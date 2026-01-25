@@ -20,7 +20,7 @@ import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { DamageSourceDef, GameItem } from "common/scripts/definitions/alldefs.ts";
 import { Vehicle } from "../gameObjects/vehicle.ts";
-import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
+import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { Skins } from "common/scripts/definitions/loadout/skins.ts";
 import { Badges } from "common/scripts/definitions/loadout/badges.ts";
 import { Creature } from "../gameObjects/creature.ts";
@@ -430,6 +430,9 @@ export class Game extends ServerGame2D<ServerGameObject>{
         }*/
 
         p.update2()
+
+        /*const car=this.add_vehicle(p.position,Vehicles.getFromString("jeep"),p.layer)
+        car.seats[0].set_player(p)*/
         return p
     }
     add_npc(name?:string,layer?:number):Player{

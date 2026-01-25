@@ -61,7 +61,7 @@ export const ConfigDefaultValues={
     cv_graphics_climate:true,
 
     cv_game_region:"na",
-    cv_game_friendly_fire:true,
+    cv_game_friendly_fire:false,
     cv_game_interpolation:true,
     cv_game_client_rot:true,
     cv_game_ping:5,
@@ -78,7 +78,7 @@ export const ConfigDefaultActions={
     },
     "emote_wheel":{
         buttons:[GamepadButtonID.L2],
-        keys:[Key.Mouse_Right]
+        keys:[Key.V]
     },
     "reload":{
         buttons:[GamepadButtonID.X],

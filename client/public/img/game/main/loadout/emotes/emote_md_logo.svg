@@ -5,8 +5,8 @@
    viewBox="-26 -28 58 58"
    version="1.1"
    id="svg14"
-   sodipodi:docname="emote_md.svg"
-   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="emote_md_logo.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    inkscape:export-filename="MD.png"
    inkscape:export-xdpi="585.14288"
    inkscape:export-ydpi="585.14288"
@@ -24,7 +24,7 @@
      inkscape:pagecheckerboard="1"
      inkscape:deskcolor="#505050"
      inkscape:zoom="6.9404762"
-     inkscape:cx="40.7753"
+     inkscape:cx="40.847341"
      inkscape:cy="56.696398"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -329,17 +329,11 @@
          d="m 4.6668895,1.7461415 -5.161074,-1.857238 1.588609,3.71119 -2.794602,7.1681295 4.448774,-4.9082905 9.2719565,6.3235825 C 12.052713,9.7900205 13.007451,8.9495305 13.938843,8.0697275 7.0625545,7.9510825 5.7001175,4.0687805 4.6668915,1.7461435 Z"
          sodipodi:nodetypes="ccccccccc" />
     </g>
-    <text
-       xml:space="preserve"
-       style="font-weight:bold;font-size:22.981px;line-height:1.25;font-family:'Russo One';-inkscape-font-specification:'Russo One Bold';letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#bd8bff;fill-opacity:1;stroke:#26004d;stroke-width:2;stroke-dasharray:none;stroke-opacity:1"
-       x="-2.9336691"
-       y="39.94891"
+    <path
+       d="M 12.233792,30.986319 9.0164514,36.73157 H 5.7991113 L 2.5817711,30.986319 V 39.94891 H -1.554809 V 23.862209 h 4.3663901 l 4.5962002,8.50297 4.5961997,-8.50297 h 4.366391 V 39.94891 h -4.13658 z m 15.856881,-7.12411 q 2.596853,0 3.929751,1.355879 1.355879,1.332898 1.355879,3.929751 v 5.515441 q 0,2.596853 -1.355879,3.952732 -1.332898,1.332898 -3.929751,1.332898 h -8.96259 V 23.862209 Z m 1.14905,5.28563 q 0,-2.06829 -2.06829,-2.06829 h -3.90677 v 9.652021 h 3.90677 q 2.06829,0 2.06829,-2.06829 z"
        id="text5563"
-       transform="scale(1.0056096,0.9944217)"><tspan
-         sodipodi:role="line"
-         id="tspan5561"
-         x="-2.9336691"
-         y="39.94891"
-         style="stroke-width:2">MD</tspan></text>
+       style="font-weight:bold;font-size:22.981px;line-height:1.25;font-family:'Russo One';-inkscape-font-specification:'Russo One Bold';letter-spacing:0px;word-spacing:0px;fill:#bd8bff;stroke:#26004d;stroke-width:2"
+       transform="scale(1.0056096,0.9944217)"
+       aria-label="MD" />
   </g>
 </svg>

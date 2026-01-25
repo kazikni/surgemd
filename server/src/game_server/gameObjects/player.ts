@@ -333,7 +333,7 @@ export class Player extends ServerGameObject{
                 if(!this.inventory.weapons[this.inventory.weapon_idx]){
                     idx=0
                 }
-                this.inventory.weapon_idx=0
+                this.inventory.weapon_idx=-1
                 this.inventory.set_weapon_index(idx)
             }
         }

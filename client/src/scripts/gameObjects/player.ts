@@ -1,31 +1,30 @@
-import { CircleHitbox2D, KeyFrameSpriteDef, model2d, NetStream, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts";
-import { GameConstants, PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts";
-import { GameItem, GameObjectDef, GameObjectsDefs, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts";
-import { GameObject } from "../others/gameObject.ts";
-import { AnimatedContainer2D, Light2D, Sprite2D, type Tween } from "../engine/mod.ts";
-import { GraphicsDConfig } from "../others/config.ts";
-import { Decal } from "./decal.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts";
-import { ClientGame2D, type ClientGameObject2D } from "../engine/game.ts";
-import { ColorM } from "../engine/renderer.ts";
-import { SoundInstance, SoundOptions } from "../engine/sounds.ts";
-import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts";
+import { CircleHitbox2D, KeyFrameSpriteDef, model2d, NetStream, random, v2, v2m, Vec2 } from "common/scripts/engine/mod.ts"
+import { GameConstants, PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
+import { GameItem, GameObjectDef, GameObjectsDefs, WeaponDef,Weapons } from "common/scripts/definitions/alldefs.ts"
+import { GameObject } from "../others/gameObject.ts"
+import { AnimatedContainer2D, Light2D, Sprite2D, type Tween } from "../engine/mod.ts"
+import { GraphicsDConfig } from "../others/config.ts"
+import { Decal } from "./decal.ts"
+import { InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { DualAdditional, GunDef, Guns } from "common/scripts/definitions/items/guns.ts"
+import { ClientGame2D, type ClientGameObject2D } from "../engine/game.ts"
+import { ColorM } from "../engine/renderer.ts"
+import { SoundInstance, SoundOptions } from "../engine/sounds.ts"
+import { BackpackDef, Backpacks } from "common/scripts/definitions/items/backpacks.ts"
 import {SkinDef, Skins} from "common/scripts/definitions/loadout/skins.ts"
-import { DefaultFistRig } from "common/scripts/others/item.ts";
-import { Consumibles } from "common/scripts/definitions/items/consumibles.ts";
-import { ParticlesEmitter2D} from "common/scripts/engine/particles.ts";
-import { Boosts } from "common/scripts/definitions/player/boosts.ts";
-import { ease, Numeric } from "common/scripts/engine/utils.ts";
-import { Container2D } from "../engine/container_2d.ts";
-import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts";
-import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
-import { HelmetDef, Helmets, VestDef, Vests } from "common/scripts/definitions/items/equipaments.ts";
-import { type Sound } from "../engine/resources.ts";
-import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CenterHotspot } from "../engine/utils.ts";
-import { type Obstacle } from "./obstacle.ts";
-import { type Building } from "./building.ts";
+import { DefaultFistRig } from "common/scripts/others/item.ts"
+import { Consumibles } from "common/scripts/definitions/items/consumibles.ts"
+import { ParticlesEmitter2D} from "common/scripts/engine/particles.ts"
+import { Boosts } from "common/scripts/definitions/player/boosts.ts"
+import { ease, Numeric } from "common/scripts/engine/utils.ts"
+import { Container2D } from "../engine/container_2d.ts"
+import { MeleeDef, Melees } from "common/scripts/definitions/items/melees.ts"
+import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts"
+import { HelmetDef, Helmets, VestDef, Vests } from "common/scripts/definitions/items/equipaments.ts"
+import { type Sound } from "../engine/resources.ts"
+import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts"
+import { CenterHotspot } from "../engine/utils.ts"
+import { type Obstacle } from "./obstacle.ts"
 export class Player extends GameObject{
     stringType:string="player"
     numberType: number=1
@@ -241,7 +240,8 @@ export class Player extends GameObject{
         }
         if(def?.image){
             this.sprites.weapon.visible=true
-            this.sprites.weapon.scale=v2.new(1*(def.image.scale??1),1)
+            const scale=(def.image.scale??1)
+            this.sprites.weapon.scale=v2.new(scale,scale)
             this.sprites.weapon.position=v2.duplicate(def.image.position)
             this.sprites.weapon.rotation=def.image.rotation
             this.sprites.weapon.zIndex=def.image.zIndex??2

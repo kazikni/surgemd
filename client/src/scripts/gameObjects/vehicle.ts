@@ -2,7 +2,7 @@ import { Container2D, Sprite2D } from "../engine/container_2d.ts";
 import { VehicleDef, Vehicles } from "common/scripts/definitions/objects/vehicles.ts";
 import { v2, v2m, Vec2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { NetStream, Numeric } from "common/scripts/engine/mod.ts";
+import { CircleHitbox2D, NetStream, Numeric } from "common/scripts/engine/mod.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { CenterHotspot } from "../engine/utils.ts";
 export class Vehicle extends GameObject{
@@ -37,6 +37,7 @@ export class Vehicle extends GameObject{
     }
     set_def(def:VehicleDef){
         if(this.def)return
+        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),2)
         this.def=def
         this.main_sprite.frame=def.frame.base?this.game.resources.get_sprite(def.frame.base):this.game.resources.get_sprite(def.idString)
         if(def.frame.base_scale){

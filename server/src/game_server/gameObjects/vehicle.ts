@@ -148,7 +148,8 @@ export class Vehicle extends ServerGameObject{
     }
 
     create(args: {position:Vec2,def:VehicleDef}): void {
-        this.hb=new CircleHitbox2D(args.position,2)
+        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),2)
+        this.base_hitbox.position=args.position
         this.def=args.def
         if(this.def.pillot_seat)this.seats.push(new VehicleSeat(this,this.def.pillot_seat.position,true,this.def.pillot_seat.leave))
         for(const s of this.def.seats??[]){

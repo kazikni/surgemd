@@ -236,7 +236,7 @@ Melees.insert(
         idString:"sledgehammer",
         damage:49.5,
         offset:0.6,
-        quality:ItemQuality.Rare,
+        quality:ItemQuality.Mythic,
         radius:0.9,
         size:3,
         attack_delay:0.8,
@@ -267,4 +267,40 @@ Melees.insert(
             hit_sound:"sledgehammer_hit",
         }
     },
+    /*{
+        idString:"bonesaw",
+        damage:49.5,
+        offset:0.6,
+        quality:ItemQuality.Legendary,
+        radius:0.9,
+        size:3,
+        attack_delay:0.8,
+        switchDelay:0.5,
+        damage_delays:[0.6],
+        resistence_damage:2,
+        arms:{
+            right:{ 
+                position:DefaultFistRig.right!.position,
+                rotation:DefaultFistRig.right!.rotation,
+                zIndex:2,
+            },
+            left:{
+                position:DefaultFistRig.left!.position,
+                rotation:DefaultFistRig.left!.rotation,
+                zIndex:2,
+            }
+        },
+        image:{
+            position:DefaultFistRig.right!.position,
+            rotation:0,
+            zIndex:1,
+            scale:1.5,
+            hotspot:v2.new(0,0.3)
+        },
+        //animation:AnimationSwing(0.9),
+        assets:{
+            use_sound:"medium_swing",
+            hit_sound:"bonesaw_hit",
+        }
+    },*/
 )

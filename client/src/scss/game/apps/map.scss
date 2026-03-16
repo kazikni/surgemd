@@ -1,0 +1,131 @@
+.tab-map-app {
+    height: 100%;
+    background: #0f1115;
+    color: #fff;
+    font-family: sans-serif;
+
+    .map-root {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        height: 100%;
+    }
+
+    // ================= LEFT =================
+    .map-sidebar {
+        background: #15181f;
+        padding: 12px;
+        border-right: 1px solid #222;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+    }
+
+    .map-section {
+        background: #1a1d24;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .map-players {
+        position: absolute;
+        left: 0;
+        top: 0;
+        pointer-events: none;
+    }
+
+    .map-player {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #000;
+        pointer-events: none;
+
+        transform:
+            translate(-50%, -50%)
+            translate(var(--px, 0px), var(--py, 0px))
+            scale(var(--inv-zoom));
+
+        transform-origin: center;
+        will-change: transform;
+    }
+
+    // ================= RIGHT =================
+    .map-viewport {
+        position: relative;
+        overflow: hidden;
+        background: #0a0c10;
+        cursor: grab;
+    }
+
+    .map-viewport:active {
+        cursor: grabbing;
+    }
+
+    .map-inner {
+        position: absolute;
+        transform-origin: 0 0;
+        will-change: transform;
+    }
+
+    .map-image {
+        display: block;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    .map-pings {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .map-ping {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #ff3b3b;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 8px #ff3b3b;
+        pointer-events: none;
+    }
+    .map-deadzone{
+        position:absolute;
+        border-radius:50%;
+        pointer-events:none;
+
+        /*left:1500px;
+        top: 0px;
+        width: 100px;
+        height: 100px;*/
+
+        left:var(--dx);
+        top:var(--dy);
+
+        width:var(--dr);
+        height:var(--dr);
+
+        transform:translate(-50%,-50%);
+    }
+    .map-deadzone-dest{
+        position:absolute;
+        border-radius:50%;
+        pointer-events:none;
+
+        left:0px;
+        top: 0px;
+        width: 100px;
+        height: 100px;
+
+        left:var(--dx);
+        top:var(--dy);
+
+        width:var(--dr);
+        height:var(--dr);
+
+        transform:translate(-50%,-50%);
+        box-shadow:0 0 0 3px #fff5;
+    }
+}

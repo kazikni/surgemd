@@ -1,16 +1,7 @@
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts"
 import { type Game } from "../others/game.ts"
 import { zIndexes } from "common/scripts/others/constants.ts"
-import { Graphics2D } from "../engine/mod.ts"
-import { model2d } from "common/scripts/engine/models.ts"
-import { Color, ColorM } from "../engine/renderer.ts"
-import { Numeric } from "common/scripts/engine/utils.ts"
-import { ParticlesEmitter2D } from "common/scripts/engine/particles.ts"
-import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts"
-import { random } from "common/scripts/engine/random.ts"
-import { GraphicsDConfig } from "../others/config.ts"
-import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts"
 import { DeadZoneUpdate } from "common/scripts/packets/general_update.ts"
+import { ABParticle2D, CircleHitbox2D, ClientParticle2D, Color, ColorM, Graphics2D, model2d, Numeric, ParticlesEmitter2D, random, v2, Vec2 } from "common/engine/client.ts";
 export class DeadZoneManager{
     radius:number=5
     position:Vec2=v2.new(0,0)
@@ -18,11 +9,15 @@ export class DeadZoneManager{
     map_sprite:Graphics2D=new Graphics2D()
     game:Game
     pa!:ParticlesEmitter2D<ClientParticle2D>
+
+    dest_position:Vec2=v2.zero
+    dest_radius:number=0
     constructor(game:Game){
         this.game=game
         this.sprite.zIndex=zIndexes.DeadZone
         this.sprite.scale=v2.new(1,1)
-        this.game.camera.addObject(this.sprite)
+        this.sprite.layer=100
+        this.game.cam2d.addObject(this.sprite)
     }
     hitbox:CircleHitbox2D=new CircleHitbox2D(v2.new(0,0),1)
     append(){
@@ -36,7 +31,7 @@ export class DeadZoneManager{
         this.pa=this.game.particles.add_emiter({
             delay:0.3,
             particle:()=>{
-                const pos=v2.random2(this.game.camera.visual_position,v2.add(this.game.camera.visual_position,v2.new(this.game.camera.width,this.game.camera.height)))
+                const pos=v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2.new(this.game.cam2d.width,this.game.cam2d.height)))
                 if(this.hitbox.pointInside(pos))return undefined
                 return new ABParticle2D({
                     frame:{
@@ -56,7 +51,7 @@ export class DeadZoneManager{
                     }
                 })
             },
-            enabled:this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced
+            enabled:false//this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced
         })
     }
     color:Color=ColorM.hex("#21f2")
@@ -64,11 +59,15 @@ export class DeadZoneManager{
     }
     update_from_data(data:DeadZoneUpdate){
         this.set_current(data.position,data.radius)
+
+        this.dest_position=data.new_position
+        this.dest_radius=data.new_radius
     }
     set_current(position:Vec2,radius:number){
         this.position=position
         this.radius=radius
 
+        if(radius===0)radius=0.01
         this.sprite.scale=v2.new(radius,radius)
         this.sprite.position=position
 

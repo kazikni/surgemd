@@ -1,184 +1,50 @@
-import { Skins } from "common/scripts/definitions/loadout/skins.ts";
-import { SettingInputConfig, type GameConsole } from "../engine/console.ts";
-import { ResourcesManager } from "../engine/resources.ts";
-import { formatToHtml, HideElement, ShowElement } from "../engine/utils.ts";
 import { api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
-import { ShowTab } from "../engine/mod.ts";
-import { SoundManager } from "../engine/sounds.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { LevelDefinition } from "common/scripts/config/level_definition.ts";
-
+import { FileManager, formatToHtml, GameSave, HideElement, ManipulativeSoundInstance, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager } from "common/engine/client.ts";
+import { CModsManager } from "./modsManager.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 export class MenuManager{
-    save:GameConsole
     api_settings:ApiSettingsS
-    account:AccountManager=new AccountManager()
-    tabButtons:Record<string,Record<string,string[]>> = {
-        play: {
-            campaign: ["campaign", "play"],
-            team: ["team", "play"],
-        },
-        settings: {
-            graphics: ["graphics", "settings"],
-            game: ["game", "settings"],
-            sounds: ["sounds", "settings"],
-            keys: ["keys", "settings"],
-        },
-        about: {
-            social: ["social", "about"],
-            news: ["news", "about"],
-            rules: ["rules", "about"],
-            credits: ["credits", "about"],
-        }
-    };
-    submenus_options:Record<string,Record<string,Record<string,SettingInputConfig>>>={
-        "settings":{
-            "graphics":{
-                "renderer":{
-                    options:[{name:"Webgl1",value:"webgl1"},{name:"Webgl2",value:"webgl2"}],
-                    type:"select"
-                },
-                "resolution":{
-                    options:[
-                        {name:"Very Low",value:"very-low"},
-                        {name:"Low",value:"low"},
-                        {name:"Medium",value:"medium"},
-                        {name:"high",value:"high"},
-                        {name:"Very High",value:"very-high"},
-                    ],
-                    type:"select"
-                },
-                "particles":{
-                    options:[
-                        {value:"0",name:"No"},
-                        {value:"1",name:"Normal"},
-                        {value:"2",name:"Advanced"},
-                    ],
-                    type:"select"
-                },
-                "lights":{
-                    options:[
-                        {value:"0",name:"No"},
-                        {value:"1",name:"Normal"},
-                        {value:"2",name:"Advanced"},
-                    ],
-                    type:"select"
-                },
-                "post_proccess":{
-                    options:[
-                        {value:"0",name:"No"},
-                        {value:"1",name:"Normal"},
-                        {value:"2",name:"Advanced"},
-                    ],
-                    type:"select"
-                },
-            },
-        }
-    }
-    submenus_html:Record<string,Record<string,HTMLDivElement>>={
-        "settings":{
-            "graphics":document.querySelector("#settings-sm-graphics") as HTMLDivElement
-        }
-    }
+    account:AccountManager
+    tabs:Record<string,MenuTab>={}
+    tabs_html:Record<string,HTMLDivElement>={}
+    current_tab?:string
     content={
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
-        insert_name:document.body.querySelector("#insert-name") as HTMLInputElement,
-        menu_p:document.body.querySelector("#menu-options") as HTMLDivElement,
+
+        menu_options:document.body.querySelector("#menu-options") as HTMLDivElement,
+        menu_content:document.body.querySelector("#menu-content") as HTMLDivElement,
 
         initial_screen:document.body.querySelector("#initial-screen") as HTMLDivElement,
 
         loading_screen:document.body.querySelector("#loading-screen") as HTMLDivElement,
         loading_screen_current:document.body.querySelector("#loading-current") as HTMLDivElement,
+        
+        gameover_text_screen:document.body.querySelector("#text-gameover-container") as HTMLDivElement,
+        gameover_text_current:document.body.querySelector("#text-gameover") as HTMLSpanElement,
 
         select_region:document.body.querySelector("#select-region") as HTMLButtonElement,
-
-        settings:{
-            graphics_climate:document.body.querySelector("#settings-graphics-climate") as HTMLInputElement,
-
-            game_friendly_fire:document.body.querySelector("#settings-game-friendly-fire") as HTMLInputElement,
-            game_client_interpolation:document.body.querySelector("#settings-game-interpolation") as HTMLInputElement,
-            game_client_rotation:document.body.querySelector("#settings-game-client-rotation") as HTMLInputElement,
-            game_ping:document.body.querySelector("#settings-game-ping") as HTMLInputElement,
-
-            sounds_master_volume:document.body.querySelector("#settings-sounds-master-volume") as HTMLInputElement,
-        },
-        submenus:{
-            play:document.body.querySelector("#menu-play-submenu") as HTMLElement,
-            loadout:document.body.querySelector("#menu-loadout-submenu") as HTMLElement,
-            settings:document.body.querySelector("#menu-settings-submenu") as HTMLElement,
-            account:document.body.querySelector("#menu-account-submenu") as HTMLElement,
-            about:document.body.querySelector("#menu-about-submenu") as HTMLElement,
-            extras:{
-                loadout_c:document.body.querySelector("#loadout-sm-extra-content") as HTMLElement,
-                loadout_v:document.body.querySelector("#loadout-sm-extra-view") as HTMLElement
-            },
-            select:{
-                account:document.body.querySelector("#account-button-m") as HTMLButtonElement,
-            },
-            open_buttons:[
-                document.body.querySelector("#play-button-m") as HTMLButtonElement,
-                document.body.querySelector("#loadout-button-m") as HTMLButtonElement,
-                document.body.querySelector("#settings-button-m") as HTMLButtonElement,
-                document.body.querySelector("#account-button-m") as HTMLButtonElement,
-                document.body.querySelector("#about-button-m") as HTMLButtonElement,
-            ],
-            buttons:{
-                campaign:document.body.querySelector("#btn-play-campaign") as HTMLButtonElement,
-                team:document.body.querySelector("#btn-play-team") as HTMLButtonElement,
-
-                graphics:document.body.querySelector("#btn-settings-graphics") as HTMLButtonElement,
-                game:document.body.querySelector("#btn-settings-game") as HTMLButtonElement,
-                sounds:document.body.querySelector("#btn-settings-sounds") as HTMLButtonElement,
-                keys:document.body.querySelector("#btn-settings-keys") as HTMLButtonElement,
-
-                login:document.body.querySelector("#btn-account-login") as HTMLButtonElement,
-                register:document.body.querySelector("#btn-account-register") as HTMLButtonElement,
-
-                social:document.body.querySelector("#btn-about-social") as HTMLButtonElement,
-                news:document.body.querySelector("#btn-about-news") as HTMLButtonElement,
-                rules:document.body.querySelector("#btn-about-rules") as HTMLButtonElement,
-                credits:document.body.querySelector("#btn-about-credits") as HTMLButtonElement,
-            } as Record<string,HTMLButtonElement>
-        },
-        campaing_levels:document.body.querySelector("#campaign-levels") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
-        play_buttons:document.body.querySelector("#menu-play-buttons") as HTMLDivElement,
     }
-    resources:ResourcesManager
+
+    save!:GameSave
+    resources!:ResourcesManager
+    sounds!:SoundManager
     submenu_param:boolean
-    sounds:SoundManager
+
+    definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
-    constructor(save:GameConsole,resources:ResourcesManager,sounds:SoundManager){
-        this.save=save
+    constructor(definitions:GameDefinition){
         const params = new URLSearchParams(self.location.search)
-        const submenu = params.get("menu")
-        this.sounds=sounds
-        this.resources=resources
-        this.menu_tabs["play"]={
-            "campaign":document.body.querySelector("#campaign-levels") as HTMLElement,
-            "gamemode":document.body.querySelector("#gamemode-view") as HTMLElement,
-            "team":document.body.querySelector("#gamemode-team") as HTMLElement,
-        }
-        this.menu_tabs["settings"]={
-            "graphics":document.body.querySelector("#settings-sm-graphics") as HTMLElement,
-            "game":document.body.querySelector("#settings-sm-game") as HTMLElement,
-            "sounds":document.body.querySelector("#settings-sm-sounds") as HTMLElement,
-        }
-        this.menu_tabs["account"]={
-            "login":document.body.querySelector("#account-sm-login") as HTMLElement,
-            "register":document.body.querySelector("#account-sm-register") as HTMLElement,
-        }
-        this.menu_tabs["about"]={
-            "social":document.body.querySelector("#about-sm-social") as HTMLElement,
-            "news":document.body.querySelector("#about-sm-news") as HTMLElement,
-            "rules":document.body.querySelector("#about-sm-rules") as HTMLElement,
-            "credits":document.body.querySelector("#about-sm-credits") as HTMLElement,
-        }
 
-        this.load_menu(submenu)
+        this.account=new AccountManager(definitions)
+        this.definitions=definitions
+
         this.submenu_param=!!params
 
         this.api_settings={
@@ -206,7 +72,7 @@ export class MenuManager{
                 }
             }
         }
-        
+
         HideElement(this.content.gameD)
         ShowElement(this.content.menuD)
 
@@ -214,98 +80,132 @@ export class MenuManager{
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
 
-        this.reload_close_btn()
-        for(const btn of this.content.submenus.open_buttons){
-            btn.addEventListener("click",this.open_button_func.bind(this))
-        }
-        this.load_resources(["main"])
-        this.update_api()
-
         setTimeout(()=>{
             HideElement(this.content.initial_screen,true)
         },1000)
     }
-    set_loading_current(text="",unloading:boolean=false){
-        this.content.loading_screen_current.innerHTML=`<p class="span-medium">${unloading?"Unloading":"Loading"}: ${text}</p>`
-    }
-    reload_close_btn(){
-        document.querySelectorAll(".submenu-close-btn").forEach((v,_k)=>{
-            (v as HTMLButtonElement).onclick=this.load_menu.bind(this,null)
-        })
-    }
-    menu_tabs:Record<string,Record<string,HTMLElement>>={}
-    open_button_func(ev:MouseEvent){
-        const t=ev.currentTarget as HTMLButtonElement
-        this.load_menu(t.attributes.getNamedItem("menu-id")?.value as string|null)
-    }
-    load_menu(submenu:string|null){
-        HideElement(this.content.submenus.play,true)
-        HideElement(this.content.submenus.loadout,true)
-        HideElement(this.content.submenus.settings,true)
-        HideElement(this.content.submenus.about,true)
-        HideElement(this.content.submenus.account,true)
+    reload_tabs(tabs:(MenuTabDef|undefined)[]){
+        this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.png" draggable="false"></img>'
+        this.content.menu_content.innerHTML=""
+        this.tabs={}
+        this.tabs_html={}
+        for(const t of tabs){
+            if(!t)continue
+            const btn=document.createElement("button") as HTMLButtonElement
+            btn.className="btn-blue menu-options-btn"
+            btn.id=`${t.id}-menu-option`
+            btn.innerText=t.name
+            this.content.menu_options.appendChild(btn)
 
-        if(submenu){
-            HideElement(this.content.menu_p,true)
-            switch(submenu){
-                case "play":
-                    ShowElement(this.content.submenus.play,true)
-                    ShowTab("campaign",this.menu_tabs["play"])
-                    break
-                case "loadout":
-                    ShowElement(this.content.submenus.loadout,true)
-                    this.show_your_skins()
-                    break
-                case "settings":
-                    ShowElement(this.content.submenus.settings,true)
-                    ShowTab("graphics",this.menu_tabs["settings"])
-                    break
-                case "account":
-                    ShowElement(this.content.submenus.account,true)
-                    break
-                case "about":
-                    ShowElement(this.content.submenus.about,true)
-                    ShowTab("social",this.menu_tabs["about"])
-                    break
+            btn.addEventListener("click",this.load_tab.bind(this,t.id))
+
+            const tab:MenuTab={
+                btn:btn,
+                def:t,
+                option:[],
+                tabs:{},
+                current_tab:""
+            }
+
+            const tab_main=document.createElement("kl-md-submenu") as HTMLDivElement
+            tab_main.id=`menu-${t.id}-submenu`
+            tab_main.className="md-menu-game"
+            tab_main.style="display: none; user-select: none;"
+            const options=document.createElement("kl-md-submenu-options") as HTMLDivElement
+            const content=document.createElement("kl-md-submenu-content") as HTMLDivElement
+
+            const close_btn=document.createElement("button") as HTMLButtonElement
+            close_btn.className="btn-red close-btn submenu-close-btn"
+            close_btn.textContent="X"
+            close_btn.onclick=this.load_tab.bind(this,"")
+
+            tab_main.appendChild(options)
+            tab_main.appendChild(content)
+            tab_main.appendChild(close_btn)
+            this.content.menu_content.appendChild(tab_main)
+
+            for(const st of Object.keys(t.subtabs)){
+                const extra=document.createElement("kl-md-extra") as HTMLDivElement
+                extra.className="background-menu-md background-menu-ss background-menu"
+                extra.id=`${t.id}-${st}-sm-extra`
+
+                t.subtabs[st].generate(extra,this)
+                tab.tabs[st]=extra
+
+                content.appendChild(extra)
+            }
+
+            for(const o of t.options){
+                switch(o.type){
+                    case "button":{
+                        const btn=document.createElement("button")
+                        btn.innerText=o.name
+                        btn.id=`btn-${t.id}-${o.id}`
+                        btn.className="btn-green"
+                        btn.onclick=this.opt_click_callback(o,tab)
+
+                        options.appendChild(btn)
+                        tab.option.push(btn)
+                        break
+                    }
+                    case "label":{
+                        const p=document.createElement("p")
+                        p.className="span"
+                        p.innerText=o.name
+                        options.appendChild(p)
+                        break
+                    }
                 }
-        }else{
-            ShowElement(this.content.menu_p,true)
-        }
+            }
+            const dk=Object.keys(t.subtabs)[0]
+            tab.current_tab=dk
+            ShowTab(dk,tab.tabs)
+            if(t.subtabs[dk].on_open)t.subtabs[dk].on_open(tab.tabs[dk] as HTMLDivElement,this)
+            this.tabs[t.id]=tab
+            this.tabs_html[t.id]=tab_main
+        }   
     }
-    loaded=false
-    loaded_textures:string[]=[]
-
-    async load_resources(textures:string[]=["main"]){
-        if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
-        ShowElement(this.content.loading_screen,true)
-        this.loaded=false
-        this.set_loading_current("Somethings",true)
-        this.resources.clear([
-            "button_click",
-            "essentials",
-            ...textures
-        ])
-        for(const tt of textures){
-            const at=`atlases/atlas-${tt}-data.json`
-            const spg=await(await fetch(at)).json()
-            for(const s of spg[this.save.get_variable("cv_graphics_resolution")]){
-                await this.resources.load_spritesheet("",s,undefined,tt,this.set_loading_current)
+    opt_click_callback(o:SubMenuOption,tab:MenuTab):(e:MouseEvent)=>void{
+        return (e)=>{
+            if(o.type==="button"){
+                if(o.subtab){
+                    const ot=tab.def.subtabs[tab.current_tab]
+                    if(ot.on_close)ot.on_close(tab.tabs[o.subtab] as HTMLDivElement,this)
+                    const t=tab.def.subtabs[o.subtab]
+                    if(t.on_open)t.on_open(tab.tabs[o.subtab] as HTMLDivElement,this)
+                    tab.current_tab=o.subtab!
+                    ShowTab(o.subtab,tab.tabs)
+                }
+                if(o.onclick)o.onclick(e)
             }
         }
+    }
+    load_tab(tab:string){
+        if(this.current_tab){
+            if(this.tabs[this.current_tab].def.on_close)this.tabs[this.current_tab].def.on_close!(this)
+        }
+        this.current_tab=tab
+        ShowTab(tab,this.tabs_html)
+        if(this.current_tab){
+            if(this.tabs[this.current_tab].def.on_open)this.tabs[this.current_tab].def.on_open!(this)
+        }
+        if(tab){
+            HideElement(this.content.menu_options)
+        }else{
+            ShowElement(this.content.menu_options)
+        }
+    }
+    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,mods?:CModsManager){
+        this.save=save
+        this.resources=resources
+        this.sounds=sounds
+        this.update_api()
 
-        //Load Sfx
-        await this.resources.load_group("/sounds/game/main.json","main",this.set_loading_current)
-        await this.resources.load_audio("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.set_loading_current)
-        await this.resources.load_audio("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.set_loading_current)
-        await this.resources.load_audio("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.set_loading_current)
-        await this.resources.load_audio("thunder_1",{src:"/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.set_loading_current)
-        await this.resources.load_audio("thunder_2",{src:"/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.set_loading_current)
-        await this.resources.load_audio("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.set_loading_current)
-        this.loaded=true
-        HideElement(this.content.loading_screen,true)
+        MenuInitDefault(this,fs,mods)
+
+        ShowElement(this.content.menu_options,true)
     }
     async update_api(){
-        this.content.select_region.innerHTML=""
         if(api){
             let js=this.api_settings
             try{
@@ -315,17 +215,12 @@ export class MenuManager{
             }
             this.api_settings=js
         }
-        for(const region of Object.keys(this.api_settings.regions)){
-            this.content.select_region.insertAdjacentHTML("beforeend",`<option value=${region}>${region}</option>`)
-        }
-        this.content.select_region.value=this.save.get_variable("cv_game_region")
+
         if(this.api_settings.database.enabled){
             this.account.enable(this)
-        }else{
-            this.content.submenus.select.account.remove()
         }
 
-        const newsS=this.content.submenus.about.querySelector("#about-sm-news") as HTMLDivElement
+        const newsS=this.content.menu_content.querySelector("#about-news-sm-extra") as HTMLDivElement
         newsS.innerHTML=""
         const news=await(await fetch(`${API_BASE}/news/get`)).json() as {title:string,id:string,content:string}[]
         for(const n of news){
@@ -336,150 +231,100 @@ export class MenuManager{
             d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3>See More</h3></a>`
             newsS.appendChild(d)
         }
-
-        this.update_modes()
     }
-    update_modes(){
-        this.content.play_buttons.innerHTML="<p class=\"span\">Online</p>"
-        this.api_settings.modes.forEach((mode)=>{
-            const btn=document.createElement("button")
-            btn.className="btn-green"
-            btn.innerText=mode.gamemode
-            btn.onclick=()=>{
-                ShowTab("gamemode",this.menu_tabs["play"])
-                const gm_view=this.menu_tabs["play"]["gamemode"]
-                gm_view.innerHTML=`
-<div class="play-select-item background-menu">
-    <h1>${mode.gamemode}</h1>
-    <div class="gamemode-image" style="background-image: url('/img/menu/modes/${mode.gamemode}.gif');"></div>
-    <button id="btn-join-${mode.gamemode}" class="btn-green">Play</button>
-</div>`
-                const join_btn=gm_view.querySelector(`#btn-join-${mode.gamemode}`) as HTMLButtonElement
-                join_btn.onclick=()=>{
-                    console.log(`${mode.gamemode}...`)
-                    if(this.play_callback)this.play_callback({type:"online",mode:mode.gamemode,team_size:mode.team_size[0]})
+    // Loading Screen
+    show_loading_screen(){
+        ShowElement(this.content.loading_screen,true)
+    }
+    hide_loading_screen(){
+        HideElement(this.content.loading_screen,true)
+    }
+    
+    set_loading_current(text="",unloading:boolean=false){
+        this.content.loading_screen_current.innerHTML=`<p class="span-medium">${unloading?"Unloading":"Loading"}: ${text}</p>`
+    }
+
+    show_gameover_text(){
+        ShowElement(this.content.gameover_text_screen,true)
+    }
+    hide_gameover_text(){
+        HideElement(this.content.gameover_text_screen,true)
+    }
+    game_over_messages(text:string[],music:Sound,music_player:ManipulativeSoundInstance,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
+        return new Promise<void>((resolve) => {
+            this.show_gameover_text()
+
+            music_player.set(music)
+
+            const elem = this.content.gameover_text_current
+            elem.innerText=""
+
+            let idx = 0
+            elem.style.transition=`opacity ${opacity_anim}ms linear`
+            const next = () => {
+                if(idx >= text.length){
+                    this.hide_gameover_text()
+                    music_player.set(undefined)
+                    resolve()
+                    return
+                }
+                const msg = text[idx++]
+                elem.style.opacity = "0"
+
+                setTimeout(()=>{
+                    elem.innerText = msg
+                    elem.style.opacity = "1"
+
+                    setTimeout(next, time_per_message)
+                }, opacity_anim)
+            }
+
+            setTimeout(()=>next(),1000)
+        })
+    }
+    game_popup(content:(ctx:GamePopupCTX)=>void):Promise<any>{
+        return new Promise((resolve)=>{
+            const overlay=document.createElement("div")
+            overlay.className="game-popup-overlay"
+
+            const popup=document.createElement("div")
+            popup.className="game-popup background-menu"
+
+            overlay.appendChild(popup)
+            document.body.appendChild(overlay)
+
+            const close=()=>{
+                overlay.style.opacity="0"
+                setTimeout(()=>{
+                    overlay.remove()
+                },200)
+            }
+
+            const ctx:GamePopupCTX={
+                parent:popup,
+                m:this,
+                resolve:(val:any)=>{
+                    close()
+                    resolve(val)
+                },
+                close:()=>{
+                    close()
+                    resolve(undefined)
                 }
             }
-            this.content.play_buttons.appendChild(btn)
-        })
-        //this.update_team(true,undefined)
-    }
-    /*update_team(enabled:boolean,connected?:TeamSetting){
-        HideElement(this.content.team_options_div)
-        if(enabled){
-            if(connected){
-                //
-            }else{
-                ShowElement(this.content.team_options_div)
-            }
-        }
-    }*/
-    setupTabButtons() {
-        for (const submenu in this.tabButtons) {
-            for (const btnName in this.tabButtons[submenu]) {
-                const [tab, group] = this.tabButtons[submenu][btnName];
-                const btn = this.content.submenus.buttons[btnName];
-                btn.addEventListener("click", () => ShowTab(tab, this.menu_tabs[group]));
-            }
-        }
-    }
-    async start(){
-        this.content.insert_name.value=this.save.get_variable("cv_loadout_name")
-        this.content.insert_name.addEventListener("change",()=>{
-            this.save.set_variable("cv_loadout_name",this.content.insert_name.value)
-        })
-        this.content.select_region.addEventListener("change",()=>{
-            this.save.set_variable("cv_game_region",this.content.select_region.value)
-        })
 
-        this.setupTabButtons()
+            content(ctx)
 
-        for (const sm of Object.keys(this.submenus_options)) {
-            for (const ssm of Object.keys(this.submenus_options[sm])) {
-                const menu = this.submenus_html[sm][ssm];
-                for (const opt of Object.keys(this.submenus_options[sm][ssm])) {
-                    const div = document.createElement("div");
-                    const id = `${sm}-${ssm}-${opt}`;
-                    let tags = "";
-        
-                    switch (this.submenus_options[sm][ssm][opt].type) {
-                        case "select": {
-                            tags += `<select class="select-blue" id="${id}">`;
-                            for (const s of this.submenus_options[sm][ssm][opt].options) {
-                                tags += `<option value="${s.value}">${s.name}</option>`;
-                            }
-                            tags += `</select>`;
-                            break;
-                        }
-        
-                    }
-        
-                    div.innerHTML = `
-                        <span>${opt}</span>
-                        ${tags}
-                    `;
-        
-                    menu.appendChild(div);
-        
-                    queueMicrotask(() => {
-                        const el = menu.querySelector(`#${id}`) as HTMLSelectElement;
-                        if (!el) return;
-        
-                        const saved = this.save.get_variable(`cv_${ssm}_${opt}`);
-        
-                        if (saved !== undefined && saved !== null) {
-                            el.value = saved;
-                        }
-                        el.addEventListener("change",()=>{
-                            this.save.set_variable(`cv_${ssm}_${opt}`,el.value)
-                        })
-                    });
-                }
-            }
-        }
-
-        //Graphics
-        this.content.settings.graphics_climate.checked=this.save.get_variable("cv_graphics_climate")
-        this.content.settings.graphics_climate.addEventListener("click",()=>{
-            this.save.set_variable("cv_graphics_climate",this.content.settings.graphics_climate.checked)
+            requestAnimationFrame(()=>{
+                overlay.style.opacity="1"
+            })
         })
-        //Game
-        this.content.settings.game_friendly_fire.checked=this.save.get_variable("cv_game_friendly_fire")
-        this.content.settings.game_friendly_fire.addEventListener("click",()=>{
-            this.save.set_variable("cv_game_friendly_fire",this.content.settings.game_friendly_fire.checked)
-        })
-        this.content.settings.game_client_interpolation.checked=this.save.get_variable("cv_game_interpolation")
-        this.content.settings.game_client_interpolation.addEventListener("click",()=>{
-            this.save.set_variable("cv_game_interpolation",this.content.settings.game_client_interpolation.checked)
-        })
-        this.content.settings.game_client_rotation.checked=this.save.get_variable("cv_game_client_rot")
-        this.content.settings.game_client_rotation.addEventListener("click",()=>{
-            this.save.set_variable("cv_game_client_rot",this.content.settings.game_client_rotation.checked)
-        })
-        this.content.settings.game_ping.addEventListener("change",()=>{
-            this.save.set_variable("cv_game_ping",this.content.settings.game_ping.value)
-        })
-        this.content.settings.game_ping.value=this.save.get_variable("cv_game_ping")
-
-        //Sounds
-        this.content.settings.sounds_master_volume.addEventListener("change",()=>{
-            this.save.set_variable("cv_sounds_master_volume",this.content.settings.sounds_master_volume.value)
-            this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
-        })
-        this.content.settings.sounds_master_volume.value=this.save.get_variable("cv_sounds_master_volume")
-        this.sounds.masterVolume=this.save.get_variable("cv_sounds_master_volume")/100
-
-        await this.load_campaign()
-        
-        /*
-        HideElement(this.content.settings_tabs)
-        HideElement(this.content.section_tabs)*/
     }
     your_skins:string[]=["default_skin"]
     show_your_skins(){
         this.content.submenus.extras.loadout_c.innerHTML=""
-        let sel=this.save.get_variable("cv_loadout_skin")
-        if(!Skins.exist(sel))sel="default_skin"
+        let sel=this.save.get_variable("sv_loadout_skin")
+        if(!this.definitions.skins.exist(sel))sel="default_skin"
         for(const s of this.your_skins){
             const skin=document.createElement("div")
             skin.id="skin-sel-"+s
@@ -497,8 +342,8 @@ export class MenuManager{
         this.update_ss_view(sel)
     }
     update_sel_skin(sel=""){
-        if(!Skins.exist(sel))sel="default_skin"
-        this.save.set_variable("cv_loadout_skin",sel)
+        if(!this.definitions.skins.exist(sel))sel="default_skin"
+        this.save.set_variable("sv_loadout_skin",sel)
         const ss=this.content.submenus.extras.loadout_c.querySelectorAll(".skin-view-menu-selected")
         ss.forEach((v,_)=>{
             v.classList.remove("skin-view-menu-selected")
@@ -512,34 +357,12 @@ export class MenuManager{
             <img src="${this.resources.get_sprite(sel+"_body").src}" class="simage"></div>
         `
     }
-    async game_start(assets:string[]){
+    game_start(){
         ShowElement(this.content.gameD)
         HideElement(this.content.menuD)
-        await this.load_resources([...assets,"main"])
     }
     game_end(){
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
-    }
-    async load_campaign():Promise<void>{
-        const campaign=await(await fetch("/scripts/campaign.json")).json()
-        this.content.campaing_levels.innerHTML = ""
-        for(const charpter of campaign.charpters){
-            this.content.campaing_levels.innerHTML+=`<h2 class="span">${charpter.name}</h2>`
-            for(const l of charpter.levels){
-                const level:LevelDefinition=await(await fetch(l)).json()
-                const level_div = document.createElement("div")
-                level_div.className="play-select-item background-menu"
-                level_div.innerHTML = `
-    <h1>${level.meta.name}</h1>
-    <p>Welcome To The Island</p>
-    <button class="btn-green">Start Level</button>`
-                this.content.campaing_levels.appendChild(level_div)
-                const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
-                start_btn.onclick = () => {
-                    if(this.play_callback)this.play_callback({type:"campaign",level:level,dificulty:2})
-                }
-            }
-        }
     }
 }

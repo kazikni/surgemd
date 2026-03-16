@@ -1,10 +1,7 @@
-import { Container2D, Sprite2D } from "../engine/container_2d.ts";
 import { type Game } from "./game.ts";
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { SoundInstance } from "../engine/sounds.ts";
 import { PlaneData } from "common/scripts/packets/general_update.ts";
-import { CenterHotspot } from "../engine/utils.ts";
+import { CenterHotspot, Container2D, SoundInstance, Sprite2D, v2, Vec2 } from "common/engine/client.ts";
 
 export class Plane{
     container:Container2D=new Container2D()
@@ -23,7 +20,7 @@ export class Plane{
     constructor(game:Game){
         this.game=game
         this.container.add_child(this.sprite)
-        this.game.camera.addObject(this.container)
+        this.game.cam2d.addObject(this.container)
         this.container.zIndex=zIndexes.Planes
     }
     dest_pos?:Vec2
@@ -34,7 +31,7 @@ export class Plane{
         }
     }
     updateData(data:PlaneData){
-        if(this.game.save.get_variable("cv_game_interpolation")){
+        if(this.game.save.get_variable("sv_game_interpolation")){
             this.dest_pos=data.pos
         }else{
             this.container.position=data.pos
@@ -46,12 +43,12 @@ export class Plane{
         if(!this.sound){
             this.sound=this.game.sounds.play(this.game.resources.get_audio("airdrop_plane_sfx"),{
                 max_distance:80,
-                position:v2.duplicate(this.container.position),
+                position:v2.clone(this.container.position),
                 loop:true,
                 volume:0.5
             })
         }
-        if(this.sound)this.sound.position=v2.duplicate(this.container.position)
+        if(this.sound)this.sound.position=v2.clone(this.container.position)
         if(!this.sprite.frame){
             this.sprite.set_frame({
                 image:"airdrop_plane",

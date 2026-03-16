@@ -1,15 +1,12 @@
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { CircleHitbox2D, NetStream, random, v2, Vec2 } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { CircleHitbox2D } from "common/scripts/engine/hitbox.ts";
 import { type Player } from "./player.ts";
-import { random } from "common/scripts/engine/random.ts";
 import { BadgeDef, Badges } from "common/scripts/definitions/loadout/badges.ts";
-import { NetStream } from "common/scripts/engine/stream.ts";
 
 
 export class PlayerBody extends ServerGameObject{
-    stringType:string="player_body"
-    numberType: number=8
+    string_type:string="player_body"
+    number_type: number=8
 
     player_name:string=""
     player_badge:string=""
@@ -29,7 +26,7 @@ export class PlayerBody extends ServerGameObject{
         if(!v2.is(this.old_pos,this.position)){
             this.manager.cells.updateObject(this)
             this.dirtyPart=true
-            this.old_pos=v2.duplicate(this.position)
+            this.old_pos=v2.clone(this.position)
             
         }
         const pos=v2.add(this.position,v2.scale(this.velocity,dt))
@@ -49,7 +46,7 @@ export class PlayerBody extends ServerGameObject{
         }
     }
     override encode(stream: NetStream, full: boolean): void {
-        stream.writePosition(this.position)
+        stream.writePos2(this.position)
         if(full){
             stream.writeStringSized(30,this.player_name)
             stream.writeUint16(this.badge?this.badge.idNumber!+1:0)

@@ -1,13 +1,13 @@
+import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
 import { InventoryPreset } from "../definitions/utils.ts";
-import { Vec2 } from "../engine/geometry.ts";
-import { PlayerModifiers } from "../others/constants.ts";
+import { HumanModifiers } from "../others/constants.ts";
 
 export type LevelPlayerDefinition={
     name?:string
     start_position?:Vec2
     inventory?:InventoryPreset
-    modifiers:Partial<PlayerModifiers>
+    modifiers:Partial<HumanModifiers>
 }
 export type LevelMapDefinition=string|(MapDef&{base:string})
 export type EnemyDef={
@@ -18,7 +18,12 @@ export type EnemyDef={
     }
     inventory:InventoryPreset
 }
-export type LevelObjective=({
+export type LevelMode={
+    map: {
+        def:LevelMapDefinition
+        seed?:number
+    };   
+}&({
     type:"kill_all_enemies",
     enemies:{
         def:EnemyDef|string
@@ -42,13 +47,8 @@ export interface LevelDefinition{
         size:"small"|"medium"|"large"
         dificulty:"easy"|"normal"|"hard"
     }
-    map: {
-        def?:LevelMapDefinition
-        seed?:number
-    };
-    objective: LevelObjective
-    player:LevelPlayerDefinition
-    gamemode?:string
+    mode:LevelMode
+    player: LevelPlayerDefinition
     assets?:{
         background_music?:string
         comics?:{

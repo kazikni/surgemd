@@ -6,6 +6,7 @@
             "npm":[
                 "vite",
                 "@sveltejs/vite-plugin-svelte",
+                "vite-plugin-svgo",
                 "fdir",
                 "sass",
                 "canvas",
@@ -18,7 +19,12 @@
     },
     "task":{
         "dev":{
-            "task":"smde run vite"
+            "task":"smde run vite",
+            "childs":{
+                "tauri":{
+                    "task":"npx tauri dev"
+                }
+            }
         },
         "build":{
             "task":"smde build vite",

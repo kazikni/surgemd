@@ -8,4 +8,10 @@ export type PlayArgs={
     type: "campaign"
     level:LevelDefinition
     dificulty:number
+}|{
+    type: "join"
+    url:string
+    password:string
+    attempts?:number
+    delay?:number
 }

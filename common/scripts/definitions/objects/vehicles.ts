@@ -1,5 +1,4 @@
-import { Definition, Definitions } from "../../engine/definitions.ts";
-import { v2, Vec2 } from "../../engine/geometry.ts";
+import { DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { zIndexes } from "../../others/constants.ts";
 
 export interface VehicleDef extends Definition{
@@ -8,6 +7,7 @@ export interface VehicleDef extends Definition{
         base_scale?:number
         zindex?:number
     }
+    center:Vec2
     movimentation:{
         acceleration:number
         angle_acceleration:number
@@ -18,10 +18,12 @@ export interface VehicleDef extends Definition{
     pillot_seat?:{
         position:Vec2
         leave:Vec2
+        doors:Vec2[]
     }
     seats?:{
         position:Vec2
         leave:Vec2
+        doors:Vec2[]
     }[]
     wheels:{
         defs:{
@@ -40,25 +42,24 @@ export interface VehicleDef extends Definition{
 }
 
 
-export const Vehicles=new Definitions<VehicleDef,null>((_g)=>{
-})
-
-Vehicles.insert(
-    {
-        idString:"bike",
+export const VehicleTemplates={
+    bike:(id:string,...merge:DeepPartial<VehicleDef>[])=>mergeDeep({
+        idString:id,
         frame:{
             base_scale:2.5
         },
+        center:v2(0,0),
         movimentation:{
-            acceleration:6000,
-            angle_acceleration:700,
-            final_speed:15,
-            back_walk_mult:0.25,
-            desacceleration:6000
+            acceleration:0.5,
+            angle_acceleration:8,
+            final_speed:20,
+            back_walk_mult:0.2,
+            desacceleration:0.5
         },
         pillot_seat:{
             position:v2.new(0,0),
-            leave:v2.new(0,-1)
+            leave:v2.new(0,1),
+            doors:[v2(0,0.5),v2(0,-0.5)]
         },
         wheels:{
             defs:[
@@ -69,25 +70,27 @@ Vehicles.insert(
                 }
             ]
         }
-    },
-    {
-        idString:"jeep",
-        frame:{
+    },...merge),
+    jeep:(id:string,...merge:DeepPartial<VehicleDef>[])=>mergeDeep({
+        idString:id,
+         frame:{
             base_scale:4
         },
+        center:v2(2,3),
         movimentation:{
-            acceleration:9000,
-            angle_acceleration:1000,
-            final_speed:9,
+            acceleration:0.5,
+            angle_acceleration:3,
+            final_speed:12,
             back_walk_mult:0.5,
-            desacceleration:5000
+            desacceleration:0.8
         },
         pillot_seat:{
             position:v2.new(0,-0.7),
-            leave:v2.new(0,-3)
+            leave:v2.new(0,-1.5),
+            doors:[v2(0,-1.5)]
         },
         seats:[
-            {position:v2.new(0,0.7),leave:v2.new(0,3)}
+            {position:v2.new(0,0.7),leave:v2.new(0,2),doors:[v2(0,1.5)]}
         ],
         wheels:{
             defs:[
@@ -113,27 +116,34 @@ Vehicles.insert(
                 }
             ]
         }
-    },
-    {
-        idString:"battle_plane",
-        frame:{
-            base_scale:13,
-            zindex:zIndexes.Planes
+    },...merge),
+}satisfies Record<string,(id:string,...merge:DeepPartial<VehicleDef>[])=>VehicleDef>
+export function Vehicles_Default_Init(vehicles:Definitions<VehicleDef,{}>){
+    vehicles.insert(
+        VehicleTemplates.bike("bike"),
+        VehicleTemplates.jeep("jeep"),
+        {
+            idString:"battle_plane",
+            center:v2.zero(),
+            frame:{
+                base_scale:13,
+                zindex:zIndexes.Planes
+            },
+            movimentation:{
+                acceleration:0,
+                angle_acceleration:0,
+                final_speed:20,
+                back_walk_mult:0,
+                desacceleration:0
+            },
+            battle_plane:{
+                main_seat:v2.new(0,0),
+                leave_position:v2.new(0,0),
+                seats_count:100,
+            },
+            wheels:{
+                defs:[]
+            }
         },
-        movimentation:{
-            acceleration:0,
-            angle_acceleration:0,
-            final_speed:20,
-            back_walk_mult:0,
-            desacceleration:0
-        },
-        battle_plane:{
-            main_seat:v2.new(0,0),
-            leave_position:v2.new(0,0),
-            seats_count:100,
-        },
-        wheels:{
-            defs:[]
-        }
-    },
-)
+    )
+}

@@ -1,24 +1,20 @@
 kl-md-submenu{
-    width: fit-content;
-    height: fit-content;
-}
-kl-md-submenu-content {
     display: flex;
     gap: 50px; /*Default*/
     flex-direction: row;
     width: fit-content;
     height: fit-content;
 }
-kl-md-menu-options {
+kl-md-submenu-options {
     display: flex;
     flex-direction: column;
     align-self: center;
 }
 
-kl-md-menu-options button,
-kl-md-menu-options select {
-    width: 200px;
-    height: 35px;
+kl-md-submenu-options button,
+kl-md-submenu-options select {
+    width: 300px;
+    height: 50px;
 }
 
 kl-md-extra {

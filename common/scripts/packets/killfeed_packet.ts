@@ -1,5 +1,5 @@
+import { NetStream, Packet } from "../../engine/core.ts";
 import { DamageReason } from "../definitions/utils.ts"
-import { type NetStream, Packet } from "../engine/mod.ts"
 export enum KillFeedMessageType{
     kill,
     down,

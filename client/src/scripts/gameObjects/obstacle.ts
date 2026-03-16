@@ -1,13 +1,8 @@
-import { ColorM, Container2D, Sprite2D } from "../engine/mod.ts";
+import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, NetStream, Orientation, ParticlesEmitter2D, random, RectHitbox2D, Sound, Sprite2D, v2, Vec2 } from "common/engine/client.ts";
+
 import { Materials, ObstacleDef, ObstacleDoorStatus, Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
-import { random } from "common/scripts/engine/random.ts";
-import { NetStream, ParticlesEmitter2D, RectHitbox2D, Vec2 } from "common/scripts/engine/mod.ts";
-import { Sound } from "../engine/resources.ts";
-import { Orientation, v2 } from "common/scripts/engine/geometry.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
-import { Color } from "../engine/renderer.ts";
 import { type Player } from "./player.ts";
 import { GraphicsDConfig } from "../others/config.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
@@ -21,40 +16,55 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:numbe
     return spr
 }
 export class Obstacle extends GameObject{
-    stringType:string="obstacle"
-    numberType: number=4
+    ////////////////////////////
+    // Definition             //
+    ////////////////////////////
+    string_type:string="obstacle"
+    number_type: number=4
     name:string=""
     def!:ObstacleDef
 
+    ////////////////////////////
+    // Visual                 //
+    ////////////////////////////
     container:Container2D=new Container2D()
+    sprite=new Sprite2D()
+
+    ////////////////////////////
+    // State                  //
+    ////////////////////////////
     rotation:number=0
     side:Orientation=0
-    sprite=new Sprite2D
     variation=0
     skin=0
     health=1
-
     dead:boolean=true
+    interacted:boolean=false
 
+    ////////////////////////////
+    // Assets                 //
+    ////////////////////////////
     frame={
         particle:"",
         dead:"",
         base:""
     }
-
-    interacted:boolean=false
-
-    door_status?:ObstacleDoorStatus
-
-    doors_hitboxes?:Record<-1|0|1,RectHitbox2D>
-
-    emitter_1?:ParticlesEmitter2D<ClientParticle2D>
     sounds?:{
         break?:Sound
         hit?:Sound[]
     }
 
+    ////////////////////////////
+    // Particles              //
+    ////////////////////////////
+    emitter_1?:ParticlesEmitter2D<ClientParticle2D>
     particle_tint?:Color
+
+    door_status?:ObstacleDoorStatus
+
+    doors_hitboxes?:Record<-1|0|1,RectHitbox2D>
+
+
     constructor(){
         super()
         this.container.visible=false
@@ -63,14 +73,14 @@ export class Obstacle extends GameObject{
     }
     // deno-lint-ignore no-explicit-any
     create(_args: Record<string,any>): void {
-        this.game.camera.addObject(this.container)
+        this.game.cam2d.addObject(this.container)
         this.updatable=false
     }
-
     override on_destroy(): void {
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
     }
+
     update_frame(){
         if(this.def.frame_transform)this.sprite.transform_frame(this.def.frame_transform)
         if(this.dead){
@@ -80,7 +90,6 @@ export class Obstacle extends GameObject{
         }else{
             this.sprite.frame=this.game.resources.get_sprite(this.frame.base)
             this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
-            //if(this.be)
         }
         this.container.visible=true
     }
@@ -90,7 +99,7 @@ export class Obstacle extends GameObject{
         this.update_frame()
         const ac=random.int(8,13)
         if(this.emitter_1)this.emitter_1.enabled=false
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal){
+        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
                 this._add_own_particle(this.hitbox.randomPoint(),2)
             }
@@ -123,7 +132,7 @@ export class Obstacle extends GameObject{
         
     }
     on_hitted(position:Vec2,light:boolean=false){
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
+        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
             this.play_sound(this.sounds.hit[random.int(0,this.sounds.hit.length)])
         }
@@ -168,6 +177,7 @@ export class Obstacle extends GameObject{
     set_definition(def:ObstacleDef){
         if(this.def)return
         if(def.hitbox)this.base_hitbox=def.hitbox.clone()
+
         this.def=def
         if(this.def.sounds){
             this.sounds={
@@ -203,7 +213,7 @@ export class Obstacle extends GameObject{
             if(this.def.particles.tint)this.particle_tint=ColorM.number(this.def.particles.tint)
         }
 
-        if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
+        if(this.def.onDestroyExplosion&&this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(!this.emitter_1){
                 this.emitter_1=this.game.particles.add_emiter({
                     delay:0.5,
@@ -240,7 +250,7 @@ export class Obstacle extends GameObject{
                 this.game.sounds.play(this.game.resources.get_audio(this.def.expanded_behavior.click_sound),{
                     position:this.position,
                 })
-                this.game.addTimeout(()=>{
+                this.game.add_timeout(()=>{
                     this.game.sounds.play(this.game.resources.get_audio("menu_music"),{
                         position:this.position,
                     })
@@ -288,7 +298,7 @@ export class Obstacle extends GameObject{
             this.container.rotation=this.rotation
             this.side=stream.readUint8() as Orientation
             this.variation=stream.readUint8()
-            const position=stream.readPosition()
+            const position=stream.readPos2()
             this.skin=stream.readUint8()
             this.set_definition(Obstacles.getFromNumber(stream.readUint16()))
             this.position=position

@@ -22,6 +22,12 @@
                     "task": "deno run --watch -A ./src/game_server/main.ts"
                 }
             }
+        },
+        "build": {
+            "windows": [
+                "mkdir dist",
+                "deno compile  --no-check --output dist/server.exe --allow-net --allow-read --allow-write ./src/game_server/cli.ts"
+            ]
         }
     }
 }

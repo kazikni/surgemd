@@ -3,7 +3,7 @@
 .item-maximized{
     color:#fe0 
 }
-#gui-items{
+#ui-items{
     position: absolute;
     bottom: 125px;
     left: 50%;
@@ -147,7 +147,7 @@
 .weapon-slot-selected{
     border: 3px solid #eee;
 }
-#gui-weapons{
+#ui-weapons{
     position: absolute;
     bottom: 5px;
     left: 50%;
@@ -199,7 +199,7 @@
         }
     }
 }
-#gui-scopes{
+#ui-iitems{
     position: absolute;
     display: flex;
     flex-direction: row;
@@ -262,7 +262,7 @@
         }
     }
 }
-#gui-oitems{
+#ui-aitems{
     display: grid;
     grid-template-columns: repeat(auto, 5);
     gap: 5px;
@@ -272,7 +272,7 @@
     transform: translate(0%, -50%);
     justify-items: end;
     pointer-events: none;
-    .oitem-slot{
+    .aitem-slot{
         background-color: #0003;
         display: flex;
         flex-direction: column;
@@ -294,11 +294,11 @@
             
         }
     }
-    .oitem-slot:hover{
+    .aitem-slot:hover{
         border: 2px solid #ccc;
     }
     @media screen and (max-width: palette.$screen_large){
-        .oitem-slot{
+        .aitem-slot{
             .count{
                 font-size: 12px;
             }
@@ -310,7 +310,7 @@
         left: 2px;
     }
     @media screen and (max-width: palette.$screen_medium){
-        .oitem-slot{
+        .aitem-slot{
             .count{
                 font-size: 10px;
             }

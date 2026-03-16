@@ -1,6 +1,5 @@
-import { v2 } from "../../engine/geometry.ts";
+import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { GameItems } from "../alldefs.ts";
 import { MapDef } from "./base.ts";
 import { NormalBiome, NormalMap } from "./normal.ts";
 
@@ -33,7 +32,7 @@ export const DebugMap:MapDef={
         let x=map.size.x/2
         let y=map.size.y/2
         let i=0
-        for(const item of Object.values(GameItems.valueNumber)){
+        for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
             map.game.add_loot(v2.new(x,y),item,Infinity)
             i++
             if(i>=15){

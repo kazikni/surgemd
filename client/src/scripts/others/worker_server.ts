@@ -1,26 +1,62 @@
-import { OfflineGameServer } from "./offline.ts";
-import { OfflineClientsManager } from "common/scripts/engine/mod.ts";
+import { BattleRoyaleSolo, CampaignGamemodeManager, LevelPlayer, OfflineGameServer } from "./offline.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
+import { OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-self.onerror = (e) => {
-    console.error("Worker error:", e,e.valueOf())
-};
+import { Maps } from "common/scripts/definitions/maps/base.ts";
+let server:OfflineGameServer
+let level:LevelPlayer
+function logError(e: any){
+    if (e instanceof Error) {
+        console.error(e.stack)
+    } else {
+        console.error(e)
+    }
+}
+
+self.onerror = (ev: ErrorEvent) => logError(ev.error ?? ev.message)
+self.onunhandledrejection = (ev) => logError(ev.reason)
+
 self.onmessage = (ev) => {
     const msg = ev.data;
-    if (msg.type === "start") {
-        const server = new OfflineGameServer(
-            {
-                mode:"normal",
-                team_size:1
-            },
-            new OfflineClientsManager(PacketManager),
-            0,
-            msg.config as ConfigType,
-            msg.level
-        );
-        server.mainloop(true)
-        const ws=new WorkerSocket(self as unknown as Worker)
-        server.clients.fake_connect_other_s(ws)
+    switch(msg.type){
+        case "begin":{
+            server=new OfflineGameServer(
+                msg.config as ConfigType,
+                new OfflineClientsManager(PacketManager),
+                0,
+            );
+            break
+        }
+        case "init_level":{
+            level=new LevelPlayer(server)
+            level.begin(msg.level)
+            break
+        }
+        case "init_mode":{
+            server.init(new BattleRoyaleSolo({
+                map:Maps["normal"],
+                players:{
+                    limit:100,
+                }
+            }))
+            break
+        }
+        case "start":{
+            server.mainloop()
+            break
+        }
+        case "stop":{
+            server.stop()
+            break
+        }
+        case "restart_level":{
+            (level.game.modeManager as CampaignGamemodeManager).start_level_again()
+            break
+        }
+        case "connect":{
+            const ws=new WorkerSocket(self as unknown as Worker)
+            server.clients.fake_connect_other_s(ws)
+            break
+        }
     }
 };

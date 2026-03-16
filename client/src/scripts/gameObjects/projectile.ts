@@ -1,11 +1,9 @@
-import { ProjectileDef, Projectiles } from "common/scripts/definitions/objects/projectiles.ts"
-import { CircleHitbox2D, NetStream, v2 } from "common/scripts/engine/mod.ts"
+import { ProjectileDef, Projectiles } from "../../../../common/scripts/definitions/items/grenades.ts"
 import { GameObject } from "../others/gameObject.ts"
-import { Sprite2D } from "../engine/container_2d.ts"
-import { CenterHotspot } from "../engine/utils.ts";
+import { CenterHotspot, CircleHitbox2D, NetStream, Sprite2D, v2 } from "common/engine/client.ts";
 export class Projectile extends GameObject{
-    stringType:string="projectile"
-    numberType: number=6
+    string_type:string="projectile"
+    number_type: number=6
 
     rotation:number=0
     zpos:number=0
@@ -15,7 +13,7 @@ export class Projectile extends GameObject{
     def!:ProjectileDef
 
     create(_args: Record<string, void>): void {
-        this.game.camera.addObject(this.sprite)
+        this.game.cam2d.addObject(this.sprite)
     }
     override on_destroy(): void {
         this.sprite.destroy()
@@ -41,7 +39,7 @@ export class Projectile extends GameObject{
         },this.game.resources)
     }
     override decode(stream: NetStream, full: boolean): void {
-        this.position=stream.readPosition()
+        this.position=stream.readPos2()
         this.rotation=stream.readRad()
         this.zpos=stream.readFloat(0,1,1)
         if(full){

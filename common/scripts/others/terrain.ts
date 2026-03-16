@@ -1,15 +1,14 @@
-import { Orientation, v2, v2m, Vec2 } from "../engine/geometry.ts";
-import { Hitbox2D, PolygonHitbox2D } from "../engine/hitbox.ts";
-import { RectHitbox2D } from "../engine/mod.ts";
-import { SeededRandom } from "../engine/random.ts";
-import { Numeric } from "../engine/utils.ts";
+import { Hitbox2D, Numeric, Orientation, PolygonHitbox2D, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
 
 export enum FloorType {
-    Grass = 0,
+    Void = 0,
+    Grass,
     Snow,
     Sand,
     Water,
     Ice,
+
+    Metal
 }
 export enum FloorKind{
     Void=0,
@@ -27,6 +26,11 @@ export interface FloorDef {
 export interface RiversDef { weight: number; rivers: RiverDef[] }[]
 
 export const Floors: Record<FloorType, FloorDef> = {
+    [FloorType.Void]: {
+        default_color: 0x0d131a,
+        floor_kind:FloorKind.Solid,
+        footstep_sounds:[]
+    },
     [FloorType.Grass]: {
         default_color: 0x4d9635,
         floor_kind:FloorKind.Solid,
@@ -48,9 +52,13 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Ice]: {
         default_color: 0x4681a3,
-        acceleration:30,
+        acceleration:0.1,
         floor_kind:FloorKind.Ice,
         footstep_sounds:["footstep_ice_1","footstep_ice_2"]
+    },
+    [FloorType.Metal]: {
+        default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
+        footstep_sounds:["footstep_metal_1","footstep_metal_2"]
     },
 };
 
@@ -77,7 +85,7 @@ export interface RiverDef{
 
 export class TerrainManager {
     floors: Floor[] = [];
-    grid = new Map<number, Map<number, { floors: Floor[] }>>();
+    grid = new Map<number,Map<number, Map<number, { floors: Floor[] }>>>();
 
     add_floor(type: FloorType, hb: Hitbox2D, layer = 0, smooth = true,jagged:boolean=false,final_hb?:Hitbox2D) {
         const floor: Floor = { type, hb, smooth, layer,jagged,final_hb:final_hb??hb };
@@ -87,20 +95,21 @@ export class TerrainManager {
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 
+        if (!this.grid.has(layer))this.grid.set(layer, new Map())
         for (let y = rect.min.y; y <= rect.max.y; y++) {
-            if (!this.grid.has(y)) this.grid.set(y, new Map());
+            if (!this.grid.get(layer)!.has(y)) this.grid.get(layer)!.set(y, new Map());
 
             for (let x = rect.min.x; x <= rect.max.x; x++) {
-                if (!this.grid.get(y)!.has(x)) this.grid.get(y)!.set(x, { floors: [] });
-                this.grid.get(y)!.get(x)!.floors.push(floor);
+                if (!this.grid.get(layer)!.get(y)!.has(x))this.grid.get(layer)!.get(y)!.set(x, { floors: [] });
+                this.grid.get(layer)!.get(y)!.get(x)!.floors.push(floor);
             }
         }
     }
 
     get_floor(position: Vec2, layer: number): Floor | undefined {
-        const pos=v2.duplicate(position)
+        const pos=v2.clone(position)
         this.cell_pos(pos)
-        const floorsInCell = this.grid.get(pos.y)?.get(pos.x)?.floors ?? [];
+        const floorsInCell = this.grid.get(layer)?.get(pos.y)?.get(pos.x)?.floors ?? [];
 
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
@@ -112,58 +121,16 @@ export class TerrainManager {
     }
 
     get_floor_type(position:Vec2,layer:number,place_holder:FloorType):FloorType{
-        const pos=v2.duplicate(position)
+        const pos=v2.clone(position)
         this.cell_pos(pos)
-        const floorsInCell = this.grid.get(pos.y)?.get(pos.x)?.floors ?? [];
-
+        const floorsInCell = this.grid.get(layer)?.get(pos.y)?.get(pos.x)?.floors ?? [];
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
-            if (floor.layer === layer && floor.hb.pointInside(position)) {
+            if (floor.hb.pointInside(position)) {
                 return floor.type
             }
         }
         return place_holder
-    }
-    cells_to_string(names: Record<FloorType, string>): string {
-        const ys = Array.from(this.grid.keys()).sort((a, b) => a - b);
-        if (ys.length === 0) return "";
-
-        const xsSet = new Set<number>();
-        for (const y of ys) {
-            const row = this.grid.get(y);
-            if (row) {
-                for (const x of row.keys()) xsSet.add(x);
-            }
-        }
-        const xs = Array.from(xsSet).sort((a, b) => a - b);
-
-        const lines: string[] = [];
-
-        for (const y of ys) {
-            const row = this.grid.get(y);
-            if (!row) continue;
-
-            const lineParts: string[] = [];
-            for (const x of xs) {
-                const cell = row.get(x);
-                if (!cell || cell.floors.length === 0) {
-                    lineParts.push(" ");
-                    continue;
-                }
-
-                const allFloorsStr = cell.floors
-                    .map(floor => {
-                        const name = names[floor.type] ?? "?";
-                        return name.length > 1 ? name[0] : name;
-                    })
-                    .join("");
-
-                lineParts.push(allFloorsStr);
-            }
-            lines.push(lineParts.join(" "));
-        }
-
-        return lines.join("\n");
     }
     cell_pos(p: Vec2) {
         v2m.dscale(p,p,10)

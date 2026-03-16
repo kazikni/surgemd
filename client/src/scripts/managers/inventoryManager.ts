@@ -1,11 +1,11 @@
-import { GameItem, GameItems } from "common/scripts/definitions/alldefs.ts";
 import { type Game } from "../others/game.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "../others/inventory.ts";
 import { InventoryItemData, InventoryItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts";
-import { InputActionType } from "common/scripts/packets/action_packet.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
-import { Ammos } from "common/scripts/definitions/items/ammo.ts";
-import { ScopeDef, Scopes } from "common/scripts/definitions/items/scopes.ts";
+import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
+import { InputActionType } from "common/scripts/packets/input_packet.ts";
+import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { ItemQuality } from "common/scripts/others/item.ts";
 
 export class InventoryManager{
     inventory:GInventory
@@ -13,7 +13,8 @@ export class InventoryManager{
     scope?:ScopeDef
     constructor(game:Game){
         this.game=game
-        this.inventory=new GInventory({
+        this.inventory=new GInventory()
+        this.inventory.initialize(game.definitions,{
             0:MeleeItem as (new(item:GameItem)=>LItem),
             1:GunItem as (new(item:GameItem)=>LItem),
             2:GunItem as (new(item:GameItem)=>LItem)
@@ -23,10 +24,10 @@ export class InventoryManager{
         this.handle_slot_click=this.handle_slot_click.bind(this)
     }
     content={
-        weapons:document.querySelector("#gui-weapons") as HTMLDivElement,
-        oitems:document.querySelector("#gui-oitems") as HTMLDivElement,
-        items: document.querySelector("#gui-items") as HTMLDivElement,
-        scopes:document.querySelector("#gui-scopes") as HTMLDivElement,
+        weapons:document.querySelector("#ui-weapons") as HTMLDivElement,
+        aitems:document.querySelector("#ui-aitems") as HTMLDivElement,
+        items: document.querySelector("#ui-items") as HTMLDivElement,
+        iitems:document.querySelector("#ui-iitems") as HTMLDivElement,
         hand_info:{
             count:document.querySelector("#hand-info-count") as HTMLSpanElement,
             consume_type:document.querySelector("#hand-info-consume-type")as HTMLImageElement,
@@ -42,13 +43,13 @@ export class InventoryManager{
     drop_weapon=(w:number)=>{
         return (e:MouseEvent)=>{
             if(e.button==2){
-                this.game.action.actions.push({type:InputActionType.drop,drop:w,drop_kind:1})
+                this.game.input.actions.push({type:InputActionType.drop,drop:w,drop_kind:1})
             }
         }
     }
     select_weapon=(w:number)=>{
         return ()=>{
-            this.game.action.actions.push({type:InputActionType.set_hand,hand:w})
+            this.game.input.actions.push({type:InputActionType.set_hand,hand:w})
         }
     }
     update_weapons(){
@@ -84,7 +85,7 @@ export class InventoryManager{
                 w.name.innerText=this.game.language.get(this.inventory.weapons[k as unknown as number]!.def.idString)
                 w.image.src=assets["item"].src
                 w.image.style.display="block"
-                w.main.style.background=`linear-gradient(to right,${ItemQualitySettings[item.def.quality].color1}42,${ItemQualitySettings[item.def.quality].color2}42)`
+                w.main.style.background=`linear-gradient(to right,${ItemQualitySettings[item.def.quality as ItemQuality].color1}42,${ItemQualitySettings[item.def.quality as ItemQuality].color2}42)`
             }else{
                 w.name.innerText=""
                 w.image.style.display="none"
@@ -92,7 +93,8 @@ export class InventoryManager{
             }
         }
     }
-    update_hand(extra?:{ammo:number,liquid:boolean}){
+    update_hand(ammo:number,widx:number,liquid:boolean){
+        this.inventory.weapon_idx=widx
         if(this.current_weapon!==-1&&this.weapons_html[this.current_weapon]){
             this.weapons_html[this.current_weapon]!.main.classList.remove("weapon-slot-selected")
             this.weapons_html[this.current_weapon]!.main.style.border=""
@@ -102,22 +104,22 @@ export class InventoryManager{
         if(weapon.item_type===InventoryItemType.melee){
             //
         }else if(weapon.item_type===InventoryItemType.gun&&(weapon.def as GunDef).reload){
-            this.content.hand_info.count.innerText=`${extra?.ammo??0}/${(weapon.def as GunDef).reload?.capacity}`
+            this.content.hand_info.count.innerText=`${ammo}/${(weapon.def as GunDef).reload?.capacity}`
 
             this.content.hand_info.consume_type.src=this.game.resources.get_sprite((weapon.def as GunDef).ammoType).src
             this.content.hand_info.consume_type.style.display=""
         }
         this.current_weapon=this.inventory.weapon_idx
-        this.weapons_html[this.current_weapon]!.main.style.border=`3px solid ${ItemQualitySettings[weapon.def.quality].color2}`
+        this.weapons_html[this.current_weapon]!.main.style.border=`3px solid ${ItemQualitySettings[weapon.def.quality as ItemQuality].color2}`
         this.weapons_html[this.current_weapon]!.main.classList.add("weapon-slot-selected")
     }
     inventory_dirty(i:string){
         switch(i){
             case "backpack":
-                this.update_oitems()
+                this.update_aitems()
                 break
         }
-    }    
+    }
     melee_free():boolean{
         return this.inventory.weapon_is_free(0)
     }
@@ -128,42 +130,48 @@ export class InventoryManager{
         const t=e.currentTarget as HTMLDivElement
         if(e.button==2){
             if(t.dataset.drop_kind==="2"){
-                this.game.action.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.drop!),drop_kind:2})
+                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.drop!),drop_kind:2})
             }else if(t.dataset.drop_kind==="3"){
-                this.game.action.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.slot!),drop_kind:3})
+                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.slot!),drop_kind:3})
             }
         }else if(e.button===0){
             if(t.dataset.drop_kind==="3"){
-                this.game.action.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+                this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
             }
         }
     }
-    oitems_cache: Map<string, HTMLDivElement> = new Map()
-    update_oitems(force = false) {
-        const keys = Object.keys(this.inventory.oitems)
-        for (const k of this.oitems_cache.keys()) {
+    handle_slot_touch(e:TouchEvent){
+        const t=e.currentTarget as HTMLDivElement
+        if(t.dataset.drop_kind==="3"){
+            this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+        }
+    }
+    aitems_cache: Map<string, HTMLDivElement> = new Map()
+    update_aitems(force = false) {
+        const keys = Object.keys(this.inventory.aitems)
+        for (const k of this.aitems_cache.keys()) {
             if (!keys.includes(k)) {
-                this.oitems_cache.get(k)!.remove()
-                this.oitems_cache.delete(k)
+                this.aitems_cache.get(k)!.remove()
+                this.aitems_cache.delete(k)
             }
         }
-        if (!force && keys.length === this.oitems_cache.size) {
+        if (!force && keys.length === this.aitems_cache.size) {
             for (const k of keys) {
-                if (!this.oitems_cache.has(k)) continue
-                this.update_oitem(k)
+                if (!this.aitems_cache.has(k)) continue
+                this.update_aitem(k)
             }
             return
         }
-        this.content.oitems.innerHTML = ""
-        this.oitems_cache.clear()
+        this.content.aitems.innerHTML = ""
+        this.aitems_cache.clear()
         for (const k of keys) {
-            this.create_oitem_entry(k)
+            this.create_aitem_entry(k)
         }
     }
-    private create_oitem_entry(key: string) {
-        const def = Ammos.getFromString(key)
+    private create_aitem_entry(key: string) {
+        const def = this.game.definitions.ammos.getFromString(key)
         const el = document.createElement("div")
-        el.className = "oitem-slot"
+        el.className = "aitem-slot"
         el.id = `ammo-${key}`
         el.innerHTML = `
             <image class="icon" src="img/game/main/items/ammos/${key}.svg"></image>
@@ -172,15 +180,16 @@ export class InventoryManager{
         el.dataset.drop_kind = "2"
         el.dataset.drop = def.idNumber!.toString()
         el.addEventListener("mousedown", this.handle_slot_click)
-        this.content.oitems.appendChild(el)
-        this.oitems_cache.set(key, el)
-        this.update_oitem(key)
+        el.addEventListener("touchstart", this.handle_slot_touch)
+        this.content.aitems.appendChild(el)
+        this.aitems_cache.set(key, el)
+        this.update_aitem(key)
     }
-    private update_oitem(key: string) {
-        const el = this.oitems_cache.get(key)
+    private update_aitem(key: string) {
+        const el = this.aitems_cache.get(key)
         if (!el) return
-        const def = Ammos.getFromString(key)
-        const count = this.inventory.oitems[key]
+        const def = this.game.definitions.ammos.getFromString(key)
+        const count = this.inventory.aitems[key]
         const span = el.querySelector(".count") as HTMLSpanElement
         span.innerText = `${count}${def.liquid ? "l" : ""}`
         span.classList.toggle(
@@ -188,12 +197,11 @@ export class InventoryManager{
             count >= this.inventory.item_limit(def)
         )
     }
-    update_scopes(scopes:number[]){
-        scopes.sort((a, b) => a - b)
-        this.inventory.scopes=scopes
-        this.content.scopes.innerHTML=""
-        for(const s of scopes){
-            const def=Scopes.getFromNumber(s)
+    update_iitems(iitems:GameItem[]){
+        iitems.sort((a, b) => a.idNumber! - b.idNumber!)
+        this.inventory.iitems=iitems
+        this.content.iitems.innerHTML=""
+        for(const def of iitems){
             const div=document.createElement("div")
             div.className="scope-slot"
             if(def==this.scope){
@@ -201,7 +209,11 @@ export class InventoryManager{
             }
             div.id="scope-"+def.idString
             div.innerHTML=`<img class="icon" src="${this.game.resources.get_sprite(def.idString).src}" draggable="false" width="30" height="30"/>`
-            this.content.scopes.appendChild(div)
+            this.content.iitems.appendChild(div)
+
+            div.addEventListener("touchstart",(e)=>{
+                this.game.input.actions.push({type:InputActionType.set_scope,scope_id:def.idNumber!})
+            })
         }
     }
     update_current_scope(scope:number){
@@ -212,7 +224,7 @@ export class InventoryManager{
                     old_s.classList.remove("scope-slot-selected")
                 }
             }
-            this.scope=Scopes.getFromNumber(scope)
+            this.scope=this.game.definitions.scopes.getFromNumber(scope)
             const sc=document.querySelector(`#scope-${this.scope!.idString}`)
             if(sc){
                 sc.classList.add("scope-slot-selected")
@@ -244,6 +256,7 @@ export class InventoryManager{
     
             el.dataset.drop_kind = "3"
             el.addEventListener("mousedown", this.handle_slot_click)
+            el.addEventListener("touchstart",this.handle_slot_touch)
     
             this.items_cache.push(el)
             container.appendChild(el)
@@ -263,7 +276,7 @@ export class InventoryManager{
             el.dataset.slot = i.toString()
     
             if (s.count > 0) {
-                const def = GameItems.valueNumber[s.idNumber]
+                const def = this.game.definitions.game_items.valueNumber[s.idNumber]
     
                 count.textContent = `${s.count}`
                 img.src = res.get_sprite(def.idString).src
@@ -285,10 +298,10 @@ export class InventoryManager{
             }
         }
     }
-    
     clear() {
         this.items_cache.length = 0
         this.items_map = {}
         this.content.items.innerHTML = ""
+        this.inventory.clear()
     }
 }

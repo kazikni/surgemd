@@ -1,9 +1,13 @@
+import { BadgeDef } from "../definitions/loadout/badges.ts";
+import { EmoteDef } from "../definitions/loadout/emotes.ts";
+import { SkinDef } from "../definitions/loadout/skins.ts";
+import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
     player:{
         defaultName:"Player",
-        playerRadius:0.4,
+        radius:0.37,
         max_name_size:25,
     },
     loot:{
@@ -13,7 +17,7 @@ export const GameConstants={
             weapon:0.59,
             consumible:0.38,
             equipament:0.38,
-            projectile:0.38,
+            grenade:0.38,
             skin:0.38
         }
     },
@@ -79,7 +83,7 @@ export enum ActionsType{
     Consuming
 }
 
-export type PlayerModifiers={
+export type HumanModifiers={
     damage:number
     speed:number
     health:number
@@ -111,4 +115,53 @@ export const Spawn={
         type:SpawnModeType.whitelist,
         list:[FloorType.Grass,FloorType.Snow]
     },
+} satisfies Record<string,SpawnMode>
+
+export interface HumanHealthData{
+    health:number
+    max_health:number
+    dead:boolean
+
+    boost:number
+    max_boost:number
+    boost_def:BoostDef
+
+    invensibility_time:number
+    downed:boolean
+}
+export interface HumanLoadoutData {
+    dirty:boolean
+
+    original:{
+        skin_id:string
+        badge_id?:string
+        emotes:{
+            die?:string
+        }
+    }
+    skin:SkinDef
+    badge?:BadgeDef
+    emotes:{
+        die?:EmoteDef
+    }
+}
+export interface HumanAnimationData{
+    dirty:boolean
+    attacking:boolean
+}
+export interface ObstacleVisualData{
+    dirty:boolean
+    skin:number
+    variation:number
+}
+export enum GameObjectType{
+    StaticBody,
+    Human,
+    Loot,
+    Obstacle,
+    Building,
+    Bullet,
+    Explosion,
+    Grenade,
+    Vehicle
 }

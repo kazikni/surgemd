@@ -1,6 +1,6 @@
-import { v2 } from "../../engine/geometry.ts";
+import { RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { BiomeDef, type MapDef } from "./base.ts";
+import { BiomeDef, CounterMapDef, type MapDef } from "./base.ts";
 export const NormalBiome:BiomeDef={
     floors:{
 
@@ -37,7 +37,7 @@ export const NormalMap:MapDef={
             {item:"vector",weight:6},
             {item:"kar98k",weight:6},
             {item:"awp",weight:0.5},
-            {item:"m2_2",weight:0.1},
+            //{item:"m2_2",weight:0.1},
         ],
         "legendary_guns":[
             {item:"awms",weight:1},
@@ -131,18 +131,18 @@ export const NormalMap:MapDef={
         ],
         //Scopes
         "scopes":[
-            {item:"scope_2",count:1,weight:100},
+            {item:"scope_2",count:1,weight:120},
             {item:"scope_3",count:1,weight:50},
-            {item:"scope_4",count:1,weight:10},
-            {item:"scope_5",count:1,weight:1},
-            {item:"scope_6",count:1,weight:0.25},
+            {item:"scope_4",count:1,weight:6},
+            {item:"scope_5",count:1,weight:0.8},
+            {item:"scope_6",count:1,weight:0.1},
         ],
         "special_scopes":[
-            {item:"scope_2",count:1,weight:100},
+            {item:"scope_2",count:1,weight:120},
             {item:"scope_3",count:1,weight:60},
-            {item:"scope_4",count:1,weight:15},
-            {item:"scope_5",count:1,weight:2},
-            {item:"scope_6",count:1,weight:0.5},
+            {item:"scope_4",count:1,weight:9},
+            {item:"scope_5",count:1,weight:1.7},
+            {item:"scope_6",count:1,weight:0.3},
         ],
         //Armors And Backpacks
         "armors":[
@@ -246,17 +246,26 @@ export const NormalMap:MapDef={
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
+
+                    {id:"watchtower",count:7}, //90% of 700
+
                     {id:"container_1",count:25},
                     {id:"container_2",count:25},
+
                     {id:"sillo",count:10},
+
                     {id:"oak_tree",count:2700}, //90% of 3000
                     {id:"stone",count:1800}, //90% of 2000
                     {id:"bush",count:1350}, //90% of 1500
+
                     {id:"wood_crate",count:630},//90% of 700
+
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
+
                     {id:"barrel",count:630}, //90% of 700
+
                     {id:"normal_loot",count:80}
                 ]
             ],
@@ -304,20 +313,29 @@ export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(150,150),
+            size:v2.new(100,100),
             spawn:[
                 [
+                    {id:"watchtower",count:1},
+                    {id:"container_1",count:1},
+                    {id:"container_2",count:1},
+
                     {id:"recorded_tape",count:1},
-                    {id:"sillo",count:3},
-                    {id:"oak_tree",count:110},
-                    {id:"stone",count:80},
-                    {id:"bush",count:60},
-                    {id:"wood_crate",count:50},
+                    {id:"sillo",count:2},
+
+                    {id:"jeep",count:1},
+                    {id:"bike",count:1},
+
+                    {id:"oak_tree",count:80},
+                    {id:"stone",count:50},
+                    {id:"bush",count:30},
+
+                    {id:"wood_crate",count:30},
                     {id:"copper_crate",count:6},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
-                    {id:"barrel",count:20},
-                    {id:"normal_loot",count:40}
+                    {id:"barrel",count:13},
+                    {id:"normal_loot",count:20}
 
                     //{id:"pig",count:10},
                     //{id:"chicken",count:10}
@@ -325,7 +343,7 @@ export const NormalLobby:MapDef={
             ],
             terrain:{
                 base:FloorType.Water,
-                rivers:{
+                /*rivers:{
                     divisions:30,
                     spawn_floor:1,
                     expansion:12,
@@ -344,16 +362,58 @@ export const NormalLobby:MapDef={
                             weight:1
                         }
                     ]
-                },
+                },*/
                 floors:[
                     {
-                        padding:15,
+                        padding:3,
                         type:FloorType.Sand,
                         spacing:3,
                         variation:1.3,
                     },
                     {
                         padding:10,
+                        type:FloorType.Grass,
+                        spacing:3,
+                        variation:1.3,
+                    }
+                ]
+            }
+        },
+    },
+    biome:NormalBiome,
+}
+export const NormalCounterMD:CounterMapDef={
+    spawn:[
+        RectHitbox2D.centered(v2(15,45),v2(1,6)),
+        RectHitbox2D.centered(v2(75,45),v2(1,6))
+    ],
+    seed:1000,
+    loot_tables:NormalMap.loot_tables,
+    generation:{
+        island:{
+            size:v2.new(90,90),
+            spawn:[
+                [
+                    {id:"sillo",count:2},
+
+                    {id:"oak_tree",count:80},
+                    {id:"stone",count:60},
+                    {id:"bush",count:40},
+
+                    {id:"barrel",count:10},
+                ]
+            ],
+            terrain:{
+                base:FloorType.Water,
+                floors:[
+                    {
+                        padding:13,
+                        type:FloorType.Sand,
+                        spacing:3,
+                        variation:1.3,
+                    },
+                    {
+                        padding:8,
                         type:FloorType.Grass,
                         spacing:3,
                         variation:1.3,

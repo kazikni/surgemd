@@ -1,4 +1,4 @@
-import { Crosshair } from "../managers/crosshairManager.ts";
+import { Crosshair, CrosshairBase } from "../managers/crosshairManager.ts";
 
 export const DefaultCrosshair:Crosshair={
     code:'<svg width="64" height="64" viewBox="0 0 16.933 16.933" xmlns="http://www.w3.org/2000/svg"><path stroke="black" fill="white" stroke-width=".5" d="M 7.9378605,4.23325 V 7.936827 H 4.23325 V 8.9951395 H 7.9378605 V 12.69975 H 8.996173 V 8.9951395 H 12.69975 V 7.936827 H 8.996173 V 4.23325 Z"/></svg>',
@@ -20,40 +20,92 @@ export const AimCrosshair:Crosshair={
     dynamic:false,
 }
 
-export function generateDynamicCross(def: Crosshair, spread: number): string {
-    const armLength = 8 * Math.max(def.size, 1)
-    const thickness = Math.max(def.stroke+(def.size*4), 1)
-    const gap = (thickness) + spread
-    const color = def.color
+export function generateAnimatedCross_Engine(
+    def: Crosshair,
+    spread: number,
+    rotation: number,
+    pulse: number
+): string {
+    const sizeMul = Math.max(def.size, 1)
+    const arm = 10 * sizeMul
+    const thick = Math.max(def.stroke + def.size * 2, 1)
+    const gap = thick + spread
 
-    const total = (armLength * 2 + gap * 2)
-    const half = total / 2
+    const total = arm * 2 + gap * 2
+    const c = total / 2
+    const rotDeg = rotation * 57.2958
+    const ringR = thick * (1 + pulse * 2)
 
     const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${total}" height="${total}">
-  <g fill="${color}" stroke="${def.stroke_color}" stroke-width="${def.stroke}">
-    <!-- Vertical -->
-    <rect x="${half - thickness/2}" y="${half - gap - armLength}" width="${thickness}" height="${armLength}" />
-    <rect x="${half - thickness/2}" y="${half + gap}" width="${thickness}" height="${armLength}" />
-    <!-- Horizontal -->
-    <rect x="${half - gap - armLength}" y="${half - thickness/2}" width="${armLength}" height="${thickness}" />
-    <rect x="${half + gap}" y="${half - thickness/2}" width="${armLength}" height="${thickness}" />
-    <!-- Center -->
-    <rect x="${half - thickness/2}" y="${half - thickness/2}" width="${thickness}" height="${thickness}" />
-  </g>
-</svg>`;
+  <g transform="rotate(${rotDeg} ${c} ${c})"
+     fill="${def.color}"
+     stroke="${def.stroke_color}"
+     stroke-width="${def.stroke}"
+     stroke-linecap="square">
 
-    return `url('data:image/svg+xml,${encodeURIComponent(svg)}') ${half} ${half}, crosshair`;
+    <rect x="${c - thick/2}" y="${c - gap - arm}" width="${thick}" height="${arm}" />
+    <rect x="${c - thick/2}" y="${c + gap}" width="${thick}" height="${arm}" />
+
+    <rect x="${c - gap - arm}" y="${c - thick/2}" width="${arm}" height="${thick}" />
+    <rect x="${c + gap}" y="${c - thick/2}" width="${arm}" height="${thick}" />
+
+    <circle cx="${c}" cy="${c}" r="${thick/2}" />
+
+    <circle cx="${c}" cy="${c}" r="${ringR}" fill="none" opacity="${0.25 + pulse*0.75}" />
+  </g>
+</svg>`
+
+    return `url('data:image/svg+xml,${encodeURIComponent(svg)}') ${c} ${c}, crosshair`
+}
+export class AnimatedCrosshair extends CrosshairBase {
+    private time = 0
+    private rotation = 0
+    private pulse = 0
+
+    constructor(
+        elem: HTMLElement,
+        private def: Crosshair
+    ) {
+        super(elem)
+    }
+
+    override tick(dt: number) {
+        this.time += dt
+
+        if (this.def.rotate) {
+            this.rotation += dt * (this.def.rotateSpeed ?? 2)
+        }
+
+        if (this.def.pulse) {
+            this.pulse = (Math.sin(this.time * (this.def.pulseSpeed ?? 6)) + 1) * 0.5
+            this.dirty = true
+        }
+        this.dirty = true
+    }
+
+    protected build(): string {
+        return generateAnimatedCross_Engine(
+            this.def,
+            this.spread,
+            this.rotation,
+            this.pulse
+        )
+    }
 }
 
-
-export const DynamicCrosshair: Crosshair = {
+export const AnimatedCrosshairDef:Crosshair={
     color: "#ffffff",
     size: 1,
     stroke: 1,
-    stroke_color:"#66666f",
+    stroke_color: "#66666f",
     code: "",
     cursor: "crosshair",
-    dynamic:true,
-    gen_callback: generateDynamicCross
-};
+    dynamic: true,
+
+    rotate: true,
+    rotateSpeed: 1.8,
+
+    pulse: true,
+    pulseSpeed: 5,
+}

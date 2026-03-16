@@ -1,9 +1,5 @@
-import { KDate } from "common/scripts/engine/definitions.ts";
+import { HideElement, KDate, ShowElement } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
-import { HideElement, ShowElement } from "../engine/utils.ts";
-import { isMobile } from "../engine/game.ts";
-import { config } from "node:process";
-import { Debug } from "../others/config.ts";
 
 
 export abstract class TabApp {
@@ -34,11 +30,12 @@ export abstract class TabApp {
     begin():void{
         if(this.running)return
         this.element=document.createElement("div")
-        this.element.classList.add("tab-app")
+        this.element.classList.add("tab-app-content")
         this.on_run()
     }
     stop():void{
-
+        if(this.element)this.element.remove()
+        this.on_stop()
     }
 
     abstract on_run():void
@@ -117,11 +114,18 @@ export class TabManager {
         this.tab.onmouseout=(_e)=>{
             if(this.full_tab)this.game.input_manager.focus=true
         }
-        if(!this.enabled){
+        if(this.enabled){
+            if(!this.visible_tab)this.toggle_tab_visibility()
+        }else{
             if(this.visible_tab)this.toggle_tab_visibility()
         }
     }
 
+    tick(dt:number){
+        for(const a of this.apps){
+            if(a.running)a.on_tick(dt)
+        }
+    }
     toggle_tab_full() {
         if(this.enabled){
             this.full_tab = !this.full_tab
@@ -133,7 +137,7 @@ export class TabManager {
             this.visible_tab = !this.visible_tab
             if(this.full_tab)this.toggle_tab_full()
             if(this.visible_tab){
-                this.game.guiManager.content.game_gui.appendChild(this.tab)
+                this.game.ui.content.game_gui.appendChild(this.tab)
             }else{
                 this.tab.remove()
             }
@@ -203,6 +207,11 @@ export class TabManager {
             this.apps[index].stop()
             this.apps[index].icon_element.remove()
             this.apps.splice(index, 1)
+        }
+    }
+    stop_all(){
+        for(const a of this.apps){
+            a.stop()
         }
     }
 }

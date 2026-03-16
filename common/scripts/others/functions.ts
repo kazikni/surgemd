@@ -1,6 +1,5 @@
+import { Orientation, RectHitbox2D, v2 } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
-import { Orientation, v2 } from "../engine/geometry.ts";
-import { RectHitbox2D } from "../engine/hitbox.ts";
 
 export function CalculateDoorHitbox(hitbox:RectHitbox2D,side:Orientation,door:ObstacleBehaviorDoor):Record<-1|0|1,RectHitbox2D>{
     return {

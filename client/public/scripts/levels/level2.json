@@ -1,110 +1,18 @@
 {
     "meta":{
-        "name": "No Hope",
-        "description": "Vini Are The last man",
+        "name": "Battle",
+        "description": "After A Misterious Call. You Decide Go To The Marked Place. Unfineshed level",
         "size":"small",
-        "dificulty":"hard"
+        "dificulty":"easy"
     },
-    "map":{
-        "def":"lobby",
-        "seed":4546
-    },
-    "definitions":{
-        "enemies":{
-            "basic":{
-                "normal":{
-                    "ia":{
-                        "action":"random"
-                    },
-                    "inventory":{
-                        "infinity_ammo":true,
-                        "hand":1,
-                        "backpack":[
-                            {"item":"basic_pack","weight":20},
-                            {"item":"regular_pack","weight":15,"drop_chance":0.3},
-                            {"item":"tactical_pack","weight":10,"drop_chance":0.5}
-                        ],
-                        "vest":[
-                            {"item":"","weight":30},
-                            {"item":"basic_vest","weight":20,"drop_chance":0.3},
-                            {"item":"regular_vest","weight":15,"drop_chance":0.5},
-                            {"item":"tactical_vest","weight":10,"drop_chance":0.75}
-                        ],
-                        "helmet":[
-                            {"item":"","weight":30},
-                            {"item":"basic_helmet","weight":20,"drop_chance":0.3},
-                            {"item":"regular_helmet","weight":15,"drop_chance":0.5},
-                            {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
-                        ],
-                        "gun1":[
-                            {"item":"m9","weight":20},
-                            {"item":"ak47","weight":10},
-                            {"item":"m870","weight":5},
-                            {"item":"hp18","weight":8},
-                            {"item":"kar98k","weight":1},
-                            {"item":"pkp","weight":0.5},
-                            {"item":"awms","weight":0.5}
-                        ]
-                    }
-                }
-            }
-        }
-    },
-    "objective":{
-        "type":"kill_all_enemies",
-        "enemies":[
-            {
-                "def":"basic",
-                "count":40
-            }
-        ]
-    },
-    "player":{
-        "start_position":{"x":75,"y":75},
-        "inventory":{
-            "hand":1,
-            "backpack":[
-                {"item":"tactical_pack","weight":1}
-            ],
-            "vest":[
-                {"item":"elite_vest","weight":10,"droppable":false}
-            ],
-            "helmet":[
-                {"item":"lastman_helmet","weight":10,"droppable":false}
-            ],
-            "melee":[
-                {"item":"sledgehammer","weight":20}
-            ],
-            "gun1":[
-                {"item":"awms","weight":5}
-            ],
-            "gun2":[
-                {"item":"pkp","weight":20}
-            ],
-            "items":[
-                [{"item":"bandage","count":15,"weight":1}],
-                [{"item":"medikit","count":4,"weight":1}],
-                [{"item":"yellow_soda","count":5,"weight":1}],
-                [{"item":"yellow_pills","count":2,"weight":1}]
-            ],
-            "oitems":{
-                "762mm":300,
-                "556mm":300,
-                "9mm":400,
-                "12g":90,
-                "308sub":40,
-                "gasoline":20
-            },
-            "scopes":[
-                "scope_2",
-                "scope_3",
-                "scope_4"
-            ],
-            "boosts":[
-                {"weight":10,"boost_type":1,"boost":1},
-                {"weight":10,"boost_type":2,"boost":1},
-                {"weight":1,"boost_type":5,"boost":1}
-            ]
+    "mode":{
+        "type":"battle_royale",
+        "team_size":1,
+        "players":{
+            "count":99
+        },
+        "map":{
+            "def":"normal"
         }
     }
 }

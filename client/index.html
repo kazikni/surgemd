@@ -41,6 +41,7 @@
           </div>
           <div id="bars-container">
             <div id="health-bar-container">
+              <div id="health-bar-basic-heal"></div>
               <div id="health-bar-animation"></div>
               <div id="health-bar"></div>
               <span id="health-bar-amount">100/100</span>
@@ -58,9 +59,6 @@
             <div id="action-info">
               <span id="action-info-delay">1s</span>
             </div>
-            <!--<div id="current-item-slot" class="inventory-slot">
-              <img id="current-item-image" alt="Current item">
-            </div>-->
           </div>
           <div id="information-container">
             <div id="killfeed-container"></div>
@@ -73,37 +71,13 @@
             <div id="debug-show">60 FPS<br>60 ping</div>
           </div>
           <div id="inventory-container">
-            <!--<div id="equipaments">
-              <div class="skin-closeup">
-                <div class="body" style="background-image:url(/img/menu/skin_closeup/skins/default_skin_closeup.svg)"></div>
-                <div class="mounth" style="background-image:url(img/menu/skin_closeup/utils/mounth_1.svg)"></div>
-              </div>
+            <div id="ui-items">
             </div>
-              <div class="inventory-slot">
-                <img id="helmet-slot" src="img/game/common/icons/helmet.svg" alt="Helmet slot">
-              </div>
-              <div class="inventory-slot">
-                <img id="vest-slot" src="img/game/common/icons/vest.svg" alt="Vest slot">
-              </div>
-              <div class="inventory-slot">
-                <img id="backpack-slot" src="img/game/common/icons/bag.svg" alt="Backpack slot">
-              </div>
-              <div class="inventory-slot">
-                <img id="accessory-slot-1" src="img/game/common/icons/accessory.svg" alt="Accessory slot 1">
-              </div>
-              <div class="inventory-slot">
-                <img id="accessory-slot-2" src="img/game/common/icons/accessory.svg" alt="Accessory slot 2">
-              </div>
-              <div class="inventory-slot">
-                <img id="accessory-slot-3" src="img/game/common/icons/accessory.svg" alt="Accessory slot 3">
-              </div>-->
-            <div id="gui-items">
+            <div id="ui-weapons">
             </div>
-            <div id="gui-weapons">
+            <div id="ui-aitems">
             </div>
-            <div id="gui-oitems">
-            </div>
-            <div id="gui-scopes">
+            <div id="ui-iitems">
             </div>
           </div>  
         </div>
@@ -116,32 +90,21 @@
             <button id="gameover-report-btn" class="btn-blue">Report Player</button>
           </div>
         </div>
-        <div id="game-debug-menu" class="background-menu">
-          <input class="text-input" id="debug-item-id" placeholder="Object-ID">
-          <input class="text-input" id="debug-item-count" value="1" placeholder="Object-Count">
-          <button class="btn-blue" id="debug-give-item">Give Item</button>
-          <button class="btn-blue" id="debug-spawn-item">Spawn Item</button>
-        </div>
       </div>  
       <canvas id="game-canvas"></canvas>
       <div id="bloom-gfx"></div>
       <div id="tiltshift-gfx"></div>
       <div id="recolor-gfx"></div>
-      <div id="vignetting-gfx"></div>
     </div>
     <div id="menu">
       <div id="menu-background-effects">
         <div id="menu-bullets"></div>
       </div>
       <div id="menu-options">
-        <img id="title-section" src="/img/menu/logos/title.png" draggable="false"></img>
-        <button menu-id="play" id="play-button-m" class="btn-blue menu-options-btn" play-sound="button_click">Play</button>
-        <button menu-id="loadout" id="loadout-button-m" class="btn-blue menu-options-btn" play-sound="button_click">Loadout</button>
-        <button menu-id="settings" id="settings-button-m" class="btn-blue menu-options-btn" play-sound="button_click">Settings</button>
-        <button menu-id="account" id="account-button-m" class="btn-blue menu-options-btn">Account</button>
-        <button menu-id="about" id="about-button-m" class="btn-blue menu-options-btn" play-sound="button_click">About</button>
       </div>
-      <kl-md-submenu id="menu-play-submenu" class ="md-menu-game" style="opacity: 0;">
+      <div id="menu-content">
+      </div>
+      <!--<kl-md-submenu id="menu-play-submenu" class ="md-menu-game" style="opacity: 0;">
         <kl-md-submenu-content>
             <kl-md-menu-options>
               <div>
@@ -190,6 +153,18 @@
         </kl-md-submenu-content>
       </kl-md-submenu>
       <kl-md-submenu id="menu-account-submenu" class="md-menu-game" style="opacity: 0;">
+      </kl-md-submenu>
+      <kl-md-submenu id="menu-mods-submenu" class="md-menu-game" style="opacity: 0;">
+        <kl-md-submenu-content>
+            <kl-md-menu-options>
+              <button class="btn-green" id="btn-mods-mods_list" play-sound="button_click">Mods List</button>
+            </kl-md-menu-options>
+            <kl-md-extra id="mods-sm-extra">
+              <div class="background-menu-md background-menu-ss background-menu" id="mods-sm-mods_list">
+              </div>
+            </kl-md-extra>
+            <button class="btn-red close-btn submenu-close-btn" play-sound="button_click">X</button>
+        </kl-md-submenu-content>
       </kl-md-submenu>
       <kl-md-submenu id="menu-settings-submenu" class="md-menu-game" style="opacity: 0;">
         <kl-md-submenu-content>
@@ -266,145 +241,17 @@
               <div id="about-sm-news" class="background-menu-md background-menu updates-section"></div>
               <div id="about-sm-rules" class="background-menu-md background-menu updates-section">
                 <div id="update-item">
-  <h2>Rules</h2>
-  <hr>
-  <h3>- Scripts, Hack, Macro and other</h3>
-  <h4>What Is A Hack?</h4>
-  <ul>
-  <p>
-Hack Is An External Program That Gives Super Powers Or Improve Your Skills.
-Programs Like Improved Client:
-When Increse The Fps, Put Some Tools To Reduce Or Improve Graphics, Features Like A FPS Viewer Or More Interpolation.
-Are Allowed. Because Dont Improve Your Skill And Give Powers
-(Example: Better Client For Surgemd, Where It Optimizes, Etc.)
-  </p>
-  </ul>
-  <hr>
-  <h3>- Smurf</h3>
-  <ul>
-  <p>Smurf Are Illegal In ChampionShips, But Not In Ranked Matches(But Dont Abuse Of Smurf In Ranked Matches Else Warn)</p>
-  </ul>
-  <hr>
-  <h3>- Account Share</h3>
-  <ul>
-  <p>
-  Account Share Are Allowed.
-  but remember what the user does with his account is YOUR responsibility.
-  share your account just with peoples when you trust
-  </p>
-  </ul>
-  <hr>
-  <h3>Fake News</h3>
-  <ul>
-  <p>
-  content spreading any lie is prohibited.
-  example: I Play The New Update Of Surgemd.io Before Everyone.
-  If fake news is something that is not meant to be taken seriously, like jokes and memes: there shouldn't even be a punishment.
-  But if it's something serious, like: YouTube, Tiktok Or Instagram videos with the sole purpose of making money.
-  Spreading fake news about the game's future on credible sites, except forums.
-  This rule only applies to fake news. Criticism of the game is not considered fake news.
-  Without Power Abuse And Censure.
-  </p>
-  </ul>
-  <hr>
-  <h3>Toxic Behaviour</h3>
-  <ul>
-  <p>
-  Toxic Behaviour Are Not Allowed.
-  Racism, Xenofoby, Swearing And Another Things.
-  Toxic Behaviour Is Just Allowed In Private Rooms.
-  But In Public Rooms No.
-  </p>
-  </ul>
-  <hr>
-  <h3>Glitchs, Bugs And Exploits</h3>
-  <ul>
-  <p>
-  Bugs And Exploit Are Allowed.
-  Example Of Bug:
-  You Are Playing And You Kill Someone hitting the air.
-  this is a bug(luck).
-  Example Of Exploit:
-  Quickswitch And Overclock
-  Glitchs:
-  Glitchs Are Allowed Just To Report. If You Want Report A Glith For Developers You Have Permition To Do The Glitch.
-  Example Of Glithcs:
-  Infinity Ammo. Infinity Consumibles
-  </p>
-  </ul>
-  <hr>
-  <h3><strong>Most important rule</strong></h3>
-  <ul>
-  <p>
-  do not commit crimes, the punishment will vary depending on how heavy it was on your country
-  This rule is above everyone, even me, everyone has to follow it.
-  <h4>Examples</h4>
-  <p>
-  copyright theft, scan, harassment, doxing
-  </p>
-  </p>
-  </ul>
+
                 </div>
               </div>
               <div id="about-sm-credits" class="background-menu-md background-menu updates-section">
                 <div id="update-item">
-                  <h2>Surgemd.io</h2>
-                  <hr>
-                  <h3>Designers</h3>
-                  <ul>
-                  <li>@kazikni</li>
-                  <li>@yourhumbledrastic</li>
-                  <li>@cheerfulbull_29688</li>
-                  <li>@littlethief69</li>
-                  </ul>
-                  <hr>
-                  <h3>Menu Designers</h3>
-                  <ul>
-                  <li>@kazikni</li>
-                  <li>@namerio</li>
-                  </ul>
-                  <hr>
-                  <h3>Sound Designers</h3>
-                  <ul>
-                  <li>@kazikni</li>
-                  <li>@teardwop</li>
-                  <li>Web</li>
-                  </ul>
-                  <hr>
-                  <h3>Musics</h3>
-                  <ul>
-                  <li>@.ryanzero</li>
-                  <li>@rivals2444</li>
-                  <li>I Wanna Be The Guy</li>
-                  <li>NoCopyrightSound</li>
-                  </ul>
-                  <hr>
-                  <h3>Programmers</h3>
-                  <ul>
-                  <li>@kazikni</li>
-                  </ul>
-                  <hr>
-                  <h3>Game Designers</h3>
-                  <ul>
-                  <li>@kazikni</li>
-                  </ul>
-                  <hr>
-                  <h3>Created By</h3>
-                  <ul>
-                  <li>@kazikni</li>
-                  </ul>
-                  <hr>
-                  <h3>Special Thanks</h3>
-                  <ul>
-                  <li>@1092384</li>
-                  <li>@hasanger</li>
-                  </ul>
                 </div>
               </div>
             </kl-md-extra>
             <button class="btn-red close-btn submenu-close-btn" play-sound="button_click">X</button>
         </kl-md-submenu-content>
-      </kl-md-submenu>
+      </kl-md-submenu>-->
     </div>
     <div id="both-ui">
       <div id="loading-screen">
@@ -417,6 +264,11 @@ Are Allowed. Because Dont Improve Your Skill And Give Powers
         </div>
       </div>
       <div id="initial-screen"></div>
+      <div id="text-gameover-container" style="opacity: 0;pointer-events:none;">
+        <div class="tv-static"></div>
+        <p id="text-gameover"></p>
+      </div>
+      <div id="vignetting-gfx"></div>
     </div>
   </body>
 </html>

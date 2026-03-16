@@ -3,8 +3,8 @@
         {
             "name":"Welcome To The Island",
             "levels":[
-                "/scripts/levels/level1.json",
-                "/scripts/levels/level2.json"
+                "scripts/levels/level1.json",
+                "scripts/levels/level2.json"
             ]
         }
     ]

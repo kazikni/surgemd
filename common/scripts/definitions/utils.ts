@@ -1,7 +1,5 @@
-import { type NetStream } from "../engine/stream.ts";
-import { Definition } from "../engine/definitions.ts";
+import { Definition, NetStream, WeightDefinition } from "../../engine/core.ts";
 import { ItemQuality } from "../others/item.ts";
-import { WeightDefinition } from "../engine/random.ts";
 import { BoostType } from "./player/boosts.ts";
 export enum BulletReflection{
     All=0,
@@ -82,7 +80,7 @@ export enum InventoryItemType{
     consumible,
     helmet,
     vest,
-    projectile,
+    grenade,
     melee,
     accessorie,
     backpack,
@@ -94,7 +92,7 @@ export interface GameItemBase extends Definition{
     quality:ItemQuality
 }
 export enum DamageReason{
-    Player,
+    Human,
     Explosion,
     DeadZone,
     Abstinence,
@@ -131,8 +129,9 @@ export interface InventoryPreset{
     gun2?:InventoryPresetItem[]//Will Choose one of these guns
 
     items?:InventoryPresetItem[][]
-    oitems?:Record<string,number>
-    scopes?:string[]
+    aitems?:Record<string,number>
+    iitems?:string[]
+    acessories:Record<number,string>
 
     hand?:number
     infinity_ammo?:boolean

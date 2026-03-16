@@ -1,8 +1,8 @@
-import { Badges } from "common/scripts/definitions/loadout/badges.ts";
-import { ShowTab } from "../engine/utils.ts";
+import { ShowTab } from "common/engine/client.ts";
 import { API_BASE } from "../others/config.ts";
 import { type MenuManager } from "./menuManager.ts";
 import { CalculatePlayerLevel, CalculatePlayerLevelProgress} from "common/scripts/others/functions.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 
 export class AccountManager{
     enabled:boolean
@@ -11,8 +11,10 @@ export class AccountManager{
     content={
         submenu:document.body.querySelector("#menu-account-submenu") as HTMLDivElement,
     }
-    constructor(){
+    definitions:GameDefinition
+    constructor(definitions:GameDefinition){
         this.enabled=false
+        this.definitions=definitions
     }
     connected:boolean=false
     async login(name:string,password:string){
@@ -71,7 +73,7 @@ export class AccountManager{
     }
     // deno-lint-ignore no-explicit-any
     set_account_status(status:any){
-        const badge=Badges.getFromNumber(0)
+        const badge=this.definitions.badges.getFromNumber(0)
         const dd=document.body.querySelector("#account-sm-status") as HTMLDivElement
             dd.innerHTML=`
 <span class="span" style="text-align:center; align-content:center;" id="coin-status-span">

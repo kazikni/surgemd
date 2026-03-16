@@ -1,69 +1,88 @@
-import { type Player } from "../gameObjects/player.ts";
+import { Human } from "../objects/human.ts";
 
-export class Group{
-    players:Player[]=[]
+export class Team{
+    humans:Human[]=[]
     id:number=0
-    add_player(p:Player){
-        p.group=this
-        p.groupId=this.id
-        this.players.push(p)
+    add_human(h:Human){
+        h.team_data.team=this
+        h.team_data.team_id=this.id
+        this.humans.push(h)
     }
-    get_living_players():Player[]{
-        return this.players.filter((p)=>!p.dead)
+    get_living_humans():Human[]{
+        return this.humans.filter((p)=>!p.health_data.dead)
     }
-    get_not_downed_players():Player[]{
-        return this.players.filter((p)=>!p.dead&&!p.downed)
+    get_not_downed_humans():Human[]{
+        return this.humans.filter((p)=>!p.health_data.dead&&!p.health_data.downed)
     }
-    get_downed_players():Player[]{
-        return this.players.filter((p)=>!p.dead&&p.downed)
+    get_downed_players():Human[]{
+        return this.humans.filter((p)=>!p.health_data.dead&&p.health_data.downed)
+    }
+    replace(o: Human, n: Human) {
+        const index = this.humans.indexOf(o)
+        if (index === -1) return false
+
+        n.team_data.team = this
+        n.team_data.team_id = this.id
+
+        this.humans[index] = n
+        return true
     }
     constructor(){
 
     }
 }
-export class Team extends Group{
-    group=0
-    override add_player(p:Player){
-        p.team=this
-        p.groupId=this.id
-        this.players.push(p)
+export class Group extends Team{
+    team:number=0
+    override add_human(h:Human){
+        h.team_data.group=this
+        h.team_data.group_id=this.id
+        this.humans.push(h)
     }
-}
-export class GroupManager{
-    groups:Group[]=[]
-    constructor(){
+    override replace(o: Human, n: Human) {
+        const index = this.humans.indexOf(o)
+        if (index === -1) return false
 
-    }
-    get_living_groups():Group[]{
-        return this.groups.filter((t)=>(t&&t!.get_living_players().length>0))
-    }
-    add_group():Group{
-        this.groups.push(new Group())
-        const g=this.groups[this.groups.length-1]
-        g.id=this.groups.length-1
-        return g
+        n.team_data.group = this
+        n.team_data.group_id = this.id
+
+        this.humans[index] = n
+        return true
     }
 }
 export class TeamsManager{
-    teams:Partial<Record<number,Team>>={}
+    teams:Team[]=[]
     constructor(){
 
     }
-    get_perfect_team(max_team_size:number,group=0):Team|undefined{
-        for(const t of Object.values(this.teams)){
-            if(t&&t.players.length<max_team_size&&t.group===group)return t
+    get_living_teams():Team[]{
+        return this.teams.filter((t)=>(t&&t!.get_living_humans().length>0))
+    }
+    add_team(team:Team=new Team):Team{
+        team.id=this.teams.length-1
+        this.teams.push(team)
+        return team
+    }
+}
+export class GroupsManager{
+    groups:Partial<Record<number,Group>>={}
+    constructor(){
+
+    }
+    find_group(max_group_size:number,team=0):Group|undefined{
+        for(const g of Object.values(this.groups)){
+            if(g&&g.humans.length<max_group_size&&g.team===team)return g
         }
         return undefined
     }
-    get_living_teams():Team[]{
-        return Object.values(this.teams).filter((t)=>(t&&t!.get_living_players().length>0)) as (Team[])
+    get_living_groups():Group[]{
+        return Object.values(this.groups).filter((t)=>(t&&t!.get_living_humans().length>0)) as (Group[])
     }
-    add_team(id?:number):Team{
+    add_group(id?:number,group:Group=new Group):Group{
         if(!id){
-            id=Object.keys(this.teams).length
+            id=Object.keys(this.groups).length
         }
-        this.teams[id]=new Team()
-        this.teams[id]!.id=id
-        return this.teams[id]!
+        this.groups[id]=group
+        this.groups[id]!.id=id
+        return this.groups[id]!
     }
 }

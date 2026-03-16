@@ -1,4 +1,5 @@
-import { type NetStream, Packet } from "../engine/mod.ts"
+import { NetStream, Packet } from "../../engine/core.ts";
+
 export class GameOverPacket extends Packet{
     ID=3
     Name="gameover"

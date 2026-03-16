@@ -1,7 +1,6 @@
+import { NetStream, Packet, v2, Vec2 } from "../../engine/core.ts";
 import { type BiomeDef, type BiomeFloor } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
-import { v2, Vec2 } from "../engine/geometry.ts";
-import { type NetStream, Packet } from "../engine/mod.ts"
 import { Floor } from "../others/terrain.ts";
 export interface MapObjectObstacle{
     type:0,
@@ -10,6 +9,7 @@ export interface MapObjectObstacle{
     variation:number
     position:Vec2
     scale:number
+    skin:number
 }
 export type MapObjectEncode=MapObjectObstacle
 export interface MapConfig{
@@ -40,7 +40,8 @@ export class MapPacket extends Packet{
                     stream.writeID(i.def)
                     .writeRad(i.rotation)
                     .writeUint8(i.variation)
-                    .writePosition(i.position)
+                    .writeUint8(i.skin)
+                    .writePos2(i.position)
                     .writeFloat(i.scale,0.1,2,1)
             }
         },2)
@@ -84,8 +85,9 @@ export class MapPacket extends Packet{
                         def:stream.readID(),
                         rotation:stream.readRad(),
                         variation:stream.readUint8(),
-                        position:stream.readPosition(),
-                        scale:stream.readFloat(0.1,2,1)
+                        skin:stream.readUint8(),
+                        position:stream.readPos2(),
+                        scale:stream.readFloat(0.1,2,1),
                     }
             }
         },2)

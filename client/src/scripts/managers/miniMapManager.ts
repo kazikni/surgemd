@@ -1,151 +1,157 @@
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
-import { Container2D, Graphics2D, SubCanvas2D } from "../engine/container_2d.ts";
-import { ColorM, WebglRenderer } from "../engine/renderer.ts";
 import { type Game } from "../others/game.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
-import { HideElement, ShowElement } from "../engine/utils.ts";
+import { ColorM, Hitbox2D, HitboxType2D, v2, Vec2} from "common/engine/client.ts";
+import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { GetObstacleBaseFrame } from "../objects/obstacle.ts";
 
 export class MinimapManager{
     game:Game
 
-    terrain_gfx=new Graphics2D()
-    grid_gfx=new Graphics2D()
-
-    map=new SubCanvas2D(1000,1000)
-
-    canvas:HTMLCanvasElement=document.querySelector("#minimap-canvas") as HTMLCanvasElement
+    canvas:HTMLCanvasElement=document.createElement("canvas")
     ctx:CanvasRenderingContext2D
-
-    full_map_canvas:HTMLCanvasElement=document.querySelector("#fullmap-canvas") as HTMLCanvasElement
-    full_map_ctx:CanvasRenderingContext2D
-
-    full_map:boolean=false
-    set_full_map(v:boolean){
-        this.full_map=v
-        if(v){
-            ShowElement(this.full_map_canvas)
-        }else{
-            HideElement(this.full_map_canvas)
-        }
-    }
     constructor(game:Game){
         this.game=game
-
-        this.terrain_gfx.zIndex=0
-        this.grid_gfx.zIndex=1
-
-        this.map.add_child(this.terrain_gfx)
-        this.map.add_child(this.grid_gfx)
-        //this.map.add_child(this.game.dead_zone.map_sprite)
-
-        this.map.zIndex=zIndexes.Minimap
-
-        this.map.size=v2.new(1000,1000)
-
-        this.map.camera.meter_size=10
         this.ctx=this.canvas.getContext("2d")!
-
-        this.full_map_canvas.width=800
-        this.full_map_canvas.height=800
-        this.full_map_ctx=this.full_map_canvas.getContext("2d")!
-        this.set_full_map(false)
-
-        this.canvas.addEventListener("click",()=>this.set_full_map(!this.full_map))
-    }
-    update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
-        grid_gfx.clear()
-        grid_gfx.fill_color(ColorM.hex("#0000001e"))
-        grid_gfx.drawGrid(v2.sub(v2.floor(v2.dscale(v2.sub(camera_position,v2.new(camera_size.x/2,camera_size.y/2)),gridSize)),v2.new(1,1)),v2.ceil(v2.new(camera_size.x/gridSize+2,camera_size.y/gridSize+2)),gridSize,line_size)
     }
     image: HTMLImageElement=new Image()
-    render(){
-        this.map.downscale=4
-        this.map.camera.meter_size=10/(this.config.size.x/100)
-        this.imgS=500*(this.config.size.x/20)
-        this.ms=(this.imgS/10)/10
-        this.map.update(0.1,this.game.resources)
-        this.map.render(this.game.renderer as WebglRenderer,this.game.camera)
-        this.map.update(0.1, this.game.resources)
-        this.image.src=this.map.toBase64(this.game.resources)
-    }
-    imgS=10
-    ms=1
+    ms=0.1
     position:Vec2=v2.new(0,0)
-    
-    draw():Promise<void>{
-        return new Promise<void>((resolve) => {    
-            /*this.canvas.width = 500
-            this.canvas.height = 500
-            this.ctx.clearRect(0, 0, this.canvas.width,this.canvas.height)
 
-            const halfW = this.canvas.width / 2
-            const halfH = this.canvas.height / 2
+    private drawHitbox(color:string,hb: Hitbox2D) {
+        switch (hb.type) {
+            case HitboxType2D.circle: {
+                this.ctx.fillStyle=color
+                const c = v2.dscale(hb.position,this.ms)
+                const r = hb.radius * this.ms
 
-            const vx=((this.position.x*this.ms))-halfH
-            const vy=((this.position.y*this.ms))-halfW
-
-            this.ctx.save()
-            this.ctx.translate(-vx,-vy)
-            this.ctx.drawImage(this.image,0,0,this.image.width,this.image.height,0,0,this.imgS, this.imgS)
-            this.ctx.restore()
-            this.ctx.fillStyle="#0ff"
-            this.ctx.fillRect(halfW-5,halfH-5,10,10)
-            resolve()
-
-            if(this.full_map){
-                this.full_map_ctx.drawImage(this.image,0,0,this.full_map_canvas.width,this.full_map_canvas.height)
-                
-                this.full_map_ctx.fillStyle="#0ff"
-                const dp=v2.scale(v2.mult(this.position,this.map.scale),8)
-                this.full_map_ctx.fillRect(dp.x-5,dp.y-5,10,10)
-            }*/
-
-            /*
-
-            for (let i = 0; i < this.images.length; i++) {
-                for (let j = 0; j < this.images[i].length; j++) {
-                    const img = this.images[i][j]
-                    if (img.complete) {
-                        const x = j * this.imgS, y = i * this.imgS
-                        this.ctx.drawImage(img, x, y, this.imgS, this.imgS)
-                    }
-                }
+                this.ctx.beginPath()
+                this.ctx.arc(c.x, c.y, r, 0, Math.PI * 2)
+                this.ctx.fill()
+                break
             }
-            resolve()*/
-            resolve()
-        })
-    }
-    objects:Container2D=new Container2D()
-    config!:MapConfig
-    init(map:MapConfig){
-        /*this.config=map
-        this.objects.destroyed=true
-        this.objects=new Container2D()
-        this.map.add_child(this.objects)
-        this.grid_gfx.clear()
-        this.grid_gfx.fill_color(ColorM.hex("#0000001e"))
-        this.grid_gfx.drawGrid(v2.new(0,0),map.size,5,0.2)
-        for(const ob of map.objects){
-            switch(ob.type){
-                case 0:{
-                    const def=Obstacles.getFromNumber(ob.def)
-                    const spr=new Sprite2D()
-                    spr.zIndex=def.zIndex??zIndexes.Obstacles1
-                    spr.set_frame({
-                        image:GetObstacleBaseFrame(def,ob.variation),
-                        position:ob.position,
-                        rotation:ob.rotation,
-                        scale:ob.scale,
-                        hotspot:v2.new(0.5,0.5)
-                    },this.game.resources)
-                    this.objects.add_child(spr)
-                    spr.cam=this.map.camera
-                    spr.update_model()
+            case HitboxType2D.rect: {
+                this.ctx.fillStyle=color
+                const min = v2.dscale(hb.min,this.ms)
+                const max = v2.dscale(hb.max,this.ms)
+
+                const w = max.x - min.x
+                const h = max.y - min.y
+
+                this.ctx.fillRect(min.x, min.y, w, h)
+                break
+            }
+            case HitboxType2D.polygon: {
+                if (hb.points.length === 0) break
+                this.ctx.fillStyle=color
+
+                this.ctx.beginPath()
+
+                const first = v2.dscale(hb.points[0],this.ms)
+                this.ctx.moveTo(first.x, first.y)
+
+                for (let i = 1; i < hb.points.length; i++) {
+                    const p = v2.dscale(hb.points[i],this.ms)
+                    this.ctx.lineTo(p.x, p.y)
                 }
+
+                this.ctx.closePath()
+                this.ctx.fill()
+                break
+            }
+            case HitboxType2D.group: {
+                this.ctx.fillStyle=color
+                for (const sub of hb.hitboxes) {
+                    this.drawHitbox(color,sub)
+                }
+                break
             }
         }
-        this.objects.updateZIndex()*/
-        this.render()
+    }
+    private drawGrid(gridSizeMeters: number, lineWidth: number = 1) {
+        const ctx = this.ctx
+
+        const canvasW = this.config.size.x/this.ms
+        const canvasH = this.config.size.y/this.ms
+        const step = gridSizeMeters/this.ms
+
+        ctx.save()
+        ctx.strokeStyle = "rgba(0,0,0,0.15)"
+        ctx.lineWidth = lineWidth/this.ms
+        ctx.beginPath()
+
+        for (let x = 0; x <= canvasW; x += step) {
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, canvasH)
+        }
+
+        for (let y = 0; y <= canvasH; y += step) {
+            ctx.moveTo(0, y)
+            ctx.lineTo(canvasW, y)
+        }
+
+        ctx.stroke()
+        ctx.restore()
+    }
+    draw(): Promise<string> {
+        return new Promise<string>((resolve) => {    
+            this.canvas.width  = this.config.size.x / this.ms
+            this.canvas.height = this.config.size.y / this.ms
+
+            this.ctx.clearRect(0, 0, this.canvas.width,this.canvas.height)
+
+            this.ctx.fillStyle = ColorM.number2hex(Floors[FloorType.Void].default_color)
+            this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
+
+            for (const floor of this.config.terrain) {
+                const hb  = floor.final_hb
+                const hex = ColorM.number2hex(Floors[floor.type].default_color)
+                this.drawHitbox(hex, hb)
+            }
+            this.drawGrid(5,0.06)
+            const sorted = [...this.config.objects].sort((a,b)=>{
+                const ad=this.game.definitions.obstacles.getFromNumber(a.def)
+                const bd=this.game.definitions.obstacles.getFromNumber(b.def)
+                return (ad.zIndex ?? 0) - (bd.zIndex ?? 0)
+            })
+            for (const obj of sorted) {
+                const def = this.game.definitions.obstacles.getFromNumber(obj.def)
+                const frameName = GetObstacleBaseFrame(def, obj.variation, 0)
+                const frame = this.game.resources.get_sprite(frameName)
+                if (!frame?.source) continue
+
+                const sx = frame.frame_rect?.x1 ?? 0
+                const sy = frame.frame_rect?.y1 ?? 0
+                const sw = (frame.frame_rect?.x2 ?? frame.source.width) - sx
+                const sh = (frame.frame_rect?.y2 ?? frame.source.height) - sy
+
+                const fw = frame.frame_size?.x ?? sw
+                const fh = frame.frame_size?.y ?? sh
+
+                const w = (fw*obj.scale)/this.ms/100
+                const h = (fh*obj.scale)/this.ms/100
+
+                const pos = v2.dscale(obj.position,this.ms)
+
+                this.ctx.save()
+                this.ctx.translate(pos.x, pos.y)
+                this.ctx.rotate(obj.rotation ?? 0)
+
+                this.ctx.drawImage(
+                    frame.source,
+                    sx, sy, sw, sh,
+                    -w/2, -h/2,
+                    w, h
+                )
+
+                this.ctx.restore()
+            }
+
+            resolve(this.canvas.toDataURL("image/png"))
+        })
+    }
+    config!:MapConfig
+    async init(map:MapConfig){
+        this.config=map
+        this.image.src=await this.draw()
     }
 }

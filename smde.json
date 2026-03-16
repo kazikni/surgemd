@@ -1,6 +1,11 @@
 {
-    "name":"client",
+    "name":"surgemd",
     "version":"1.0",
+    "engine": {
+        "version": "@latest",
+        "path": "common/scripts/engine",
+        "source": "https://smde.io/files/smde"
+    },
     "task":{
         "dev":{
             "childs":{

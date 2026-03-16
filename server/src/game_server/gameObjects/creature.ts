@@ -1,17 +1,15 @@
-import { v2, v2m, Vec2 } from "common/scripts/engine/geometry.ts";
+import { LootTableItemRet, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { type CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { CreaturesUpdates, CreatureUFunc } from "../defs/creatures_extra.ts";
 import { DamageParams } from "../others/utils.ts";
-import { LootTableItemRet } from "common/scripts/engine/inventory.ts";
 import { Obstacle } from "./obstacle.ts";
 import { GameItem } from "common/scripts/definitions/alldefs.ts";
-import { NetStream } from "common/scripts/engine/stream.ts";
 
 export class Creature extends ServerGameObject{
-    stringType:string="creature"
-    numberType: number=10
+    string_type:string="creature"
+    number_type: number=10
 
     update_func?:CreatureUFunc
 
@@ -53,7 +51,7 @@ export class Creature extends ServerGameObject{
         if(this.update_func)this.update_func(this,dt)
         if(!v2.is(this.old_position,this.position)||this.old_rotation!==this.angle){
             this.dirtyPart=true
-            this.old_position=v2.duplicate(this.position)
+            this.old_position=v2.clone(this.position)
             this.old_rotation=this.angle
             this.manager.cells.updateObject(this)
         }
@@ -62,7 +60,7 @@ export class Creature extends ServerGameObject{
         const objs=this.manager.cells.get_objects(this.hitbox,this.layer)
         for(const obj of objs){
             if(obj.id===this.id)continue
-            switch(obj.stringType){
+            switch(obj.string_type){
                 case "obstacle":
                     if((obj as Obstacle).def.no_collision)break
                     if((obj as Obstacle).hitbox&&!(obj as Obstacle).dead){
@@ -74,7 +72,7 @@ export class Creature extends ServerGameObject{
                     break
             }
         }
-        this.game.map.clamp_hitbox(this.hitbox)
+        this.position=this.game.map.clamp_hitbox(this.position,this.hitbox)
     }
     override interact(_user: Player): void {
     }
@@ -88,7 +86,7 @@ export class Creature extends ServerGameObject{
         }
     }
     override encode(stream: NetStream, full: boolean): void {
-        stream.writePosition(this.position)
+        stream.writePos2(this.position)
         .writeRad(this.angle)
         .writeUint8(this.state)
         if(full){

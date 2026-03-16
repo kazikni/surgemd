@@ -1,5 +1,5 @@
-import { Definition, Definitions } from "../../engine/definitions.ts";
-import { PlayerModifiers } from "../../others/constants.ts";
+import { Definition, Definitions } from "../../../engine/core.ts";
+import { HumanModifiers } from "../../others/constants.ts";
 import { BoostDef, Boosts, BoostType } from "./boosts.ts";
 
 export enum EffectType{
@@ -23,12 +23,12 @@ export enum SideEffectType{
     Parachute
 }
 export type SideEffect=({
-    type:SideEffectType.AddEffect,
-    effect:string,
+    type:SideEffectType.AddEffect
+    effect:string
     duration:number
 }|{
     type:SideEffectType.Modify,
-    modify:Partial<PlayerModifiers>
+    modify:Partial<HumanModifiers>
 }|{
     type:SideEffectType.Damage,
     amount:number
@@ -89,7 +89,7 @@ Effects.insert(
             {
                 type:SideEffectType.Modify,
                 modify:{
-                    speed:2
+                    speed:1.5
                 }
             },
         ],

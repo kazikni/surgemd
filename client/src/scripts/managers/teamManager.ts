@@ -16,7 +16,7 @@ export class TeamManager {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                player:this.game.save.get_variable("cv_loadout_name"),
+                player:this.game.save.get_variable("sv_loadout_name"),
                 code:"",
             })
         })

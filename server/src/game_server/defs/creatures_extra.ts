@@ -1,7 +1,5 @@
-import { random } from "common/scripts/engine/random.ts";
+import { Numeric, random, v2, Vec2 } from "common/engine/core.ts";
 import { type Creature } from "../gameObjects/creature.ts";
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
-import { Numeric } from "common/scripts/engine/utils.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 
 export type CreatureUFunc=(self:Creature,dt:number)=>void

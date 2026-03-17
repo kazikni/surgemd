@@ -1,4 +1,4 @@
-package io.suroimd2.game;
+package io.surgemd.game;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsets;

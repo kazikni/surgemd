@@ -3,6 +3,7 @@ import path, { resolve } from "node:path";
 import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
 import { AudiosLists } from "./plugins/audio_list.ts";
+
 const config: UserConfig = {
     build: {
         rollupOptions: {
@@ -43,16 +44,14 @@ const config: UserConfig = {
     plugins: [
         svelte(),
         spritesheet({"main":"main","normal":"normal","christmas":"christmas"},undefined,[
-            {name:"very-low",scale:0.35},
             {name:"low",scale:0.5},
             {name:"medium",scale:0.75},
             {name:"high",scale:1},
-            {name:"very-high",scale:2},
         ]),
         AudiosLists([{
             input:"public/sounds/game/main",
             output:"sounds/game/main.json"
-        }])
+        }]),
     ],
 
     css: {

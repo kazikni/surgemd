@@ -1,6 +1,6 @@
-import { v2 } from "../../engine/geometry.ts";
+import { RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { BiomeDef, type MapDef } from "./base.ts";
+import { BiomeDef, CounterMapDef, type MapDef } from "./base.ts";
 export const NormalBiome:BiomeDef={
     floors:{
 
@@ -37,7 +37,7 @@ export const NormalMap:MapDef={
             {item:"vector",weight:6},
             {item:"kar98k",weight:6},
             {item:"awp",weight:0.5},
-            {item:"m2_2",weight:0.1},
+            //{item:"m2_2",weight:0.1},
         ],
         "legendary_guns":[
             {item:"awms",weight:1},
@@ -124,6 +124,26 @@ export const NormalMap:MapDef={
             {item:"gasoline",count:10,weight:0.2},
             {item:"explosive_ammo",count:4,weight:0.2},
         ],
+        //Throwables
+        "throwables":[
+            {item:"frag_grenade",count:1,weight:10},
+            {item:"mirv_grenade",count:1,weight:5},
+        ],
+        //Scopes
+        "scopes":[
+            {item:"scope_2",count:1,weight:120},
+            {item:"scope_3",count:1,weight:50},
+            {item:"scope_4",count:1,weight:6},
+            {item:"scope_5",count:1,weight:0.8},
+            {item:"scope_6",count:1,weight:0.1},
+        ],
+        "special_scopes":[
+            {item:"scope_2",count:1,weight:120},
+            {item:"scope_3",count:1,weight:60},
+            {item:"scope_4",count:1,weight:9},
+            {item:"scope_5",count:1,weight:1.7},
+            {item:"scope_6",count:1,weight:0.3},
+        ],
         //Armors And Backpacks
         "armors":[
             {item:"basic_vest",weight:10},
@@ -171,25 +191,33 @@ export const NormalMap:MapDef={
             {item:"tactical_pack",weight:1},
         ],
         //Loot Tables
-        "ground_loot":[
-            {weight:1.5,table:"ammos"},
-            {weight:1,table:"equipments"},
-            {weight:0.5,table:"guns"},
+        "normal_loot":[
+            {weight:1,table:"ammos"},
+            {weight:1,table:"consumibles"},
+            {weight:0.75,table:"guns"},
+            {weight:0.75,table:"equipments"},
+            {weight:0.5,table:"scopes"},
+            {weight:0.25,table:"throwables"},
             {weight:0.01,table:"melees"},
         ],
+        "special_loot":[
+            {weight:1,table:"special_ammos"},
+            {weight:1,table:"special_consumibles"},
+            {weight:0.75,table:"special_equipments"},
+            {weight:0.75,table:"special_guns"},
+            {weight:0.7,table:"special_scopes"},
+            {weight:0.4,table:"throwables"},
+            {weight:0.025,table:"melees"},
+        ],
         "wood_crate":[
-            [{weight:10,table:"ammos"},{weight:1,table:""}],
-            [{weight:10,table:"consumibles"},{weight:1,table:""}],
-            [{weight:9.5,table:"equipments"},{weight:1,table:""}],
-            [{weight:1,table:"guns"}],
-            [{weight:60,table:""},{weight:1,table:"melees"}],
+            {weight:2,count:1,table:"normal_loot"},
+            {weight:1,count:2,table:"normal_loot"},
+            {weight:0.5,count:3,table:"normal_loot"},
         ],
         "copper_crate":[
-            [{weight:10,table:"special_ammos"},{weight:1,table:""}],
-            [{weight:10,table:"consumibles"},{weight:1,table:""}],
-            [{weight:9.5,table:"special_equipments"},{weight:1,table:""}],
-            [{weight:1,table:"special_guns"}],
-            [{weight:40,table:""},{weight:1,table:"melees"}],
+            {weight:1,count:2,table:"special_loot"},
+            {weight:0.5,count:3,table:"special_loot"},
+            {weight:0.25,count:4,table:"special_loot"},
         ],
         "iron_crate":[
             [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
@@ -215,21 +243,30 @@ export const NormalMap:MapDef={
     generation:{
         island:{
             size:v2.new(500,500),
-            ground_loot:[{count:80,table:"ground_loot"}],
             spawn:[
                 [
+                    {id:"recorded_tape",count:1},
+
+                    {id:"watchtower",count:7}, //90% of 700
+
                     {id:"container_1",count:25},
                     {id:"container_2",count:25},
+
                     {id:"sillo",count:10},
+
                     {id:"oak_tree",count:2700}, //90% of 3000
                     {id:"stone",count:1800}, //90% of 2000
                     {id:"bush",count:1350}, //90% of 1500
+
                     {id:"wood_crate",count:630},//90% of 700
+
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
+
                     {id:"barrel",count:630}, //90% of 700
-                    {id:"recorded_tape",count:1},
+
+                    {id:"normal_loot",count:80}
                 ]
             ],
             terrain:{
@@ -277,23 +314,36 @@ export const NormalLobby:MapDef={
     generation:{
         island:{
             size:v2.new(100,100),
-            ground_loot:[{count:20,table:"ground_loot"}],
             spawn:[
                 [
-                    {id:"oak_tree",count:40},
-                    {id:"stone",count:30},
-                    {id:"bush",count:20},
-                    {id:"wood_crate",count:15},
-                    {id:"copper_crate",count:3},
-                    {id:"barrel",count:8},
+                    {id:"watchtower",count:1},
+                    {id:"container_1",count:1},
+                    {id:"container_2",count:1},
 
-                    /*{id:"pig",count:10},
-                    {id:"chicken",count:10}*/
+                    {id:"recorded_tape",count:1},
+                    {id:"sillo",count:2},
+
+                    {id:"jeep",count:1},
+                    {id:"bike",count:1},
+
+                    {id:"oak_tree",count:80},
+                    {id:"stone",count:50},
+                    {id:"bush",count:30},
+
+                    {id:"wood_crate",count:30},
+                    {id:"copper_crate",count:6},
+                    {id:"iron_crate",count:1},
+                    {id:"gold_crate",count:1},
+                    {id:"barrel",count:13},
+                    {id:"normal_loot",count:20}
+
+                    //{id:"pig",count:10},
+                    //{id:"chicken",count:10}
                 ]
             ],
             terrain:{
                 base:FloorType.Water,
-                rivers:{
+                /*rivers:{
                     divisions:30,
                     spawn_floor:1,
                     expansion:12,
@@ -312,16 +362,58 @@ export const NormalLobby:MapDef={
                             weight:1
                         }
                     ]
-                },
+                },*/
                 floors:[
                     {
-                        padding:15,
+                        padding:3,
                         type:FloorType.Sand,
                         spacing:3,
                         variation:1.3,
                     },
                     {
                         padding:10,
+                        type:FloorType.Grass,
+                        spacing:3,
+                        variation:1.3,
+                    }
+                ]
+            }
+        },
+    },
+    biome:NormalBiome,
+}
+export const NormalCounterMD:CounterMapDef={
+    spawn:[
+        RectHitbox2D.centered(v2(15,45),v2(1,6)),
+        RectHitbox2D.centered(v2(75,45),v2(1,6))
+    ],
+    seed:1000,
+    loot_tables:NormalMap.loot_tables,
+    generation:{
+        island:{
+            size:v2.new(90,90),
+            spawn:[
+                [
+                    {id:"sillo",count:2},
+
+                    {id:"oak_tree",count:80},
+                    {id:"stone",count:60},
+                    {id:"bush",count:40},
+
+                    {id:"barrel",count:10},
+                ]
+            ],
+            terrain:{
+                base:FloorType.Water,
+                floors:[
+                    {
+                        padding:13,
+                        type:FloorType.Sand,
+                        spacing:3,
+                        variation:1.3,
+                    },
+                    {
+                        padding:8,
                         type:FloorType.Grass,
                         spacing:3,
                         variation:1.3,
@@ -365,7 +457,6 @@ export const SnowMap:MapDef={
     generation:{
         island:{
             size:v2.new(500,500),
-            ground_loot:[{count:80,table:"ground_loot"}],
             spawn:[
                 [
                     {id:"christmas_tree",count:3},
@@ -379,6 +470,7 @@ export const SnowMap:MapDef={
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
                     {id:"barrel",count:630}, //90% of 700
+                    {id:"normal_loot",count:80}
                 ]
             ],
             terrain:{

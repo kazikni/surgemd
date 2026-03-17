@@ -1,13 +1,12 @@
-import { GameItem } from "../definitions/alldefs.ts";
-import { AmmoDef, Ammos } from "../definitions/items/ammo.ts";
-import { BackpackDef, Backpacks } from "../definitions/items/backpacks.ts";
+import { Inventory, Item, Numeric, Slot } from "../../engine/core.ts";
+import { GameDefinition, GameItem } from "../definitions/game_defs.ts";
+import { AmmoDef } from "../definitions/items/ammo.ts";
+import { BackpackDef } from "../definitions/items/backpacks.ts";
 import { ConsumibleDef } from "../definitions/items/consumibles.ts";
+import { GrenadeDef } from "../definitions/items/grenades.ts";
 import { GunDef } from "../definitions/items/guns.ts";
-import { MeleeDef, Melees } from "../definitions/items/melees.ts";
-import { ProjectileDef } from "../definitions/objects/projectiles.ts";
+import { MeleeDef } from "../definitions/items/melees.ts";
 import { InventoryItemType } from "../definitions/utils.ts";
-import { Inventory, Item, Slot } from "../engine/inventory.ts";
-import { Numeric } from "../engine/utils.ts";
 
 export abstract class MDItem extends Item{
     abstract item_type:InventoryItemType
@@ -31,7 +30,7 @@ export class GunItemBase extends MDItem{
         super()
         this.def=def!
         this.tags.push("gun")
-        this.liquid=Ammos.getFromString(def!.ammoType).liquid??false
+        this.liquid=false
     }
     is(other: MDItem): boolean {
         return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
@@ -60,10 +59,10 @@ export class ConsumibleItemBase extends MDItem{
       return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
   }
 }
-export class ProjectileItemBase extends MDItem{
-    def:ProjectileDef
-    item_type: InventoryItemType.projectile=InventoryItemType.projectile
-    constructor(def:ProjectileDef){
+export class GrenadeItemBase extends MDItem{
+    def:GrenadeDef
+    item_type: InventoryItemType.grenade=InventoryItemType.grenade
+    constructor(def:GrenadeDef){
         super()
         this.def=def
     }
@@ -92,19 +91,42 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     hand_item?:IT
     hand_def?:GameItem
 
-    oitems:Record<string,number>={}
+    aitems:Record<string,number>={} // Amount Items
+    iitems:GameItem[]=[] // Inclusion Items
 
     backpack!:BackpackDef
-    default_backpack:BackpackDef
+    default_backpack!:BackpackDef
 
-    constructor(weapons_kind:Record<number,(new(def:GameItem)=>IT)>,weapons_defaults:Record<number,GameItem>={
-        0:Melees.getFromString("survival_knife")
-    }){
+    net_sync:{
+        hand:boolean
+        weapons:boolean
+
+        items:boolean
+        aitems:boolean
+        iitems:boolean
+    }={
+        hand:false,
+        weapons:false,
+
+        items:false,
+        aitems:false,
+        iitems:false,
+    }
+
+    constructor(){
         super(1)
-        this.default_backpack=Backpacks.getFromString("null_pack")
+    }
+    initialize(definitions:GameDefinition,weapons_kind:Record<number,(new(def:GameItem)=>IT)>,weapons_defaults?:Record<number,GameItem>){
+        this.default_backpack=definitions.backpacks.getFromString("null_pack")
         this.set_backpack()
         this.weapons_kind=weapons_kind
-        this.weapons_defaults=weapons_defaults
+        this.weapons_defaults=weapons_defaults??{
+            0:definitions.melees.getFromString("survival_knife")
+        }
+        this.clear_weapons()
+        this.iitems.push(definitions.scopes.getFromNumber(0))
+
+        this.set_weapon_index(0)
     }
 
     set_backpack(backpack?:BackpackDef){
@@ -124,15 +146,13 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         while(this.slots.length<backpack.slots){
             this.slots.push(new Slot<IT>())
         }
-        this.dirty("items")
-        this.dirty("backpack")
     }
-    dirty(it:string){}
     set_hand_item(val:IT){
         this.hand_item=val
         this.hand_def=val.def
         this.hand_item.load()
-        this.dirty("hand")
+
+        this.net_sync.hand=true
     }
     set_weapon_index(idx:number){
         if(this.weapon_idx===idx||!this.weapons[idx])return
@@ -160,7 +180,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
                 this.set_weapon_index(0)
             }
         }
-        if(oid!==wep?.idString)this.dirty("weapons")
+        this.net_sync.weapons=true
     }
     weapon_is_free(slot:number):boolean{
         return !this.weapons[slot]||this.weapons[slot].def==this.weapons_defaults[slot]
@@ -172,20 +192,21 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
             else this.weapons[k as unknown as number]=undefined
         }
     }
-    consume_oitem(a:string,val:number):number{
-        if(this.oitems[a]){
-            const con=Numeric.max(val,this.oitems[a])
-            this.oitems[a]-=con
-            if(this.oitems[a]===0){
-                delete this.oitems[a]
+    consume_aitems(a:string,val:number):number{
+        if(this.aitems[a]){
+            const con=Numeric.max(val,this.aitems[a])
+            this.aitems[a]-=con
+            if(this.aitems[a]===0){
+                delete this.aitems[a]
             }
-            this.dirty("oitems")
+            this.net_sync.aitems=true
             return con
         }
         return 0
     }
     clear(){
-        this.oitems={}
+        this.aitems={}
+        this.iitems.length=1
         this.set_backpack()
         for(const s of this.slots){
           s.clear()

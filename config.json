@@ -44,7 +44,7 @@
             "port": 8080
         },
         "na": {
-            "host": "na.suroimd.io",
+            "host": "na.surgemd.io",
             "port": 443,
             "ssh":true
         }

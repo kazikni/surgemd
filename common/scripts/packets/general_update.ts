@@ -1,7 +1,4 @@
-import { KDate } from "../engine/definitions.ts";
-import { Vec2 } from "../engine/geometry.ts";
-import { Packet } from "../engine/packets.ts";
-import { NetStream } from "../engine/stream.ts";
+import { KDate, NetStream, Packet, Vec2 } from "../../engine/core.ts";
 
 export interface PlaneData{
     direction:number
@@ -33,7 +30,7 @@ export interface GeneralUpdate{
     deadzone?:DeadZoneUpdate
     ambient?:{
         date:KDate
-        time_walked:number
+        initial_date:KDate
         rain:number
         thunder_storm:number
     }
@@ -48,8 +45,8 @@ function encode_general_update(stream:NetStream,up:GeneralUpdate){
         stream.writeUint8(up.deadzone.state)
         stream.writeFloat(up.deadzone.radius,0,3000,3)
         stream.writeFloat(up.deadzone.new_radius,0,3000,3)
-        stream.writePosition(up.deadzone.position)
-        stream.writePosition(up.deadzone.new_position)
+        stream.writePos2(up.deadzone.position)
+        stream.writePos2(up.deadzone.new_position)
     }
     if(up.dirty.living_count){
         stream.writeArray(up.living_count,(i,_s)=>{
@@ -58,7 +55,7 @@ function encode_general_update(stream:NetStream,up:GeneralUpdate){
     }
     stream.writeArray(up.planes,(e)=>{
         stream.writeID(e.id)
-        stream.writePosition(e.pos)
+        stream.writePos2(e.pos)
         stream.writeRad(e.direction)
         stream.writeBooleanGroup(e.complete)
         stream.writeUint8(e.type)
@@ -78,8 +75,8 @@ function decode_general_update(stream:NetStream,up:GeneralUpdate){
             state:stream.readUint8(),
             radius:stream.readFloat(0,3000,3),
             new_radius:stream.readFloat(0,3000,3),
-            position:stream.readPosition(),
-            new_position:stream.readPosition()
+            position:stream.readPos2(),
+            new_position:stream.readPos2()
         }
     }
     up.dirty.living_count=living_count
@@ -93,7 +90,7 @@ function decode_general_update(stream:NetStream,up:GeneralUpdate){
     up.planes=stream.readArray(()=>{
         return {
             id:stream.readID(),
-            pos:stream.readPosition(),
+            pos:stream.readPos2(),
             direction:stream.readRad(),
             complete:stream.readBooleanGroup()[0],
             type:stream.readUint8()
@@ -101,11 +98,12 @@ function decode_general_update(stream:NetStream,up:GeneralUpdate){
     },1)
     up.ambient=undefined
     if(ambient){
+        const date=stream.readKDate()
         up.ambient={
-            date:stream.readKDate(),
+            date:date,
+            initial_date:date,
             rain:0,
             thunder_storm:0,
-            time_walked:0,
         }
     }
 }

@@ -1,0 +1,51 @@
+.tab-debug-app {
+    padding: 16px;
+    color: white;
+    .debug-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .debug-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .debug-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .debug-info {
+        margin-top: 12px;
+        font-size: 13px;
+        opacity: 0.8;
+    }
+    .text-input{
+        width: 50%;
+    }
+    .search-section {
+        position: relative;
+    }
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 220px;
+        overflow-y: auto;
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 6px;
+        z-index: 999;
+        display: none;
+    }
+    .search-item {
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .search-item:hover,
+    .search-item.active {
+        background: #1e90ff;
+    }
+}

@@ -1,14 +1,18 @@
-import { Container2D, Sprite2D } from "../engine/mod.ts";
-import { v2 } from "common/scripts/engine/geometry.ts";
+import { ColorM, Container2D, NetStream, NullHitbox2D, Sprite2D, v2 } from "common/engine/client.ts";
+
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { ColorM } from "../engine/renderer.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Badges } from "common/scripts/definitions/loadout/badges.ts";
-import { NetStream } from "common/scripts/engine/stream.ts";
 export class PlayerBody extends GameObject{
-    stringType:string="player_body"
-    numberType: number=8
+    ////////////////////////////
+    // Definition             //
+    ////////////////////////////
+    string_type:string="player_body"
+    number_type: number=8
 
+    ////////////////////////////
+    // Visual                 //
+    ////////////////////////////
     container:Container2D=new Container2D()
     sprite_text:Sprite2D=new Sprite2D()
     sprite_badge:Sprite2D=new Sprite2D()
@@ -16,7 +20,8 @@ export class PlayerBody extends GameObject{
 
     // deno-lint-ignore no-explicit-any
     create(_args: any) {
-        this.game.camera.addObject(this.container)
+        this.base_hitbox=new NullHitbox2D(v2.new(0,0))
+        this.game.cam2d.addObject(this.container)
         this.sprite.frame=this.game.resources.get_sprite("player_body")
         this.updatable=false
     }
@@ -40,7 +45,7 @@ export class PlayerBody extends GameObject{
         this.container.visible=false
     }
     override async decode(stream: NetStream, full: boolean): Promise<void> {
-        const pos=stream.readPosition()
+        const pos=stream.readPos2()
         if(full){
             const name=stream.readStringSized(30)
             const badge=stream.readUint16()

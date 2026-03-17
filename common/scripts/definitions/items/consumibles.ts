@@ -1,12 +1,23 @@
-import { AKeyFrame } from "../../engine/definitions.ts";
-import { v2, Vec2 } from "../../engine/geometry.ts";
-import { Definitions,Definition } from "../../engine/mod.ts"
-import { DeepPartial, mergeDeep } from "../../engine/utils.ts";
+import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, ItemQuality } from "../../others/item.ts";
 import { Boosts, BoostType } from "../player/boosts.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 import { InventoryItemType } from "../utils.ts";
-
+export interface ConsumibleDef extends Definition{
+    side_effects:SideEffect[]
+    quality:ItemQuality
+    use_delay:number
+    condition?:ConsumibleCondition[]
+    assets?:{
+        using_particle?:string
+        using_sound?:string
+        pickup_sound?:string
+    }
+    boost_type?:BoostType
+    drink?:boolean
+    animation?:AKeyFrame[]
+    item_type?:InventoryItemType.consumible
+}
 export enum ConsumibleCondition{
     UnfullHealth,
     UnfullExtra
@@ -64,24 +75,7 @@ export const ConsumiblesAnimations={
         }
     ]
 }satisfies Record<string,()=>AKeyFrame[]>
-export interface ConsumibleDef extends Definition{
-    side_effects:SideEffect[]
-    quality:ItemQuality
-    use_delay:number
-    condition?:ConsumibleCondition[]
-    assets?:{
-        using_particle?:string
-        using_sound?:string
-        pickup_sound?:string
-    }
-    boost_type?:BoostType
-    drink?:boolean
-    animation?:AKeyFrame[]
-    item_type?:InventoryItemType.consumible
-}
-export const Consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
-    i.item_type=InventoryItemType.consumible
-})
+
 export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:number=25,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
         idString:color+"_soda",
@@ -129,161 +123,163 @@ export function CreatePills(color:string,boost_type:BoostType,item:DeepPartial<C
         },
     },item)
 }
-Consumibles.insert(
-    {
-        idString:"bandage",
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                health:{
-                    amount:20,
-                    max:0.75
+export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{}>){
+    consumibles.insert(
+        {
+            idString:"bandage",
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    health:{
+                        amount:20,
+                        max:0.75
+                    }
                 }
+            ],
+            use_delay:3,
+            quality:ItemQuality.Uncommon,
+            condition:[ConsumibleCondition.UnfullHealth],
+            assets:{
+                using_particle:"healing_particle"
             }
-        ],
-        use_delay:3,
-        quality:ItemQuality.Uncommon,
-        condition:[ConsumibleCondition.UnfullHealth],
-        assets:{
-            using_particle:"healing_particle"
-        }
-    },
-    {
-        idString:"medikit",
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                health:{
-                    amount:100,
-                }
-            }
-        ],
-        use_delay:5.5,
-        quality:ItemQuality.Uncommon,
-        condition:[ConsumibleCondition.UnfullHealth]
-    },
-
-    //Adrenaline
-    CreateSoda("yellow",BoostType.Adrenaline),
-    {
-        idString:"inhaler",
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                boost:{
-                    amount:50,
-                    def:Boosts[BoostType.Adrenaline]
-                }
-            }
-        ],
-        use_delay:4.5,
-        quality:ItemQuality.Uncommon,
-        condition:[ConsumibleCondition.UnfullExtra],
-        boost_type:BoostType.Adrenaline
-    },
-    CreatePills("yellow",BoostType.Adrenaline),
-
-    //Shield
-    CreateSoda("blue",BoostType.Shield,0.5),
-    {
-        idString:"blue_potion",
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                boost:{
-                    amount:50,
-                    def:Boosts[BoostType.Shield]
-                }
-            }
-        ],
-        use_delay:4.5,
-        quality:ItemQuality.Rare,
-        condition:[ConsumibleCondition.UnfullExtra],
-        assets:{
-            using_sound:"using_potion"
         },
-        animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2.new(0.5,0.35)),
-        drink:true,
-        boost_type:BoostType.Shield
-    },
-    CreatePills("blue",BoostType.Shield),
-    //Mana
-    CreateSoda("purple",BoostType.Mana),
-    {
-        idString:"purple_potion",
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                boost:{
-                    amount:50,
-                    def:Boosts[BoostType.Mana]
+        {
+            idString:"medikit",
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    health:{
+                        amount:100,
+                    }
                 }
-            }
-        ],
-        use_delay:4.5,
-        quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra],
-        assets:{
-            using_sound:"using_potion"
+            ],
+            use_delay:5.5,
+            quality:ItemQuality.Uncommon,
+            condition:[ConsumibleCondition.UnfullHealth]
         },
-        animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2.new(0.5,0.35)),
-        drink:true,
-        boost_type:BoostType.Mana
-    },
-    CreatePills("purple",BoostType.Mana),
-    //Addiction
-    CreateSoda("red",BoostType.Addiction),
-    {
-        idString:"small_red_crystal",
-        use_delay:1.5,
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                boost:{
-                    amount:25,
-                    max:.5,
-                    def:Boosts[BoostType.Addiction]
+
+        //Adrenaline
+        CreateSoda("yellow",BoostType.Adrenaline),
+        {
+            idString:"inhaler",
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    boost:{
+                        amount:50,
+                        def:Boosts[BoostType.Adrenaline]
+                    }
                 }
-            }
-        ],
-        quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra],
-        animation:ConsumiblesAnimations.drinking("small_red_crystal",1.4),
-        boost_type:BoostType.Addiction
-    },
-    {
-        idString:"red_crystal",
-        use_delay:3,
-        side_effects:[
-            {
-                type:SideEffectType.Heal,
-                boost:{
-                    amount:50,
-                    def:Boosts[BoostType.Addiction]
+            ],
+            use_delay:4.5,
+            quality:ItemQuality.Uncommon,
+            condition:[ConsumibleCondition.UnfullExtra],
+            boost_type:BoostType.Adrenaline
+        },
+        CreatePills("yellow",BoostType.Adrenaline),
+
+        //Shield
+        CreateSoda("blue",BoostType.Shield,0.5),
+        {
+            idString:"blue_potion",
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    boost:{
+                        amount:50,
+                        def:Boosts[BoostType.Shield]
+                    }
                 }
-            }
-        ],
-        quality:ItemQuality.Epic,
-        condition:[ConsumibleCondition.UnfullExtra],
-        animation:ConsumiblesAnimations.drinking("red_crystal",2.9),
-        boost_type:BoostType.Addiction
-    },
-    CreatePills("red",BoostType.Addiction),
-    //Green Bless
-    CreateSoda("green",BoostType.GreenBless),
-    //CreatePills("green",BoostType.GreenBless),
-    //Death
-    CreateSoda("black",BoostType.Death,undefined,100),
-    //Misc
-    {
-        idString:"pocket_portal",
-        use_delay:1.5,
-        side_effects:[
-            {
-                type:SideEffectType.Parachute
-            }
-        ],
-        quality:ItemQuality.Mythic,
-        boost_type:BoostType.Mana
-    },
-)
+            ],
+            use_delay:4.5,
+            quality:ItemQuality.Rare,
+            condition:[ConsumibleCondition.UnfullExtra],
+            assets:{
+                using_sound:"using_potion"
+            },
+            animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2.new(0.5,0.35)),
+            drink:true,
+            boost_type:BoostType.Shield
+        },
+        CreatePills("blue",BoostType.Shield),
+        //Mana
+        CreateSoda("purple",BoostType.Mana),
+        {
+            idString:"purple_potion",
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    boost:{
+                        amount:50,
+                        def:Boosts[BoostType.Mana]
+                    }
+                }
+            ],
+            use_delay:4.5,
+            quality:ItemQuality.Epic,
+            condition:[ConsumibleCondition.UnfullExtra],
+            assets:{
+                using_sound:"using_potion"
+            },
+            animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2.new(0.5,0.35)),
+            drink:true,
+            boost_type:BoostType.Mana
+        },
+        CreatePills("purple",BoostType.Mana),
+        //Addiction
+        CreateSoda("red",BoostType.Addiction),
+        {
+            idString:"small_red_crystal",
+            use_delay:1.5,
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    boost:{
+                        amount:25,
+                        max:.5,
+                        def:Boosts[BoostType.Addiction]
+                    }
+                }
+            ],
+            quality:ItemQuality.Epic,
+            condition:[ConsumibleCondition.UnfullExtra],
+            animation:ConsumiblesAnimations.drinking("small_red_crystal",1.4),
+            boost_type:BoostType.Addiction
+        },
+        {
+            idString:"red_crystal",
+            use_delay:3,
+            side_effects:[
+                {
+                    type:SideEffectType.Heal,
+                    boost:{
+                        amount:50,
+                        def:Boosts[BoostType.Addiction]
+                    }
+                }
+            ],
+            quality:ItemQuality.Epic,
+            condition:[ConsumibleCondition.UnfullExtra],
+            animation:ConsumiblesAnimations.drinking("red_crystal",2.9),
+            boost_type:BoostType.Addiction
+        },
+        CreatePills("red",BoostType.Addiction),
+        //Green Bless
+        CreateSoda("green",BoostType.GreenBless),
+        //CreatePills("green",BoostType.GreenBless),
+        //Death
+        CreateSoda("black",BoostType.Death,undefined,1),
+        //Misc
+        {
+            idString:"pocket_portal",
+            use_delay:1.5,
+            side_effects:[
+                {
+                    type:SideEffectType.Parachute
+                }
+            ],
+            quality:ItemQuality.Mythic,
+            boost_type:BoostType.Mana
+        },
+    )
+}

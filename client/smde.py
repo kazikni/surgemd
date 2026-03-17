@@ -64,16 +64,16 @@ def build_android(mode):
     if mode == "debug":
         shutil.copy(
             ANDROID_DIR / "app/build/outputs/apk/debug/app-debug.apk",
-            out / "suroimd-debug.apk"
+            out / "surgemd-debug.apk"
         )
     else:
         shutil.copy(
             ANDROID_DIR / "app/build/outputs/apk/release/app-release.apk",
-            out / "suroimd-release.apk"
+            out / "surgemd-release.apk"
         )
         shutil.copy(
             ANDROID_DIR / "app/build/outputs/bundle/release/app-release.aab",
-            out / "suroimd-release.aab"
+            out / "surgemd-release.aab"
         )
 
 def build_electron(platform):
@@ -84,7 +84,7 @@ def build_electron(platform):
     resources.mkdir(parents=True, exist_ok=True)
 
     pkg = {
-        "name": "suroimd2",
+        "name": "surgemd",
         "version": "1.0.0",
         "main": "electron/main.js",
         "author": {"name": "kaklik"},

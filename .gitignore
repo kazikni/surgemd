@@ -61,3 +61,5 @@ app/src/main/release
 
 __pycache__
 __pycache__/*
+
+save/

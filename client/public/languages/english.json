@@ -1,8 +1,16 @@
 {
     "values":{
-        "game-name":"Suroimd.io 2",
+        "game-name":"Surgemd.io",
 
         "barrel":"Barrel",
+
+        "scope_1": "Scope 1x",
+        "scope_2": "Scope 2x",
+        "scope_3": "Scope 4x",
+        "scope_4": "Scope 6x",
+        "scope_5": "Scope 8x",
+        "scope_6": "Scope 10x",
+        "scope_7": "Scope 12x",
 
         "bandage":"Bandage",
         "medikit":"Medikit",

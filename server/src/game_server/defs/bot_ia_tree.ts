@@ -1,8 +1,5 @@
-import { ActionDefinition, ActionTreeDef, ConditionNode, DoActionNode, NodeStatus, SelectorNode, SequenceNode } from "common/scripts/engine/AI/behaviour_tree.ts";
-import { Player } from "../gameObjects/player.ts";
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { ActionDefinition, ActionTreeDef, ConditionNode, DoActionNode, NodeStatus, SelectorNode, SequenceNode, v2, Vec2 } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { InputActionType } from "common/scripts/packets/action_packet.ts";
 export interface BotSettings{
     reaction_time:number,
     accuracy:number,

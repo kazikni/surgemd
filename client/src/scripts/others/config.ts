@@ -1,7 +1,4 @@
-import { IPLocation } from "common/scripts/engine/utils.ts"
-import { Casters } from "../engine/console.ts"
-import { GamepadButtonID, Key } from "../engine/mod.ts"
-import { isMobile } from "../engine/game.ts";
+import { Casters, GamepadButtonID, IPLocation, isMobile, Key } from "common/engine/client.ts";
 
 /*
 * LOCAL SERVER
@@ -9,13 +6,14 @@ export const api_server=new IPLocation("localhost",3000,false,false,"api")
 */
 /*
 * GLOBAL SERVER
-export const api_server=new IPLocation("api.suroimd.io",443,true,true,"")
+export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 */
-//export const api_server=new IPLocation("api.suroimd.io",443,true,true,"")
+//export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
+export const sandbox_version=false
 export enum GraphicsDConfig {
     None=0,
     Normal,
@@ -28,57 +26,81 @@ export const Debug={
 }
 
 export const ConfigCasters=Object.freeze({
-    cv_loadout_name:Casters.toString,
-    cv_loadout_skin:Casters.toString,
+    sv_loadout_name:Casters.toString,
+    sv_loadout_skin:Casters.toString,
 
-    cv_graphics_resolution:Casters.generateUnionCaster(["very-low","low","medium","high","very-high"]),
-    cv_graphics_renderer:Casters.generateUnionCaster(["webgl1","webgl2"]),
-    cv_graphics_particles:Casters.toInt,
-    cv_graphics_lights:Casters.toInt,
-    cv_graphics_post_proccess:Casters.toInt,
-    cv_graphics_climate:Casters.toBoolean,
+    sv_graphics_resolution:Casters.generateUnionCaster(["low","medium","high"]),
+    sv_graphics_renderer:Casters.generateUnionCaster(["webgl1","webgl2"]),
+    sv_graphics_particles:Casters.toInt,
+    sv_graphics_lights:Casters.toInt,
+    sv_graphics_post_proccess:Casters.toInt,
+    sv_graphics_climate:Casters.toBoolean,
+    sv_graphics_fullscreen:Casters.toBoolean,
 
+    sv_game_region:Casters.toString,
+    sv_game_friendly_fire:Casters.toBoolean,
+    sv_game_interpolation:Casters.toBoolean,
+    sv_game_client_rot:Casters.toBoolean,
+    sv_game_ping:Casters.toInt,
 
-    cv_game_region:Casters.toString,
-    cv_game_friendly_fire:Casters.toBoolean,
-    cv_game_interpolation:Casters.toBoolean,
-    cv_game_client_rot:Casters.toBoolean,
-    cv_game_ping:Casters.toInt,
+    sv_mobile_auto_pickup:Casters.toBoolean,
 
-    cv_mobile_auto_pickup:Casters.toBoolean,
-
-    cv_sounds_master_volume:Casters.toInt,
+    sv_sounds_master_volume:Casters.toNumber,
+    sv_sounds_music_volume:Casters.toNumber,
+    sv_sounds_ambient_volume:Casters.toNumber,
 })
 export const ConfigDefaultValues={
-    cv_loadout_skin:"default_skin",
-    cv_loadout_name:"",
+    sv_loadout_skin:"default_skin",
+    sv_loadout_name:"",
 
-    cv_graphics_renderer:"webgl2",
-    cv_graphics_resolution:(Debug.force_mobile||isMobile)?"very-low":"high",
-    cv_graphics_particles:GraphicsDConfig.Advanced,
-    cv_graphics_lights:GraphicsDConfig.Advanced,
-    cv_graphics_post_proccess:GraphicsDConfig.Advanced,
-    cv_graphics_climate:true,
+    sv_graphics_renderer:"webgl2",
+    sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"high",
+    sv_graphics_particles:GraphicsDConfig.Advanced,
+    sv_graphics_lights:GraphicsDConfig.Advanced,
+    sv_graphics_post_proccess:GraphicsDConfig.Advanced,
+    sv_graphics_climate:true,
+    sv_graphics_fullscreen:false,
 
-    cv_game_region:"na",
-    cv_game_friendly_fire:true,
-    cv_game_interpolation:true,
-    cv_game_client_rot:true,
-    cv_game_ping:5,
+    sv_game_region:"na",
+    sv_game_friendly_fire:false,
+    sv_game_interpolation:true,
+    sv_game_client_rot:true,
+    sv_game_ping:5,
 
-    cv_mobile_auto_pickup:(Debug.force_mobile||isMobile),
+    sv_mobile_auto_pickup:(Debug.force_mobile||isMobile),
 
-    cv_sounds_master_volume:100,
-    
+    sv_sounds_master_volume:1,
+    sv_sounds_music_volume:1,
+    sv_sounds_ambient_volume:1,
 }
 export const ConfigDefaultActions={
+    "move_up":{
+        buttons:[],
+        keys:[Key.W]    
+    },
+    "move_down":{
+        buttons:[],
+        keys:[Key.S]
+    },
+    "move_left":{
+        buttons:[],
+        keys:[Key.A]
+    },
+    "move_right":{
+        buttons:[],
+        keys:[Key.D]
+    },
     "fire":{
         buttons:[GamepadButtonID.R2],
         keys:[Key.Mouse_Left]
     },
-    "emote_wheel":{
+    "alt_fire":{
         buttons:[GamepadButtonID.L2],
         keys:[Key.Mouse_Right]
+    },
+    "emote_wheel":{
+        buttons:[GamepadButtonID.DPAD_Up],
+        keys:[Key.V]
     },
     "reload":{
         buttons:[GamepadButtonID.X],
@@ -140,13 +162,21 @@ export const ConfigDefaultActions={
         buttons:[],
         keys:[Key.Number_0]
     },
-    "previour_weapon":{
+    "previous_weapon":{
         buttons:[GamepadButtonID.L1],
         keys:[]
     },
     "next_weapon":{
         buttons:[GamepadButtonID.R1],
         keys:[]
+    },
+    "previous_scope":{
+        buttons:[],
+        keys:[Key.Mouse_Wheel_Up]
+    },
+    "next_scope":{
+        buttons:[],
+        keys:[Key.Mouse_Wheel_Down]
     },
     "debug_menu":{
         buttons:[GamepadButtonID.R3],

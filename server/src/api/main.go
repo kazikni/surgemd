@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 
-	api "suroimd.io/module/api"
+	api "surgemd.io/module/api"
 )
 
 func main() {

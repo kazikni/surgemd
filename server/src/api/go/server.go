@@ -1,4 +1,4 @@
-package suroimd_api
+package surgemd_api
 
 import (
 	"crypto/sha256"

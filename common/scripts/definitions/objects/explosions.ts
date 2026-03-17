@@ -1,21 +1,21 @@
-import { Definitions,Definition } from "../../engine/mod.ts"
+import { Definition, Definitions, FrameDef, MinMax1 } from "../../../engine/core.ts";
 import { tracers } from "../../others/item.ts";
 import { BulletDef } from "../utils.ts";
 
 export type ExplosionDef={
     size:{
-        min:number
-        max:number
+        begin:number
+        end:number
     }
     tint:string
     damage:number
     bullet?:{
         def:BulletDef
         count:number
-    }
-    sounds?:{
-        normal:string
-    }
+    },
+    assets:{
+        sound:string
+    },
     projectiles?:{
         def:string
         count:number
@@ -23,108 +23,207 @@ export type ExplosionDef={
         angSpeed:number
         randomAng:number
     }
+    particles?:{
+        count:number
+        frame:FrameDef
+        speed:MinMax1
+        lifetime:MinMax1
+    }[]
 }&Definition
-export const Explosions=new Definitions<ExplosionDef,null>((_v)=>{})
-Explosions.insert(
-    {
-        idString:"barrel_explosion",
-        tint:"#445",
-        size:{
-            min:2,
-            max:2.5
-        },
-        damage:100,
-        bullet:{
-            def:{
-                damage:7,
-                radius:0.02,
-                speed:20,
-                range:25,
-                tracer:tracers.black_projectile
+
+export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
+    explosions.insert(
+        {
+            idString:"barrel_explosion",
+            tint:"#445",
+            size:{
+                begin:2,
+                end:3
             },
-            count:6
-        }
-    },
-    {
-        idString:"rocket_explosion",
-        tint:"#445",
-        size:{
-            min:1,
-            max:2
-        },
-        sounds:{
-            normal:"explosion_1"
-        },
-        damage:90,
-    },
-    {
-        idString:"frag_grenade_explosion",
-        tint:"#355",
-        size:{
-            min:1.5,
-            max:2
-        },
-        damage:99,
-        bullet:{
-            def:{
-                damage:7,
-                radius:0.0125,
-                speed:18,
-                range:8,
-                tracer:tracers.medium
+            damage:99,
+            bullet:{
+                def:{
+                    damage:7,
+                    radius:0.02,
+                    speed:20,
+                    range:25,
+                    tracer:tracers.black_projectile
+                },
+                count:6
             },
-            count:5
-        },
-        sounds:{
-            normal:"explosion_1"
-        },
-    },
-    {
-        idString:"mirv_grenade_explosion",
-        tint:"#09e",
-        size:{
-            min:1.6,
-            max:2.2
-        },
-        damage:110,
-        bullet:{
-            def:{
-                damage:7,
-                radius:0.0125,
-                speed:18,
-                range:8,
-                tracer:tracers.mirv
+            assets:{
+                sound:"explosion_1"
             },
-            count:5
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
         },
-        projectiles:{
-            count:6,
-            def:"submirv_grenade",
-            speed:1,
-            angSpeed:9,
-            randomAng:1
-        },
-        sounds:{
-            normal:"explosion_1"
-        },
-    },
-    {
-        idString:"submirv_grenade_explosion",
-        tint:"#09e",
-        size:{
-            min:0.1,
-            max:0.2
-        },
-        damage:35,
-        bullet:{
-            def:{
-                damage:7,
-                radius:0.0125,
-                speed:18,
-                range:8,
-                tracer:tracers.mirv
+        {
+            idString:"rocket_explosion",
+            tint:"#445",
+            size:{
+                begin:1,
+                end:2
             },
-            count:5
+            damage:90,
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
         },
-    },
-)
+        {
+            idString:"frag_grenade_explosion",
+            tint:"#355",
+            size:{
+                begin:1.5,
+                end:2
+            },
+            damage:99,
+            bullet:{
+                def:{
+                    damage:7,
+                    radius:0.0125,
+                    speed:18,
+                    range:8,
+                    tracer:tracers.medium
+                },
+                count:5
+            },
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
+        },
+        {
+            idString:"mirv_grenade_explosion",
+            tint:"#09e",
+            size:{
+                begin:1.6,
+                end:2.2
+            },
+            damage:110,
+            bullet:{
+                def:{
+                    damage:7,
+                    radius:0.0125,
+                    speed:18,
+                    range:8,
+                    tracer:tracers.mirv
+                },
+                count:5
+            },
+            projectiles:{
+                count:6,
+                def:"submirv_grenade",
+                speed:2,
+                angSpeed:15,
+                randomAng:1
+            },
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
+        },
+        {
+            idString:"submirv_grenade_explosion",
+            tint:"#09e",
+            size:{
+                begin:0.1,
+                end:0.2
+            },
+            damage:35,
+            bullet:{
+                def:{
+                    damage:7,
+                    radius:0.0125,
+                    speed:18,
+                    range:8,
+                    tracer:tracers.mirv
+                },
+                count:5
+            },
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:3,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
+        },
+    )
+}

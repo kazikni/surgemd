@@ -1,16 +1,10 @@
-import { type Camera2D, ColorM, Container2D, type Renderer, Sprite2D } from "../engine/mod.ts";
-import { Materials, ObstacleBehaviorDoor, ObstacleDef, ObstacleDoorStatus, Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
-import { random } from "common/scripts/engine/random.ts";
-import { NetStream, ParticlesEmitter2D, RectHitbox2D, Vec2 } from "common/scripts/engine/mod.ts";
-import { Sound } from "../engine/resources.ts";
-import { Orientation, v2 } from "common/scripts/engine/geometry.ts";
+import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, NetStream, Orientation, ParticlesEmitter2D, random, RectHitbox2D, Sound, Sprite2D, v2, Vec2 } from "common/engine/client.ts";
+
+import { Materials, ObstacleDef, ObstacleDoorStatus, Obstacles } from "common/scripts/definitions/objects/obstacles.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
-import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { model2d } from "common/scripts/engine/models.ts";
-import { ABParticle2D, ClientParticle2D } from "../engine/particles.ts";
-import { Color } from "../engine/renderer.ts";
 import { type Player } from "./player.ts";
+import { GraphicsDConfig } from "../others/config.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=(def.frame&&def.frame.base)?def.frame.base:def.idString
     if(skin>0&&def.biome_skins){
@@ -22,49 +16,71 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:numbe
     return spr
 }
 export class Obstacle extends GameObject{
-    stringType:string="obstacle"
-    numberType: number=4
+    ////////////////////////////
+    // Definition             //
+    ////////////////////////////
+    string_type:string="obstacle"
+    number_type: number=4
     name:string=""
     def!:ObstacleDef
 
+    ////////////////////////////
+    // Visual                 //
+    ////////////////////////////
     container:Container2D=new Container2D()
-    m_position:Vec2=v2.new(0,0)
+    sprite=new Sprite2D()
+
+    ////////////////////////////
+    // State                  //
+    ////////////////////////////
     rotation:number=0
     side:Orientation=0
-    sprite=new Sprite2D
     variation=0
     skin=0
     health=1
-
     dead:boolean=true
+    interacted:boolean=false
 
+    ////////////////////////////
+    // Assets                 //
+    ////////////////////////////
     frame={
         particle:"",
         dead:"",
         base:""
     }
+    sounds?:{
+        break?:Sound
+        hit?:Sound[]
+    }
 
-    interacted:boolean=false
+    ////////////////////////////
+    // Particles              //
+    ////////////////////////////
+    emitter_1?:ParticlesEmitter2D<ClientParticle2D>
+    particle_tint?:Color
 
     door_status?:ObstacleDoorStatus
 
     doors_hitboxes?:Record<-1|0|1,RectHitbox2D>
 
-    emitter_1?:ParticlesEmitter2D<ClientParticle2D>
+
+    constructor(){
+        super()
+        this.container.visible=false
+        this.container.add_child(this.sprite)
+        this.sprite.hotspot=v2.new(.5,.5)
+    }
     // deno-lint-ignore no-explicit-any
     create(_args: Record<string,any>): void {
-        this.game.camera.addObject(this.container)
+        this.game.cam2d.addObject(this.container)
         this.updatable=false
-    }
-
-    sounds?:{
-        break?:Sound
-        hit?:Sound[]
     }
     override on_destroy(): void {
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
     }
+
     update_frame(){
         if(this.def.frame_transform)this.sprite.transform_frame(this.def.frame_transform)
         if(this.dead){
@@ -74,7 +90,6 @@ export class Obstacle extends GameObject{
         }else{
             this.sprite.frame=this.game.resources.get_sprite(this.frame.base)
             this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
-            //if(this.be)
         }
         this.container.visible=true
     }
@@ -84,19 +99,15 @@ export class Obstacle extends GameObject{
         this.update_frame()
         const ac=random.int(8,13)
         if(this.emitter_1)this.emitter_1.enabled=false
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal){
+        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
-                this._add_own_particle(this.hb.randomPoint(),2)
+                this._add_own_particle(this.hitbox.randomPoint(),2)
             }
         }
         if(this.sounds&&this.sounds.break){
-            this.game.sounds.play(this.sounds.break,{
-                position:this.position,
-                max_distance:30
-            })
+            this.play_sound(this.sounds.break)
         }
     }
-    particle_tint?:Color
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         const p=new ABParticle2D({
             frame:{
@@ -120,20 +131,13 @@ export class Obstacle extends GameObject{
     update(_dt:number): void {
         
     }
-    on_hitted(position:Vec2){
-        if(this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
+    on_hitted(position:Vec2,light:boolean=false){
+        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
         if(this.sounds&&this.sounds.hit&&this.sounds.hit.length>0){
-            this.game.sounds.play(this.sounds.hit[random.int(0,this.sounds.hit.length)],{
-                volume:1,
-                position:this.position,
-                max_distance:40,
-            },"obstacles")
+            this.play_sound(this.sounds.hit[random.int(0,this.sounds.hit.length)])
         }
     }
-    override render(camera: Camera2D, renderer: Renderer, _dt: number): void {
-        
-    }
-    update_door(door_status:ObstacleDoorStatus){
+    /*update_door(door_status:ObstacleDoorStatus){
         this.door_status=door_status
         if(this.is_new){
             if(door_status.open===0){
@@ -152,14 +156,14 @@ export class Obstacle extends GameObject{
                         duration:(this.def.expanded_behavior as ObstacleBehaviorDoor).open_duration,
                         to:{rotation:this.rotation+(3.141592/2)},
                     })
-                    this.hb=this.doors_hitboxes![1].transform(this.container.position,this.scale)
+                    this.hitbox=this.doors_hitboxes![1].transform(this.container.position,this.scale)
                 }else if(door_status.open===0){
                     this.game.addTween({
                         target:this.container,
                         duration:(this.def.expanded_behavior as ObstacleBehaviorDoor).open_duration,
                         to:{rotation:this.rotation},
                     })
-                    this.hb=this.doors_hitboxes![0].transform(this.container.position,this.scale)
+                    this.hitbox=this.doors_hitboxes![0].transform(this.container.position,this.scale)
                 }
                 
             }
@@ -169,15 +173,11 @@ export class Obstacle extends GameObject{
                 f()
             }
         }
-    }
-    constructor(){
-        super()
-        this.container.visible=false
-        this.container.add_child(this.sprite)
-        this.sprite.hotspot=v2.new(.5,.5)
-    }
+    }*/
     set_definition(def:ObstacleDef){
         if(this.def)return
+        if(def.hitbox)this.base_hitbox=def.hitbox.clone()
+
         this.def=def
         if(this.def.sounds){
             this.sounds={
@@ -213,7 +213,7 @@ export class Obstacle extends GameObject{
             if(this.def.particles.tint)this.particle_tint=ColorM.number(this.def.particles.tint)
         }
 
-        if(this.def.onDestroyExplosion&&this.game.save.get_variable("cv_graphics_particles")>=GraphicsDConfig.Advanced){
+        if(this.def.onDestroyExplosion&&this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(!this.emitter_1){
                 this.emitter_1=this.game.particles.add_emiter({
                     delay:0.5,
@@ -248,11 +248,11 @@ export class Obstacle extends GameObject{
                 if(this.interacted)return
                 this.interacted=true
                 this.game.sounds.play(this.game.resources.get_audio(this.def.expanded_behavior.click_sound),{
-                    position:this.m_position,
+                    position:this.position,
                 })
-                this.game.addTimeout(()=>{
+                this.game.add_timeout(()=>{
                     this.game.sounds.play(this.game.resources.get_audio("menu_music"),{
-                        position:this.m_position,
+                        position:this.position,
                     })
                 },this.def.expanded_behavior.delay)
             }
@@ -268,12 +268,19 @@ export class Obstacle extends GameObject{
         )
     }
     override can_interact(player: Player): boolean {
-        return !this.dead&&this.hb.collidingWith(player.hb)&&this.def.interactDestroy===true
+        return !this.dead&&this.hitbox.collidingWith(player.hitbox)&&this.def.interactDestroy===true
     }
     override auto_interact(player: Player): boolean {
         return (this.def.interactDestroy===true)
     }
     scale=0
+    play_sound(sound:Sound){
+        this.game.sounds.play(sound,{
+            position:this.position,
+            max_distance:50,
+            rolloffFactor:0.5
+        },"obstacles")
+    }
     override decode(stream: NetStream, full: boolean): void {
         const [dead,door]=stream.readBooleanGroup()
         this.scale=stream.readFloat(0,3,3)
@@ -291,9 +298,10 @@ export class Obstacle extends GameObject{
             this.container.rotation=this.rotation
             this.side=stream.readUint8() as Orientation
             this.variation=stream.readUint8()
-            this.m_position=stream.readPosition()
+            const position=stream.readPos2()
             this.skin=stream.readUint8()
             this.set_definition(Obstacles.getFromNumber(stream.readUint16()))
+            this.position=position
         }
         if(dead){
             if(this.emitter_1)this.emitter_1.enabled=false
@@ -305,14 +313,13 @@ export class Obstacle extends GameObject{
                 this.emitter_1.enabled=true
             }
             if(door){
-                this.update_door(this.door_status!)
+                //this.update_door(this.door_status!)
             }
         }
         if(!this.container.visible){
             this.update_frame()
         }
         if(this.def.hitbox){
-            this.hb=this.def.hitbox.transform(this.m_position,this.scale,0)
             this.container.position=this.position
             this.manager.cells.updateObject(this)
         }

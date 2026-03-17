@@ -1,13 +1,17 @@
-import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { Player } from "../gameObjects/player.ts";
-import { Vec2 } from "common/scripts/engine/geometry.ts";
-import { DamageSourceDef } from "common/scripts/definitions/alldefs.ts";
+import { type DamageReason } from "common/scripts/definitions/utils.ts";
+import { Vec2 } from "common/engine/core.ts";
+import { type Human } from "../objects/human.ts";
+import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 
 export interface DamageParams{
     amount:number
-    owner?:Player
-    reason:DamageReason
-    position:Vec2
+    resistence?:number
     critical:boolean
+
+    owner?:Human
     source?:DamageSourceDef
+
+    reason:DamageReason
+
+    position:Vec2
 }

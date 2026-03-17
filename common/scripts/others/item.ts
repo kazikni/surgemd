@@ -1,4 +1,4 @@
-import { v2, Vec2 } from "../engine/geometry.ts";
+import { v2, Vec2 } from "../../engine/core.ts";
 
 export enum ItemQuality{
     Common,
@@ -27,6 +27,7 @@ export interface WeaponAssets{
     world?:string
     world_tint?:number
     cycle_sound?:string|boolean
+    use_sound?:string
 }
 export interface WeaponRig{
     position:Vec2
@@ -136,8 +137,8 @@ export const tracers={
         }
     },
     mirv:{
-        height:3,// 0.4h = 0.01 radius
-        width:1,
+        height:1.3,// 0.4h = 0.01 radius
+        width:2,
         color:0x0044aa,
         proj:{
             img:0,

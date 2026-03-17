@@ -1,454 +1,649 @@
-import { ClientGame2D, ResourcesManager, Renderer, ColorM, InputManager} from "../engine/mod.ts"
-import { LayersL, zIndexes } from "common/scripts/others/constants.ts";
-import { Client, DefaultSignals, Numeric, Vec2, model2d, v2, v2m } from "common/scripts/engine/mod.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { Player } from "../gameObjects/player.ts";
-import { Loot } from "../gameObjects/loot.ts";
-import { Bullet } from "../gameObjects/bullet.ts";
-import { Obstacle } from "../gameObjects/obstacle.ts";
-import { GuiManager } from "../managers/guiManager.ts";
-import { Explosion } from "../gameObjects/explosion.ts";
-import { SoundManager } from "../engine/sounds.ts";
-import { Projectile } from "../gameObjects/projectile.ts";
-import { DamageSplashOBJ } from "../gameObjects/damageSplash.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
-import { Debug } from "./config.ts";
-import { type DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
-import { PlayerBody } from "../gameObjects/player_body.ts";
-import { Decal } from "../gameObjects/decal.ts";
-import {  KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
-import { JoinedPacket } from "common/scripts/packets/joined_packet.ts";
-import { GameConsole } from "../engine/console.ts";
-import { TerrainM } from "../gameObjects/terrain.ts";
-import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Graphics2D, Lights2D, Sprite2D } from "../engine/container_2d.ts";
-import { Vehicle } from "../gameObjects/vehicle.ts";
-import { Skins } from "common/scripts/definitions/loadout/skins.ts";
-import { ActionEvent, AxisActionEvent, GamepadManagerEvent, Key, MouseEvents } from "../engine/keys.ts";
-import { Creature } from "../gameObjects/creature.ts";
-import { Material, WebglRenderer } from "../engine/renderer.ts";
-import { Plane } from "./planes.ts";
-import { isMobile } from "../engine/game.ts";
+import { UiManager } from "../managers/uiManager.ts";
+import { TerrainM } from "../objects/terrain.ts";
+import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
-import { CenterHotspot, ToggleElement } from "../engine/utils.ts";
-import { type MenuManager } from "../managers/menuManager.ts";
-import { ActionPacket, InputActionType } from "common/scripts/packets/action_packet.ts";
-import { TabManager } from "../managers/tabManager.ts";
-import { Camera3D } from "../engine/container_3d.ts";
-import { TranslationManager } from "common/scripts/engine/definitions.ts";
-import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
-import { Building } from "../gameObjects/building.ts";
-import { MessageTabApp } from "../apps/message.ts";
-import { TeamManager } from "../managers/teamManager.ts";
+import { TabManager } from "../managers/tabManager.ts";
+import { Human } from "../objects/human.ts";
 import { InventoryManager } from "../managers/inventoryManager.ts";
-export const gridSize=5
-export class Game extends ClientGame2D<GameObject>{
-  client?:Client
-  activePlayerId=0
-  activePlayer?:Player
+import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { PacketManager } from "common/scripts/packets/packet_manager.ts";
+import { MapPacket } from "common/scripts/packets/map_packet.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
+import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { Loot } from "../objects/loot.ts";
+import { Obstacle } from "../objects/obstacle.ts";
+import { Bullet } from "../objects/bullet.ts";
+import { Explosion } from "../objects/explosion.ts";
+import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
+import { Grenade } from "../objects/grenade.ts";
+import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
+import { MessageTabApp } from "../apps/message.ts";
+import { DebugTabApp } from "../apps/debug.ts";
+import { ShopTabApp } from "../apps/shop.ts";
+import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { LevelDefinition } from "common/scripts/config/level_definition.ts";
+import { Building } from "../objects/building.ts";
+import { DamageSplashOBJ } from "../objects/damageSplash.ts";
+import { Vehicle } from "../objects/vehicle.ts";
+import { MinimapManager } from "../managers/miniMapManager.ts";
+import { MapTabApp } from "../apps/map.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
+import { LocalGameServer } from "./offline_game.ts";
+import { is_binary } from "../defs/go_files.ts";
+export class Game extends ClientGame<GameObject>{
+    client?:Client
+    input:InputPacket=new InputPacket()
 
-  action:ActionPacket=new ActionPacket()
-  guiManager!:GuiManager
-  inventoryManager:InventoryManager
-  menuManager!:MenuManager
+    level?:LevelDefinition
+    offline:boolean=false
+    can_act:boolean=true
+    get play_sounds():boolean{
+        return this.menu.content.gameover_text_screen.style.opacity=="0"
+    }
+    game_over:boolean=false
 
-  can_act:boolean=true
+    local_server:LocalGameServer
 
-  gameOver:boolean=false
+    cursors={
+        default:"url('/img/menu/icons/mouse.svg') 0 0, default",
+        pointer:"url('/img/menu/icons/pointer.svg') 21 21, pointer"
+    }
 
-  terrain:TerrainM=new TerrainM(this)
-  
-  terrain_gfx=new Graphics2D()
-  grid_gfx=new Graphics2D()
-  scope_zoom:number=0.53
+    terrain:TerrainM=new TerrainM(this)
 
-  //0.14=l6 32x
-  //0.27=l5 16x
-  //0.35=l4 8x
-  //0.53=l3 4x
-  //0.63=l2 2x
-  //0.73=l1 1x
-  //1=l-1 0.5x
-  //1.5=l-2 0.25x
-  //1.75=l-3 0.1x
-  //2=l-4 0.05x
-  flying_position:number=0
-  happening:boolean=false
+    scope_zoom:number=0.5
+    dest_zoom:number=1
 
-  cursors={
-    default:"url('/img/menu/icons/mouse.svg') 0 0, default",
-    pointer:"url('/img/menu/icons/pointer.svg') 21 21, pointer"
-  }
+    ui:UiManager
+    menu:MenuManager
+    inventory:InventoryManager
+    dead_zone:DeadZoneManager
+    ambient:AmbientManager
+    tab:TabManager
+    minimap:MinimapManager
 
-  light_map=new Lights2D()
+    active_entity?:Human
+    active_entity_id?:number
 
-  //minimap:MinimapManager=new MinimapManager(this)
+    global_interpolation:number=1
 
-  dead_zone:DeadZoneManager=new DeadZoneManager(this)
-  ambient:AmbientManager
+    terrain_gfx=new Graphics2D()
+    grid_gfx=new Graphics2D()
 
-  language:TranslationManager
+    loaded=false
+    loaded_textures:string[]=[]
 
-  tab:TabManager=new TabManager(this)
+    definitions!:GameDefinition
 
-  fake_crosshair=new Sprite2D()
+    world_shadow: {
+        color: Color,
+        radius: number,
+        offset:Vec2
+    }
 
-  fps:number=60
-  frame_calc:number=0
+    constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
+        super(
+            new WebglRenderer(canvas),
+            translation,
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle/*,StaticBody,Obstacle,Loot*/],
+        )
 
-  offline:boolean=false
+        this.local_server=new LocalGameServer(this)
 
-  living_count:number[]=[2]
+        this.definitions=definitions
+        this.renderer.background=ColorM.rgba(10,10,10)
 
-  cam3:Camera3D
-
-  team:TeamManager=new TeamManager(this)
-
-  listners_init(){
-    this.input_manager.add_axis("movement",
-      {
-        keys:[Key.W],
-        buttons:[]
-      },
-      {
-        keys:[Key.S],
-        buttons:[]
-      },
-      {
-        keys:[Key.A],
-        buttons:[]
-      },
-      {
-        keys:[Key.D],
-        buttons:[]
-      }
-    )
-    this.input_manager.on("axis",(a:AxisActionEvent)=>{
-      if(a.action==="movement"){
-        this.action.movement=a.value
-      }
-    })
-    this.input_manager.on("actiondown",(a:ActionEvent)=>{
-      if(!this.can_act)return
-      switch(a.action){
-        case "fire":
-          this.action.use_weapon=true
-          break
-        case "emote_wheel":
-          this.guiManager.begin_emote_wheel(this.input_manager.mouse.position)
-          break
-        case "reload":
-          this.action.reload=true
-          break
-        case "interact":
-          this.interact()
-          break
-        case "swamp_guns":
-          this.action.swamp_guns=true
-          break
-        case "weapon1":
-          this.action.actions.push({type:InputActionType.set_hand,hand:0})
-          break
-        case "weapon2":
-          this.action.actions.push({type:InputActionType.set_hand,hand:1})
-          break
-        case "weapon3":
-          this.action.actions.push({type:InputActionType.set_hand,hand:2})
-          break
-        case "full_tab":
-          this.tab.toggle_tab_full()
-          break
-        case "hide_tab":
-          this.tab.toggle_tab_visibility()
-          break
-        case "use_item1":
-          this.action.actions.push({type:InputActionType.use_item,slot:0})
-          break
-        case "use_item2":
-          this.action.actions.push({type:InputActionType.use_item,slot:1})
-          break
-        case "use_item3":
-          this.action.actions.push({type:InputActionType.use_item,slot:2})
-          break
-        case "use_item4":
-          this.action.actions.push({type:InputActionType.use_item,slot:3})
-          break
-        case "use_item5":
-          this.action.actions.push({type:InputActionType.use_item,slot:4})
-          break
-        case "use_item6":
-          this.action.actions.push({type:InputActionType.use_item,slot:5})
-          break
-        case "use_item7":
-          this.action.actions.push({type:InputActionType.use_item,slot:6})
-          break
-        case "previour_weapon":
-          this.action.actions.push({type:InputActionType.set_hand,hand:this.inventoryManager.current_weapon-1})
-          break
-        case "next_weapon":
-          this.action.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventoryManager.current_weapon+1,-1,3)})
-          break
-        case "debug_menu":
-          if((!this.menuManager.api_settings.debug.debug_menu)&&!this.offline)break
-          ToggleElement(this.guiManager.content.debug_menu)
-          break
-      }
-    })
-    this.input_manager.on("actionup",(a:ActionEvent)=>{
-      switch(a.action){
-        case "fire":
-          this.action.use_weapon=false
-          break
-        case "emote_wheel":
-          this.guiManager.end_emote_wheel()
-          break
-      }
-    })
-    this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
-      if(!isMobile){
-        this.fake_crosshair.visible=false
-        this.action.aim_speed=Math.min(Math.abs(v2.length(this.input_manager.mouse.mouse_speed))*4,1)
-        this.set_lookTo_angle(v2.lookTo(v2.new(this.camera.width/2,this.camera.height/2),v2.dscale(this.input_manager.mouse.position,this.camera.zoom)))
-      }
-    })
-    
-    this.input_manager.gamepad.listener.on(GamepadManagerEvent.analogicmove,(e: { stick: string; axis: Vec2; })=>{
-      if(e.stick==="left"){
-        this.action.movement=e.axis
-      }else if(e.stick==="right"){
-        this.set_lookTo_angle(Math.atan2(e.axis.y,e.axis.x),true)
-        this.fake_crosshair.visible=true
-      }
-    })
-  }
-  set_lookTo_angle(angle:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
-    if(!this.activePlayer)return
-    if(aim_assist){
-      for(const o of this.scene.objects.objects[this.activePlayer.layer].orden){
-        const obj=this.scene.objects.objects[this.activePlayer.layer].objects[o]
-        if(obj.id===this.activePlayerId||obj.stringType!=="player")continue
-        const ang=v2.lookTo(this.activePlayer.position,obj.position)
-        if(Math.abs(angle-ang)<=aim_assist_help){
-          angle=ang
-          break
+        this.sounds.volumes={
+            "music":1,
+            "players":1,
+            "loot":1,
+            "obstacles":1,
+            "explosions":1,
+            "ambience":1,
+            "ui":1
         }
-      }
-    }
-    this.action.angle=angle
-    if(this.save.get_variable("cv_game_client_rot")&&!this.activePlayer.driving&&this.running&&!this.gameOver){
-      (this.activePlayer as Player).rotation=this.action.angle
-    }
-  }
-  constructor(input_manager:InputManager,menu:MenuManager,sounds:SoundManager,consol:GameConsole,resources:ResourcesManager,translation:TranslationManager,renderer:Renderer,objects:Array<new ()=>GameObject>=[]){
-    super(input_manager,consol,resources,sounds,renderer,[...objects,Player,Loot,Bullet,Obstacle,Explosion,Projectile,DamageSplashOBJ,Decal,PlayerBody,Vehicle,Creature,Building])
-    for(const i of LayersL){
-      this.scene.objects.add_layer(i)
-    }
-    this.language=translation
-    this.renderer.background=ColorM.hex("#000")
-    this.menuManager=menu
+        this.save.casters=ConfigCasters
+        this.save.default_values=ConfigDefaultValues
+        this.save.default_actions=ConfigDefaultActions
 
-    this.cam3=new Camera3D(this.renderer)
+        this.ui=new UiManager(this)
+        this.menu=menu
 
-    document.body.style.cursor=this.cursors.default
-    this.terrain_gfx.zIndex=zIndexes.Terrain
-    this.camera.addObject(this.terrain_gfx)
-    this.camera.addObject(this.grid_gfx)
-    this.camera.addObject(this.light_map)
-    this.camera.addObject(this.fake_crosshair)
+        this.inventory=new InventoryManager(this)
+        this.dead_zone=new DeadZoneManager(this)
+        this.ambient=new AmbientManager(this)
+        this.tab=new TabManager(this)
+        this.minimap=new MinimapManager(this)
 
-    this.fake_crosshair.zIndex=zIndexes.DamageSplashs
-    this.fake_crosshair.hotspot=CenterHotspot
+        this.cam2d.addObject(this.terrain_gfx)
+        this.cam2d.addObject(this.grid_gfx)
 
-    this.light_map.zIndex=zIndexes.Lights
-    this.grid_gfx.zIndex=zIndexes.Grid
-    this.dead_zone.append()
+        this.dead_zone.append()
 
-    setInterval(()=>{
-      this.fps=this.frame_calc
-      this.frame_calc=0
-    },1000)
+        this.terrain_gfx.zIndex=zIndexes.Terrain
+        this.grid_gfx.zIndex=zIndexes.Grid
 
-    this.ambient=new AmbientManager(this)
-    this.hitbox_view=Debug.hitbox
+        this.world_shadow={
+            color:ColorM.rgba(0,0,0,50),
+            radius:1,
+            offset:v2(0.1,0.1)
+        }
 
-    this.tab.add_app(new MessageTabApp(this.tab))
-    this.inventoryManager=new InventoryManager(this)
+        this.tab.add_app(new MessageTabApp(this.tab))
+        this.tab.add_app(new MapTabApp(this.tab))
 
-    this.camera.after_draw.push(this.light_map.dd.bind(this.light_map))
-  }
-  add_damageSplash(d:DamageSplash){
-    this.scene.objects.add_object(new DamageSplashOBJ(),7,undefined,d)
-  }
-  override on_stop(): void {
-    super.on_stop()
-    if(!this.gameOver){
-      if(this.onstop)this.onstop(this)
+        this.ui.shop_app=new ShopTabApp(this.tab)
+        this.tab.add_app(this.ui.shop_app)
     }
-  }
-  onstop?:(g:Game)=>void
-  clear(){
-    this.scene.reset()
-    for(const p of this.planes.values()){
-      p.free()
+    add_damage_splash(d:DamageSplash){
+        const dd=new DamageSplashOBJ()
+        this.scene_2d.objects.add_object(dd,d.taker_layer,undefined,d)
     }
-    this.planes.clear()
-  }
-  override on_render(_dt:number):void{
-    this.cam3.update(this.dt,this.resources)
-    this.light_map.render(this.renderer as WebglRenderer,this.camera)
-    //this.minimap.draw()
-  }
-  override on_run(): void {
-  }
-  interact(){
-    if(this.action.interact)return
-    this.action.interact=true
-    this.guiManager.update_active_player(this.activePlayer)
-    if(this.activePlayer&&this.guiManager.current_interaction){
-      this.guiManager.current_interaction.interact(this.activePlayer)
-    }
-  }
-  override on_update(dt:number): void {
-    super.on_update(dt)
-    this.dead_zone.tick(dt)
-    if(this.client&&this.client.opened&&this.can_act){
-      this.client.emit(this.action)
-      this.action.actions.length=0
-      this.action.interact=false
-      this.action.reload=false
-      this.action.swamp_guns=false
-    }
-    for(const p of this.planes.values()){
-      p.update(dt)
-    }
-    this.renderer.fullCanvas()
-    this.camera.zoom=(this.scope_zoom*Numeric.clamp(1-(0.5*this.flying_position),0.5,1))
+    override listeners_init(): void {
+        this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right")
+        this.input_manager.on("axis",(a:AxisActionEvent)=>{
+            if(a.action==="movement"){
+                if(a.value.x==0&&a.value.y==0){
+                    this.input.movement={dir:0,scale:0}
+                }else{
+                    this.input.movement={dir:Math.atan2(a.value.y,a.value.x),scale:1}
+                }
+            }
+        })
+        this.input_manager.on("actiondown",(a:ActionEvent)=>{
+            if(!this.can_act)return
+            switch(a.action){
+                case "fire":
+                    this.input.use_weapon=true
+                    break
+                case "alt_fire":
+                    this.input.alt_use_weapon=true
+                    break
+                case "emote_wheel":
+                    this.ui.begin_emote_wheel(this.input_manager.mouse.position)
+                    break
+                case "reload":
+                    this.input.reload=true
+                    break
+                case "interact":
+                    this.interact()
+                    break
+                case "swamp_guns":
+                    this.input.swamp_guns=true
+                    break
+                case "weapon1":
+                    this.input.actions.push({type:InputActionType.set_hand,hand:0})
+                    break
+                case "weapon2":
+                    this.input.actions.push({type:InputActionType.set_hand,hand:1})
+                    break
+                case "weapon3":
+                    this.input.actions.push({type:InputActionType.set_hand,hand:2})
+                    break
+                case "full_tab":
+                    this.tab.toggle_tab_full()
+                    break
+                case "hide_tab":
+                    this.tab.toggle_tab_visibility()
+                    break
+                case "use_item1":
+                    this.input.actions.push({type:InputActionType.use_item,slot:0})
+                    break
+                case "use_item2":
+                    this.input.actions.push({type:InputActionType.use_item,slot:1})
+                    break
+                case "use_item3":
+                    this.input.actions.push({type:InputActionType.use_item,slot:2})
+                    break
+                case "use_item4":
+                    this.input.actions.push({type:InputActionType.use_item,slot:3})
+                    break
+                case "use_item5":
+                    this.input.actions.push({type:InputActionType.use_item,slot:4})
+                    break
+                case "use_item6":
+                    this.input.actions.push({type:InputActionType.use_item,slot:5})
+                    break
+                case "use_item7":
+                    this.input.actions.push({type:InputActionType.use_item,slot:6})
+                    break
+                case "previous_weapon":
+                    this.input.actions.push({type:InputActionType.set_hand,hand:this.inventory.current_weapon-1})
+                    break
+                case "next_weapon":
+                    this.input.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventory.current_weapon+1,-1,3)})
+                    break
+                case "previous_scope":{
+                    const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
+                    const it=this.inventory.inventory.iitems[oidx-1]
 
-    this.ambient.update(dt)
+                    if(!it)break
 
-    //FPS Show
-    this.frame_calc++
-  }
-  update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
-    this.grid_gfx.position=v2.new(0,0)
-    grid_gfx.clear()
-    const begin=v2.new(camera_size.x/2,camera_size.y/2)
-    v2m.sub(begin,camera_position,begin)
-    v2m.dscale(begin,begin,gridSize)
-    v2m.floor(begin)
-    v2m.sub_component(begin,1,1)
+                    this.input.actions.push({
+                        type:InputActionType.set_scope,
+                        scope_id:it.idNumber!
+                    })
+                    break
+                }
+                case "next_scope":{
+                    const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
+                    const it=this.inventory.inventory.iitems[oidx+1]
+                    if(!it)break
+                    this.input.actions.push({
+                        type:InputActionType.set_scope,
+                        scope_id:it.idNumber!
+                    })
+                    break
+                }
+                case "debug_menu":
+                    //if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
+                    if(!this.tab.apps.some((a)=>a instanceof DebugTabApp)){
+                        this.tab.add_app(new DebugTabApp(this.tab))
+                    }
+                    break
+            }
+        })
+        this.input_manager.on("actionup",(a:ActionEvent)=>{
+            switch(a.action){
+                case "fire":
+                    this.input.use_weapon=false
+                    break
+                case "alt_fire":
+                    this.input.alt_use_weapon=false
+                    break
+                case "emote_wheel":
+                    this.ui.end_emote_wheel()
+                    break
+            }
+        })
+        this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
+            if(isMobile){
+            }else{
+                const cam_c=v2.new(this.cam2d.width/2,this.cam2d.height/2)
+                const mouse_p=v2.dscale(this.input_manager.mouse.position,this.cam2d.zoom)
+                const angle=v2.lookTo(cam_c,mouse_p)
+                const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
+                this.set_lookTo_angle(angle,dist)
+            }
+        })
+        
+        this.ui_manager.init()
+    }
+    override async bind(fs?:FileManager): Promise<void> {
+        super.bind()
 
-    const size=v2.new(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
-    v2m.ceil(size)
-    grid_gfx.fill_color({r:0,g:0,b:0,a:0.2})
-    grid_gfx.drawGrid(begin,size,gridSize,line_size)
-  }
-  update_camera(){
-    if(this.activePlayer){
-      this.camera.position=this.activePlayer!.position
-      this.update_grid(this.grid_gfx,5,this.camera.position,v2.new(this.camera.width,this.camera.height),0.06)
-      if(this.fake_crosshair.visible){
-        this.fake_crosshair.position=v2.add(this.activePlayer.position,v2.scale(v2.from_RadAngle(this.activePlayer.rotation),2/this.camera.zoom))
-        this.fake_crosshair.scale=v2.new(1/this.camera.zoom,1/this.camera.zoom)
-      }
-    }
-  }
-  planes:Map<number,Plane>=new Map()
-  proccess_general(up:GeneralUpdate){
-    for(const p of up.planes){
-      if(!this.planes.has(p.id)){
-        this.planes.set(p.id,new Plane(this))
-      }
-      const plane=this.planes.get(p.id)!
-      plane.updateData(p)
-    }
-    if(up.dirty.living_count){
-      this.living_count=up.living_count
-    }
-    if(up.deadzone!==undefined)this.dead_zone.update_from_data(up.deadzone)
-    if(up.ambient){
-      this.ambient.date=up.ambient.date
-    }
-  }
-  wait_load(callback:()=>void){
-    if(!this.menuManager.loaded){
-      this.addTimeout(this.wait_load.bind(this,callback),100)
-      return
-    }
-    callback()
-  }
-  async start(assets:string[]){
-      await this.menuManager.game_start(assets)
-      this.happening=true
-      this.mainloop(true)
-      this.sounds.listener_position.x=100000
-      this.sounds.listener_position.y=100000
-      this.camera.position.x=100000
-      this.camera.position.y=100000
-  }
-  connect(playerName:string){
-    if(!this.client)return
-    const p=new JoinPacket(playerName)
-    p.is_mobile=isMobile
-    p.skin=Skins.getFromString(this.save.get_variable("cv_loadout_skin"))?.idNumber??0
-    this.client.emit(p)
-    this.ambient.reset()
-  }
-  connected(client:Client,playerName:string){
-    this.client=client
-    this.light_map.quality=this.save.get_variable("cv_graphics_lights")
-    this.client.on("update",(up:UpdatePacket)=>{
-      this.guiManager.update_gui(up.priv)
-      this.scene.objects.proccess_list(up.objects!,true)
-    })
-    this.client.on("general_update",(up:GeneralUpdatePacket)=>{
-      this.proccess_general(up.content)
-    })
-    this.client.on("killfeed",(kfp:KillFeedPacket)=>{
-      this.guiManager.add_killfeed_message(kfp.message)
-    })
-    this.client.on("joined",(jp:JoinedPacket)=>{
-      this.guiManager.start()
-      this.guiManager.process_joined_packet(jp)
-      this.ambient.date=jp.date
+        await this.save.init(is_binary?{
+            type:"file",
+            path:"save/settings.json",
+            fs:fs!,
+        }:{
+            type:"localstorage",
+            key:"surgemd-settings"
+        })
+        
+        this.load_resources(["main"])
 
-      this.tab.game_start()      
-    })
-    this.client.on("map",async(mp:MapPacket)=>{
-      await this.terrain.process_map(mp.map)
-      this.terrain.draw(this.terrain_gfx,1)
-      await this.start(this.terrain.biome!.assets)
-      this.wait_load(this.connect.bind(this,playerName))
-      /*this.terrain.draw(this.minimap.terrain_gfx,1)
-      this.minimap.init(mp.map)*/
-    })
-    this.client.on(DefaultSignals.DISCONNECT,()=>{
-      this.running=false
-    })
-    if(!this.client.opened){
-      console.log("not connected")
-      return
     }
-    this.activePlayer?.destroy()
-    this.activePlayer=undefined
-    
-    this.activePlayerId=this.client.ID
-    console.log("Joined As:",this.activePlayerId)
+    set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
+        if(!this.active_entity)return
+        /*if(aim_assist){
+            for(const o of this.scene_2d.objects.objects[this.activePlayer.layer].orden){
+                const obj=this.scene.objects.objects[this.activePlayer.layer].objects[o]
+                if(obj.id===this.activePlayerId||obj.stringType!=="player")continue
+                const ang=v2.lookTo(this.activePlayer.position,obj.position)
+                if(Math.abs(angle-ang)<=aim_assist_help){
+                    angle=ang
+                    break
+                }
+            }
+        }*/
+        this.input.angle=angle
+        this.input.distance_to_aim=dist
+        /*if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.driving&&this.running){
+            this.active_entity.rotation=this.input.angle
+        }*/
+    }
+    interact(){
+        if(this.input.interact)return
+        this.input.interact=true
+        this.ui.update_active_player(this.active_entity)
+        if(this.active_entity&&this.ui.current_interaction){
+            this.ui.current_interaction.interact(this.active_entity)
+        }
+    }
+    set_scope(scope:ScopeDef){
+        this.scope_zoom=scope.scope_view
+    }
+    async process_level(){
+        if(this.level?.assets?.background_music){
+            await this.resources.load_audio("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
+        }
+    }
+    async load_resources(textures:string[]=["main"]){
+        if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
+        this.loaded=false
 
-    this.fake_crosshair.frame=this.resources.get_sprite("crosshair_1")
-    this.fake_crosshair.visible=false
+        this.menu.show_loading_screen()
+        this.menu.set_loading_current("Somethings",true)
 
-    this.guiManager.players_name={}
-    this.renderer.fullCanvas()
-  }
-  init_gui(gui:GuiManager){
-    this.guiManager=gui
-    this.guiManager.init(this)
-    this.tab.toggle_tab_visibility()
-  }
-}
-export async function getGame(server:string){
-    return `api/${await(await fetch(`${server}/api/get-game`)).text()}/ws`
+        this.resources.clear([
+            "essentials",
+            "main",
+            ...textures
+        ])
+
+        for(const tt of textures){
+            const at=`atlases/atlas-${tt}-data.json`
+            const spg=await(await fetch(at)).json()
+            for(const s of spg[this.save.get_variable("sv_graphics_resolution")]){
+                await this.resources.load_spritesheet("",s,undefined,tt,this.menu.set_loading_current)
+            }
+        }
+
+        //Load Sfx
+        await this.resources.load_group("/sounds/game/main.json","main",this.menu.set_loading_current)
+
+        await this.resources.load_audio("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("thunder_1",{src:"/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("thunder_2",{src:"/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
+
+        if(this.level){
+            await this.process_level()
+        }
+
+        this.menu.hide_loading_screen()
+        this.loaded=true
+    }
+    async start(assets:string[]){
+        await this.load_resources(assets)
+        this.menu.game_start()
+
+        this.happening=true
+
+        this.cam2d.position.x=0
+        this.cam2d.position.y=0
+
+        /*this.sounds.listener_position.x=100000
+        this.sounds.listener_position.y=100000
+        this.cam2d.position.x=100000
+        this.cam2d.position.y=100000*/
+
+        this.join()
+
+        this.mainloop(true)
+    }
+    close_game(){
+        if(this.running)this.stop()
+        this.client=undefined
+        this.tab.stop_all()
+        this.ui.clear()
+        this.scene_2d.reset()
+        this.menu.game_end()
+        this.local_server.stop()
+        this.active_entity=undefined
+        this.active_entity_id=undefined
+        this.game_over=false
+        this.ambient.on_game_close()
+    }
+    soft_reset(){
+        this.tab.stop_all()
+        this.scene_2d.reset()
+        this.game_over=false
+        this.ui.hide_game_over()
+    }
+    override on_stop(): void {
+        super.on_stop()
+        this.happening=false
+        if(!this.game_over){
+            this.close_game()
+        }
+    }
+    reset_input(){
+        this.input.reload=false
+        this.input.interact=false
+        this.input.swamp_guns=false
+        this.input.actions.length=0
+    }
+    override on_update(dt:number){
+        super.on_update(dt)
+
+        if(this.save.get_variable("sv_game_interpolation")){
+            this.global_interpolation=Numeric.dt_expo_inter(15,dt)
+        }else{
+            this.global_interpolation=1
+        }
+        this.ambient.update(dt)
+        this.ui.update(dt)
+        this.tab.tick(dt)
+        if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
+            this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
+        }
+        if(this.active_entity){
+            this.cam2d.position=this.active_entity.position
+            this.sounds.listener_position=this.active_entity.position
+            this.update_grid(this.grid_gfx,5,this.cam2d.position,v2.new(this.cam2d.width,this.cam2d.height),0.06)
+
+            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(1,dt))
+
+            this.ambient.update_camera()
+            if(this.client&&this.client.opened){
+                this.client.emit(this.input)
+                this.reset_input()
+            }
+            if(this.active_entity.dead)this.active_entity=undefined
+        }
+    }
+    update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
+        this.grid_gfx.position=v2.new(0,0)
+        grid_gfx.clear()
+        const begin=v2.new(camera_size.x/2,camera_size.y/2)
+        v2m.sub(begin,camera_position,begin)
+        v2m.dscale(begin,begin,gridSize)
+        v2m.floor(begin)
+        v2m.sub_component(begin,1,1)
+
+        const size=v2.new(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
+        v2m.ceil(size)
+        grid_gfx.fill_color({r:0,g:0,b:0,a:0.2})
+        grid_gfx.drawGrid(begin,size,gridSize,line_size)
+    }
+    override on_render(_dt: number): void {
+        this.ambient.render()
+    }
+    async game_over_messages(text:string[],music:Sound,time_per_message?:number,opacity_anim?:number):Promise<void>{
+        this.ambient.ambience.set(undefined)
+        await this.menu.game_over_messages(text,music,this.ambient.music,time_per_message,opacity_anim)
+        this.ambient.reload()
+    }
+    process_general_update(up:GeneralUpdate){
+        if(up.deadzone)this.dead_zone.update_from_data(up.deadzone)
+    }
+    process_private(priv:PrivateUpdate){
+        if(priv.active_entity.dirty){
+            if(priv.active_entity.id){
+                this.active_entity_id=priv.active_entity.id
+                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
+            }else{
+                this.active_entity=undefined
+            }
+        }
+        if(priv.splashes.length>0){
+            for(const s of priv.splashes){
+                this.add_damage_splash(s)
+            }
+        }
+        if(priv.self_state){
+            this.ui.update_self_state(priv.self_state)
+        }
+    }
+    join(){
+        if(!this.client)return
+        const packet=new JoinPacket()
+
+        packet.player_name=this.save.get_variable("sv_game_name")
+        this.client.emit(packet)
+    }
+    connect(url:string){
+        this.set_socket(new WebSocket(url) as unknown as BasicSocket)
+        this.offline=false
+    }
+    set_socket(socket:BasicSocket){
+        if(this.client)return
+        this.level=undefined
+        const client=new Client(socket,PacketManager)
+        client.onopen=this.set_client.bind(this,client)
+    }
+    set_client(client:Client){
+        if(!client.opened){
+            this.client=undefined
+            return
+        }
+        if(client===this.client)return
+        this.client=client
+
+        client.on("general_update",(p:GeneralUpdatePacket)=>{
+            this.process_general_update(p.content)
+        })
+        client.on("update",(p:UpdatePacket)=>{
+            this.scene_2d.objects.proccess(p.objects!,true)
+            this.process_private(p.priv)
+        })
+        client.on("connect",(_p:ConnectPacket)=>{
+        })
+        client.on("map",async(mp:MapPacket)=>{
+            await this.terrain.process_map(mp.map)
+            this.terrain.draw(this.terrain_gfx,1)
+            await this.start(this.terrain.biome!.assets)
+
+            this.minimap.init(mp.map)
+            this.ambient.on_game_start()
+        })
+        client.on("joinned",(jp:JoinnedPacket)=>{
+            this.ui.proccess_joinned_packet(jp)
+            this.reset_input()
+
+            this.ui.start()
+        })
+        client.on("gameover",async(p:GameOverPacket)=>{
+            this.game_over = true
+            this.ui.show_game_over(p)
+            if(this.offline){
+                if(p.Win){
+                    await this.game_over_messages([
+                        random.choose(["Hi.", "Hello.","Hey."]),
+                        "You did it.",
+                        ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't kill anyone.","Congratulations you are a good soul."]),
+                        "But are you really happy?",
+                        "Was it worth it?",
+                        "You can leave the island...",
+                        "But the island will never leave you.",
+                        "Goodbye. See you later!"
+                    ], this.resources.get_audio("gameover_music"))
+                }else{
+                    await this.game_over_messages([
+                        random.choose(["Hi.", "Hello.","Hey."]),
+                        random.choose([
+                            "You died again.",
+                            "You've become a pile of meat.",
+                            "You died.",
+                            "You are dead.",
+                            "You lose.",
+                            "Your Hearth Stop.",
+                            "You were turned inside out",
+                            "You were taken apart.",
+                            "You suffered brain death.",
+                            "You Dont Exist More",
+                            "You’re sleeping with the fishes."
+                        ]),
+                        ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't eliminate anyone.","Unfortunately, this is not the way to get out of here alive."]),
+                        ...(random.choose([
+                            [
+                                "Have you heard about quickswitch?",
+                                "Quickswitch removes your recoil.",
+                                "Just switch to another weapon after shooting.",
+                                "Quickswitch only works with single-shot weapons...",
+                                "Weapons like snipers or shotguns."
+                            ],
+                            [
+                                "Movement is a weapon too.",
+                                "Use it wisely."
+                            ],  
+                            [
+                                "Cover can save your life.",
+                                "Fight near rocks or trees.",
+                                "Never stay in the open."
+                            ],
+                            [
+                                "Do not fight while weak.",
+                                "Heal first.",
+                                "Then fight."
+                            ],
+                            [
+                                "A well placed grenade",
+                                "can win a fight instantly."
+                            ],
+                            [
+                                "Intelligence is the key",
+                                "Know exactly what you are doing.",
+                                "Investing without a plan usually goes wrong."
+                            ],
+                            [
+                                "Melees is good too.",
+                                "The enemy can't aim properly if they're too close to you.",
+                            ],
+                            [],
+                        ])),
+                        ...random.choose([
+                            ["Failure teaches more than victory."],
+                            ["You can do it."],
+                            ["Every attempt teaches something."],
+                            ["I trust you"],
+                            ["Never give up.","trust your instincts."],
+                            ["Fritz never gave up.","Look where he is now."],
+                            ["You are strong.","You are capable of anything."],
+                            ["Hope is always the last to die."],
+                            ["No Pain","No Gain"]
+                        ]),
+                        random.choose([
+                            "Death is not the end.",
+                            "There are things worse than death.",
+                            "I need you alive.",
+                            "I dont will allow you die.",
+                            "You Are Too Important To Die.",
+                            "There's still a lot of work ahead.",
+                            "Evil never rests.",
+                            "Some questions remain unanswered.",
+                            "She is still alive, waiting for you.",
+                            "You still have many unfinished matters.",
+                            "You are too young to die.",
+                            "Its Not Your Time",
+                            "Your time hasn’t come yet."
+                        ]),
+                        "Get up!"
+                    ], this.resources.get_audio("gameover_music"))
+                    if(this.level){
+                        this.soft_reset()
+                        this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
+                        this.local_server.restart_level()
+                    }
+                }
+            }
+        })
+        client.on("disconnect",(_p:DisconnectPacket)=>{
+            this.stop()
+        })
+        client.on("killfeed",(p:KillFeedPacket)=>{
+            this.ui.add_killfeed_message(p.message)
+        })
+    }
 }

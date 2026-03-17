@@ -1,4 +1,9 @@
 @use "../palette.scss";
+
+@use "./apps/message.scss";
+@use "./apps/shop.scss";
+@use "./apps/debug.scss";
+@use "./apps/map.scss";
 #tab-view{
     --tab-primary: #4f6ef7;
     --tab-secondary: #222;
@@ -53,7 +58,8 @@
         background-repeat: no-repeat;
         background-size: cover;
         color: var(--tab-text);
-        .tab-app{
+        overflow: hidden;
+        .tab-app-content{
             position: absolute;
             left: 0px;
             right: 0px;
@@ -61,6 +67,7 @@
             top: 0px;
             width: 100%;
             height: 100%;
+            overflow: hidden;
         }
         .tab-current-app{
             position: absolute;
@@ -127,149 +134,18 @@
     };
 }
 .tab-view-minimized{
-    scale: 50%;
-    transform: translate(0%,0%);
+    transform: translate(0%,0%) scale(50%);
     left: -180px;
     top: -90px;
 
     @media screen and (max-width: palette.$screen_large) {
-        scale: 30%;
+        transform: translate(0%,0%) scale(30%);
         left: -240px;
         top: -120px;
     };
     @media screen and (max-width: palette.$screen_medium) {
-        scale: 25%;
+        transform: translate(0%,0%) scale(25%);
         left: -270px;
         top: -145px;
     };
-}
-
-.tab-message-app {
-    display: flex;
-    height: 100%;
-    background: #0f172a;
-    color: var(--tab-text);
-
-    .contacts-panel {
-        width: 30%;
-        border-right: 1px solid #334155;
-        background: #1e293b;
-        height: 100%;
-        overflow-y: auto;
-
-        .contact {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            gap: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-
-            &:hover {
-                background: #2e3a4d;
-            }
-
-            .avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: var(--tab-primary);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                color: #fff;
-            }
-
-            .contact-info {
-                flex: 1;
-
-                .contact-name {
-                font-weight: bold;
-                font-size: 14px;
-                }
-                .contact-last {
-                font-size: 12px;
-                color: #94a3b8;
-                }
-            }
-
-            .contact-time {
-                font-size: 11px;
-                color: #64748b;
-            }
-        }
-    }
-
-    .chat-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-
-        .chat-header {
-            height: 40px;
-            flex-shrink: 0;
-            background: #1e293b;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            font-weight: bold;
-            border-bottom: 1px solid #334155;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            .msg {
-                max-width: 70%;
-                padding: 8px 12px;
-                border-radius: 10px;
-                font-size: 14px;
-
-                &.received {
-                    background: #334155;
-                    align-self: flex-start;
-                }
-
-                &.sent {
-                    background: var(--tab-primary);
-                    align-self: flex-end;
-                    color: white;
-                }
-            }
-        }
-
-        .chat-input {
-            flex-shrink: 0;
-            display: flex;
-            border-top: 1px solid #334155;
-            background: #1e293b;
-
-            input {
-                flex: 1;
-                padding: 10px;
-                border: none;
-                background: transparent;
-                color: var(--tab-text);
-                outline: none;
-            }
-            button {
-                width: 50px;
-                border: none;
-                background: var(--tab-primary);
-                color: #fff;
-                cursor: pointer;
-            }
-        }
-    }
-    .msg img.badge-icon {
-        height: 18px;
-        vertical-align: middle;
-        margin: 0 4px;
-    }    
 }

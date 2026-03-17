@@ -1,6 +1,6 @@
-import { type NetStream } from "../engine/stream.ts";
-import { Definition } from "../engine/definitions.ts";
+import { Definition, NetStream, WeightDefinition } from "../../engine/core.ts";
 import { ItemQuality } from "../others/item.ts";
+import { BoostType } from "./player/boosts.ts";
 export enum BulletReflection{
     All=0,
     Only_Reflective=1,
@@ -80,7 +80,7 @@ export enum InventoryItemType{
     consumible,
     helmet,
     vest,
-    projectile,
+    grenade,
     melee,
     accessorie,
     backpack,
@@ -92,7 +92,7 @@ export interface GameItemBase extends Definition{
     quality:ItemQuality
 }
 export enum DamageReason{
-    Player,
+    Human,
     Explosion,
     DeadZone,
     Abstinence,
@@ -104,6 +104,43 @@ export interface InventoryItemData{
     count:number
     type:InventoryItemType
     idNumber:number
+}
+export interface InventoryDroppable{
+    helmet:boolean
+    vest:boolean
+    backpack:boolean
+}
+export interface InventoryPresetItem{
+    item:string
+    weight:number
+    droppable?:boolean
+    drop_chance?:number
+    count?:number
+}
+export interface InventoryPreset{
+    helmet?:InventoryPresetItem[]//Will Choose one of these helmets
+    vest?:InventoryPresetItem[]//Will Choose one of these vest
+    backpack?:InventoryPresetItem[]//Will Choose one of these backpacks
+
+    skin?:InventoryPresetItem[]//Will Choose one of these skins
+
+    melee?:InventoryPresetItem[]//Will Choose one of these melees
+    gun1?:InventoryPresetItem[]//Will Choose one of these guns
+    gun2?:InventoryPresetItem[]//Will Choose one of these guns
+
+    items?:InventoryPresetItem[][]
+    aitems?:Record<string,number>
+    iitems?:string[]
+    acessories:Record<number,string>
+
+    hand?:number
+    infinity_ammo?:boolean
+    droppables?:Partial<InventoryDroppable>
+
+    boosts?:(WeightDefinition&{
+        boost:number
+        boost_type:BoostType
+    })[]
 }
 export function InventoryItemDataEncode(stream:NetStream,data:InventoryItemData){
     stream.writeUint16(data.count)

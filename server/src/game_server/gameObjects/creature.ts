@@ -1,17 +1,15 @@
-import { v2, Vec2 } from "common/scripts/engine/geometry.ts";
+import { LootTableItemRet, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type Player } from "./player.ts";
 import { type CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { CreaturesUpdates, CreatureUFunc } from "../defs/creatures_extra.ts";
 import { DamageParams } from "../others/utils.ts";
-import { LootTableItemRet } from "common/scripts/engine/inventory.ts";
 import { Obstacle } from "./obstacle.ts";
 import { GameItem } from "common/scripts/definitions/alldefs.ts";
-import { NetStream } from "common/scripts/engine/stream.ts";
 
 export class Creature extends ServerGameObject{
-    stringType:string="creature"
-    numberType: number=10
+    string_type:string="creature"
+    number_type: number=10
 
     update_func?:CreatureUFunc
 
@@ -53,34 +51,33 @@ export class Creature extends ServerGameObject{
         if(this.update_func)this.update_func(this,dt)
         if(!v2.is(this.old_position,this.position)||this.old_rotation!==this.angle){
             this.dirtyPart=true
-            this.old_position=v2.duplicate(this.position)
+            this.old_position=v2.clone(this.position)
             this.old_rotation=this.angle
             this.manager.cells.updateObject(this)
         }
-        this.position=v2.add(this.position,v2.scale(this.velocity,dt))
-        
+        v2m.add(this.position,this.position,v2.scale(this.velocity,dt))
         //Collision
-        const objs=this.manager.cells.get_objects(this.hb,this.layer)
+        const objs=this.manager.cells.get_objects(this.hitbox,this.layer)
         for(const obj of objs){
             if(obj.id===this.id)continue
-            switch(obj.stringType){
+            switch(obj.string_type){
                 case "obstacle":
                     if((obj as Obstacle).def.no_collision)break
-                    if((obj as Obstacle).hb&&!(obj as Obstacle).dead){
-                        const ov=this.hb.overlapCollision((obj as Obstacle).hb)
-                        if(ov){
-                            this.position=v2.sub(this.position,v2.scale(ov.dir,ov.pen))
+                    if((obj as Obstacle).hitbox&&!(obj as Obstacle).dead){
+                        const ov=this.hitbox.overlapCollision((obj as Obstacle).hitbox)
+                        for(const o of ov){
+                            this.position=v2.sub(this.position,v2.scale(o.dir,o.pen))
                         }
                     }
                     break
             }
         }
-        this.game.map.clamp_hitbox(this.hb)
+        this.position=this.game.map.clamp_hitbox(this.position,this.hitbox)
     }
     override interact(_user: Player): void {
     }
     create(args: {position:Vec2,def:CreatureDef}): void {
-        this.hb=args.def.hitbox.transform(args.position)
+        this.hitbox=args.def.hitbox.transform(args.position)
         this.def=args.def
         this.update_func=this.def.server_side.update?CreaturesUpdates[this.def.server_side.update](this.def.server_side.update_parameters,this):undefined
         this.health=this.def.health
@@ -89,7 +86,7 @@ export class Creature extends ServerGameObject{
         }
     }
     override encode(stream: NetStream, full: boolean): void {
-        stream.writePosition(this.position)
+        stream.writePos2(this.position)
         .writeRad(this.angle)
         .writeUint8(this.state)
         if(full){

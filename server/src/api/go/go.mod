@@ -1,6 +1,6 @@
 go 1.24
 
-module suroimd.io/module/api
+module surgemd.io/module/api
 
 require (
 	github.com/gorilla/mux v1.8.1

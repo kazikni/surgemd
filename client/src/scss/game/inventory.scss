@@ -3,7 +3,7 @@
 .item-maximized{
     color:#fe0 
 }
-#gui-items{
+#ui-items{
     position: absolute;
     bottom: 125px;
     left: 50%;
@@ -147,7 +147,7 @@
 .weapon-slot-selected{
     border: 3px solid #eee;
 }
-#gui-weapons{
+#ui-weapons{
     position: absolute;
     bottom: 5px;
     left: 50%;
@@ -199,7 +199,70 @@
         }
     }
 }
-#gui-oitems{
+#ui-iitems{
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    gap:2px;
+    width: fit-content;
+    height: fit-content;
+    top:10px;
+    left:50%;
+    transform: translateX(-50%);
+    .scope-slot{
+        display: flex;
+        border-radius: 100%;
+        background-color: #0003;
+        width: fit-content;
+        height: fit-content;
+        .icon{
+            padding: 10px;
+            width: 30px;
+            height: 30px;
+        }
+    }
+    .scope-slot-selected{
+        border: 1px solid #fff3;
+        .icon{
+            padding: 13px;
+            width: 45px;
+            height: 45px;
+        }
+    }
+    @media screen and (max-width: palette.$screen_large){
+        .scope-slot{
+            .icon{
+                padding: 7px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+        .scope-slot-selected{
+            .icon{
+                padding: 8px;
+                width: 30px;
+                height: 30px;
+            }
+        }
+    }
+    @media screen and (max-width: palette.$screen_medium){
+        .scope-slot{
+            .icon{
+                padding: 5px;
+                width: 15px;
+                height: 15px;
+            }
+        }
+        .scope-slot-selected{
+            .icon{
+                padding: 7px;
+                width: 22px;
+                height: 22px;
+            }
+        }
+    }
+}
+#ui-aitems{
     display: grid;
     grid-template-columns: repeat(auto, 5);
     gap: 5px;
@@ -209,7 +272,7 @@
     transform: translate(0%, -50%);
     justify-items: end;
     pointer-events: none;
-    .oitem-slot{
+    .aitem-slot{
         background-color: #0003;
         display: flex;
         flex-direction: column;
@@ -231,11 +294,11 @@
             
         }
     }
-    .oitem-slot:hover{
+    .aitem-slot:hover{
         border: 2px solid #ccc;
     }
     @media screen and (max-width: palette.$screen_large){
-        .oitem-slot{
+        .aitem-slot{
             .count{
                 font-size: 12px;
             }
@@ -247,7 +310,7 @@
         left: 2px;
     }
     @media screen and (max-width: palette.$screen_medium){
-        .oitem-slot{
+        .aitem-slot{
             .count{
                 font-size: 10px;
             }
@@ -258,4 +321,8 @@
         }
         left: 3px;
     }
+}
+#inventory-container{
+    width: 100%;
+    height: 100%;
 }

@@ -1,12 +1,12 @@
-import { HostConfig } from "../engine/server_offline/offline_server.ts";
+import { HostConfig } from "../../engine/core.ts";
 
 export interface GameOptions{
     gameTps:number
     netTps:number
 }
 export interface GameConfig{
-    team_size:number
     mode:string
+    mode_settings:any
 }
 export interface GamemodeConfig{
     team_size:number[]
@@ -38,7 +38,7 @@ export interface ApiSettingsS{
         enabled:boolean
     }
 }
-export interface ConfigType {
+export interface ConfigType{
     api: {
         host: HostConfig
         global:string
@@ -48,7 +48,7 @@ export interface ConfigType {
         options: GameOptions
         debug:GameDebugOptions
         host: HostConfig
-        modes:GamemodeConfig[]
+        modes: GamemodeConfig[]
     }
     this_region:string
     vite:{
@@ -67,4 +67,50 @@ export interface ConfigType {
         api_key: string
     }
     shop: ShopConfig
+}
+
+export function ZeroConfig():ConfigType{
+    return {
+        api:{
+            host:{
+                port:-1
+            },
+            global:""
+        },
+        database:{
+            enabled:false,
+            api_key:"",
+            files:{
+                accounts:"",
+                forum:"",
+                statistic:""
+            },
+            statistic:false
+        },
+        game:{
+            debug:{
+                debug_menu:true,
+            },
+            host:{
+                port:-1,
+            },
+            max_games:1,
+            modes:[],
+            options:{
+                gameTps:100,
+                netTps:30
+            }
+        },
+        regions:{
+
+        },
+        shop:{
+            skins:[]
+        },
+        this_region:"local",
+        vite:{
+            port:3000,
+            allowed_hosts:true
+        }
+    }
 }

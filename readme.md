@@ -1,4 +1,4 @@
-# Suroimd.io 2
+# Surgemd.io
 
 ## 📖 Description
 Coming soon...
@@ -8,7 +8,7 @@ Coming soon...
 ## 🖥️ Self-Host Instructions
 
 ### ⚙️ Setup
-To run **Suroimd.io 2**, you’ll need to install a few programs first.  
+To run **Surgemd.io**, you’ll need to install a few programs first.  
 The main ones are:
 
 - [Deno](https://deno.com/)  
@@ -35,7 +35,7 @@ Download and install from: [Golang](https://go.dev/)
 ### 3️⃣ Install Python
 Download and install from: [Golang](https://www.python.org/)
 ---
-### 4️⃣ Get the Suroimd.io 2 Code
+### 4️⃣ Get the Surgemd.io Code
 You have three options:
 * Download the source code directly from GitHub
 * Clone the repository using Git

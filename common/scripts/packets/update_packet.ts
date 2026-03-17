@@ -1,28 +1,41 @@
-import { Ammos } from "../definitions/items/ammo.ts";
-import { type GunDef, Guns } from "../definitions/items/guns.ts";
-import { type MeleeDef, Melees } from "../definitions/items/melees.ts";
+import { Numeric, UpdatePacketBase, Vec2 } from "../../engine/core.ts";
+import { NetStream } from "../../engine/core/net/stream.ts";
+import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
-import { Vec2 } from "../engine/geometry.ts";
-import { type NetStream, Packet } from "../engine/mod.ts"
-import { Numeric } from "../engine/utils.ts";
 import { ActionsType } from "../others/constants.ts";
 export interface DamageSplash{
     count:number
+
     position:Vec2
     taker:number
     taker_layer:number
+
     shield:boolean
     critical:boolean
     shield_break:boolean
 }
 export interface PrivateUpdate{
+    splashes:DamageSplash[]
+
+    active_entity:{
+        dirty:boolean
+        id:number
+    }
+
+    self_state?:SelfStateUpdate
+}
+
+export interface SelfStateUpdate{
     dirty:{
-        inventory:boolean
-        weapons:boolean
-        current_weapon:boolean
+        inventory:{
+            items:boolean
+            aitems:boolean
+            iitems:boolean
+            weapons:boolean
+            hand:boolean
+        }
         action:boolean
-        oitems:boolean
     }
 
     health:number
@@ -32,112 +45,124 @@ export interface PrivateUpdate{
     max_boost:number
     boost_type:BoostType
 
-    inventory?:InventoryItemData[]
-    action?:{delay:number,type:ActionsType}
+    money:number
 
-    weapons:{
-        melee?:MeleeDef
-        gun1?:GunDef
-        gun2?:GunDef
-    }
-
-    current_weapon?:{
-        slot:number
-        ammo:number
-        liquid:boolean
-    }
-
-    oitems:Record<number,number>
-
-    damages:DamageSplash[]
-}
-function encode_gui_packet(priv:PrivateUpdate,stream:NetStream){
-    stream.writeUint8(priv.health)
-    stream.writeUint8(priv.max_health)
-    stream.writeUint8(priv.boost)
-    stream.writeUint8(priv.max_boost)
-    stream.writeUint8(priv.boost_type)
-    stream.writeBooleanGroup(
-        priv.dirty.inventory,
-        priv.dirty.weapons,
-        priv.dirty.current_weapon,
-        priv.dirty.action,
-        priv.dirty.oitems,
-        priv.action!==undefined,
-        priv.damages!==undefined,
-        priv.current_weapon?.liquid
-    )
-    if(priv.dirty.inventory){
-        stream.writeArray<InventoryItemData>(priv.inventory!,(i)=>{
-            stream.writeUint16(i.idNumber)
-            stream.writeUint8(i.type)
-            stream.writeUint8(i.count)
-        },1)
-    }
-    if(priv.dirty.weapons){
-        stream.writeInt16(priv.weapons.melee?.idNumber??-1)
-        stream.writeInt16(priv.weapons.gun1?.idNumber??-1)
-        stream.writeInt16(priv.weapons.gun2?.idNumber??-1)
-    }
-    if(priv.dirty.current_weapon){
-        stream.writeInt8(priv.current_weapon!.slot)
-        if(priv.current_weapon!.liquid){
-            stream.writeFloat32(Numeric.maxDecimals(priv.current_weapon!.ammo,1))
-        }else{
-            stream.writeUint16(priv.current_weapon!.ammo)
+    inventory:{
+        items:InventoryItemData[]
+        aitems:Record<string,number>
+        iitems:GameItem[]
+        weapons:(WeaponDef|undefined)[]
+        hand?:{
+            slot:number
+            ammo:number
+            liquid:boolean
         }
     }
-    if(priv.dirty.action&&priv.action){
-        stream.writeFloat(priv.action.delay,0,20,3)
-        stream.writeUint8(priv.action.type)
-    }
-    if(priv.damages){
-        stream.writeArray(priv.damages,(d)=>{
-            stream.writeBooleanGroup(d.critical,d.shield,d.shield_break)
-            stream.writeUint16(d.count)
-            stream.writePosition(d.position)
-            stream.writeID(d.taker)
-            stream.writeUint8(d.taker_layer)
+
+    action?:{delay:number,type:ActionsType}
+
+    current_scope:number
+}
+function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:GameDefinition){
+    stream.writeUint8(state.health)
+    .writeUint8(state.max_health)
+    .writeUint8(state.boost)
+    .writeUint8(state.max_boost)
+    .writeUint8(state.boost_type)
+
+    .writeUint16(state.money)
+
+    .writeBooleanGroup2(
+        state.dirty.inventory.items,
+        state.dirty.inventory.aitems,
+        state.dirty.inventory.iitems,
+        state.dirty.inventory.weapons,
+        state.dirty.inventory.hand,
+
+        state.dirty.action,
+
+        state.inventory.hand!==undefined, //has Hand
+        state.action!==undefined, //has Action
+
+        state.inventory.hand?.liquid, // Is Liquid
+    )
+    if(state.dirty.inventory.items){
+        stream.writeArray<InventoryItemData>(state.inventory.items,(i)=>{
+            stream.writeUint16(i.idNumber)
+            .writeUint8(i.type)
+            .writeUint8(i.count)
         },1)
     }
-    if(priv.dirty.oitems){
-        stream.writeArray(Object.entries(priv.oitems),(i)=>{
-            const def=Ammos.getFromNumber(i[0] as unknown as number)
-            stream.writeUint8(i[0] as unknown as number)
+    if(state.dirty.inventory.aitems){
+        stream.writeArray(Object.entries(state.inventory.aitems),(i)=>{
+            const def=definitions.ammos.getFromString(i[0])
+            stream.writeUint8(def.idNumber!)
             if(def.liquid){
-                stream.writeFloat32(Numeric.maxDecimals(i[1],1))
+                stream.writeFloat32(i[1])
             }else{
                 stream.writeUint16(i[1] as unknown as number)
             }
         },1)
     }
-}
-function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
-    priv.health=stream.readUint8()
-    priv.max_health=stream.readUint8()
-    priv.boost=stream.readUint8()
-    priv.max_boost=stream.readUint8()
-    priv.boost_type=stream.readUint8()
-    const [
-        dirtyInventory,
-        dirtyWeapons,
-        dirtyCurrentWeapon,
-        dirtyAction,
-        dirtyAmmos,
-        hasAction,
-        hasDamages,
-        liquid,
-    ]=stream.readBooleanGroup()
-    priv.dirty={
-        inventory:dirtyInventory,
-        weapons:dirtyWeapons,
-        current_weapon:dirtyCurrentWeapon,
-        action:dirtyAction,
-        oitems:dirtyAmmos,
+    if(state.dirty.inventory.iitems){
+        stream.writeArray(state.inventory.iitems,(i)=>{
+            stream.writeUint16(definitions.game_items.keysString[i.idString])
+        },1)
     }
-    if(dirtyInventory){
-        priv.dirty.inventory=true
-        priv.inventory=stream.readArray<InventoryItemData>(()=>{
+    if(state.dirty.inventory.weapons){
+        stream.writeArray(state.inventory.weapons,(i)=>{
+            if(i)stream.writeUint16(definitions.game_items.keysString[i.idString]+1)
+            else stream.writeUint16(0)
+        },1)
+    }
+    if(state.dirty.inventory.hand){
+        if(state.inventory.hand){
+            stream.writeInt8(state.inventory.hand.slot)
+            if(state.inventory.hand.liquid){
+                stream.writeFloat32(Numeric.maxDecimals(state.inventory.hand.ammo,1))
+            }else{
+                stream.writeUint16(state.inventory.hand.ammo)
+            }
+        }
+    }
+    if(state.dirty.action&&state.action){
+        stream.writeFloat(state.action.delay,0,20,3)
+        stream.writeUint8(state.action.type)
+    }
+    stream.writeUint8(state.current_scope)
+}
+function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:GameDefinition){
+    state.health=stream.readUint8()
+    state.max_health=stream.readUint8()
+    state.boost=stream.readUint8()
+    state.max_boost=stream.readUint8()
+    state.boost_type=stream.readUint8()
+    state.money=stream.readUint16()
+    const [
+        dirtyItems,
+        dirtyAItems,
+        dirtyIItems,
+        dirtyWeapons,
+        dirtyHand,
+
+        dirtyAction,
+
+        hasHand,
+        hasAction,
+        liquid,
+    ]=stream.readBooleanGroup2()
+    state.dirty={
+        inventory:{
+            items:dirtyItems,
+            aitems:dirtyAItems,
+            iitems:dirtyIItems,
+            weapons:dirtyWeapons,
+            hand:dirtyHand,
+        },
+        action:dirtyAction
+    }
+    if(dirtyItems){
+        state.inventory.items=stream.readArray<InventoryItemData>(()=>{
             return {
                 idNumber:stream.readUint16(),
                 type:stream.readUint8(),
@@ -145,103 +170,138 @@ function decode_gui_packet(priv:PrivateUpdate,stream:NetStream){
             }
         },1)
     }
-    if(dirtyWeapons){
-        const melee=stream.readInt16()
-        const gun1=stream.readInt16()
-        const gun2=stream.readInt16()
-        if(melee!==-1)priv.weapons.melee=Melees.getFromNumber(melee)
-        else priv.weapons.melee=undefined
-        if(gun1!==-1)priv.weapons.gun1=Guns.getFromNumber(gun1)
-        else priv.weapons.gun1=undefined
-        if(gun2!==-1)priv.weapons.gun2=Guns.getFromNumber(gun2)
-        else priv.weapons.gun2=undefined
+    if(dirtyAItems){
+        const len=stream.readUint8()
+        state.inventory.aitems={}
+        for(let i=0;i<len;i++){
+            const def=definitions.ammos.getFromNumber(stream.readUint8())
+            if(def.liquid){
+                state.inventory.aitems[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
+            }else{
+                state.inventory.aitems[def.idNumber!]=stream.readUint16()
+            }
+        }
     }
-    if(dirtyCurrentWeapon){
-        priv.current_weapon={
-            slot:stream.readInt8(),
-            ammo:liquid?Numeric.maxDecimals(stream.readFloat32(),1):stream.readUint16(),
-            liquid:liquid
+    if(dirtyIItems){
+        state.inventory.iitems=stream.readArray(()=>{
+            return definitions.game_items.valueNumber[stream.readUint16()]
+        },1)
+    }
+    if(dirtyWeapons){
+        state.inventory.weapons=stream.readArray(()=>{
+            const id=stream.readUint16()
+            if(id==0){
+                return undefined
+            }else{
+                return definitions.game_items.valueNumber[id-1] as WeaponDef
+            }
+        },1)
+    }
+    if(dirtyHand){
+        state.inventory.hand=undefined
+        if(hasHand){
+            state.inventory.hand={
+                slot:stream.readInt8(),
+                ammo:liquid?stream.readFloat32():stream.readUint16(),
+                liquid:liquid
+            }
         }
     }
     if(dirtyAction){
-        priv.dirty.action=true
+        state.dirty.action=true
         if(hasAction){
-            priv.action={
+            state.action={
                 delay:stream.readFloat(0,20,3),
                 type:stream.readUint8(),
             }
         }
     }
-    if(hasDamages){
-        priv.damages=stream.readArray(()=>{
-            const boo=stream.readBooleanGroup()
-            return {
-                count:stream.readUint16(),
-                critical:boo[0],
-                shield:boo[1],
-                shield_break:boo[2],
-                position:stream.readPosition(),
-                taker:stream.readID(),
-                taker_layer:stream.readInt8()
-            }
-        },1)
-    }
-    if(dirtyAmmos){
-        const len=stream.readUint8()
-        priv.oitems={}
-        for(let i=0;i<len;i++){
-            const def=Ammos.getFromNumber(stream.readUint8())
-            if(def.liquid){
-                priv.oitems[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
-            }else{
-                priv.oitems[def.idNumber!]=stream.readUint16()
-            }
-        }
-    }
+    state.current_scope=stream.readUint8()
 }
-export class UpdatePacket extends Packet{
+export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     ID=2
     Name="update"
-
-    priv:PrivateUpdate={
-        boost:0,
-        boost_type:BoostType.Shield,
-        dirty:{
-            action:false,
-            current_weapon:false,
-            inventory:false,
-            weapons:false,
-            oitems:false,
-        },
-        oitems:{},
-        health:0,
-        max_boost:0,
-        max_health:0,
-        weapons:{
-            gun1:undefined,
-            gun2:undefined,
-            melee:undefined
-        },
-        action:undefined,
-        current_weapon:{
-            ammo:0,
-            slot:0,
-            liquid:false
-        },
-        damages:[],
-        inventory:undefined,
-    }
-
-    objects?:NetStream
+    definition!:GameDefinition
     constructor(){
-        super()
+        super({
+            splashes:[],
+            active_entity:{
+                dirty:false,
+                id:0,
+            }
+        })
     }
-    encode(stream: NetStream): void {
-        stream.writeStreamDynamic(this.objects!)
-        encode_gui_packet(this.priv,stream)
+    override encode_private(stream: NetStream): void {
+        stream.writeBooleanGroup(
+            this.priv.active_entity.dirty,
+            this.priv.self_state!==undefined
+        )
+        .writeArray(this.priv.splashes,(d)=>{
+            stream.writeBooleanGroup(d.critical,d.shield,d.shield_break)
+            .writeUint16(d.count)
+            .writeID(d.taker)
+            .writeUint8(d.taker_layer)
+            .writePos2(d.position)
+        },1)
+        if(this.priv.active_entity.dirty){
+            stream.writeID(this.priv.active_entity.id)
+        }
+        if(this.priv.self_state){
+            encode_self_state(this.priv.self_state,stream,this.definition)
+        }
     }
-    decode(stream: NetStream): void {
-        this.objects=stream.readStreamDynamic()
-        decode_gui_packet(this.priv,stream)
+    override decode_private(stream: NetStream): void {
+        const bg=stream.readBooleanGroup()
+        this.priv.splashes=stream.readArray(()=>{
+            const bg=stream.readBooleanGroup()
+            return {
+               count:stream.readUint16(),
+               taker:stream.readID(),
+               taker_layer:stream.readUint8(),
+               position:stream.readPos2(),
+               critical:bg[0],
+               shield:bg[1],
+               shield_break:bg[2], 
+            }
+        },1)
+        if(bg[0]){
+            this.priv.active_entity={
+                dirty:true,
+                id:stream.readID(),
+            }
+        }
+        if(bg[1]){
+            this.priv.self_state={
+                health:0,
+                max_health:0,
+
+                max_boost:0,
+                boost:0,
+                boost_type:BoostType.Shield,
+
+                money:0,
+
+                dirty:{
+                    inventory:{
+                        items:false,
+                        aitems:false,
+                        iitems:false,
+                        weapons:false,
+                        hand:false,
+                    },
+                    action:false,
+                },
+                action:undefined,
+                inventory:{
+                    items:[],
+                    aitems:{},
+                    iitems:[],
+                    weapons:[],
+                    hand:undefined
+                },
+                current_scope:0,
+            }
+            decode_self_state(this.priv.self_state,stream,this.definition)
+        }
     }
 }

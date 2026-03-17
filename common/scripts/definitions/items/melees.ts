@@ -1,7 +1,4 @@
-import { AKeyFrame } from "../../engine/definitions.ts";
-import { Angle, v2 } from "../../engine/geometry.ts";
-import { Definitions,Definition } from "../../engine/mod.ts";
-import { ease } from "../../engine/utils.ts";
+import { AKeyFrame, Angle, Definition, Definitions, ease, v2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemQuality, WeaponAssets, WeaponRig } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -20,7 +17,9 @@ export interface MeleeDef extends Definition{
     arms?:FistRig
     image?:WeaponRig
     animation?:AKeyFrame[]
-    assets?:WeaponAssets
+    assets?:WeaponAssets&{
+        hit_sound?:string
+    }
 
     resistence_damage?:number
 }
@@ -128,129 +127,176 @@ export function AnimationSwing(time:number):AKeyFrame[]{
         },
     ]
 }
-export const Melees=new Definitions<MeleeDef,{}>((g)=>{
-    g.item_type=InventoryItemType.melee
-})
-Melees.insert(
-    {
-        idString:"survival_knife",
-        damage:15,
-        offset:0.5,
-        quality:ItemQuality.Common,
-        radius:0.5,
-        size:0,
-        attack_delay:0.4,
-        switchDelay:0.5,
-        damage_delays:[0.11],
-        arms:{
-            right:{
+export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
+    melees.insert(
+        {
+            idString:"survival_knife",
+            damage:15,
+            offset:0.5,
+            quality:ItemQuality.Common,
+            radius:0.5,
+            size:0,
+            attack_delay:0.25,
+            switchDelay:0.5,
+            damage_delays:[0.11],
+            arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
                 position:DefaultFistRig.right!.position,
-                rotation:DefaultFistRig.right!.rotation,
-                zIndex:2,
+                rotation:-0.5,
+                zIndex:1,
+                hotspot:v2.new(0.33,0.5)
             },
-            left:{
-                position:DefaultFistRig.left!.position,
-                rotation:DefaultFistRig.left!.rotation,
-                zIndex:2,
-            }
-        },
-        image:{
-            position:DefaultFistRig.right!.position,
-            rotation:-0.5,
-            zIndex:1,
-            hotspot:v2.new(0.33,0.5)
-        },
-        animation:[
-            {
-                time:0,
-                actions:[
-                ]
-            },
-            {
-                time:0.1,
-                actions:[
-                    {
-                        fuser:"weapon",
-                        type:"tween",
-                        yoyo:true,
-                        to:{
-                            rotation:DefaultFistRig.right!.rotation-1,
-                            position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+            animation:[
+                {
+                    time:0,
+                    actions:[
+                    ]
+                },
+                {
+                    time:0.06,
+                    actions:[
+                        {
+                            fuser:"weapon",
+                            type:"tween",
+                            yoyo:true,
+                            to:{
+                                rotation:DefaultFistRig.right!.rotation-1,
+                                position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                            }
+                        },
+                        {
+                            fuser:"right_arm",
+                            type:"tween",
+                            yoyo:true,
+                            to:{
+                                rotation:DefaultFistRig.right!.rotation-0.4,
+                                position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                            }
                         }
-                    },
-                    {
-                        fuser:"right_arm",
-                        type:"tween",
-                        yoyo:true,
-                        to:{
-                            rotation:DefaultFistRig.right!.rotation-0.4,
-                            position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
-                        }
-                    }
-                ]
+                    ]
+                }
+            ],
+            assets:{
+                use_sound:"light_swing",
+                hit_sound:"knife_hit",
             }
-        ]
-    },
-    {
-        idString:"axe",
-        damage:33,
-        offset:0.6,
-        quality:ItemQuality.Uncommon,
-        radius:0.9,
-        size:2,
-        attack_delay:0.5,
-        switchDelay:0.5,
-        damage_delays:[0.4],
-        resistence_damage:1,
-        arms:{
-            right:{
-                position:DefaultFistRig.right!.position,
-                rotation:DefaultFistRig.right!.rotation,
-                zIndex:2,
+        },
+        {
+            idString:"axe",
+            damage:33,
+            offset:0.6,
+            quality:ItemQuality.Uncommon,
+            radius:0.9,
+            size:2,
+            attack_delay:0.4,
+            switchDelay:0.5,
+            damage_delays:[0.3],
+            resistence_damage:1,
+            arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
             },
-            left:{
+            image:{
                 position:DefaultFistRig.left!.position,
-                rotation:DefaultFistRig.left!.rotation,
-                zIndex:2,
-            }
-        },
-        image:{
-            position:DefaultFistRig.left!.position,
-            rotation:Angle.deg2rad(90),
-            zIndex:1,
-            hotspot:v2.new(0.2,0.4)
-        },
-        animation:AnimationSwing(0.6)
-    },
-    {
-        idString:"sledgehammer",
-        damage:49.5,
-        offset:0.6,
-        quality:ItemQuality.Rare,
-        radius:0.9,
-        size:3,
-        attack_delay:0.8,
-        switchDelay:0.5,
-        damage_delays:[0.6],
-        resistence_damage:2,
-        arms:{
-            right:{ 
-                position:DefaultFistRig.right!.position,
-                rotation:DefaultFistRig.right!.rotation,
-                zIndex:2,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2.new(0.2,0.4)
             },
-            left:{
-                position:DefaultFistRig.left!.position,
-                rotation:DefaultFistRig.left!.rotation,
-                zIndex:2,
+            animation:AnimationSwing(0.45),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"axe_hit",
             }
         },
-        image:{
-            position:DefaultFistRig.left!.position,
-            rotation:Angle.deg2rad(90),
-            zIndex:1,
-            hotspot:v2.new(0.2,0.3)
+        {
+            idString:"sledgehammer",
+            damage:49.5,
+            offset:0.6,
+            quality:ItemQuality.Mythic,
+            radius:0.9,
+            size:3,
+            attack_delay:0.6,
+            switchDelay:0.1,
+            damage_delays:[0.4],
+            resistence_damage:2,
+            arms:{
+                right:{ 
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2.new(0.2,0.3)
+            },
+            animation:AnimationSwing(0.55),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"sledgehammer_hit",
+            }
         },
-        animation:AnimationSwing(0.9)
-    },
-)
+        /*{
+            idString:"bonesaw",
+            damage:49.5,
+            offset:0.6,
+            quality:ItemQuality.Legendary,
+            radius:0.9,
+            size:3,
+            attack_delay:0.8,
+            switchDelay:0.5,
+            damage_delays:[0.6],
+            resistence_damage:2,
+            arms:{
+                right:{ 
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
+                position:DefaultFistRig.right!.position,
+                rotation:0,
+                zIndex:1,
+                scale:1.5,
+                hotspot:v2.new(0,0.3)
+            },
+            //animation:AnimationSwing(0.9),
+            assets:{
+                use_sound:"medium_swing",
+                hit_sound:"bonesaw_hit",
+            }
+        },*/
+    )
+}

@@ -1,0 +1,112 @@
+import { ease, random, Sound, Sprite2D, v2 } from "common/engine/client.ts";
+
+import { zIndexes } from "common/scripts/others/constants.ts";
+import { DamageSplash } from "common/scripts/packets/update_packet.ts";
+import { type Player } from "../gameObjects/player.ts";
+import { GameObject } from "../others/gameObject.ts";
+export class DamageSplashOBJ extends GameObject{
+    ////////////////////////////
+    // Definition             //
+    ////////////////////////////
+    string_type:string="damage_splash"
+    number_type: number=89
+
+    ////////////////////////////
+    // Visual                 //
+    ////////////////////////////
+    sprite:Sprite2D
+
+    ////////////////////////////
+    // Assets                 //
+    ////////////////////////////
+    sounds?:{
+        break?:Sound
+        hit?:Sound[]
+    }
+
+    ////////////////////////////
+    // State                 //
+    ////////////////////////////
+    dying:boolean=false
+    can_die:boolean=true
+    lifetime:number=3
+
+    constructor(){
+        super()
+        this.sprite=new Sprite2D()
+
+        this.sprite.hotspot=v2.new(0.5,0.5)
+        this.sprite.scale.x=0
+        this.sprite.scale.y=0
+
+        this.sprite.zIndex=zIndexes.DamageSplashs
+    }
+    async create(args: DamageSplash): Promise<void> {
+        const color = args.shield
+            ? (args.critical ? "#114e" : "#0f9e")
+            : (args.critical ? "#ff0e" : "#fffe")
+
+        
+        const player = this.manager.get_object(args.taker) as Player|undefined
+        if(player&&args.shield_break){
+            player.broke_shield()
+        }
+
+        this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color)
+        this.position = v2.clone(args.position)
+        this.lifetime += Math.random()
+
+        this.sprite.position = this.position
+        this.sprite.scale.x = 0
+        this.sprite.scale.y = 0
+        this.sprite.rotation=-0.1
+
+        const s=(random.float(1,1.3)+(args.critical?0.7:0))/this.game.cam2d.zoom
+        this.game.add_tween({
+            duration: 1,
+            target: this.sprite.scale,
+            to: v2.random(s,s),
+            ease:ease.cubicOut
+        })
+
+        
+        this.game.add_tween({
+            duration: 0.4,
+            target: this.sprite.position,
+            to: v2.add(this.sprite.position, v2.dscale(v2.random2(v2.new(-0.2,-0.5),v2.new(0.3,-0.7)),this.game.cam2d.zoom*(args.critical?0.6:0.8))),
+        })
+        this.game.add_tween({
+            duration: args.critical?0.1:0.3,
+            target: this.sprite,
+            to: {rotation:0.1},
+            yoyo:true,
+            ease:ease.quadraticInOut,
+            infinite:true
+        })
+        
+        this.game.cam2d.addObject(this.sprite)
+    }
+    override on_destroy(): void {
+        this.sprite.frame?.free()
+        this.sprite.destroy()
+    }
+    update(dt:number): void {
+        this.lifetime-=dt
+        if(this.lifetime<=0){
+            this.dying=true
+        }
+        if(this.dying&&this.can_die){
+            this.can_die=false
+            // deno-lint-ignore no-this-alias
+            const This=this
+            this.game.add_tween({
+                duration:1,
+                target:this.sprite.scale,
+                to:{x:0,y:0},
+                onComplete(){
+                    This.destroy()
+                }
+            })
+        }
+    }
+}

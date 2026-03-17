@@ -1,0 +1,18 @@
+{
+    "meta":{
+        "name": "Battle",
+        "description": "After A Misterious Call. You Decide Go To The Marked Place. Unfineshed level",
+        "size":"small",
+        "dificulty":"easy"
+    },
+    "mode":{
+        "type":"battle_royale",
+        "team_size":1,
+        "players":{
+            "count":99
+        },
+        "map":{
+            "def":"normal"
+        }
+    }
+}

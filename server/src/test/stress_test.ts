@@ -1,8 +1,7 @@
-// stress_test.ts
-import { BasicSocket, Client } from "common/scripts/engine/mod.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { delay } from "https://deno.land/std@0.204.0/async/delay.ts"
+import { BasicSocket, Client } from "common/engine/core.ts";
 const SERVER_URL = "http://localhost:8080"
 const BOT_COUNT = 199
 const TICK_RATE = 60
@@ -25,7 +24,8 @@ class Bot {
     async connect():Promise<boolean>{
         const con=await(await fetch(`${SERVER_URL}/api/get-game`)).json()
         if(con.status===0){
-            this.ws=new WebSocket(`ws${con.address}/api/ws`)
+            console.log(con.address)
+            this.ws=new WebSocket(con.address)
             this.client=new Client(this.ws as BasicSocket,PacketManager)
             this.ws.onopen = () => this.start()
             this.ws.onmessage = (ev) => this.onMessage(ev)
@@ -41,9 +41,8 @@ class Bot {
         const interval = 1000 / TICK_RATE
         
         const jp=new JoinPacket()
-        jp.PlayerName=`BOT-${this.id}`
+        jp.player_name=`BOT-${this.id}`
         jp.is_mobile=false
-
         this.client.emit(jp)
 
         /*const loop = async () => {
@@ -88,6 +87,7 @@ for (let i = 0; i < BOT_COUNT; i++){
     const b=new Bot(i)
     const connected=await b.connect()
     bots.push(b)
+
     if(!connected)break
     await delay(CONNECTION_DELAY*1000)
 }

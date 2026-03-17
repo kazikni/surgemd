@@ -18,15 +18,15 @@ export const Boosts={
         color:"#fff",
         type:BoostType.Null
     },
-    [BoostType.Adrenaline]:{
-        name:"adrenaline",
-        color:"#ff0",
-        type:BoostType.Adrenaline
-    },
     [BoostType.Shield]:{
         name:"shield",
         color:"#08f",
         type:BoostType.Shield
+    },
+    [BoostType.Adrenaline]:{
+        name:"adrenaline",
+        color:"#ff0",
+        type:BoostType.Adrenaline
     },
     [BoostType.Mana]:{
         name:"mana",

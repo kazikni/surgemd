@@ -1,4 +1,4 @@
-import { Definition, Definitions } from "../../engine/definitions.ts";
+import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemQuality } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 
@@ -10,104 +10,100 @@ export interface BackpackDef extends Definition{
     no_world_image?:boolean
     slots:number
 }
+export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
+    backpacks.insert(
+        {
+            idString:"null_pack",
+            level:0,
+            max:{
+                "12g":15,
+                "9mm":120,
+                "22lr":150,
+                "762mm":90,
+                "556mm":90,
+                "50cal":50,
+                "308sub":10,
+                "explosive_ammo":5,
+                "gasoline":5,
 
+                "frag_grenade":9,
 
-export const Backpacks=new Definitions<BackpackDef,{}>((g)=>{
-    g.item_type=InventoryItemType.backpack
-})
+                "gauze":15,
+                "yellow_soda":5,
+                "blue_soda":5,
+                "purple_soda":5,
+                "red_soda":5,
+                "green_soda":5,
+                "black_soda":5,
+                "small_red_crystal":5,
 
-Backpacks.insert(
-    {
-        idString:"null_pack",
-        level:0,
-        max:{
-            "12g":15,
-            "9mm":120,
-            "22lr":150,
-            "762mm":90,
-            "556mm":90,
-            "50cal":50,
-            "308sub":10,
-            "explosive_ammo":5,
-            "gasoline":5,
+                "inhaler":4,
+                "blue_potion":4,
+                "purple_potion":4,
+                "red_crystal":4,
 
-            "frag_grenade":9,
-
-            "gauze":15,
-            "yellow_soda":5,
-            "blue_soda":5,
-            "purple_soda":5,
-            "red_soda":5,
-            "green_soda":5,
-            "black_soda":5,
-            "small_red_crystal":5,
-
-            "inhaler":4,
-            "blue_potion":4,
-            "purple_potion":4,
-            "red_crystal":4,
-
-            "medikit":4,
-            "blue_pills":2,
-            "yellow_pills":2,
-            "purple_pills":2,
-            "red_pills":2,
-            "green_pills":2,
-            "pocket_portal":3,
+                "medikit":4,
+                "blue_pills":2,
+                "yellow_pills":2,
+                "purple_pills":2,
+                "red_pills":2,
+                "green_pills":2,
+                "pocket_portal":3,
+            },
+            quality:ItemQuality.Common,
+            no_world_image:true,
+            slots:3,
         },
-        quality:ItemQuality.Common,
-        no_world_image:true,
-        slots:3,
-    },
-    {
-        idString:"basic_pack",
-        level:1,
-        max:{
-            "12g":30,
-            "9mm":240,
-            "22lr":300,
-            "762mm":150,
-            "556mm":150,
-            "50cal":80,
-            "308sub":20,
-            "explosive_ammo":10,
-            "gasoline":10,
+        {
+            idString:"basic_pack",
+            level:1,
+            max:{
+                "12g":30,
+                "9mm":240,
+                "22lr":300,
+                "762mm":150,
+                "556mm":150,
+                "50cal":80,
+                "308sub":20,
+                "explosive_ammo":10,
+                "gasoline":10,
+            },
+            quality:ItemQuality.Common,
+            slots:4,
         },
-        quality:ItemQuality.Common,
-        slots:4,
-    },
-    {
-        idString:"regular_pack",
-        level:2,
-        max:{
-            "12g":60,
-            "9mm":320,
-            "22lr":400,
-            "762mm":250,
-            "556mm":250,
-            "308sub":40,
-            "50cal":130,
-            "explosive_ammo":15,
-            "gasoline":15,
+        {
+            idString:"regular_pack",
+            level:2,
+            max:{
+                "12g":60,
+                "9mm":320,
+                "22lr":400,
+                "762mm":250,
+                "556mm":250,
+                "308sub":40,
+                "50cal":130,
+                "explosive_ammo":15,
+                "gasoline":15,
+            },
+            quality:ItemQuality.Uncommon,
+            slots:5,
         },
-        quality:ItemQuality.Uncommon,
-        slots:5,
-    },
-    {
-        idString:"tactical_pack",
-        level:3,
-        max:{
-            "12g":90,
-            "9mm":400,
-            "22lr":500,
-            "762mm":310,
-            "556mm":310,
-            "308sub":80,
-            "50cal":160,
-            "explosive_ammo":20,
-            "gasoline":20,
-        },
-        quality:ItemQuality.Rare,
-        slots:6,
-    }
-)
+        {
+            idString:"tactical_pack",
+            level:3,
+            max:{
+                "12g":90,
+                "9mm":400,
+                "22lr":500,
+                "762mm":310,
+                "556mm":310,
+                "308sub":80,
+                "50cal":160,
+                "explosive_ammo":20,
+                "gasoline":20,
+            },
+            quality:ItemQuality.Rare,
+            slots:6,
+        }
+    )
+}

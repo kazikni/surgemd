@@ -1,17 +1,4 @@
 {
-    "tasks": {
-        "dev": "deno task dev:client & deno task dev:server",
-        "dev:window": "deno task dev:client:window & deno task dev:server",
-        "dev:client": "cd client && deno task dev",
-        "dev:client:window":"cd client && deno task dev:window",
-        "dev:server": "cd server && deno task dev",
-        "dev:game": "cd server && deno task dev:game",
-        "dev:api": "cd server && deno task dev:api",
-        "clear":"rm -rf dist",
-        "build:client":"cd client && deno task build",
-        "build:app":"deno run --allow-read --allow-write app.ts",
-        "install":"cd client && deno task install && cd ../server && deno task install"
-    },
     "lock": true,
     "importMap": "./common/deps.json",
     "compilerOptions": {

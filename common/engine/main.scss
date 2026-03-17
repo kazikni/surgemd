@@ -1,0 +1,51 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
+}
+.game-canvas{
+    position: absolute;
+
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    pointer-events: all;
+
+    &:focus {
+        outline: none !important;
+        border: none !important;
+    }
+}
+
+.fill-screen{
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 100%;
+    height: 100%;
+}
+$screen_small:       640px;
+$screen_medium:      768px;
+$screen_large:       1280px;
+
+$facebook_bg:   #253763;
+$twitter_bg:    #1a78b2;
+$instagram_bg:  #942b3f;
+$reddit_bg:     #c23602;
+$discord_bg:    #4049ad;
+$youtube_bg:    #8e0000;
+$github_bg:     #111111;
+
+$twitter:       #1da1f2;
+$instagram:     #e4405f;
+$reddit:        #ff4500;
+$discord:       #5865f2;
+$youtube:       #ff0000;
+$github:        #252525;

@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "io.suroimd2.game"
+    namespace = "io.surgemd.game"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.suroimd2.game"
+        applicationId "io.surgemd.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -18,9 +18,9 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file("../keystore/suroimd2-release.keystore")
+            storeFile file("../keystore/surgemd-release.keystore")
             storePassword "KEYSTORE_PASSWORD"
-            keyAlias "suroimd2"
+            keyAlias "surgemd"
             keyPassword "KEYSTORE_PASSWORD"
         }
     }

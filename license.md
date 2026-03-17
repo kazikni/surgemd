@@ -1,13 +1,13 @@
 # 🧾 BR-BattleRoyale Public Mod License (BR-BPL) v1.1
 
-**Public License for the game and mods of [Suroimd.io 2]**  
+**Public License for the game and mods of [Surgemd.io]**  
 _Last updated: 2025-11-09_
 
 ---
 
 ## 1. Definitions
 
-**“Project”**: the official repository, binaries, and official servers of the game [Suroimd.io 2].  
+**“Project”**: the official repository, binaries, and official servers of the game [Surgemd.io].  
 **“Team”**: the official maintainers of the Project.  
 **“Modder”** or **“Author”**: person or group who creates a mod, asset, map, skin, sound, or other independent contribution.  
 **“Mod”**: any package that changes gameplay behavior, assets, UI, maps, game rules, or adds content.  
@@ -36,7 +36,7 @@ The Modder retains ownership of their original content (code, images, sounds, et
 
 When submitting a Mod to the official repository or “Featured Mods” system, the Modder grants the Team a **non-exclusive, irrevocable, sublicensable, and perpetual license** to use, modify, distribute, and integrate the Mod into official versions, marketing materials, and Project packages.
 
-The Modder remains free to reuse their own content in other projects, provided it does not infringe on the [Suroimd.io 2] trademark or visual identity.
+The Modder remains free to reuse their own content in other projects, provided it does not infringe on the [Surgemd.io] trademark or visual identity.
 
 ---
 
@@ -57,7 +57,7 @@ The Team will display credits for incorporated Mods in appropriate places (loadi
 
 Monetization of Mods (sales, microtransactions, paid access, direct advertising, etc.) **requires written agreement** with the Team.
 
-Using the “[Suroimd.io 2]” name, logo, or branding in any monetized project also requires **prior written authorization**.
+Using the “[Surgemd.io]” name, logo, or branding in any monetized project also requires **prior written authorization**.
 
 **Exception:** symbolic or experimental monetization in educational, research, or personal contexts is allowed  
 (e.g., private server among friends, technical demo, explanatory videos).
@@ -82,7 +82,7 @@ It is **prohibited** to distribute, publish, or promote hacks intended for use i
 
 If a developer publishes a tool or mod that *could* be used for cheating, they must include an explicit warning in the repository, documentation, or project name stating:
 
-> “This modification is experimental and must not be used on official [Suroimd.io 2] servers.”
+> “This modification is experimental and must not be used on official [Surgemd.io] servers.”
 
 Sharing hacks intended for official server use constitutes a **serious license violation**, subject to legal action and permanent removal.
 
@@ -159,9 +159,9 @@ If no agreement is reached, **Brazilian law** applies, with jurisdiction in the 
 
 ## Annex A — Simplified Contributor License Agreement (CLA)
 
-**CLA — [Suroimd.io 2] — Summary Version**
+**CLA — [Surgemd.io] — Summary Version**
 
-I, **[Hugo Mendonça Santana]**, grant the **[SMD-Team]** a non-exclusive, irrevocable, sublicensable, and worldwide license to use, copy, modify, publish, distribute, and incorporate my contributions into the [Suroimd.io 2] Project.  
+I, **[Hugo Mendonça Santana]**, grant the **[SMD-Team]** a non-exclusive, irrevocable, sublicensable, and worldwide license to use, copy, modify, publish, distribute, and incorporate my contributions into the [Surgemd.io] Project.  
 I declare that I hold the necessary rights or valid authorization to license these contributions.  
 I accept that the Team may integrate my contributions into official versions, binaries, and derivative products of the Project.
 

@@ -1,0 +1,8 @@
+{
+    "id":"io.surgemd.example",
+    "name":"Example Mod",
+    "version":"1.0",
+    "author":"kazikni",
+    "description":"A Example Mod",
+    "main":"main.js"
+}

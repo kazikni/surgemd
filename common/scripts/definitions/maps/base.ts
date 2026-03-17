@@ -1,18 +1,18 @@
-import { LootTable, LootTableItemRet } from "../../engine/inventory.ts";
 import { InventoryItemType } from "../utils.ts";
-import { GameItem, GameItems } from "../alldefs.ts";
 import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
-import { Random1 } from "../../engine/random.ts";
-import { Vec2 } from "../../engine/geometry.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap, SnowMap } from "./normal.ts";
-
+import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
+import { DebugMap } from "./debug.ts";
+import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2 } from "../../../engine/core.ts";
+import { GameDefinition, GameItem } from "../game_defs.ts";
 export interface Aditional{
     withammo:boolean
 }
-export function loot_table_get_item(item:string,count:number,_aditional:Aditional):LootTableItemRet<GameItem>[]{
-    const itemD=GameItems.valueString[item]
+export function loot_table_get_item(item:string,count:number,_aditional:Aditional,game:AbstractGame<any>):LootTableItemRet<GameItem>[]{
+    //@ts-ignore
+    const itemD=(game.definitions as GameDefinition).game_items.valueString[item]
     if(!itemD){
         console.error(item,"Not Founded")
     }
@@ -24,7 +24,8 @@ export function loot_table_get_item(item:string,count:number,_aditional:Aditiona
             }
         ]
         if(itemD.ammoSpawnAmount){
-            const ammo_def=GameItems.valueString[(itemD as unknown as GunDef).ammoSpawn??(itemD as unknown as GunDef).ammoType]
+            //@ts-ignore
+            const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammoSpawn??(itemD as unknown as GunDef).ammoType]
             ret.push({
                 item:ammo_def,
                 count:(itemD as unknown as GunDef).ammoSpawnAmount!
@@ -72,7 +73,6 @@ export interface IslandDef{
             floor?:FloorType
         }
     },
-    ground_loot?:{table:string,count:Random1,layer?:Layers}[],
     spawn?:{id:string,count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
 }
 export interface MapDef{
@@ -82,11 +82,16 @@ export interface MapDef{
     generation:{
         island?:IslandDef
     }
+    seed?:number
+    gen_callback?:(map:GameMap)=>void
 }
-//export const LootTables=new LootTablesManager<GameItem,Aditional>(get_item)
-
+export interface CounterMapDef extends MapDef{
+    spawn:Hitbox2D[]
+}
 export const Maps:Record<string,MapDef>={
     normal:NormalMap,
     lobby:NormalLobby,
-    snow:SnowMap
+    snow:SnowMap,
+
+    debug:DebugMap
 }

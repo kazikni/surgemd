@@ -1,6 +1,6 @@
 {
-    "appId": "io.suroimd2.game",
-    "appName": "Suroimd.io 2",
+    "appId": "io.surgemd.game",
+    "appName": "Surgemd",
     "webDir": "dist",
     "bundledWebRuntime": false,
     "server": {

@@ -1,0 +1,46 @@
+{
+    "name":"client",
+    "version":"1.0",
+    "dependencies":{
+        "main":{
+            "npm":[
+                "vite",
+                "@sveltejs/vite-plugin-svelte",
+                "vite-plugin-svgo",
+                "fdir",
+                "sass",
+                "canvas",
+                "maxrects-packer",
+                "minimatch",
+                "types",
+                "semver"
+            ]
+        }
+    },
+    "task":{
+        "dev":{
+            "task":"smde run vite",
+            "childs":{
+                "tauri":{
+                    "task":"npx tauri dev"
+                }
+            }
+        },
+        "build":{
+            "task":"smde build vite",
+            "childs":{
+                "electron":{
+                    "task":"smde build electron"
+                }
+            }
+        },
+        "run": {
+            "task": "smde run vite"
+        }
+    },
+    "build":{
+        "electron":{
+            
+        }
+    }
+}

@@ -1,20 +1,15 @@
-import { ResourcesManager, ShowElement, WebglRenderer} from "../engine/mod.ts"
 import { Game} from "./game.ts"
-import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import "../../scss/main.scss"
-import { GuiManager } from "../managers/guiManager.ts";
-import { SoundManager } from "../engine/sounds.ts";
-import { OfflineGameServer } from "./offline.ts";
-import { BasicSocket, Client, IPLocation, random } from "common/scripts/engine/mod.ts";
-import { GameConsole } from "../engine/console.ts";
 import { MenuManager } from "../managers/menuManager.ts";
-import { InputManager } from "../engine/keys.ts"
-import { ConfigType } from "common/scripts/config/config.ts";
-import { WorkerSocket } from "common/scripts/engine/server_offline/worker_socket.ts";
 import { NewMDLanguageManager } from "./languages.ts";
-import { PacketManager } from "common/scripts/packets/packet_manager.ts";
+import { BasicSocket, FetchFileManager, FileManager, IPLocation, isMobile } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
-import { isMobile } from "../engine/game.ts";
+import { sandbox_version } from "./config.ts";
+import { GoFileManager, is_binary } from "../defs/go_files.ts";
+import { CModsManager } from "../managers/modsManager.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { PacketManager } from "common/scripts/packets/packet_manager.ts";
+import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -41,38 +36,11 @@ import { isMobile } from "../engine/game.ts";
 
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
-    const inputs=new InputManager(100)
-    inputs.bind(canvas)
-
-    const GameSave=new GameConsole()
-    GameSave.input_manager=inputs
-    GameSave.default_actions=ConfigDefaultActions
-    GameSave.casters=ConfigCasters
-    GameSave.default_values=ConfigDefaultValues
-    GameSave.init("suroimd2-config")
-
-    const sounds=new SoundManager()
     const tm=await NewMDLanguageManager("english","/languages")
-    sounds.volumes={
-        "players":1,
-        "music":1,
-        "loot":1,
-        "obstacles":1,
-        "explosions":1,
-        "ambience":1,
-        "ui":1
-    }
 
-    const renderer=new WebglRenderer(canvas,undefined,GameSave.get_variable("cv_graphics_renderer")==="webgl1"?1:2)
+    const fs:FileManager=is_binary?new GoFileManager():new FetchFileManager()
+    const mods:CModsManager|undefined=sandbox_version&&is_binary?new CModsManager(fs):undefined
 
-    const resources=new ResourcesManager(renderer,sounds)
-    await resources.load_audio("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
-    //await resources.load_audio("menu_music_2",{src:"/sounds/musics/menu_music_2.mp3",volume:1},"essentials")
-    await resources.load_audio("button_click",{src:"/sounds/ui/button_click.mp3",volume:1},"essentials")
-    const menu_manager=new MenuManager(GameSave,resources,sounds)
-    menu_manager.start()
-
-    const gui=new GuiManager()
     class App{
         game:Game
 
@@ -81,86 +49,75 @@ import { isMobile } from "../engine/game.ts";
             play_button_campaign:document.querySelector("#btn-play-campaign") as HTMLButtonElement
         }
 
-        game_server?:OfflineGameServer
+        menu_manager:MenuManager
+        definitions:GameDefinition
+        file=new FetchFileManager()
 
         constructor(){
-            this.elements.play_button_campaign.addEventListener("click",(_e)=>{
-                //this.playGame({offline:true})
-            })
-            this.game=new Game(inputs,menu_manager,sounds,GameSave,resources,tm,renderer)
-            this.game.listners_init()
-            this.game.init_gui(gui)
-            this.game.onstop=this.closeGame.bind(this)
-            menu_manager.play_callback=this.playGame.bind(this)
+            this.definitions=new GameDefinition()
+            this.definitions.init_default()
+            PacketManager.pre_packet=(p)=>{
+                if(p.Name==="update")(p as UpdatePacket).definition=this.definitions
+            }
+            const menu_manager=new MenuManager(this.definitions)
+
+            this.menu_manager=menu_manager
+
+            this.game=new Game(this.definitions,menu_manager,canvas,tm)
         }
-        async playGame(join_config:PlayArgs){
+        async init(){
+            this.menu_manager.play_callback=this.play_game.bind(this)
+            if(mods){
+                mods.stateFile="save/mods_state.json"
+                await mods.loadManifests()
+                await mods.initialize(this.game)
+                for(const k of mods.getLoadOrder()){
+                    const mod=mods.loaded.get(k.id)!
+                    if(mod.result?.definitions)this.definitions.add_definitions(mod?.result?.definitions)
+                }
+            }
+            await this.game.bind(fs)
+            this.menu_manager.init(this.game.save,this.file,this.game.resources,this.game.sounds,mods)
+        }
+        join_on_game(url:string,password:string,attempts=0,delay=500){
+            console.log("Joining In: ",url)
+            try{
+                const ws=new WebSocket(url) as unknown as BasicSocket
+                this.game.offline=false
+                this.game.set_socket(ws)
+            }catch{
+                console.log("Failed To Join In:",url)
+                if(attempts){
+                    setTimeout(this.join_on_game.bind(this,url,password,attempts-1,delay),delay)
+                }
+            }
+        }
+        async play_game(play:PlayArgs){
             if(this.game.happening)return
-            let socket:BasicSocket
-            switch(join_config.type){
+            this.menu_manager.show_loading_screen()
+            switch(play.type){
                 case "online":{
-                    this.game.offline=false
-                    const reg=menu_manager.api_settings.regions[GameSave.get_variable("cv_game_region")]
+                    const reg=this.menu_manager.api_settings.regions[this.game.save.get_variable("sv_game_region")]
                     const ser=new IPLocation(reg.host,reg.port)
                     const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).json())
+
                     if(ghost.status===0){
-                        socket=new WebSocket(`ws${ghost.address}/api/ws`) as unknown as BasicSocket
+                        this.game.connect(ghost.address)
                     }
                     break
                 }
                 case "campaign":{
-                    const worker = new Worker(new URL("./worker_server.ts", import.meta.url), {
-                        type: "module",
-                    });
-
-                    this.game.offline=true
-                    worker.postMessage({
-                        type: "start",
-                        config: {
-                            game: {
-                                options: {
-                                    gameTps: 100,
-                                    netTps: 30
-                                },
-                                debug:{
-                                    deenable_lobby:true,
-                                    debug_menu:true,
-                                }
-                            },
-                            database: {
-                                enabled: false,
-                                statistic:false
-                            },
-                        } as ConfigType,
-                        bots: 99,
-                        ping: GameSave.get_variable("cv_game_ping"),
-                    });
-
-                    socket = new WorkerSocket(worker);
+                    this.game.local_server.play_campaign_level(play.level)
                     break
                 }
-            }
-            ShowElement(menu_manager.content.loading_screen,true)
-            const c=new Client(socket!,PacketManager)
-            c.onopen=this.game.connected.bind(this.game,c,GameSave.get_variable("cv_loadout_name"))
-            this.game.running=true
-        }
-        closeGame(){
-            if(menu_manager.account.enabled)menu_manager.account.update_account()
-            this.game.scene.objects.clear()
-            this.game.guiManager.clear()
-            this.game.menuManager.game_end()
-            this.game.client?.disconnect()
-            this.game.happening=false
-            this.game.running=false
-            this.game.clock.stop()
-
-            if(this.game_server){
-                this.game_server.clock.stop()
-                this.game_server.running=false
-                this.game_server=undefined
+                case "join":{
+                    this.join_on_game(play.url,play.password,play.attempts,play.delay)
+                    break
+                }
             }
         }
 
     }
     const app=new App()
+    await app.init()
 })()

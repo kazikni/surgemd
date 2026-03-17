@@ -221,7 +221,6 @@ func main() {
 	w.Bind("go_exec_server", JSexecServer)
 	w.Bind("go_stop_server", JSstopServer)
 	w.Bind("go_exec_cmd", JSexecCommand)
-
 	w.Bind("go_toggle_fullscreen", JStoggleFullscreen)
 
 	if len(os.Args) > 1 && os.Args[1] == "dev" {
@@ -231,7 +230,8 @@ func main() {
 		smdt.HWNDSetIcon(smdt.Get_Active_HWND(), "../client/public/favicon.ico")
 		return
 	}
+
 	smdt.HWNDSetIcon(smdt.Get_Active_HWND(), "files/favicon.ico")
 
-	go runWebServer(w)
+	runWebServer(w)
 }

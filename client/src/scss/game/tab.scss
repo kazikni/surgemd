@@ -134,18 +134,17 @@
     };
 }
 .tab-view-minimized{
-    scale: 50%;
-    transform: translate(0%,0%);
+    transform: translate(0%,0%) scale(50%);
     left: -180px;
     top: -90px;
 
     @media screen and (max-width: palette.$screen_large) {
-        scale: 30%;
+        transform: translate(0%,0%) scale(30%);
         left: -240px;
         top: -120px;
     };
     @media screen and (max-width: palette.$screen_medium) {
-        scale: 25%;
+        transform: translate(0%,0%) scale(25%);
         left: -270px;
         top: -145px;
     };

@@ -1,7 +1,7 @@
 import { Layers } from "common/scripts/others/constants.ts";
 import { Human } from "../objects/human.ts";
 import { type Game } from "../others/game.ts";
-import { type BotAi } from "../human/simple_bot_ai.ts";
+import { type BotAi } from "../human/ai/simple_bot_ai.ts";
 import { DamageParams } from "../others/utils.ts";
 export class NPC extends Human{
     ai?:BotAi

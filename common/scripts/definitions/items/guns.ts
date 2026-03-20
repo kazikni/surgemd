@@ -803,7 +803,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"hp18",
             fireDelay:0.6,
-            switchDelay:0.7,
+            switchDelay:0.3,
             spread:11,
             lenght:0.65,
             ammoType:"12g",

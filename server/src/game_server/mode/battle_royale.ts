@@ -35,7 +35,7 @@ export class BattleRoyaleSolo extends ModeManager{
             },
             map:settings.map?(
                 typeof settings.map==="string"?Maps[settings.map]:settings.map
-            ):Maps["normal"],
+            ):Maps["lobby"],
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone
         }
@@ -87,6 +87,54 @@ export class BattleRoyaleSolo extends ModeManager{
     override generate_map(): void {
         this.game.map.generate(this.settings.map)
         this.game.deadzone.set_config(this.settings.deadzone)
+
+        /*for(let i=0;i<1;i++){
+            const b=this.game.humans.add_npc()
+            b.ai=new ADVHumanAI(b)
+
+            const pos=this.get_human_spawn_position(b)
+            if(pos)b.position=pos
+
+            b.inventory.load_preset({
+                gun1:[
+                    {item:"spas12",weight:1},
+                ],
+                gun2:[
+                    {item:"kar98k",weight:1},
+                ],
+                helmet:[
+                    {item:"tactical_helmet",weight:1}
+                ],
+                vest:[
+                    {item:"tactical_vest",weight:1}
+                ],
+                hand:1,
+                infinity_ammo:true,
+            })
+    
+            const jp=new JoinPacket()
+            jp.player_name=`BOT-${i+1}`
+            const b=this.game.players.add_bot(jp)
+
+            b.ai=new ADVHumanAI(b.human!)
+            b.human!.inventory.load_preset({
+                gun1:[
+                    {item:"spas12",weight:1},
+                ],
+                gun2:[
+                    {item:"ak47",weight:1},
+                    {item:"kar98k",weight:1},
+                ],
+                helmet:[
+                    {item:"tactical_helmet",weight:1}
+                ],
+                vest:[
+                    {item:"tactical_vest",weight:1}
+                ],
+                hand:1,
+                infinity_ammo:true,
+            })
+        }*/
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)

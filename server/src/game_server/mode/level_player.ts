@@ -7,7 +7,8 @@ import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
 import { Spawn } from "common/scripts/others/constants.ts";
-import { EnemyNPCAI } from "../human/enemy_npc_ai.ts";
+import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
+import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 
 export class CampaignGamemodeManager extends ModeManager {
     level: LevelDefinition
@@ -90,7 +91,8 @@ export class CampaignGamemodeManager extends ModeManager {
     generate_enemy(def: EnemyDef, name?: string) {
         const bot = this.game.humans.add_npc()
 
-        bot.ai = new EnemyNPCAI(bot)
+        bot.ai=new ADVHumanAI(bot)
+        //bot.ai = new EnemyNPCAI(bot)
 
         if (name)bot.name = name
         if (def.inventory)bot.inventory.load_preset(def.inventory)

@@ -1,13 +1,13 @@
-import { Building } from "../objects/building.ts"
+import { Building } from "../../objects/building.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
-import { GunItem } from "./inventory.ts"
+import { GunItem } from "../inventory.ts"
 import { StatedBotAi } from "./simple_bot_ai.ts";
 import { Angle, astar_path2d, random, v2, Vec2 } from "common/engine/core.ts";
-import { type Human } from "../objects/human.ts";
-import { type Obstacle } from "../objects/obstacle.ts";
+import { type Human } from "../../objects/human.ts";
+import { type Obstacle } from "../../objects/obstacle.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { NetStream } from "common/engine/core/net/stream.ts";
-import { ServerGameObject } from "../others/gameObject.ts";
+import { ServerGameObject } from "../../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 type EnemyState =
     | "idle"

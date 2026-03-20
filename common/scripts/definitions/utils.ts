@@ -131,7 +131,7 @@ export interface InventoryPreset{
     items?:InventoryPresetItem[][]
     aitems?:Record<string,number>
     iitems?:string[]
-    acessories:Record<number,string>
+    acessories?:Record<number,string>
 
     hand?:number
     infinity_ammo?:boolean

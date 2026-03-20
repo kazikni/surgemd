@@ -1,7 +1,7 @@
-import { type Game } from "../others/game.ts";
+import { type Game } from "../../others/game.ts";
 import { NetStream, Numeric, PolarMovement, random, v2, Vec2 } from "common/engine/core.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
-import { Human } from "../objects/human.ts";
+import { Human } from "../../objects/human.ts";
 import { GameObjectDef } from "common/scripts/definitions/game_defs.ts";
 export type AIMessage<T = any> = {
     type: string

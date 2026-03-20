@@ -10,13 +10,16 @@ import { GameConstants } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { BotAi } from "../human/simple_bot_ai.ts";
+import { BotAi } from "../human/ai/simple_bot_ai.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:NetStream): void {
         if(this.ai){
             this.ai.net_update(general_update)
         }
+    }
+    override send_game_over(win?: boolean, eliminated_by?: number): void {
+        //
     }
 }
 export class PlayerClient extends PlayerConnManager{

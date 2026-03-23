@@ -1,8 +1,7 @@
-import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
-import { Container2D, NetStream, Numeric, RectHitbox2D, Sprite2D, v2 } from "common/engine/client.ts";
-import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-
+import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts"
+import { Container2D, NetStream, Numeric, RectHitbox2D, Sprite2D, v2 } from "common/engine/client.ts"
+import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
+import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 export class Vehicle extends MovingBody {
     string_type = "vehicle"
     number_type = GameObjectType.Vehicle
@@ -13,8 +12,6 @@ export class Vehicle extends MovingBody {
     main_sprite = new Sprite2D()
     wheels: Sprite2D[] = []
     movable_wheels: Sprite2D[] = []
-
-    
 
     physical_data:MovingBodyPhysicalData&{direction:number,speed:number} = {
         rotation: 0,

@@ -37,6 +37,7 @@ import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
+import { Creature } from "../objects/creature.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -92,7 +93,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle/*,StaticBody,Obstacle,Loot*/],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature/*,StaticBody,Obstacle,Loot*/],
         )
 
         this.local_server=new LocalGameServer(this)

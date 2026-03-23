@@ -1,11 +1,10 @@
-import { Material, WebglRenderer } from "../rendering/renderer.ts";
+import { Material } from "../rendering/renderer.ts";
 import { Color } from "../../core/math/color.ts";
 import { model2d, Model2D } from "../../core/definition/models.ts";
 import { CamA, Container2DObject } from "./base.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts";
 import { SmoothShape2D } from "../../core/math/geometry.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
-import { Batcher } from "../rendering/batcher.ts";
 type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material }
   | { type: 'fillColor'; color:Color }

@@ -1,9 +1,9 @@
 import { AKeyFrame, FrameTransform } from "../../core/definition/definitions.ts"
-import { Container2D } from "./base.ts"
 import { AnimatedSprite2D, Sprite2D } from "./sprite.ts"
 import { Tween } from "../misc/utils.ts"
 import { type ClientGame } from "../misc/game.ts"
 import { ResourcesManager } from "../resources/resources.ts"
+import { Container2D } from "./container.ts";
 
 export class AnimatedContainer2D extends Container2D{
     objects=new Map<string,Sprite2D>()

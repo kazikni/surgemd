@@ -163,5 +163,6 @@ export enum GameObjectType{
     Bullet,
     Explosion,
     Grenade,
-    Vehicle
+    Vehicle,
+    Creature
 }

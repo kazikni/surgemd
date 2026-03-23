@@ -1,4 +1,4 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 
 export interface ObstacleBehaviorDoor{
@@ -72,7 +72,7 @@ export interface ObstacleDef extends Definition{
     onDestroyExplosion?:string
     material?:string
 
-    lootTable?:string
+    lootTable?:LootTable
 
     interactDestroy?:boolean
     reflect_bullets?:boolean

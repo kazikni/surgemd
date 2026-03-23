@@ -335,10 +335,10 @@ export const NormalLobby:MapDef={
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
                     {id:"barrel",count:13},
-                    {id:"normal_loot",count:20}
+                    {id:"normal_loot",count:20},
 
-                    //{id:"pig",count:10},
-                    //{id:"chicken",count:10}
+                    {id:"pig",count:5},
+                    {id:"chicken",count:5}
                 ]
             ],
             terrain:{

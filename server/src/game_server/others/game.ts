@@ -26,6 +26,8 @@ import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
 import { BattleRoyaleDebug, BattleRoyaleSolo } from "../mode/battle_royale.ts";
 import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
+import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
+import { Creature } from "../objects/creature.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -136,7 +138,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Building,
             Vehicle,
             Bullet,
-            Explosion
+            Explosion,
+            Creature
         ])
 
         this.ntps=30
@@ -356,11 +359,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const v=this.scene_2d.objects.add_object(new Vehicle(),layer,undefined,{position,def}) as Vehicle
         return v
     }
-    /*
     add_creature(position:Vec2,def:CreatureDef,layer:number=Layers.Normal):Creature{
-        const c=this.scene.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
+        const c=this.scene_2d.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
         return c
-    }*/
+    }
     override handle_connection(client:Client,username:string){
         this.players.connection(client,username)
     }

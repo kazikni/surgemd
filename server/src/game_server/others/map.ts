@@ -39,8 +39,8 @@ export const generation={
             for(const spawn of def.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
-                    /*if(Creatures.exist(item.id)){
-                        const def=Creatures.getFromString(item.id)
+                    if(map.game.definitions.creatures.exist(item.id)){
+                        const def=map.game.definitions.creatures.getFromString(item.id)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.game.add_creature(v2.new(0,0),def,item.layer)
                             const pos=map.getRandomPosition(obj.hitbox,obj.id,obj.layer,item.spawn??def.spawn??{
@@ -53,8 +53,7 @@ export const generation={
                             }
                             obj.position=pos
                         }
-                    }else */
-                    if(map.game.definitions.buildings.exist(item.id)){
+                    }else if(map.game.definitions.buildings.exist(item.id)){
                         const def=map.game.definitions.buildings.getFromString(item.id)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.generate_building(def,random,item.spawn,item.layer)

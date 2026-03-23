@@ -469,7 +469,7 @@ interface LootTableObject{
     max:number
     content:LootTableItem[]
 }
-export type LootTable=LootTableObject|LootTableItem[]|LootTableItem[][]
+export type LootTable=string|LootTableObject|LootTableItem[]|LootTableItem[][]
 export type LootTableItemRet<Item>={
     count:number
     item:Item
@@ -488,9 +488,9 @@ export class LootTablesManager<TP,Aditional>{
             this.tables.set(t,tables[t])
         }
     }
-    get_loot(table:string,aditional:Aditional,game:AbstractGame<any>):LootTableItemRet<TP>[]{
+    get_loot(table:LootTable,aditional:Aditional,game:AbstractGame<any>):LootTableItemRet<TP>[]{
         const ret:LootTableItemRet<TP>[]=[]
-        const lt=this.tables.get(table)
+        const lt=typeof table==="string"?this.tables.get(table):table
         if(!lt){
             return []
         }

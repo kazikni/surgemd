@@ -320,6 +320,126 @@ export class MenuManager{
             })
         })
     }
+    show_comic(pages: string[][],can_skip: boolean = false,auto:boolean = true,frame_time: number = 2,music?: Sound,music_player?: ManipulativeSoundInstance): Promise<void> {
+        return new Promise((resolve) => {
+            if (music && music_player) {
+                music_player.set(music)
+            }
+            const overlay = document.createElement("div")
+            overlay.className = "comic-overlay"
+            const container = document.createElement("div")
+            container.className = "comic-container"
+            overlay.appendChild(container)
+            document.body.appendChild(overlay)
+            requestAnimationFrame(() => {
+                overlay.style.opacity = "1"
+            })
+            let pageIndex = 0
+            let frameIndex = 0
+            let frames: HTMLImageElement[] = []
+            const buildPage = () => {
+                container.innerHTML = ""
+                frames = []
+                const page = pages[pageIndex]
+                for (const src of page) {
+                    const img = document.createElement("img")
+                    img.draggable=false
+                    img.className = "comic-frame"
+                    img.src = src
+                    container.appendChild(img)
+                    frames.push(img)
+                }
+                frameIndex = 0
+            }
+            const revealNext = () => {
+                if (frameIndex < frames.length) {
+                    frames[frameIndex++].classList.add("show")
+                    return true
+                }
+                return false
+            }
+            const hideLast = () => {
+                if (frameIndex > 0) {
+                    frames[--frameIndex].classList.remove("show")
+                    return true
+                }
+                return false
+            }
+            const nextPage = () => {
+                if (pageIndex < pages.length - 1) {
+                    pageIndex++
+                    buildPage()
+                    setTimeout(autoLoop, frame_time * 1000)
+                    return true
+                    
+                }
+                return false
+            }
+            const prevPage = () => {
+                if (pageIndex > 0) {
+                    pageIndex--
+                    buildPage()
+                    frames.forEach(f => f.classList.add("show"))
+                    frameIndex = frames.length
+                    return true
+                }
+                return false
+            }
+            const end = () => {
+                overlay.style.opacity = "0"
+                setTimeout(() => {
+                    overlay.remove()
+                    if (music_player) music_player.set(undefined)
+                    resolve()
+                }, 300)
+            }
+            const clickHandler = (e: MouseEvent) => {
+                if (e.button === 2) return
+                if (!revealNext()) {
+                    if (!nextPage()) {
+                        end()
+                    }
+                }
+            }
+            const rightClickHandler = (e: MouseEvent) => {
+                e.preventDefault()
+                if (!hideLast()) {
+                    prevPage()
+                }
+            }
+            const keyHandler = (e: KeyboardEvent) => {
+                if (e.key === "ArrowRight" || e.key === " ") {
+                    clickHandler(new MouseEvent("click"))
+                }
+                if (e.key === "ArrowLeft") {
+                    rightClickHandler(new MouseEvent("contextmenu"))
+                }
+            }
+            overlay.addEventListener("click", clickHandler)
+            if (can_skip) {
+                overlay.addEventListener("contextmenu", rightClickHandler)
+                window.addEventListener("keydown", keyHandler)
+            }
+            const autoLoop = () => {
+                if (!auto) return
+
+                if (revealNext()) {
+                    setTimeout(autoLoop, frame_time * 1000)
+                    return
+                }
+
+                return
+            }
+            buildPage()
+            autoLoop()
+            const cleanup = () => {
+                overlay.removeEventListener("click", clickHandler)
+                overlay.removeEventListener("contextmenu", rightClickHandler)
+                window.removeEventListener("keydown", keyHandler)
+            }
+            overlay.addEventListener("remove", cleanup)
+        })
+    }
     your_skins:string[]=["default_skin"]
     show_your_skins(){
         this.content.submenus.extras.loadout_c.innerHTML=""

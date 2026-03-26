@@ -2,6 +2,7 @@ import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
 import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
+import { HistoryCommand } from "./history.ts";
 
 export type LevelPlayerDefinition={
     name?:string
@@ -51,9 +52,8 @@ export interface LevelDefinition{
     player: LevelPlayerDefinition
     assets?:{
         background_music?:string
-        comics?:{
-            before_level?:string[]
-            after_level?:string[]
+        load?:{
+            sounds?:Record<string,string>
         }
     }
     definitions?:{
@@ -63,4 +63,5 @@ export interface LevelDefinition{
             hard:EnemyDef
         }>
     }
+    history?:HistoryCommand[]
 }

@@ -6,7 +6,12 @@
         "dificulty":"normal"
     },
     "assets":{
-        "background_music":"/sounds/musics/single-player/music_1.mp3"
+        "background_music":"/sounds/musics/single-player/music_1.mp3",
+        "load":{
+            "sounds":{
+                "history_music_1":"/sounds/musics/history_music_1.mp3"
+            }
+        }
     },
     "mode":{
         "type":"kill_all_enemies",
@@ -20,6 +25,128 @@
             }
         ]
     },
+    "history":[
+        {
+            "type":3,
+            "music":"history_music_1"
+        },
+        {
+            "type":2,
+            "text":"*The Ships*"
+        },
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-1.png"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-2.png"
+        },
+        {
+            "type":2,
+            "text":"*Nhac*"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-3.png"
+        },
+        {
+            "type":2,
+            "text":"*wine toast*"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-4.png"
+        },
+        {
+            "type":2,
+            "text":"*Vinii looking at the sea*"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-5.png"
+        },
+        {
+            "type":2,
+            "text":"*Soldier waiting*"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-6.png"
+        },
+        {
+            "type":2,
+            "text":"*Soldier opening the doors*"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-7.png"
+        },
+        {
+            "type":2,
+            "text":""
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-9.png"
+        },
+        {
+            "type":2,
+            "text":"*The blue hole appear*"
+        },
+        {
+            "type":0,
+            "time":4
+        },
+
+        {
+            "type":1,
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-10.png"
+        },
+        {
+            "type":2,
+            "text":"*Ship entering the blue hole*"
+        },
+        {
+            "type":0,
+            "time":4
+        }
+    ],
     "definitions":{
         "enemies":{
             "basic":{
@@ -63,12 +190,13 @@
                             {"item":"awp","weight":0.5},
                             {"item":"pkp","weight":0.1},
                             {"item":"awms","weight":0.1}
+                        ],
+                        "boosts":[
+                            {"weight":10,"boost_type":0,"boost":0},
+                            {"weight":1,"boost_type":1,"boost":1},
+                            {"weight":1,"boost_type":2,"boost":1}
                         ]
-                    },
-                    "boosts":[
-                        {"weight":10,"boost_type":0},
-                        {"weight":1,"boost_type":1,"boost":1}
-                    ]
+                    }
                 }
             }
         }

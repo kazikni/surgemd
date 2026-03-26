@@ -245,7 +245,7 @@ export class ManipulativeSoundInstance {
 
             if (this.instance && this.instance.buffer !== sound.buffer) {
 
-                const pos = position ?? this.get_position()
+                const pos = position ?? 0
 
                 this.instance.stop()
 

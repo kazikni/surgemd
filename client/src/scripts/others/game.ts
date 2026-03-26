@@ -326,6 +326,11 @@ export class Game extends ClientGame<GameObject>{
         if(this.level?.assets?.background_music){
             await this.resources.load_audio("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
         }
+        if(this.level?.assets?.load?.sounds){
+            for(const s of Object.keys(this.level.assets.load.sounds)){
+                await this.resources.load_audio(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
+            }
+        }
     }
     async load_resources(textures:string[]=["main"]){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
@@ -371,13 +376,14 @@ export class Game extends ClientGame<GameObject>{
 
         this.happening=true
 
-        this.cam2d.position.x=0
-        this.cam2d.position.y=0
-
-        /*this.sounds.listener_position.x=100000
+        this.sounds.listener_position.x=100000
         this.sounds.listener_position.y=100000
         this.cam2d.position.x=100000
-        this.cam2d.position.y=100000*/
+        this.cam2d.position.y=100000
+
+        if(this.level?.history){
+            await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music)
+        }
 
         this.join()
 

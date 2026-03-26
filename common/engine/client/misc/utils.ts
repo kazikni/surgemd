@@ -210,3 +210,50 @@ export function disableContextMenuPrevent() {
     document.removeEventListener("contextmenu", preventHandler);
     document.removeEventListener("selectstart", preventHandler);
 }
+export async function typewriter(
+    element: HTMLElement,
+    html: string,
+    speed: number = 20
+): Promise<void> {
+    element.innerHTML = ""
+    const temp = document.createElement("div")
+    temp.innerHTML = html
+    const nodes: Node[] = []
+    const walk = (node: Node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            nodes.push(node)
+        } else {
+            nodes.push(node)
+            node.childNodes.forEach(walk)
+        }
+    }
+    temp.childNodes.forEach(walk)
+    const cloneNode = (node: Node): Node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return document.createTextNode("")
+        }
+        const el = (node as HTMLElement).cloneNode(false)
+        return el
+    }
+    const build = (src: Node, dstParent: Node) => {
+        const clone = cloneNode(src)
+        dstParent.appendChild(clone)
+
+        if (src.nodeType !== Node.TEXT_NODE) {
+            src.childNodes.forEach(child => build(child, clone))
+        }
+    }
+    temp.childNodes.forEach(n => build(n, element))
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+    let node: Node | null
+    while ((node = walker.nextNode())) {
+        const fullText = nodes.shift()?.textContent ?? ""
+        let current = ""
+
+        for (const char of fullText) {
+            current += char
+            node.textContent = current
+            await new Promise(r => setTimeout(r, speed))
+        }
+    }
+}

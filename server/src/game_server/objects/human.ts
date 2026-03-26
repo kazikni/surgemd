@@ -542,7 +542,7 @@ export class Human extends MovingBody{
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
         const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
-        let speed=6*(this.recoil?this.recoil.speed:1)
+        let speed=5*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
                   * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
                   * this.modifiers.speed

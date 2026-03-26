@@ -730,10 +730,10 @@ export function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CModsManag
 <a href="https://github.com/kazikni/surgemd" target="_blank" class="social-link">
     <i class="social-icon github"></i>
 </a>
-<a href="/files/selfs-build-lasted.zip" target="_blank" class="social-link">
+<a href="/files/surgemd-windows-lasted.zip" target="_blank" class="social-link">
     <i class="social-icon selfs"></i>
 </a>
-<a href="/files/linux-build-lasted.zip" target="_blank" class="social-link">
+<a href="/files/surgemd-linux-lasted.zip" target="_blank" class="social-link">
     <i class="social-icon linux"></i>
 </a>
 </div>

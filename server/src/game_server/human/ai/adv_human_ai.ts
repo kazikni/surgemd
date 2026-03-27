@@ -13,6 +13,7 @@ export type BotExecutionContext = {
     target?: Human
     target_pos?: Vec2
     dt: number
+    spin:(human:Human, duration:number)=>void
 }
 export abstract class BotExecutor{
     activated:boolean=false
@@ -124,16 +125,49 @@ export class AimController extends BotExecutor{
     aim_follow_variation = random.float(0,10)
 
     angle_variation = random.float(0,0.4)
+    
+    spinning = false
+    spin_progress = 0
+    spin_duration = 0
+    spin_start_angle = 0
+    spin_target_angle = 0
+    startSpin(human:Human, duration:number){
+        if(this.spinning)return
+        this.spinning = true
+        this.spin_progress = 0
+        this.spin_duration = duration
 
+        this.spin_start_angle = human.physical_data.rotation
+        this.spin_target_angle = this.spin_start_angle + Math.PI*2
+    }
+    private updateSpin(ctx:BotExecutionContext){
+        if(!this.spinning) return
+        this.spin_progress += ctx.dt
+        const t = this.spin_progress / this.spin_duration
+        if(t >= 1){
+            this.spinning = false
+            return
+        }
+        const angle = Numeric.lerp(
+            this.spin_start_angle,
+            this.spin_target_angle,
+            t
+        )
+        ctx.human.input.rotation = angle
+    }
     update(ctx: BotExecutionContext){
         if(!ctx.target_pos) return
         const self = ctx.human
         const dst_angle=v2.lookTo(ctx.human.position,ctx.target_pos)
-        self.input.rotation = Numeric.lerp_rad(
-            self.physical_data.rotation,
-            dst_angle+random.float(-this.angle_variation,this.angle_variation),
-            Numeric.dt_expo_inter(this.aim_follow+(this.aim_follow_variation*Math.random()),ctx.dt)
-        )
+        if(this.spinning){
+            this.updateSpin(ctx)
+        }else{
+            self.input.rotation = Numeric.lerp_rad(
+                self.physical_data.rotation,
+                dst_angle+random.float(-this.angle_variation,this.angle_variation),
+                Numeric.dt_expo_inter(this.aim_follow+(this.aim_follow_variation*Math.random()),ctx.dt)
+            )
+        }
     }
 }
 export enum QuickswitchType{
@@ -172,6 +206,7 @@ export class AttackingController extends BotExecutor {
         type: QuickswitchType.None,
         weapon:0,
     }
+
     private switchWeapon(human:Human, hand:number){
         human.input.actions.push({
             type: InputActionType.set_hand,
@@ -213,6 +248,7 @@ export class AttackingController extends BotExecutor {
                             this.shoot(human)
                             this.cycle_timer = qs.switch_delay
                             this.cycle_step = 1
+                            ctx.spin(human, random.float(0.3,0.4))
                         }
                         break
                     // switch to secondary
@@ -229,6 +265,7 @@ export class AttackingController extends BotExecutor {
                             this.shoot(human)
                             this.cycle_timer = qs.switch_delay
                             this.cycle_step = 3
+                            ctx.spin(human, random.float(0.3,0.4))
                         }
                         break
                     // switch back to primary (recoil cancel)
@@ -252,6 +289,7 @@ export class AttackingController extends BotExecutor {
                     case 0:
                         this.shoot(human)
                         if(this.cycle_timer === 0){
+                            ctx.spin(human, random.float(0.3,0.4))
                             this.cycle_timer = qs.switch_delay
                             this.cycle_step = 1
                         }
@@ -269,7 +307,6 @@ export class AttackingController extends BotExecutor {
                         this.shoot(human)
                         if(this.cycle_timer === 0){
                             this.switchWeapon(human, qs.main_weapon)
-
                             this.cycle_timer = qs.switch_delay*2
                             this.cycle_step = 0
                         }
@@ -290,6 +327,7 @@ export class AttackingController extends BotExecutor {
                             this.shoot(human)
                             this.cycle_timer = qs.switch_delay
                             this.cycle_step = 1
+                            ctx.spin(human, random.float(0.3,0.4))
                         }
                         break
                     // switch to melee (cancel recoil)
@@ -574,7 +612,8 @@ export class ADVHumanAI extends BotAi{
             dt:dt,
             human:this.human,
             target:t,
-            target_pos:t?.position
+            target_pos:t?.position,
+            spin:this.controller.aim.startSpin.bind(this.controller.aim)
         }
 
         if(this.brain.combat.enabled){

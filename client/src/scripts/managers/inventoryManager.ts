@@ -113,13 +113,6 @@ export class InventoryManager{
         this.weapons_html[this.current_weapon]!.main.style.border=`3px solid ${ItemQualitySettings[weapon.def.quality as ItemQuality].color2}`
         this.weapons_html[this.current_weapon]!.main.classList.add("weapon-slot-selected")
     }
-    inventory_dirty(i:string){
-        switch(i){
-            case "backpack":
-                this.update_aitems()
-                break
-        }
-    }
     melee_free():boolean{
         return this.inventory.weapon_is_free(0)
     }

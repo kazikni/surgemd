@@ -382,7 +382,7 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.position.y=100000
 
         if(this.level?.history){
-            await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music)
+            await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
         }
 
         this.join()

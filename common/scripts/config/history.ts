@@ -1,5 +1,6 @@
 export enum HistoryCommandType{
     Wait,
+    WaitInput,
     SetFrame,
     SetDialog,
     SetMusic,
@@ -10,12 +11,16 @@ export type HistoryCommand={
     type:HistoryCommandType.Wait,
     time:number
 }|{
+    type:HistoryCommandType.WaitInput,
+}|{
     type:HistoryCommandType.SetFrame
     frame:string
 }|{
     type:HistoryCommandType.SetDialog
     text:string // HTML Text
+    name?:string
     color?:string
+    typewriter_delay?:number
 }|{
     type:HistoryCommandType.SetMusic
     music:string

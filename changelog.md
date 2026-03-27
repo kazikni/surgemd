@@ -22,7 +22,9 @@ __                                                                              
 * Creatures Reword
 __                                                                                                      __
 ## Fixes
-
+* Fix Bullet Range
+* Fix Damage Splash
+* Fix Ammos Gui
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)

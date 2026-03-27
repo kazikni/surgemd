@@ -2,7 +2,7 @@ import { api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, formatToHtml, GameSave, HideElement, ManipulativeSoundInstance, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
+import { FileManager, formatToHtml, GameSave, HideElement, InputManager, ManipulativeSoundInstance, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -34,6 +34,7 @@ export class MenuManager{
         history_container:document.body.querySelector("#history-container") as HTMLDivElement,
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
+        history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
     }
 
@@ -326,7 +327,7 @@ export class MenuManager{
             })
         })
     }
-    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,time_scale: number = 1,can_skip = false): Promise<void> {
+    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
         ShowElement(this.content.history_overlay,true)
         const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
         sleep(2)
@@ -334,6 +335,14 @@ export class MenuManager{
             switch (cmd.type) {
                 case HistoryCommandType.Wait: {
                     await sleep(cmd.time)
+                    this.content.history_dialog_text.style.opacity="0"
+                    break
+                }
+                case HistoryCommandType.WaitInput: {
+                    ShowElement(this.content.history_dialog_indicator)
+                    await input.wait_for_action("next")
+                    HideElement(this.content.history_dialog_indicator)
+                    this.content.history_dialog_text.style.opacity="0"
                     break
                 }
                 case HistoryCommandType.SetFrame: {
@@ -345,16 +354,22 @@ export class MenuManager{
                     })
                     break
                 }
-
                 case HistoryCommandType.SetDialog: {
                     if(cmd.text){
                         ShowElement(this.content.history_dialog_text,true)
+                        this.content.history_dialog_text.innerHTML = `
+                            ${cmd.name?`<p class="name">${cmd.name}</p>`:""}
+                            <p class="content"></p>
+                        `
+
+                        const content=this.content.history_dialog_text.querySelector(".content") as HTMLSpanElement
                         await typewriter(
-                            this.content.history_dialog_text,
+                            content,
                             cmd.text,
-                            50
+                            cmd.typewriter_delay
                         )
-                        this.content.history_dialog_text.style.color = cmd.color ?? "white"
+                        content.style.color = cmd.color ?? "white"
+                        
                     }else{
                         HideElement(this.content.history_dialog_text,true)
                     }

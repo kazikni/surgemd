@@ -626,6 +626,11 @@ export class UiManager{
                 }
             }
         }
+
+        if(player.backpack?.idString!==this.game.inventory.inventory.backpack.idString){
+            this.game.inventory.inventory.set_backpack(player.backpack)
+            this.game.inventory.update_aitems()
+        }
     }
     set_health(health:number,max_health:number){
         const p=health/max_health

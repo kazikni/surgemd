@@ -88,26 +88,45 @@ export class Tween<T> {
         this.game.remove_tween(this as unknown as Tween<unknown>);
     }
 }
-export function HideElement(elem:HTMLElement,opacity=false){
-    elem.style.pointerEvents="none"
-    elem.style.userSelect="none"
-    if(opacity){
-        elem.style.opacity="0"
-    }else{
-        elem.style.display="none"
+export function HideElement(elem: HTMLElement, useOpacity = false) {
+    elem.style.pointerEvents = "none"
+    elem.style.userSelect = "none"
+
+    if (useOpacity) {
+        elem.style.opacity = "0"
+        elem.style.visibility = "hidden"
+    } else {
+        elem.style.display = "none"
     }
 }
-export function ShowElement(elem:HTMLElement,opacity=false){
-    if(opacity){
-        elem.style.opacity="1"
+export function ShowElement(elem: HTMLElement, useOpacity = false) {
+    if (useOpacity) {
+        elem.style.display = "" 
+        elem.style.visibility = "visible"
+        requestAnimationFrame(() => {
+            elem.style.opacity = "1"
+        })
+    } else {
+        elem.style.display = ""
     }
-    elem.style.display = ""
+
     elem.style.pointerEvents = ""
-    elem.style.userSelect=""
+    elem.style.userSelect = ""
 }
-export function ToggleElement(elem:HTMLElement){
-    if(elem.style.display==="none")ShowElement(elem)
-    else HideElement(elem)
+export function ToggleElement(elem: HTMLElement, useOpacity = false) {
+    if (useOpacity) {
+        if (elem.style.opacity === "0" || elem.style.visibility === "hidden") {
+            ShowElement(elem, true)
+        } else {
+            HideElement(elem, true)
+        }
+    } else {
+        if (elem.style.display === "none") {
+            ShowElement(elem)
+        } else {
+            HideElement(elem)
+        }
+    }
 }
 
 export function ShowTab(tab:string,tabs:Record<string,HTMLElement>,opacity?:boolean){

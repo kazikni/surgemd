@@ -130,25 +130,25 @@ export class GunItem extends GunItemBase implements LItem{
                 }
                 b.set_direction(ang)
                 if(this.inventory.acessories.hasAccesorie("bullet_breaker_barrel")){
-                    b.damage*=0.75
+                    b.damage*=0.7
 
-                    b=user.game.add_bullet(pos,ang-0.04,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
-                    b.damage*=0.25
+                    b=user.game.add_bullet(pos,ang-0.02,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
+                    b.damage*=0.2
                     b.tracerAlpha*=0.5
                     b.modifiers={
                         speed:user.modifiers.bullet_speed,
                         size:user.modifiers.bullet_size*0.5,
                     }
-                    b.set_direction(ang-0.04)
+                    b.set_direction(ang-0.02)
 
-                    b=user.game.add_bullet(pos,ang+0.04,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
-                    b.damage*=0.25
+                    b=user.game.add_bullet(pos,ang+0.02,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
+                    b.damage*=0.2
                     b.tracerAlpha*=0.5
                     b.modifiers={
                         speed:user.modifiers.bullet_speed,
                         size:user.modifiers.bullet_size*0.5,
                     }
-                    b.set_direction(ang+0.04)
+                    b.set_direction(ang+0.02)
                 }
             }
         }

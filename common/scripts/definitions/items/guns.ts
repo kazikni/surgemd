@@ -578,7 +578,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:40,
+                    damage:42,
                     radius:0.02,
                     range:210,
                     falloff:0.8,
@@ -616,7 +616,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"awp",
-            fireDelay:1.1,
+            fireDelay:1.2,
             spread:0.5,
             lenght:0.9,
             ammoType:"762mm",
@@ -662,7 +662,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"awms",
-            fireDelay:1.4,
+            fireDelay:1.5,
             spread:0.7,
             lenght:1,
             ammoType:"308sub",
@@ -708,7 +708,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"m870",
-            fireDelay:0.9,
+            fireDelay:1,
             spread:6,
             lenght:0.9,
             ammoType:"12g",
@@ -755,8 +755,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"spas12",
-            fireDelay:0.8,
-            spread:3,
+            fireDelay:1,
+            spread:2.8,
             lenght:1,
             ammoType:"12g",
             ammoSpawnAmount:18,

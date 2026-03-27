@@ -658,7 +658,7 @@ export function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CModsManag
                             name:"Master Volume",
                             var:"sv_sounds_master_volume",
                             on_set:(v:number)=>{
-                                menu.sounds.masterVolume=(Numeric.clamp(v,0,1))*0.5
+                                menu.sounds.masterVolume=(Numeric.clamp(v,0,1))*0.6
                             },
                             min:0,
                             max:1,

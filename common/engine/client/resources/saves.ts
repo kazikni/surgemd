@@ -73,6 +73,7 @@ export type SettingInputConfig=({
     options:{value:string,name:string}[]
 })
 export interface GameConsoleFile{
+    version:number
     settings:Record<string,any>
     actions:Record<string,InputAction>
 }
@@ -96,6 +97,9 @@ export class GameSave{
     input_manager?:InputManager
 
     default_actions:Record<string,InputAction>={}
+
+    compatible_version=0
+    version:number=0
 
     set_action(name:string,action:InputAction){
         if(!this.input_manager)return
@@ -132,7 +136,7 @@ export class GameSave{
         for(const o of Object.keys(js)){
             if(this.default_values[o]===undefined)continue
             const res=this.casters[o](js[o])
-            if ("err" in res) {
+            if("err" in res) {
                 this.content[o] = this.default_values[o]
             } else {
                 this.content[o] = res.res
@@ -153,6 +157,11 @@ export class GameSave{
                     const s=await save.fs.read_file(save.path)
                     if(s){
                         const f=JSON.parse(s) as GameConsoleFile
+                        if(f.version===undefined||f.version<this.compatible_version){
+                            this.content={}
+                            await this.save(save)
+                            break
+                        }
                         this.load_save(f.settings)
                         if(f.actions)this.input_manager?.loadConfig(f.actions)
                     }else{
@@ -166,6 +175,11 @@ export class GameSave{
                 const s=self.localStorage.getItem(save.key)
                 if(s){
                     const f=JSON.parse(s) as GameConsoleFile
+                    if(f.version===undefined||f.version<this.compatible_version){
+                        this.content={}
+                        await this.save(save)
+                        break
+                    }
                     this.load_save(f.settings)
                     if(f.actions)this.input_manager?.loadConfig(f.actions)
                 }else{
@@ -179,7 +193,8 @@ export class GameSave{
         this.current_save=save
         const s={
             settings:this.content,
-            actions:this.input_manager?.saveConfig()
+            actions:this.input_manager?.saveConfig(),
+            version:this.version
         }
         switch(save.type){
             case "file":

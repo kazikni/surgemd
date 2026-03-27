@@ -238,6 +238,12 @@ export class KeyListener{
             const k=KeyNames[e.keyCode]
             this.keysup.push(k)
             this.listener.emit(KeyEvents.KeyUp,k)
+
+            let index=this.keys.indexOf(k)
+            while(index!=-1){
+                this.keys.splice(index,1)
+                index=this.keys.indexOf(k)
+            }
         })
         elem.addEventListener("mousedown",(e:MouseEvent)=>{
             if(!this.focus)return
@@ -250,9 +256,9 @@ export class KeyListener{
         })
         elem.addEventListener("mouseup",(e:MouseEvent)=>{
             const b=KeyNames[e.button+1000]
+            this.mouse_b[b]=false
             if (!this.mouse_b_up.includes(b)) {
                 this.mouse_b_up.push(b)
-                this.mouse_b[b]=false
                 this.listener.emit(KeyEvents.KeyUp,b)
             }
         })
@@ -270,23 +276,25 @@ export class KeyListener{
             this.listener.emit(KeyEvents.KeyDown, k)
             this.keysup.push(k)
             this.listener.emit(KeyEvents.KeyUp, k)
+
         }, { passive: false })
     }
     tick(){
-        this.keysdown.length=0
-        this.mouse_b_down.length=0
-        for(const i of this.keysup){
-            let index=this.keys.indexOf(i)
-            while(index!=-1){
-                this.keys.splice(index,1)
-                index=this.keys.indexOf(i)
-            }
-        }
         if(!this.focus){
             for(const i in this.keys){
                 this.listener.emit(KeyEvents.KeyUp,this.keys[i])
             }
             this.keys.length=0
+        }
+
+        this.keysdown.length=0
+        this.mouse_b_down.length=0
+        for(const k of this.keysup){
+            let index=this.keys.indexOf(k)
+            while(index!=-1){
+                this.keys.splice(index,1)
+                index=this.keys.indexOf(k)
+            }
         }
         this.keysup.length=0
         this.mouse_b_up.length=0
@@ -304,6 +312,41 @@ export class KeyListener{
         this.keys.length=0
         this.keysdown.length=0
         this.keysup.length=0
+    }
+
+    wait_for_keys(keys: Key[]): Promise<void> {
+        return new Promise((resolve) => {
+            const check = () => {
+                if (!this.focus) {
+                    requestAnimationFrame(check)
+                    return
+                }
+                for (const k of keys) {
+                    if (this.keyPress(k)) {
+                        resolve()
+                        return
+                    }
+                }
+                requestAnimationFrame(check)
+            }
+            check()
+        })
+    }
+    wait_for_any_key(): Promise<Key> {
+        return new Promise((resolve) => {
+            const check = () => {
+                if (!this.focus) {
+                    requestAnimationFrame(check)
+                    return
+                }
+                for (const k of this.keysdown) {
+                    resolve(k as Key)
+                    return
+                }
+                requestAnimationFrame(check)
+            }
+            check()
+        })
     }
 }
 
@@ -532,7 +575,13 @@ export class InputManager {
         this.actions.delete(name);
         this.activeActions.delete(name);
     }
-
+    async wait_for_action(name: string): Promise<ActionEvent> {
+        const action=this.actions.get(name)!
+        await this.keys.wait_for_keys(action.keys)
+        return {
+            action:name
+        }
+    }
     action_pressed(action:InputAction):boolean{
         const keyPressed = action.keys.some(k => this.keys.keyPress(k));
         const buttonPressed = action.buttons.some(b => this.pressedButtons.has(b));

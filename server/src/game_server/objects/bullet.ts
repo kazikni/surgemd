@@ -48,9 +48,6 @@ export class Bullet extends ServerGameObject{
         this.destroy()
     }
     update(dt:number): void {
-        if(v2.distance(this.initial_position,this.position)>this.max_distance){
-            this.destroy()
-        }
         this.old_position=v2.clone(this.position)
         this.tticks+=dt
         const disT=v2.distance(this.initial_position,this.position)/this.max_distance
@@ -137,13 +134,16 @@ export class Bullet extends ServerGameObject{
                 }
             }
         }
+        if(v2.distance(this.initial_position,this.position)>this.max_distance){
+            this.destroy()
+        }
     }
     ammo:string=""
     create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef}): void {
         this.def=args.defs
         this.base_hitbox=new CircleHitbox2D(v2.zero,this.def.radius*this.modifiers.size)
         this.position=args.position
-        this.initial_position=this.position
+        this.initial_position=v2.clone(this.position)
         this.old_position=this.position
         this.max_distance=this.def.range/2.5
 

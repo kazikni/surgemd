@@ -213,6 +213,7 @@ export class Obstacle extends StaticBody{
     }
     die(params:DamageParams){
         if(this.health_data.dead)return
+        this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
             this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def)

@@ -238,7 +238,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
         )
         .writeArray(this.priv.splashes,(d)=>{
             stream.writeBooleanGroup(d.critical,d.shield,d.shield_break)
-            .writeUint16(d.count)
+            .writeUint16(Math.ceil(d.count))
             .writeID(d.taker)
             .writeUint8(d.taker_layer)
             .writePos2(d.position)

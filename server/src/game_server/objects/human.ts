@@ -892,24 +892,14 @@ export class Human extends MovingBody{
 
         this.piercing_damage(params)
     }
-    piercing_damage(params: DamageParams):[number,number]{
+    piercing_damage(params: DamageParams): [number, number] {
         const totalDamage = params.amount
         let shieldDamage = 0
         let healthDamage = 0
-        this.net_sync.part=true
-
-        const baseSplash: Omit<DamageSplash, "shield" | "shield_break" | "count"> = {
-            critical: params.critical,
-            position: params.position??this.position,
-            taker: this.id,
-            taker_layer: this.layer
-        }
-
-        const splashes: DamageSplash[] = []
-
+        this.net_sync.part = true
+        const pos = params.position ?? this.position
         if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
             shieldDamage = Math.min(this.health_data.boost, totalDamage)
-
             if (totalDamage >= this.health_data.boost * 2) {
                 shieldDamage = this.health_data.boost
                 healthDamage = totalDamage - shieldDamage
@@ -917,55 +907,32 @@ export class Human extends MovingBody{
             } else {
                 this.health_data.boost -= shieldDamage
             }
-            splashes.push({
-                ...baseSplash,
-                count: Math.ceil(totalDamage),
-                shield: true,
-                shield_break: this.health_data.boost === 0
-            })
-
+            this.add_damage_splash(
+                params.owner,
+                totalDamage,
+                true,
+                params.critical,
+                pos,
+                this.health_data.boost === 0
+            )
             if (this.health_data.boost === 0) {
                 this.health_data.invensibility_time = 0.35
-                this.health_data.boost_def=Boosts[BoostType.Null]
+                this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
             healthDamage = Math.min(this.health_data.health, totalDamage)
-
-            splashes.push({
-                ...baseSplash,
-                count: Math.ceil(totalDamage),
-                shield: false,
-                shield_break: false
-            })
+            this.add_damage_splash(
+                params.owner,
+                totalDamage,
+                false,
+                params.critical,
+                pos,
+                false
+            )
         }
         if (healthDamage > 0) {
             this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
         }
-
-        if (params.owner && params.owner.is_player && params.owner.id !== this.id){
-            for (const splash of splashes) {
-                let ok = true
-                for (const ds of params.owner.splashes) {
-                    if (ds.shield === splash.shield && ds.taker === splash.taker) {
-                        ds.critical = ds.critical || splash.critical
-                        if (ds.shield) {
-                            ds.shield_break = ds.shield_break || splash.shield_break
-                        }
-                        ds.count += splash.count
-                        ok = false
-                        break
-                    }
-                }
-                if (ok) {
-                    params.owner.splashes.push(splash)
-                } else {
-                    params.owner.splash_delay = 2
-                }
-            }
-        }
-        
-        this.splashes.push(...splashes)
-
         if (this.health_data.health === 0) {
             if (!this.health_data.downed && this.game.modeManager.can_down(this)) {
                 this.down(params)
@@ -973,7 +940,38 @@ export class Human extends MovingBody{
                 this.die(params)
             }
         }
-        return [healthDamage,shieldDamage]
+        return [healthDamage, shieldDamage]
+    }
+    add_damage_splash(owner: Human | undefined,count: number,shield: boolean,critical: boolean,position: Vec2,shield_break: boolean = false){
+        const splash: DamageSplash = {
+            count: count,
+            shield,
+            critical,
+            position,
+            taker: this.id,
+            taker_layer: this.layer,
+            shield_break
+        }
+        this.splashes.push(splash)
+        if (owner && owner.is_player && owner.id !== this.id){
+            let merged = false
+            for (const ds of owner.splashes){
+                if (ds.shield === splash.shield && ds.taker === splash.taker){
+                    ds.critical = ds.critical || splash.critical
+                    if (ds.shield){
+                        ds.shield_break = ds.shield_break || splash.shield_break
+                    }
+                    ds.count += splash.count
+                    merged = true
+                    break
+                }
+            }
+            if (!merged){
+                owner.splashes.push(splash)
+            } else {
+                owner.splash_delay = 5
+            }
+        }
     }
     down(params:DamageParams){
         if(this.health_data.downed)return

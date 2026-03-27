@@ -647,6 +647,11 @@
 
     transition: opacity 1s ease-in-out;
 
+    .tv-static{
+        z-index:2;
+        filter: brightness(0.25) contrast(1) sepia(1) hue-rotate(70deg) saturate(10);
+    }
+
     cursor: none;
     #text-gameover{
         color:#47b984;
@@ -684,9 +689,9 @@
 .tv-static{
     position:absolute;
     inset:0;
-    z-index:2;
     pointer-events:none;
     overflow:hidden;
+    opacity:0.2;
     &::before{
         content:"";
         position:absolute;
@@ -700,11 +705,7 @@
         background-size:10000px 1000px;
         background-repeat:repeat;
 
-        opacity:0.25;
-        filter: brightness(0.25) contrast(1) sepia(1) hue-rotate(70deg) saturate(10);
-
         animation:tvNoise 0.25s steps(6) infinite;
-
         
         @media screen and (max-width: palette.$screen_large) {
             background-size:6000px 600px;
@@ -712,21 +713,6 @@
         @media screen and (max-width: palette.$screen_medium) {
             background-size:5000px 500px;
         }
-    }
-    &::after{
-        content:"";
-        position:absolute;
-        inset:0;
-
-        background:repeating-linear-gradient(
-            to bottom,
-            rgba(255,255,255,0.05) 0px,
-            rgba(255,255,255,0.05) 1px,
-            transparent 1px,
-            transparent 3px
-        );
-
-        mix-blend-mode:overlay;
     }
 }
 @keyframes tvNoise{
@@ -787,12 +773,16 @@
 
     z-index: 9999;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 1s ease;
+
+    .tv-static {
+        filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(5);
+    }
 
     #history-container {
         position: relative;
         width: 100%;
-        height: 100%;
+        height: auto;
 
         display: flex;
         align-items: center;
@@ -810,76 +800,76 @@
 
             image-rendering: pixelated;
 
-            opacity: 0;
-            transform: scale(0.95);
             transition: opacity 0.75s ease;
-
-            &.show {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        #history-skip {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-
-            padding: 8px 14px;
-
-            background: rgba(0,0,0,0.5);
-            color: white;
-            font-size: 13px;
-
-            border-radius: 6px;
-            cursor: pointer;
-
-            transition: background 0.2s;
-
-            &:hover {
-                background: rgba(0,0,0,0.8);
-            }
         }
     }
     #history-dialog {
         position: absolute;
-        bottom: 20px;
+        bottom: 40px;
         left: 50%;
         transform: translateX(-50%);
-        width: fit-content;
 
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-
-        padding: 20px;
-        color: white;
+        width: 90%;
+        height: auto;
 
         .dialog-box {
-            display: flex;
-            gap: 16px;
-
-            max-width: 80%;
-            width: fit-content;
-
-            background: linear-gradient(135deg, rgba(7, 170, 238, 0.1) 0%, rgba(7, 170, 238, 0.2) 100%);
-            border: 2px solid rgba(7, 170, 238, 0.5);
-            border-radius: 12px;
-            padding: 16px 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-
-            font-size: 16px;
-            line-height: 1.4;
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
             transition: opacity 0.75s ease;
+
+            display: inline-flex;
+            flex-direction: column;
+
+            width: auto;
+            max-width: 100%;
+
+            height: auto;
+            max-height: 15vh;
+            overflow-y: auto;
+
+            gap: 4px;
+            padding: 8px 12px;
+            * {
+                margin: 0;
+            }
+            border-radius: 12px;
+
+            background: linear-gradient(
+                135deg,
+                rgba(7, 170, 238, 0.08),
+                rgba(7, 170, 238, 0.18)
+            );
+
+            border: 2px solid rgba(7, 170, 238, 0.5);
+
+            backdrop-filter: blur(4px);
+
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            text-align: center;
 
             .name {
                 font-weight: bold;
-                margin-bottom: 6px;
-                opacity: 0.9;
+                font-size: 20px;
+                opacity: 0.8;
             }
 
             .content {
+                font-size: 16px;
+                line-height: 1.5;
                 word-break: break-word;
             }
+        }
+        #history-dialog-indicator {
+            position: absolute;
+            transform: translateX(-50%);
+            left: 50%;
+            top: 10px;
+            font-size: 22px;
+            opacity: 0.7;
+            rotate: 90deg;
         }
     }
 }

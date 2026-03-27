@@ -27,15 +27,11 @@
     },
     "history":[
         {
-            "type":3,
+            "type":4,
             "music":"history_music_1"
         },
         {
             "type":2,
-            "text":"*The Ships*"
-        },
-        {
-            "type":1,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-1.png"
         },
         {
@@ -44,103 +40,71 @@
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-2.png"
         },
         {
-            "type":2,
-            "text":"*Nhac*"
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-3.png"
         },
         {
-            "type":2,
-            "text":"*wine toast*"
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-4.png"
         },
         {
-            "type":2,
-            "text":"*Vinii looking at the sea*"
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-5.png"
         },
         {
-            "type":2,
-            "text":"*Soldier waiting*"
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-6.png"
         },
         {
-            "type":2,
-            "text":"*Soldier opening the doors*"
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-7.png"
         },
         {
-            "type":2,
-            "text":""
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
+            "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-9.png"
         },
         {
-            "type":2,
-            "text":"*The blue hole appear*"
-        },
-        {
             "type":0,
             "time":4
         },
 
         {
-            "type":1,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-10.png"
-        },
-        {
             "type":2,
-            "text":"*Ship entering the blue hole*"
+            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-10.png"
         },
         {
             "type":0,

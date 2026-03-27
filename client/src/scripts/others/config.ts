@@ -178,6 +178,10 @@ export const ConfigDefaultActions={
         buttons:[],
         keys:[Key.Mouse_Wheel_Down]
     },
+    "next":{
+        buttons:[],
+        keys:[Key.E,Key.Space,Key.Enter,Key.Mouse_Left]
+    },
     "debug_menu":{
         buttons:[GamepadButtonID.R3],
         keys:[Key.Delete,Key.Backspace]

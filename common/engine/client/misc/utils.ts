@@ -97,6 +97,7 @@ export function HideElement(elem: HTMLElement, useOpacity = false) {
         elem.style.visibility = "hidden"
     } else {
         elem.style.display = "none"
+        elem.style.visibility = "hidden"
     }
 }
 export function ShowElement(elem: HTMLElement, useOpacity = false) {
@@ -108,6 +109,7 @@ export function ShowElement(elem: HTMLElement, useOpacity = false) {
         })
     } else {
         elem.style.display = ""
+        elem.style.visibility = "visible"
     }
 
     elem.style.pointerEvents = ""

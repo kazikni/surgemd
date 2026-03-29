@@ -381,9 +381,20 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.position.x=100000
         this.cam2d.position.y=100000
 
-        if(this.level?.history){
-            await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
+        if(this.level){
+            this.ambient.music.set(undefined)
+            await this.menu.show_phase_intro({
+                location:this.level.meta.location,
+                name:this.level.meta.name,
+                description:this.level.meta.description,
+                date:this.level.meta.date,
+                style:"clean",
+            })
+            if(this.level?.history){
+                await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
+            }
         }
+
 
         this.join()
 

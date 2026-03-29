@@ -157,13 +157,13 @@ export class Human extends MovingBody{
                     image:`blood_splash_${random.int(1,3)}`,
                 },
                 direction:random.rad(),
-                life_time:0.5,
+                life_time:1,
                 position:this.position,
                 speed:random.float(2,4),
                 angle:random.rad(),
                 tint:ColorM.rgba(170,10,40),
                 to:{
-                    scale:1.8,
+                    scale:3,
                     tint:ColorM.rgba(170,10,40,0)
                 },
                 zIndex:zIndexes.Particles
@@ -184,7 +184,7 @@ export class Human extends MovingBody{
                     image:`player_gore_${random.int(1,2)}`,
                 },
                 direction:random.rad(),
-                life_time:0.7,
+                life_time:1,
                 position:this.position,
                 speed:random.float(5,6),
                 angle:random.rad(),

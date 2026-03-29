@@ -17,7 +17,7 @@ export class Container2D extends Container2DObject{
     object_group:boolean=false
 
     update_visibility(){
-        this.visible_children = this.children.filter(c => c._visible)
+        this.visible_children = this.children.filter(c => c.visible)
     }
     update_zindex(){
         this.children.sort((a,b)=>
@@ -63,13 +63,14 @@ export class Container2D extends Container2DObject{
         }
     }
     add_child(c:Container2DObject){
+        if(c.parent)return
         c.id_on_parent=this.children.length+1
         c.parent=this
         this.children.push(c)
         if(c.has_update){
             this.update_children.push(c)
         }
-        if(c._visible){
+        if(c.visible){
             this.visible_children.push(c)
         }
 

@@ -13,6 +13,14 @@ export class Sprite2D extends Container2DObject{
     hotspot:Vec2=v2(0,0)
     _size?:Vec2M
 
+    override get visible(): boolean {
+        return this._visible&&this.frame!==undefined   
+    }
+    override set visible(val:boolean){
+        this._visible=val
+        if(this.parent)this.parent.update_visibility()
+    }
+
     get size():Vec2|undefined{
         return this._size as Vec2|undefined
     }

@@ -47,6 +47,8 @@ export interface LevelDefinition{
         description: string
         size:"small"|"medium"|"large"
         dificulty:"easy"|"normal"|"hard"
+        location: string
+        date:string
     }
     mode:LevelMode
     player: LevelPlayerDefinition

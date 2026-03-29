@@ -1,8 +1,10 @@
 {
     "meta":{
         "name": "No Hope",
-        "description": "Vinii Are The last man",
+        "location": "South America - Southeast - MD Island",
+        "description": "The 50vs50 Lastman",
         "size":"small",
+        "date":"26/03/2009 12:23AM",
         "dificulty":"normal"
     },
     "assets":{
@@ -21,7 +23,11 @@
         "enemies":[
             {
                 "def":"basic",
-                "count":20
+                "count":30
+            },
+            {
+                "def":"advanced",
+                "count":10
             }
         ]
     },
@@ -38,7 +44,10 @@
             "type":0,
             "time":4
         },
-
+        {
+            "type":3,
+            "text":""
+        },
         {
             "type":2,
             "frame":"/img/menu/gui/history/charpter-1/level-1/frame-2.png"
@@ -140,6 +149,53 @@
                             {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
                         ],
                         "gun1":[
+                            {"item":"m9","weight":20},
+                            {"item":"ak47","weight":10},
+                            {"item":"hp18","weight":8},
+                            {"item":"m870","weight":5},
+                            {"item":"spas12","weight":1},
+                            {"item":"kar98k","weight":1},
+                            {"item":"awp","weight":0.5},
+                            {"item":"pkp","weight":0.1},
+                            {"item":"awms","weight":0.1}
+                        ],
+                        "aitems":{
+                            "12g":15,
+                            "556mm":100,
+                            "762mm":100,
+                            "9mm":100
+                        }
+                    },
+                    "boosts":[
+                        {"weight":10,"boost_type":0,"boost":0},
+                        {"weight":1,"boost_type":1,"boost":1},
+                        {"weight":1,"boost_type":2,"boost":1}
+                    ]
+                }
+            },
+            "advanced":{
+                "normal":{
+                    "ia":{
+                        "kind":"advanced"
+                    },
+                    "inventory":{
+                        "hand":1,
+                        "backpack":[
+                            {"item":"basic_pack","weight":20},
+                            {"item":"regular_pack","weight":15,"drop_chance":0.3},
+                            {"item":"tactical_pack","weight":10,"drop_chance":0.5}
+                        ],
+                        "vest":[
+                            {"item":"basic_vest","weight":20,"drop_chance":0.3},
+                            {"item":"regular_vest","weight":15,"drop_chance":0.5},
+                            {"item":"tactical_vest","weight":10,"drop_chance":0.75}
+                        ],
+                        "helmet":[
+                            {"item":"basic_helmet","weight":20,"drop_chance":0.3},
+                            {"item":"regular_helmet","weight":15,"drop_chance":0.5},
+                            {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
+                        ],
+                        "gun1":[
                             {"item":"hp18","weight":8},
                             {"item":"m870","weight":5},
                             {"item":"spas12","weight":1},
@@ -159,7 +215,13 @@
                             {"weight":10,"boost_type":0,"boost":0},
                             {"weight":1,"boost_type":1,"boost":1},
                             {"weight":1,"boost_type":2,"boost":1}
-                        ]
+                        ],
+                        "aitems":{
+                            "12g":30,
+                            "556mm":150,
+                            "762mm":150,
+                            "9mm":200
+                        }
                     }
                 }
             }
@@ -201,8 +263,7 @@
                 "556mm":300,
                 "9mm":400,
                 "12g":90,
-                "308sub":40,
-                "gasoline":20
+                "308sub":40
             },
             "iitems":[
                 "scope_2",

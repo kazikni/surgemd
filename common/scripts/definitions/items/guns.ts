@@ -859,8 +859,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Legendary,
             bullet:{
                 def:{
-                    damage:10.5,
-                    obstacleMult:2,
+                    damage:14,
+                    obstacleMult:1.5,
                     radius:0.014,
                     range:170,
                     speed:45,

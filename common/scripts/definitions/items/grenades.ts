@@ -54,7 +54,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:true,
-                fuse_time:6
+                fuse_time:5
             },
             throw_max_speed:15,
             explosion:"frag_grenade_explosion",
@@ -79,7 +79,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:true,
-                fuse_time:6
+                fuse_time:5
             },
             explosion:"mirv_grenade_explosion",
             throw_max_speed:15,

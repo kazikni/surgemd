@@ -690,7 +690,10 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         if(preset.aitems){
             for(const o of Object.keys(preset.aitems)){
-                this.aitems[o]=preset.aitems[o]
+                const def=this.owner.game.definitions.game_items.valueString[o]
+                const max=this.item_limit(def)
+                const ac=this.aitems[o]??0
+                this.aitems[o]=Numeric.max(ac+preset.aitems[o],max)
             }
         }
         if(preset.iitems){

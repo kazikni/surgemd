@@ -91,8 +91,14 @@ export class CampaignGamemodeManager extends ModeManager {
     generate_enemy(def: EnemyDef, name?: string) {
         const bot = this.game.humans.add_npc()
 
-        bot.ai=new ADVHumanAI(bot)
-        //bot.ai = new EnemyNPCAI(bot)
+        switch(def.ia.kind){
+            case "advanced":
+                bot.ai=new ADVHumanAI(bot)
+                break
+            default:
+                bot.ai=new EnemyNPCAI(bot)
+                break
+        }
 
         if (name)bot.name = name
         if (def.inventory)bot.inventory.load_preset(def.inventory)

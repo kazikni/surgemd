@@ -7,6 +7,15 @@ import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+type PhaseIntroConfig = {
+    location: string
+    name: string
+    date?: string
+    style?: "glitch" | "clean"
+    description?: string
+    text_speed?: number
+    wait_time?:number
+}
 export class MenuManager{
     api_settings:ApiSettingsS
     account:AccountManager
@@ -34,7 +43,13 @@ export class MenuManager{
         history_container:document.body.querySelector("#history-container") as HTMLDivElement,
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
-        history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement
+        history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
+
+        phase_intro_overlay: document.querySelector("#phase-intro-overlay") as HTMLDivElement,
+        phase_intro_location: document.querySelector("#phase-intro-location") as HTMLDivElement,
+        phase_intro_name: document.querySelector("#phase-intro-name") as HTMLDivElement,
+        phase_intro_date: document.querySelector("#phase-intro-date") as HTMLDivElement,
+        phase_intro_description: document.querySelector("#phase-intro-description") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
     }
 
@@ -330,7 +345,8 @@ export class MenuManager{
     async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
         ShowElement(this.content.history_overlay,true)
         const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
-        sleep(2)
+        sleep(1)
+        HideElement(this.content.phase_intro_overlay)
         for (const cmd of commands) {
             switch (cmd.type) {
                 case HistoryCommandType.Wait: {
@@ -408,6 +424,26 @@ export class MenuManager{
         }
         HideElement(this.content.history_overlay,true)
         if (music_player) music_player.set(undefined)
+    }
+    async show_phase_intro(config: PhaseIntroConfig): Promise<void> {
+        const text_speed=config.text_speed??1
+        const wait_time=(config.wait_time??2)*1000
+        ShowElement(this.content.phase_intro_overlay)
+        // reset
+        this.content.phase_intro_location.innerText = ""
+        this.content.phase_intro_name.innerText = ""
+        this.content.phase_intro_date.innerText = ""
+        this.content.phase_intro_description.innerText = ""
+        // TYPEWRITER
+        await typewriter(this.content.phase_intro_name, config.name, 120*text_speed)
+        await typewriter(this.content.phase_intro_location, config.location, 80*text_speed)
+        if (config.date) {
+            await typewriter(this.content.phase_intro_date, config.date, 120)
+        }
+        if (config.description) {
+            await typewriter(this.content.phase_intro_description, config.description, 60*text_speed)
+        }
+        await new Promise(r => setTimeout(r, wait_time))
     }
     your_skins:string[]=["default_skin"]
     show_your_skins(){

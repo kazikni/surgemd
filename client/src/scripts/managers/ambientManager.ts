@@ -169,19 +169,20 @@ export class AmbientManager{
     }
     reload(){
         this.biome=this.game.terrain.biome!
-        if(this.game.save.get_variable("sv_graphics_climate")){
-            this.ambient_particles_emitter.enabled=(this.biome?.ambient.particles!=undefined&&this.biome.ambient.particles.length>0)
-            this.rain_particles_emitter.enabled=(this.biome?.ambient.rain!)
-            this.snow_particles_emitter.enabled=(this.biome?.ambient.snow!)
-        }else{
-            this.ambient_particles_emitter.enabled=false
-            this.rain_particles_emitter.enabled=false
-            this.snow_particles_emitter.enabled=false
-        }
         if(this.biome.ambient.sound){
             this.ambience.set(this.game.resources.get_audio(this.biome.ambient.sound),true)
         }else{
             this.ambience.set(null)
+        }
+        if(this.game.save.get_variable("sv_graphics_climate")){
+            this.ambient_particles_emitter.enabled=(this.biome?.ambient.particles!=undefined&&this.biome.ambient.particles.length>0)
+            this.rain_particles_emitter.enabled=(this.biome?.ambient.rain!)
+            this.snow_particles_emitter.enabled=(this.biome?.ambient.snow!)
+            this.ambience.set(this.game.resources.get_audio("storm_ambience"),true)
+        }else{
+            this.ambient_particles_emitter.enabled=false
+            this.rain_particles_emitter.enabled=false
+            this.snow_particles_emitter.enabled=false
         }
 
         //this.game.light_map.ambient=0

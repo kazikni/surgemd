@@ -77,7 +77,7 @@
     height: 30px;
 
     #health-bar,
-    #health-bar-basic-heal
+    #health-bar-basic-heal,
     #health-bar-animation {
         position: absolute;
         top: 0;
@@ -85,11 +85,9 @@
         border-radius: 2px;
         height: 100%;
         width: 100%;
-        transition: width ease-in-out 3s;
     }
     #health-bar-basic-heal{
         width: 75%;
-        height: 100%;
 
         border-right: 1px solid #fff3;
         background:
@@ -103,18 +101,15 @@
                 rgba(255,255,255,0.10) 0 1px,
                 transparent 2px 16px
             );
-
-        border-radius: 2px;
     }
 
     #health-bar {
         background: linear-gradient(90deg, #fff,#dfdfdf);
-        transition: width ease-in-out 0.2s;
     }
 
     #health-bar-animation {
-        opacity: 50%;
-        background: #ff0000;
+        background: #ff000066;
+        transition: width ease-out 2s;
     }
 
     #health-bar-amount {

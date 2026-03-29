@@ -22,6 +22,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
+import { LevelHumanDefinition } from "common/scripts/config/level_definition.ts";
 
 export class Human extends MovingBody{
     // Definition
@@ -223,8 +224,21 @@ export class Human extends MovingBody{
         mana_consume:1,
     }
 
+    temp_modifiers:Partial<HumanModifiers>={}
+
     effects:Map<number,EffectInstance>=new Map()
 
+    set_preset(preset:LevelHumanDefinition){
+        if(preset.name)this.name = preset.name
+        if(preset.modifiers)this.temp_modifiers=preset.modifiers
+        if(preset.inventory)this.inventory.load_preset(preset.inventory)
+
+        if(preset.start_position)this.position=preset.start_position
+
+        this.update_modifiers()
+
+        this.health_data.health=this.health_data.max_health
+    }
     apply_modifiers(mods:Partial<HumanModifiers>){
         this.modifiers.boost*=mods.boost??1
         this.modifiers.bullet_size*=mods.bullet_size??1
@@ -235,6 +249,7 @@ export class Human extends MovingBody{
     }
     update_modifiers(){
         this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
+        this.apply_modifiers(this.temp_modifiers)
         const rules=this.game.modeManager.rules.humans
 
         switch(this.health_data.boost_def.type){

@@ -142,7 +142,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Creature
         ])
 
-        this.ntps=30
+        this.ntps=35
         this.main_config=main_config
 
         for(const i of LayersL){

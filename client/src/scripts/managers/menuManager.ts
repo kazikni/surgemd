@@ -2,7 +2,7 @@ import { api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, formatToHtml, GameSave, HideElement, InputManager, ManipulativeSoundInstance, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
+import { FileManager, formatToHtml, GameSave, HideElement, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -382,7 +382,7 @@ export class MenuManager{
                         await typewriter(
                             content,
                             cmd.text,
-                            cmd.typewriter_delay
+                            cmd.typewriter_delay??20
                         )
                         content.style.color = cmd.color ?? "white"
                         
@@ -425,7 +425,12 @@ export class MenuManager{
         HideElement(this.content.history_overlay,true)
         if (music_player) music_player.set(undefined)
     }
-    async show_phase_intro(config: PhaseIntroConfig): Promise<void> {
+    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[],sounds:SoundManager): Promise<void> {
+        function play_type_sound(_a:string){
+            sounds.play(random.choose(type_sounds),{
+                volume:0.15
+            },"ui")
+        }
         const text_speed=config.text_speed??1
         const wait_time=(config.wait_time??2)*1000
         ShowElement(this.content.phase_intro_overlay)
@@ -435,13 +440,18 @@ export class MenuManager{
         this.content.phase_intro_date.innerText = ""
         this.content.phase_intro_description.innerText = ""
         // TYPEWRITER
-        await typewriter(this.content.phase_intro_name, config.name, 120*text_speed)
-        await typewriter(this.content.phase_intro_location, config.location, 80*text_speed)
+        const rand_delay={
+            min:40*text_speed,
+            max:200*text_speed
+        }
+
+        await typewriter(this.content.phase_intro_name, config.name, rand_delay,play_type_sound)
+        await typewriter(this.content.phase_intro_location, config.location, rand_delay,play_type_sound)
         if (config.date) {
-            await typewriter(this.content.phase_intro_date, config.date, 120)
+            await typewriter(this.content.phase_intro_date, config.date, rand_delay,play_type_sound)
         }
         if (config.description) {
-            await typewriter(this.content.phase_intro_description, config.description, 60*text_speed)
+            await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
         }
         await new Promise(r => setTimeout(r, wait_time))
     }

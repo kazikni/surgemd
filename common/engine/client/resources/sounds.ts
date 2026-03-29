@@ -400,7 +400,7 @@ export class SoundManager {
         }
     }
 
-    play(sound: Sound, params: Partial<SoundOptions> = {}, volume_group?: string): SoundInstance | undefined {
+    play(sound: Sound|undefined, params: Partial<SoundOptions> = {}, volume_group?: string): SoundInstance | undefined {
         if (!sound || !sound.buffer) return;
 
         let volume = params.volume != undefined ? params.volume : 1

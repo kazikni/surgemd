@@ -356,6 +356,13 @@ export class Game extends ClientGame<GameObject>{
         //Load Sfx
         await this.resources.load_group("/sounds/game/main.json","main",this.menu.set_loading_current)
 
+        /*
+        await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("keyboard-2",{src:"/sounds/ui/keyboard-2.mp3",volume:1},"essentials",this.menu.set_loading_current)*/
+        
+        await this.resources.load_audio("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+
         await this.resources.load_audio("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
@@ -389,7 +396,10 @@ export class Game extends ClientGame<GameObject>{
                 description:this.level.meta.description,
                 date:this.level.meta.date,
                 style:"clean",
-            })
+            },[
+                this.resources.get_audio("typewriter-1"),
+                this.resources.get_audio("typewriter-2"),
+            ],this.sounds)
             if(this.level?.history){
                 await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
             }
@@ -451,7 +461,7 @@ export class Game extends ClientGame<GameObject>{
             this.sounds.listener_position=this.active_entity.position
             this.update_grid(this.grid_gfx,5,this.cam2d.position,v2.new(this.cam2d.width,this.cam2d.height),0.06)
 
-            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(1,dt))
+            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 
             this.ambient.update_camera()
             if(this.client&&this.client.opened){

@@ -189,10 +189,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         }),
         {
             idString:"barrel",
-            health:110,
+            health:140,
             hitbox:new CircleHitbox2D(v2.new(0,0),0.57),
             scale:{
-                destroy:0.6
+                destroy:0.5
             },
             assets:{
                 frame:{

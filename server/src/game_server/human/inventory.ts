@@ -745,7 +745,7 @@ export class GInventory extends GInventoryBase<LItem>{
             const r=(this.owner.hitbox as CircleHitbox2D).radius
             const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
             while(this.aitems[s]>0){
-                const rc=Math.min(this.aitems[s],60)
+                const rc=Math.min(this.aitems[s],100)
                 const ll=this.owner.game.add_loot(pos,def,rc)
                 l.push(ll);
                 ll.push(random.float(1,7),dir+random.float(-0.03,0.03))

@@ -63,11 +63,7 @@ export class CampaignGamemodeManager extends ModeManager {
         }
     }
     override on_player_join(p: Player) {
-        if (this.level.player?.name)
-            p.name = this.level.player.name
-
-        if (this.level.player?.inventory)
-            p.inventory.load_preset(this.level.player.inventory)
+        p.set_preset(this.level.player)
     }
 
     override on_human_die(h: Human) {
@@ -88,7 +84,7 @@ export class CampaignGamemodeManager extends ModeManager {
         },1)
     }
 
-    generate_enemy(def: EnemyDef, name?: string) {
+    generate_enemy(def: EnemyDef) {
         const bot = this.game.humans.add_npc()
 
         switch(def.ia.kind){
@@ -99,11 +95,10 @@ export class CampaignGamemodeManager extends ModeManager {
                 bot.ai=new EnemyNPCAI(bot)
                 break
         }
-
-        if (name)bot.name = name
-        if (def.inventory)bot.inventory.load_preset(def.inventory)
         if (def.ia?.params)bot.ai.params = cloneDeep(def.ia.params)
 
+        bot.set_preset(def)
+        
         return bot
     }
     reset_level(){
@@ -159,7 +154,7 @@ export class CampaignGamemodeManager extends ModeManager {
                 if(!def)continue
 
                 for(let i=0;i<count;i++){
-                    const npc=this.generate_enemy(def,e.name)
+                    const npc=this.generate_enemy(def)
 
                     if(e.position){
                         v2m.set(npc.position,e.position.x,e.position.y)

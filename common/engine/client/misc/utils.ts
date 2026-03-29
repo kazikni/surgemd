@@ -1,3 +1,4 @@
+import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
 import { type ClientGame } from "./game.ts";
 export const CenterHotspot={
@@ -231,50 +232,45 @@ export function disableContextMenuPrevent() {
     document.removeEventListener("contextmenu", preventHandler);
     document.removeEventListener("selectstart", preventHandler);
 }
-export async function typewriter(
-    element: HTMLElement,
-    html: string,
-    speed: number = 20
-): Promise<void> {
-    element.innerHTML = ""
-    const temp = document.createElement("div")
-    temp.innerHTML = html
-    const nodes: Node[] = []
-    const walk = (node: Node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            nodes.push(node)
-        } else {
-            nodes.push(node)
-            node.childNodes.forEach(walk)
-        }
-    }
-    temp.childNodes.forEach(walk)
-    const cloneNode = (node: Node): Node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            return document.createTextNode("")
-        }
-        const el = (node as HTMLElement).cloneNode(false)
-        return el
-    }
-    const build = (src: Node, dstParent: Node) => {
-        const clone = cloneNode(src)
-        dstParent.appendChild(clone)
+export async function typewriter(element: HTMLElement,html: string,delay:Random1,on_type?: (char: string) => void): Promise<void> {
 
-        if (src.nodeType !== Node.TEXT_NODE) {
-            src.childNodes.forEach(child => build(child, clone))
-        }
-    }
-    temp.childNodes.forEach(n => build(n, element))
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
-    let node: Node | null
-    while ((node = walker.nextNode())) {
-        const fullText = nodes.shift()?.textContent ?? ""
+    element.innerHTML = ""
+
+    const template = document.createElement("div")
+    template.innerHTML = html
+
+    // clona estrutura direto
+    const clone = template.cloneNode(true) as HTMLElement
+    element.append(...Array.from(clone.childNodes))
+
+    const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT
+    )
+
+    const originalWalker = document.createTreeWalker(
+        template,
+        NodeFilter.SHOW_TEXT
+    )
+
+    let currentNode: Node | null
+    let originalNode: Node | null
+
+    while (
+        (currentNode = walker.nextNode()) &&
+        (originalNode = originalWalker.nextNode())
+    ) {
+        const fullText = originalNode.textContent ?? ""
         let current = ""
 
-        for (const char of fullText) {
+        for (let i = 0; i < fullText.length; i++) {
+            const char = fullText[i]
             current += char
-            node.textContent = current
-            await new Promise(r => setTimeout(r, speed))
+            currentNode.textContent = current
+
+            on_type?.(char)
+
+            await new Promise(r => setTimeout(r, random.random1(delay)))
         }
     }
 }

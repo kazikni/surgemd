@@ -4,11 +4,11 @@ import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
 import { HistoryCommand } from "./history.ts";
 
-export type LevelPlayerDefinition={
+export type LevelHumanDefinition={
     name?:string
     start_position?:Vec2
     inventory?:InventoryPreset
-    modifiers:Partial<HumanModifiers>
+    modifiers?:Partial<HumanModifiers>
 }
 export type LevelMapDefinition=string|(MapDef&{base:string})
 export type EnemyDef={
@@ -17,8 +17,7 @@ export type EnemyDef={
         action?:string
         params?:Record<string,any>
     }
-    inventory:InventoryPreset
-}
+}&LevelHumanDefinition
 export type LevelMode={
     map: {
         def:LevelMapDefinition
@@ -51,7 +50,7 @@ export interface LevelDefinition{
         date:string
     }
     mode:LevelMode
-    player: LevelPlayerDefinition
+    player: LevelHumanDefinition
     assets?:{
         background_music?:string
         load?:{

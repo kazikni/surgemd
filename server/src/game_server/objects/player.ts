@@ -10,6 +10,7 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Layers } from "common/scripts/others/constants.ts";
+import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -90,6 +91,16 @@ export class Player extends Human{
     player_manager!:PlayersManager
     constructor(){
         super()
+    }
+    override set_preset(preset: HumanDefinition|undefined): void {
+        if(!preset)return
+        super.set_preset(preset)
+        if(preset.team){
+            this.game.modeManager.get_team(preset.team)?.add_human(this)
+        }
+        if(preset.group){
+            this.game.modeManager.get_team(preset.group)?.add_human(this)
+        }
     }
     override net_update(): void {
         super.net_update()
@@ -185,6 +196,7 @@ export class Player extends Human{
         this.game.dirty.living_count=true
 
         this.game.modeManager.on_player_die(this)
+        this.game.signals.emit("player_die",{player:this,killer:this.killed_by})
         this.game.update_data()
     }
     override self_state(full: boolean): SelfStateUpdate {

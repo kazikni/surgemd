@@ -361,7 +361,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     }
     update(user: Human): void {
         if(this.use_delay>0){
-            this.use_delay-=1/user.game.tps
+            this.use_delay-=user.game.delta_time
         }else{
             this.firing=false
         }

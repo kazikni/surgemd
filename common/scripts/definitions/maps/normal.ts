@@ -105,7 +105,7 @@ export const NormalMap:MapDef={
         "ammos":[
             {item:"12g",count:10,weight:5},
             {item:"9mm",count:60,weight:5},
-            {item:"22lr",count:60,weight:5},
+            //{item:"22lr",count:60,weight:5},
             {item:"762mm",count:60,weight:5},
             {item:"556mm",count:60,weight:5},
             {item:"50cal",count:20,weight:0.1},
@@ -116,7 +116,7 @@ export const NormalMap:MapDef={
         "special_ammos":[
             {item:"12g",count:15,weight:5},
             {item:"9mm",count:80,weight:5},
-            {item:"22lr",count:80,weight:5},
+            //{item:"22lr",count:80,weight:5},
             {item:"762mm",count:80,weight:5},
             {item:"556mm",count:80,weight:5},
             {item:"50cal",count:40,weight:0.3},
@@ -313,7 +313,7 @@ export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(85,85),
+            size:v2.new(100,100),
             spawn:[
                 [
                     {id:"watchtower",count:1},
@@ -321,24 +321,24 @@ export const NormalLobby:MapDef={
                     {id:"container_2",count:1},
 
                     {id:"recorded_tape",count:1},
-                    {id:"sillo",count:1},
+                    {id:"sillo",count:2},
 
                     {id:"jeep",count:1},
                     {id:"bike",count:1},
 
-                    {id:"oak_tree",count:70},
-                    {id:"stone",count:40},
-                    {id:"bush",count:25},
-                    {id:"barrel",count:8},
+                    {id:"oak_tree",count:80},
+                    {id:"stone",count:50},
+                    {id:"bush",count:30},
 
-                    {id:"wood_crate",count:20},
-                    {id:"copper_crate",count:4},
+                    {id:"wood_crate",count:30},
+                    {id:"copper_crate",count:6},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
-                    {id:"normal_loot",count:10},
+                    {id:"barrel",count:13},
+                    {id:"normal_loot",count:20},
 
-                    {id:"pig",count:5},
-                    {id:"chicken",count:5}
+                    /*{id:"pig",count:5},
+                    {id:"chicken",count:5}*/
                 ]
             ],
             terrain:{

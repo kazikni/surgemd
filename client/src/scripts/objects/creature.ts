@@ -71,6 +71,6 @@ export class Creature extends MovingBody {
             this.kill()
         }
 
-        this.def.decode?.(this, stream, full)
+        if(this.def)this.def.decode?.(this, stream, full)
     }
 }

@@ -1,9 +1,5 @@
 import { HostConfig } from "../../engine/core.ts";
 
-export interface GameOptions{
-    gameTps:number
-    netTps:number
-}
 export interface GameConfig{
     mode:string
     mode_settings:any
@@ -45,7 +41,6 @@ export interface ConfigType{
     };
     game: {
         max_games: number
-        options: GameOptions
         debug:GameDebugOptions
         host: HostConfig
         modes: GamemodeConfig[]
@@ -96,10 +91,6 @@ export function ZeroConfig():ConfigType{
             },
             max_games:1,
             modes:[],
-            options:{
-                gameTps:100,
-                netTps:30
-            }
         },
         regions:{
 

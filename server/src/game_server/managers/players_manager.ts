@@ -1,4 +1,4 @@
-import { Client, DefaultSignals, NetStream, RectHitbox2D, v2, ValidString } from "common/engine/core.ts";
+import { Client, cloneDeep, DefaultSignals, NetStream, RectHitbox2D, v2, ValidString } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -11,6 +11,9 @@ import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scr
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
+import { EnemyDef } from "common/scripts/config/level_definition.ts";
+import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
+import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:NetStream): void {
@@ -131,19 +134,27 @@ export class PlayersManager{
     constructor(game:Game){
         this.game=game
     }
-    add_bot(packet:JoinPacket):BotClient{
+    clear_bots(){
+        for(const b of this.connected_bots){
+            b.human?.destroy?.()
+        }
+        this.connected_bots.length=0
+    }
+    add_bot(packet:JoinPacket,player?:Player):BotClient{
         const client=new BotClient(this.game)
-        const p=this.add_player(new Player(),packet) as Player
+        const p=this.add_player(player??new Player(),packet,undefined,true) as Player
         p.conn=client
         client.set_active_player(p)
 
         this.game.modeManager.on_player_connect(p)
+        this.game.signals.emit("player_connect",{player:p,client:client})
         this.connected_bots.push(client)
         return client
     }
-    add_player(player:Player,packet:JoinPacket,id?:number):Player{
+    add_player(player:Player,packet:JoinPacket,id?:number,is_bot:boolean=false):Player{
         player.player_manager=this
         const p=this.game.humans.add_human(player,id) as Player
+        p.is_bot=is_bot
 
         if(ValidString.simple_characters(packet.player_name)){
             p.name=packet.player_name
@@ -167,10 +178,35 @@ export class PlayersManager{
         p.inventory.set_weapon_index(0)
 
         this.game.modeManager.on_player_join(p)
+        this.game.signals.emit("player_join",{player:p})
 
         const pos=this.game.modeManager.get_human_spawn_position(p)
         if(pos)p.position=pos
         return p
+    }
+    add_enemy(def: EnemyDef | string, packet: JoinPacket,player?:Player): Player | undefined {
+        if(typeof def === "string"){
+            def = this.game.humans.enemies[def]
+        }
+        if(!def) return
+        const client=this.add_bot(packet,player)
+        if(!client.human)return
+
+        // AI
+        switch(def.ia?.kind){
+            case "advanced":
+                client.ai = new ADVHumanAI(client.human)
+                break
+            default:
+                client.ai = new EnemyNPCAI(client.human)
+        }
+
+        if(def.ia?.params){
+            client.ai!.params = cloneDeep(def.ia.params)
+        }
+        client.human?.set_preset(def)
+
+        return client.human as Player
     }
     get_global_update_packet(full:boolean):UpdatePacket{
         const up=new UpdatePacket()
@@ -202,7 +238,7 @@ export class PlayersManager{
             this.general_update.content.deadzone=this.game.deadzone.state
         }
 
-        s.writeUint16(this.general_update.ID)
+        this.game.clients.packets_manager.encode(this.general_update,s)
         this.general_update.encode(s)
         for(const p of Object.values(this.connected_players)){
             p.net_update(s)
@@ -252,6 +288,7 @@ export class PlayersManager{
                     console.log(`${p.name} Join`)
 
                     this.game.modeManager.on_player_connect(p)
+                    this.game.signals.emit("player_connect",{player:p,client:client})
                 }
             }
         })

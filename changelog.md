@@ -25,6 +25,7 @@ __                                                                              
 * Fix Bullet Range
 * Fix Damage Splash
 * Fix Ammos Gui
+* Fix Health Bar Animation
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)

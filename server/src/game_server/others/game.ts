@@ -80,7 +80,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     closed:boolean=false
     started:boolean=false
     fineshed:boolean=false
-    killing_game:boolean=false
 
     statistics?:GameStatistic
 
@@ -130,7 +129,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         ambient:false,
     }
     constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
-        super(main_config.game.options.gameTps,id,clients,[
+        super(100,id,clients,[
             Human,
             Loot,
             Grenade,
@@ -142,7 +141,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Creature
         ])
 
-        this.ntps=35
+        this.ntps=30
         this.main_config=main_config
 
         for(const i of LayersL){
@@ -185,7 +184,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 if(mod?.result?.definitions)this.definitions.add_definitions(mod?.result?.definitions)
             }
         }
-
 
         this.modeManager=mode
         mode.init(this)
@@ -240,13 +238,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                     break
             }
         }*/
-        if(this.killing_game){
-            this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
-            if(this.clock.timeScale<=0.05){
-                this.clock.timeScale=1
-                this.stop()
-            }
-        }
     }
     update_data(){
         const data:GameData={
@@ -296,6 +287,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.update_data()
         console.log(`Game ${this.id} Stopped`)
     }
+    override mainloop(rqf?:boolean,auto_mainloop?:boolean){
+        this.fineshed=false
+        this.closed=false
+        super.mainloop(rqf,auto_mainloop)
+    }
     start(){
         if(this.started)return
 
@@ -315,8 +311,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     finish(){
         if(this.fineshed)return
         this.fineshed=true
-        this.modeManager.on_finish()
         this.update_data()
+        this.stop()
+
+        this.modeManager.on_finish()
+        this.signals.emit("finish",{})
+
         console.log(`Game ${this.id} Fineshed`)
     }
     add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal):Bullet{

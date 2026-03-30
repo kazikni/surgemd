@@ -346,7 +346,6 @@ export class MenuManager{
         ShowElement(this.content.history_overlay,true)
         const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
         sleep(1)
-        HideElement(this.content.phase_intro_overlay)
         for (const cmd of commands) {
             switch (cmd.type) {
                 case HistoryCommandType.Wait: {
@@ -453,6 +452,9 @@ export class MenuManager{
         if (config.description) {
             await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
         }
+        setTimeout(()=>{
+            HideElement(this.content.phase_intro_overlay)
+        },wait_time+1000)
         await new Promise(r => setTimeout(r, wait_time))
     }
     your_skins:string[]=["default_skin"]

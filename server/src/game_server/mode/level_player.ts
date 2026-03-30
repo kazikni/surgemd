@@ -1,216 +1,173 @@
 import { Game } from "../others/game.ts";
-import { EnemyDef, LevelDefinition } from "common/scripts/config/level_definition.ts";
-import { cloneDeep, mergeDeep, SignalManager, v2m, Vec2 } from "common/engine/core.ts";
-import { BattleRoyaleSolo } from "./battle_royale.ts";
+import { LevelDefinition, LevelEnemys } from "common/scripts/config/level_definition.ts";
+import { BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
-import { Spawn } from "common/scripts/others/constants.ts";
-import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
-import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
-
-export class CampaignGamemodeManager extends ModeManager {
-    level: LevelDefinition
-    level_player:LevelPlayer
-    started:boolean=false
-    constructor(level: LevelDefinition,level_player:LevelPlayer) {
-        super()
-        this.level_player=level_player
-        this.level = level
+import { v2m, Vec2 } from "common/engine/core.ts";
+import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+export type KillAllEnemiesSettings={
+    map:{
+        def:MapDef|string
+    }
+    spawn_mode?:SpawnMode
+    enemies?:LevelEnemys
+}
+export class KillAllEnemiesMode extends ModeManager {
+    settings:{
+        map:{
+            def:MapDef
+            seed?:number
+        }
+        enemies?:LevelEnemys
+        spawn_mode:SpawnMode
     }
 
+    constructor(settings: KillAllEnemiesSettings){
+        super()
+        this.settings={
+            map:{
+                def:typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def,
+            },
+            spawn_mode:settings.spawn_mode??Spawn.grass,
+            enemies:settings.enemies
+        }
+    }
+    override on_start(){
+        this.spawn_enemies()
+    }
     can_join(): boolean {
         return true
     }
-
-    can_down(_h: Human): boolean {
+    can_down(): boolean {
         return false
     }
-
     is_ally(a: Human, b: Human): boolean {
         return a.is_player === b.is_player
     }
 
-    override generate_map(): void {
-        const m = this.level.mode.map.def
-        if (typeof m === "string") {
-            this.game.map.generate(Maps[m], this.level.mode.map.seed)
-        } else {
-            const def = mergeDeep({}, Maps[m.base], m)
-            this.game.map.generate(def as MapDef, this.level.mode.map.seed)
+    spawn_enemies(){
+        if(!this.settings.enemies) return
+        for(const e of this.settings.enemies){
+            const count = e.count ?? 1
+            for(let i = 0; i < count; i++){
+                const npc = this.game.humans.create_enemy(e.def)
+                if(!npc)break
+                if(e.position){
+                    v2m.set(npc.position, e.position.x, e.position.y)
+                }else{
+                    const pos = this.get_human_spawn_position(npc)
+                    if(pos) npc.position = pos
+                }
+            }
         }
     }
-
-    override get_human_spawn_position(h: Human): Vec2 | undefined {
-        if (h.is_player) {
-            return this.level.player?.start_position
-        }
-
-        return this.game.map.getRandomPosition(
-            h.base_hitbox,
-            h.id,
-            h.layer,
-            Spawn.grass,
-            this.game.map.random
-        )
-    }
-
-    override on_human_create(human: Human): void {
-        if(!this.game.started&&!this.started){
-            human.human_data.movement_enabled=false
-            human.human_data.combat_enabled=false
-        }
-    }
-    override on_player_join(p: Player) {
-        p.set_preset(this.level.player)
-    }
-
-    override on_human_die(h: Human) {
-        if(!h.is_player) {
-            if(this.game.humans.living_npc.length<=0&&this.game.started&&this.started){
+    override on_human_die(h: Human){
+        if(!h.is_player){
+            if(this.game.humans.living_npc.length <= 0 && this.game.started){
                 for(const p of this.game.players.living_players){
-                    if(p.conn)p.conn.send_game_over(true)
+                    p.conn?.send_game_over(true)
                 }
                 this.game.finish()
             }
         }
     }
-    override on_player_die(p: Player): void {
-        if(p.conn)p.conn.send_game_over(false,p.killed_by?.id)
+    override on_player_die(p: Player){
+        p.conn?.send_game_over(false, p.killed_by?.id)
+        this.game.add_timeout(this.game.finish.bind(this.game),2)
+    }
+    override generate_map(): void {
+        this.game.map.generate(this.settings.map.def)
+    }
+    override get_human_spawn_position(h:Human):Vec2|undefined{
+        return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)
+    }
+}
+export class LevelPlayer {
+    game: Game
+    level!: LevelDefinition
+    started:boolean=false
 
-        this.game.add_timeout(()=>{
-            this.reset_level()
-        },1)
+    constructor(game: Game){
+        this.game = game
     }
 
-    generate_enemy(def: EnemyDef) {
-        const bot = this.game.humans.add_npc()
+    begin(level: LevelDefinition){
+        this.level = level
 
-        switch(def.ia.kind){
-            case "advanced":
-                bot.ai=new ADVHumanAI(bot)
+        switch(level.mode.type){
+            case "kill_all_enemies":
+                // deno-lint-ignore ban-ts-comment
+                //@ts-ignore
+                this.game.init(new KillAllEnemiesMode(level.mode))
                 break
-            default:
-                bot.ai=new EnemyNPCAI(bot)
+            case "battle_royale":
+                if((level.mode.teams??0)>=2){
+                    this.game.init(new BattleRoyaleTeam(level.mode.teams,level.mode.group_size??4,level.mode as unknown as BattleRoyaleSettings))
+                }else{
+                    this.game.init(new BattleRoyaleSolo(level.mode as unknown as BattleRoyaleSettings))
+                }
                 break
         }
-        if (def.ia?.params)bot.ai.params = cloneDeep(def.ia.params)
 
-        bot.set_preset(def)
-        
-        return bot
+        this.game.signals.on("finish",(e:any)=>{
+            this.reset()
+        })
+        this.game.signals.on("player_join",(e:any)=>{
+            if(!e.player.is_bot){
+                if(this.level.player){
+                    e.player.set_preset(this.level.player)
+                    if(!this.level.player.start_position){
+                        const pos = this.game.modeManager.get_human_spawn_position(e.player)
+                        if(pos)e.player.position = pos
+                    }
+                }
+            }
+        })
+
+        if(level.definitions?.enemies)this.game.humans.enemies=level.definitions?.enemies
+        this.start()
     }
-    reset_level(){
-        this.started=false
+    start(){
+        const level = this.level
+        this.game.start()
 
+        if(level.deadzone?.stage){
+            this.game.deadzone.jump_stages(level.deadzone.stage)
+        }
+
+        this.spawn_players()
+        this.enable_all()
+    }
+    spawn_players(){
+        for(const p of Object.values(this.game.players.connected_players)){
+            if(!p.human || p.human.health_data.dead){
+                p.add_player()
+            }
+        }
+    }
+    reset(){
+        if(!this.game.running)this.game.mainloop()
+        this.game.started = false
         for(const p of Object.values(this.game.players.connected_players)){
             if(p.human){
                 if(p.human.is_player){
                     (p.human as Player).reset_status()
                 }
-                p.human.human_data.movement_enabled=false
-                p.human.human_data.combat_enabled=false
             }
         }
 
         this.game.humans.clear_npcs()
+        this.game.players.clear_bots()
         this.game.clear_loot()
-
         this.game.map.soft_reset()
+        this.game.deadzone.reset()
     }
-    override on_init(): void {
-        this.game.add_timeout(this.game.start.bind(this.game),1)
-    }
-
-    start_level_again(){
-        if(this.started)return
-        const level=this.level
-        this.started=true
-
-        for(const p of Object.values(this.game.players.connected_players)){
-            if(p.human && p.human.health_data.dead){
-                p.add_player()
-            }
-
-            if(p.human){
-                const pos=this.get_human_spawn_position(p.human)
-                if(pos)p.human.position=pos
-            }
-        }
-
-        const obj = level.mode
-        if(obj.type==="kill_all_enemies"){
-            for(const e of obj.enemies){
-                const count=e.count??1
-                let def:EnemyDef|undefined
-
-                if(typeof e.def==="string"){
-                    def=this.level.definitions?.enemies?.[e.def]?.normal
-                }else{
-                    def=e.def
-                }
-
-                if(!def)continue
-
-                for(let i=0;i<count;i++){
-                    const npc=this.generate_enemy(def)
-
-                    if(e.position){
-                        v2m.set(npc.position,e.position.x,e.position.y)
-                    }else{
-                        const pos=this.get_human_spawn_position(npc)
-                        if(pos)npc.position=pos
-                    }
-                }
-            }
-        }
-
+    enable_all(){
         for(const h of this.game.humans.humans){
-            h.human_data.movement_enabled=true
-            h.human_data.combat_enabled=true
+            h.human_data.movement_enabled = true
+            h.human_data.combat_enabled = true
         }
-
-        this.game.started=true
-    }
-    override on_start() {
-        const obj = this.level.mode
-        if (obj.type !== "kill_all_enemies") return
-        this.start_level_again()
-    }
-}
-export class LevelPlayer {
-    game:Game
-    signals:SignalManager
-    level!:LevelDefinition
-    constructor(game:Game){
-        this.game=game
-        this.signals=new SignalManager()
-        this.signals.emit("init", this)
-    }
-    begin(level:LevelDefinition){
-        this.level=level
-        this.signals.emit("level_begin", this)
-        const map=(typeof level.mode.map.def==="string"?Maps[level.mode.map.def]:mergeDeep({},Maps[level.mode.map.def.base],level.mode.map.def)) as MapDef
-        switch(level.mode.type){
-            case "battle_royale":
-                this.game.init(new BattleRoyaleSolo({
-                    map:map,
-                    players:{
-                        limit:level.mode.players.count+1,
-                    }
-                }))
-
-                /*for(let i=0;i<level.mode.players.count;i++){
-                    const pp=this.game.players.add_bot()
-                    const ai=new BattleRoyaleBot(pp)
-                    pp.ai=ai
-                }*/
-                break
-            default:
-                this.game.init(new CampaignGamemodeManager(level,this))
-                break
-        }
-        /**/
     }
 }

@@ -22,7 +22,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
-import { LevelHumanDefinition } from "common/scripts/config/level_definition.ts";
+import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 
 export class Human extends MovingBody{
     // Definition
@@ -30,6 +30,7 @@ export class Human extends MovingBody{
     number_type:number=GameObjectType.Human
     name:string=""
     is_player:boolean=false
+    is_bot:boolean=false
 
     humans_manager!:HumansManager
 
@@ -199,7 +200,7 @@ export class Human extends MovingBody{
         })
     }
     interact(user: Human): void {
-        if(!this.health_data.downed||user.team_data.team_id===undefined||(user.team_data.team_id!==this.team_data.team_id&&(user.team_data.group_id===undefined||user.team_data.group_id!==this.team_data.group_id)))return
+        if(!this.health_data.downed||!this.game.modeManager.is_ally(user,this))return
         this.help_up()
     }
 
@@ -228,7 +229,8 @@ export class Human extends MovingBody{
 
     effects:Map<number,EffectInstance>=new Map()
 
-    set_preset(preset:LevelHumanDefinition){
+    set_preset(preset:HumanDefinition|undefined){
+        if(!preset)return
         if(preset.name)this.name = preset.name
         if(preset.modifiers)this.temp_modifiers=preset.modifiers
         if(preset.inventory)this.inventory.load_preset(preset.inventory)
@@ -678,7 +680,7 @@ export class Human extends MovingBody{
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false
-                if(this.input.using_item&&this.inventory.hand_item&&!this.grenade_holding&&this.human_data.combat_enabled){
+                if(this.input.using_item&&this.inventory.hand_item&&!this.grenade_holding&&this.human_data.combat_enabled&&!this.health_data.downed){
                     this.inventory.hand_item.on_fire(this)
                     this.animation_data.attacking=this.inventory.hand_item.attacking()
                     this.input.using_item_down=false
@@ -997,6 +999,8 @@ export class Human extends MovingBody{
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Null]
+
+        this.inventory.set_weapon_index(0)
     }
     help_up(){
         if(!this.health_data.downed)return
@@ -1019,8 +1023,8 @@ export class Human extends MovingBody{
         }
         
         this.inventory.drop_all()
-        this.game.modeManager.on_human_die(this)
         this.killed_by=params.owner
+
         this.destroy()
         if(params.owner instanceof Human){
             if(params.owner.is_player){
@@ -1038,12 +1042,15 @@ export class Human extends MovingBody{
             }
         }
 
+        this.game.modeManager.on_human_die(this)
+        this.game.signals.emit("human_die",{human:this})
+
         //this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
     }
     override destroy(): void {
         super.destroy()
         const idx=this.humans_manager.humans.indexOf(this)
-        if(idx!==-1)this.humans_manager.humans.splice(idx)
+        if(idx!==-1)this.humans_manager.humans.splice(idx,1)
     }
     override encode(stream: NetStream, full: boolean,utils:any): void {
         stream.writeBooleanGroup2(

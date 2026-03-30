@@ -387,6 +387,7 @@ export class Game extends ClientGame<GameObject>{
         this.sounds.listener_position.y=100000
         this.cam2d.position.x=100000
         this.cam2d.position.y=100000
+        this.cam2d.zoom=6
 
         if(this.level){
             this.ambient.music.set(undefined)
@@ -428,6 +429,7 @@ export class Game extends ClientGame<GameObject>{
         this.scene_2d.reset()
         this.game_over=false
         this.ui.hide_game_over()
+        this.cam2d.zoom=6
     }
     override on_stop(): void {
         super.on_stop()
@@ -659,11 +661,11 @@ export class Game extends ClientGame<GameObject>{
                         ]),
                         "Get up!"
                     ], this.resources.get_audio("gameover_music"))
-                    if(this.level){
+                    //setTimeout(()=>{if(this.level){
                         this.soft_reset()
                         this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
                         this.local_server.restart_level()
-                    }
+                    //}},2000)
                 }
             }
         })

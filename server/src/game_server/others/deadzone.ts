@@ -171,6 +171,7 @@ export class DeadZoneManager {
     }
 
     reset(){
+        this.dirty=true
         this.radius_size=this.game.map.size.x
 
         this.state.position=v2.dscale(this.game.map.size,2)
@@ -222,6 +223,20 @@ export class DeadZoneManager {
         this.hitbox.position = this.state.position
 
         this.stageIndex++
+        this.dirty = true
+    }
+    jump_stages(targetStage: number){
+        if(targetStage <= 0) return
+        targetStage = Math.min(targetStage, this.stages.length)
+        for(let i = 0; i < targetStage; i++){
+            this.advance()
+
+            this.state.radius = this.state.new_radius
+            this.state.position = v2.clone(this.state.new_position)
+
+            this.hitbox.radius = this.state.radius
+            this.hitbox.position = this.state.position
+        }
         this.dirty = true
     }
     tick(dt:number){

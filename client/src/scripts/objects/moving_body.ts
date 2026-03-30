@@ -24,7 +24,7 @@ export abstract class MovingBody extends GameObject{
             this.distance_walked=dist
         }
         v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
-        this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.dest_rot!,this.game.global_interpolation*1.5)
+        this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.dest_rot!,this.game.global_interpolation)
     }
     decode_physical_data(stream:NetStream,full:boolean):void{
         this.dest_pos=stream.readPos2()

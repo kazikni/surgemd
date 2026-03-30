@@ -123,8 +123,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         this.playerCheckTimer += dt
         if (this.playerCheckTimer >= 0.5) {
             if (!this.seenHuman) {
-                for (const p of self.game.players.living_players) {
-                    if (this.isPlayerVisible(self, p)) {
+                for (const p of self.game.humans.humans) {
+                    if (!p.game.modeManager.is_ally(p,this.human)&&this.isPlayerVisible(self, p)) {
                         this.seenHuman = p
                         this.lastSeenPos = v2.clone(p.position)
                         break

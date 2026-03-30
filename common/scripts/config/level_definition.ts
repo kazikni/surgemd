@@ -4,10 +4,12 @@ import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
 import { HistoryCommand } from "./history.ts";
 
-export type LevelHumanDefinition={
+export type HumanDefinition={
     name?:string
     start_position?:Vec2
     inventory?:InventoryPreset
+    team?:number
+    group?:number
     modifiers?:Partial<HumanModifiers>
 }
 export type LevelMapDefinition=string|(MapDef&{base:string})
@@ -17,7 +19,14 @@ export type EnemyDef={
         action?:string
         params?:Record<string,any>
     }
-}&LevelHumanDefinition
+}&HumanDefinition
+export type LevelEnemys={
+    def:EnemyDef|string
+    team?:number
+    name?:string
+    position?:Vec2
+    count?:number
+}[]
 export type LevelMode={
     map: {
         def:LevelMapDefinition
@@ -25,20 +34,12 @@ export type LevelMode={
     };   
 }&({
     type:"kill_all_enemies",
-    enemies:{
-        def:EnemyDef|string
-        name?:string
-
-        position?:Vec2
-        count?:number
-    }[]
+    enemies:LevelEnemys
 }|{
     type:"battle_royale"
-    team_size:number
-    groups?:number
-    players:{
-        count:number
-    }
+    group_size:number
+    teams?:number
+    enemies:LevelEnemys[]
 })
 export interface LevelDefinition{
     meta:{
@@ -50,7 +51,10 @@ export interface LevelDefinition{
         date:string
     }
     mode:LevelMode
-    player: LevelHumanDefinition
+    deadzone?:{
+        stage?:number
+    }
+    player: HumanDefinition
     assets?:{
         background_music?:string
         load?:{
@@ -58,11 +62,7 @@ export interface LevelDefinition{
         }
     }
     definitions?:{
-        enemies?:Record<string,{
-            easy:EnemyDef,
-            normal:EnemyDef,
-            hard:EnemyDef
-        }>
+        enemies?:Record<string,EnemyDef>
     }
     history?:HistoryCommand[]
 }

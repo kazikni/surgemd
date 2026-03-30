@@ -97,6 +97,7 @@ export class SignalManager {
 export class Clock {
     private frameDuration: number;
     private lastFrameTime: number;
+    accumulator:number=0
     public timeScale: number;
     public callback: (dt:number)=>void;
     public intervals:Map<number,(dt:number)=>void>=new Map()
@@ -113,7 +114,7 @@ export class Clock {
         this.tick = this.tick.bind(this)
     }
 
-    private interval:number=0
+    private interval?:number=undefined
 
     add_interval(cb:(dt:number)=>void):number{
         let id=0
@@ -127,51 +128,50 @@ export class Clock {
     clear_interval(id:number){
         if(this.intervals.has(id))this.intervals.delete(id)
     }
-    tick(currentTime?: number) {
-        if (this.running) {
-            if (currentTime === undefined) currentTime = performance.now();
-
+    tick(){
+        if(this.running){
+            const currentTime = performance.now();
             const elapsedTime = currentTime - this.lastFrameTime;
-            this.lastFrameTime = currentTime;
+            this.lastFrameTime = currentTime
 
-            const dt = (elapsedTime / 1000) * this.timeScale;
+            const dt = (elapsedTime / 1000) * this.timeScale
 
             this.callback(dt);
             for (const i of this.intervals.values()) {
                 i(dt);
             }
-
-            self.requestAnimationFrame(this.tick)
+        }
+    }
+    _tick(){
+        if(this.running){
+            this.tick()
+            self.requestAnimationFrame(this._tick)
         }
     }
     public start() {
         if(!this.running){
+            this.running=true
+
+            this.frameDuration=1000/this.tps
+            this.lastFrameTime = performance.now()
             this.interval=setInterval(() => {
-                const currentTime = Date.now()
-                const elapsedTime = currentTime - this.lastFrameTime
-                this.lastFrameTime = Date.now()
-                const dt=(elapsedTime/1000)*this.timeScale
-                this.callback(dt)
-                for(const i of this.intervals.values()){
-                    i(dt)
-                }
+                this.tick()
             }, this.frameDuration)
         }
     }
     public startRAF() {
         if (!this.running) {
             this.running = true;
-            this.lastFrameTime = performance.now()
-            this.tps=60
-            this.frameDuration=1000/this.tps
 
-            self.requestAnimationFrame(this.tick.bind(this))
+            this._tick=this._tick.bind(this)
+            this.lastFrameTime = performance.now()
+            this.frameDuration=1000/this.tps
+            self.requestAnimationFrame(this._tick)
         }
     }
     public stop(){
         this.running=false
-        if(!this.running)
-        clearInterval(this.interval)
+        if(this.interval!==undefined)clearInterval(this.interval)
     }
 }
 

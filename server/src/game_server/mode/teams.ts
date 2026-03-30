@@ -3,7 +3,17 @@ import { Human } from "../objects/human.ts";
 export class Team{
     humans:Human[]=[]
     id:number=0
+    remove_human(h:Human){
+        if(!h.team_data.team)return
+        const idx=this.humans.indexOf(h)
+        if(idx!==-1){
+            h.team_data.team=undefined
+            h.team_data.team_id=undefined
+            this.humans.splice(idx,1)
+        }
+    }
     add_human(h:Human){
+        if(h.team_data.team)h.team_data.team.remove_human(h)
         h.team_data.team=this
         h.team_data.team_id=this.id
         this.humans.push(h)
@@ -33,7 +43,19 @@ export class Team{
 }
 export class Group extends Team{
     team:number=0
+    override remove_human(h:Human){
+        if(!h.team_data.group)return
+        const idx=this.humans.indexOf(h)
+        if(idx!==-1){
+            h.team_data.group=undefined
+            h.team_data.group_id=undefined
+            this.humans.splice(idx,1)
+        }
+
+    }
     override add_human(h:Human){
+        if(h.team_data.group)h.team_data.group.remove_human(h)
+        if(h.team_data.team_id)this.team=h.team_data.team_id
         h.team_data.group=this
         h.team_data.group_id=this.id
         this.humans.push(h)

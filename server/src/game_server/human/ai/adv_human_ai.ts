@@ -601,12 +601,21 @@ export class ADVHumanAI extends BotAi{
         this.controller.attacking.activated=false
         this.controller.movement.activated=false
     }
+    protected isPlayerVisible(other: Human): boolean {
+        const dist=v2.distance(this.human.position, other.position)
+        if(other.health_data.dead || !other.is_player) return false
+        return dist<=12
+    }
     override AI(dt: number): void {
         this.reset_inputs()
 
-        let t:Human|undefined=this.human.game.players.living_players[0]
-        if(!t||v2.distance(t.position,this.human.position)>=12){
-            t=undefined
+        let t:Human|undefined=undefined
+        for(const p of this.human.game.humans.humans){
+            if(p.id===this.human.id)continue
+            if(!p.game.modeManager.is_ally(p,this.human)&&this.isPlayerVisible(p)){
+                t=p
+                break
+            }
         }
         const e_ctx:BotExecutionContext={
             dt:dt,

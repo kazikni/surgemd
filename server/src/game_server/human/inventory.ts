@@ -408,7 +408,8 @@ export class GInventory extends GInventoryBase<LItem>{
         this.owner.animation_data.switching=true
         this.owner.animation_data.dirty=true
     }
-    override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): void {
+    override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
+        if(wep?.idString===this.weapons[slot]?.def.idString)return false
         if(drop){
             if(this.weapons[slot]&&this.weapons[slot].def!=this.weapons_defaults[slot]){
                 this.weapons[slot].drop()
@@ -416,6 +417,7 @@ export class GInventory extends GInventoryBase<LItem>{
             }
         }
         super.set_weapon(slot,wep)
+        return true
     }
     add_gun(dd:GunDef,full_ammo:boolean):boolean{
         const id=dd.idString
@@ -499,7 +501,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 if(drop_overflow&&drop>0){
                     this.owner.game.add_loot(this.owner.position,def,drop,this.owner.layer)
                 }
-                return drop
+                return drop //Residue
             }
             case InventoryItemType.consumible:{
                 this.net_sync.items=true
@@ -513,7 +515,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 if(count==Infinity){
                     ov=this.add(item,item.limit_per_slot)
                     if(drop_overflow)this.owner.game.add_loot(this.owner.position,def,Infinity,this.owner.layer)
-                    return 0
+                    return count
                 }else{
                     ov=this.add(item,count)
                     if(ov&&drop_overflow){
@@ -534,7 +536,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 if(count==Infinity){
                     ov=this.add(item,count)
                     if(drop_overflow)this.owner.game.add_loot(this.owner.position,def,Infinity,this.owner.layer)
-                    return 0
+                    return count
                 }else{
                     ov=this.add(item,count)
                     if(ov&&drop_overflow){
@@ -599,9 +601,9 @@ export class GInventory extends GInventoryBase<LItem>{
                 return g?count-1:count
             }
             case InventoryItemType.melee:{
-                this.set_weapon(0,def as unknown as MeleeDef)
+                const s=this.set_weapon(0,def as unknown as MeleeDef)
                 this.net_sync.weapons=true
-                return count-1
+                return s?count-1:count
             }
             case InventoryItemType.skin:{
                 if(this.owner.loadout.skin.idString!==def.idString){
@@ -619,12 +621,12 @@ export class GInventory extends GInventoryBase<LItem>{
                 if(!this.iitems.includes(def)){
                     this.iitems.push(def)
 
-                    count-=1
                     if(def.idNumber!>this.owner.equipment_data.scope.idNumber!){
                         this.owner.equipment_data.scope=def
                     }
                     this.owner.equipment_data.dirty=true
                     this.net_sync.iitems=true
+                    return count-1
                 }
                 break
             }

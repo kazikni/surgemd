@@ -28,6 +28,8 @@ import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -215,6 +217,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                     this.init(new BattleRoyaleDebug(game_config.mode_settings))
                     break
             }
+        }
+
+        for(let i=0;i<99;i++){
+            const b = this.players.add_bot(new JoinPacket())
+            if(b.human)b.ai=new DumbBotAI(b.human)
         }
     }
     override net_update(full:boolean){

@@ -814,7 +814,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireMode:FireMode.Auto,
             bullet:{
                 def:{
-                    damage:3.5,
+                    damage:4.3,
                     radius:0.01,
                     speed:25,
                     falloff:0.7,

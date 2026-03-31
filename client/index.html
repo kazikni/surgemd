@@ -21,7 +21,7 @@
     <script type="module" src="./src/scripts/others/index.ts" async></script>
     <div id="game" style="display: none;">
       <div>
-        <div id="game-gui">
+        <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
           <div id="game-mobile-gui" style="display: none; pointer-events: none;">
             <kl-joystick id="left-joystick"></kl-joystick>
             <kl-joystick id="right-joystick"></kl-joystick>
@@ -282,7 +282,7 @@
           <div id="history-dialog-indicator" style="pointer-events:none;display:none">▶</div>
         </div>
       </div>
-      <div id="phase-intro-overlay" style="display: none;visibility: none;pointer-events:none;">
+      <div id="phase-intro-overlay" style="display:none;visibility:none;pointer-events:none;">
         <div class="tv-static"></div>
         <div id="phase-intro-content">
           <div id="phase-intro-name"></div>

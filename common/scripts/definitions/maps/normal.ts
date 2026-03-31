@@ -242,7 +242,7 @@ export const NormalMap:MapDef={
     biome:NormalBiome,
     generation:{
         island:{
-            size:v2.new(500,500),
+            size:v2.new(600,600),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},

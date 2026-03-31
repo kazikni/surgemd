@@ -61,6 +61,8 @@ export class MenuManager{
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
+
+    campaign:Record<string,any>={}
     constructor(definitions:GameDefinition){
         const params = new URLSearchParams(self.location.search)
 
@@ -424,6 +426,14 @@ export class MenuManager{
         HideElement(this.content.history_overlay,true)
         if (music_player) music_player.set(undefined)
     }
+    open_phase_intro(){
+        // reset
+        this.content.phase_intro_location.innerText = ""
+        this.content.phase_intro_name.innerText = ""
+        this.content.phase_intro_date.innerText = ""
+        this.content.phase_intro_description.innerText = ""
+        ShowElement(this.content.phase_intro_overlay)
+    }
     async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[],sounds:SoundManager): Promise<void> {
         function play_type_sound(_a:string){
             sounds.play(random.choose(type_sounds),{
@@ -432,12 +442,7 @@ export class MenuManager{
         }
         const text_speed=config.text_speed??1
         const wait_time=(config.wait_time??2)*1000
-        ShowElement(this.content.phase_intro_overlay)
-        // reset
-        this.content.phase_intro_location.innerText = ""
-        this.content.phase_intro_name.innerText = ""
-        this.content.phase_intro_date.innerText = ""
-        this.content.phase_intro_description.innerText = ""
+        this.open_phase_intro()
         // TYPEWRITER
         const rand_delay={
             min:40*text_speed,

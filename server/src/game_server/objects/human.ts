@@ -94,6 +94,10 @@ export class Human extends MovingBody{
         dirty:boolean
         dirty_part:boolean
     }
+
+    get scope_zoom():number{
+        return 20/this.equipment_data.scope.scope_view
+    }
     loadout!:HumanLoadoutData&{emote?:GameObjectDef}
     animation_data:HumanAnimationData&{switching:boolean,current_animation?:PlayerAnimation}={
         dirty:true,

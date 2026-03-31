@@ -20,6 +20,12 @@ export abstract class BotAi{
     }
     abstract AI(dt:number):void
     abstract net_update(general_update:NetStream):void
+    reset_inputs(){
+        this.human.input.using_item=false
+        this.human.input.using_item_down=false
+        this.human.input.movement.scale=0
+        this.human.input.interaction=false
+    }
 }
 export type BotStateHandler = (self: Human,begin:boolean,dt: number) => void
 export abstract class StatedBotAi<TState extends string = string> extends BotAi{

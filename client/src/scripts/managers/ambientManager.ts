@@ -167,6 +167,10 @@ export class AmbientManager{
         this.reload()
         this.last_music_pos=0
     }
+    clear(){
+        this.music.set(undefined)
+        this.ambience.set(undefined)
+    }
     reload(){
         this.biome=this.game.terrain.biome!
         if(this.biome.ambient.sound){

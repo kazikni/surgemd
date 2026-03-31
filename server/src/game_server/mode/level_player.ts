@@ -108,6 +108,11 @@ export class LevelPlayer {
                 }else{
                     this.game.init(new BattleRoyaleSolo(level.mode as unknown as BattleRoyaleSettings))
                 }
+                this.game.signals.on("player_die",(e:any)=>{
+                    if(!e.player.is_bot){
+                        this.game.add_timeout(this.game.finish.bind(this.game),2)
+                    }
+                })
                 break
         }
 

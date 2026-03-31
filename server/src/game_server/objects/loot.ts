@@ -35,7 +35,7 @@ export class Loot extends ServerGameObject{
         }
     }
     override can_interact(user: Human): boolean {
-        return user.hitbox.collidingWith(this.hitbox)&&!this.destroyed
+        return user.hitbox.collidingWith(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
     interact(user: Human): void {
         const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)

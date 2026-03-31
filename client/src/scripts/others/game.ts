@@ -88,6 +88,7 @@ export class Game extends ClientGame<GameObject>{
         radius: number,
         offset:Vec2
     }
+    fs?:FileManager
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
@@ -290,7 +291,7 @@ export class Game extends ClientGame<GameObject>{
         })
         
         this.load_resources(["main"])
-
+        this.fs=fs
     }
     set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
         if(!this.active_entity)return
@@ -307,9 +308,9 @@ export class Game extends ClientGame<GameObject>{
         }*/
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        /*if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.driving&&this.running){
-            this.active_entity.rotation=this.input.angle
-        }*/
+        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.driving&&!this.game_over){
+            this.active_entity.physical_data.rotation=this.input.angle
+        }
     }
     interact(){
         if(this.input.interact)return
@@ -401,15 +402,39 @@ export class Game extends ClientGame<GameObject>{
                 this.resources.get_audio("typewriter-1"),
                 this.resources.get_audio("typewriter-2"),
             ],this.sounds)
-            if(this.level?.history){
-                await this.menu.show_history(this.level.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
+            if(this.level?.begin?.history){
+                await this.menu.show_history(this.level.begin.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
             }
         }
 
-
+        this.ui.start()
         this.join()
-
         this.mainloop(true)
+    }
+    async end_level(kills:number=0){
+        this.stop()
+        await this.game_over_messages([
+            random.choose(["Hi.", "Hello.","Hey."]),
+            "You did it.",
+            ...(kills >= 1 ? [`You got ${kills} kills.`] : ["You didn't kill anyone.","Congratulations you are a good soul."]),
+            "But are you really happy?",
+            "Was it worth it?",
+            "You can leave the island...",
+            "But the island will never leave you.",
+            "Goodbye. See you later!"
+        ], this.resources.get_audio("gameover_music"))
+        if(this.level?.end&&this.fs){
+            if(this.level?.end?.history){
+                await this.menu.show_history(this.level.end.history,this.sounds,this.resources,this.ambient.music,this.input_manager)
+            }
+            if(this.level.end.next?.type==="level"){
+                this.menu.open_phase_intro()
+                this.close_game()
+                this.ambient.clear()
+                const l=JSON.parse(await this.fs.read_file(this.menu.campaign.charpters[this.level.end.next.charpter].levels[this.level.end.next.level]))
+                this.local_server.play_campaign_level(l)
+            }
+        }
     }
     close_game(){
         if(this.running)this.stop()
@@ -422,6 +447,7 @@ export class Game extends ClientGame<GameObject>{
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.game_over=false
+        this.happening=false
         this.ambient.on_game_close()
     }
     soft_reset(){
@@ -561,24 +587,13 @@ export class Game extends ClientGame<GameObject>{
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
             this.reset_input()
-
-            this.ui.start()
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.game_over = true
             this.ui.show_game_over(p)
             if(this.offline){
                 if(p.Win){
-                    await this.game_over_messages([
-                        random.choose(["Hi.", "Hello.","Hey."]),
-                        "You did it.",
-                        ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't kill anyone.","Congratulations you are a good soul."]),
-                        "But are you really happy?",
-                        "Was it worth it?",
-                        "You can leave the island...",
-                        "But the island will never leave you.",
-                        "Goodbye. See you later!"
-                    ], this.resources.get_audio("gameover_music"))
+                    this.end_level(p.Kills)
                 }else{
                     await this.game_over_messages([
                         random.choose(["Hi.", "Hello.","Hey."]),
@@ -662,9 +677,9 @@ export class Game extends ClientGame<GameObject>{
                         "Get up!"
                     ], this.resources.get_audio("gameover_music"))
                     //setTimeout(()=>{if(this.level){
-                        this.soft_reset()
-                        this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
-                        this.local_server.restart_level()
+                    this.soft_reset()
+                    this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
+                    this.local_server.restart_level()
                     //}},2000)
                 }
             }

@@ -591,11 +591,8 @@ export class ADVHumanAI extends BotAi{
     constructor(human:Human){
         super(human)
     }
-
-    reset_inputs(){
-        this.human.input.using_item=false
-        this.human.input.using_item_down=false
-        this.human.input.movement.scale=0
+    override reset_inputs(): void {
+        super.reset_inputs()
 
         this.controller.aim.activated=false
         this.controller.attacking.activated=false

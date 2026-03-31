@@ -2,7 +2,7 @@
     "meta":{
         "name": "No Hope",
         "location": "South America - Southeast - MD Island",
-        "description": "The 50vs50 Lastman",
+        "description": "The 50vs50 Last Man",
         "size":"small",
         "date":"26/03/2009 12:23AM",
         "dificulty":"normal"
@@ -35,95 +35,126 @@
             }
         ]
     },
-    "history":[
-        {
-            "type":4,
-            "music":"history_music_1"
+    "end":{
+        "next":{
+            "type":"level",
+            "charpter":0,
+            "level":1
         },
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-1.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
-        {
-            "type":3,
-            "text":""
-        },
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-2.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+        "history":[
+            {
+                "type":4,
+                "music":"history_music_1"
+            },
+            {
+                "type":3,
+                "text":"Good Game"
+            },
+            {
+                "type":2,
+                "frame":"/img/menu/gui/history/charpter-1/level-1/frame-3.png"
+            },
+            {
+                "type":1
+            },
+            {
+                "type":2,
+                "frame":""
+            }
+        ]
+    },
+    "begin":{
+        "history":[
+                {
+                    "type":4,
+                    "music":"history_music_1"
+                },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-1.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
+                {
+                    "type":3,
+                    "text":""
+                },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-2.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-3.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-3.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-4.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-4.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-5.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-5.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-6.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-6.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-7.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-7.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-9.png"
-        },
-        {
-            "type":0,
-            "time":4
-        },
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-9.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                },
 
-        {
-            "type":2,
-            "frame":"/img/menu/gui/history/charpter-1/level-1/frame-10.png"
-        },
-        {
-            "type":0,
-            "time":4
-        }
-    ],
+                {
+                    "type":2,
+                    "frame":"/img/menu/gui/history/charpter-1/level-1/frame-10.png"
+                },
+                {
+                    "type":0,
+                    "time":4
+                }
+            ]
+    },
+    
     "definitions":{
         "enemies":{
             "basic":{

@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
+import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { LevelDefinition } from "common/scripts/config/level_definition.ts";
@@ -294,31 +294,29 @@ export function make_menu_settings(save: GameSave, defs: SettingDef[]){
         }
     }
 }
-export function make_menu_campaign(file:FileManager,path="scripts/campaign.json"){
+export function make_menu_campaign(campaign:Record<string,any>){
     return (parent:HTMLDivElement,manager:MenuManager)=>{
-        file.read_file(path).then(async(txt)=>{
-            const campaign=JSON.parse(txt)
-            for(const charpter of campaign.charpters){
-                const h2=document.createElement("h2")
-                h2.className="span"
-                h2.textContent=charpter.name
-                parent.appendChild(h2)
-                for(const l of charpter.levels){
-                    const level:LevelDefinition=JSON.parse(await file.read_file(l))
-                    const level_div = document.createElement("div")
-                    level_div.className="play-select-item background-menu"
-                    level_div.innerHTML = `
+        for(const c in campaign.charpters){
+            const charpter=campaign.charpters[c]
+            const h2=document.createElement("h2")
+            h2.className="span"
+            h2.textContent=charpter.name
+            parent.appendChild(h2)
+            for(const l in charpter.levels){
+                const level=charpter.levels[l]
+                const level_div = document.createElement("div")
+                level_div.className="play-select-item background-menu"
+                level_div.innerHTML = `
 <h1>${level.meta.name}</h1>
 <p>${level.meta.description}</p>
 <button class="btn-green">Start Level</button>`
-                    parent.appendChild(level_div)
-                    const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
-                    start_btn.onclick = () => {
-                        if(manager.play_callback)manager.play_callback({type:"campaign",level:level,dificulty:2})
-                    }
+                parent.appendChild(level_div)
+                const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
+                start_btn.onclick = () => {
+                    if(manager.play_callback)manager.play_callback({type:"campaign",level:l as unknown as number,charpter:c as unknown as number})
                 }
             }
-        }) 
+        }
     }
 }
 export function make_menu_modes(modes:GamemodeConfig[]){
@@ -428,10 +426,17 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     }
 }
 
-export function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CModsManager){
+export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CModsManager){
+    const campaign=JSON.parse(await fs.read_file("scripts/campaign.json"))
+    menu.campaign=cloneDeep(campaign)
+    for(const c in campaign.charpters){
+        for(const l in campaign.charpters[c].levels){
+            campaign.charpters[c].levels[l]=JSON.parse(await fs.read_file(campaign.charpters[c].levels[l]))
+        }
+    }
     const play_subtabs={
         "campaign_level_selector":{
-            generate:make_menu_campaign(fs)
+            generate:make_menu_campaign(campaign)
         },
     } as Record<string,MenuSubTabDef>
     const play_options:SubMenuOption[]=[

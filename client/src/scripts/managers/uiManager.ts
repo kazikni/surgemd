@@ -126,8 +126,8 @@ export class UiManager{
 
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
+        HideElement(this.content.game_gui)
         HideElement(this.content.gameOver)
-        ShowElement(this.content.game_gui)
         this.enableCrosshair()
 
         this.game.inventory.clear()
@@ -256,6 +256,8 @@ export class UiManager{
         this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
         this.enableCrosshair()
         enableContextMenuPrevent()
+
+        ShowElement(this.content.game_gui)
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     proccess_joinned_packet(jp:JoinnedPacket){
@@ -329,6 +331,7 @@ export class UiManager{
                 break
             }
             case KillFeedMessageType.kill:{
+                if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
                         elem.innerHTML=this.game.language.get("killfeed-kill-abstinence",{player:this.players_name[msg.victimId].full})
@@ -342,7 +345,7 @@ export class UiManager{
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get(dsd.idString),
                         })
-                        if(msg.killer.id===this.game.active_entity!.id){
+                        if(this.game.active_entity&&msg.killer.id===this.game.active_entity.id){
                             this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
                         }
                         if(this.killleader&&msg.killer.id===this.killleader.id){
@@ -367,6 +370,7 @@ export class UiManager{
                 break
             }
             case KillFeedMessageType.down:{
+                if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
                         elem.innerHTML=this.game.language.get("killfeed-down-abstinence",{player:this.players_name[msg.victimId].full})
@@ -398,6 +402,7 @@ export class UiManager{
                 break
             }
             case KillFeedMessageType.killleader_assigned:{
+                if(!this.players_name[msg.player.id])break
                 elem.innerHTML=this.game.language.get("killfeed-killleader-assigned",{"player":this.players_name[msg.player.id].full})
                 this.assign_killleader(msg)
                 this.game.sounds.play(this.game.resources.get_audio("kill_leader_assigned"),{

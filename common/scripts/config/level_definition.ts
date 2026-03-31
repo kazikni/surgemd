@@ -64,5 +64,15 @@ export interface LevelDefinition{
     definitions?:{
         enemies?:Record<string,EnemyDef>
     }
-    history?:HistoryCommand[]
+    begin?:{
+        history?:HistoryCommand[]
+    }
+    end?:{
+        history?:HistoryCommand[]
+        next?:{
+            type:"level"
+            charpter:number
+            level:number
+        }
+    }
 }

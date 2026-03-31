@@ -136,7 +136,13 @@ export class PlayersManager{
     }
     clear_bots(){
         for(const b of this.connected_bots){
-            b.human?.destroy?.()
+            if(b.human){
+                const idx=this.living_players.indexOf(b.human as Player)
+                if(idx!==-1){
+                    this.living_players.splice(idx,1)
+                }
+                b.human.destroy()
+            }
         }
         this.connected_bots.length=0
     }

@@ -141,6 +141,7 @@ export class Loot extends GameObject{
                     this.sprite_main.frame=this.game.resources.get_sprite((this.item as GunDef).assets?.item??this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
+                    this.sprite_main.scale=v2.new(2,2)
                     this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2.new(1.5,1.5);

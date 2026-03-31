@@ -8,10 +8,14 @@ __                                                                              
 
 __                                                                                                      __
 ### Items
-
+* SR25 - 762mm DMR
+* Model94 - 45acp Sniper
+* BLR - 556mm Sniper
+* 45ACP
 __                                                                                                      __
 ### Others
-
+* MD Crate
+* Tundra Crate
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
@@ -20,6 +24,7 @@ __                                                                              
 __                                                                                                      __
 ### Others
 * Creatures Reword
+* Balance Changes
 __                                                                                                      __
 ## Fixes
 * Fix Bullet Range

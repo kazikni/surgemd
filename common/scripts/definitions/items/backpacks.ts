@@ -17,10 +17,13 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             level:0,
             max:{
                 "12g":15,
-                "9mm":120,
-                "22lr":150,
-                "762mm":90,
-                "556mm":90,
+                "9mm":100,
+                "762mm":80,
+                "556mm":80,
+
+                "45acp":80,
+                "22lr":110,
+
                 "50cal":50,
                 "308sub":10,
                 "explosive_ammo":5,
@@ -59,10 +62,13 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             level:1,
             max:{
                 "12g":30,
-                "9mm":240,
-                "22lr":300,
-                "762mm":150,
-                "556mm":150,
+                "9mm":200,
+                "762mm":140,
+                "556mm":140,
+
+                "45acp":140,
+                "22lr":220,
+
                 "50cal":80,
                 "308sub":20,
                 "explosive_ammo":10,
@@ -75,11 +81,14 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             idString:"regular_pack",
             level:2,
             max:{
-                "12g":60,
-                "9mm":320,
-                "22lr":400,
-                "762mm":250,
-                "556mm":250,
+                "12g":45,
+                "9mm":300,
+                "762mm":220,
+                "556mm":220,
+
+                "45acp":220,
+                "22lr":330,
+
                 "308sub":40,
                 "50cal":130,
                 "explosive_ammo":15,
@@ -92,11 +101,14 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             idString:"tactical_pack",
             level:3,
             max:{
-                "12g":90,
+                "12g":60,
                 "9mm":400,
-                "22lr":500,
-                "762mm":310,
-                "556mm":310,
+                "762mm":300,
+                "556mm":300,
+    
+                "45acp":300,
+                "22lr":440,
+
                 "308sub":80,
                 "50cal":160,
                 "explosive_ammo":20,

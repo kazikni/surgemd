@@ -2,11 +2,12 @@ import { InventoryItemType } from "../utils.ts";
 import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
-import { NormalLobby, NormalMap, SnowMap } from "./normal.ts";
+import { NormalLobby, NormalMap } from "./normal.ts";
 import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
 import { DebugMap } from "./debug.ts";
 import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2 } from "../../../engine/core.ts";
 import { GameDefinition, GameItem } from "../game_defs.ts";
+import { TundraMap } from "./tundra.ts";
 export interface Aditional{
     withammo:boolean
 }
@@ -91,7 +92,7 @@ export interface CounterMapDef extends MapDef{
 export const Maps:Record<string,MapDef>={
     normal:NormalMap,
     lobby:NormalLobby,
-    snow:SnowMap,
+    tundra:TundraMap,
 
     debug:DebugMap
 }

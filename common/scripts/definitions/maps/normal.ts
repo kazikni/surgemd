@@ -16,7 +16,7 @@ export const NormalBiome:BiomeDef={
 }
 export const NormalMap:MapDef={
     loot_tables:{
-        //Guns
+        //Guns Quality
         "common_guns":[
             {item:"m9",weight:5},
         ],
@@ -32,11 +32,14 @@ export const NormalMap:MapDef={
         "epic_guns":[
             {item:"famas",weight:6},
             {item:"spas12",weight:3},
+            {item:"model94",weight:1},
+            {item:"blr",weight:0.7},
         ],
         "mythic_guns":[
-            {item:"vector",weight:6},
-            {item:"kar98k",weight:6},
-            {item:"awp",weight:0.5},
+            {item:"sr25",weight:10},
+            {item:"vector",weight:10},
+            {item:"kar98k",weight:7},
+            {item:"awp",weight:1},
             //{item:"m2_2",weight:0.1},
         ],
         "legendary_guns":[
@@ -44,57 +47,58 @@ export const NormalMap:MapDef={
             {item:"pfeifer_zeliska",weight:1},
             {item:"rpg7",weight:0.8},
         ],
+        //Guns Spawn
         "guns":[
-            {table:"common_guns",weight:27},
-            {table:"uncommon_guns",weight:25},
+            {table:"common_guns",weight:21},
+            {table:"uncommon_guns",weight:20},
             {table:"rare_guns",weight:17},
             {table:"epic_guns",weight:1},
             {table:"mythic_guns",weight:0.1},
             {table:"legendary_guns",weight:0.01}
         ],
-        "melees":[
-            {item:"axe",weight:10},
-            {item:"sledgehammer",weight:1},
-        ],
         "special_guns":[
-            {table:"uncommon_guns",weight:29},
+            {table:"uncommon_guns",weight:21},
             {table:"rare_guns",weight:20},
             {table:"epic_guns",weight:3},
             {table:"mythic_guns",weight:0.7},
             {table:"legendary_guns",weight:0.3}
         ],
+        "melees":[
+            {item:"axe",weight:10},
+            {item:"sledgehammer",weight:1},
+        ],
         //Consumibles
         "consumibles":[
-            {"item":"bandage","count":5,"weight":1000},
-            {"item":"yellow_soda","count":1,"weight":950},
-            {"item":"blue_soda","count":2,"weight":700},
-            {"item":"inhaler","count":1,"weight":400},
-            {"item":"medikit","count":1,"weight":350},
-            {"item":"blue_potion","count":1,"weight":240},
-            {"item":"small_red_crystal","count":4,"weight":130},
-            {"item":"red_soda","count":1,"weight":110},
-            {"item":"red_crystal","count":2,"weight":60},
-            {"item":"yellow_pills","count":1,"weight":4},
-            {"item":"blue_pills","count":1,"weight":4},
-            {"item":"red_pills","count":1,"weight":2.5},
-            {"item":"green_soda","count":1,"weight":3},
-            {"item":"black_soda","count":1,"weight":1.25}
+            {item:"bandage",count:5,weight:1000},
+            {item:"yellow_soda",count:1,weight:950},
+            {item:"blue_soda",count:2,weight:700},
+            {item:"inhaler",count:1,weight:400},
+            {item:"medikit",count:1,weight:350},
+            {item:"blue_potion",count:1,weight:240},
+            {item:"small_red_crystal",count:4,weight:130},
+            {item:"red_soda",count:1,weight:110},
+            {item:"red_crystal",count:2,weight:60},
+            {item:"yellow_pills",count:1,weight:4},
+            {item:"blue_pills",count:1,weight:4},
+            {item:"red_pills",count:1,weight:2.5},
+            {item:"green_soda",count:1,weight:3},
+            {item:"black_soda",count:1,weight:1.25}
         ],
         "special_consumibles":[
-            {"item":"bandage","count":10,"weight":1000},
-            {"item":"yellow_soda","count":2,"weight":950},
-            {"item":"blue_soda","count":3,"weight":700},
-            {"item":"inhaler","count":2,"weight":400},
-            {"item":"medikit","count":1,"weight":350},
-            {"item":"blue_potion","count":2,"weight":240},
-            {"item":"small_red_crystal","count":6,"weight":130},
-            {"item":"red_soda","count":2,"weight":110},
-            {"item":"red_crystal","count":2,"weight":60},
-            {"item":"yellow_pills","count":1,"weight":4},
-            {"item":"blue_pills","count":1,"weight":4},
-            {"item":"red_pills","count":1,"weight":2.5},
-            {"item":"green_soda","count":2,"weight":3},
-            {"item":"black_soda","count":2,"weight":1.25}
+            {item:"bandage",count:10,weight:1000},
+            {item:"yellow_soda",count:2,weight:950},
+            {item:"blue_soda",count:3,weight:700},
+            {item:"inhaler",count:2,weight:400},
+            {item:"medikit",count:1,weight:350},
+            {item:"blue_potion",count:2,weight:240},
+            {item:"small_red_crystal",count:6,weight:130},
+            {item:"red_soda",count:2,weight:110},
+            {item:"red_crystal",count:2,weight:60},
+            {item:"yellow_pills",count:1,weight:4},
+            {item:"blue_pills",count:1,weight:4},
+            {item:"red_pills",count:1,weight:2.5},
+            {item:"green_soda",count:2,weight:3},
+            {item:"black_soda",count:2,weight:1.25}
         ],
         "mana":[
             {item:"purple_soda",count:2,weight:100},
@@ -108,6 +112,7 @@ export const NormalMap:MapDef={
             //{item:"22lr",count:60,weight:5},
             {item:"762mm",count:60,weight:5},
             {item:"556mm",count:60,weight:5},
+            {item:"45acp",count:60,weight:0.5},
             {item:"50cal",count:20,weight:0.1},
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
@@ -119,6 +124,7 @@ export const NormalMap:MapDef={
             //{item:"22lr",count:80,weight:5},
             {item:"762mm",count:80,weight:5},
             {item:"556mm",count:80,weight:5},
+            {item:"45acp",count:80,weight:0.5},
             {item:"50cal",count:40,weight:0.3},
             {item:"308sub",count:10,weight:0.2},
             {item:"gasoline",count:10,weight:0.2},
@@ -145,32 +151,29 @@ export const NormalMap:MapDef={
             {item:"scope_6",count:1,weight:0.3},
         ],
         //Armors And Backpacks
-        "armors":[
+        "helmets":[
+            {item:"basic_helmet",weight:100},
+            {item:"regular_helmet",weight:1},
+            {item:"tactical_helmet",weight:0.05},
+        ],
+        "vests":[
             {item:"basic_vest",weight:10},
             {item:"regular_vest",weight:1},
             {item:"tactical_vest",weight:0.05},
-
-            {item:"basic_helmet",weight:10},
-            {item:"regular_helmet",weight:1},
-            {item:"tactical_helmet",weight:0.05},
         ],
         "backpacks":[
             {item:"basic_pack",weight:10},
             {item:"regular_pack",weight:1},
             {item:"tactical_pack",weight:0.05},
         ],
+        "armors":[
+            {table:"helmets",weight:1},
+            {table:"vests",weight:1},
+        ],
         "equipments":[
-            {item:"basic_vest",weight:10},
-            {item:"regular_vest",weight:1},
-            {item:"tactical_vest",weight:0.05},
-
-            {item:"basic_helmet",weight:10},
-            {item:"regular_helmet",weight:1},
-            {item:"tactical_helmet",weight:0.05},
-
-            {item:"basic_pack",weight:10},
-            {item:"regular_pack",weight:1},
-            {item:"tactical_pack",weight:0.05},
+            {table:"helmets",weight:1},
+            {table:"vests",weight:1},
+            {table:"backpacks",weight:1},
         ],
         "special_equipments":[
             {item:"basic_vest",weight:10},
@@ -188,7 +191,7 @@ export const NormalMap:MapDef={
         "airdrop_equipments":[
             {item:"tactical_vest",weight:1},
             {item:"tactical_helmet",weight:1},
-            {item:"tactical_pack",weight:1},
+            {item:"tactical_pack",weight:0.8},
         ],
         //Loot Tables
         "normal_loot":[
@@ -213,6 +216,18 @@ export const NormalMap:MapDef={
             {weight:2,count:1,table:"normal_loot"},
             {weight:1,count:2,table:"normal_loot"},
             {weight:0.5,count:3,table:"normal_loot"},
+        ],
+        "md_crate":[
+            [{weight:1,table:"ammos",count:2}],
+            [{weight:1,table:"consumibles"}],
+            [{weight:1,table:"scopes"}],
+
+            [{weight:1,table:"helmets"}],
+            [{weight:1,table:"vests"}],
+            [{weight:1,table:"backpacks"}],
+
+            [{weight:1,table:"special_guns",count:2}],
+            [{weight:10,table:""},{weight:1,table:"melees"}],
         ],
         "copper_crate":[
             {weight:1,count:2,table:"special_loot"},
@@ -242,31 +257,30 @@ export const NormalMap:MapDef={
     biome:NormalBiome,
     generation:{
         island:{
-            size:v2.new(600,600),
+            size:v2.new(550,550),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
 
-                    {id:"watchtower",count:7}, //90% of 700
+                    {id:"watchtower",count:5},
 
-                    {id:"container_1",count:25},
-                    {id:"container_2",count:25},
+                    {id:"container_1",count:10},
+                    {id:"container_2",count:10},
 
                     {id:"sillo",count:10},
 
-                    {id:"oak_tree",count:2700}, //90% of 3000
-                    {id:"stone",count:1800}, //90% of 2000
-                    {id:"bush",count:1350}, //90% of 1500
-
-                    {id:"wood_crate",count:630},//90% of 700
-
+                    {id:"md_crate",count:10},
                     {id:"copper_crate",count:20},
                     {id:"iron_crate",count:1},
                     {id:"gold_crate",count:1},
+                    {id:"wood_crate",count:700},
 
-                    {id:"barrel",count:630}, //90% of 700
+                    {id:"oak_tree",count:2400}, //80% of 3000
+                    {id:"stone",count:1600}, //80% of 2000
+                    {id:"bush",count:1200}, //80% of 1500
+                    {id:"barrel",count:560}, //80% of 700
 
-                    {id:"normal_loot",count:80}
+                    {id:"normal_loot",count:100}
                 ]
             ],
             terrain:{
@@ -438,79 +452,4 @@ export const SnowBiome:BiomeDef={
         snow:true,
         sound:"snowstorm_ambience"
     }
-}
-export const SnowMap:MapDef={
-    loot_tables:{...NormalMap.loot_tables,
-        christmas_tree:[
-            [{item:"kar98k",weight:10},{item:"awp",weight:1}],
-            [{item:"m870",weight:10},{item:"spas12",weight:1}],
-
-            [{table:"special_healings",count:3,weight:6}],
-            [{table:"ammos",count:6,weight:6}],
-            [{table:"special_equipments",count:3,weight:6}],
-            [{table:"airdrop_equipments",weight:6}],
-            [{table:"melees",count:1,weight:6}],
-        ]
-    },
-    default_floor:FloorType.Ice,
-    biome:SnowBiome,
-    generation:{
-        island:{
-            size:v2.new(500,500),
-            spawn:[
-                [
-                    {id:"christmas_tree",count:3},
-                    {id:"container_1",count:25},
-                    {id:"container_2",count:25},
-                    {id:"oak_tree",count:2700}, //90% of 3000
-                    {id:"stone",count:1800}, //90% of 2000
-                    {id:"bush",count:1350}, //90% of 1500
-                    {id:"wood_crate",count:630},//90% of 700
-                    {id:"copper_crate",count:20},
-                    {id:"iron_crate",count:1},
-                    {id:"gold_crate",count:1},
-                    {id:"barrel",count:630}, //90% of 700
-                    {id:"normal_loot",count:80}
-                ]
-            ],
-            terrain:{
-                base:FloorType.Ice,
-                rivers:{
-                    divisions:100,
-                    spawn_floor:1,
-                    expansion:32,
-                    floor:FloorType.Ice,
-                    defs:[
-                        {
-                            rivers:[
-                                {sub_river_width:5,width:7,width_variation:1,sub_river_chance:0.5},
-                                {sub_river_width:5,width:8,width_variation:1,sub_river_chance:0.1},
-                            ],
-                            weight:10
-                        },
-                        {
-                            rivers:[
-                                {sub_river_width:10,width:15,width_variation:1,sub_river_chance:0.9},
-                            ],
-                            weight:1000
-                        }
-                    ]
-                },
-                floors:[
-                    {
-                        padding:30,
-                        type:FloorType.Sand,
-                        spacing:3,
-                        variation:3,
-                    },
-                    {
-                        padding:14,
-                        type:FloorType.Snow,
-                        spacing:3,
-                        variation:3,
-                    }
-                ]
-            }
-        }
-    },
 }

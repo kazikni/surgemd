@@ -390,7 +390,7 @@ export class Human extends MovingBody{
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
             if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle)&&!(obj as StaticBody).physical_data.no_collision){
-                if (hb.collidingWith(obj.hitbox)) return true
+                if(hb.collidingWith(obj.hitbox))return true
             }
         }
         return false

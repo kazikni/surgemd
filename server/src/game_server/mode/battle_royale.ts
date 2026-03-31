@@ -44,7 +44,7 @@ export class BattleRoyaleSolo extends ModeManager{
                 limit:settings.players?.limit??100,
             },
             map:{
-                def:(settings.map?.def)?(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def):Maps["normal"],
+                def:(settings.map?.def)?(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def):Maps["tundra"],
                 seed:settings.map?.seed
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,

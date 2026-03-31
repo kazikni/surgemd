@@ -11,7 +11,6 @@ export const GameConstants={
         max_name_size:25,
     },
     loot:{
-        velocityDecay:5,
         radius:{
             ammo:0.45,
             weapon:0.6,

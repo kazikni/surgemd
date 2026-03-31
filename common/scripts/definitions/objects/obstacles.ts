@@ -261,6 +261,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             }
         },
         CreateCrate("wood_crate",0x583b08,{},"plank_particle",true),
+        CreateCrate("md_crate",0x7021d3,{},"plank_particle",true),
+        CreateCrate("tundra_crate",0x3e58c4,{},"plank_particle",true),
         CreateCrate("copper_crate",0xcc742d,{
             health:160,
             material:"iron",

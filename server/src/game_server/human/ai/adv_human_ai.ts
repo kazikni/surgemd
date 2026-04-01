@@ -1,23 +1,23 @@
-import { Angle, astar_path2d, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
+import { Angle, astar_path2d, NetStream, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
-import { NetStream } from "common/engine/core/net/stream.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type GunItem } from "../inventory.ts";
-import { type GunDef } from "common/scripts/definitions/items/guns.ts";
+import { GunItem } from "../inventory.ts";
 import { WeaponDef } from "common/scripts/definitions/game_defs.ts";
-
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { Spawn } from "common/scripts/others/constants.ts";
 export type BotExecutionContext = {
     human: Human
     target?: Human
     target_pos?: Vec2
     dt: number
+    ai:ADVHumanAI
     spin:(human:Human, duration:number)=>void
 }
 export abstract class BotExecutor{
     activated:boolean=false
-    constructor() {
+    constructor(){
         
     }
     abstract update(ctx: BotExecutionContext): void
@@ -39,6 +39,10 @@ export class MovementController extends BotExecutor {
     last_dir = 0
     dir_change_delay = 0.08
     dir_timer = 0
+
+    orbit_side = random.choose([-1,1])
+    orbit_timer = random.float(1.5,3)
+    orbit_distance = 6
 
     setTarget(pos:Vec2){
         this.move_target = pos
@@ -74,6 +78,26 @@ export class MovementController extends BotExecutor {
             this.dir_timer = this.dir_change_delay
         }
         return this.last_dir
+    }
+    update_orbit(dt:number){
+        this.orbit_timer -= dt
+        if(this.orbit_timer <= 0){
+            this.orbit_side *= -1
+            this.orbit_timer = random.float(0.5,3)
+        }
+    }
+    compute_orbit_pos(ctx:BotExecutionContext){
+        if(!ctx.target_pos)return
+        const self=ctx.human
+        const to=v2.sub(ctx.target_pos,self.position)
+        const dir=Math.atan2(to.y,to.x)
+
+        const orbitDir = dir + Math.PI/2 * this.orbit_side
+
+        return v2.add(
+            ctx.target_pos,
+            v2.scale(v2.from_RadAngle(orbitDir), this.orbit_distance)
+        )
     }
     update(ctx:BotExecutionContext){
         const human = ctx.human
@@ -142,7 +166,7 @@ export class AimController extends BotExecutor{
     }
     private updateSpin(ctx:BotExecutionContext){
         if(!this.spinning) return
-        this.spin_progress += ctx.dt
+        this.spin_progress += ctx.dt*random.float(0.5,2)
         const t = this.spin_progress / this.spin_duration
         if(t >= 1){
             this.spinning = false
@@ -354,7 +378,6 @@ export class AttackingController extends BotExecutor {
     start(){
         if(!this.activated)return
         this.activated=true
-
         this.cycle_timer=0
         switch(this.quickswitch.type){
             case QuickswitchType.None:
@@ -370,207 +393,201 @@ export class AttackingController extends BotExecutor {
                 break
         }
     }
-}
-export class CombatBrain{
-    ai:ADVHumanAI
-
-    enabled:boolean=true
-    melee_distance:number=1
-    firing_distance:number=20
-    shoot_angle_epsilon:number=1
-
-    switch_delay:number=0.2
-
-    constructor(ai:ADVHumanAI){
-        this.ai=ai
-    }
     quickswitable(weapon?:WeaponDef){
-        return weapon&&(weapon.item_type===InventoryItemType.melee||(weapon.item_type===InventoryItemType.gun&&weapon.fireDelay>=0.6))
+        return weapon && (
+            weapon.item_type===InventoryItemType.melee ||
+            (weapon.item_type===InventoryItemType.gun && weapon.fireDelay>=0.6)
+        )
     }
-    choose_quickswitch(){
-        const w1=this.ai.human.inventory.weapons[1]
-        const w2=this.ai.human.inventory.weapons[2]
+    choose_quickswitch(ctx:BotExecutionContext){
+        const w1=ctx.human.inventory.weapons[1]
+        const w2=ctx.human.inventory.weapons[2]
 
-        if(!w1&&!w2){
-            this.ai.controller.attacking.quickswitch={
-                type:QuickswitchType.None,
-                weapon:0
-            }
+        if(!w1 && !w2){
+            this.quickswitch = { type:QuickswitchType.None, weapon:0 }
             return
         }
-        if(w1&&w2){
+        if(w1 && w2){
             const w1s=this.quickswitable(w1.def as GunDef)
             const w2s=this.quickswitable(w2.def as GunDef)
             if(w1s&&w2s){
-                this.ai.controller.attacking.quickswitch={
+                this.quickswitch={
                     type:QuickswitchType.Dual,
                     primary_weapon:1,
                     secondary_weapon:2,
-                    switch_delay:this.switch_delay,
-                    cycle_delay:Math.max((w1.def  as GunDef).fireDelay,(w2.def  as GunDef).fireDelay)
+                    switch_delay:0.2,
+                    cycle_delay:Math.max(
+                        (w1.def as GunDef).fireDelay,
+                        (w2.def as GunDef).fireDelay
+                    )
                 }
                 return
             }else if(w1s&&!w2s){
-                this.ai.controller.attacking.quickswitch={
+                this.quickswitch={
                     type:QuickswitchType.AR,
                     main_weapon:1,
                     alt_weapon:2,
-                    switch_delay:this.switch_delay,
+                    switch_delay:.2,
                     burst_delay:(((w2.def as GunDef).reload?.capacity??0)*0.25*(w2.def as GunDef).fireDelay)+((w2.def as GunDef).switchDelay??0)
                 }
                 return
             }else if(!w1s&&w2s){
-                this.ai.controller.attacking.quickswitch={
+                this.quickswitch={
                     type:QuickswitchType.AR,
                     main_weapon:2,
                     alt_weapon:1,
-                    switch_delay:this.switch_delay,
+                    switch_delay:.2,
                     burst_delay:(((w1.def as GunDef).reload?.capacity??0)*0.25*(w1.def as GunDef).fireDelay)+((w1.def as GunDef).switchDelay??0)
                 }
                 return
             }
-        }else if(w1){
-            const w1s=this.quickswitable(w1.def as GunDef)
-            if(w1s){
-                this.ai.controller.attacking.quickswitch={
-                    type:QuickswitchType.Single,
-                    alt_weapon:0,
-                    main_weapon:1,
-                    cycle_delay:(w1.def  as GunDef).fireDelay,
-                    switch_delay:this.switch_delay,
-                }
-            }else{
-                this.ai.controller.attacking.quickswitch={
-                    type:QuickswitchType.None,
-                    weapon:1,
-                }
-            }
         }
-    }
-    will_reload(self: Human):boolean{
-        return self.inventory.hand_item?.item_type === InventoryItemType.gun &&(
-            (self.inventory.hand_item as GunItem).reloading ||
-            !(self.inventory.hand_item as GunItem).has_ammo(self)
-        )
-    }
-    is_aim_aligned(self: Human, target: Vec2): boolean {
-        const desired = Math.atan2(
-            target.y - self.position.y,
-            target.x - self.position.x
-        )
-        return Math.abs(
-            Angle.delta_rad(self.physical_data.rotation, desired)
-        ) <= this.shoot_angle_epsilon
-    }
-    update(ctx:BotExecutionContext){
-        if(!ctx.target_pos)return
-        const dist=v2.distance(ctx.human.position,ctx.target!.position)
-
-        ctx.human.input.reload = this.will_reload(ctx.human)
-        this.ai.controller.aim.activated=true
-
-        this.ai.controller.movement.activated=true
-        if(dist>this.melee_distance&&dist<this.firing_distance&&this.is_aim_aligned(ctx.human,ctx.target_pos)&&!ctx.human.input.reload){
-            this.choose_quickswitch()
-            this.ai.controller.attacking.activated=true
-        }else if(dist<this.melee_distance){
-            this.ai.controller.attacking.quickswitch={
+        if(w1){
+            this.quickswitch={
                 type:QuickswitchType.None,
-                weapon:0
+                weapon:1
             }
-            this.ai.controller.attacking.activated=true
-        }else{
-            this.ai.controller.attacking.activated=false
         }
     }
 }
-export class MovementBrain{
-    ai:ADVHumanAI
-    enabled=true
+export enum BTState {
+    Success,
+    Failure,
+    Running
+}
 
-    orbit_distance=6
-    orbit_side=random.choose([-1,1])
+export interface BTNode {
+    tick(ctx: BotExecutionContext): BTState
+    reset?(): void
+}
 
-    orbit_change_timer=random.float(1.5,3)
-
-    aggression_phase:"push"|"backoff"="push"
-    aggression_timer=random.float(1.5,3)
-
-    max_distance=20
-
-    constructor(ai:ADVHumanAI){
-        this.ai=ai
-    }
-
-    private compute_aggression(ctx:BotExecutionContext){
-        const self=ctx.human
-        const target=ctx.target!
-
-        const enemyWeapon=target.inventory.hand_item
-        const enemyQuick=this.ai.brain.combat.quickswitable(enemyWeapon?.def as WeaponDef)
-
-        const healthRatio=self.health_data.health/self.health_data.max_health
-
-        let aggression=this.ai.params.aggression
-
-        if(enemyQuick) aggression*=0.4
-        if(healthRatio<0.4) aggression*=0.3
-
-        return Numeric.clamp(aggression,0,1)
-    }
-    private update_orbit_side(dt:number){
-        this.orbit_change_timer-=dt
-        if(this.orbit_change_timer<=0){
-            this.orbit_side*=-1
-            this.orbit_change_timer=random.float(0.5,3)
+export class Sequence implements BTNode {
+    constructor(public children: BTNode[]) {}
+    private i = 0
+    tick(ctx: BotExecutionContext): BTState {
+        while (this.i < this.children.length) {
+            const s=this.children[this.i].tick(ctx)
+            if (s===BTState.Failure) {
+                this.i=0
+                return BTState.Failure
+            }
+            this.i++
         }
+        this.i = 0
+        return BTState.Success
     }
-    private update_aggression_cycle(dt:number){
-        this.aggression_timer-=dt
-        if(this.aggression_timer<=0){
-            if(this.aggression_phase==="push"){
-                this.aggression_phase="backoff"
-                this.aggression_timer=random.float(1.2,2)
-            }else{
-                this.aggression_phase="push"
-                this.aggression_timer=random.float(1.2,2)
+    reset(){
+        this.i = 0
+        this.children.forEach(c=>c.reset?.())
+    }
+}
+export class Selector implements BTNode {
+    constructor(public children: BTNode[]) {}
+    private i = 0
+
+    tick(ctx: BotExecutionContext): BTState {
+        for (this.i=0; this.i < this.children.length; this.i++) {
+            const s = this.children[this.i].tick(ctx)
+            if (s === BTState.Running) return BTState.Running
+            if (s === BTState.Success) {
+                this.i = 0
+                return BTState.Success
             }
         }
+        return BTState.Failure
     }
-    private update_orbit_distance(ctx:BotExecutionContext){
-        const aggression=this.compute_aggression(ctx)
-        const base=this.max_distance*(1-aggression)
-        if(base<=2){
-            if(this.aggression_phase==="push"){
-                this.orbit_distance=0.1
-            }else{
-                this.orbit_distance=3
-            }
-        }else{
-            this.orbit_distance=base
-        }
-        
+    reset() {
+        this.i = 0
+        this.children.forEach(c => c.reset?.())
     }
-    private move_orbit(ctx:BotExecutionContext){
-        const human=ctx.human
-        const target=ctx.target!
-        const toTarget=v2.sub(target.position,human.position)
-        const dir=Math.atan2(toTarget.y,toTarget.x)
-        const orbitDir = dir + Math.PI/2 * this.orbit_side
-        const orbitPos = v2.add(
-            target.position,
-            v2.scale(v2.from_RadAngle(orbitDir),this.orbit_distance)
-        )
-        this.ai.controller.movement.setTarget(orbitPos)
+}
+export class Condition implements BTNode {
+    constructor(private fn: (ctx: BotExecutionContext) => boolean) {}
+    tick(ctx: BotExecutionContext): BTState {
+        return this.fn(ctx) ? BTState.Success : BTState.Failure
     }
+}
+export class Action implements BTNode {
+    constructor(private fn: (ctx: BotExecutionContext) => BTState) {}
+    tick(ctx: BotExecutionContext): BTState {
+        return this.fn(ctx)
+    }
+}
 
-    update(ctx:BotExecutionContext){
-        if(!ctx.target)return
-        this.update_orbit_side(ctx.dt)
-        this.update_aggression_cycle(ctx.dt)
-        this.update_orbit_distance(ctx)
-        this.ai.controller.movement.activated=true
-        this.move_orbit(ctx)
+// AI
+export class CombatNode implements BTNode {
+    tick(ctx: BotExecutionContext): BTState {
+        if (!ctx.target_pos) return BTState.Failure
+        const dist = v2.distance(ctx.human.position, ctx.target_pos)
+        ctx.human.input.reload = ctx.ai.will_reload()
+        ctx.ai.controller.aim.activated = true
+        ctx.ai.controller.movement.activated = true
+        if(dist>1&&dist<20&&ctx.ai.is_aim_aligned(ctx.target_pos)&&!ctx.human.input.reload){
+            ctx.ai.controller.attacking.choose_quickswitch(ctx)
+            ctx.ai.controller.attacking.activated = true
+        }else if(dist < 1){
+            ctx.ai.controller.attacking.quickswitch = {
+                type: QuickswitchType.None,
+                weapon: 0
+            }
+            ctx.ai.controller.attacking.activated = true
+        }else {
+            ctx.ai.controller.attacking.activated = false
+        }
+        return BTState.Running
+    }
+}
+export class CombatMovementNode implements BTNode {
+    tick(ctx: BotExecutionContext): BTState {
+        const ai = ctx.ai
+        const human = ctx.human
+        const target = ctx.target
+        if (!target || !ctx.target_pos) return BTState.Failure
+        const move = ai.controller.movement
+        const dist = v2.distance(human.position, target.position)
+        move.update_orbit(ctx.dt)
+        let targetPos: Vec2 | undefined
+        if (dist < 2) {
+            const dir = v2.lookTo(target.position, human.position)
+            targetPos = v2.add(
+                human.position,
+                v2.scale(v2.from_RadAngle(dir), 4)
+            )
+        }else if (dist < 10) {
+            targetPos = move.compute_orbit_pos(ctx)
+        }else {
+            targetPos = target.position
+        }
+
+        if (targetPos) {
+            if(!move.move_target||v2.distance(move.move_target, targetPos) > 0.5){
+                move.setTarget(targetPos)
+            }
+            move.activated = true
+            return BTState.Running
+        }
+
+        return BTState.Failure
+    }
+}
+class RandomWalkNode implements BTNode {
+    private timer = 0
+
+    tick(ctx: BotExecutionContext): BTState {
+        this.timer -= ctx.dt
+        if(!ctx.ai.controller.movement.path || this.timer <= 0){
+            this.timer = random.float(2,5)
+
+            let pos:Vec2|undefined
+            for(let i=0;i<2;i++){
+                pos = ctx.human.game.map.getRandomPosition(ctx.human.base_hitbox,ctx.human.id,ctx.human.layer,Spawn.grass,ctx.human.game.map.random)
+                if(pos)break
+            }
+            if(pos)ctx.ai.controller.movement.setPathTarget(pos)
+        }
+        ctx.ai.controller.aim.activated=false
+        ctx.ai.controller.movement.activated = true
+        return BTState.Running
     }
 }
 export class ADVHumanAI extends BotAi{
@@ -579,24 +596,52 @@ export class ADVHumanAI extends BotAi{
         attacking:new AttackingController(),
         movement:new MovementController()
     }
-    brain={
-        combat:new CombatBrain(this),
-        movement:new MovementBrain(this)
-    }
-    override params={
-        aggression: random.float(0,1),
-    }
 
     first_tick:boolean=true
+
+    tree:Selector
     constructor(human:Human){
         super(human)
+        const combat=new CombatNode()
+        const combat_movement=new CombatMovementNode()
+        this.tree = new Selector([
+            new Sequence([
+                new Condition(ctx => !!ctx.target),
+                combat,
+                combat_movement
+            ]),
+            new Sequence([
+                new RandomWalkNode(),
+                new Action(ctx => {
+                    this.controller.attacking.activated=false
+                    return BTState.Running
+                })
+            ]),
+            new Action(ctx => {
+                this.controller.aim.activated=false
+                this.controller.attacking.activated=false
+                this.controller.movement.activated=false
+                return BTState.Running
+            })
+        ])
     }
-    override reset_inputs(): void {
-        super.reset_inputs()
+    will_reload(){
+        const h=this.human
+        return h.inventory.hand_item?.item_type === InventoryItemType.gun && (
+            (h.inventory.hand_item as GunItem).reloading ||
+            !(h.inventory.hand_item as GunItem).has_ammo(h)
+        )
+    }
 
-        this.controller.aim.activated=false
-        this.controller.attacking.activated=false
-        this.controller.movement.activated=false
+    is_aim_aligned(target:Vec2){
+        const self=this.human
+        const desired = Math.atan2(
+            target.y - self.position.y,
+            target.x - self.position.x
+        )
+        return Math.abs(
+            Angle.delta_rad(self.physical_data.rotation, desired)
+        ) <= 1
     }
     protected isPlayerVisible(other: Human): boolean {
         const dist=v2.distance(this.human.position, other.position)
@@ -606,37 +651,34 @@ export class ADVHumanAI extends BotAi{
     override AI(dt: number): void {
         this.reset_inputs()
 
-        let t:Human|undefined=undefined
+        let target:Human|undefined
+
         for(const p of this.human.game.humans.humans){
-            if(p.id===this.human.id)continue
-            if(!p.game.modeManager.is_ally(p,this.human)&&this.isPlayerVisible(p)){
-                t=p
+            if(p.id===this.human.id) continue
+            if(!p.game.modeManager.is_ally(p,this.human) && this.isPlayerVisible(p)){
+                target = p
                 break
             }
         }
-        const e_ctx:BotExecutionContext={
-            dt:dt,
+
+        const ctx:BotExecutionContext={
+            dt,
             human:this.human,
-            target:t,
-            target_pos:t?.position,
+            target,
+            target_pos:target?.position,
+            ai:this,
             spin:this.controller.aim.startSpin.bind(this.controller.aim)
         }
-
-        if(this.brain.combat.enabled){
-            this.brain.combat.update(e_ctx)
-        }
-        if(this.brain.movement.enabled){
-            this.brain.movement.update(e_ctx)
-        }
+        this.tree.tick(ctx)
 
         if(this.controller.aim.activated){
-            this.controller.aim.update(e_ctx)
+            this.controller.aim.update(ctx)
         }
         if(this.controller.attacking.activated){
-            this.controller.attacking.update(e_ctx)
+            this.controller.attacking.update(ctx)
         }
         if(this.controller.movement.activated){
-            this.controller.movement.update(e_ctx)
+            this.controller.movement.update(ctx)
         }
     }
     override net_update(general_update: NetStream): void {

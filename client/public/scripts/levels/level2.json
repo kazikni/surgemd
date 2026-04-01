@@ -62,11 +62,21 @@
                             "762mm":150,
                             "9mm":200
                         }
-                    },
-                    "team":1
+                    }
                 },
-                "count":99
+                "count":40
+            },
+            {
+                "def":{
+                    "ia":{
+                        "kind":"dumb"
+                    }
+                },
+                "count":59
             }
         ]
+    },
+    "player":{
+        "name":"nick"
     }
 }

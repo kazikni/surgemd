@@ -108,7 +108,7 @@ export const TundraMap:MapDef={
     biome:TundraBiome,
     generation:{
         island:{
-            size:v2.new(550,550),
+            size:v2.new(500,500),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
@@ -128,11 +128,10 @@ export const TundraMap:MapDef={
 
                     {id:"wood_crate",count:700},
 
-                    {id:"oak_tree",count:750}, //25% of 3000
-                    {id:"stone",count:800}, //40% of 2000
-                    {id:"bush",count:600}, //40% of 1500
-                    {id:"barrel",count:280}, //40% of 700
-
+                    {id:"oak_tree",count:600},
+                    {id:"stone",count:500},
+                    {id:"bush",count:450},
+                    {id:"barrel",count:230},
 
                     {id:"normal_loot",count:100}
                 ]

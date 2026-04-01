@@ -14,6 +14,7 @@ import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { EnemyDef } from "common/scripts/config/level_definition.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
+import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:NetStream): void {
@@ -202,6 +203,9 @@ export class PlayersManager{
         switch(def.ia?.kind){
             case "advanced":
                 client.ai = new ADVHumanAI(client.human)
+                break
+            case "dumb":
+                client.ai = new DumbBotAI(client.human)
                 break
             default:
                 client.ai = new EnemyNPCAI(client.human)

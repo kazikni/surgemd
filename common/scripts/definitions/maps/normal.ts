@@ -257,7 +257,7 @@ export const NormalMap:MapDef={
     biome:NormalBiome,
     generation:{
         island:{
-            size:v2.new(550,550),
+            size:v2.new(500,500),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
@@ -275,10 +275,10 @@ export const NormalMap:MapDef={
                     {id:"gold_crate",count:1},
                     {id:"wood_crate",count:700},
 
-                    {id:"oak_tree",count:2400}, //80% of 3000
-                    {id:"stone",count:1600}, //80% of 2000
-                    {id:"bush",count:1200}, //80% of 1500
-                    {id:"barrel",count:560}, //80% of 700
+                    {id:"oak_tree",count:2000},
+                    {id:"stone",count:1100},
+                    {id:"bush",count:1000},
+                    {id:"barrel",count:400},
 
                     {id:"normal_loot",count:100}
                 ]

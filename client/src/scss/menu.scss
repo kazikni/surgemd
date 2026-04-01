@@ -715,9 +715,9 @@
         z-index:3;
 
         animation:
-            text-gameover-rotate alternate 7s ease-in-out infinite,
-            text-gameover-scale 8s alternate ease-in-out infinite,
-            text-gameover-translate 10s alternate ease-in-out infinite;
+            text-gameover-rotate alternate 9s ease-in-out infinite,
+            text-gameover-scale 10s alternate ease-in-out infinite,
+            text-gameover-translate 13s alternate ease-in-out infinite;
     }
     pointer-events: all;
     @media screen and (max-width: palette.$screen_large) {
@@ -782,8 +782,8 @@
     100%    { transform:translate(-7%,7%) }
 }
 @keyframes text-gameover-rotate{
-    0%   { rotate:5deg }
-    100% { rotate:-5deg }
+    0%   { rotate:4deg }
+    100% { rotate:-4deg }
 }
 @keyframes text-gameover-scale{
     0%   { scale:0.8 }

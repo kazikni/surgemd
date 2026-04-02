@@ -232,6 +232,7 @@ export class Human extends MovingBody{
     temp_modifiers:Partial<HumanModifiers>={}
 
     effects:Map<number,EffectInstance>=new Map()
+    effects_dirty:boolean=true
 
     set_preset(preset:HumanDefinition|undefined){
         if(!preset)return
@@ -278,11 +279,7 @@ export class Human extends MovingBody{
                 break
         }
 
-        /*for(const acc of this.equipment_data.acessories.slots){
-            if(acc.item){
-                this.apply_modifiers(acc.item.modifiers)
-            }
-        }*/
+        this.inventory.accessorys.apply_modifiers(this)
 
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
@@ -309,6 +306,7 @@ export class Human extends MovingBody{
                         tick_time:0,
                         time:sf.duration
                     })
+                    this.effects_dirty=true
                 }
                 break
             }
@@ -637,6 +635,7 @@ export class Human extends MovingBody{
             }
             if(e.time<0){
                 this.effects.delete(e.effect.idNumber!)
+                this.effects_dirty=true
             }
         }
         if(this.seat){
@@ -855,6 +854,8 @@ export class Human extends MovingBody{
 
         this.equipment_data.dirty=false
 
+        this.effects_dirty=false
+
         this.inventory.net_update()
     }
     clear_boost(){
@@ -961,6 +962,7 @@ export class Human extends MovingBody{
                 this.die(params)
             }
         }
+        this.inventory.accessorys.call_event("damage",{params,player:this})
         return [healthDamage, shieldDamage]
     }
     add_damage_splash(owner: Human | undefined,count: number,shield: boolean,critical: boolean,position: Vec2,shield_break: boolean = false){
@@ -1036,14 +1038,7 @@ export class Human extends MovingBody{
                     (params.owner as Player).status.kills++
                 }
             }
-            if(params.owner.inventory.acessories.hasAccesorie("liquid_insanity")){
-                params.owner.health_data.health+=20
-                params.owner.side_effect({
-                    type:SideEffectType.AddEffect,
-                    duration:4,
-                    effect:"kill_haste"
-                })
-            }
+            params.owner.inventory.accessorys.call_event("kill",params)
         }
 
         this.game.modeManager.on_human_die(this)
@@ -1065,6 +1060,7 @@ export class Human extends MovingBody{
             // Loadout
             this.loadout.dirty, // 1
             this.animation_data.dirty, // 1
+            this.effects_dirty,
 
             // Inventory
             this.inventory.net_sync.hand, // 1
@@ -1105,6 +1101,11 @@ export class Human extends MovingBody{
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])
+        }
+        if(full||this.effects_dirty){
+            stream.writeArray(Array.from(this.effects.values()),(e)=>{
+                stream.writeUint16(e.effect.idNumber!)
+            },1)
         }
         if(full||this.animation_data.dirty){
             if(this.animation_data.current_animation!==undefined){

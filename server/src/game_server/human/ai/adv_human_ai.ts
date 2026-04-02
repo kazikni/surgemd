@@ -1,4 +1,4 @@
-import { Angle, astar_path2d, NetStream, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
+import { Action, Angle, astar_path2d, BTAction, BTCondition, BTNode, BTSelector, BTSequence, BTState, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
@@ -44,12 +44,18 @@ export class MovementController extends BotExecutor {
     orbit_timer = random.float(1.5,3)
     orbit_distance = 6
 
+    state:0|1|2=0
+    reset(){
+        this.move_target = undefined
+        this.path = undefined
+        this.path_index = 0
+        this.pathfinding = false
+    }
     setTarget(pos:Vec2){
         this.move_target = pos
         this.path = undefined
         this.pathfinding = false
     }
-
     setPathTarget(pos:Vec2){
         this.move_target = pos
         this.pathfinding = true
@@ -65,7 +71,13 @@ export class MovementController extends BotExecutor {
             self.base_hitbox,
             this.move_target,
             self.isBlockedForPath.bind(self),
-            { cellSize:0.5 }
+            {
+                cellSize:0.5,
+                dirs:[
+                    [1,0],[0,1],[-1,0],[0,-1],
+                    [1,1],[-1,-1],[-1,1],[1,-1]
+                ]
+            },
         )
         this.path_index = 0
     }
@@ -99,48 +111,60 @@ export class MovementController extends BotExecutor {
             v2.scale(v2.from_RadAngle(orbitDir), this.orbit_distance)
         )
     }
-    update(ctx:BotExecutionContext){
+    update(ctx: BotExecutionContext){
         const human = ctx.human
+        let movement = { dir: 0, scale: 0 }
+        let rotation: number | undefined = undefined
         if(!this.move_target){
-            human.input.movement = {dir:0,scale:0}
+            human.input.movement = movement
             return
         }
-
         if(this.pathfinding){
             this.repath_timer -= ctx.dt
             if(!this.path || this.repath_timer <= 0){
                 this.computePath(ctx)
                 this.repath_timer = this.repath_delay
             }
-            const node = this.path?.[this.path_index]
-            if(!node){
-                this.path = undefined
-                return
+            if(!this.path || this.path.length === 0){
+                this.reset()
+            }else{
+                if(this.path_index >= this.path.length){
+                    this.reset()
+                }else{
+                    const node = this.path[this.path_index]
+                    const to = v2.sub(node, human.position)
+                    const dist = v2.len(to)
+
+                    if(dist < 0.5){
+                        this.path_index++
+                    }else{
+                        let dir = Math.atan2(to.y, to.x)
+                        dir = this.quantizeDir(dir, ctx.dt)
+
+                        movement = { dir, scale: 1 }
+
+                        if(this.rotate_to){
+                            rotation = dir
+                        }
+                    }
+                }
             }
-            const to = v2.sub(node,human.position)
-            if(v2.len(to) < 0.4){
-                this.path_index++
-                return
+        }else{
+            const dist = v2.distance(human.position, this.move_target)
+            if(dist < 0.5){
+                this.reset()
+            }else{
+                let dir = v2.lookTo(human.position, this.move_target)
+                dir = this.quantizeDir(dir, ctx.dt)
+                movement = { dir, scale: 1 }
+                if(this.rotate_to){
+                    rotation = dir
+                }
             }
-            let dir = Math.atan2(to.y,to.x)
-            dir = this.quantizeDir(dir, ctx.dt)
-            human.input.movement = {
-                dir:dir,
-                scale:1
-            }
-            if(this.rotate_to){
-                human.input.rotation = dir
-            }
-            return
         }
-        let dir = v2.lookTo(human.position,this.move_target)
-        dir = this.quantizeDir(dir,ctx.dt)
-        human.input.movement = {
-            dir:dir,
-            scale:1
-        }
-        if(this.rotate_to){
-            human.input.rotation = dir
+        human.input.movement = movement
+        if(rotation !== undefined){
+            human.input.rotation = rotation
         }
     }
 }
@@ -450,72 +474,9 @@ export class AttackingController extends BotExecutor {
         }
     }
 }
-export enum BTState {
-    Success,
-    Failure,
-    Running
-}
-
-export interface BTNode {
-    tick(ctx: BotExecutionContext): BTState
-    reset?(): void
-}
-
-export class Sequence implements BTNode {
-    constructor(public children: BTNode[]) {}
-    private i = 0
-    tick(ctx: BotExecutionContext): BTState {
-        while (this.i < this.children.length) {
-            const s=this.children[this.i].tick(ctx)
-            if (s===BTState.Failure) {
-                this.i=0
-                return BTState.Failure
-            }
-            this.i++
-        }
-        this.i = 0
-        return BTState.Success
-    }
-    reset(){
-        this.i = 0
-        this.children.forEach(c=>c.reset?.())
-    }
-}
-export class Selector implements BTNode {
-    constructor(public children: BTNode[]) {}
-    private i = 0
-
-    tick(ctx: BotExecutionContext): BTState {
-        for (this.i=0; this.i < this.children.length; this.i++) {
-            const s = this.children[this.i].tick(ctx)
-            if (s === BTState.Running) return BTState.Running
-            if (s === BTState.Success) {
-                this.i = 0
-                return BTState.Success
-            }
-        }
-        return BTState.Failure
-    }
-    reset() {
-        this.i = 0
-        this.children.forEach(c => c.reset?.())
-    }
-}
-export class Condition implements BTNode {
-    constructor(private fn: (ctx: BotExecutionContext) => boolean) {}
-    tick(ctx: BotExecutionContext): BTState {
-        return this.fn(ctx) ? BTState.Success : BTState.Failure
-    }
-}
-export class Action implements BTNode {
-    constructor(private fn: (ctx: BotExecutionContext) => BTState) {}
-    tick(ctx: BotExecutionContext): BTState {
-        return this.fn(ctx)
-    }
-}
 
 // AI
-export class CombatNode implements BTNode {
+export class CombatNode implements BTNode<BotExecutionContext> {
     tick(ctx: BotExecutionContext): BTState {
         if (!ctx.target_pos) return BTState.Failure
         const dist = v2.distance(ctx.human.position, ctx.target_pos)
@@ -537,7 +498,7 @@ export class CombatNode implements BTNode {
         return BTState.Running
     }
 }
-export class CombatMovementNode implements BTNode {
+export class CombatMovementNode implements BTNode<BotExecutionContext> {
     tick(ctx: BotExecutionContext): BTState {
         const ai = ctx.ai
         const human = ctx.human
@@ -570,19 +531,22 @@ export class CombatMovementNode implements BTNode {
         return BTState.Failure
     }
 }
-class RandomWalkNode implements BTNode {
+class RandomWalkNode implements BTNode<BotExecutionContext> {
     private timer = 0
 
     tick(ctx: BotExecutionContext): BTState {
         this.timer -= ctx.dt
         if(!ctx.ai.controller.movement.path || this.timer <= 0){
-            this.timer = random.float(2,5)
+            this.timer = random.float(10,30)
 
-            let pos:Vec2|undefined
-            for(let i=0;i<2;i++){
-                pos = ctx.human.game.map.getRandomPosition(ctx.human.base_hitbox,ctx.human.id,ctx.human.layer,Spawn.grass,ctx.human.game.map.random)
-                if(pos)break
-            }
+            const pos = ctx.human.game.map.getRandomPosition(ctx.human.base_hitbox,ctx.human.id,ctx.human.layer,Spawn.grass,ctx.human.game.map.random,(h,m,r)=>{
+                const ret=r.random_in_circle(30)
+                v2m.add(ret,ret,ctx.human.position)
+                m.clamp(ret)
+                return ret
+            },(hb,id,layer,mode,map)=>{
+                return !map.game.deadzone.is_on_deadzone(hb.center())&&map.point_is_valid(hb,id,layer,mode,map)
+            })
             if(pos)ctx.ai.controller.movement.setPathTarget(pos)
         }
         ctx.ai.controller.aim.activated=false
@@ -599,25 +563,25 @@ export class ADVHumanAI extends BotAi{
 
     first_tick:boolean=true
 
-    tree:Selector
+    tree:BTSelector<BotExecutionContext>
     constructor(human:Human){
         super(human)
         const combat=new CombatNode()
         const combat_movement=new CombatMovementNode()
-        this.tree = new Selector([
-            new Sequence([
-                new Condition(ctx => !!ctx.target),
+        this.tree = new BTSelector([
+            new BTSequence([
+                new BTCondition(ctx => !!ctx.target),
                 combat,
                 combat_movement
             ]),
-            new Sequence([
+            new BTSequence([
                 new RandomWalkNode(),
-                new Action(ctx => {
+                new BTAction(ctx => {
                     this.controller.attacking.activated=false
                     return BTState.Running
                 })
             ]),
-            new Action(ctx => {
+            new BTAction(ctx => {
                 this.controller.aim.activated=false
                 this.controller.attacking.activated=false
                 this.controller.movement.activated=false

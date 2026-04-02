@@ -96,7 +96,7 @@ export class Loot extends GameObject{
             case InventoryItemType.scope:
                 if(player.game.inventoryManager.inventory.scopes.includes(this.item.idNumber!))return
                 break
-            case InventoryItemType.accessorie:
+            case InventoryItemType.accessory:
             case InventoryItemType.skin:
         }
         if(this.pickup_sound)this.game.sounds.play(this.pickup_sound,undefined,"players")*/
@@ -252,7 +252,16 @@ export class Loot extends GameObject{
                     this.container.add_child(this.sprite_outline)
                     this.container.add_child(this.sprite_main)
                     break
-                case InventoryItemType.accessorie:
+                case InventoryItemType.accessory:
+                    //this.sprite_main.frame=this.game.resources.get_sprite((this.item as MeleeDef).assets?.item??this.item.idString)
+                    this.sprite_main.visible=false
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`accessory_outline`)
+                    this.sprite_outline.visible=true
+                    this.sprite_outline.scale=v2.new(1.5,1.5)
+                    this.pickup_sound=this.game.resources.get_audio("gun_pickup")
+                    radius=GameConstants.loot.radius.accessory
+                    this.container.add_child(this.sprite_outline)
+                    this.container.add_child(this.sprite_main)
                     break
                 case InventoryItemType.skin:{
                     const ff=(this.item as unknown as SkinDef).frame?.base??(this.item.idString+"_body")

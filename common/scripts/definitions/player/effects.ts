@@ -1,4 +1,4 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, FrameDef } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { BoostDef, Boosts, BoostType } from "./boosts.ts";
 
@@ -11,7 +11,13 @@ export interface EffectDef extends Definition{
     effect_type:EffectType
     particles?:{
         delay:number
-        frame:string
+        frame:FrameDef
+    }
+    assets?:{
+        sounds?:{
+            when_take?:string
+            when_remove?:string
+        }
     }
     side_effects:SideEffect[]
 }
@@ -93,20 +99,39 @@ Effects.insert(
                 }
             },
         ],
+        particles:{
+            delay:0.2,
+            frame:{
+                scale:2,
+                image:"boost_addiction_particle"
+            },
+        },
+        assets:{
+            sounds:{
+                when_take:"effect_take_1"
+            }
+        },
     },
     {
-        idString:"blue_effect",
+        idString:"nature_help",
         effect_type:EffectType.Buff,
         particles:{
-            delay:0.3,
-            frame:"boost_addiction_particle"
+            delay:0.2,
+            frame:{
+                scale:2,
+                image:"leaf_01_particle_1"
+            },
+        },
+        assets:{
+            sounds:{
+                when_take:"effect_take_1"
+            }
         },
         side_effects:[
             {
-                type:SideEffectType.Heal,
-                global:{
-                    amount:2,
-                    boost:Boosts[BoostType.Shield]
+                type:SideEffectType.Modify,
+                modify:{
+                    speed:1.5
                 }
             },
         ],

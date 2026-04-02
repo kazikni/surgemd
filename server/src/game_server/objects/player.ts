@@ -142,6 +142,18 @@ export class Player extends Human{
     override die(params: DamageParams): void {
         if(this.health_data.dead)return
         super.die(params)
+
+        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
+            this.game.modeManager.kill_leader=undefined
+            this.player_manager.send_killfeed_message({
+                type:KillFeedMessageType.killleader_dead,
+                player:{
+                    id:this.id,
+                    kills:this.status.kills
+                }
+            })
+        }
+
         if(params.owner&&params.owner instanceof Player){
             if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
                 params.owner.earned.coins+=3
@@ -179,17 +191,6 @@ export class Player extends Human{
                 damage_reason:params.reason,
             })
         }
-
-        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
-            this.player_manager.send_killfeed_message({
-                type:KillFeedMessageType.killleader_dead,
-                player:{
-                    id:this.id,
-                    kills:this.status.kills
-                }
-            })
-        }
-
 
         //Respawn
         this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);

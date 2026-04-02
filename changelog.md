@@ -10,7 +10,7 @@ __                                                                              
 ### Items
 * SR25 - 762mm DMR
 * Model94 - 45acp Sniper
-* BLR - 556mm Sniper
+* BLR-81 - 556mm Sniper
 * 45ACP
 __                                                                                                      __
 ### Others

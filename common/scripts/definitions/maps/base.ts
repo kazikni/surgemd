@@ -55,6 +55,7 @@ export interface BiomeDef{
         particles:string[]
         sound?:string
     }
+    musics?:string[]
 }
 export interface IslandDef{
     size:Vec2

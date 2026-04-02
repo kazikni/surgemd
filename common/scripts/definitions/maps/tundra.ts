@@ -14,6 +14,11 @@ export const TundraBiome:BiomeDef={
     },
     biome_skin:"snow",
     assets:["normal"],
+    musics:[
+        "game_tundra_music_1",
+        /*"game_normal_music_2",
+        "game_normal_music_3",*/
+    ],
     ambient:{
         particles:[],
         rain:false,
@@ -66,7 +71,7 @@ export const TundraMap:MapDef={
             {item:"sr25",weight:29},
             {item:"model94",weight:29},
             {item:"famas",weight:27},
-            {item:"blr",weight:25},
+            {item:"blr81",weight:25},
             {item:"kar98k",weight:10},
             {item:"awp",weight:1},
             {item:"pfeifer_zeliska",weight:0.05},
@@ -80,7 +85,7 @@ export const TundraMap:MapDef={
             {item:"sr25",weight:30},
             {item:"model94",weight:30},
             {item:"famas",weight:28},
-            {item:"blr",weight:26},
+            {item:"blr81",weight:26},
             {item:"kar98k",weight:11},
             {item:"awp",weight:1.1},
             {item:"pfeifer_zeliska",weight:0.08},
@@ -91,7 +96,7 @@ export const TundraMap:MapDef={
                 {item:"famas",weight:30},
                 {item:"model94",weight:30},
                 {item:"sr25",weight:27},
-                {item:"blr",weight:15},
+                {item:"blr81",weight:15},
                 {item:"kar98k",weight:10},
                 {item:"awp",weight:1},
                 {item:"pfeifer_zeliska",weight:0.05},

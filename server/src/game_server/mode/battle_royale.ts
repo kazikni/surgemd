@@ -38,13 +38,12 @@ export class BattleRoyaleSolo extends ModeManager{
 
     constructor(settings:BattleRoyaleSettings){
         super()
-
         this.settings={
             players:{
                 limit:settings.players?.limit??100,
             },
             map:{
-                def:(settings.map?.def)?(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def):Maps["tundra"],
+                def:(settings.map?.def)?(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def):Maps["normal"],
                 seed:settings.map?.seed
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
@@ -108,7 +107,10 @@ export class BattleRoyaleSolo extends ModeManager{
             for(const p of this.game.players.living_players){
                 if(p.conn)p.conn.send_game_over(true)
             }
-            this.game.finish()
+            this.game.overed=true
+            this.game.add_timeout(()=>{
+                this.game.finish()
+            },3)
         }
     }
 

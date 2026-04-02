@@ -1,6 +1,6 @@
 import { Game } from "../others/game.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { ActionsType } from "common/scripts/others/constants.ts";
+import { ActionsType, GameObjectType } from "common/scripts/others/constants.ts";
 import { BoostType,Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -15,6 +15,7 @@ import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { ShopTabApp } from "../apps/shop.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
+import { type Building } from "../objects/building.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -521,7 +522,6 @@ export class UiManager{
     }
     ping_time:number=0
     update(dt:number){
-        //this.update_active_player(this.game.activePlayer)
         if(this.action){
             const w=(Date.now()-this.action.start)/1000
             if(w<this.action.delay){
@@ -553,25 +553,31 @@ export class UiManager{
                 this.content.debug_show.innerHTML=`FPS: ${Math.floor(1/dt)}<br/>PING: ${Math.floor(this.game.client?.ping??0)}`
             }
             if(this.game.active_entity){
-                this.update_active_player(this.game.active_entity as Human)
+                this.update_active_player(this.game.active_entity as Human,dt)
             }
         }
         this.update_crosshair(dt)
     }
     current_interaction?: GameObject
-    update_active_player(player?: Human) {
+    update_active_player(player: Human,dt:number=0) {
         const old_inter=this.current_interaction
 
         this.current_interaction = undefined
         this.state.interact = false
         this.state.information_box_message = ""
 
-        if (!player) {
-            return
-        }
-
         const objs = this.game.scene_2d.objects.cells.get_objects(player.hitbox, player.layer)
         for (const o of objs) {
+            switch(o.number_type){
+                case GameObjectType.Building:{
+                    for(const ceiling of (o as Building).ceilings){
+                        if(ceiling.hitbox.collidingWith(player.hitbox)){
+                            ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,Numeric.dt_expo_inter(5,dt))
+                            ceiling.collided=true
+                        }
+                    }
+                }
+            }
             if(!o.can_interact(player)) continue
             this.current_interaction = o
             const hint = o.get_interact_hint(player)
@@ -585,7 +591,21 @@ export class UiManager{
             }
             break
         }
-
+        /*const objects:ClientGameObject2D[]=this.manager.cells.get_objects(this.hitbox,this.layer)
+        for(const obj of objects){
+            if(obj.id===this.id)continue
+            switch(obj.stringType){
+                case "building":{
+                    const o:Building=obj as Building
+                    for(const ceiling of o.ceilings){
+                        if(ceiling.hitbox.collidingWith(this.hitbox)){
+                            ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,1/(1+dt*1000))
+                            ceiling.collided=true
+                        }
+                    }
+                }
+            }
+        }*/
         this.update_hint()
 
         if (this.emote_wheel.active) {

@@ -265,8 +265,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
         CreatePills("red",BoostType.Addiction),
         //Green Bless
-        CreateSoda("green",BoostType.GreenBless),
-        //CreatePills("green",BoostType.GreenBless),
+        CreateSoda("green",BoostType.GreenBless,undefined,100),
         //Death
         CreateSoda("black",BoostType.Death,undefined,1),
         //Misc

@@ -45,6 +45,8 @@ export class AmbientManager{
     bullet_whiz_hitbox?:CircleHitbox2D
     last_music_pos:number=0
 
+    musics:string[]=[]
+
     constructor(game:Game){
         this.game=game
         this.rain_particles_emitter=this.game.particles.add_emiter({
@@ -188,6 +190,7 @@ export class AmbientManager{
             this.rain_particles_emitter.enabled=false
             this.snow_particles_emitter.enabled=false
         }
+        this.musics=this.biome.musics??[]
 
         //this.game.light_map.ambient=0
 
@@ -200,21 +203,10 @@ export class AmbientManager{
 
         this.global_ilumination=0.5
     }
-    musics:string[]=[
-        "game_normal_music_1",
-        "game_normal_music_2",
-        "game_normal_music_3",
-        "game_normal_music_4",
-        "game_normal_music_5",
-    ]
     /*musics:string[]=[
         "game_snow_music_1",
         "game_snow_music_2",
     ]*/
-    ending_music:string[]=[
-        "game_campaing_ending_1",
-        "game_campaing_ending_2"
-    ]
     end_game=false
     grand_finale(){
         if(this.end_game)return
@@ -269,7 +261,7 @@ export class AmbientManager{
         }
 
         if(!this.game.game_over){
-            if(!this.music.running){
+            if(!this.music.running&&this.musics.length>0){
                 if(Math.random()<=0.0002){
                     this.music.set(this.game.resources.get_audio(random.choose(this.musics)))
                 }

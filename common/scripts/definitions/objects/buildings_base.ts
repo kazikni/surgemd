@@ -62,7 +62,7 @@ const Templates={
             right:false,
             top:true
         },0.5),
-        spawnHitbox:new RectHitbox2D(v2.new(-2.85,1.42),v2.new(2.85,1.42)),
+        spawnHitbox:new RectHitbox2D(v2.new(-2.85,-1.42),v2.new(2.85,1.42)),
         material:"iron",
         assets:{
             particles:"metal_particle",
@@ -86,7 +86,7 @@ const Templates={
                     scale:2,
                     tint:0x00359f
                 },
-                hitbox:new RectHitbox2D(v2.new(-2.85,1.42),v2.new(2.85,1.42)),
+                hitbox:new RectHitbox2D(v2.new(-2.8,-1.3),v2.new(2.8,1.3)),
             }
         ]
     } satisfies BuildingDef,
@@ -130,7 +130,7 @@ const Templates={
                     scale:2,
                     tint:0x00359f
                 },
-                hitbox:new RectHitbox2D(v2.new(-2.85,1.42),v2.new(2.85,1.42)),
+                hitbox:new RectHitbox2D(v2.new(-2.8,-1.3),v2.new(2.8,1.3)),
             }
         ]
     } satisfies BuildingDef,

@@ -1,5 +1,5 @@
 
-import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -28,6 +28,9 @@ import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
+import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -79,6 +82,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     closed:boolean=false
     started:boolean=false
+    overed:boolean=false
     fineshed:boolean=false
 
     statistics?:GameStatistic
@@ -219,7 +223,68 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         /*for(let i=0;i<99;i++){
             const b = this.players.add_bot(new JoinPacket())
-            if(b.human)b.ai=new DumbBotAI(b.human)
+            if(b.human){
+                if(Math.random()<=0.7){
+                    b.human.set_preset({
+                        "inventory":{
+                            "infinity_ammo":true,
+                            "hand":1,
+                            "backpack":[
+                                {"item":"basic_pack","weight":10},
+                                {"item":"regular_pack","weight":15,"drop_chance":0.3},
+                                {"item":"tactical_pack","weight":10,"drop_chance":0.5}
+                            ],
+                            "vest":[
+                                {"item":"basic_vest","weight":10,"drop_chance":0.3},
+                                {"item":"regular_vest","weight":15,"drop_chance":0.5},
+                                {"item":"tactical_vest","weight":10,"drop_chance":0.75}
+                            ],
+                            "helmet":[
+                                {"item":"basic_helmet","weight":10,"drop_chance":0.3},
+                                {"item":"regular_helmet","weight":15,"drop_chance":0.5},
+                                {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
+                            ],
+                            "gun1":[
+                                {"item":"blr81","weight":6},
+                                {"item":"model94","weight":6},
+                                {"item":"kar98k","weight":1.5},
+                                {"item":"awp","weight":0.5},
+                                {"item":"awms","weight":0.01}
+                            ],
+                            "gun2":[
+                                {"item":"mp5","weight":7},
+                                {"item":"ak47","weight":7},
+                                {"item":"model94","weight":5},
+                                {"item":"blr81","weight":5},
+                                {"item":"kar98k","weight":1},
+                                {"item":"awp","weight":0.5},
+                                {"item":"pkp","weight":0.1},
+                                {"item":"awms","weight":0.01}
+                            ],
+                            "boosts":[
+                                {"weight":8,"boost_type":0,"boost":0},
+                                {"weight":1,"boost_type":1,"boost":1},
+                                {"weight":1,"boost_type":2,"boost":1}
+                            ],
+                            "aitems":{
+                                "12g":30,
+                                "556mm":150,
+                                "762mm":150,
+                                "45acp":150,
+                                "9mm":200,
+                            },
+                            "iitems":[
+                                "scope_2",
+                                "scope_3",
+                                "scope_4",
+                            ]
+                        }
+                    })
+                    b.ai=new ADVHumanAI(b.human)
+                }else{
+                    b.ai=new DumbBotAI(b.human)
+                }
+            }
         }*/
     }
     override net_update(full:boolean){
@@ -295,6 +360,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.fineshed=false
         this.closed=false
+        this.overed=false
         super.mainloop(rqf,auto_mainloop)
     }
     start(){

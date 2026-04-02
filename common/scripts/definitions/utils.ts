@@ -82,7 +82,7 @@ export enum InventoryItemType{
     vest,
     grenade,
     melee,
-    accessorie,
+    accessory,
     backpack,
     skin,
     scope
@@ -131,7 +131,7 @@ export interface InventoryPreset{
     items?:InventoryPresetItem[][]
     aitems?:Record<string,number>
     iitems?:string[]
-    acessories?:Record<number,string>
+    accessorys?:Record<number,string>
 
     hand?:number
     infinity_ammo?:boolean

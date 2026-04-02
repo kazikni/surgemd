@@ -2,6 +2,7 @@ import { InventoryItemType } from "../utils.ts";
 import { ItemQuality } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
+import { SideEffectType } from "../player/effects.ts";
 export interface VestDef extends Definition{
     defence:number
     reduction:number
@@ -22,10 +23,11 @@ export interface HelmetDef extends Definition{
     quality:ItemQuality
     item_type?:InventoryItemType.helmet
 }
-export interface AcessorieDef extends Definition{
-    modifiers:Partial<HumanModifiers>
+export interface AccessoryDef extends Definition{
     quality:ItemQuality
-    item_type?:InventoryItemType.accessorie
+    modifiers?:Partial<HumanModifiers>
+    events?:Record<string,(e:any)=>void>
+    item_type?:InventoryItemType.accessory
 }
 export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
     helmets.insert(
@@ -117,19 +119,62 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
         },
     )
 }
-export function Acessories_Default_Init(acessories:Definitions<AcessorieDef,{}>){
-    acessories.insert(
+export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
+    accessorys.insert(
         {
             idString:"bullet_breaker_barrel",
-            modifiers:{
+            quality:ItemQuality.Mythic,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.damage*=0.7
+
+                    let b=e.user.game.add_bullet(e.position,e.angle-0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer)
+                    b.damage*=0.2
+                    b.tracerAlpha*=0.5
+                    b.modifiers={
+                        speed:e.user.modifiers.bullet_speed,
+                        size:e.user.modifiers.bullet_size*0.5,
+                    }
+                    b.set_direction(e.angle-0.02)
+
+                    b=e.user.game.add_bullet(e.position,e.angle+0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer)
+                    b.damage*=0.2
+                    b.tracerAlpha*=0.5
+                    b.modifiers={
+                        speed:e.user.modifiers.bullet_speed,
+                        size:e.user.modifiers.bullet_size*0.5,
+                    }
+                    b.set_direction(e.angle+0.02)
+                }
             },
-            quality:ItemQuality.Common
         },
         {
             idString:"liquid_insanity",
-            modifiers:{
-            },
-            quality:ItemQuality.Common
+            quality:ItemQuality.Mythic,
+            events:{
+                "kill":(e)=>{
+                    e.owner.health_data.health+=20
+                    e.owner.side_effect({
+                        type:SideEffectType.AddEffect,
+                        duration:4,
+                        effect:"kill_haste"
+                    })
+                }
+            }
+        },
+        {
+            idString:"nature_leaf",
+            quality:ItemQuality.Mythic,
+            events:{
+                "damage":(e)=>{
+                    e.player.health_data.health+=20
+                    e.player.side_effect({
+                        type:SideEffectType.AddEffect,
+                        duration:4,
+                        effect:"nature_help"
+                    })
+                }
+            }
         },
     )
 }

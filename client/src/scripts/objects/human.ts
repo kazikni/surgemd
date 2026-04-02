@@ -17,6 +17,7 @@ import { Camera2D } from "common/engine/client/2d/camera.ts";
 import { StaticBody } from "./static_body.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
+import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -101,6 +102,8 @@ export class Human extends MovingBody{
         weapon_reload_sound_alt?:Sound
         footstep_sounds?:string[]
     }={}
+
+    effects:{def:EffectDef,lifetime:number}[]=[]
 
     current_floor?:FloorType
 
@@ -611,28 +614,33 @@ export class Human extends MovingBody{
                     onComplete:()=>{
                         if(this.emote_time<2.5)return
                         this.sprites.emote_container.visible=false
-                        this.sprites.emote_container.destroy()
                         this.anims.emote=undefined
                     },
                     ease:ease.circOut
                 })
             }
         }
-        /*const objects:ClientGameObject2D[]=this.manager.cells.get_objects(this.hitbox,this.layer)
-        for(const obj of objects){
-            if(obj.id===this.id)continue
-            switch(obj.stringType){
-                case "building":{
-                    const o:Building=obj as Building
-                    for(const ceiling of o.ceilings){
-                        if(ceiling.hitbox.collidingWith(this.hitbox)){
-                            ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,1/(1+dt*1000))
-                            ceiling.collided=true
+        for(const f of this.effects){
+            f.lifetime+=dt
+            if(f.def.particles){
+                if(f.lifetime>=f.def.particles.delay){
+                    f.lifetime=0
+                    const angle=random.rad()
+                    this.game.particles.add_particle(new ABParticle2D({
+                        frame:f.def.particles.frame,
+                        direction:angle,
+                        life_time:random.float(1,3),
+                        position:this.position,
+                        speed:random.float(1,3),
+                        tint:ColorM.hex("#ffff"),
+                        to:{
+                            angle:angle+(Math.random()>=0.5?-6:6),
+                            tint:ColorM.hex("#fff0"),
                         }
-                    }
+                    }))
                 }
             }
-        }*/
+        }
     }
     override on_destroy(): void {
         this.anims.consumible_particles!.destroyed=true
@@ -939,6 +947,43 @@ export class Human extends MovingBody{
             this.sprites!.backpack.frame=this.game.resources.get_sprite(this.backpack.idString+"_world")
         }
     }
+    on_effect_added(effect:EffectDef){
+        if(effect.assets?.sounds?.when_take){
+            this.play_sound(this.game.resources.get_audio(effect.assets.sounds.when_take))
+        }
+    }
+    on_effect_removed(effect:EffectDef){
+        if(effect.assets?.sounds?.when_remove){
+            this.play_sound(this.game.resources.get_audio(effect.assets.sounds.when_remove))
+        }
+    }
+    update_effects(effects: EffectDef[]){
+        const old = this.effects ?? []
+        const oldMap = new Map(old.map(e => [e.def.idNumber, e]))
+        const newMap = new Map(effects.map(e => [e.idNumber, e]))
+        const result: {def: EffectDef, lifetime: number}[] = []
+        for(const [id, newEffect] of newMap){
+            const oldEffect = oldMap.get(id)
+            if(oldEffect){
+                result.push({
+                    def: newEffect,
+                    lifetime: oldEffect.lifetime
+                })
+            }else{
+                this.on_effect_added(newEffect)
+                result.push({
+                    def: newEffect,
+                    lifetime: 0
+                })
+            }
+        }
+        for(const [id, oldEffect] of oldMap){
+            if(!newMap.has(id)){
+                this.on_effect_removed(oldEffect.def)
+            }
+        }
+        this.effects = result
+    }
     broke_shield(){
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
             for(let p=0;p<14;p++){
@@ -995,6 +1040,7 @@ export class Human extends MovingBody{
             equipment_dirty_part,equipment_dirty,
             loadout_dirty,
             animation_dirty,
+            effects_dirty,
 
             hand_dirty,
 
@@ -1066,6 +1112,12 @@ export class Human extends MovingBody{
                 }
                 this.play_animation(animation)
             }
+        }
+        if(full||effects_dirty){
+            const effects=stream.readArray(()=>{
+                return Effects.getFromNumber(stream.readUint16())
+            },1)
+            this.update_effects(effects)
         }
         if(full||hand_dirty){
             const id = stream.readInt16()

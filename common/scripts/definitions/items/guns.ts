@@ -716,7 +716,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             supresed:true
         },
         {
-            idString:"blr",
+            idString:"blr81",
             fireDelay:0.9,
             spread:0.3,
             lenght:0.9,

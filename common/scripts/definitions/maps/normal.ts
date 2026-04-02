@@ -12,7 +12,12 @@ export const NormalBiome:BiomeDef={
         particles:["leaf_01_particle_1"],
         rain:true,
         sound:"storm_ambience"
-    }
+    },
+    musics:[
+        "game_normal_music_1",
+        "game_normal_music_2",
+        "game_normal_music_3",
+    ]
 }
 export const NormalMap:MapDef={
     loot_tables:{
@@ -33,7 +38,7 @@ export const NormalMap:MapDef={
             {item:"famas",weight:6},
             {item:"spas12",weight:3},
             {item:"model94",weight:1},
-            {item:"blr",weight:0.7},
+            {item:"blr81",weight:0.7},
         ],
         "mythic_guns":[
             {item:"sr25",weight:10},

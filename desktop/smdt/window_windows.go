@@ -5,6 +5,8 @@ package smdt
 import (
 	"syscall"
 	"unsafe"
+
+	webview "github.com/webview/webview_go"
 )
 
 var (
@@ -63,7 +65,6 @@ func HWNDSetIcon(hwnd uintptr, path string) {
 }
 
 func HWNDFullscreen(hwnd uintptr, enable bool) {
-
 	const (
 		WS_OVERLAPPEDWINDOW = 0x00CF0000
 
@@ -137,4 +138,10 @@ func HWNDFullscreen(hwnd uintptr, enable bool) {
 func Get_Active_HWND() uintptr {
 	ret, _, _ := getActiveWindow.Call()
 	return ret
+}
+func Fullscreen(w webview.WebView, enable bool) {
+	HWNDFullscreen(Get_Active_HWND(), enable)
+}
+func SetIcon(w webview.WebView, path string) {
+	HWNDSetIcon(Get_Active_HWND(), path)
 }

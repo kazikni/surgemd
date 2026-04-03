@@ -16,6 +16,7 @@ __                                                                              
 ### Others
 * MD Crate
 * Tundra Crate
+* Buildings Ceiling Now Have Opacity
 __                                                                                                      __
 ## Changes
 __                                                                                                      __

@@ -11,14 +11,17 @@
         "build": {
             "windows":[
                 "rmdir /S /Q dist",
-                "mkdir dist build",
+                "mkdir dist",
+                "mkdir build",
                 "mkdir dist/mods",
                 "mkdir dist/files",
                 "robocopy mods dist/mods /E",
-                "cd ../client && npx vite build && robocopy dist ../binary/dist/files /E",
+                "cd ../client && npx vite build && robocopy dist ../desktop/dist/files /E",
+                "rsrc -ico dist/files/favicon.ico -o rsrc.syso",
                 "go build -ldflags=-H=windowsgui -o dist/surgemd.exe",
+                "del rsrc.syso",
                 "rmdir /S /Q build",
-                "cd ../server && smde task build && robocopy dist ../binary/dist /E"
+                "cd ../server && smde task build && robocopy dist ../desktop/dist /E"
             ]
         }
     }

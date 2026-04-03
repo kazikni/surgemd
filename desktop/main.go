@@ -24,6 +24,7 @@ var (
 	serverLock sync.Mutex
 	dev_mode   bool
 	ports      = []int{3000, 6835, 9255, 2314}
+	window     webview.WebView
 )
 
 func stopServerInternal() error {
@@ -47,8 +48,7 @@ func stopServerInternal() error {
 	return nil
 }
 func JStoggleFullscreen(fullscreen bool) {
-
-	smdt.HWNDFullscreen(smdt.Get_Active_HWND(), fullscreen)
+	smdt.Fullscreen(window, fullscreen)
 }
 
 func findFreePort() (int, error) {
@@ -208,6 +208,7 @@ func main() {
 		os.Exit(0)
 	}()
 
+	window = w
 	w.SetTitle("Surgemd.io")
 	w.SetSize(1280, 720, webview.HintNone)
 
@@ -227,11 +228,11 @@ func main() {
 		dev_mode = true
 		w.Navigate("http://localhost:3000")
 		w.Run()
-		smdt.HWNDSetIcon(smdt.Get_Active_HWND(), "../client/public/favicon.ico")
+		smdt.SetIcon(w, "../client/public/favicon.ico")
 		return
 	}
 
-	smdt.HWNDSetIcon(smdt.Get_Active_HWND(), "files/favicon.ico")
+	smdt.SetIcon(w, "../client/public/favicon.ico")
 
 	runWebServer(w)
 }

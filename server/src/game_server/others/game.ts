@@ -1,5 +1,5 @@
 
-import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -28,9 +28,6 @@ import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
-import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2

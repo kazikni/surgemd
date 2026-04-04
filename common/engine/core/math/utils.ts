@@ -638,6 +638,18 @@ export const Numeric={
     loop(value: number, min: number, max: number): number {
         const range = max - min;
         return ((value - min) % range + range) % range + min;
+    },
+    loop_rad(value: number): number {
+        const min = 0;
+        const max = Math.PI * 2;
+        const range = max - min;
+        return ((value - min) % range + range) % range + min;
+    },
+    loop_deg(value: number): number {
+        const min = 0;
+        const max = 360;
+        const range = max - min;
+        return ((value - min) % range + range) % range + min;
     }
 }
 

@@ -1,6 +1,6 @@
-import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
+import { GameObjectType } from "common/scripts/others/constants.ts";
 import { Projectile, ProjectileData, ProjectilePhysicalData } from "./projectile.ts";
-import { CircleHitbox2D, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type Human } from "./human.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
@@ -58,11 +58,11 @@ export class Grenade extends Projectile{
         if(!this.old_pos||!v2.is(this.position,this.old_pos)){
             this.old_pos=this.position
             // Fall
-            if(this.physical_data.current_floor===FloorType.Void){
+            /*if(this.physical_data.current_floor===FloorType.Void){
                 if(this.layer>Layers.Normal){
                     this.set_layer(this.layer-1)
                 }
-            }
+            }*/
         }
         this.net_sync.part=true
     }

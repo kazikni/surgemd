@@ -29,6 +29,8 @@ import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/defini
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
+import { SyncedParticle } from "../objects/synced_particle.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -144,7 +146,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Bullet,
             Explosion,
             Creature,
-            Parachute
+            Parachute,
+            SyncedParticle
         ])
 
         this.ntps=30
@@ -473,6 +476,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     add_parachute(position:Vec2,layer=Layers.Normal):Parachute{
         const p=this.scene_2d.objects.add_object(new Parachute(),layer,undefined,{position}) as Parachute
+        return p
+    }
+    add_synced_particle(position:Vec2,def:SyncedParticleDef,layer=Layers.Normal):SyncedParticle{
+        const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position}) as SyncedParticle
         return p
     }
     override handle_connection(client:Client,username:string){

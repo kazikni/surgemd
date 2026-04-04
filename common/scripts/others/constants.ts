@@ -68,6 +68,7 @@ export enum zIndexes{
     Obstacles3,
     Obstacles4,
     Explosions,
+    SyncedParticle,
     BuildingsCeiling,
     ParachutePlayers,
     Rain1,
@@ -166,4 +167,5 @@ export enum GameObjectType{
     Vehicle,
     Creature,
     Parachute,
+    SyncedParticle,
 }

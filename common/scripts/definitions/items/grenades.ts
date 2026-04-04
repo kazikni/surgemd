@@ -71,12 +71,36 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:true,
-                fuse_time:5
+                fuse_time:6
             },
             throw_max_speed:15,
             explosion:"frag_grenade_explosion",
             frames:{
                 world:"proj_frag"
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Common
+        },
+        {
+            idString:"smoke_grenade",
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.7,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:4
+            },
+            throw_max_speed:17,
+            explosion:"smoke_grenade_explosion",
+            frames:{
+                world:"proj_smoke"
             },
             speed_mod:1,
             arms:DefaultFistRig,
@@ -96,7 +120,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:true,
-                fuse_time:5
+                fuse_time:6
             },
             explosion:"mirv_grenade_explosion",
             throw_max_speed:15,
@@ -169,7 +193,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                     max:0.25
                 },
                 frame:{
-                    image:"smoke_particle",
+                    image:"gas_particle",
                     scale:0.01
                 }
             },
@@ -215,7 +239,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                     max:0.25
                 },
                 frame:{
-                    image:"smoke_particle",
+                    image:"gas_particle",
                     scale:0.01
                 }
             },

@@ -73,7 +73,13 @@ export class Explosion extends ServerGameObject{
                     }
                 }
             }
-            
+
+            if(this.defs.synced_particles){
+                const def=this.game.definitions.synced_particle.getFromString(this.defs.synced_particles.def)
+                for(let i=0;i<this.defs.synced_particles.count;i++){
+                    this.game.add_synced_particle(this.position,def,this.layer)
+                }
+            }
             //this.game.play_sound(this.position,this.layer,"explosion")
             this.destroy()
         }else{

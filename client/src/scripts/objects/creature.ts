@@ -20,7 +20,6 @@ export class Creature extends MovingBody {
 
         this.container.zIndex = zIndexes.Creatures
     }
-    
     override on_layer_set(layer: number): void {
         this.container.layer=layer
     }

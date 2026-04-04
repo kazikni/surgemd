@@ -40,6 +40,7 @@ import { is_binary } from "../defs/go_files.ts";
 import { Creature } from "../objects/creature.ts";
 import { Plane } from "./planes.ts";
 import { Parachute } from "../objects/parachute.ts";
+import { SyncedParticle } from "../objects/synced_particle.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -98,7 +99,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle],
         )
 
         this.local_server=new LocalGameServer(this)

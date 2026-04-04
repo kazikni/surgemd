@@ -29,6 +29,10 @@ export type ExplosionDef={
         speed:MinMax1
         lifetime:MinMax1
     }[]
+    synced_particles?:{
+        def:string
+        count:number
+    }
 }&Definition
 
 export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
@@ -139,6 +143,22 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ]
+        },
+        {
+            idString:"smoke_grenade_explosion",
+            tint:"#355",
+            size:{
+                begin:0.3,
+                end:0.5
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_1"
+            },
+            synced_particles:{
+                count:6,
+                def:"smoke"
+            }
         },
         {
             idString:"mirv_grenade_explosion",

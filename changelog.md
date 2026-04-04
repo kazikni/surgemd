@@ -7,6 +7,7 @@ __                                                                              
 ### Menu
 __                                                                                                      __
 ### Items
+* Smoke Grenade
 * SR25 - 762mm DMR
 * Model94 - 45acp Sniper
 * BLR-81 - 556mm Sniper

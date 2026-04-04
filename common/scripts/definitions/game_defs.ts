@@ -15,11 +15,12 @@ import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
 import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
+import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { InventoryItemType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef|SkinDef
-export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef
+export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
 
@@ -76,6 +77,7 @@ export class GameDefinition{
     explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
     obstacles=new Definitions<ObstacleDef,{}>((_v)=>{})
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
+    synced_particle=new Definitions<SyncedParticleDef,{}>((_v)=>{})
 
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
@@ -106,6 +108,7 @@ export class GameDefinition{
         Explosions_Default_Init(this.explosions)
         Obstacles_Default_Init(this.obstacles)
         Vehicles_Default_Init(this.vehicles)
+        SyncedParticle_Default_Init(this.synced_particle)
 
         this.game_items.insert_def(this.ammos.value)
         this.game_items.insert_def(this.backpacks.value)
@@ -127,6 +130,7 @@ export class GameDefinition{
         this.game_objects.insert_def(this.explosions.value)
         this.game_objects.insert_def(this.obstacles.value)
         this.game_objects.insert_def(this.vehicles.value)
+        this.game_objects.insert_def(this.synced_particle.value)
     }
     add_definitions(mm:GameADefinitions){
         if(mm.items){

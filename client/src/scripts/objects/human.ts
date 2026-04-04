@@ -135,8 +135,8 @@ export class Human extends MovingBody{
                 zIndex:zIndexes.Particles
             }))
         }
-        
-        this.play_sound(this.game.resources.get_audio(sound??(
+
+        this.game.sounds.play(this.game.resources.get_audio(sound??(
             (this.vest&&this.vest.reflect_bullets)?
                 (
                     "player_metal_hit"
@@ -146,7 +146,10 @@ export class Human extends MovingBody{
                     `player_hit_${random.int(1,2)}`
                 )
             )
-        ))
+        ),{
+            position:this.position,
+            max_distance:10,
+        },"humans")
     }
 
     on_die(){
@@ -306,10 +309,12 @@ export class Human extends MovingBody{
             const sound=this.game.resources.get_audio(`${def.idString}_switch`)
             if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.stop()
             if(sound){
-                this.sound_animation.weapon.switch=this.play_sound(sound,{
+                this.sound_animation.weapon.switch=this.game.sounds.play(sound,{
                     on_complete:()=>{
                         this.sound_animation.weapon.switch=undefined
                     },
+                    position:this.position,
+                    max_distance:17,
                 })
             }
             this.attacking=false
@@ -568,7 +573,11 @@ export class Human extends MovingBody{
             if(this.distance_since_last_footstep>=2){
                 this.distance_since_last_footstep=0
                 if(this.assets.footstep_sounds){
-                    this.sound_animation.footsteps=this.play_sound(this.game.resources.get_audio(random.choose(this.assets.footstep_sounds)))
+                    this.sound_animation.footsteps=this.game.sounds.play(this.game.resources.get_audio(random.choose(this.assets.footstep_sounds)),{
+                        position:this.position,
+                        max_distance: 15,
+                        volume:0.7
+                    },"humans")
                 }
                 if(Floors[f].floor_kind===FloorKind.Liquid){
                     this.game.particles.add_particle(new ABParticle2D({
@@ -672,7 +681,11 @@ export class Human extends MovingBody{
     }
     emote_time:number=0
     add_emote(emote:GameObjectDef){
-        this.play_sound(this.game.resources.get_audio("emote_play"))
+        this.game.sounds.play(this.game.resources.get_audio("emote_play"),{
+            position:this.position,
+            max_distance: 50,
+            volume: 0.7,
+        },"humans")
         if(!this.sprites.emote_container.visible)this.game.cam2d.addObject(this.sprites.emote_container)
         this.sprites.emote_container.visible=true
         this.emote_time=0
@@ -701,11 +714,13 @@ export class Human extends MovingBody{
                 const sound=(d.reload?.reload_alt&&this.current_animation.alt_reload)?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
                 if(sound){
                     if(this.sound_animation.animation)this.sound_animation.animation.stop()
-                    this.sound_animation.animation=this.play_sound(sound,{
+                    this.sound_animation.animation=this.game.sounds.play(sound,{
+                        position:this.position,
+                        max_distance:10,
                         on_complete:()=>{
                             this.reset_anim()
                         },
-                    })
+                    },"humans")
                 }
                 break
             }
@@ -717,11 +732,13 @@ export class Human extends MovingBody{
                         this.sprites.mounth.frames=undefined
                         this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_open)
                     }
-                    this.sound_animation.animation=this.play_sound(sound,{
+                    this.sound_animation.animation=this.game.sounds.play(sound,{
+                        position:this.position,
+                        max_distance:10,
                         on_complete:()=>{
                             this.update_weapon(false)
                         }
-                    })
+                    },"humans")
                 }
                 if(def.assets?.using_particle){
                     this.anims.consumible_particle=def.assets.using_particle
@@ -748,7 +765,11 @@ export class Human extends MovingBody{
                 }
                 const att=()=>{
                     if(def.assets?.use_sound){
-                        this.play_sound(this.game.resources.get_audio(def.assets.use_sound))
+                        this.game.sounds.play(this.game.resources.get_audio(def.assets.use_sound),{
+                            position:this.position,
+                            max_distance:12,
+                            volume:0.7
+                        },"humans")
                     }
                     const position=v2.add(
                         this.position,
@@ -836,11 +857,13 @@ export class Human extends MovingBody{
             //Cycle Sound
             if(this.assets.weapon_cycle_sound){
                 this.sound_animation.weapon.switch?.stop()
-                this.sound_animation.weapon.switch=this.play_sound(this.assets.weapon_cycle_sound,{
+                this.sound_animation.weapon.switch=this.game.sounds.play(this.assets.weapon_cycle_sound,{
                     on_complete:()=>{
                         this.sound_animation.weapon.switch=undefined
                     },
-                })
+                    position:this.position,
+                    max_distance:10,
+                },"humans")
             }
         },d.fireDelay*0.25)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
@@ -892,7 +915,11 @@ export class Human extends MovingBody{
             }
         }
         if(this.assets.weapon_fire_sound){
-            this.play_sound(this.assets.weapon_fire_sound)
+            this.game.sounds.play(this.assets.weapon_fire_sound,{
+                position:this.position,
+                max_distance: 15,
+                volume:0.7
+            },"humans")
         }
     }
     set_helmet(helmet:number){
@@ -950,12 +977,20 @@ export class Human extends MovingBody{
     }
     on_effect_added(effect:EffectDef){
         if(effect.assets?.sounds?.when_take){
-            this.play_sound(this.game.resources.get_audio(effect.assets.sounds.when_take))
+            this.game.sounds.play(this.game.resources.get_audio(effect.assets.sounds.when_take),{
+                position:this.position,
+                max_distance: 7,
+                volume: 0.7,
+            },"humans")
         }
     }
     on_effect_removed(effect:EffectDef){
         if(effect.assets?.sounds?.when_remove){
-            this.play_sound(this.game.resources.get_audio(effect.assets.sounds.when_remove))
+            this.game.sounds.play(this.game.resources.get_audio(effect.assets.sounds.when_remove),{
+                position:this.position,
+                max_distance: 7,
+                volume: 0.7,
+            },"humans")
         }
     }
     update_effects(effects: EffectDef[]){
@@ -1029,11 +1064,11 @@ export class Human extends MovingBody{
         }
         const sound=this.game.resources.get_audio(`shield_break`)
         if(sound){
-            this.play_sound(sound)
+            this.game.sounds.play(sound,{
+                position:this.position,
+                max_distance:15
+            })
         }
-    }
-    override play_sound(sound: Sound, params?: SoundOptions): SoundInstance | undefined {
-        return super.play_sound(sound,params,"players")
     }
     override decode(stream: NetStream, full: boolean): void {
         const [
@@ -1052,9 +1087,10 @@ export class Human extends MovingBody{
             swithced,
 
             dead,downed,invensibility,
-
-            controlling
         ]=stream.readBooleanGroup2()
+        const [
+            controlling
+        ]=stream.readBooleanGroup()
         this.controlling=controlling
         if(!dead&&this.dead){
             this.dead=false

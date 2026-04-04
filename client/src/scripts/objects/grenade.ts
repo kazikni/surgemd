@@ -49,32 +49,34 @@ export class Grenade extends MovingBody{
             scale:1
         },this.game.resources)
         if(def.particles){
+            this.particles_spawner=this.game.particles.add_emiter({
+                delay:def.particles!.delay,
+                particle:()=>{
+                    const ang=random.rad()
+                    const col=ColorM.number(def.particles!.tint)
+                    const col2=ColorM.clone(col)
+                    col2.a=0
+                    const pos=v2.rotate_RadAngle(def.particles!.spawn,this.physical_data.rotation)
+                    v2m.add(pos,pos,this.position)
+                    return new ABParticle2D({
+                        direction:ang,
+                        frame:def.particles!.frame,
+                        life_time:random.random1(def.particles!.lifetime),
+                        position:pos,
+                        speed:random.random1(def.particles!.speed),
+                        tint:col,
+                        angle:ang,
+                        scale:0.01,
+                        to:{
+                            scale:1,
+                            tint:col2
+                        }
+                    })
+                },
+                enabled:false
+            }),
             this.game.add_timeout(()=>{
-                this.particles_spawner=this.game.particles.add_emiter({
-                    delay:def.particles!.delay,
-                    particle:()=>{
-                        const ang=random.rad()
-                        const col=ColorM.number(def.particles!.tint)
-                        const col2=ColorM.clone(col)
-                        col2.a=0
-                        const pos=v2.rotate_RadAngle(def.particles!.spawn,this.physical_data.rotation)
-                        v2m.add(pos,pos,this.position)
-                        return new ABParticle2D({
-                            direction:ang,
-                            frame:def.particles!.frame,
-                            life_time:random.random1(def.particles!.lifetime),
-                            position:pos,
-                            speed:random.random1(def.particles!.speed),
-                            tint:col,
-                            angle:ang,
-                            scale:0.01,
-                            to:{
-                                scale:1,
-                                tint:col2
-                            }
-                        })
-                    }
-                })
+                if(this.particles_spawner)this.particles_spawner.enabled=true
             },def.particles!.spawn_delay??0)
         }
     }

@@ -39,6 +39,10 @@ export type GrenadeDef={
     call_airdrop?:{
         delay:number
     }
+    call_airstrike?:{
+        delay:number
+        def:string
+    }
     particles?:{
         spawn_delay?:number
         spawn:Vec2
@@ -169,6 +173,74 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                     scale:0.01
                 }
             },
+        },
+        {
+            idString:"red_flare",
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.6,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:9
+            },
+            throw_max_speed:20,
+            explosion:"red_flare_explosion",
+            frames:{
+                world:"proj_red_flare"
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Common,
+            call_airstrike:{
+                delay:3,
+                def:"nuke"
+            },
+            particles:{
+                spawn_delay:3,
+                tint:0xca0819,
+                delay:0.1,
+                spawn:v2.new(0.3,0),
+                lifetime:{
+                    min:2,
+                    max:5
+                },
+                speed:{
+                    min:0.1,
+                    max:0.25
+                },
+                frame:{
+                    image:"smoke_particle",
+                    scale:0.01
+                }
+            },
+        },
+        {
+            idString:"nuke",
+            gravity:0.2,
+            radius:0.6,
+            zBaseScale:1,
+            zScaleAdd:1,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:3
+            },
+            explosion:"nuke_explosion",
+            frames:{
+                world:"proj_nuke"
+            },
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Legendary
         },
     )
 }

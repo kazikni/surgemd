@@ -42,20 +42,43 @@ export class Plane{
         }
         this.container.rotation=data.direction
         if(!this.sound){
-            this.sound=this.game.sounds.play(this.game.resources.get_audio("airdrop_plane_sfx"),{
-                max_distance:80,
-                position:v2.clone(this.container.position),
-                loop:true,
-                volume:0.5
-            })
+            switch(data.type){
+                case 0:
+                    this.sound=this.game.sounds.play(this.game.resources.get_audio("airdrop_plane_sfx"),{
+                        max_distance:80,
+                        position:v2.clone(this.container.position),
+                        loop:true,
+                        volume:0.5
+                    })
+                    break
+                case 1:
+                    this.sound=this.game.sounds.play(this.game.resources.get_audio("airstrike_plane_sfx"),{
+                        max_distance:130,
+                        position:v2.clone(this.container.position),
+                        loop:false,
+                        volume:0.5
+                    })
+                    break
+            }
         }
         if(this.sound)this.sound.position=v2.clone(this.container.position)
         if(!this.sprite.frame){
-            this.sprite.set_frame({
-                image:"airdrop_plane",
-                scale:14,
-                hotspot:CenterHotspot
-            },this.game.resources)
+            switch(data.type){
+                case 0:
+                    this.sprite.set_frame({
+                        image:"airdrop_plane",
+                        scale:14,
+                        hotspot:CenterHotspot
+                    },this.game.resources)
+                    break
+                case 1:
+                    this.sprite.set_frame({
+                        image:"airstrike_plane",
+                        scale:8,
+                        hotspot:CenterHotspot
+                    },this.game.resources)
+                    break
+            }
         }
         if(this.initial){
             this.id=data.id

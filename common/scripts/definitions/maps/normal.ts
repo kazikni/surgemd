@@ -137,8 +137,10 @@ export const NormalMap:MapDef={
         ],
         //Throwables
         "throwables":[
-            {item:"frag_grenade",count:1,weight:10},
-            {item:"mirv_grenade",count:1,weight:5},
+            {item:"frag_grenade",count:1,weight:100},
+            {item:"mirv_grenade",count:1,weight:20},
+            {item:"blue_flare",count:1,weight:1},
+            {item:"red_flare",count:1,weight:1},
         ],
         //Scopes
         "scopes":[

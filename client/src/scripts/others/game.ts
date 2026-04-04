@@ -108,7 +108,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.sounds.volumes={
             "music":1,
-            "players":1,
+            "humans":1,
             "loot":1,
             "obstacles":1,
             "explosions":1,
@@ -545,13 +545,19 @@ export class Game extends ClientGame<GameObject>{
     }
     soft_reset(){
         this.tab.stop_all()
-        this.scene_2d.reset()
+        this.clear()
         this.game_over=false
         this.ui.hide_game_over()
         this.cam2d.zoom=6
         this.active_entity=undefined
         this.active_entity_id=undefined
-        //this.planes={}
+    }
+    override clear(): void {
+        super.clear()
+        for(const p of Object.values(this.planes)){
+            p.free()
+        }
+        this.planes={}
     }
     override on_stop(): void {
         super.on_stop()

@@ -106,7 +106,10 @@ export class Obstacle extends StaticBody{
             }
         }
         if(this.assets_data.sounds.break){
-            this.play_sound(this.assets_data.sounds.break)
+            this.game.sounds.play(this.assets_data.sounds.break,{
+                position:this.position,
+                max_distance:15,
+            },"obstacles")
         }
         this.update_frame()
 
@@ -233,9 +236,6 @@ export class Obstacle extends StaticBody{
     }
     override auto_interact(h:Human): boolean {
         return (this.def.interactDestroy===true)
-    }
-    override play_sound(sound: Sound, params?: SoundOptions): SoundInstance | undefined {
-        return super.play_sound(sound,params,"obstacles")
     }
     override decode(stream: NetStream, full: boolean): void {
         const [

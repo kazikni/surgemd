@@ -9,6 +9,7 @@ export interface SoundOptions {
     offset?: number;
     position?: Vec2;
     max_distance?: number;
+    ref_distance?: number;
     rolloffFactor?: number;
     on_complete?: () => void;
 }
@@ -48,6 +49,7 @@ export class SoundInstance {
 
     position?: Vec2;
     maxDistance = 20;
+    refDistance = 20;
     rolloffFactor = 1.0;
 
     ctx: AudioContext
@@ -63,7 +65,7 @@ export class SoundInstance {
      * Start this instance with given params.
      * signature kept compatible with your previous usage.
      */
-    start(destination: GainNode, buffer: AudioBuffer, volume: number, loop: boolean, delay: number, offset: number, position?: Vec2, rolloffFactor?: number, max_distance?: number) {
+    start(destination: GainNode, buffer: AudioBuffer, volume: number, loop: boolean, delay: number, offset: number, position?: Vec2, rolloffFactor?: number, max_distance?: number, ref_distance?: number) {
         // If currently playing, stop gracefully first
         if (this.playState === SoundPlayState.playSucceeded && this.sourceNode) {
             // schedule fade and stop
@@ -81,6 +83,7 @@ export class SoundInstance {
         this.position = position;
         this.rolloffFactor = rolloffFactor ?? 1.0;
         this.maxDistance = max_distance ?? 20;
+        this.refDistance=ref_distance??(this.maxDistance*0.3)
         this.loop = !!loop;
         this.delay = delay ?? 0;
 
@@ -91,7 +94,7 @@ export class SoundInstance {
         this.pannerNode.panningModel = "equalpower";
         try {
             this.pannerNode.distanceModel = "inverse";
-            this.pannerNode.refDistance = 1;
+            this.pannerNode.refDistance = this.refDistance;
             this.pannerNode.maxDistance = this.maxDistance;
             this.pannerNode.rolloffFactor = this.rolloffFactor;
         } catch (_e) {
@@ -221,6 +224,7 @@ export class ManipulativeSoundInstance {
     volume_id: string = "";
     instance: SoundInstance | null = null;
     manager: SoundManager;
+    volume:number=1;
     constructor(volume_id: string = "", manager: SoundManager) {
         this.instance = null;
         this.volume_id = volume_id;
@@ -242,17 +246,10 @@ export class ManipulativeSoundInstance {
     }
     set(sound: Sound | null | undefined, loop: boolean = false, position?: number) {
         if (sound) {
-
             if (this.instance && this.instance.buffer !== sound.buffer) {
-
                 const pos = position ?? 0
-
                 this.instance.stop()
-
-                const volume =
-                    (sound.volume ?? 1) *
-                    (this.manager.masterVolume ?? 1) *
-                    (this.manager.volumes[this.volume_id] ?? 1)
+                const volume=(sound.volume ?? 1)*this.volume
 
                 this.instance = this.manager.play(
                     sound,
@@ -262,14 +259,8 @@ export class ManipulativeSoundInstance {
 
                 return
             }
-
             if (this.instance && this.instance.buffer === sound.buffer) return
-
-            const volume =
-                (sound.volume ?? 1) *
-                (this.manager.masterVolume ?? 1) *
-                (this.manager.volumes[this.volume_id] ?? 1)
-
+            const volume=(sound.volume??1)*this.volume
             this.instance = this.manager.play(
                 sound,
                 { loop, volume, offset: position ?? 0 },
@@ -438,7 +429,7 @@ export class SoundManager {
         }
 
         if (params.on_complete) instance.on_complete = params.on_complete
-        instance.start(this.masterGainNode, sound.buffer, volume, loop, delay, offset, params.position, params.rolloffFactor, params.max_distance);
+        instance.start(this.masterGainNode, sound.buffer, volume, loop, delay, offset, params.position, params.rolloffFactor, params.max_distance,params.ref_distance);
 
         if (!this.playingInstances.includes(instance)) {
             this.playingInstances.push(instance);

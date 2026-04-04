@@ -34,6 +34,9 @@ export interface PlaneDataServer extends PlaneData{
     target_pos:Vec2
     called:boolean
     speed:number
+    
+    owner?:Human
+    grenade_def?:GrenadeDef
 }
 export interface GameData {
     living_count: number[]
@@ -301,13 +304,20 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 v2m.scale(p.velocity,p.velocity,p.speed)
             }
             v2m.add(p.pos,p.pos,v2.scale(p.velocity,dt))
-            switch(p.type){
-                case 0:
-                    if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
+            if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
+                switch(p.type){
+                    case 0:
                         this.add_parachute(p.target_pos)
-                        p.called=true
+                        break
+                    case 1:{
+                        const g=this.add_grenade(p.target_pos,p.grenade_def!,p.owner,Layers.Normal)
+                        g.physical_data.zpos=1
+                        g.physical_data.zpos_speed=0
+                        g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
+                        break
                     }
-                    break
+                }
+                p.called=true
             }
         }
     }
@@ -342,6 +352,22 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             speed:13,
             velocity:v2.zero,
             type:0
+        })
+    }
+    add_airstrike(position:Vec2,grenade:GrenadeDef,owner?:Human){
+        const dir=v2.lookTo(v2.new(0,0),position)
+        this.planes.push({
+            id:random.int(0,1000000),
+            direction:dir,
+            complete:false,
+            target_pos:position,
+            called:false,
+            pos:v2.zero(),
+            speed:100,
+            velocity:v2.zero,
+            type:1,
+            owner:owner,
+            grenade_def:grenade
         })
     }
     override on_run(): void {

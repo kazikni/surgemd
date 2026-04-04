@@ -236,6 +236,40 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_1"
             },
-        }
+        },
+        {
+            idString:"red_flare_explosion",
+            tint:"#ca0819",
+            size:{
+                begin:0.5,
+                end:1
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_1"
+            },
+        },
+        {
+            idString:"nuke_explosion",
+            tint:"#445",
+            size:{
+                begin:5,
+                end:10
+            },
+            damage:1000,
+            bullet:{
+                def:{
+                    damage:30,
+                    radius:0.02,
+                    speed:20,
+                    range:50,
+                    tracer:tracers.black_projectile
+                },
+                count:100
+            },
+            assets:{
+                sound:"explosion_2"
+            },
+        },
     )
 }

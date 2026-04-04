@@ -143,7 +143,9 @@ export class AmbientManager{
         this.game.sounds.init_html_sound_bindings("ui",this.game.resources)
 
         this.music=this.game.sounds.get_manipulative_si("music")??game.sounds.add_manipulative_si("music")
+        this.music.volume=0.65
         this.ambience=game.sounds.add_manipulative_si("ambience")
+        this.ambience.volume=0.25
         this.game.sounds.signals.on("load",async()=>{
             await this.game.resources.load_audio("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
             await this.game.resources.load_audio("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")

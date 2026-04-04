@@ -1,6 +1,6 @@
 import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
 import { Projectile, ProjectileData, ProjectilePhysicalData } from "./projectile.ts";
-import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type Human } from "./human.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
@@ -64,6 +64,7 @@ export class Grenade extends Projectile{
                 }
             }
         }
+        this.net_sync.part=true
     }
     create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
         this.def=args.def
@@ -80,6 +81,12 @@ export class Grenade extends Projectile{
             this.game.add_timeout(()=>{
                 this.game.add_airdrop(this.position)
             },this.def.call_airdrop.delay)
+        }
+        if(this.def.call_airstrike){
+            this.game.add_timeout(()=>{
+                const def=this.game.definitions.grenades.getFromString(this.def.call_airstrike!.def)
+                this.game.add_airstrike(this.position,def,this.owner)
+            },this.def.call_airstrike.delay)
         }
     }
     override encode(stream: NetStream, full: boolean): void {

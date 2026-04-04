@@ -546,7 +546,6 @@ export class GInventory extends GInventoryBase<LItem>{
                     if(this.owner.equipment_data.helmet)this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
 
                     this.owner.equipment_data.dirty=true
-
                     this.owner.equipment_data.helmet=d
                     this.owner.equipment_data.helmet_health=d.health
 

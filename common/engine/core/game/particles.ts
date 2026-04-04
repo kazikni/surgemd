@@ -112,6 +112,16 @@ export class ParticlesManager2D<Particle extends Particle2D=Particle2D>{
             this.particles[i].update(dt)
         }
     }
+    clear(){
+        for(let i=0;i<this.particles.length;i++){
+            if(!this.particles[i]){
+                this.particles[i].destroyed=true
+                this.particles[i].on_destroy()
+            }
+        }
+        this.particles.length=0
+        this.emitters.length=0
+    }
 }
 
 // Current Particles

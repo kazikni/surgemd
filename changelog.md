@@ -2,16 +2,18 @@
 ## News
 __                                                                                                      __
 ### Mains
-
+* Airdrops And Parachutes
 __                                                                                                      __
 ### Menu
-
 __                                                                                                      __
 ### Items
 * SR25 - 762mm DMR
 * Model94 - 45acp Sniper
 * BLR-81 - 556mm Sniper
 * 45ACP
+* Blue Flare
+* Red Flare
+* Nuke
 __                                                                                                      __
 ### Others
 * MD Crate
@@ -21,7 +23,9 @@ __                                                                              
 ## Changes
 __                                                                                                      __
 ### Items
-
+* Change Mirv Design
+* Change Axe Design
+* Change Sledgehammer Design
 __                                                                                                      __
 ### Others
 * Creatures Reword

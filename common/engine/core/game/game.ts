@@ -175,4 +175,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         this.running=false
         this.clock.stop()
     }
+    clear(){
+        this.scene_2d.objects.clear()
+    }
 }

@@ -56,6 +56,10 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
 
         this.ui_manager=new UIRoot(this)
     }
+    override clear(){
+        super.clear()
+        this.particles.clear()
+    }
     set_meter_size(size:number){
         this.cam2d.meter_size=size
         this.input_manager.mouse.meter_size=size

@@ -1074,7 +1074,8 @@ export class Human extends MovingBody{
             this.health_data.dead,
             this.health_data.downed,
             this.health_data.invensibility_time>0,
-
+        )
+        stream.writeBooleanGroup(
             this.input.path===undefined
         )
         // Physical

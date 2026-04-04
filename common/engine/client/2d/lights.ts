@@ -13,7 +13,6 @@ export type Light2D = {
 }
 
 export class Lights2D extends Container2DObject {
-
     override object_type = "lights"
 
     private renderer!: WebglRenderer

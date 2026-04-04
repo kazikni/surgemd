@@ -28,7 +28,6 @@ export abstract class Container2DObject {
     _zIndex: number = 0;
     _layer: number = 0;
 
-    has_update:boolean=false
     get layer():number{
         return this._layer
     }
@@ -89,18 +88,28 @@ export abstract class Container2DObject {
 
     sync_rotation:boolean=true
 
+    _has_update:boolean=false
+    get has_update():boolean{
+        return this._has_update
+    }
+    set has_update(val:boolean){
+        this._has_update=val
+        if(this.parent)this.parent.dirty_children=true
+    }
+
     _visible:boolean=true
     get visible():boolean{
         return this._visible
     }
     set visible(val:boolean){
         this._visible=val
-        if(this.parent)this.parent.update_visibility()
+        if(this.parent)this.parent.dirty_children=true
     }
 
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
+        this.visible = false; 
         if(this.parent){
             let i=this.parent.children.indexOf(this)
             if(i!==-1)this.parent.children.splice(i,1)
@@ -123,7 +132,7 @@ export abstract class Container2DObject {
     dirty_reals=true
     update_real(){
         if (this.parent&&!this.parent.object_group) {
-            this._real_scale = v2.mult(this.parent._real_scale, this._scale);
+            v2m.mul(this._real_scale,this.parent._real_scale, this._scale)
             if(this.sync_rotation){
                 this._real_rotation = this.parent._real_rotation + this._rotation
                 v2m.mul(this._real_position,this._position,this.parent._real_scale)
@@ -134,7 +143,6 @@ export abstract class Container2DObject {
                 v2m.mul(this._real_position,this.parent._real_scale, this._position)
                 v2m.add(this._real_position,this._real_position,this.parent._real_position)
             }
-
             ColorM.mult(this._real_tint,this._tint,this.parent._tint)
         } else {
             v2m.set(this._real_position,this._position._x,this._position._y)

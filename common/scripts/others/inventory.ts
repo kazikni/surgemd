@@ -154,8 +154,8 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
 
         this.net_sync.hand=true
     }
-    set_weapon_index(idx:number){
-        if(this.weapon_idx===idx||!this.weapons[idx])return
+    set_weapon_index(idx:number,force:boolean=false){
+        if((this.weapon_idx===idx&&!force)||!this.weapons[idx])return
         const val=this.weapons[idx as keyof typeof this.weapons]
         this.weapon_idx=idx
         if(this.hand_item){

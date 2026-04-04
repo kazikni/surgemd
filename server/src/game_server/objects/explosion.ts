@@ -18,6 +18,7 @@ export class Explosion extends ServerGameObject{
     source?:DamageSourceDef
 
     radius:number=2
+    speed_damage:number=0
     constructor(){
         super()
         this.net_sync.enabled.deletion=false

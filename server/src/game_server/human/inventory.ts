@@ -375,17 +375,16 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         super.set_backpack(backpack)
     }
-    override set_weapon_index(idx:number){
-        if(this.hand_item!==this.weapons[idx]){
+    override set_weapon_index(idx:number,force:boolean=false){
+        if(this.hand_item!==this.weapons[idx]||force){
             this.owner.recoil=undefined
             this.owner.actions.cancel()
+
+            this.owner.throw_using_projectile()
+            this.owner.animation_data.switching=true
+            this.owner.animation_data.dirty=true
         }
-        super.set_weapon_index(idx)
-
-        this.owner.throw_using_projectile()
-
-        this.owner.animation_data.switching=true
-        this.owner.animation_data.dirty=true
+        super.set_weapon_index(idx,force)
     }
     override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
         if(wep?.idString===this.weapons[slot]?.def.idString)return false
@@ -430,14 +429,15 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         return false
     }
-    drop_weapon(slot=0){
-        if(this.weapon_is_free(slot))return
+    drop_weapon(slot=0):Loot[]{
+        if(this.weapon_is_free(slot))return []
         const loots:Loot[]=this.weapons[slot]!.drop()
         for(const l of loots){
             l.velocity.x-=1.5
         }
         this.owner.actions.cancel()
         super.set_weapon(slot,undefined)
+        return loots
     }
     swamp_guns(){
         const gun1=this.weapons[1]
@@ -721,11 +721,10 @@ export class GInventory extends GInventoryBase<LItem>{
     drop_all(){
         const layer=this.owner.layer
 
-        for(const w of Object.keys(this.weapons)){
-            this.drop_weapon(w as unknown as number)
-        }
-
         const l:Loot[]=[]
+        for(const w of Object.keys(this.weapons)){
+            l.push(...this.drop_weapon(w as unknown as number))
+        }
         for(const s of Object.keys(this.aitems)){
             const def=this.owner.game.definitions.game_items.valueString[s]
             const dir=random.float(-3.141592,3.141592)
@@ -733,7 +732,7 @@ export class GInventory extends GInventoryBase<LItem>{
             const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
             while(this.aitems[s]>0){
                 const rc=Math.min(this.aitems[s],100)
-                const ll=this.owner.game.add_loot(pos,def,rc)
+                const ll=this.owner.game.add_loot(pos,def,rc,this.owner.layer)
                 l.push(ll);
                 ll.push(random.float(1,7),dir+random.float(-0.03,0.03))
                 this.aitems[s]-=rc
@@ -741,35 +740,40 @@ export class GInventory extends GInventoryBase<LItem>{
             delete this.aitems[s]
         }
         if(this.owner.equipment_data.helmet&&this.droppable.helmet){
-            this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,layer)
+            l.push(this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,layer))
             this.owner.equipment_data.helmet=undefined
         }
         if(this.owner.equipment_data.vest&&this.droppable.vest){
-            this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.vest,1,layer)
+            l.push(this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.vest,1,layer))
             this.owner.equipment_data.vest=undefined
         }
         if(this.backpack&&this.backpack.level&&this.droppable.backpack){
-            this.owner.game.add_loot(this.owner.position,this.backpack,1,layer)
+            l.push(this.owner.game.add_loot(this.owner.position,this.backpack,1,layer))
             this.set_backpack()
         }
         if(this.owner.loadout.skin.idString!==this.owner.loadout.original.skin_id){
-            this.owner.game.add_loot(this.owner.position,this.owner.loadout.skin,1,layer)
+            l.push(this.owner.game.add_loot(this.owner.position,this.owner.loadout.skin,1,layer))
         }
         for(const s of this.slots){
             if(s.item&&s.quantity>0){
-                this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity,layer)
+                l.push(this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity,layer))
                 s.remove(s.quantity)
             }
         }
         for(const i of this.iitems){
-            if((i as ScopeDef).droppable)this.owner.game.add_loot(this.owner.position,i,1,layer)
+            if((i as ScopeDef).droppable)l.push(this.owner.game.add_loot(this.owner.position,i,1,layer))
         }
         for(const s of this.accessorys.slots){
             if(s.item&&s.droppable){
-                this.owner.game.add_loot(this.owner.position,s.item,1,layer)
+                l.push(this.owner.game.add_loot(this.owner.position,s.item,1,layer))
             }
         }
         this.accessorys.clear()
+        for(let i=0;i<5;i++){
+            for(const loot of l){
+                loot.update(1/60)
+            }
+        }
         for(const loot of l){
             loot.is_new=true
         }

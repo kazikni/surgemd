@@ -44,15 +44,16 @@ self.onmessage = (ev) => {
             break
         }
         case "start":{
-            server.mainloop()
+            if(!server.running)server.mainloop()
+            level.start()
             break
         }
         case "stop":{
             server.stop()
             break
         }
-        case "restart_level":{
-            level.start()
+        case "reset_level":{
+            level.reset()
             break
         }
         case "connect":{

@@ -4,6 +4,7 @@ export enum HistoryCommandType{
     SetFrame,
     SetDialog,
     SetMusic,
+    SetAmbient,
     PlaySoundEffect,
     ShowGameOverMessage,
 }
@@ -24,6 +25,11 @@ export type HistoryCommand={
 }|{
     type:HistoryCommandType.SetMusic
     music:string
+    loop?:boolean
+    start_at?:number
+}|{
+    type:HistoryCommandType.SetAmbient
+    ambient:string
     loop?:boolean
     start_at?:number
 }|{

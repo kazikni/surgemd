@@ -79,7 +79,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:1,
                 end:2
             },
-            damage:90,
+            damage:80,
             assets:{
                 sound:"explosion_1"
             },
@@ -190,10 +190,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             idString:"submirv_grenade_explosion",
             tint:"#09e",
             size:{
-                begin:0.1,
-                end:0.2
+                begin:0.5,
+                end:1
             },
-            damage:35,
+            damage:15,
             bullet:{
                 def:{
                     damage:7,
@@ -225,5 +225,17 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 }
             ]
         },
+        {
+            idString:"blue_flare_explosion",
+            tint:"#08b0ce",
+            size:{
+                begin:0.5,
+                end:1
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_1"
+            },
+        }
     )
 }

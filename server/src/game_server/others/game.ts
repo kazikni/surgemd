@@ -1,5 +1,5 @@
 
-import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -28,10 +28,12 @@ import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
+import { Parachute } from "../objects/parachute.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
     called:boolean
+    speed:number
 }
 export interface GameData {
     living_count: number[]
@@ -79,7 +81,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     closed:boolean=false
     started:boolean=false
-    overed:boolean=false
     fineshed:boolean=false
 
     statistics?:GameStatistic
@@ -139,7 +140,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Vehicle,
             Bullet,
             Explosion,
-            Creature
+            Creature,
+            Parachute
         ])
 
         this.ntps=30
@@ -292,19 +294,22 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.players.update(dt)
         this.deadzone.tick(dt)
         this.modeManager.tick(dt)
-        /*for(const p of this.planes){
-            p.pos=v2.add(p.pos,v2.scale(p.velocity,dt))
+        for(const p of this.planes){
+            if(!p.called){
+                p.direction=v2.lookTo(p.pos,p.target_pos)
+                p.velocity=v2.from_RadAngle(p.direction)
+                v2m.scale(p.velocity,p.velocity,p.speed)
+            }
+            v2m.add(p.pos,p.pos,v2.scale(p.velocity,dt))
             switch(p.type){
                 case 0:
                     if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
-                        const obs=this.map.add_obstacle(Obstacles.getFromString("copper_crate"))
-                        obs.set_position(p.pos,0)
-                        obs.manager.cells.updateObject(obs)
+                        this.add_parachute(p.target_pos)
                         p.called=true
                     }
                     break
             }
-        }*/
+        }
     }
     update_data(){
         const data:GameData={
@@ -326,18 +331,18 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
-        /*const dir=v2.lookTo(v2.new(0,0),position)
-
+        const dir=v2.lookTo(v2.new(0,0),position)
         this.planes.push({
             id:random.int(0,1000000),
             complete:false,
             direction:dir,
             target_pos:position,
             called:false,
-            pos:v2.new(0,0),//v2.mult(v2.from_RadAngle(dir),this.map.size),
-            velocity:v2.scale(v2.from_RadAngle(dir),8),
+            pos:v2.zero(),
+            speed:13,
+            velocity:v2.zero,
             type:0
-        })*/
+        })
     }
     override on_run(): void {
         this.update_data()
@@ -354,10 +359,19 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.update_data()
         console.log(`Game ${this.id} Stopped`)
     }
+    soft_reset(){
+        this.humans.clear_npcs()
+        this.players.clear_bots()
+        this.clear_loot()
+        this.map.soft_reset()
+        this.deadzone.reset()
+        this.timeouts.length=0
+        this.started = false
+        this.closed = false
+    }
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.fineshed=false
         this.closed=false
-        this.overed=false
         super.mainloop(rqf,auto_mainloop)
     }
     start(){
@@ -430,6 +444,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     add_creature(position:Vec2,def:CreatureDef,layer:number=Layers.Normal):Creature{
         const c=this.scene_2d.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
         return c
+    }
+    add_parachute(position:Vec2,layer=Layers.Normal):Parachute{
+        const p=this.scene_2d.objects.add_object(new Parachute(),layer,undefined,{position}) as Parachute
+        return p
     }
     override handle_connection(client:Client,username:string){
         this.players.connection(client,username)

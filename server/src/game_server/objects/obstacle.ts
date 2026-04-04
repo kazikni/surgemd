@@ -6,6 +6,7 @@ import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DamageParams } from "../others/utils.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { type Loot } from "./loot.ts";
 
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
@@ -218,8 +219,9 @@ export class Obstacle extends StaticBody{
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
             this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def)
         }
+        const loots:Loot[]=[]
         for(const l of this.loot){
-            this.game.add_loot(this.hitbox.randomPoint(),l.item,l.count,this.layer)
+            loots.push(this.game.add_loot(this.hitbox.randomPoint(),l.item,l.count,this.layer))
         }
 
         this.net_sync.part=true
@@ -227,6 +229,15 @@ export class Obstacle extends StaticBody{
         this.health_data.dirty=true
         this.physical_data.no_collision=true
         this.physical_data.no_bullet_collision=true
+
+        for(let i=0;i<5;i++){
+            for(const loot of loots){
+                loot.update(1/60)
+            }
+        }
+        for(const loot of loots){
+            loot.is_new=true
+        }
     }
     revive(){
         if(!this.health_data.dead)return

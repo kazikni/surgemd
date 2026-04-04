@@ -36,7 +36,7 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             defence:0,
             level:1,
             health:1000,
-            reduction:0.1,
+            reduction:0.05,
             position:v2.new(0,0),
             quality:ItemQuality.Common
         },
@@ -55,7 +55,7 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                     health:0.3333333
                 }
             ],
-            reduction:0.15,
+            reduction:0.1,
             position:v2.new(0,0),
             quality:ItemQuality.Uncommon
         },
@@ -64,14 +64,14 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             defence:0,
             level:3,
             health:1600,
-            reduction:0.20,
+            reduction:0.15,
             position:v2.new(0,0),
             quality:ItemQuality.Rare
         },
         {
             idString:"lastman_helmet",
             defence:0,
-            level:4,
+            level:5,
             reduction:0.25,
             position:v2.new(0,0),
             quality:ItemQuality.Legendary
@@ -86,7 +86,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             defence:0,
             level:1,
             health:2000,
-            reduction:0.1,
+            reduction:0.05,
             tint:0xffffff,
             quality:ItemQuality.Common
         },
@@ -95,7 +95,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             defence:0,
             level:2,
             health:2300,
-            reduction:0.15,
+            reduction:0.05,
             tint:0x556655,
             quality:ItemQuality.Uncommon
         },
@@ -104,7 +104,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             defence:0,
             level:3,
             health:2600,
-            reduction:0.20,
+            reduction:0.15,
             tint:0x010011,
             quality:ItemQuality.Rare
         },
@@ -113,7 +113,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             defence:0,
             level:4,
             reflect_bullets:true,
-            reduction:0.25,
+            reduction:0.2,
             tint:0x5C322E,
             quality:ItemQuality.Mythic
         },

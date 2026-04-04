@@ -276,7 +276,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         CreateCrate("gold_crate",0xffd92b,{
             health:180,
             material:"iron",
+            reflect_bullets:true
+        }),
+        CreateCrate("platinum_crate",0x468edb,{
+            health:500,
+            material:"iron",
             reflect_bullets:true,
+            scale:{
+                destroy:0.75,
+            },
+            hitbox:RectHitbox2D.centered(v2.zero(),v2.new(3,3))
         }),
         {
             idString:"bush",

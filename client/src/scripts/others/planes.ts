@@ -1,7 +1,7 @@
 import { type Game } from "./game.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { PlaneData } from "common/scripts/packets/general_update.ts";
-import { CenterHotspot, Container2D, SoundInstance, Sprite2D, v2, Vec2 } from "common/engine/client.ts";
+import { CenterHotspot, Container2D, SoundInstance, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 
 export class Plane{
     container:Container2D=new Container2D()
@@ -14,6 +14,10 @@ export class Plane{
         this.sprite.destroy()
         this.destroyed=false
         if(this.sound)this.sound.stop()
+
+        if(this.game.planes[this.id]){
+            delete this.game.planes[this.id]
+        }
     }
     game:Game
     id:number=0
@@ -22,20 +26,17 @@ export class Plane{
         this.container.add_child(this.sprite)
         this.game.cam2d.addObject(this.container)
         this.container.zIndex=zIndexes.Planes
+        this.container.layer=Layers.Normal*1000
     }
     dest_pos?:Vec2
     initial=true
     update(dt:number){
         if(this.dest_pos){
-            this.container.position=v2.lerp(this.container.position,this.dest_pos,this.game.inter_global)
+            v2m.lerp(this.container.position,this.dest_pos,this.game.global_interpolation)
         }
     }
-    updateData(data:PlaneData){
-        if(this.game.save.get_variable("sv_game_interpolation")){
-            this.dest_pos=data.pos
-        }else{
-            this.container.position=data.pos
-        }
+    update_data(data:PlaneData){
+        this.dest_pos=data.pos
         if(data.complete){
             this.free()
         }

@@ -125,10 +125,9 @@ export class UiManager{
 
         this.players_name={}
 
-        ShowElement(this.content.menuD)
-        HideElement(this.content.gameD)
         HideElement(this.content.game_gui)
         HideElement(this.content.gameOver)
+
         this.enableCrosshair()
 
         this.game.inventory.clear()

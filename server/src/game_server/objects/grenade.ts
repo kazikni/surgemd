@@ -36,7 +36,7 @@ export class Grenade extends Projectile{
         super.update(dt)
 
         if(this.physical_data.zpos>0){
-            this.physical_data.zpos_speed=Numeric.clamp(this.physical_data.zpos_speed-this.def.gravity*dt,-10,10)
+            this.physical_data.zpos_speed=Numeric.clamp(this.physical_data.zpos_speed-this.def.gravity*dt,-3,3)
             this.physical_data.zpos=Numeric.clamp(this.physical_data.zpos+this.physical_data.zpos_speed*dt,0,1)
         }else{
             const vel = this.physical_data.velocity
@@ -75,6 +75,12 @@ export class Grenade extends Projectile{
         this.owner=args.owner
 
         if(this.def.explosion)this.projectile_data.explosion=this.game.definitions.explosions.getFromString(this.def.explosion)
+
+        if(this.def.call_airdrop){
+            this.game.add_timeout(()=>{
+                this.game.add_airdrop(this.position)
+            },this.def.call_airdrop.delay)
+        }
     }
     override encode(stream: NetStream, full: boolean): void {
         this.physical_encode(stream)

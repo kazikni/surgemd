@@ -1,9 +1,8 @@
 import { ease, random, Sound, Sprite2D, v2 } from "common/engine/client.ts";
-
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "common/scripts/packets/update_packet.ts";
-import { type Player } from "../gameObjects/player.ts";
 import { GameObject } from "../others/gameObject.ts";
+import { type Human } from "./human.ts";
 export class DamageSplashOBJ extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -41,15 +40,18 @@ export class DamageSplashOBJ extends GameObject{
 
         this.sprite.zIndex=zIndexes.DamageSplashs
     }
+    override set_layer(layer: number): void {
+        this.sprite.layer=layer
+    }
     async create(args: DamageSplash): Promise<void> {
         const color = args.shield
             ? (args.critical ? "#114e" : "#0f9e")
             : (args.critical ? "#ff0e" : "#fffe")
 
         
-        const player = this.manager.get_object(args.taker) as Player|undefined
-        if(player&&args.shield_break){
-            player.broke_shield()
+        const human = this.manager.get_object(args.taker) as Human|undefined
+        if(human&&args.shield_break){
+            human.broke_shield()
         }
 
         this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color)

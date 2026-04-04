@@ -363,8 +363,8 @@ export class Human extends MovingBody{
             return
         }
         const proj=this.game.add_grenade(this.position,this.grenade_holding!.def,this,this.layer)
-        proj.physical_data.zpos=0.5
-        proj.physical_data.zpos_speed=1.5
+        proj.physical_data.zpos=0.01
+        proj.physical_data.zpos_speed=1.8
         const limit=(this.grenade_holding.def.throw_max_speed??0)
         proj.push(Numeric.clamp(this.input.dist_to_pointer*limit,0,limit),this.physical_data.rotation,10)
         proj.fuse_delay=this.grenade_holding.time
@@ -378,8 +378,7 @@ export class Human extends MovingBody{
                 if(!this.inventory.weapons[this.inventory.weapon_idx]){
                     idx=0
                 }
-                this.inventory.weapon_idx=-1
-                this.inventory.set_weapon_index(idx)
+                this.inventory.set_weapon_index(idx,true)
             }
         }
         this.grenade_holding=undefined
@@ -992,7 +991,7 @@ export class Human extends MovingBody{
             if (!merged){
                 owner.splashes.push(splash)
             } else {
-                owner.splash_delay = 5
+                owner.splash_delay = 4
             }
         }
     }

@@ -43,7 +43,7 @@ export class BattleRoyaleSolo extends ModeManager{
                 limit:settings.players?.limit??100,
             },
             map:{
-                def:(settings.map?.def)?(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def):Maps["normal"],
+                def:(settings.map?.def===undefined)?Maps["normal"]:(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def),
                 seed:settings.map?.seed
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
@@ -104,13 +104,15 @@ export class BattleRoyaleSolo extends ModeManager{
             p.conn!.set_spectator(p.killed_by! as Player)
         },2)
         if(this.game.players.living_players.length<=1&&this.game.started){
-            for(const p of this.game.players.living_players){
-                if(p.conn)p.conn.send_game_over(true)
-            }
-            this.game.overed=true
             this.game.add_timeout(()=>{
                 this.game.finish()
             },3)
+        }
+    }
+
+    override on_finish(): void {
+        for(const p of this.game.players.living_players){
+            if(p.conn)p.conn.send_game_over(true)
         }
     }
 

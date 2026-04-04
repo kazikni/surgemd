@@ -8,16 +8,26 @@ export class Container2D extends Container2DObject{
     children:Container2DObject[]=[]
 
     dirty_zindex:boolean=true
+    dirty_children:boolean=true
     update_children:Container2DObject[]=[]
     visible_children:Container2DObject[]=[]
-    override has_update: boolean=true
+    override _has_update: boolean=true
 
     _hitbox:HitboxGroup2D=new HitboxGroup2D()
 
     object_group:boolean=false
 
     update_visibility(){
-        this.visible_children = this.children.filter(c => c.visible)
+        this.visible_children.length = 0;
+        this.update_children.length = 0;
+        for (let i = 0; i < this.children.length; i++) {
+            if (this.children[i].visible) {
+                this.visible_children.push(this.children[i]);
+            }
+            if (this.children[i].has_update) {
+                this.update_children.push(this.children[i]);
+            }
+        }
     }
     update_zindex(){
         this.children.sort((a,b)=>
@@ -25,21 +35,18 @@ export class Container2D extends Container2DObject{
             a.zIndex - b.zIndex ||
             a.id_on_parent - b.id_on_parent
         )
-
-        this.update_children = this.children.filter(c => c.has_update)
-        this.update_visibility()
+        this.dirty_children=true
     }
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources);
-        for (const c of this.update_children) c.update(dt,resources);
+        for (const c of this.update_children)c.update(dt,resources);
     }
     override update_real(): void {
         super.update_real()
-
         this._hitbox.hitboxes.length=0
         for (const c of this.children){
             c.update_real()
-
+            c.dirty_reals = false
             const hb=c.get_hitbox()
             if(hb)this._hitbox.hitboxes.push(hb)
         }
@@ -50,15 +57,16 @@ export class Container2D extends Container2DObject{
             this.update_zindex()
             this.dirty_zindex=false
         }
+        if(this.dirty_children){
+            this.update_visibility()
+            this.dirty_children=false
+        }
         if (!objects) objects = this.visible_children
 
         for (let o = 0; o < objects.length; o++) {
             const c = objects[o]
-            if (!c.visible)continue
-
             const hb = c.get_hitbox()
             if (hb!==undefined&&!hb.collidingWith(cam.hitbox))continue
-
             c.draw(cam)
         }
     }
@@ -73,7 +81,6 @@ export class Container2D extends Container2DObject{
         if(c.visible){
             this.visible_children.push(c)
         }
-
         c.update_real()
         this.dirty_zindex=true
     }

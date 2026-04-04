@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="175.659"
-   height="175.659"
-   viewBox="0 0 46.476 46.476"
+   width="131.74426"
+   height="131.74426"
+   viewBox="0 0 34.857004 34.857004"
    version="1.1"
    id="svg2"
    sodipodi:docname="45acp_outline.svg"
@@ -22,8 +22,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.6242697"
-     inkscape:cx="75.418509"
-     inkscape:cy="212.71098"
+     inkscape:cx="53.870364"
+     inkscape:cy="141.90993"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -41,7 +41,7 @@
        fy="10.857"
        r="10.964"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(-6.738 -6.738) scale(2.00223)" />
+       gradientTransform="matrix(1.5016725,0,0,1.5016725,1.1249999,1.1249999)" />
     <linearGradient
        id="a">
       <stop
@@ -55,10 +55,9 @@
     </linearGradient>
   </defs>
   <circle
-     style="fill:url(#b);stroke:#480e64;stroke-width:3;stroke-dasharray:none;stroke-opacity:1"
-     cx="15"
-     cy="15"
-     r="21.738"
-     transform="translate(8.238 8.238)"
+     style="fill:url(#b);stroke:#480e64;stroke-width:2.25;stroke-dasharray:none;stroke-opacity:1"
+     cx="17.428501"
+     cy="17.428501"
+     r="16.303501"
      id="circle2" />
 </svg>

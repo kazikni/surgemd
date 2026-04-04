@@ -2,7 +2,6 @@
 import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
-import { LevelDefinition } from "common/scripts/config/level_definition.ts";
 import { formatToHtml, GameSave } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";

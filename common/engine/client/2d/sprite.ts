@@ -104,7 +104,7 @@ export class Sprite2D extends Container2DObject{
 }
 export class AnimatedSprite2D extends Sprite2D{
     override object_type:string="animated_sprite2d"
-    override has_update: boolean=true
+    override _has_update: boolean=true
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources)
         if(this.frames){

@@ -75,7 +75,6 @@ export class KillAllEnemiesMode extends ModeManager {
     }
     override on_player_die(p: Player){
         p.conn?.send_game_over(false, p.killed_by?.id)
-        this.game.add_timeout(this.game.finish.bind(this.game),2)
     }
     override generate_map(): void {
         this.game.map.generate(this.settings.map.def)
@@ -108,17 +107,8 @@ export class LevelPlayer {
                 }else{
                     this.game.init(new BattleRoyaleSolo(level.mode as unknown as BattleRoyaleSettings))
                 }
-                this.game.signals.on("player_die",(e:any)=>{
-                    if(!e.player.is_bot){
-                        this.game.add_timeout(this.game.finish.bind(this.game),2)
-                    }
-                })
                 break
         }
-
-        this.game.signals.on("finish",(e:any)=>{
-            this.reset()
-        })
         this.game.signals.on("player_join",(e:any)=>{
             if(!e.player.is_bot){
                 if(this.level.player){
@@ -132,7 +122,6 @@ export class LevelPlayer {
         })
 
         if(level.definitions?.enemies)this.game.humans.enemies=level.definitions?.enemies
-        this.start()
     }
     start(){
         const level = this.level
@@ -154,7 +143,6 @@ export class LevelPlayer {
     }
     reset(){
         if(!this.game.running)this.game.mainloop()
-        this.game.started = false
         for(const p of Object.values(this.game.players.connected_players)){
             if(p.human){
                 if(p.human.is_player){
@@ -162,12 +150,7 @@ export class LevelPlayer {
                 }
             }
         }
-
-        this.game.humans.clear_npcs()
-        this.game.players.clear_bots()
-        this.game.clear_loot()
-        this.game.map.soft_reset()
-        this.game.deadzone.reset()
+        this.game.soft_reset()
     }
     enable_all(){
         for(const h of this.game.humans.humans){

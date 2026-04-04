@@ -454,7 +454,6 @@ export class CounterMD extends ModeManager {
         }
     }
     /* ---------------- MAP ---------------- */
-
     override generate_map(): void {
         this.game.map.generate(this.settings.map)
         this.game.deadzone.set_config(this.settings.deadzone)

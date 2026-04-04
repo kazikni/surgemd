@@ -277,33 +277,38 @@ export class MenuManager{
     game_over_messages(text:string[],music:Sound,music_player:ManipulativeSoundInstance,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
         return new Promise<void>((resolve) => {
             this.show_gameover_text()
-
             music_player.set(music)
-
             const elem = this.content.gameover_text_current
             elem.innerText=""
-
-            let idx = 0
             elem.style.transition=`opacity ${opacity_anim}ms linear`
-            const next = () => {
+            const tpm=time_per_message
+            const onmousedown=(_e:MouseEvent)=>{
+                time_per_message=tpm/4
+            }
+            const onmouseup=(_e:MouseEvent)=>{
+                time_per_message=tpm
+            }
+            this.content.gameover_text_screen.addEventListener("mousedown",onmousedown)
+            this.content.gameover_text_screen.addEventListener("mouseup",onmouseup)
+            const next = (idx:number) => {
                 if(idx >= text.length){
                     this.hide_gameover_text()
                     music_player.set(undefined)
+                    this.content.gameover_text_screen.removeEventListener("mousedown",onmousedown)
+                    this.content.gameover_text_screen.removeEventListener("mouseup",onmouseup)
                     resolve()
                     return
                 }
                 const msg = text[idx++]
                 elem.style.opacity = "0"
-
                 setTimeout(()=>{
                     elem.innerText = msg
                     elem.style.opacity = "1"
-
-                    setTimeout(next, time_per_message)
+                    setTimeout(next.bind(this,idx+1), time_per_message)
                 }, opacity_anim)
             }
 
-            setTimeout(()=>next(),1000)
+            setTimeout(()=>next(0),1000)
         })
     }
     game_popup(content:(ctx:GamePopupCTX)=>void):Promise<any>{
@@ -344,8 +349,10 @@ export class MenuManager{
             })
         })
     }
-    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
+    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,ambient_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
         ShowElement(this.content.history_overlay,true)
+        music_player.set(undefined)
+        ambient_player.set(undefined)
         const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
         sleep(1)
         for (const cmd of commands) {
@@ -399,7 +406,13 @@ export class MenuManager{
                     }
                     break
                 }
-
+                case HistoryCommandType.SetAmbient: {
+                    if (music_player && resources) {
+                        const s = resources.get_audio(cmd.ambient)
+                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                    }
+                    break
+                }
                 case HistoryCommandType.PlaySoundEffect: {
                     if (resources) {
                         const s = resources.get_audio(cmd.sfx)

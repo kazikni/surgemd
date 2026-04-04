@@ -12,13 +12,13 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.44,
+            ammo:0.4,
             weapon:0.65,
             accessory:0.65,
-            consumible:0.44,
-            equipament:0.44,
-            grenade:0.44,
-            skin:0.44
+            consumible:0.4,
+            equipament:0.4,
+            grenade:0.4,
+            skin:0.4
         }
     },
     collision:{
@@ -71,6 +71,7 @@ export enum zIndexes{
     BuildingsCeiling,
     ParachutePlayers,
     Rain1,
+    Parachute,
     Planes,
     DeadZone,
     Lights,
@@ -163,5 +164,6 @@ export enum GameObjectType{
     Explosion,
     Grenade,
     Vehicle,
-    Creature
+    Creature,
+    Parachute,
 }

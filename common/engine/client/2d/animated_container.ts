@@ -7,7 +7,7 @@ import { Container2D } from "./container.ts";
 
 export class AnimatedContainer2D extends Container2D{
     objects=new Map<string,Sprite2D>()
-    override has_update: boolean=true
+    override _has_update: boolean=true
 
     current_animations:{
         current_kf:number

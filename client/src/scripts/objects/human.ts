@@ -123,9 +123,9 @@ export class Human extends MovingBody{
                     image:`blood_splash_${random.int(1,3)}`,
                 },
                 direction:random.rad(),
-                life_time:0.5,
+                life_time:random.float(0.5,1),
                 position:position,
-                speed:random.float(0.1,0.5),
+                speed:random.float(0.1,0.4),
                 angle:random.rad(),
                 tint:ColorM.rgba(170,10,40),
                 to:{
@@ -160,13 +160,13 @@ export class Human extends MovingBody{
                     image:`blood_splash_${random.int(1,3)}`,
                 },
                 direction:random.rad(),
-                life_time:1,
+                life_time:random.float(1,2),
                 position:this.position,
-                speed:random.float(2,4),
+                speed:random.float(1,2),
                 angle:random.rad(),
                 tint:ColorM.rgba(170,10,40),
                 to:{
-                    scale:3,
+                    scale:random.float(2,5),
                     tint:ColorM.rgba(170,10,40,0)
                 },
                 zIndex:zIndexes.Particles
@@ -187,13 +187,13 @@ export class Human extends MovingBody{
                     image:`player_gore_${random.int(1,2)}`,
                 },
                 direction:random.rad(),
-                life_time:1,
+                life_time:random.float(1,2),
                 position:this.position,
                 speed:random.float(5,6),
                 angle:random.rad(),
                 tint:ColorM.default.white,
                 to:{
-                    scale:1.7,
+                    scale:random.float(1.7,3),
                     tint:ColorM.rgba(255,255,255,0)
                 },
                 zIndex:zIndexes.Particles
@@ -472,6 +472,7 @@ export class Human extends MovingBody{
     }
     override on_layer_set(layer: number): void {
         this.container.layer=layer
+        this.sprites.emote_container.layer=layer
     }
     override create(_args: Record<string, void>): void {
         this.base_hitbox=new CircleHitbox2D(v2.new(0,0),GameConstants.player.radius)
@@ -529,7 +530,7 @@ export class Human extends MovingBody{
         this.sprites.emote_bg.set_frame({
             image:"emote_background",
             hotspot:CenterHotspot,
-            scale:1.5
+            scale:2
         },this.game.resources)
         this.sprites.emote_sprite.transform_frame({
             hotspot:CenterHotspot,

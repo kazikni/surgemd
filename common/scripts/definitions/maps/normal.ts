@@ -240,18 +240,26 @@ export const NormalMap:MapDef={
             {weight:0.25,count:4,table:"special_loot"},
         ],
         "iron_crate":[
-            [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
+            [{weight:10,table:"special_ammos",count:2}],
             [{weight:10,table:"consumibles"},{weight:1,table:""}],
             [{weight:1,table:"airdrop_equipments"}],
             [{weight:1,table:"mythic_guns"}],
             [{weight:5,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
-            [{weight:10,table:"special_ammos",count:2},{weight:1,table:""}],
+            [{weight:10,table:"special_ammos",count:2}],
             [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
             [{weight:10,table:"airdrop_equipments"},{weight:1,count:2,table:"airdrop_equipments"}],
             [{weight:10,table:"legendary_guns"},{weight:1,table:"mythic_guns"}],
             [{weight:1,table:"melees"}],
+        ],
+        "platinum_crate":[
+            [{weight:1,table:"special_ammos",count:4}],
+            [{weight:1,table:"consumibles",count:7}],
+            [{weight:1,count:6,table:"airdrop_equipments"}],
+            [{weight:1,count:7,table:"mythic_guns"}],
+            [{weight:1,count:2,table:"legendary_guns"}],
+            [{weight:1,count:3,table:"melees"}],
         ],
         //Animals
         "animal_medium":[

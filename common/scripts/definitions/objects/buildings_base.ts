@@ -51,7 +51,7 @@ const Templates={
             
         ],
         spawnMode:Spawn.grass,
-        reflect_bullets:false,
+        reflect_bullets:true,
         loots:[
             {position:v2.new(-1,0),table:"ground_loot"},
             {position:v2.new(1,0),table:"ground_loot"}
@@ -96,7 +96,7 @@ const Templates={
             
         ],
         spawnMode:Spawn.grass,
-        reflect_bullets:false,
+        reflect_bullets:true,
         loots:[
             {position:v2.new(-1,0),table:"ground_loot"},
             {position:v2.new(1,0),table:"ground_loot"}

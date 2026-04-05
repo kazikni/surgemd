@@ -204,7 +204,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:45,
             bullet:{
                 def:{
-                    damage:9,
+                    damage:11,
                     radius:0.02,
                     range:90,
                     falloff:0.8,
@@ -251,7 +251,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:25,
             bullet:{
                 def:{
-                    damage:10,
+                    damage:11,
                     radius:0.02,
                     range:90,
                     falloff:0.8,
@@ -299,7 +299,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:25,
             bullet:{
                 def:{
-                    damage:50,
+                    damage:55,
                     radius:0.02,
                     range:130,
                     falloff:0.7,
@@ -341,7 +341,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Rare,
             bullet:{
                 def:{
-                    damage:7,
+                    damage:8,
                     radius:0.014,
                     range:100,
                     speed:40,
@@ -381,7 +381,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Rare,
             bullet:{
                 def:{
-                    damage:7,
+                    damage:8,
                     radius:0.014,
                     range:102,
                     falloff:0.7,
@@ -427,7 +427,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Epic,
             bullet:{
                 def:{
-                    damage:8,
+                    damage:10,
                     radius:0.014,
                     range:102,
                     falloff:0.7,
@@ -467,7 +467,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Uncommon,
             bullet:{
                 def:{
-                    damage:6.25,
+                    damage:7,
                     radius:0.014,
                     range:92,
                     falloff:0.9,
@@ -504,7 +504,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:5,
+                    damage:6,
                     radius:0.014,
                     range:45,
                     criticalMult:1.5,
@@ -545,7 +545,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Rare,
             bullet:{
                 def:{
-                    damage:5,
+                    damage:6,
                     radius:0.014,
                     range:35,
                     speed:34,
@@ -585,7 +585,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:38,
+                    damage:40,
                     radius:0.02,
                     range:110,
                     falloff:0.8,
@@ -635,7 +635,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:30,
             bullet:{
                 def:{
-                    damage:42,
+                    damage:45,
                     radius:0.025,
                     range:115,
                     falloff:0.7,
@@ -681,7 +681,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:25,
             bullet:{
                 def:{
-                    damage:90,
+                    damage:99,
                     radius:0.02,
                     range:130,
                     falloff:0.7,
@@ -727,7 +727,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Epic,
             bullet:{
                 def:{
-                    damage:33,
+                    damage:37,
                     radius:0.02,
                     range:105,
                     falloff:0.8,
@@ -773,7 +773,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Epic,
             bullet:{
                 def:{
-                    damage:30,
+                    damage:34,
                     radius:0.02,
                     range:100,
                     falloff:0.8,
@@ -821,7 +821,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Rare,
             bullet:{
                 def:{
-                    damage:7,
+                    damage:8,
                     radius:0.014,
                     speed:24,
                     range:25,
@@ -868,7 +868,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireMode:FireMode.Single,
             bullet:{
                 def:{
-                    damage:5.7,
+                    damage:6,
                     radius:0.012,
                     speed:32,
                     range:54,
@@ -961,7 +961,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:11,
+                    damage:25,
                     radius:0.014,
                     range:180,
                     speed:50,
@@ -1001,7 +1001,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Legendary,
             bullet:{
                 def:{
-                    damage:10,
+                    damage:14,
                     obstacleMult:1.5,
                     radius:0.014,
                     range:100,

@@ -2,13 +2,12 @@ import { BulletDef, BulletReflection, DamageReason } from "common/scripts/defini
 import { Obstacle } from "./obstacle.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { CircleHitbox2D, NetStream, Numeric, OverlapCollision2D, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 
-const SubSteps=3
 export class Bullet extends ServerGameObject{
     string_type:string="bullet"
     number_type:number=GameObjectType.Bullet
@@ -51,87 +50,80 @@ export class Bullet extends ServerGameObject{
         this.old_position=v2.clone(this.position)
         this.tticks+=dt
         const disT=v2.distance(this.initial_position,this.position)/this.max_distance
-        dt/=SubSteps
-        for(let s=0;s<SubSteps;s++){
-            v2m.add_component(this.position,this.velocity.x*dt,this.velocity.y*dt)
-            this.manager.cells.updateObject(this)
-            const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
-            for(const obj of objs){
-                if(this.destroyed)break
-                switch(obj.number_type){
-                    case GameObjectType.Human:{
-                        if(!(obj as Human).health_data.dead&&(!this.owner||((obj as Human).id===this.owner.id&&this.reflectionCount>0)||(obj as Human).id!==this.owner.id)&&!(obj as Human).parachute){
-                            const col1=(obj as Obstacle).hitbox.overlapCollision(this.hitbox)
-                            const main_col:OverlapCollision2D[]=[...col1]
-                            if(main_col.length===0)continue
+        v2m.add_component(this.position,this.velocity.x*dt,this.velocity.y*dt)
 
-                            const dmg:number=this.damage
-                            *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
-                            *(this.critical?(this.def.criticalMult??1.25):1);
-                            (obj as Human).damage({
-                                amount:dmg,
-                                owner:this.owner,
-                                reason:DamageReason.Human,
-                                position:v2.clone(this.position),
-                                critical:this.critical,
-                                source:this.source as unknown as DamageSourceDef
-                            })
-                            this.on_hit()
-                            s=SubSteps
-                            if(this.def.effect){
-                                for(const e of this.def.effect){
-                                    (obj as Human).side_effect({
-                                        type:SideEffectType.AddEffect,
-                                        duration:e.time,
-                                        effect:e.id
-                                    })
-                                }
+        this.manager.cells.updateObject(this)
+        const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
+        for(const obj of objs){
+            if(this.destroyed)break
+            switch(obj.number_type){
+                case GameObjectType.Human:{
+                    if(!(obj as Human).health_data.dead&&(!this.owner||((obj as Human).id===this.owner.id&&this.reflectionCount>0)||(obj as Human).id!==this.owner.id)&&!(obj as Human).parachute){
+                        const col1=(obj as Obstacle).hitbox.overlapLine(this.old_position,this.position)
+                        if(!col1)continue
+                        const dmg:number=this.damage
+                        *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
+                        *(this.critical?(this.def.criticalMult??1.25):1);
+                        (obj as Human).damage({
+                            amount:dmg,
+                            owner:this.owner,
+                            reason:DamageReason.Human,
+                            position:v2.clone(this.position),
+                            critical:this.critical,
+                            source:this.source as unknown as DamageSourceDef
+                        })
+                        this.on_hit()
+                        if(this.def.effect){
+                            for(const e of this.def.effect){
+                                (obj as Human).side_effect({
+                                    type:SideEffectType.AddEffect,
+                                    duration:e.time,
+                                    effect:e.id
+                                })
                             }
+                        }
 
-                            if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
-                                this.reflect(main_col[0].dir)
-                            }
-                            break
+                        if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
+                            this.reflect(col1.dir)
                         }
                         break
                     }
-                    /*case GameObjectType.Creature:{
-                        if((obj as Creature).hitbox&&!(obj as Creature).dead&&(this.hitbox.collidingWith(obj.hitbox)||obj.hitbox.colliding_with_line(this.old_position,this.position))){
-                            const dmg:number=this.damage
-                            *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
-                            *(this.critical?(this.defs.criticalMult??1.25):1);
-                            (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.clone(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                            this.on_hit()
-                            s=SubSteps
-                            break
-                        }
-                        break
-                    }*/
-                    case GameObjectType.Obstacle:
-                    case GameObjectType.Building:
-                        if((obj as StaticBody).physical_data.no_bullet_collision)break
-                        if(obj.hitbox){
-                            const main_col:OverlapCollision2D[]=[/*...obj.hitbox.overlapLine(this.hitbox),*/...obj.hitbox.overlapCollision(this.hitbox)]
-                            if(main_col.length===0)continue
-                            if(((obj as StaticBody).physical_data.reflect_bullet||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.def.on_hit_explosion){
-                                this.reflect(main_col[0].dir)
-                            }
-                            this.on_hit()
-                            s=SubSteps
-
-                            const dmg:number=this.damage;
-                            (obj as StaticBody).damage({
-                                amount:dmg,
-                                resistence:0,
-                                owner:this.owner,
-                                reason:DamageReason.Human,
-                                position:v2.clone(this.position),
-                                critical:this.critical,
-                                source:this.source as unknown as DamageSourceDef
-                            })
-                        }
-                        break
+                    break
                 }
+                /*case GameObjectType.Creature:{
+                    if((obj as Creature).hitbox&&!(obj as Creature).dead&&(this.hitbox.collidingWith(obj.hitbox)||obj.hitbox.colliding_with_line(this.old_position,this.position))){
+                        const dmg:number=this.damage
+                        *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
+                        *(this.critical?(this.defs.criticalMult??1.25):1);
+                        (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.clone(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
+                        this.on_hit()
+                        s=SubSteps
+                        break
+                    }
+                    break
+                }*/
+                case GameObjectType.Obstacle:
+                case GameObjectType.Building:
+                    if((obj as StaticBody).physical_data.no_bullet_collision)break
+                    if(obj.hitbox){
+                        const col1=obj.hitbox.overlapLine(this.old_position,this.position)
+                        if(!col1)continue
+                        if(((obj as StaticBody).physical_data.reflect_bullet||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.def.on_hit_explosion){
+                            this.reflect(col1.dir)
+                        }
+                        this.on_hit()
+                        const dmg:number=this.damage;
+                        (obj as StaticBody).damage({
+                            amount:dmg,
+                            resistence:0,
+                            owner:this.owner,
+                            reason:DamageReason.Human,
+                            position:v2.clone(this.position),
+                            critical:this.critical,
+                            source:this.source as unknown as DamageSourceDef
+                        })
+                    }
+                    break
             }
         }
         if(v2.distance(this.initial_position,this.position)>this.max_distance){

@@ -6,8 +6,12 @@ export interface SkinDef extends Definition{
     frame?:{
         base?:string
         base_tint?:number
+        chest?:string
+        chest_tint?:number
         arm?:string
         arm_tint?:string
+        leg?:string
+        leg_tint?:string
         mount?:{
             normal:string
             closed:string

@@ -585,7 +585,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:40,
+                    damage:42,
                     radius:0.02,
                     range:110,
                     falloff:0.8,

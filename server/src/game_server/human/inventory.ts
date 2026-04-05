@@ -770,7 +770,7 @@ export class GInventory extends GInventoryBase<LItem>{
         this.accessorys.clear()
         for(let i=0;i<5;i++){
             for(const loot of l){
-                loot.update(1/60)
+                loot.update(1/30)
             }
         }
         for(const loot of l){

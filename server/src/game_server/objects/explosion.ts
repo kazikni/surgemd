@@ -53,7 +53,15 @@ export class Explosion extends ServerGameObject{
                     case GameObjectType.Building:
                     case GameObjectType.Human:{
                         if(obj.hitbox.collidingWith(this.hitbox)){
-                            (obj as Human|StaticBody).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.clone(obj.position),critical:false})
+                            (obj as Human|StaticBody).damage({
+                                amount:this.defs.damage,
+                                reason:DamageReason.Explosion,
+                                source:this.source??this.defs,
+                                owner:this.owner,
+                                position:v2.clone(obj.position),
+                                critical:false,
+                                direction:v2.lookTo(obj.position,this.position)
+                            })
                         }
                         break
                     }

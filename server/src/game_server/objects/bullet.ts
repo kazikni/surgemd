@@ -70,7 +70,8 @@ export class Bullet extends ServerGameObject{
                             reason:DamageReason.Human,
                             position:v2.clone(this.position),
                             critical:this.critical,
-                            source:this.source as unknown as DamageSourceDef
+                            source:this.source as unknown as DamageSourceDef,
+                            direction:Math.atan2(col1.dir.y,col1.dir.x)
                         })
                         this.on_hit()
                         if(this.def.effect){
@@ -120,7 +121,8 @@ export class Bullet extends ServerGameObject{
                             reason:DamageReason.Human,
                             position:v2.clone(this.position),
                             critical:this.critical,
-                            source:this.source as unknown as DamageSourceDef
+                            source:this.source as unknown as DamageSourceDef,
+                            direction:Math.atan2(col1.dir.y,col1.dir.x)
                         })
                     }
                     break

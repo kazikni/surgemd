@@ -210,6 +210,7 @@ export class Human extends MovingBody{
 
     killed_by?:Human
 
+    downed_time:number=0
     downed_by?:Human
     downed_by_source?:DamageSourceDef
 
@@ -316,6 +317,7 @@ export class Human extends MovingBody{
                     critical:false,
                     position:this.position,
                     reason:DamageReason.SideEffect,
+                    direction:0,
                 })
                 break
             case SideEffectType.Heal:
@@ -594,6 +596,7 @@ export class Human extends MovingBody{
                         reason:DamageReason.Abstinence,
                         position:this.position,
                         critical:false,
+                        direction:0,
                     })
                 }else{
                     this.health_data.boost_time-=dt
@@ -611,7 +614,8 @@ export class Human extends MovingBody{
                         amount:this.health_data.health,
                         critical:true,
                         position:this.position,
-                        reason:DamageReason.Abstinence
+                        reason:DamageReason.Abstinence,
+                        direction:0,
                     })
                 }
                 if(this.health_data.boost_time<=0){
@@ -734,14 +738,19 @@ export class Human extends MovingBody{
         }
 
         if(this.health_data.downed){
-            this.piercing_damage({
-                amount:1*dt,
-                critical:false,
-                position:this.position,
-                reason:DamageReason.Bleend,
-                owner:this.downed_by,
-                source:this.downed_by_source
-            })
+            this.downed_time+=dt
+            if(this.downed_time>=2){
+                this.downed_time=0
+                this.piercing_damage({
+                    amount:2,
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.Bleend,
+                    owner:this.downed_by,
+                    source:this.downed_by_source,
+                    direction:0,
+                })
+            }
         }
         //Update Inventory
         this.inventory.update(dt)
@@ -758,6 +767,7 @@ export class Human extends MovingBody{
                 position:this.position,
                 owner:undefined,
                 reason:DamageReason.DeadZone,
+                direction:0,
             })
         }
 
@@ -1004,6 +1014,10 @@ export class Human extends MovingBody{
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Null]
+
+        this.push(-80,params.direction)
+
+        this.health_data.invensibility_time=1
 
         this.inventory.set_weapon_index(0)
     }

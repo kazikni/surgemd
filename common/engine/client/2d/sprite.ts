@@ -115,6 +115,9 @@ export class AnimatedSprite2D extends Sprite2D{
                 this.current_frame=Numeric.loop(this.current_frame+1,0,this.frames.length)
                 this.set_frame(this.frames[this.current_frame],resources)
             }
+        }else{
+            this.current_delay=0
+            this.current_frame=-1
         }
     }
 }

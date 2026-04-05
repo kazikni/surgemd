@@ -57,7 +57,8 @@ export class Obstacle extends StaticBody{
                 position:this.position,
                 reason:DamageReason.Human,
                 owner:user,
-                critical:false
+                critical:false,
+                direction:0,
             })
         }
         if(this.def.expanded_behavior){
@@ -214,6 +215,7 @@ export class Obstacle extends StaticBody{
     }
     die(params:DamageParams){
         if(this.health_data.dead)return
+        this.health_data.health===0
         this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)

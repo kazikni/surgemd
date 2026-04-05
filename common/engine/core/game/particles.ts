@@ -114,13 +114,16 @@ export class ParticlesManager2D<Particle extends Particle2D=Particle2D>{
     }
     clear(){
         for(let i=0;i<this.particles.length;i++){
-            if(!this.particles[i]){
-                this.particles[i].destroyed=true
+            if(!this.particles[i].destroyed){
                 this.particles[i].on_destroy()
+                this.particles[i].destroyed=true
             }
         }
         this.particles.length=0
-        this.emitters.length=0
+        for(let i=0;i<this.emitters.length;i++){
+            this.emitters[i].particles.length=0
+            this.emitters[i].current_delay=0
+        }
     }
 }
 

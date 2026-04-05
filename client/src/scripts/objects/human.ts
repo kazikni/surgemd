@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, KeyFrameSpriteDef, Light2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, SoundInstance, SoundOptions, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AnimationInstance, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, KeyFrameSpriteDef, Light2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, SoundInstance, SoundOptions, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GraphicsDConfig } from "../others/config.ts"
@@ -50,7 +50,7 @@ export class Human extends MovingBody{
     ////////////////////////////
     // Visual                 //
     ////////////////////////////
-    skin!:string
+    skin!:SkinDef
     container!:AnimatedContainer2D
     sprites!:{
         body:Sprite2D,
@@ -60,6 +60,9 @@ export class Human extends MovingBody{
         backpack:Sprite2D,
         left_arm:Sprite2D,
         right_arm:Sprite2D,
+        chest:Sprite2D,
+        left_leg:Sprite2D,
+        right_leg:Sprite2D,
         weapon:Sprite2D,
         weapon2:Sprite2D,
         muzzle_flash:Sprite2D,
@@ -67,7 +70,6 @@ export class Human extends MovingBody{
         emote_container:Container2D,
         emote_bg:Sprite2D,
         emote_sprite:Sprite2D
-        legs:Sprite2D
     }
     anims:{
         fire?:{
@@ -80,8 +82,10 @@ export class Human extends MovingBody{
         consumible_particles?:ParticlesEmitter2D<ClientParticle2D>
         mount_anims:KeyFrameSpriteDef[]
         mount_open:string
+        mount_normal:string
         emote?:Tween<Vec2>
-    }={consumible_particle:"healing_particle",mount_anims:[],mount_open:""}
+        walk_anim?:AnimationInstance
+    }={consumible_particle:"healing_particle",mount_anims:[],mount_open:"",mount_normal:""}
     sound_animation:{
         animation?:SoundInstance
         footsteps?:SoundInstance
@@ -92,6 +96,13 @@ export class Human extends MovingBody{
 
     current_weapon?:WeaponDef
     dead:boolean=true
+    _happy:boolean=true
+    get happy():boolean{
+        return this._happy
+    }
+    set happy(val:boolean){
+        this._happy=val
+    }
 
     shield:boolean=false
 
@@ -205,6 +216,25 @@ export class Human extends MovingBody{
 
         this.container.destroy()
         this.destroy()
+    }
+    downed:boolean=false
+    on_downed(){
+        if(this.downed)return
+        this.downed=true
+        this.sprites.left_leg.visible=true
+        this.sprites.right_leg.visible=true
+        this.sprites.chest.visible=true
+        this.happy=false
+        this.reset_anim()
+    }
+    on_help_up(){
+        if(!this.downed)return
+        this.downed=false
+        this.sprites.left_leg.visible=false
+        this.sprites.right_leg.visible=false
+        this.sprites.chest.visible=false
+        this.happy=true
+        this.reset_anim()
     }
 
     current_animation?:PlayerAnimation
@@ -336,22 +366,46 @@ export class Human extends MovingBody{
         this.container.update_zindex()
     }
     set_skin(skin:SkinDef){
-        if(this.skin==skin.idString)return
-        this.skin=skin.idString
+        if(this.skin==skin)return
+        this.skin=skin
 
         const bf=skin.frame?.base??(skin.idString+"_body")
+        const cf=skin.frame?.chest??(skin.idString+"_chest")
         this.sprites.body.frame=this.game.resources.get_sprite(bf)
         const arf=skin.frame?.arm??(skin.idString+"_arm")
-        this.sprites.left_arm.frame=
-        this.sprites.right_arm.frame=this.game.resources.get_sprite(arf)
+        const lrf=skin.frame?.leg??(skin.idString+"_leg")
 
+        this.sprites.left_arm.frame=this.game.resources.get_sprite(arf)
+        this.sprites.right_arm.frame=this.game.resources.get_sprite(arf)
+        this.sprites.left_arm.visible=false
+        this.sprites.right_arm.visible=false
         this.sprites.left_arm.zIndex=1
         this.sprites.right_arm.zIndex=1
 
-        this.sprites.left_arm.visible=false
-        this.sprites.right_arm.visible=false
+        this.sprites.left_leg.frame=this.game.resources.get_sprite(lrf)
+        this.sprites.right_leg.frame=this.game.resources.get_sprite(lrf)
+
+        this.sprites.left_leg.position=v2.new(-0.75,-0.22)
+        this.sprites.right_leg.position=v2.new(-0.75,0.22)
+        this.sprites.left_leg.scale=v2.new(1.33333,1.33333)
+        this.sprites.right_leg.scale=v2.new(1.33333,1.33333)
+        this.sprites.left_leg.rotation=0.1
+        this.sprites.right_leg.rotation=-0.1
+        this.sprites.left_leg.visible=false
+        this.sprites.right_leg.visible=false
+        this.sprites.left_leg.zIndex=1
+        this.sprites.right_leg.zIndex=1
+
+        this.sprites.chest.frame=this.game.resources.get_sprite(cf)
+        this.sprites.chest.position=v2.new(-0.25,0)
+        this.sprites.chest.scale=v2.new(1.33333,1.33333)
+        this.sprites.chest.visible=false
+        this.sprites.chest.zIndex=1
 
         this.sprites.body.hotspot=v2.new(0.5,0.5)
+        this.sprites.chest.hotspot=v2.new(0.5,0.5)
+        this.sprites.left_leg.hotspot=v2.new(0,0.5)
+        this.sprites.right_leg.hotspot=v2.new(0,0.5)
         this.sprites.helmet.hotspot=v2.new(0.5,0.5)
         this.sprites.backpack.hotspot=v2.new(1,0.5)
         this.sprites.weapon.hotspot=v2.new(0.5,0.5)
@@ -361,21 +415,20 @@ export class Human extends MovingBody{
 
         this.sprites.weapon.zIndex=2
 
-        const ms1=skin.frame?.mount?.normal??"player_mounth_1_1"
-        const ms2=skin.frame?.mount?.closed??"player_mounth_1_2"
-        this.anims.mount_open=ms2
-        this.sprites.mounth.frame=this.game.resources.get_sprite(ms1)
+        this.anims.mount_normal=skin.frame?.mount?.normal??"player_mounth_1_1"
+        this.anims.mount_open=skin.frame?.mount?.closed??"player_mounth_1_2"
+        this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_normal)
         this.anims.mount_anims.length=0
-        if(!skin.animation?.no_auto_talk){
-            this.anims.mount_anims.push({delay:random.float(8,14),image:ms1})
+        if(!this.skin.animation?.no_auto_talk){
+            this.anims.mount_anims.push({delay:random.float(8,14),image:this.anims.mount_normal})
             const c=random.int(10,20)
             for(let i=0;i<c;i++){
                 this.anims.mount_anims.push(
-                    {delay:0.15,image:ms1},
-                    {delay:0.15,image:ms2}
+                    {delay:0.15,image:this.anims.mount_normal},
+                    {delay:0.15,image:this.anims.mount_open}
                 )
             }
-            this.anims.mount_anims.push({delay:random.float(1,5),image:ms1})
+            this.anims.mount_anims.push({delay:random.float(1,5),image:this.anims.mount_normal})
         }
         this.sprites.mounth.frames=this.anims.mount_anims
         if(!skin.animation?.no){
@@ -386,94 +439,10 @@ export class Human extends MovingBody{
             }
         }
 
-        /*const time=0.01
-        this.sprites.legs.frames=[
-            {
-                image:"",
-                delay:time,
-                scale2:v2(1.5,1.5)
-            },
-            {
-                image:"default_skin_leg_1",
-                delay:time,
-            },
-            {
-                image:"default_skin_leg_2",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_3",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_4",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_5",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_4",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_3",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_2",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_1",
-                delay:time
-            },
-            {
-                image:"",
-                delay:time,
-            },
-            {
-                image:"default_skin_leg_1",
-                delay:time,
-                scale2:v2(1.5,-1.5)
-            },
-            {
-                image:"default_skin_leg_2",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_3",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_4",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_5",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_4",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_3",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_2",
-                delay:time
-            },
-            {
-                image:"default_skin_leg_1",
-                delay:time
-            },
-        ]*/
         this.container.update_zindex()
 
         this.update_weapon(false)
+        this.reset_anim()
     }
     override on_layer_set(layer: number): void {
         this.container.layer=layer
@@ -491,11 +460,13 @@ export class Human extends MovingBody{
             vest:this.container.add_sprite("vest",{zIndex:0,scale:1.333333,hotspot:v2.new(.5,.5)}),
             left_arm:this.container.add_sprite("left_arm"),
             right_arm:this.container.add_sprite("right_arm"),
+            left_leg:this.container.add_sprite("left_leg"),
+            right_leg:this.container.add_sprite("right_leg"),
+            chest:this.container.add_sprite("chest"),
             muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2.new(0,.5)}),
             parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.new(0.5,0.5),visible:false}),
             weapon:this.container.add_sprite("weapon"),
             weapon2:this.container.add_sprite("weapon2"),
-            legs:this.container.add_animated_sprite("legs",{zIndex:-1,scale:1.333333,position:v2.new(0,0),hotspot:v2.new(0.5,0.5)}),
             emote_container:new Container2D(),
             emote_bg:new Sprite2D(),
             emote_sprite:new Sprite2D()
@@ -559,6 +530,32 @@ export class Human extends MovingBody{
         super.update(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
+        /*if(!this.anims.walk_anim||this.anims.walk_anim.destroyed)this.anims.walk_anim=this.container.play_animation([
+            {
+                actions:[
+                    {
+                        type:"sprite",
+                        fuser:"left_leg",
+                        rotation:-0.1,
+                        position:v2.new(-0.2,-0.2),
+                    },
+                ],
+                time:0
+            },
+            {
+                actions:[
+                    {
+                        type:"tween",
+                        fuser:"left_leg",
+                        to:{
+                            position:v2.new(-0.56,-0.2),
+                        },
+                        yoyo:true
+                    }
+                ],
+                time:0.1
+            }
+        ],undefined,true)*/
         if(this.distance_walked>0){
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
 
@@ -677,6 +674,19 @@ export class Human extends MovingBody{
             if(this.anims.fire.right_arm)this.anims.fire.right_arm.kill()
             if(this.anims.fire.weapon)this.anims.fire.weapon.kill()
             this.anims.fire=undefined
+        }
+        if(this.happy){
+            this.sprites.mounth.scale.x=1.4
+            this.sprites.mounth.frames=this.anims.mount_anims
+        }else{
+            this.sprites.mounth.scale.x=-1.4
+            this.sprites.mounth.frames=undefined
+            this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_normal)
+        }
+        if(this.downed){
+            this.sprites.left_arm.position=DefaultFistRig.left!.position
+            this.sprites.right_arm.position=DefaultFistRig.right!.position
+            this.sprites.weapon.visible=false
         }
     }
     emote_time:number=0
@@ -1163,6 +1173,11 @@ export class Human extends MovingBody{
                 this.current_weapon=current_weapon
                 this.update_weapon(true)
             }else if(swithced)this.update_weapon(true)
+        }
+        if(downed){
+            this.on_downed()
+        }else if(this.downed&&!downed){
+            this.on_help_up()
         }
     }
 }

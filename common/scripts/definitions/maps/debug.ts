@@ -59,5 +59,16 @@ export const DebugMap:MapDef={
                 x+=5
             }
         }
+        for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
+            const o=map.game.add_vehicle(v2.new(x,y),def,Layers.Normal)
+            i++
+            if(i>=15){
+                i=0
+                x=map.size.x/2
+                y-=5
+            }else{
+                x+=5
+            }
+        }
     },
 }

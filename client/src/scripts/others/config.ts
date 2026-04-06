@@ -41,7 +41,6 @@ export const ConfigCasters=Object.freeze({
     sv_game_friendly_fire:Casters.toBoolean,
     sv_game_interpolation:Casters.toBoolean,
     sv_game_client_rot:Casters.toBoolean,
-    sv_game_ping:Casters.toInt,
 
     sv_mobile_auto_pickup:Casters.toBoolean,
 

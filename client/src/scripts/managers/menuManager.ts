@@ -2,7 +2,7 @@ import { api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, formatToHtml, GameSave, HideElement, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
+import { FileManager, formatToHtml, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -278,37 +278,55 @@ export class MenuManager{
         return new Promise<void>((resolve) => {
             this.show_gameover_text()
             music_player.set(music)
+
             const elem = this.content.gameover_text_current
             elem.innerText=""
             elem.style.transition=`opacity ${opacity_anim}ms linear`
-            const tpm=time_per_message
-            const onmousedown=(_e:MouseEvent)=>{
-                time_per_message=tpm/4
-            }
-            const onmouseup=(_e:MouseEvent)=>{
-                time_per_message=tpm
-            }
+
+            const baseTime = time_per_message
+            let speed = 1
+            let runId = 0
+
+            const onmousedown=()=> speed = 0.2
+            const onmouseup=()=> speed = 1
+
             this.content.gameover_text_screen.addEventListener("mousedown",onmousedown)
             this.content.gameover_text_screen.addEventListener("mouseup",onmouseup)
+
             const next = (idx:number) => {
                 if(idx >= text.length){
                     this.hide_gameover_text()
                     music_player.set(undefined)
+
                     this.content.gameover_text_screen.removeEventListener("mousedown",onmousedown)
                     this.content.gameover_text_screen.removeEventListener("mouseup",onmouseup)
+
                     resolve()
                     return
                 }
-                const msg = text[idx++]
+
+                const currentRun = ++runId
+                const msg = text[idx]
+
                 elem.style.opacity = "0"
+
                 setTimeout(()=>{
+                    if(currentRun !== runId) return
+
                     elem.innerText = msg
                     elem.style.opacity = "1"
-                    setTimeout(next.bind(this,idx+1), time_per_message)
+
+                    const delay = baseTime * speed
+
+                    setTimeout(()=>{
+                        if(currentRun !== runId) return
+                        next(idx+1)
+                    }, delay)
+
                 }, opacity_anim)
             }
 
-            setTimeout(()=>next(0),1000)
+            requestAnimationFrame(()=>next(0))
         })
     }
     game_popup(content:(ctx:GamePopupCTX)=>void):Promise<any>{
@@ -349,6 +367,18 @@ export class MenuManager{
             })
         })
     }
+    history_buffer:ImageBuffer=new ImageBuffer()
+    async preload_history_frames(commands: HistoryCommand[], max = 6){
+        let count = 0
+        for(const cmd of commands){
+            if(cmd.type === HistoryCommandType.SetFrame){
+                this.set_loading_current(cmd.frame)
+                await this.history_buffer.load(cmd.frame)
+                count++
+                if(count >= max) break
+            }
+        }
+    }
     async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,ambient_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
         ShowElement(this.content.history_overlay,true)
         music_player.set(undefined)
@@ -370,12 +400,26 @@ export class MenuManager{
                     break
                 }
                 case HistoryCommandType.SetFrame: {
+                    const currentIndex = commands.indexOf(cmd)
+
+                    for (let i = 1; i <= 3; i++) {
+                        const next = commands[currentIndex + i]
+                        if (next?.type === HistoryCommandType.SetFrame) {
+                            this.history_buffer.preload(next.frame)
+                        }
+                    }
+
                     this.content.history_frame.style.opacity = "0"
-                    await sleep(0.75)
-                    this.content.history_frame.src = cmd.frame
+                    await sleep(0.4)
+
+                    const img = await this.history_buffer.load(cmd.frame)
+
+                    this.content.history_frame.src = img.src
+
                     requestAnimationFrame(() => {
                         this.content.history_frame.style.opacity = "1"
                     })
+
                     break
                 }
                 case HistoryCommandType.SetDialog: {
@@ -417,7 +461,7 @@ export class MenuManager{
                     if (resources) {
                         const s = resources.get_audio(cmd.sfx)
                         const inst = sounds_manager.play(s,{
-
+                            
                         },cmd.category??"players")
                     }
                     break

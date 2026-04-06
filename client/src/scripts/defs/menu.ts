@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
+import { cloneDeep, deleteDeep, FetchFileManager, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { formatToHtml, GameSave } from "common/engine/client.ts";
@@ -426,7 +426,8 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 }
 
 export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CModsManager){
-    const campaign=JSON.parse(await fs.read_file("scripts/campaign.json"))
+    const txt=await fs.read_file("scripts/campaign.json")
+    const campaign=JSON.parse(txt)
     menu.campaign=cloneDeep(campaign)
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){

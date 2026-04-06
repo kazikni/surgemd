@@ -370,11 +370,16 @@ export class MousePosListener{
         return v2.add(v2.scale(this.position,camera.zoom),camera.position)
     }
     bind(elem:HTMLElement,canvas:HTMLCanvasElement){
-        elem.addEventListener("pointermove",(e:MouseEvent)=>{
+        elem.addEventListener("pointermove",(e:PointerEvent)=>{
             if(!this.focus)return
             const rect=canvas.getBoundingClientRect()
             this.position_old=this._position
-            this._position=v2(e.x-rect.left,e.y-rect.top)
+            const scaleX = canvas.width / rect.width
+            const scaleY = canvas.height / rect.height
+            this._position = v2(
+                (e.clientX - rect.left) * scaleX,
+                (e.clientY - rect.top) * scaleY
+            )
             this.mouse_speed=v2.dscale(v2.sub(this.position_old,this._position),this.meter_size)
             this.listener.emit(MouseEvents.MouseMove,this.position)
         })

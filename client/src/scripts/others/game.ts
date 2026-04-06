@@ -378,6 +378,10 @@ export class Game extends ClientGame<GameObject>{
                     await this.resources.load_audio(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
                 }
             }
+            if(this.menu.campaign?.history){
+                this.menu.history_buffer.clear()
+                await this.menu.preload_history_frames(this.menu.campaign.history)
+            }
         }
 
         this.menu.hide_loading_screen()

@@ -698,3 +698,4 @@ export async function importFromString(code: string) {
         URL.revokeObjectURL(url)
     }
 }
+export const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)))

@@ -274,3 +274,58 @@ export async function typewriter(element: HTMLElement,html: string,delay:Random1
         }
     }
 }
+export class ImageBuffer {
+    cache = new Map<string, HTMLImageElement>()
+    loading = new Set<string>()
+
+    lastUsed = new Map<string, number>()
+    tick = 0
+    max = 6
+
+    async load(src: string): Promise<HTMLImageElement> {
+        this.tick++
+        if (this.cache.has(src)) return this.cache.get(src)!
+
+        if (this.loading.has(src)) {
+            return new Promise(res => {
+                const check = () => {
+                    if (this.cache.has(src)) res(this.cache.get(src)!)
+                    else requestAnimationFrame(check)
+                }
+                check()
+            })
+        }
+
+        this.loading.add(src)
+        const img = new Image()
+        img.src = src
+        await img.decode().catch(()=>{})
+        this.cache.set(src, img)
+        this.loading.delete(src)
+        this.cleanup()
+        return img
+    }
+    preload(src: string) {
+        this.load(src)
+    }
+    cleanup() {
+        if (this.cache.size <= this.max) return
+
+        const entries = [...this.lastUsed.entries()]
+        entries.sort((a,b)=>a[1]-b[1])
+
+        const toRemove = this.cache.size - this.max
+
+        for (let i = 0; i < toRemove; i++) {
+            const key = entries[i][0]
+            this.cache.delete(key)
+            this.lastUsed.delete(key)
+        }
+    }
+    clear() {
+        this.cache.clear()
+        this.loading.clear()
+        this.lastUsed.clear()
+        this.tick = 0
+    }
+}

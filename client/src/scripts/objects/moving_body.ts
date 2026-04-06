@@ -10,6 +10,8 @@ export abstract class MovingBody extends GameObject{
     dest_pos:Vec2=v2.zero()
     dest_rot:number=0
     distance_walked=0
+
+    enable_auto_rot:boolean=true
     constructor(){
         super()
     }
@@ -24,7 +26,7 @@ export abstract class MovingBody extends GameObject{
             this.distance_walked=dist
         }
         v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
-        this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.dest_rot!,this.game.global_interpolation)
+        if(this.enable_auto_rot)this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.dest_rot!,this.game.global_interpolation)
     }
     decode_physical_data(stream:NetStream,full:boolean):void{
         this.dest_pos=stream.readPos2()

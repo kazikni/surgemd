@@ -181,11 +181,6 @@ export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
         }
     }
     override on_player_die(p:Player){
-        if(p.team_data.group){
-            for(const pp of p.team_data.group.get_downed_players()){
-                pp.die({amount:pp.health_data.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downed_by,source:pp.downed_by_source})
-            }
-        }
         if(this.groupsManager.get_living_groups().length<=1){
             this.game.finish()
         }
@@ -241,7 +236,15 @@ export class BattleRoyaleTeam extends BattleRoyaleGroupMode{
     override on_player_die(p:Player){
         if(p.team_data.team){
             for(const pp of p.team_data.team.get_downed_players()){
-                pp.die({amount:pp.health_data.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downed_by,source:pp.downed_by_source})
+                pp.die({
+                    amount:pp.health_data.health,
+                    critical:false,
+                    position:pp.position,
+                    reason:DamageReason.Bleend,
+                    owner:pp.downed_by,
+                    source:pp.downed_by_source,
+                    direction:0,
+                })
             }
         }
         if(this.teamsManager.get_living_teams().length<=1){

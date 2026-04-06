@@ -31,6 +31,7 @@ export class Human extends MovingBody{
     name:string=""
     is_player:boolean=false
     is_bot:boolean=false
+    is_npc:boolean=false
 
     humans_manager!:HumansManager
 
@@ -182,12 +183,14 @@ export class Human extends MovingBody{
         this.loadout={
             dirty:true,
             original:{
-                skin_id:"default_skin",
+                //skin_id:"default_skin",
+                skin_id:"nick_winner",
                 emotes:{
 
                 }
             },
-            skin:this.game.definitions.skins.getFromString("default_skin"),
+            skin:this.game.definitions.skins.getFromString("nick_winner"),
+            //skin:this.game.definitions.skins.getFromString("default_skin"),
             emotes:{
 
             }
@@ -566,7 +569,7 @@ export class Human extends MovingBody{
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
                   * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
                   * this.modifiers.speed
-                  * (this.health_data.downed?0.4:1)
+                  * (this.health_data.downed?0.25:1)
                   * (this.parachute?1:((current_floor.speed_mult??1)))
                   * (this.grenade_holding?0.7:1)
         if(this.recoil){
@@ -675,7 +678,11 @@ export class Human extends MovingBody{
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
 
-                this.physical_data.rotation=this.input.rotation
+                if(this.health_data.downed){
+                    this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
+                }else{
+                    this.physical_data.rotation=this.input.rotation
+                }
             }else{
                 this.physical_data.rotation=this.input.rotation
                 this.physical_data.velocity=v2.zero()
@@ -730,7 +737,7 @@ export class Human extends MovingBody{
         this.physical_data.dirty_part=true
         this.net_sync.part=true
 
-        this._can_interact=this.human_data.movement_enabled
+        this._can_interact=this.human_data.movement_enabled&&!this.health_data.downed
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
@@ -914,6 +921,9 @@ export class Human extends MovingBody{
             mod-=this.equipment_data.helmet.reduction
             damage-=this.equipment_data.helmet.defence
         }
+        if(this.health_data.downed){
+            mod+=0.2
+        }
         if(params.critical){
             mod+=this.modifiers.critical_mult-1
         }
@@ -1014,8 +1024,6 @@ export class Human extends MovingBody{
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Null]
-
-        this.push(-80,params.direction)
 
         this.health_data.invensibility_time=1
 

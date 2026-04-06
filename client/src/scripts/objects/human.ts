@@ -102,6 +102,14 @@ export class Human extends MovingBody{
     }
     set happy(val:boolean){
         this._happy=val
+        if(val){
+            this.sprites.mounth.scale.x=1.4
+            this.sprites.mounth.frames=this.anims.mount_anims
+        }else{
+            this.sprites.mounth.scale.x=-1.4
+            this.sprites.mounth.frames=undefined
+            this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_normal)
+        }
     }
 
     shield:boolean=false
@@ -224,6 +232,7 @@ export class Human extends MovingBody{
         this.sprites.left_leg.visible=true
         this.sprites.right_leg.visible=true
         this.sprites.chest.visible=true
+        this.sprites.backpack.visible=false
         this.happy=false
         this.reset_anim()
     }
@@ -233,6 +242,7 @@ export class Human extends MovingBody{
         this.sprites.left_leg.visible=false
         this.sprites.right_leg.visible=false
         this.sprites.chest.visible=false
+        this.sprites.backpack.visible=true
         this.happy=true
         this.reset_anim()
     }
@@ -674,14 +684,6 @@ export class Human extends MovingBody{
             if(this.anims.fire.right_arm)this.anims.fire.right_arm.kill()
             if(this.anims.fire.weapon)this.anims.fire.weapon.kill()
             this.anims.fire=undefined
-        }
-        if(this.happy){
-            this.sprites.mounth.scale.x=1.4
-            this.sprites.mounth.frames=this.anims.mount_anims
-        }else{
-            this.sprites.mounth.scale.x=-1.4
-            this.sprites.mounth.frames=undefined
-            this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_normal)
         }
         if(this.downed){
             this.sprites.left_arm.position=DefaultFistRig.left!.position

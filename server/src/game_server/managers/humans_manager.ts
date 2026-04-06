@@ -9,6 +9,7 @@ import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { cloneDeep } from "common/engine/core.ts";
 export class NPC extends Human{
     ai?:BotAi
+    override is_npc: boolean=true
     override update(dt: number): void {
         if(this.ai)this.ai.AI(dt)
         super.update(dt)

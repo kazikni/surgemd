@@ -313,8 +313,11 @@ export class Game extends ClientGame<GameObject>{
         }*/
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.driving&&!this.game_over){
+        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.downed&&!this.active_entity.driving&&!this.game_over){
+            this.active_entity.enable_auto_rot=false
             this.active_entity.physical_data.rotation=this.input.angle
+        }else{
+            this.active_entity.enable_auto_rot=true
         }
     }
     interact(){
@@ -398,8 +401,9 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.position.y=100000
         this.cam2d.zoom=6
 
+        this.ambient.music.set(undefined)
+
         if(this.level){
-            this.ambient.music.set(undefined)
             await this.menu.show_phase_intro({
                 location:this.level.meta.location,
                 name:this.level.meta.name,

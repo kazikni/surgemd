@@ -35,6 +35,9 @@ export function Skins_Default_Init(skins:Definitions<SkinDef,{}>){
         {
             idString:"nick_winner",
             quality:ItemQuality.Rare,
+            frame:{
+                leg:"default_skin_leg"
+            }
         },
         {
             idString:"justin_winner",

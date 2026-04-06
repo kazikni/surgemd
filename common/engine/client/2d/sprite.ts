@@ -107,7 +107,7 @@ export class AnimatedSprite2D extends Sprite2D{
     override _has_update: boolean=true
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources)
-        if(this.frames){
+        if(this.frames&&this.frames[this.current_frame]){
             if(this.current_delay<this.frames[this.current_frame].delay){
                 this.current_delay+=dt
             }else{

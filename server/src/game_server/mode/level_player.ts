@@ -40,8 +40,8 @@ export class KillAllEnemiesMode extends ModeManager {
     can_join(): boolean {
         return true
     }
-    can_down(): boolean {
-        return false
+    can_down(a: Human): boolean {
+        return a.is_npc
     }
     is_ally(a: Human, b: Human): boolean {
         return a.is_player === b.is_player

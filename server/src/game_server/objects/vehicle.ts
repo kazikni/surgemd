@@ -223,5 +223,4 @@ export class Vehicle extends MovingBody {
             stream.writeUint8(this.def.idNumber!)
         }
     }
-
 }

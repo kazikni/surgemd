@@ -18,6 +18,7 @@ export class Explosion extends ServerGameObject{
     source?:DamageSourceDef
 
     radius:number=2
+    speed_damage:number=0
     constructor(){
         super()
         this.net_sync.enabled.deletion=false
@@ -52,7 +53,15 @@ export class Explosion extends ServerGameObject{
                     case GameObjectType.Building:
                     case GameObjectType.Human:{
                         if(obj.hitbox.collidingWith(this.hitbox)){
-                            (obj as Human|StaticBody).damage({amount:this.defs.damage,reason:DamageReason.Explosion,source:this.source??this.defs,owner:this.owner,position:v2.clone(obj.position),critical:false})
+                            (obj as Human|StaticBody).damage({
+                                amount:this.defs.damage,
+                                reason:DamageReason.Explosion,
+                                source:this.source??this.defs,
+                                owner:this.owner,
+                                position:v2.clone(obj.position),
+                                critical:false,
+                                direction:v2.lookTo(obj.position,this.position)
+                            })
                         }
                         break
                     }
@@ -72,7 +81,13 @@ export class Explosion extends ServerGameObject{
                     }
                 }
             }
-            
+
+            if(this.defs.synced_particles){
+                const def=this.game.definitions.synced_particle.getFromString(this.defs.synced_particles.def)
+                for(let i=0;i<this.defs.synced_particles.count;i++){
+                    this.game.add_synced_particle(this.position,def,this.layer)
+                }
+            }
             //this.game.play_sound(this.position,this.layer,"explosion")
             this.destroy()
         }else{

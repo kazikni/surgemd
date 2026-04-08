@@ -51,6 +51,12 @@
     50% { transform:rotate(1deg) translate(1%,0.5%); }
     100% { transform:rotate(-1deg) translate(1%,-1%); }
 }
+#game-version{
+    position: absolute;
+    color: #fff;
+    left: 10px;
+    top: 10px;
+}
 #both-ui{
     left: 0px;
     right: 0px;
@@ -614,6 +620,52 @@
         height: 180px;
     }
 }
+
+#tiltshift-gfx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+#tiltshift-gfx::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    backdrop-filter: blur(5px) saturate(1.1) contrast(1.1);
+
+    mask-image: radial-gradient(circle at top left, #fff 0%, transparent 60%),
+                radial-gradient(circle at top right, #fff 0%, transparent 60%),
+                radial-gradient(circle at bottom left, #fff 0%, transparent 60%),
+                radial-gradient(circle at bottom right, #fff 0%, transparent 60%);
+    mask-repeat: no-repeat;
+    mask-position: top left, top right, bottom left, bottom right;
+    mask-size: 50% 50%;
+
+    -webkit-mask-image: radial-gradient(circle at top left, #fff 0%, transparent 60%),
+                        radial-gradient(circle at top right, #fff 0%, transparent 60%),
+                        radial-gradient(circle at bottom left, #fff 0%, transparent 60%),
+                        radial-gradient(circle at bottom right, #fff 0%, transparent 60%);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: top left, top right, bottom left, bottom right;
+    -webkit-mask-size: 50% 50%;
+}
+#recolor {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    filter:blur(0.5px) saturate(1.1) contrast(1.1);
+}
+#bloom-gfx {
+    position: absolute;
+    pointer-events: none;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1002;
+}
 #vignetting-gfx {
     position: absolute;
     inset: 0;
@@ -623,7 +675,7 @@
     background-image: url("/img/menu/background/vignetting.png");
     background-repeat: no-repeat;
     background-size: cover;
-    z-index: 8;
+    z-index: 1002;
 }
 .mod-root{
     h1{
@@ -643,9 +695,14 @@
     display:flex;
     justify-content:center;
     align-items:center;
-    z-index: 103;
+    z-index: 104;
 
     transition: opacity 1s ease-in-out;
+
+    .tv-static{
+        z-index:2;
+        filter: brightness(0.25) contrast(1) sepia(1) hue-rotate(70deg) saturate(10);
+    }
 
     cursor: none;
     #text-gameover{
@@ -664,9 +721,9 @@
         z-index:3;
 
         animation:
-            text-gameover-rotate alternate 7s ease-in-out infinite,
-            text-gameover-scale 7s alternate ease-in-out infinite,
-            text-gameover-translate 10s alternate ease-in-out infinite;
+            text-gameover-rotate alternate 9s ease-in-out infinite,
+            text-gameover-scale 10s alternate ease-in-out infinite,
+            text-gameover-translate 13s alternate ease-in-out infinite;
     }
     pointer-events: all;
     @media screen and (max-width: palette.$screen_large) {
@@ -684,9 +741,9 @@
 .tv-static{
     position:absolute;
     inset:0;
-    z-index:2;
     pointer-events:none;
     overflow:hidden;
+    opacity:0.2;
     &::before{
         content:"";
         position:absolute;
@@ -700,11 +757,7 @@
         background-size:10000px 1000px;
         background-repeat:repeat;
 
-        opacity:0.25;
-        filter: brightness(0.25) contrast(1) sepia(1) hue-rotate(70deg) saturate(10);
-
         animation:tvNoise 0.25s steps(6) infinite;
-
         
         @media screen and (max-width: palette.$screen_large) {
             background-size:6000px 600px;
@@ -712,21 +765,6 @@
         @media screen and (max-width: palette.$screen_medium) {
             background-size:5000px 500px;
         }
-    }
-    &::after{
-        content:"";
-        position:absolute;
-        inset:0;
-
-        background:repeating-linear-gradient(
-            to bottom,
-            rgba(255,255,255,0.05) 0px,
-            rgba(255,255,255,0.05) 1px,
-            transparent 1px,
-            transparent 3px
-        );
-
-        mix-blend-mode:overlay;
     }
 }
 @keyframes tvNoise{
@@ -750,8 +788,8 @@
     100%    { transform:translate(-7%,7%) }
 }
 @keyframes text-gameover-rotate{
-    0%   { rotate:5deg }
-    100% { rotate:-5deg }
+    0%   { rotate:4deg }
+    100% { rotate:-4deg }
 }
 @keyframes text-gameover-scale{
     0%   { scale:0.8 }
@@ -767,11 +805,188 @@
     backdrop-filter:blur(4px);
     opacity:0;
     transition:opacity .2s;
-    z-index:1000;
+    z-index:102;
 }
 
 .game-popup{
     padding:20px;
     min-width:300px;
     max-width:600px;
+}
+
+#history-overlay {
+    position: fixed;
+    inset: 0;
+    background: black;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 103;
+    opacity: 0;
+    pointer-events: all;
+    cursor: none;
+
+    .tv-static {
+        filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(6);
+    }
+
+    #history-container {
+        position: relative;
+        width: 100%;
+        height: auto;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 40px;
+        box-sizing: border-box;
+
+        #history-frame {
+            max-width: 100%;
+            max-height: 100%;
+
+            object-fit: contain;
+            background: black;
+
+            image-rendering: pixelated;
+
+            transition: opacity 0.75s ease;
+        }
+    }
+    #history-dialog {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+
+        width: 90%;
+        height: auto;
+
+        .dialog-box {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: opacity 0.75s ease;
+
+            display: inline-flex;
+            flex-direction: column;
+
+            width: auto;
+            max-width: 100%;
+
+            height: auto;
+            max-height: 15vh;
+            overflow-y: auto;
+
+            gap: 4px;
+            padding: 8px 12px;
+            * {
+                margin: 0;
+            }
+            border-radius: 12px;
+
+            background: linear-gradient(
+                135deg,
+                rgba(7, 170, 238, 0.08),
+                rgba(7, 170, 238, 0.18)
+            );
+
+            border: 2px solid rgba(7, 170, 238, 0.5);
+
+            backdrop-filter: blur(4px);
+
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            text-align: center;
+
+            .name {
+                font-weight: bold;
+                font-size: 20px;
+                opacity: 0.8;
+            }
+
+            .content {
+                font-size: 16px;
+                line-height: 1.5;
+                word-break: break-word;
+            }
+        }
+        #history-dialog-indicator {
+            position: absolute;
+            transform: translateX(-50%);
+            left: 50%;
+            top: 10px;
+            font-size: 22px;
+            opacity: 0.7;
+            rotate: 90deg;
+        }
+    }
+}
+
+#phase-intro-overlay {
+    position: fixed;
+    inset: 0;
+    background: black;
+    z-index: 106;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: all;
+
+    cursor: none;
+
+    .tv-static {
+        filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(6);
+    }
+    #phase-intro-content {
+        position: relative;
+        z-index: 2;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+
+        text-align: center;
+        font-family: "Russo-One", monospace;
+    }
+    #phase-intro-location {
+        font-size: 18px;
+        opacity: 0.6;
+        letter-spacing: 2px;
+    }
+    #phase-intro-name {
+        font-size: 120px;
+        font-weight: bold;
+
+        color: #47b984;
+
+        text-shadow:
+            0 0 10px #27b34a65,
+            0 0 25px #27b34a6b;
+    }
+    #phase-intro-date {
+        font-size: 14px;
+        opacity: 0.5;
+    }
+    #phase-intro-description {
+        margin-top: 10px;
+        font-size: 16px;
+        opacity: 0.8;
+        letter-spacing: 1px;
+    }
+}
+@keyframes glitchText {
+    0% { transform: translate(0px, 0px); }
+    20% { transform: translate(-2px, 1px); }
+    40% { transform: translate(2px, -1px); }
+    60% { transform: translate(-1px, 2px); }
+    80% { transform: translate(1px, -2px); }
+    100% { transform: translate(0px, 0px); }
 }

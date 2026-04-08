@@ -17,6 +17,7 @@ export class PacketsManager{
     pre_packet?:(packet:Packet)=>void
     constructor(){
         this.packets=new Map()
+        this.add_packet(InvalidPacket)
         this.add_packet(ConnectPacket)
         this.add_packet(DisconnectPacket)
         this.add_packet(SteamPacket)
@@ -24,11 +25,16 @@ export class PacketsManager{
         this.add_packet(PongPacket)
     }
     encode(packet:Packet,stream:NetStream):NetStream{
+        stream.writeUint16(2314) // Passcode
         stream.writeUint16(packet.ID)
         packet.encode(stream)
         return stream
     }
     decode(stream:NetStream):Packet{
+        const passcode=stream.readUint16()
+        if(passcode!=2314){
+            return new InvalidPacket()
+        }
         const id:PacketID=stream.readUint16()
         if (this.packets.get(id)){
             // deno-lint-ignore ban-ts-comment
@@ -40,7 +46,7 @@ export class PacketsManager{
             p._size=stream.index
             return p
         }else{
-            throw new Error(`the Packet ${id} dont exist`)
+            return new InvalidPacket()
         }
     }
     add_packet(pack:new () => Packet){
@@ -149,5 +155,19 @@ export class PongPacket extends Packet {
 
     decode(stream: NetStream): void {
         this.time = stream.readFloat64()
+    }
+}
+
+export class InvalidPacket extends Packet {
+    readonly ID = -1
+    readonly Name = "invalid"
+
+    constructor() {
+        super()
+    }
+
+    encode(stream: NetStream): void {
+    }
+    decode(stream: NetStream): void {
     }
 }

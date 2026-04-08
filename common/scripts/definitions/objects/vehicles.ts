@@ -122,7 +122,7 @@ export function Vehicles_Default_Init(vehicles:Definitions<VehicleDef,{}>){
     vehicles.insert(
         VehicleTemplates.bike("bike"),
         VehicleTemplates.jeep("jeep"),
-        {
+        /*{
             idString:"battle_plane",
             center:v2.zero(),
             frame:{
@@ -144,6 +144,6 @@ export function Vehicles_Default_Init(vehicles:Definitions<VehicleDef,{}>){
             wheels:{
                 defs:[]
             }
-        },
+        },*/
     )
 }

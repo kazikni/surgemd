@@ -19,6 +19,56 @@ export interface MapConfig{
     biome:BiomeDef
     objects:MapObjectEncode[]
 }
+function write_biome(biome:BiomeDef,stream:NetStream){
+    stream.writeString(biome.biome_skin??"",1)
+    .writeArray(biome.assets,(i,_s)=>{
+        stream.writeString(i,1)
+    })
+    .writeArray(biome.musics??[],(i,_s)=>{
+        stream.writeString(i,1)
+    })
+    .writeArray(biome.ambient.particles,(i,_s)=>{
+        stream.writeString(i,1)
+    })
+    .writeBooleanGroup(biome.ambient.rain===true,biome.ambient.snow===true)
+    .writeString(biome.ambient.sound??"",1)
+    .writeNumberDict(biome.floors as Record<number,BiomeFloor>,(i,_s)=>{
+        stream.writeBooleanGroup(i.color!==undefined)
+        if(i.color!==undefined)stream.writeUint32(i.color??0)
+    },1)
+}
+function decode_biome(stream:NetStream):BiomeDef{
+    const biome:BiomeDef={
+        ambient:{
+            particles:[]
+        },
+        assets:[],
+        floors:{},
+    }
+    biome.biome_skin=stream.readString(1)
+    biome.assets=stream.readArray(()=>{
+        return stream.readString(1)
+    },1)
+    biome.musics=stream.readArray(()=>{
+        return stream.readString(1)
+    },1)
+    biome.ambient.particles=stream.readArray(()=>{
+        return stream.readString(1)
+    },1)
+    const bg1=stream.readBooleanGroup()
+    biome.ambient.rain=bg1[0]
+    biome.ambient.snow=bg1[1]
+    biome.ambient.sound=stream.readString(1)
+    biome.floors=stream.readNumberDict((_s)=>{
+        const [has_color]=stream.readBooleanGroup()
+        const floor:BiomeFloor={}
+        if(has_color){
+            floor.color=stream.readUint32()
+        }
+        return floor
+    },1)
+    return biome
+}
 export class MapPacket extends Packet{
     ID=6
     Name="map"
@@ -48,20 +98,7 @@ export class MapPacket extends Packet{
         .writeUint32(this.map.seed)
         .writeUint16(this.map.size.x)
         .writeUint16(this.map.size.y)
-        //Biome
-        .writeStringSized(30,this.map.biome.biome_skin??"")
-        .writeArray(this.map.biome.assets,(i,_s)=>{
-            stream.writeString(i)
-        })
-        .writeArray(this.map.biome.ambient.particles,(i,_s)=>{
-            stream.writeString(i)
-        })
-        .writeBooleanGroup(this.map.biome.ambient.rain===true,this.map.biome.ambient.snow===true)
-        .writeString(this.map.biome.ambient.sound??"")
-        .writeNumberDict(this.map.biome.floors as Record<number,BiomeFloor>,(i,_s)=>{
-            stream.writeBooleanGroup(i.color!==undefined)
-            if(i.color!==undefined)stream.writeUint32(i.color??0)
-        },1)
+        write_biome(this.map.biome,stream)
     }
     decode(stream: NetStream): void {
         this.map.terrain=stream.readArray(()=>{
@@ -93,31 +130,6 @@ export class MapPacket extends Packet{
         },2)
         this.map.seed=stream.readUint32()
         this.map.size=v2.new(stream.readUint16(),stream.readUint16())
-        this.map.biome={
-            floors:{},
-            ambient:{
-                particles:[],
-            },
-            assets:[],
-            biome_skin:stream.readStringSized(30)??undefined
-        }
-        this.map.biome.assets=stream.readArray((s)=>{
-            return s.readString()
-        },1)
-        this.map.biome.ambient.particles=stream.readArray((s)=>{
-            return s.readString()
-        },1)
-        const bg1=stream.readBooleanGroup()
-        this.map.biome.ambient.rain=bg1[0]
-        this.map.biome.ambient.snow=bg1[1]
-        this.map.biome.ambient.sound=stream.readString()
-        this.map.biome.floors=stream.readNumberDict((_s)=>{
-            const [has_color]=stream.readBooleanGroup()
-            const floor:BiomeFloor={}
-            if(has_color){
-                floor.color=stream.readUint32()
-            }
-            return floor
-        },1)
+        this.map.biome=decode_biome(stream)
     }
 }

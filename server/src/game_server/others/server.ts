@@ -2,7 +2,6 @@ import { Server, AbstractGameContainer, AbstractGameServer, Cors} from "common/e
 import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
 import { GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
-import { Maps } from "common/scripts/definitions/maps/base.ts";
 export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     constructor(server: Server,config:ConfigType){
         super(server,config)
@@ -36,8 +35,11 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             if(!g.data.running){
                 g.new_game(config??{
                     mode:"normal",
+                    //group_size:2,
                     mode_settings:{
-                        map:Maps["lobby"]
+                        /*map:{
+                            def:"lobby"
+                        }*/
                     }
                 })
                 return g as GameContainer

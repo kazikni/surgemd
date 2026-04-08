@@ -1,1 +1,71 @@
-<svg width="175.659" height="175.659" viewBox="0 0 46.476 46.476" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient xlink:href="#a" id="b" cx="10.857" cy="10.857" fx="10.857" fy="10.857" r="10.964" gradientUnits="userSpaceOnUse" gradientTransform="translate(-6.738 -6.738) scale(2.00223)"/><linearGradient id="a"><stop style="stop-color:#ffde6b;stop-opacity:.60000002" offset="0"/><stop style="stop-color:#a08200;stop-opacity:.80000001" offset="1"/></linearGradient></defs><g transform="translate(8.238 8.238)"><circle style="fill:url(#b);stroke:#8c6200;stroke-width:3;stroke-dasharray:none;stroke-opacity:1" cx="15" cy="15" r="21.738"/><path style="fill:#8c6200;fill-opacity:.6;stroke:none;stroke-width:.359084" d="M26.905 20.092c0 6.575-5.33 11.904-11.904 11.904S3.097 26.666 3.097 20.092c0-2.494-.118-13.146 1.466-16.815.56-1.297 1.32 9.915 2.919 10.84 1.038.6 1.004-9.29.98-10.155-.307-11.177 2.89-1.633 6.818 7.667.488 1.156-.837-10.095 2.206-7.356 4.754 4.277 3.905-7.807 5.016-6.104 3.157 4.843 4.403 17.988 4.403 21.923z"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="131.66666"
+   height="131.74684"
+   viewBox="0 0 34.836471 34.857686"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="gasoline_outline.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.1485321"
+     inkscape:cx="-64.865405"
+     inkscape:cy="43.098491"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs2">
+    <radialGradient
+       xlink:href="#a"
+       id="b"
+       cx="10.857"
+       cy="10.857"
+       fx="10.857"
+       fy="10.857"
+       r="10.964"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(2.00223,0,0,2.00223,-6.738,-6.738)" />
+    <linearGradient
+       id="a">
+      <stop
+         style="stop-color:#ffde6b;stop-opacity:.60000002"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#a08200;stop-opacity:.80000001"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+  </defs>
+  <g
+     transform="matrix(0.74955829,0,0,0.7500147,6.1748618,6.1786218)"
+     id="g2">
+    <circle
+       style="fill:url(#b);stroke:#8c6200;stroke-width:3;stroke-dasharray:none;stroke-opacity:1"
+       cx="15"
+       cy="15"
+       r="21.738001"
+       id="circle2" />
+    <path
+       style="fill:#8c6200;fill-opacity:0.6;stroke:none;stroke-width:0.359084"
+       d="m 26.905,20.092 c 0,6.575 -5.33,11.904 -11.904,11.904 -6.574,0 -11.904,-5.33 -11.904,-11.904 0,-2.494 -0.118,-13.146 1.466,-16.815 0.56,-1.297 1.32,9.915 2.919,10.84 1.038,0.6 1.004,-9.29 0.98,-10.155 -0.307,-11.177 2.89,-1.633 6.818,7.667 0.488,1.156 -0.837,-10.095 2.206,-7.356 4.754,4.277 3.905,-7.807 5.016,-6.104 3.157,4.843 4.403,17.988 4.403,21.923 z"
+       id="path2" />
+  </g>
+</svg>

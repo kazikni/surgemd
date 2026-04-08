@@ -1,4 +1,4 @@
-import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
+import { GameObjectType } from "common/scripts/others/constants.ts";
 import { Projectile, ProjectileData, ProjectilePhysicalData } from "./projectile.ts";
 import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
@@ -36,7 +36,7 @@ export class Grenade extends Projectile{
         super.update(dt)
 
         if(this.physical_data.zpos>0){
-            this.physical_data.zpos_speed=Numeric.clamp(this.physical_data.zpos_speed-this.def.gravity*dt,-10,10)
+            this.physical_data.zpos_speed=Numeric.clamp(this.physical_data.zpos_speed-this.def.gravity*dt,-3,3)
             this.physical_data.zpos=Numeric.clamp(this.physical_data.zpos+this.physical_data.zpos_speed*dt,0,1)
         }else{
             const vel = this.physical_data.velocity
@@ -58,12 +58,13 @@ export class Grenade extends Projectile{
         if(!this.old_pos||!v2.is(this.position,this.old_pos)){
             this.old_pos=this.position
             // Fall
-            if(this.physical_data.current_floor===FloorType.Void){
+            /*if(this.physical_data.current_floor===FloorType.Void){
                 if(this.layer>Layers.Normal){
                     this.set_layer(this.layer-1)
                 }
-            }
+            }*/
         }
+        this.net_sync.part=true
     }
     create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
         this.def=args.def
@@ -75,6 +76,18 @@ export class Grenade extends Projectile{
         this.owner=args.owner
 
         if(this.def.explosion)this.projectile_data.explosion=this.game.definitions.explosions.getFromString(this.def.explosion)
+
+        if(this.def.call_airdrop){
+            this.game.add_timeout(()=>{
+                this.game.add_airdrop(this.position)
+            },this.def.call_airdrop.delay)
+        }
+        if(this.def.call_airstrike){
+            this.game.add_timeout(()=>{
+                const def=this.game.definitions.grenades.getFromString(this.def.call_airstrike!.def)
+                this.game.add_airstrike(this.position,def,this.owner)
+            },this.def.call_airstrike.delay)
+        }
     }
     override encode(stream: NetStream, full: boolean): void {
         this.physical_encode(stream)

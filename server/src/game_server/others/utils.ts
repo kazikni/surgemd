@@ -13,5 +13,6 @@ export interface DamageParams{
 
     reason:DamageReason
 
+    direction:number
     position:Vec2
 }

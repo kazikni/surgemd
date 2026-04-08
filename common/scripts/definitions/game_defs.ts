@@ -3,7 +3,7 @@ import { GameADefinitions } from "../others/mods.ts";
 import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
 import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
 import { ConsumibleDef, Consumibles_Default_Init } from "./items/consumibles.ts";
-import { AcessorieDef, Acessories_Default_Init, HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
+import { AccessoryDef, Accessorys_Default_Init, HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
 import { GrenadeDef, Grenades_Default_Init } from "./items/grenades.ts";
 import { GunDef, Guns_Default_Init } from "./items/guns.ts";
 import { MeleeDef, Melees_Default_Init } from "./items/melees.ts";
@@ -15,11 +15,12 @@ import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
 import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
+import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { InventoryItemType } from "./utils.ts";
 
-export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AcessorieDef|ScopeDef|SkinDef
-export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef
+export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef|SkinDef
+export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
 
@@ -40,8 +41,8 @@ export class GameDefinition{
     helmets=new Definitions<HelmetDef,{}>((obj)=>{
         obj.item_type=InventoryItemType.helmet
     })
-    acessories=new Definitions<AcessorieDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.accessorie
+    accessorys=new Definitions<AccessoryDef,{}>((obj)=>{
+        obj.item_type=InventoryItemType.accessory
     })
     grenades=new Definitions<GrenadeDef,{}>((v)=>{
         v.item_type=InventoryItemType.grenade
@@ -76,6 +77,7 @@ export class GameDefinition{
     explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
     obstacles=new Definitions<ObstacleDef,{}>((_v)=>{})
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
+    synced_particle=new Definitions<SyncedParticleDef,{}>((_v)=>{})
 
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
@@ -91,7 +93,7 @@ export class GameDefinition{
         Consumibles_Default_Init(this.consumibles)
         Helmets_Default_Init(this.helmets)
         Vests_Default_Init(this.vests)
-        Acessories_Default_Init(this.acessories)
+        Accessorys_Default_Init(this.accessorys)
         Grenades_Default_Init(this.grenades)
         Guns_Default_Init(this.guns)
         Melees_Default_Init(this.melees)
@@ -106,6 +108,7 @@ export class GameDefinition{
         Explosions_Default_Init(this.explosions)
         Obstacles_Default_Init(this.obstacles)
         Vehicles_Default_Init(this.vehicles)
+        SyncedParticle_Default_Init(this.synced_particle)
 
         this.game_items.insert_def(this.ammos.value)
         this.game_items.insert_def(this.backpacks.value)
@@ -116,7 +119,7 @@ export class GameDefinition{
         this.game_items.insert_def(this.guns.value)
         this.game_items.insert_def(this.melees.value)
         this.game_items.insert_def(this.scopes.value)
-        this.game_items.insert_def(this.acessories.value)
+        this.game_items.insert_def(this.accessorys.value)
         this.game_items.insert_def(this.skins.value)
 
         this.game_objects.insert_def(this.game_items.valueString)
@@ -127,6 +130,7 @@ export class GameDefinition{
         this.game_objects.insert_def(this.explosions.value)
         this.game_objects.insert_def(this.obstacles.value)
         this.game_objects.insert_def(this.vehicles.value)
+        this.game_objects.insert_def(this.synced_particle.value)
     }
     add_definitions(mm:GameADefinitions){
         if(mm.items){

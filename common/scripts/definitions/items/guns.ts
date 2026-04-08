@@ -206,7 +206,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:11,
                     radius:0.02,
-                    range:100,
+                    range:90,
                     falloff:0.8,
                     speed:31,
                     obstacleMult:1.2,
@@ -253,7 +253,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:11,
                     radius:0.02,
-                    range:100,
+                    range:90,
                     falloff:0.8,
                     speed:31,
                     obstacleMult:1.2,
@@ -299,9 +299,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:25,
             bullet:{
                 def:{
-                    damage:60,
+                    damage:55,
                     radius:0.02,
-                    range:230,
+                    range:130,
                     falloff:0.7,
                     speed:38,
                     obstacleMult:1.7,
@@ -334,16 +334,16 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:0.1,
             switchDelay:0.6,
             spread:4,
-            lenght:1.2,
+            lenght:0.9,
             ammoType:"762mm",
             ammoSpawnAmount:90,
             class:GunClasses.Assault,
             quality:ItemQuality.Rare,
             bullet:{
                 def:{
-                    damage:9,
+                    damage:8,
                     radius:0.014,
-                    range:170,
+                    range:100,
                     speed:40,
                     tracer:tracers.medium
                 }
@@ -359,24 +359,31 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.97,
             gasParticles:GasParticles.automatic,
             muzzleFlash:MuzzleFlash.normal,
-            arms:WeaponsArmRig[0],
-            image:WeaponsRig[0]
+            arms:WeaponsArmRig[2],
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
+            },
         },
         {
             idString:"ar15",
             fireDelay:0.05,
-            switchDelay:0.7,
+            switchDelay:0.9,
             spread:6,
-            lenght:0.7,
+            lenght:0.9,
             ammoType:"556mm",
             ammoSpawnAmount:90,
             class:GunClasses.Assault,
             quality:ItemQuality.Rare,
             bullet:{
                 def:{
-                    damage:9,
+                    damage:8,
                     radius:0.014,
-                    range:190,
+                    range:102,
                     falloff:0.7,
                     speed:42,
                     tracer:tracers.medium
@@ -393,10 +400,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             muzzleFlash:MuzzleFlash.normal,
             speed_mod:0.95,
             gasParticles:GasParticles.automatic,
-            arms:WeaponsArmRig[0],
+            arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x12111f
+                world_tint:0x3f3a2f
             },
             image:{
                 position:v2.new(0.6,0.0),
@@ -413,16 +420,16 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 sequence:3
             },
             spread:1.5,
-            lenght:0.7,
+            lenght:0.9,
             ammoType:"556mm",
             ammoSpawnAmount:90,
             class:GunClasses.Assault,
             quality:ItemQuality.Epic,
             bullet:{
                 def:{
-                    damage:11,
+                    damage:10,
                     radius:0.014,
-                    range:190,
+                    range:102,
                     falloff:0.7,
                     speed:42,
                     tracer:tracers.medium
@@ -438,10 +445,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.95,
             gasParticles:GasParticles.automatic,
-            arms:WeaponsArmRig[0],
+            arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x12111f
+                world_tint:0x3f3a2f
             },
             image:{
                 position:v2.new(0.6,0.0),
@@ -460,9 +467,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Uncommon,
             bullet:{
                 def:{
-                    damage:8,
+                    damage:7,
                     radius:0.014,
-                    range:160,
+                    range:92,
                     falloff:0.9,
                     speed:37,
                     tracer:tracers.medium
@@ -490,16 +497,16 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:0.03,
             switchDelay:0.7,
             spread:2,
-            lenght:0.6,
+            lenght:0.9,
             ammoType:"9mm",
             ammoSpawnAmount:99,
             class:GunClasses.SMG,
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:5.5,
+                    damage:6,
                     radius:0.014,
-                    range:60,
+                    range:45,
                     criticalMult:1.5,
                     speed:40,
                     tracer:tracers.medium
@@ -531,7 +538,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:0.03,
             switchDelay:0.7,
             spread:9,
-            lenght:0.68,
+            lenght:0.7,
             ammoType:"9mm",
             ammoSpawnAmount:96,
             class:GunClasses.SMG,
@@ -569,8 +576,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"kar98k",
             fireDelay:1.1,
-            spread:0.4,
-            lenght:1.26,
+            spread:0.3,
+            lenght:0.9,
             ammoType:"762mm",
             ammoSpawnAmount:20,
             fireMode:FireMode.Single,
@@ -578,9 +585,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             quality:ItemQuality.Mythic,
             bullet:{
                 def:{
-                    damage:40,
+                    damage:42,
                     radius:0.02,
-                    range:210,
+                    range:110,
                     falloff:0.8,
                     criticalMult:1.1,
                     speed:50,
@@ -600,24 +607,26 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.4
             },
             speed_mod:0.95,
-            arms:WeaponsArmRig[1],
-            image:{
-                position:v2.new(0.6,0.04),
-                rotation:0
-            },
             gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
             caseParticle:{
                 position:v2.new(0.6,0.3)
             },
+            arms:WeaponsArmRig[2],
             assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f,
                 cycle_sound:true,
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
             },
         },
         {
             idString:"awp",
-            fireDelay:1.1,
-            spread:0.5,
+            fireDelay:1.2,
+            spread:0.3,
             lenght:0.9,
             ammoType:"762mm",
             fireMode:FireMode.Single,
@@ -626,9 +635,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:30,
             bullet:{
                 def:{
-                    damage:48,
+                    damage:45,
                     radius:0.025,
-                    range:220,
+                    range:115,
                     falloff:0.7,
                     speed:55,
                     criticalMult:1.1,
@@ -637,7 +646,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
             reload:{
-                delay:3.3,
+                delay:2.9,
                 capacity:10,
                 shotsPerReload:10,
             },
@@ -662,8 +671,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"awms",
-            fireDelay:1.4,
-            spread:0.7,
+            fireDelay:1.5,
+            spread:0.6,
             lenght:1,
             ammoType:"308sub",
             fireMode:FireMode.Single,
@@ -674,11 +683,11 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:99,
                     radius:0.02,
-                    range:230,
+                    range:130,
                     falloff:0.7,
                     speed:38,
                     criticalMult:1.2,
-                    obstacleMult:1.7,
+                    obstacleMult:2,
                     tracer:tracers.large
                 }
             },
@@ -707,8 +716,101 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             supresed:true
         },
         {
-            idString:"m870",
+            idString:"blr81",
             fireDelay:0.9,
+            spread:0.3,
+            lenght:0.9,
+            ammoType:"556mm",
+            ammoSpawnAmount:12,
+            fireMode:FireMode.Single,
+            class:GunClasses.Sniper,
+            quality:ItemQuality.Epic,
+            bullet:{
+                def:{
+                    damage:37,
+                    radius:0.02,
+                    range:105,
+                    falloff:0.8,
+                    criticalMult:1.1,
+                    speed:45,
+                    tracer:tracers.medium
+                }
+            },
+            reload:{
+                delay:2.5,
+                capacity:3,
+            },
+            recoil:{
+                duration:1,
+                speed:0.7
+            },
+            speed_mod:0.95,
+            gasParticles:GasParticles.sniper,
+            muzzleFlash:MuzzleFlash.normal,
+            caseParticle:{
+                position:v2.new(0.6,0.3)
+            },
+            arms:WeaponsArmRig[2],
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f,
+                cycle_sound:true,
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
+            },
+        },
+        {
+            idString:"model94",
+            fireDelay:0.9,
+            spread:0.5,
+            lenght:0.9,
+            ammoType:"45acp",
+            ammoSpawnAmount:27,
+            fireMode:FireMode.Single,
+            class:GunClasses.Sniper,
+            quality:ItemQuality.Epic,
+            bullet:{
+                def:{
+                    damage:34,
+                    radius:0.02,
+                    range:100,
+                    falloff:0.8,
+                    criticalMult:1.1,
+                    speed:45,
+                    tracer:tracers.medium
+                }
+            },
+            reload:{
+                delay:0.6,
+                capacity:9,
+                shotsPerReload:1,
+            },
+            recoil:{
+                duration:1,
+                speed:0.7
+            },
+            speed_mod:0.95,
+            gasParticles:GasParticles.sniper,
+            muzzleFlash:MuzzleFlash.normal,
+            caseParticle:{
+                position:v2.new(0.6,0.3)
+            },
+            arms:WeaponsArmRig[2],
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f,
+                cycle_sound:true,
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
+            },
+        },
+        {
+            idString:"m870",
+            fireDelay:1,
             spread:6,
             lenght:0.9,
             ammoType:"12g",
@@ -727,7 +829,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     criticalMult:1.2,
                     tracer:tracers.small
                 },
-                count:10
+                count:8
             },
             reload:{
                 delay:0.8,
@@ -755,8 +857,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"spas12",
-            fireDelay:0.8,
-            spread:3,
+            fireDelay:1,
+            spread:2.8,
             lenght:1,
             ammoType:"12g",
             ammoSpawnAmount:18,
@@ -774,7 +876,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     falloff:0.65,
                     tracer:tracers.small
                 },
-                count:10
+                count:8
             },
             reload:{
                 delay:0.6,
@@ -802,10 +904,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"hp18",
-            fireDelay:0.6,
-            switchDelay:0.7,
+            fireDelay:0.3,
+            switchDelay:0.3,
             spread:11,
-            lenght:0.65,
+            lenght:0.9,
             ammoType:"12g",
             ammoSpawnAmount:15,
             jitterRadius:0.2,
@@ -826,7 +928,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:0.8,
-                capacity:7,
+                capacity:5,
                 shotsPerReload:1,
             },
             recoil:{
@@ -835,34 +937,74 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:1,
             gasParticles:GasParticles.shotgun,
-            arms:WeaponsArmRig[0],
-            image:{
-                position:v2.new(0.45,0.0),
-                rotation:0
-            },
+            muzzleFlash:MuzzleFlash.normal,
+            arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x12111f,
-                cycle_sound:true,
+                world_tint:0x3f3a2f
             },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
+            },
+        },
+        {
+            idString:"sr25",
+            fireDelay:0.3,
+            fireMode:FireMode.Single,
+            switchDelay:0.6,
+            spread:1,
+            lenght:0.9,
+            ammoType:"762mm",
+            ammoSpawnAmount:60,
+            class:GunClasses.DMR,
+            quality:ItemQuality.Mythic,
+            bullet:{
+                def:{
+                    damage:25,
+                    radius:0.014,
+                    range:180,
+                    speed:50,
+                    tracer:tracers.medium
+                }
+            },
+            reload:{
+                delay:2.5,
+                capacity:20
+            },
+            recoil:{
+                duration:0.4,
+                speed:0.75
+            },
+            speed_mod:0.97,
+            gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
+            arms:WeaponsArmRig[2],
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
+            },
         },
         {
             idString:"pkp",
             fireDelay:0.1,
             switchDelay:0.6,
             spread:5.5,
-            lenght:1,
+            lenght:0.9,
             ammoType:"762mm",
             ammoSpawnAmount:200,
             class:GunClasses.LMG,
             quality:ItemQuality.Legendary,
             bullet:{
                 def:{
-                    damage:10.5,
-                    obstacleMult:2,
+                    damage:14,
+                    obstacleMult:1.5,
                     radius:0.014,
-                    range:170,
+                    range:100,
                     speed:45,
                     tracer:tracers.medium
                 }
@@ -878,11 +1020,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.8,
             gasParticles:GasParticles.automatic,
             muzzleFlash:MuzzleFlash.normal,
-            arms:WeaponsArmRig[0],
-            image:WeaponsRig[0],
+            arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x12111f,
+                world_tint:0x3f3a2f
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
             },
         },
         {
@@ -910,7 +1055,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             bullet:{
                 def:{
-                    damage:20,
+                    damage:5,
                     radius:0.2,
                     range:220,
                     falloff:0.5,

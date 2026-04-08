@@ -29,6 +29,10 @@ export type ExplosionDef={
         speed:MinMax1
         lifetime:MinMax1
     }[]
+    synced_particles?:{
+        def:string
+        count:number
+    }
 }&Definition
 
 export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
@@ -40,7 +44,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:2,
                 end:3
             },
-            damage:99,
+            damage:105,
             bullet:{
                 def:{
                     damage:7,
@@ -79,7 +83,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:1,
                 end:2
             },
-            damage:90,
+            damage:80,
             assets:{
                 sound:"explosion_1"
             },
@@ -108,7 +112,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:1.5,
                 end:2
             },
-            damage:99,
+            damage:105,
             bullet:{
                 def:{
                     damage:7,
@@ -139,6 +143,22 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ]
+        },
+        {
+            idString:"smoke_grenade_explosion",
+            tint:"#355",
+            size:{
+                begin:0.3,
+                end:0.5
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_1"
+            },
+            synced_particles:{
+                count:10,
+                def:"smoke"
+            }
         },
         {
             idString:"mirv_grenade_explosion",
@@ -190,10 +210,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             idString:"submirv_grenade_explosion",
             tint:"#09e",
             size:{
-                begin:0.1,
-                end:0.2
+                begin:0.5,
+                end:1
             },
-            damage:35,
+            damage:15,
             bullet:{
                 def:{
                     damage:7,
@@ -224,6 +244,52 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ]
+        },
+        {
+            idString:"blue_flare_explosion",
+            tint:"#08b0ce",
+            size:{
+                begin:0.5,
+                end:1
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_1"
+            },
+        },
+        {
+            idString:"red_flare_explosion",
+            tint:"#ca0819",
+            size:{
+                begin:0.5,
+                end:1
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_1"
+            },
+        },
+        {
+            idString:"nuke_explosion",
+            tint:"#445",
+            size:{
+                begin:5,
+                end:10
+            },
+            damage:1000,
+            bullet:{
+                def:{
+                    damage:30,
+                    radius:0.02,
+                    speed:20,
+                    range:50,
+                    tracer:tracers.black_projectile
+                },
+                count:100
+            },
+            assets:{
+                sound:"explosion_2"
+            },
         },
     )
 }

@@ -1,0 +1,183 @@
+import { v2 } from "../../../engine/core.ts";
+import { FloorType } from "../../others/terrain.ts";
+import { type BiomeDef, type MapDef } from "./base.ts";
+import { NormalMap } from "./normal.ts";
+
+export const TundraBiome:BiomeDef={
+    floors:{
+        [FloorType.Sand]:{
+            color:0x8a979e,
+        },
+        [FloorType.Water]:{
+            color:0x274763,
+        }
+    },
+    biome_skin:"snow",
+    assets:["normal"],
+    musics:[
+        "game_tundra_music_1",
+        /*"game_normal_music_2",
+        "game_normal_music_3",*/
+    ],
+    ambient:{
+        particles:[],
+        rain:false,
+        snow:true,
+        sound:"snowstorm_ambience"
+    }
+}
+// No Shotguns And Pistols
+export const TundraMap:MapDef={
+    loot_tables:{...NormalMap.loot_tables,
+        "ammos":[
+            {item:"9mm",count:60,weight:5},
+            {item:"762mm",count:60,weight:5},
+            {item:"556mm",count:60,weight:5},
+            {item:"45acp",count:60,weight:5},
+            {item:"50cal",count:20,weight:0.1},
+            {item:"308sub",count:5,weight:0.05},
+            {item:"gasoline",count:5,weight:0.05},
+            {item:"explosive_ammo",count:2,weight:0.05},
+        ],
+        "special_ammos":[
+            {item:"9mm",count:80,weight:5},
+            {item:"762mm",count:80,weight:5},
+            {item:"556mm",count:80,weight:5},
+            {item:"45acp",count:80,weight:5},
+            {item:"50cal",count:40,weight:0.3},
+            {item:"308sub",count:10,weight:0.2},
+            {item:"gasoline",count:10,weight:0.2},
+            {item:"explosive_ammo",count:4,weight:0.2},
+        ],
+        "scopes":[
+            {item:"scope_2",count:1,weight:120},
+            {item:"scope_3",count:1,weight:50},
+            {item:"scope_4",count:1,weight:10},
+            {item:"scope_5",count:1,weight:5},
+            {item:"scope_6",count:1,weight:0.3},
+        ],
+        "special_scopes":[
+            {item:"scope_2",count:1,weight:120},
+            {item:"scope_3",count:1,weight:60},
+            {item:"scope_4",count:1,weight:24},
+            {item:"scope_5",count:1,weight:18},
+            {item:"scope_6",count:1,weight:2},
+        ],
+        "guns":[
+            {item:"m9",weight:40},
+            {item:"mp5",weight:40},
+            {item:"ak47",weight:37},
+            {item:"ar15",weight:36},
+            {item:"sr25",weight:29},
+            {item:"model94",weight:29},
+            {item:"famas",weight:27},
+            {item:"blr81",weight:25},
+            {item:"kar98k",weight:10},
+            {item:"awp",weight:1},
+            {item:"pfeifer_zeliska",weight:0.05},
+            {item:"awms",weight:0.04},
+        ],
+        "special_guns":[
+            {item:"ak47",weight:37},
+            {item:"ar15",weight:36},
+            {item:"m9",weight:35},
+            {item:"mp5",weight:35},
+            {item:"sr25",weight:30},
+            {item:"model94",weight:30},
+            {item:"famas",weight:28},
+            {item:"blr81",weight:26},
+            {item:"kar98k",weight:11},
+            {item:"awp",weight:1.1},
+            {item:"pfeifer_zeliska",weight:0.08},
+            {item:"awms",weight:0.06},
+        ],
+        "tundra_crate":[
+            [
+                {item:"famas",weight:30},
+                {item:"model94",weight:30},
+                {item:"sr25",weight:27},
+                {item:"blr81",weight:15},
+                {item:"kar98k",weight:10},
+                {item:"awp",weight:1},
+                {item:"pfeifer_zeliska",weight:0.05},
+                {item:"awms",weight:0.04},
+            ],
+            [
+                {weight:1,count:2,table:"normal_loot"},
+                {weight:0.5,count:3,table:"normal_loot"},
+            ],
+            [{weight:1,table:"special_scopes"}]
+        ],
+    },
+    default_floor:FloorType.Water,
+    biome:TundraBiome,
+    generation:{
+        island:{
+            size:v2.new(500,500),
+            spawn:[
+                [
+                    {id:"recorded_tape",count:1},
+
+                    {id:"watchtower",count:7},
+
+                    {id:"container_1",count:25},
+                    {id:"container_2",count:25},
+
+                    {id:"sillo",count:10},
+
+                    {id:"md_crate",count:10},
+                    {id:"tundra_crate",count:10},
+                    {id:"copper_crate",count:20},
+                    {id:"iron_crate",count:1},
+                    {id:"gold_crate",count:1},
+
+                    {id:"wood_crate",count:700},
+
+                    {id:"oak_tree",count:600},
+                    {id:"stone",count:500},
+                    {id:"bush",count:450},
+                    {id:"barrel",count:230},
+
+                    {id:"normal_loot",count:100}
+                ]
+            ],
+            terrain:{
+                base:FloorType.Water,
+                rivers:{
+                    divisions:100,
+                    spawn_floor:1,
+                    expansion:32,
+                    defs:[
+                        {
+                            rivers:[
+                                {sub_river_width:2,width:7,width_variation:1,sub_river_chance:0.5},
+                                {sub_river_width:1,width:8,width_variation:1,sub_river_chance:0.1},
+                            ],
+                            weight:10
+                        },
+                        {
+                            rivers:[
+                                {sub_river_width:3,width:15,width_variation:1,sub_river_chance:0.9},
+                            ],
+                            weight:1
+                        }
+                    ]
+                },
+                floors:[
+                    {
+                        padding:30,
+                        type:FloorType.Sand,
+                        spacing:3,
+                        variation:3,
+                    },
+                    {
+                        padding:14,
+                        type:FloorType.Snow,
+                        spacing:3,
+                        variation:3,
+                    }
+                ]
+            }
+        }
+    },
+}

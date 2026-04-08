@@ -401,34 +401,41 @@ export class RectHitbox2D extends BaseHitbox2D{
 
         return tmax >= 0 && tmin <= dist
     }
-    override overlapLine(a_point:Vec2,b_point:Vec2): IntersectionRes {
+    override overlapLine(a: Vec2, b: Vec2): IntersectionRes | null {
         let tmin = 0
         let tmax = Number.MAX_VALUE
 
         const eps = 1e-5
-        const r = a_point
+        const r = a
 
-        let d = v2.sub(b_point, a_point)
+        let d = v2.sub(b, a)
         const dist = v2.len(d)
+
         d = v2.normalizeSafe(d)
 
         let absDx = Math.abs(d.x)
         let absDy = Math.abs(d.y)
 
         if (absDx < eps) {
-            d.x = eps * 2
-            absDx = d.x
+            d.x = eps * 2;
+            absDx = Math.abs(d.x)
         }
+
         if (absDy < eps) {
             d.y = eps * 2
-            absDy = d.y
+            absDy = Math.abs(d.y)
         }
 
         if (absDx > eps) {
             const tx1 = (this.min.x - r.x) / d.x
             const tx2 = (this.max.x - r.x) / d.x
-            tmin = Numeric.max(tmin, Numeric.min(tx1, tx2))
-            tmax = Numeric.min(tmax, Numeric.max(tx1, tx2))
+
+            const t1 = Math.min(tx1, tx2)
+            const t2 = Math.max(tx1, tx2)
+
+            tmin = Math.max(tmin, t1)
+            tmax = Math.min(tmax, t2)
+
             if (tmin > tmax) return null
         }
 
@@ -436,29 +443,39 @@ export class RectHitbox2D extends BaseHitbox2D{
             const ty1 = (this.min.y - r.y) / d.y
             const ty2 = (this.max.y - r.y) / d.y
 
-            tmin = Numeric.max(tmin, Numeric.min(ty1, ty2))
-            tmax = Numeric.min(tmax, Numeric.max(ty1, ty2))
+            const t1 = Math.min(ty1, ty2)
+            const t2 = Math.max(ty1, ty2)
+
+            tmin = Math.max(tmin, t1)
+            tmax = Math.min(tmax, t2)
 
             if (tmin > tmax) return null
         }
 
         if (tmin > dist) return null
 
-        const p = v2.add(a_point, v2.scale(d, tmin));
+        const p = v2.add(a, v2.scale(d, tmin))
 
-        const c = v2.add(this.min, v2.scale(v2.sub(this.max, this.min), 0.5));
-        const p0 = v2.sub(p, c)
-        const d0 = v2.scale(v2.sub(this.min, this.max), 0.5);
+        const center = v2.add(this.min, v2.scale(v2.sub(this.max, this.min), 0.5))
+        const rel = v2.sub(p, center)
+        const half = v2.scale(v2.sub(this.max, this.min), 0.5)
 
-        const x = p0.x / Math.abs(d0.x) * 1.001;
-        const y = p0.y / Math.abs(d0.y) * 1.001;
+        const nx = rel.x / Math.abs(half.x)
+        const ny = rel.y / Math.abs(half.y)
+
+        let normal = v2(Math.trunc(nx * 1.001), Math.trunc(ny * 1.001))
+
+        if (normal.x === 0 && normal.y === 0) {
+            if (Math.abs(nx) > Math.abs(ny)) {
+                normal = v2(Math.sign(nx), 0)
+            } else {
+                normal = v2(0, Math.sign(ny))
+            }
+        }
 
         return {
             point: p,
-            dir: v2.normalizeSafe(
-                v2(Math.trunc(x), Math.trunc(y)),
-                v2(1, 0)
-            )
+            dir: v2.normalizeSafe(normal, v2(1, 0))
         };
     }
     override center(): Vec2 {
@@ -547,8 +564,12 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override colliding_with_line(a:Vec2,b:Vec2):boolean{
         return this.hitboxes.some(hitbox => hitbox.colliding_with_line(a,b));
     }
-    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
-        return undefined
+    override overlapLine(a:Vec2,b:Vec2): IntersectionRes {
+        for(const hb of this.hitboxes){
+            const col=hb.overlapLine(a,b)
+            if(col)return col
+        }
+        return null
     }
 
     override center(): Vec2 {

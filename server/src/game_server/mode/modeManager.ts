@@ -4,6 +4,7 @@ import { Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { type Group, type Team } from "./teams.ts";
 
 export interface GameRules{
     humans:{
@@ -114,10 +115,9 @@ export abstract class ModeManager{
 
     on_init(){}
     on_tick(dt:number){}
+    on_net_update(){}
     on_start():void{}
-    on_finish():void{
-        this.game.killing_game=true
-    }
+    on_finish():void{}
 
     abstract can_join():boolean
     abstract can_down(human:Human):boolean
@@ -129,6 +129,13 @@ export abstract class ModeManager{
 
     on_human_create(human:Human):void{}
     on_human_die(human:Human):void{}
+
+    get_group(group:number):Group|undefined{
+        return undefined
+    }
+    get_team(team:number):Team|undefined{
+        return undefined
+    }
 
     abstract generate_map():void
 

@@ -1,73 +1,56 @@
-# Surgemd Pre-Beta-4
+# Surgemd Pre-Beta-5
 ## News
 __                                                                                                      __
 ### Mains
-* **Big Refactoring in the game Code!!!**
-* **Sandbox Version**
-* **Floors!!**
-* **Scopes!**
-* **Counter MD Mode**
-* Anti Aliasing
-* Campaign LEVELS
-* Readd Vehicles
+* Airdrops And Parachutes
+* Downeds Animation
+* Tundra Mode
+* Better Bots AI
+* See Through Containers
 __                                                                                                      __
 ### Menu
-* Loading Screen Now Show The Current Asset
-* Initial Screen
-* Shop App On Tab
-* Map App On Tab
-* Debug Menu Now Is A App
-* Green Light Messages
-* A entire rework on the menus code
-* More Sounds Options
+* Match Tab App
+* Campaign Mode History Test
 __                                                                                                      __
 ### Items
-* Scope 1x(LVL 1)
-* Scope 2x(LVL 2)
-* Scope 4x(LVL 3)
-* Scope 6x(LVL 4)
-* Scope 8x(LVL 5)
-* Scope 10x(LVL 6)
-* Scope 12x(LVL 7)
-* PKP
-* Hit Sounds
-* Bullet Breaker Barrel - (Split the Bullet)
-* Liquid Insanity - (Heal You And Give A Effect)
-* Lastman Helmet
-* Elite Vest - Reflect Bullets
+* Smoke Grenade
+* SR25 - 762mm DMR
+* Model94 - 45acp Sniper
+* BLR-81 - 556mm Sniper
+* 45ACP
+* Blue Flare
+* Red Flare
+* Nuke
+* Liquid Insanity Particle
 __                                                                                                      __
 ### Others
-* Debug Map
-* Explosions Smoke Gas Particle
-* Watchtower
-* Bullet Whiz Sounds
-* Bullet Bloom
-* Rain Bloom
+* MD Crate
+* Tundra Crate
+* Buildings Ceiling Now Have Opacity
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
 ### Items
-* Change Loot Tables
+* Change Mirv Design
+* Change Axe Design
+* Change Sledgehammer Design
 __                                                                                                      __
 ### Others
-* Explosions Physics
-* Metal Sound
-* Change Damage Indicator Color
-* Now The Default Emote Key Change To 
-* Remove Mode Gif
-* Remove the dynamic lights
-* Rain Rework
-* Emotes Rework
-* Change ArtStyle
-* Balacing Changes
+* Creatures Reword
+* Balance Changes
+* Sillo Redesign
+* Nick Winner Skin Redesign
 __                                                                                                      __
 ## Fixes
-* Fix Backpacks Pickup(Now The You Can Take A Backpack Without DESTROY de previous)
-* Fix Vest And Helmet Pickup
+* Fix Bullet Range
+* Fix Damage Splash
+* Fix Ammos Gui
+* Fix Health Bar Animation
+* Fix Mouse Into Some Web Browsers
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)
-[Windows Version](https://surgemd.io/files/windows-build-lasted.zip)
-[Linux Version](https://surgemd.io/files/linux-build-lasted.zip)
-[Android Version](https://surgemd.io/files/android-build-lasted.apk)
+[Windows Version](https://surgemd.io/files/surgemd-windows-lasted.zip)
+[Linux Version](https://surgemd.io/files/surgemd-linux-lasted.zip)
+[Android Version](https://surgemd.io/files/surgemd-android-lasted.apk)
 If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

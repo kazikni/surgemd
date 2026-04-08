@@ -10,7 +10,7 @@ import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, NetStream, Numeric, PolarMovement, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, NetStream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { Loot } from "./loot.ts";
@@ -22,6 +22,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
+import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 
 export class Human extends MovingBody{
     // Definition
@@ -29,6 +30,8 @@ export class Human extends MovingBody{
     number_type:number=GameObjectType.Human
     name:string=""
     is_player:boolean=false
+    is_bot:boolean=false
+    is_npc:boolean=false
 
     humans_manager!:HumansManager
 
@@ -91,6 +94,10 @@ export class Human extends MovingBody{
 
         dirty:boolean
         dirty_part:boolean
+    }
+
+    get scope_zoom():number{
+        return 20/this.equipment_data.scope.scope_view
     }
     loadout!:HumanLoadoutData&{emote?:GameObjectDef}
     animation_data:HumanAnimationData&{switching:boolean,current_animation?:PlayerAnimation}={
@@ -173,15 +180,18 @@ export class Human extends MovingBody{
         )
     }
     create(_args: Record<string, void>): void {
+        const skin=random.choose(["nick_winner","default_skin"])
         this.loadout={
             dirty:true,
             original:{
-                skin_id:"default_skin",
+                //skin_id:"default_skin",
+                skin_id:skin,
                 emotes:{
 
                 }
             },
-            skin:this.game.definitions.skins.getFromString("default_skin"),
+            skin:this.game.definitions.skins.getFromString(skin),
+            //skin:this.game.definitions.skins.getFromString("default_skin"),
             emotes:{
 
             }
@@ -198,12 +208,13 @@ export class Human extends MovingBody{
         })
     }
     interact(user: Human): void {
-        if(!this.health_data.downed||user.team_data.team_id===undefined||(user.team_data.team_id!==this.team_data.team_id&&(user.team_data.group_id===undefined||user.team_data.group_id!==this.team_data.group_id)))return
+        if(!this.health_data.downed||!this.game.modeManager.is_ally(user,this))return
         this.help_up()
     }
 
     killed_by?:Human
 
+    downed_time:number=0
     downed_by?:Human
     downed_by_source?:DamageSourceDef
 
@@ -223,8 +234,23 @@ export class Human extends MovingBody{
         mana_consume:1,
     }
 
-    effects:Map<number,EffectInstance>=new Map()
+    temp_modifiers:Partial<HumanModifiers>={}
 
+    effects:Map<number,EffectInstance>=new Map()
+    effects_dirty:boolean=true
+
+    set_preset(preset:HumanDefinition|undefined){
+        if(!preset)return
+        if(preset.name)this.name = preset.name
+        if(preset.modifiers)this.temp_modifiers=preset.modifiers
+        if(preset.inventory)this.inventory.load_preset(preset.inventory)
+
+        if(preset.start_position)this.position=preset.start_position
+
+        this.update_modifiers()
+
+        this.health_data.health=this.health_data.max_health
+    }
     apply_modifiers(mods:Partial<HumanModifiers>){
         this.modifiers.boost*=mods.boost??1
         this.modifiers.bullet_size*=mods.bullet_size??1
@@ -235,6 +261,7 @@ export class Human extends MovingBody{
     }
     update_modifiers(){
         this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
+        this.apply_modifiers(this.temp_modifiers)
         const rules=this.game.modeManager.rules.humans
 
         switch(this.health_data.boost_def.type){
@@ -257,11 +284,7 @@ export class Human extends MovingBody{
                 break
         }
 
-        /*for(const acc of this.equipment_data.acessories.slots){
-            if(acc.item){
-                this.apply_modifiers(acc.item.modifiers)
-            }
-        }*/
+        this.inventory.accessorys.apply_modifiers(this)
 
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
@@ -288,6 +311,7 @@ export class Human extends MovingBody{
                         tick_time:0,
                         time:sf.duration
                     })
+                    this.effects_dirty=true
                 }
                 break
             }
@@ -297,6 +321,7 @@ export class Human extends MovingBody{
                     critical:false,
                     position:this.position,
                     reason:DamageReason.SideEffect,
+                    direction:0,
                 })
                 break
             case SideEffectType.Heal:
@@ -344,8 +369,8 @@ export class Human extends MovingBody{
             return
         }
         const proj=this.game.add_grenade(this.position,this.grenade_holding!.def,this,this.layer)
-        proj.physical_data.zpos=0.5
-        proj.physical_data.zpos_speed=1.5
+        proj.physical_data.zpos=0.01
+        proj.physical_data.zpos_speed=1.8
         const limit=(this.grenade_holding.def.throw_max_speed??0)
         proj.push(Numeric.clamp(this.input.dist_to_pointer*limit,0,limit),this.physical_data.rotation,10)
         proj.fuse_delay=this.grenade_holding.time
@@ -359,8 +384,7 @@ export class Human extends MovingBody{
                 if(!this.inventory.weapons[this.inventory.weapon_idx]){
                     idx=0
                 }
-                this.inventory.weapon_idx=-1
-                this.inventory.set_weapon_index(idx)
+                this.inventory.set_weapon_index(idx,true)
             }
         }
         this.grenade_holding=undefined
@@ -369,7 +393,7 @@ export class Human extends MovingBody{
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
             if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle)&&!(obj as StaticBody).physical_data.no_collision){
-                if (hb.collidingWith(obj.hitbox)) return true
+                if(hb.collidingWith(obj.hitbox))return true
             }
         }
         return false
@@ -542,11 +566,11 @@ export class Human extends MovingBody{
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
         const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
-        let speed=6*(this.recoil?this.recoil.speed:1)
+        let speed=5*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
                   * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
                   * this.modifiers.speed
-                  * (this.health_data.downed?0.4:1)
+                  * (this.health_data.downed?0.25:1)
                   * (this.parachute?1:((current_floor.speed_mult??1)))
                   * (this.grenade_holding?0.7:1)
         if(this.recoil){
@@ -576,6 +600,7 @@ export class Human extends MovingBody{
                         reason:DamageReason.Abstinence,
                         position:this.position,
                         critical:false,
+                        direction:0,
                     })
                 }else{
                     this.health_data.boost_time-=dt
@@ -593,7 +618,8 @@ export class Human extends MovingBody{
                         amount:this.health_data.health,
                         critical:true,
                         position:this.position,
-                        reason:DamageReason.Abstinence
+                        reason:DamageReason.Abstinence,
+                        direction:0,
                     })
                 }
                 if(this.health_data.boost_time<=0){
@@ -616,6 +642,7 @@ export class Human extends MovingBody{
             }
             if(e.time<0){
                 this.effects.delete(e.effect.idNumber!)
+                this.effects_dirty=true
             }
         }
         if(this.seat){
@@ -652,7 +679,11 @@ export class Human extends MovingBody{
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
 
-                this.physical_data.rotation=this.input.rotation
+                if(this.health_data.downed){
+                    this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
+                }else{
+                    this.physical_data.rotation=this.input.rotation
+                }
             }else{
                 this.physical_data.rotation=this.input.rotation
                 this.physical_data.velocity=v2.zero()
@@ -663,7 +694,7 @@ export class Human extends MovingBody{
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false
-                if(this.input.using_item&&this.inventory.hand_item&&!this.grenade_holding&&this.human_data.combat_enabled){
+                if(this.input.using_item&&this.inventory.hand_item&&!this.grenade_holding&&this.human_data.combat_enabled&&!this.health_data.downed){
                     this.inventory.hand_item.on_fire(this)
                     this.animation_data.attacking=this.inventory.hand_item.attacking()
                     this.input.using_item_down=false
@@ -707,7 +738,7 @@ export class Human extends MovingBody{
         this.physical_data.dirty_part=true
         this.net_sync.part=true
 
-        this._can_interact=this.human_data.movement_enabled
+        this._can_interact=this.human_data.movement_enabled&&!this.health_data.downed
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
@@ -715,14 +746,19 @@ export class Human extends MovingBody{
         }
 
         if(this.health_data.downed){
-            this.piercing_damage({
-                amount:1*dt,
-                critical:false,
-                position:this.position,
-                reason:DamageReason.Bleend,
-                owner:this.downed_by,
-                source:this.downed_by_source
-            })
+            this.downed_time+=dt
+            if(this.downed_time>=2){
+                this.downed_time=0
+                this.piercing_damage({
+                    amount:2,
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.Bleend,
+                    owner:this.downed_by,
+                    source:this.downed_by_source,
+                    direction:0,
+                })
+            }
         }
         //Update Inventory
         this.inventory.update(dt)
@@ -739,6 +775,7 @@ export class Human extends MovingBody{
                 position:this.position,
                 owner:undefined,
                 reason:DamageReason.DeadZone,
+                direction:0,
             })
         }
 
@@ -834,6 +871,8 @@ export class Human extends MovingBody{
 
         this.equipment_data.dirty=false
 
+        this.effects_dirty=false
+
         this.inventory.net_update()
     }
     clear_boost(){
@@ -883,6 +922,9 @@ export class Human extends MovingBody{
             mod-=this.equipment_data.helmet.reduction
             damage-=this.equipment_data.helmet.defence
         }
+        if(this.health_data.downed){
+            mod+=0.2
+        }
         if(params.critical){
             mod+=this.modifiers.critical_mult-1
         }
@@ -892,24 +934,14 @@ export class Human extends MovingBody{
 
         this.piercing_damage(params)
     }
-    piercing_damage(params: DamageParams):[number,number]{
+    piercing_damage(params: DamageParams): [number, number] {
         const totalDamage = params.amount
         let shieldDamage = 0
         let healthDamage = 0
-        this.net_sync.part=true
-
-        const baseSplash: Omit<DamageSplash, "shield" | "shield_break" | "count"> = {
-            critical: params.critical,
-            position: params.position??this.position,
-            taker: this.id,
-            taker_layer: this.layer
-        }
-
-        const splashes: DamageSplash[] = []
-
+        this.net_sync.part = true
+        const pos = params.position ?? this.position
         if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
             shieldDamage = Math.min(this.health_data.boost, totalDamage)
-
             if (totalDamage >= this.health_data.boost * 2) {
                 shieldDamage = this.health_data.boost
                 healthDamage = totalDamage - shieldDamage
@@ -917,55 +949,32 @@ export class Human extends MovingBody{
             } else {
                 this.health_data.boost -= shieldDamage
             }
-            splashes.push({
-                ...baseSplash,
-                count: Math.ceil(totalDamage),
-                shield: true,
-                shield_break: this.health_data.boost === 0
-            })
-
+            this.add_damage_splash(
+                params.owner,
+                totalDamage,
+                true,
+                params.critical,
+                pos,
+                this.health_data.boost === 0
+            )
             if (this.health_data.boost === 0) {
                 this.health_data.invensibility_time = 0.35
-                this.health_data.boost_def=Boosts[BoostType.Null]
+                this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
             healthDamage = Math.min(this.health_data.health, totalDamage)
-
-            splashes.push({
-                ...baseSplash,
-                count: Math.ceil(totalDamage),
-                shield: false,
-                shield_break: false
-            })
+            this.add_damage_splash(
+                params.owner,
+                totalDamage,
+                false,
+                params.critical,
+                pos,
+                false
+            )
         }
         if (healthDamage > 0) {
             this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
         }
-
-        if (params.owner && params.owner.is_player && params.owner.id !== this.id){
-            for (const splash of splashes) {
-                let ok = true
-                for (const ds of params.owner.splashes) {
-                    if (ds.shield === splash.shield && ds.taker === splash.taker) {
-                        ds.critical = ds.critical || splash.critical
-                        if (ds.shield) {
-                            ds.shield_break = ds.shield_break || splash.shield_break
-                        }
-                        ds.count += splash.count
-                        ok = false
-                        break
-                    }
-                }
-                if (ok) {
-                    params.owner.splashes.push(splash)
-                } else {
-                    params.owner.splash_delay = 2
-                }
-            }
-        }
-        
-        this.splashes.push(...splashes)
-
         if (this.health_data.health === 0) {
             if (!this.health_data.downed && this.game.modeManager.can_down(this)) {
                 this.down(params)
@@ -973,7 +982,39 @@ export class Human extends MovingBody{
                 this.die(params)
             }
         }
-        return [healthDamage,shieldDamage]
+        this.inventory.accessorys.call_event("damage",{params,player:this})
+        return [healthDamage, shieldDamage]
+    }
+    add_damage_splash(owner: Human | undefined,count: number,shield: boolean,critical: boolean,position: Vec2,shield_break: boolean = false){
+        const splash: DamageSplash = {
+            count: count,
+            shield,
+            critical,
+            position,
+            taker: this.id,
+            taker_layer: this.layer,
+            shield_break
+        }
+        this.splashes.push(splash)
+        if (owner && owner.is_player && owner.id !== this.id){
+            let merged = false
+            for (const ds of owner.splashes){
+                if (ds.shield === splash.shield && ds.taker === splash.taker){
+                    ds.critical = ds.critical || splash.critical
+                    if (ds.shield){
+                        ds.shield_break = ds.shield_break || splash.shield_break
+                    }
+                    ds.count += splash.count
+                    merged = true
+                    break
+                }
+            }
+            if (!merged){
+                owner.splashes.push(splash)
+            } else {
+                owner.splash_delay = 4
+            }
+        }
     }
     down(params:DamageParams){
         if(this.health_data.downed)return
@@ -984,6 +1025,10 @@ export class Human extends MovingBody{
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Null]
+
+        this.health_data.invensibility_time=1
+
+        this.inventory.set_weapon_index(0)
     }
     help_up(){
         if(!this.health_data.downed)return
@@ -1006,8 +1051,8 @@ export class Human extends MovingBody{
         }
         
         this.inventory.drop_all()
-        this.game.modeManager.on_human_die(this)
         this.killed_by=params.owner
+
         this.destroy()
         if(params.owner instanceof Human){
             if(params.owner.is_player){
@@ -1015,22 +1060,18 @@ export class Human extends MovingBody{
                     (params.owner as Player).status.kills++
                 }
             }
-            if(params.owner.inventory.acessories.hasAccesorie("liquid_insanity")){
-                params.owner.health_data.health+=20
-                params.owner.side_effect({
-                    type:SideEffectType.AddEffect,
-                    duration:4,
-                    effect:"kill_haste"
-                })
-            }
+            params.owner.inventory.accessorys.call_event("kill",params)
         }
+
+        this.game.modeManager.on_human_die(this)
+        this.game.signals.emit("human_die",{human:this})
 
         //this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
     }
     override destroy(): void {
         super.destroy()
         const idx=this.humans_manager.humans.indexOf(this)
-        if(idx!==-1)this.humans_manager.humans.splice(idx)
+        if(idx!==-1)this.humans_manager.humans.splice(idx,1)
     }
     override encode(stream: NetStream, full: boolean,utils:any): void {
         stream.writeBooleanGroup2(
@@ -1041,6 +1082,7 @@ export class Human extends MovingBody{
             // Loadout
             this.loadout.dirty, // 1
             this.animation_data.dirty, // 1
+            this.effects_dirty,
 
             // Inventory
             this.inventory.net_sync.hand, // 1
@@ -1055,7 +1097,8 @@ export class Human extends MovingBody{
             this.health_data.dead,
             this.health_data.downed,
             this.health_data.invensibility_time>0,
-
+        )
+        stream.writeBooleanGroup(
             this.input.path===undefined
         )
         // Physical
@@ -1081,6 +1124,11 @@ export class Human extends MovingBody{
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])
+        }
+        if(full||this.effects_dirty){
+            stream.writeArray(Array.from(this.effects.values()),(e)=>{
+                stream.writeUint16(e.effect.idNumber!)
+            },1)
         }
         if(full||this.animation_data.dirty){
             if(this.animation_data.current_animation!==undefined){

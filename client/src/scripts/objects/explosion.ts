@@ -72,7 +72,6 @@ export class Explosion extends GameObject{
         if(this.def.assets&&this.game.play_sounds)this.game.sounds.play(this.game.resources.get_audio(this.def.assets.sound),{
             position:this.position,
             max_distance:150,
-            rolloffFactor:0.5
         },"explosions")
 
         if(def.particles){

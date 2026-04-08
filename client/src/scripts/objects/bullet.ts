@@ -10,7 +10,6 @@ const images=[
 const particles=[
     "gas_smoke_particle"
 ]
-const SubSteps=3
 export class Bullet extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -102,45 +101,47 @@ export class Bullet extends GameObject{
             this.old_position=v2.clone(this.position)
             if(this.sprite_trail.scale.x<this.maxLength)this.tticks+=dt
             // Collisions
-            const dst=v2.scale(this.velocity,dt/SubSteps)
-            for(let s=0;s<SubSteps;s++){
-                v2m.add(this._position,this._position,dst)
-                this.manager.cells.updateObject(this)
+            const dst=v2.scale(this.velocity,dt)
 
-                const objs:GameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
+            v2m.add(this._position,this._position,dst)
+            this.manager.cells.updateObject(this)
 
-                // Bullet Whiz Sound
-                if(this._play_bullet_whiz&&this.owner_id!==this.game.active_entity_id){
-                    if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.collidingWith(this.hitbox)){
-                        this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
-                            position: this.position,
-                            max_distance: 60,
-                            volume:0.5
-                        })
-                        this._play_bullet_whiz=false
-                    }
+            // Bullet Whiz Sound
+            if(this._play_bullet_whiz&&this.owner_id!==this.game.active_entity_id){
+                if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.collidingWith(this.hitbox)){
+                    this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
+                        position: this.position,
+                        max_distance: 60,
+                        volume:0.5
+                    })
+                    this._play_bullet_whiz=false
                 }
+            }
 
-                // Collisions with objects
-                for(const obj of objs){
-                    if(this.dying)break
-                    switch((obj as BaseGameObject2D).number_type){
-                        case GameObjectType.Human:
-                            if(obj.hitbox&&!(obj as Human).dead&&!(obj as Human).parachute&&(this.hitbox.collidingWith(obj.hitbox)/*||obj.hitbox.colliding_with_line(this.old_position,this.position)*/)){
+            // Collisions with objects
+            const objs:GameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
+            for(const obj of objs){
+                if(this.dying)break
+                switch((obj as BaseGameObject2D).number_type){
+                    case GameObjectType.Human:
+                        if(!(obj as Human).dead&&!(obj as Human).parachute){
+                            const col=obj.hitbox.overlapLine(this.old_position,this.position)
+                            if(col){
                                 (obj as Human).on_hitted(this.position,this._critical)
                                 this.dying=true
-                                s=SubSteps
                             }
-                            break
-                        case GameObjectType.Building:
-                        case GameObjectType.Obstacle:
-                            if(obj.hitbox&&!(obj as StaticBody).physical_data.no_bullet_collision&&(this.hitbox.collidingWith(obj.hitbox)/*||obj.hitbox.colliding_with_line(this.old_position,this.position))*/)){
+                        }
+                        break
+                    case GameObjectType.Building:
+                    case GameObjectType.Obstacle:
+                        if(!(obj as StaticBody).physical_data.no_bullet_collision){
+                            const col=obj.hitbox.overlapLine(this.old_position,this.position)
+                            if(col){
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
                                 this.dying=true
-                                s=SubSteps
                             }
-                            break
-                    }
+                        }
+                        break
                 }
             }
             // Particles

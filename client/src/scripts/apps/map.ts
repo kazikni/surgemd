@@ -61,7 +61,7 @@ export class MapTabApp extends TabApp {
         this.deadzoneEl.style.setProperty('--dx',`${pos.x}px`)
         this.deadzoneEl.style.setProperty('--dy',`${pos.y}px`)
         this.deadzoneEl.style.setProperty('--dr',`${r*2}px`)
-        this.deadzoneEl.style.boxShadow=`0 0 0 5000px ${ColorM.rgba2hex(this.game.dead_zone.color)}`
+        this.deadzoneEl.style.boxShadow=`0 0 0 8000px ${ColorM.rgba2hex(this.game.dead_zone.color)}`
         
         this.deadzoneDestEl.style.setProperty('--dx',`${dest_pos.x}px`)
         this.deadzoneDestEl.style.setProperty('--dy',`${dest_pos.y}px`)

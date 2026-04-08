@@ -1,3 +1,4 @@
+import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
 import { type ClientGame } from "./game.ts";
 export const CenterHotspot={
@@ -88,26 +89,47 @@ export class Tween<T> {
         this.game.remove_tween(this as unknown as Tween<unknown>);
     }
 }
-export function HideElement(elem:HTMLElement,opacity=false){
-    elem.style.pointerEvents="none"
-    elem.style.userSelect="none"
-    if(opacity){
-        elem.style.opacity="0"
-    }else{
-        elem.style.display="none"
+export function HideElement(elem: HTMLElement, useOpacity = false) {
+    elem.style.pointerEvents = "none"
+    elem.style.userSelect = "none"
+
+    if (useOpacity) {
+        elem.style.opacity = "0"
+        elem.style.visibility = "hidden"
+    } else {
+        elem.style.display = "none"
+        elem.style.visibility = "hidden"
     }
 }
-export function ShowElement(elem:HTMLElement,opacity=false){
-    if(opacity){
-        elem.style.opacity="1"
+export function ShowElement(elem: HTMLElement, useOpacity = false) {
+    if (useOpacity) {
+        elem.style.display = "" 
+        elem.style.visibility = "visible"
+        requestAnimationFrame(() => {
+            elem.style.opacity = "1"
+        })
+    } else {
+        elem.style.display = ""
+        elem.style.visibility = "visible"
     }
-    elem.style.display = ""
+
     elem.style.pointerEvents = ""
-    elem.style.userSelect=""
+    elem.style.userSelect = ""
 }
-export function ToggleElement(elem:HTMLElement){
-    if(elem.style.display==="none")ShowElement(elem)
-    else HideElement(elem)
+export function ToggleElement(elem: HTMLElement, useOpacity = false) {
+    if (useOpacity) {
+        if (elem.style.opacity === "0" || elem.style.visibility === "hidden") {
+            ShowElement(elem, true)
+        } else {
+            HideElement(elem, true)
+        }
+    } else {
+        if (elem.style.display === "none") {
+            ShowElement(elem)
+        } else {
+            HideElement(elem)
+        }
+    }
 }
 
 export function ShowTab(tab:string,tabs:Record<string,HTMLElement>,opacity?:boolean){
@@ -209,4 +231,101 @@ export function enableContextMenuPrevent() {
 export function disableContextMenuPrevent() {
     document.removeEventListener("contextmenu", preventHandler);
     document.removeEventListener("selectstart", preventHandler);
+}
+export async function typewriter(element: HTMLElement,html: string,delay:Random1,on_type?: (char: string) => void): Promise<void> {
+
+    element.innerHTML = ""
+
+    const template = document.createElement("div")
+    template.innerHTML = html
+
+    // clona estrutura direto
+    const clone = template.cloneNode(true) as HTMLElement
+    element.append(...Array.from(clone.childNodes))
+
+    const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT
+    )
+
+    const originalWalker = document.createTreeWalker(
+        template,
+        NodeFilter.SHOW_TEXT
+    )
+
+    let currentNode: Node | null
+    let originalNode: Node | null
+
+    while (
+        (currentNode = walker.nextNode()) &&
+        (originalNode = originalWalker.nextNode())
+    ) {
+        const fullText = originalNode.textContent ?? ""
+        let current = ""
+
+        for (let i = 0; i < fullText.length; i++) {
+            const char = fullText[i]
+            current += char
+            currentNode.textContent = current
+
+            on_type?.(char)
+
+            await new Promise(r => setTimeout(r, random.random1(delay)))
+        }
+    }
+}
+export class ImageBuffer {
+    cache = new Map<string, HTMLImageElement>()
+    loading = new Set<string>()
+
+    lastUsed = new Map<string, number>()
+    tick = 0
+    max = 6
+
+    async load(src: string): Promise<HTMLImageElement> {
+        this.tick++
+        if (this.cache.has(src)) return this.cache.get(src)!
+
+        if (this.loading.has(src)) {
+            return new Promise(res => {
+                const check = () => {
+                    if (this.cache.has(src)) res(this.cache.get(src)!)
+                    else requestAnimationFrame(check)
+                }
+                check()
+            })
+        }
+
+        this.loading.add(src)
+        const img = new Image()
+        img.src = src
+        await img.decode().catch(()=>{})
+        this.cache.set(src, img)
+        this.loading.delete(src)
+        this.cleanup()
+        return img
+    }
+    preload(src: string) {
+        this.load(src)
+    }
+    cleanup() {
+        if (this.cache.size <= this.max) return
+
+        const entries = [...this.lastUsed.entries()]
+        entries.sort((a,b)=>a[1]-b[1])
+
+        const toRemove = this.cache.size - this.max
+
+        for (let i = 0; i < toRemove; i++) {
+            const key = entries[i][0]
+            this.cache.delete(key)
+            this.lastUsed.delete(key)
+        }
+    }
+    clear() {
+        this.cache.clear()
+        this.loading.clear()
+        this.lastUsed.clear()
+        this.tick = 0
+    }
 }

@@ -1,0 +1,109 @@
+.tab-match-app {
+    background: #0b0e13;
+    color: #d7e0ea;
+    font-family: monospace;
+    padding: 12px;
+    height: 100%;
+
+    .match-root {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .match-header {
+        text-align: center;
+        font-size: 18px;
+        letter-spacing: 2px;
+        opacity: 0.7;
+    }
+
+    .match-stats {
+        display: flex;
+        gap: 10px;
+
+        .stat-box {
+            flex: 1;
+            background: #141922;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+
+            .label {
+                font-size: 12px;
+                opacity: 0.6;
+            }
+
+            .value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #00ffcc;
+            }
+        }
+    }
+
+    .match-group {
+        background: #141922;
+        border-radius: 8px;
+        padding: 10px;
+
+        .group-title {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0.7;
+        }
+
+        .group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .group-member {
+            background: #1b2130;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .member-header {
+                display: flex;
+                justify-content: space-between;
+                font-size: 11px;
+                opacity: 0.8;
+            }
+
+            .bars {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+
+                .hp-bar,
+                .boost-bar {
+                    height: 30px;
+                    background: #000;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    position: relative;
+
+                    .fill {
+                        height: 100%;
+                        transition: width 0.25s ease;
+                    }
+                }
+
+                .hp-bar .fill {
+                    background: #ffffff;
+                }
+
+                .boost-bar {
+                    height: 10px;
+                }
+                .boost-bar .fill {
+                    height: 10px;
+                }
+            }
+        }
+    }
+}

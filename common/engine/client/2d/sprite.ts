@@ -13,6 +13,14 @@ export class Sprite2D extends Container2DObject{
     hotspot:Vec2=v2(0,0)
     _size?:Vec2M
 
+    override get visible(): boolean {
+        return this._visible&&this.frame!==undefined   
+    }
+    override set visible(val:boolean){
+        this._visible=val
+        if(this.parent)this.parent.update_visibility()
+    }
+
     get size():Vec2|undefined{
         return this._size as Vec2|undefined
     }
@@ -96,10 +104,10 @@ export class Sprite2D extends Container2DObject{
 }
 export class AnimatedSprite2D extends Sprite2D{
     override object_type:string="animated_sprite2d"
-    override has_update: boolean=true
+    override _has_update: boolean=true
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources)
-        if(this.frames){
+        if(this.frames&&this.frames[this.current_frame]){
             if(this.current_delay<this.frames[this.current_frame].delay){
                 this.current_delay+=dt
             }else{
@@ -107,6 +115,9 @@ export class AnimatedSprite2D extends Sprite2D{
                 this.current_frame=Numeric.loop(this.current_frame+1,0,this.frames.length)
                 this.set_frame(this.frames[this.current_frame],resources)
             }
+        }else{
+            this.current_delay=0
+            this.current_frame=-1
         }
     }
 }

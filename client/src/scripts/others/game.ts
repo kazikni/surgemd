@@ -37,6 +37,11 @@ import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
+import { Creature } from "../objects/creature.ts";
+import { Plane } from "./planes.ts";
+import { Parachute } from "../objects/parachute.ts";
+import { SyncedParticle } from "../objects/synced_particle.ts";
+import { MatchTabApp } from "../apps/match.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -87,12 +92,15 @@ export class Game extends ClientGame<GameObject>{
         radius: number,
         offset:Vec2
     }
+    fs?:FileManager
+
+    planes:Record<number,Plane>={}
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle/*,StaticBody,Obstacle,Loot*/],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle],
         )
 
         this.local_server=new LocalGameServer(this)
@@ -102,7 +110,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.sounds.volumes={
             "music":1,
-            "players":1,
+            "humans":1,
             "loot":1,
             "obstacles":1,
             "explosions":1,
@@ -136,6 +144,8 @@ export class Game extends ClientGame<GameObject>{
             offset:v2(0.1,0.1)
         }
 
+        this.ui.match_app=new MatchTabApp(this.tab)
+        this.tab.add_app(this.ui.match_app)
         this.tab.add_app(new MessageTabApp(this.tab))
         this.tab.add_app(new MapTabApp(this.tab))
 
@@ -289,7 +299,7 @@ export class Game extends ClientGame<GameObject>{
         })
         
         this.load_resources(["main"])
-
+        this.fs=fs
     }
     set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
         if(!this.active_entity)return
@@ -306,12 +316,15 @@ export class Game extends ClientGame<GameObject>{
         }*/
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        /*if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.driving&&this.running){
-            this.active_entity.rotation=this.input.angle
-        }*/
+        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.downed&&!this.active_entity.driving&&!this.game_over){
+            this.active_entity.enable_auto_rot=false
+            this.active_entity.physical_data.rotation=this.input.angle
+        }else{
+            this.active_entity.enable_auto_rot=true
+        }
     }
     interact(){
-        if(this.input.interact)return
+        if(this.input.interact||this.active_entity===undefined)return
         this.input.interact=true
         this.ui.update_active_player(this.active_entity)
         if(this.active_entity&&this.ui.current_interaction){
@@ -320,11 +333,6 @@ export class Game extends ClientGame<GameObject>{
     }
     set_scope(scope:ScopeDef){
         this.scope_zoom=scope.scope_view
-    }
-    async process_level(){
-        if(this.level?.assets?.background_music){
-            await this.resources.load_audio("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
-        }
     }
     async load_resources(textures:string[]=["main"]){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
@@ -350,6 +358,13 @@ export class Game extends ClientGame<GameObject>{
         //Load Sfx
         await this.resources.load_group("/sounds/game/main.json","main",this.menu.set_loading_current)
 
+        /*
+        await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("keyboard-2",{src:"/sounds/ui/keyboard-2.mp3",volume:1},"essentials",this.menu.set_loading_current)*/
+        
+        await this.resources.load_audio("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_audio("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+
         await this.resources.load_audio("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
@@ -358,11 +373,28 @@ export class Game extends ClientGame<GameObject>{
         await this.resources.load_audio("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
         if(this.level){
-            await this.process_level()
+            if(this.level?.assets?.background_music){
+                await this.resources.load_audio("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
+            }
+            if(this.level?.assets?.load?.sounds){
+                for(const s of Object.keys(this.level.assets.load.sounds)){
+                    await this.resources.load_audio(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
+                }
+            }
+            if(this.menu.campaign?.history){
+                this.menu.history_buffer.clear()
+                await this.menu.preload_history_frames(this.menu.campaign.history)
+            }
         }
 
         this.menu.hide_loading_screen()
         this.loaded=true
+    }
+    start_campaign_level(level:LevelDefinition){
+        this.local_server.begin_campaign_level(level)
+        this.local_server.start()
+        this.local_server.connect()
+        this.level=level
     }
     async start(assets:string[]){
         await this.load_resources(assets)
@@ -370,36 +402,174 @@ export class Game extends ClientGame<GameObject>{
 
         this.happening=true
 
-        this.cam2d.position.x=0
-        this.cam2d.position.y=0
-
-        /*this.sounds.listener_position.x=100000
+        this.sounds.listener_position.x=100000
         this.sounds.listener_position.y=100000
         this.cam2d.position.x=100000
-        this.cam2d.position.y=100000*/
+        this.cam2d.position.y=100000
+        this.cam2d.zoom=6
 
+        this.ambient.music.set(undefined)
+
+        if(this.level){
+            await this.menu.show_phase_intro({
+                location:this.level.meta.location,
+                name:this.level.meta.name,
+                description:this.level.meta.description,
+                date:this.level.meta.date,
+                style:"clean",
+            },[
+                this.resources.get_audio("typewriter-1"),
+                this.resources.get_audio("typewriter-2"),
+            ],this.sounds)
+            if(this.level?.begin?.history){
+                await this.menu.show_history(this.level.begin.history,this.sounds,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+            }
+        }
+
+        this.ui.start()
         this.join()
-
         this.mainloop(true)
     }
+    async end_level(kills:number=0){
+        this.stop()
+        /*await this.game_over_messages([
+            random.choose(["Hi.", "Hello.","Hey."]),
+            "You did it.",
+            ...(kills >= 1 ? [`You got ${kills} kills.`] : ["You didn't kill anyone.","Congratulations you are a good soul."]),
+            "But are you really happy?",
+            "Was it worth it?",
+            "You can leave the island...",
+            "But the island will never leave you.",
+            "Goodbye. See you later!"
+        ], this.resources.get_audio("gameover_music"))*/
+        if(this.level?.end&&this.fs){
+            if(this.level?.end?.history){
+                await this.menu.show_history(this.level.end.history,this.sounds,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+            }
+            if(this.level.end.next?.type==="level"){
+                this.soft_close_game()
+                const l=JSON.parse(await this.fs.read_file(this.menu.campaign.charpters[this.level.end.next.charpter].levels[this.level.end.next.level]))
+                this.start_campaign_level(l)
+            }
+        }
+    }
+    async on_die_level(p:GameOverPacket){
+        if(!this.level)return
+        this.add_timeout(()=>{
+            this.local_server.reset_level()
+        },2)
+        await this.game_over_messages([
+            random.choose(["Hi.", "Hello.","Hey."]),
+            random.choose([
+                "You died again.",
+                "You've become a pile of meat.",
+                "You died.",
+                "You are dead.",
+                "You lose.",
+                "Your Hearth Stop.",
+                "You were turned inside out",
+                "You were taken apart.",
+                "You suffered brain death.",
+                "You Dont Exist More",
+                "You’re sleeping with the fishes."
+            ]),
+            ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't eliminate anyone.","Unfortunately, this is not the way to get out of here alive."]),
+            ...(random.choose([
+                [
+                    "Have you heard about quickswitch?",
+                    "Quickswitch removes your recoil.",
+                    "Just switch to another weapon after shooting.",
+                    "Quickswitch only works with single-shot weapons...",
+                    "Weapons like snipers or shotguns."
+                ],
+                [
+                    "Movement is a weapon too.",
+                    "Use it wisely."
+                ],  
+                [
+                    "Cover can save your life.",
+                    "Fight near rocks or trees.",
+                    "Never stay in the open."
+                ],
+                [
+                    "Do not fight while weak.",
+                    "Heal first.",
+                    "Then fight."
+                ],
+                [
+                    "A well placed grenade",
+                    "can win a fight instantly."
+                ],
+                [
+                    "Intelligence is the key",
+                    "Know exactly what you are doing.",
+                    "Investing without a plan usually goes wrong."
+                ],
+                [
+                    "Melees is good too.",
+                    "The enemy can't aim properly if they're too close to you.",
+                ],
+                [],
+            ])),
+            ...random.choose([
+                ["Failure teaches more than victory."],
+                ["You can do it."],
+                ["Every attempt teaches something."],
+                ["I trust you"],
+                ["Never give up.","trust your instincts."],
+                ["Fritz never gave up.","Look where he is now."],
+                ["You are strong.","You are capable of anything."],
+                ["Hope is always the last to die."],
+                ["No Pain","No Gain"]
+            ]),
+            random.choose([
+                "Death is not the end.",
+                "There are things worse than death.",
+                "I need you alive.",
+                "I dont will allow you die.",
+                "You Are Too Important To Die.",
+                "There's still a lot of work ahead.",
+                "Evil never rests.",
+                "Some questions remain unanswered.",
+                "She is still alive, waiting for you.",
+                "You still have many unfinished matters.",
+                "You are too young to die.",
+                "Its Not Your Time",
+                "Your time hasn’t come yet."
+            ]),
+            "Get up!"
+        ], this.resources.get_audio("gameover_music"))
+        this.soft_reset()
+        this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
+        this.local_server.start()
+    }
     close_game(){
-        if(this.running)this.stop()
-        this.client=undefined
-        this.tab.stop_all()
-        this.ui.clear()
-        this.scene_2d.reset()
+        this.soft_close_game()
         this.menu.game_end()
-        this.local_server.stop()
-        this.active_entity=undefined
-        this.active_entity_id=undefined
-        this.game_over=false
         this.ambient.on_game_close()
+    }
+    soft_close_game(){
+        if(this.running)this.stop()
+        this.local_server.stop()
+        this.ui.clear()
+        this.happening=false
+        this.soft_reset()
     }
     soft_reset(){
         this.tab.stop_all()
-        this.scene_2d.reset()
+        this.clear()
         this.game_over=false
         this.ui.hide_game_over()
+        this.cam2d.zoom=6
+        this.active_entity=undefined
+        this.active_entity_id=undefined
+    }
+    override clear(): void {
+        super.clear()
+        for(const p of Object.values(this.planes)){
+            p.free()
+        }
+        this.planes={}
     }
     override on_stop(): void {
         super.on_stop()
@@ -433,7 +603,7 @@ export class Game extends ClientGame<GameObject>{
             this.sounds.listener_position=this.active_entity.position
             this.update_grid(this.grid_gfx,5,this.cam2d.position,v2.new(this.cam2d.width,this.cam2d.height),0.06)
 
-            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(1,dt))
+            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 
             this.ambient.update_camera()
             if(this.client&&this.client.opened){
@@ -441,6 +611,9 @@ export class Game extends ClientGame<GameObject>{
                 this.reset_input()
             }
             if(this.active_entity.dead)this.active_entity=undefined
+        }
+        for(const p of Object.values(this.planes)){
+            p.update(dt)
         }
     }
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
@@ -467,6 +640,12 @@ export class Game extends ClientGame<GameObject>{
     }
     process_general_update(up:GeneralUpdate){
         if(up.deadzone)this.dead_zone.update_from_data(up.deadzone)
+        for(const p of up.planes){
+            let plane=this.planes[p.id]
+            if(!plane)plane=new Plane(this)
+            this.planes[p.id]=plane
+            plane.update_data(p)
+        }
     }
     process_private(priv:PrivateUpdate){
         if(priv.active_entity.dirty){
@@ -531,111 +710,15 @@ export class Game extends ClientGame<GameObject>{
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
             this.reset_input()
-
-            this.ui.start()
         })
-        client.on("gameover",async(p:GameOverPacket)=>{
+        client.on("gameover",(p:GameOverPacket)=>{
             this.game_over = true
             this.ui.show_game_over(p)
-            if(this.offline){
+            if(this.level){
                 if(p.Win){
-                    await this.game_over_messages([
-                        random.choose(["Hi.", "Hello.","Hey."]),
-                        "You did it.",
-                        ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't kill anyone.","Congratulations you are a good soul."]),
-                        "But are you really happy?",
-                        "Was it worth it?",
-                        "You can leave the island...",
-                        "But the island will never leave you.",
-                        "Goodbye. See you later!"
-                    ], this.resources.get_audio("gameover_music"))
+                    this.end_level(p.Kills)
                 }else{
-                    await this.game_over_messages([
-                        random.choose(["Hi.", "Hello.","Hey."]),
-                        random.choose([
-                            "You died again.",
-                            "You've become a pile of meat.",
-                            "You died.",
-                            "You are dead.",
-                            "You lose.",
-                            "Your Hearth Stop.",
-                            "You were turned inside out",
-                            "You were taken apart.",
-                            "You suffered brain death.",
-                            "You Dont Exist More",
-                            "You’re sleeping with the fishes."
-                        ]),
-                        ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't eliminate anyone.","Unfortunately, this is not the way to get out of here alive."]),
-                        ...(random.choose([
-                            [
-                                "Have you heard about quickswitch?",
-                                "Quickswitch removes your recoil.",
-                                "Just switch to another weapon after shooting.",
-                                "Quickswitch only works with single-shot weapons...",
-                                "Weapons like snipers or shotguns."
-                            ],
-                            [
-                                "Movement is a weapon too.",
-                                "Use it wisely."
-                            ],  
-                            [
-                                "Cover can save your life.",
-                                "Fight near rocks or trees.",
-                                "Never stay in the open."
-                            ],
-                            [
-                                "Do not fight while weak.",
-                                "Heal first.",
-                                "Then fight."
-                            ],
-                            [
-                                "A well placed grenade",
-                                "can win a fight instantly."
-                            ],
-                            [
-                                "Intelligence is the key",
-                                "Know exactly what you are doing.",
-                                "Investing without a plan usually goes wrong."
-                            ],
-                            [
-                                "Melees is good too.",
-                                "The enemy can't aim properly if they're too close to you.",
-                            ],
-                            [],
-                        ])),
-                        ...random.choose([
-                            ["Failure teaches more than victory."],
-                            ["You can do it."],
-                            ["Every attempt teaches something."],
-                            ["I trust you"],
-                            ["Never give up.","trust your instincts."],
-                            ["Fritz never gave up.","Look where he is now."],
-                            ["You are strong.","You are capable of anything."],
-                            ["Hope is always the last to die."],
-                            ["No Pain","No Gain"]
-                        ]),
-                        random.choose([
-                            "Death is not the end.",
-                            "There are things worse than death.",
-                            "I need you alive.",
-                            "I dont will allow you die.",
-                            "You Are Too Important To Die.",
-                            "There's still a lot of work ahead.",
-                            "Evil never rests.",
-                            "Some questions remain unanswered.",
-                            "She is still alive, waiting for you.",
-                            "You still have many unfinished matters.",
-                            "You are too young to die.",
-                            "Its Not Your Time",
-                            "Your time hasn’t come yet."
-                        ]),
-                        "Get up!"
-                    ], this.resources.get_audio("gameover_music"))
-                    if(this.level){
-                        this.soft_reset()
-                        this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
-                        this.local_server.restart_level()
-                    }
+                    this.on_die_level(p)
                 }
             }
         })

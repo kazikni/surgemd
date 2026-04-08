@@ -95,7 +95,7 @@ export class CounterMD extends ModeManager {
             ):NormalCounterMD,*/
             map:settings.map as CounterMapDef??NormalCounterMD,
             rules:{
-                team_need_win:settings.rules?.team_need_win??5,
+                team_need_win:settings.rules?.team_need_win??15,
                 freeze_time:settings.rules?.freeze_time??8,
                 round_time:settings.rules?.round_time??120,
             },
@@ -454,7 +454,6 @@ export class CounterMD extends ModeManager {
         }
     }
     /* ---------------- MAP ---------------- */
-
     override generate_map(): void {
         this.game.map.generate(this.settings.map)
         this.game.deadzone.set_config(this.settings.deadzone)

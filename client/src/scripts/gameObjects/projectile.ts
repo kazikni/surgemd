@@ -1,4 +1,4 @@
-import { ProjectileDef, Projectiles } from "../../../../common/scripts/definitions/items/grenades.ts"
+import { ProjectileDef, Projectiles } from "common/scripts/definitions/items/grenades.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { CenterHotspot, CircleHitbox2D, NetStream, Sprite2D, v2 } from "common/engine/client.ts";
 export class Projectile extends GameObject{

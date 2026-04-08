@@ -1,10 +1,11 @@
 import { fullCanvas, Renderer, WebglRenderer } from "../rendering/renderer.ts"
-import { CamA, Container2D, Container2DObject } from "./base.ts"
+import { CamA, Container2DObject } from "./base.ts"
 import { v2 } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Context2D, GLContext2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/definition/matrix.ts";
 import { RectHitbox2D } from "../../core/math/hitbox.ts";
+import { Container2D } from "./container.ts";
 
 export class Camera2D{
     renderer:Renderer

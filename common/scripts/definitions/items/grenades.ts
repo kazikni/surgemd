@@ -1,4 +1,4 @@
-import { Definition, Definitions, v2 } from "../../../engine/core.ts";
+import { Definition, Definitions, FrameDef, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemQuality, WeaponAssets, WeaponRig } from "../../others/item.ts"
 import { InventoryItemType } from "../utils.ts";
 export type GrenadeDef={
@@ -35,6 +35,23 @@ export type GrenadeDef={
 
     quality:ItemQuality
     item_type?:InventoryItemType.grenade
+
+    call_airdrop?:{
+        delay:number
+    }
+    call_airstrike?:{
+        delay:number
+        def:string
+    }
+    particles?:{
+        spawn_delay?:number
+        spawn:Vec2
+        delay:number
+        frame:FrameDef
+        speed:MinMax1
+        lifetime:MinMax1
+        tint:number
+    }
 }&Definition
 const GrenadeRig={
     position:v2.new(0.5,0.18),
@@ -60,6 +77,30 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             explosion:"frag_grenade_explosion",
             frames:{
                 world:"proj_frag"
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Common
+        },
+        {
+            idString:"smoke_grenade",
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.7,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:4
+            },
+            throw_max_speed:17,
+            explosion:"smoke_grenade_explosion",
+            frames:{
+                world:"proj_smoke"
             },
             speed_mod:1,
             arms:DefaultFistRig,
@@ -112,5 +153,118 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             image:GrenadeRig,
             quality:ItemQuality.Common
         },
-    )   
+        {
+            idString:"blue_flare",
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.6,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:20
+            },
+            throw_max_speed:20,
+            explosion:"blue_flare_explosion",
+            frames:{
+                world:"proj_blue_flare"
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Common,
+            call_airdrop:{
+                delay:9
+            },
+            particles:{
+                spawn_delay:6,
+                tint:0x08b0ce,
+                delay:0.1,
+                spawn:v2.new(0.3,0),
+                lifetime:{
+                    min:2,
+                    max:5
+                },
+                speed:{
+                    min:0.1,
+                    max:0.25
+                },
+                frame:{
+                    image:"gas_particle",
+                    scale:0.01
+                }
+            },
+        },
+        {
+            idString:"red_flare",
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.6,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:9
+            },
+            throw_max_speed:20,
+            explosion:"red_flare_explosion",
+            frames:{
+                world:"proj_red_flare"
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Common,
+            call_airstrike:{
+                delay:3,
+                def:"nuke"
+            },
+            particles:{
+                spawn_delay:3,
+                tint:0xca0819,
+                delay:0.1,
+                spawn:v2.new(0.3,0),
+                lifetime:{
+                    min:2,
+                    max:5
+                },
+                speed:{
+                    min:0.1,
+                    max:0.25
+                },
+                frame:{
+                    image:"gas_particle",
+                    scale:0.01
+                }
+            },
+        },
+        {
+            idString:"nuke",
+            gravity:0.2,
+            radius:0.6,
+            zBaseScale:1,
+            zScaleAdd:1,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:3
+            },
+            explosion:"nuke_explosion",
+            frames:{
+                world:"proj_nuke"
+            },
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            quality:ItemQuality.Legendary
+        },
+    )
 }

@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Hitbox2D, jaggedRectangle, NetStream, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Hitbox2D, jaggedRectangle, NetStream, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef } from "common/scripts/definitions/maps/base.ts"
@@ -39,8 +39,8 @@ export const generation={
             for(const spawn of def.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
-                    /*if(Creatures.exist(item.id)){
-                        const def=Creatures.getFromString(item.id)
+                    if(map.game.definitions.creatures.exist(item.id)){
+                        const def=map.game.definitions.creatures.getFromString(item.id)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.game.add_creature(v2.new(0,0),def,item.layer)
                             const pos=map.getRandomPosition(obj.hitbox,obj.id,obj.layer,item.spawn??def.spawn??{
@@ -53,8 +53,7 @@ export const generation={
                             }
                             obj.position=pos
                         }
-                    }else */
-                    if(map.game.definitions.buildings.exist(item.id)){
+                    }else if(map.game.definitions.buildings.exist(item.id)){
                         const def=map.game.definitions.buildings.getFromString(item.id)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.generate_building(def,random,item.spawn,item.layer)
@@ -107,45 +106,47 @@ export class GameMap{
 
     objects:StaticBody[]=[]
 
-    getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:(hitbox:Hitbox2D,map:GameMap)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
+    point_is_valid(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap){
+        const objs=map.game.scene_2d.objects.cells.get_objects(hitbox,layer)
+        for(const o of objs){
+            if(!(o.id===id&&o.layer===layer)){
+                if((o.string_type==="obstacle"||o.string_type==="building")&&hitbox.collidingWith((o as StaticBody).spawn_hitbox??o.hitbox)){
+                    return false
+                }
+            }
+        }
+        switch(mode.type){
+            case SpawnModeType.any:
+                break
+            case SpawnModeType.blacklist:{
+                const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Water)
+                return !mode.list.includes(floor)
+            }
+            case SpawnModeType.whitelist:{
+                const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Water)
+                return mode.list.includes(floor)
+            }
+        }
+        return true
+    }
+    random_point_inside(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
+        return v2.random2_s(v2.zero,map.size,random)
+    }
+    getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:(hitbox:Hitbox2D,map:GameMap,random:SeededRandom)=>Vec2,valid?:(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap)=>boolean,maxAttempts:number=100):Vec2|undefined{
         let pos:Vec2|undefined=undefined
         let attempt=0
         if(!valid){
-            valid=(hitbox:Hitbox2D,id:number,layer:number,map:GameMap)=>{
-                const objs=map.game.scene_2d.objects.cells.get_objects(hitbox,layer)
-                for(const o of objs){
-                    if(!(o.id===id&&o.layer===layer)){
-                        if((o.string_type==="obstacle"||o.string_type==="building")&&hitbox.collidingWith((o as StaticBody).spawn_hitbox??o.hitbox)){
-                            return false
-                        }
-                    }
-                }
-                switch(mode.type){
-                    case SpawnModeType.any:
-                        break
-                    case SpawnModeType.blacklist:{
-                        const floor=this.terrain.get_floor_type(hitbox.position,layer,FloorType.Water)
-                        return !mode.list.includes(floor)
-                    }
-                    case SpawnModeType.whitelist:{
-                        const floor=this.terrain.get_floor_type(hitbox.position,layer,FloorType.Water)
-                        return mode.list.includes(floor)
-                    }
-                }
-                return true
-            }
+            valid=this.point_is_valid
         }
         if(!gp){
-            gp=(_hitbox:Hitbox2D,map:GameMap)=>{
-                return v2.random2_s(v2.zero,map.size,random)
-            }
+            gp=this.random_point_inside
         }
         const hb=hitbox
         while(!pos){
             if(attempt>=maxAttempts)break
-            pos=gp!(hb,this)
+            pos=gp!(hb,this,random)
             const hh=hb.transform(pos)
-            if(!valid!(hh,id,layer,this)){
+            if(!valid!(hh,id,layer,mode,this)){
                 pos=undefined
             }
             attempt++
@@ -154,6 +155,9 @@ export class GameMap{
     }
     clamp_hitbox(position:Vec2,hb:Hitbox2D):Vec2{
         return hb.clamp(position,v2.new(0,0),this.size)
+    }
+    clamp(v:Vec2){
+        v2m.clamp2(v,v2.zero,this.size)
     }
     add_obstacle(def:ObstacleDef,rotation?:number,layer?:number):Obstacle{
         const o=this.game.scene_2d.objects.add_object(new Obstacle(),layer??Layers.Normal,undefined,{

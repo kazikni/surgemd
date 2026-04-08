@@ -45,6 +45,8 @@ export class AmbientManager{
     bullet_whiz_hitbox?:CircleHitbox2D
     last_music_pos:number=0
 
+    musics:string[]=[]
+
     constructor(game:Game){
         this.game=game
         this.rain_particles_emitter=this.game.particles.add_emiter({
@@ -141,7 +143,9 @@ export class AmbientManager{
         this.game.sounds.init_html_sound_bindings("ui",this.game.resources)
 
         this.music=this.game.sounds.get_manipulative_si("music")??game.sounds.add_manipulative_si("music")
+        this.music.volume=0.65
         this.ambience=game.sounds.add_manipulative_si("ambience")
+        this.ambience.volume=0.25
         this.game.sounds.signals.on("load",async()=>{
             await this.game.resources.load_audio("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
             await this.game.resources.load_audio("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
@@ -167,22 +171,28 @@ export class AmbientManager{
         this.reload()
         this.last_music_pos=0
     }
+    clear(){
+        this.music.set(undefined)
+        this.ambience.set(undefined)
+    }
     reload(){
         this.biome=this.game.terrain.biome!
-        if(this.game.save.get_variable("sv_graphics_climate")){
-            this.ambient_particles_emitter.enabled=(this.biome?.ambient.particles!=undefined&&this.biome.ambient.particles.length>0)
-            this.rain_particles_emitter.enabled=(this.biome?.ambient.rain!)
-            this.snow_particles_emitter.enabled=(this.biome?.ambient.snow!)
-        }else{
-            this.ambient_particles_emitter.enabled=false
-            this.rain_particles_emitter.enabled=false
-            this.snow_particles_emitter.enabled=false
-        }
         if(this.biome.ambient.sound){
             this.ambience.set(this.game.resources.get_audio(this.biome.ambient.sound),true)
         }else{
             this.ambience.set(null)
         }
+        if(this.game.save.get_variable("sv_graphics_climate")){
+            this.ambient_particles_emitter.enabled=(this.biome?.ambient.particles!=undefined&&this.biome.ambient.particles.length>0)
+            this.rain_particles_emitter.enabled=(this.biome?.ambient.rain!)
+            this.snow_particles_emitter.enabled=(this.biome?.ambient.snow!)
+            this.ambience.set(this.game.resources.get_audio("storm_ambience"),true)
+        }else{
+            this.ambient_particles_emitter.enabled=false
+            this.rain_particles_emitter.enabled=false
+            this.snow_particles_emitter.enabled=false
+        }
+        this.musics=this.biome.musics??[]
 
         //this.game.light_map.ambient=0
 
@@ -195,21 +205,10 @@ export class AmbientManager{
 
         this.global_ilumination=0.5
     }
-    musics:string[]=[
-        "game_normal_music_1",
-        "game_normal_music_2",
-        "game_normal_music_3",
-        "game_normal_music_4",
-        "game_normal_music_5",
-    ]
     /*musics:string[]=[
         "game_snow_music_1",
         "game_snow_music_2",
     ]*/
-    ending_music:string[]=[
-        "game_campaing_ending_1",
-        "game_campaing_ending_2"
-    ]
     end_game=false
     grand_finale(){
         if(this.end_game)return
@@ -264,8 +263,8 @@ export class AmbientManager{
         }
 
         if(!this.game.game_over){
-            if(!this.music.running){
-                if(Math.random()<=0.0002){
+            if(!this.music.running&&this.musics.length>0){
+                if(Math.random()<=0.0001){
                     this.music.set(this.game.resources.get_audio(random.choose(this.musics)))
                 }
             }

@@ -1,5 +1,5 @@
 
-import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager,  Numeric, OfflineClientsManager, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -23,13 +23,22 @@ import { Grenade } from "../objects/grenade.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Building } from "../objects/building.ts";
 import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
-import { BattleRoyaleDebug, BattleRoyaleSolo } from "../mode/battle_royale.ts";
+import { BattleRoyaleDebug, BattleRoyaleGroup, BattleRoyaleSolo } from "../mode/battle_royale.ts";
 import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
+import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
+import { Creature } from "../objects/creature.ts";
+import { Parachute } from "../objects/parachute.ts";
+import { SyncedParticle } from "../objects/synced_particle.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
     called:boolean
+    speed:number
+    
+    owner?:Human
+    grenade_def?:GrenadeDef
 }
 export interface GameData {
     living_count: number[]
@@ -78,7 +87,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     closed:boolean=false
     started:boolean=false
     fineshed:boolean=false
-    killing_game:boolean=false
 
     statistics?:GameStatistic
 
@@ -128,7 +136,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         ambient:false,
     }
     constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
-        super(main_config.game.options.gameTps,id,clients,[
+        super(100,id,clients,[
             Human,
             Loot,
             Grenade,
@@ -136,7 +144,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Building,
             Vehicle,
             Bullet,
-            Explosion
+            Explosion,
+            Creature,
+            Parachute,
+            SyncedParticle
         ])
 
         this.ntps=30
@@ -183,7 +194,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             }
         }
 
-
         this.modeManager=mode
         mode.init(this)
         mode.generate_map()
@@ -205,7 +215,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(!has_mode){
             switch(game_config.mode){
                 case "normal":
-                    this.init(new BattleRoyaleSolo(game_config.mode_settings))
+                    if((game_config.group_size??1)>1){
+                        this.init(new BattleRoyaleGroup(game_config.group_size??1,game_config.mode_settings))
+                    }else{
+                        this.init(new BattleRoyaleSolo(game_config.mode_settings))
+                    }
                     break
                 case "counter_md":
                     this.init(new CounterMD(game_config.mode_settings))
@@ -215,33 +229,103 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                     break
             }
         }
+
+        /*for(let i=0;i<99;i++){
+            const b = this.players.add_bot(new JoinPacket())
+            if(b.human){
+                if(Math.random()<=0.7){
+                    b.human.set_preset({
+                        "inventory":{
+                            "infinity_ammo":true,
+                            "hand":1,
+                            "backpack":[
+                                {"item":"basic_pack","weight":10},
+                                {"item":"regular_pack","weight":15,"drop_chance":0.3},
+                                {"item":"tactical_pack","weight":10,"drop_chance":0.5}
+                            ],
+                            "vest":[
+                                {"item":"basic_vest","weight":10,"drop_chance":0.3},
+                                {"item":"regular_vest","weight":15,"drop_chance":0.5},
+                                {"item":"tactical_vest","weight":10,"drop_chance":0.75}
+                            ],
+                            "helmet":[
+                                {"item":"basic_helmet","weight":10,"drop_chance":0.3},
+                                {"item":"regular_helmet","weight":15,"drop_chance":0.5},
+                                {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
+                            ],
+                            "gun1":[
+                                {"item":"blr81","weight":6},
+                                {"item":"model94","weight":6},
+                                {"item":"kar98k","weight":1.5},
+                                {"item":"awp","weight":0.5},
+                                {"item":"awms","weight":0.01}
+                            ],
+                            "gun2":[
+                                {"item":"mp5","weight":7},
+                                {"item":"ak47","weight":7},
+                                {"item":"model94","weight":5},
+                                {"item":"blr81","weight":5},
+                                {"item":"kar98k","weight":1},
+                                {"item":"awp","weight":0.5},
+                                {"item":"pkp","weight":0.1},
+                                {"item":"awms","weight":0.01}
+                            ],
+                            "boosts":[
+                                {"weight":8,"boost_type":0,"boost":0},
+                                {"weight":1,"boost_type":1,"boost":1},
+                                {"weight":1,"boost_type":2,"boost":1}
+                            ],
+                            "aitems":{
+                                "12g":30,
+                                "556mm":150,
+                                "762mm":150,
+                                "45acp":150,
+                                "9mm":200,
+                            },
+                            "iitems":[
+                                "scope_2",
+                                "scope_3",
+                                "scope_4",
+                            ]
+                        }
+                    })
+                    b.ai=new ADVHumanAI(b.human)
+                }else{
+                    b.ai=new DumbBotAI(b.human)
+                }
+            }
+        }*/
     }
     override net_update(full:boolean){
         this.players.net_update()
+        this.modeManager.on_net_update()
     }
     override on_update(dt:number): void {
         super.on_update(dt)
         this.players.update(dt)
         this.deadzone.tick(dt)
         this.modeManager.tick(dt)
-        /*for(const p of this.planes){
-            p.pos=v2.add(p.pos,v2.scale(p.velocity,dt))
-            switch(p.type){
-                case 0:
-                    if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
-                        const obs=this.map.add_obstacle(Obstacles.getFromString("copper_crate"))
-                        obs.set_position(p.pos,0)
-                        obs.manager.cells.updateObject(obs)
-                        p.called=true
-                    }
-                    break
+        for(const p of this.planes){
+            if(!p.called){
+                p.direction=v2.lookTo(p.pos,p.target_pos)
+                p.velocity=v2.from_RadAngle(p.direction)
+                v2m.scale(p.velocity,p.velocity,p.speed)
             }
-        }*/
-        if(this.killing_game){
-            this.clock.timeScale=Numeric.lerp(this.clock.timeScale,0,0.03)
-            if(this.clock.timeScale<=0.05){
-                this.clock.timeScale=1
-                this.stop()
+            v2m.add(p.pos,p.pos,v2.scale(p.velocity,dt))
+            if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
+                switch(p.type){
+                    case 0:
+                        this.add_parachute(p.target_pos)
+                        break
+                    case 1:{
+                        const g=this.add_grenade(p.target_pos,p.grenade_def!,p.owner,Layers.Normal)
+                        g.physical_data.zpos=1
+                        g.physical_data.zpos_speed=0
+                        g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
+                        break
+                    }
+                }
+                p.called=true
             }
         }
     }
@@ -265,18 +349,34 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
-        /*const dir=v2.lookTo(v2.new(0,0),position)
-
+        const dir=v2.lookTo(v2.new(0,0),position)
         this.planes.push({
             id:random.int(0,1000000),
             complete:false,
             direction:dir,
             target_pos:position,
             called:false,
-            pos:v2.new(0,0),//v2.mult(v2.from_RadAngle(dir),this.map.size),
-            velocity:v2.scale(v2.from_RadAngle(dir),8),
+            pos:v2.zero(),
+            speed:13,
+            velocity:v2.zero,
             type:0
-        })*/
+        })
+    }
+    add_airstrike(position:Vec2,grenade:GrenadeDef,owner?:Human){
+        const dir=v2.lookTo(v2.new(0,0),position)
+        this.planes.push({
+            id:random.int(0,1000000),
+            direction:dir,
+            complete:false,
+            target_pos:position,
+            called:false,
+            pos:v2.zero(),
+            speed:100,
+            velocity:v2.zero,
+            type:1,
+            owner:owner,
+            grenade_def:grenade
+        })
     }
     override on_run(): void {
         this.update_data()
@@ -292,6 +392,21 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         }*/
         this.update_data()
         console.log(`Game ${this.id} Stopped`)
+    }
+    soft_reset(){
+        this.humans.clear_npcs()
+        this.players.clear_bots()
+        this.clear_loot()
+        this.map.soft_reset()
+        this.deadzone.reset()
+        this.timeouts.length=0
+        this.started = false
+        this.closed = false
+    }
+    override mainloop(rqf?:boolean,auto_mainloop?:boolean){
+        this.fineshed=false
+        this.closed=false
+        super.mainloop(rqf,auto_mainloop)
     }
     start(){
         if(this.started)return
@@ -312,8 +427,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     finish(){
         if(this.fineshed)return
         this.fineshed=true
-        this.modeManager.on_finish()
         this.update_data()
+        this.stop()
+
+        this.modeManager.on_finish()
+        this.signals.emit("finish",{})
+
         console.log(`Game ${this.id} Fineshed`)
     }
     add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal):Bullet{
@@ -356,11 +475,18 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const v=this.scene_2d.objects.add_object(new Vehicle(),layer,undefined,{position,def}) as Vehicle
         return v
     }
-    /*
     add_creature(position:Vec2,def:CreatureDef,layer:number=Layers.Normal):Creature{
-        const c=this.scene.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
+        const c=this.scene_2d.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
         return c
-    }*/
+    }
+    add_parachute(position:Vec2,layer=Layers.Normal):Parachute{
+        const p=this.scene_2d.objects.add_object(new Parachute(),layer,undefined,{position}) as Parachute
+        return p
+    }
+    add_synced_particle(position:Vec2,def:SyncedParticleDef,layer=Layers.Normal):SyncedParticle{
+        const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position}) as SyncedParticle
+        return p
+    }
     override handle_connection(client:Client,username:string){
         this.players.connection(client,username)
     }

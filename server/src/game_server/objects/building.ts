@@ -27,12 +27,14 @@ export class Building extends StaticBody {
 
         if (def.hitbox) {
             this.physical_data.hitbox = def.hitbox.clone()
+            this.base_hitbox = this.physical_data.hitbox
         }
         if(this.def.spawnHitbox){
             this.physical_data.spawn_hitbox=this.def.spawnHitbox
         }else{
             this.physical_data.spawn_hitbox=this.base_hitbox
         }
+        this.physical_data.reflect_bullet=this.def.reflect_bullets??false
 
         this.update_hitbox()
     }

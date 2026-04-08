@@ -16,6 +16,7 @@ export class Building extends StaticBody{
         collided:boolean
         opacity:number
         hitbox:Hitbox2D
+        base_hitbox:Hitbox2D
         container:Container2DObject
     }[]=[]
 
@@ -43,14 +44,23 @@ export class Building extends StaticBody{
     }
     update(dt:number): void {
         for(const c of this.ceilings){
+            if(c.container.tint.a===0&&c.container.visible){
+                c.container.visible=false
+            }else if(c.container.tint.a!==0&&!c.container.visible){
+                c.container.visible=true
+            }
+
             if(!c.collided){
-                c.container.tint.a=Numeric.lerp(c.container.tint.a,1,1/(1+dt*1000))
+                c.container.tint.a=Numeric.lerp(c.container.tint.a,1,Numeric.dt_expo_inter(5,dt))
             }
             c.collided=false
         }
     }
     constructor(){
         super()
+    }
+    override create(_args: Record<string, any>): void {
+        this.updatable=true
     }
     set_definition(def:BuildingDef){
         if(this.def)return
@@ -92,8 +102,9 @@ export class Building extends StaticBody{
 
             this.ceilings.push({
                 container:sprite,
+                base_hitbox:c.hitbox,
                 hitbox:c.hitbox.transform(this.position),
-                opacity:c.visible_opacity??0.5,
+                opacity:c.visible_opacity??0,
                 collided:false
             })
         }

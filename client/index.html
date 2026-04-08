@@ -21,7 +21,7 @@
     <script type="module" src="./src/scripts/others/index.ts" async></script>
     <div id="game" style="display: none;">
       <div>
-        <div id="game-gui">
+        <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
           <div id="game-mobile-gui" style="display: none; pointer-events: none;">
             <kl-joystick id="left-joystick"></kl-joystick>
             <kl-joystick id="right-joystick"></kl-joystick>
@@ -104,6 +104,7 @@
       </div>
       <div id="menu-content">
       </div>
+      <p id="game-version">Pre-Beta-5</p>
       <!--<kl-md-submenu id="menu-play-submenu" class ="md-menu-game" style="opacity: 0;">
         <kl-md-submenu-content>
             <kl-md-menu-options>
@@ -264,11 +265,33 @@
         </div>
       </div>
       <div id="initial-screen"></div>
-      <div id="text-gameover-container" style="opacity: 0;pointer-events:none;">
+      <div id="text-gameover-container" style="opacity:0;pointer-events:none;visibility:hidden;">
         <div class="tv-static"></div>
         <p id="text-gameover"></p>
       </div>
       <div id="vignetting-gfx"></div>
+      <div id="history-overlay" style="opacity:0;pointer-events:none;visibility:hidden;">
+        <div class="tv-static"></div>
+        <div id="history-container">
+          <img id="history-frame">
+        </div>
+        <div id="history-dialog">
+          <div id="history-dialog-text" style="pointer-events:none;display:none" class="dialog-box">
+            <p class="name"></p>
+            <p class="content"></p>
+          </div>
+          <div id="history-dialog-indicator" style="pointer-events:none;display:none">▶</div>
+        </div>
+      </div>
+      <div id="phase-intro-overlay" style="display:none;visibility:none;pointer-events:none;">
+        <div class="tv-static"></div>
+        <div id="phase-intro-content">
+          <div id="phase-intro-name"></div>
+          <div id="phase-intro-location"></div>
+          <div id="phase-intro-date"></div>
+          <div id="phase-intro-description"></div>
+        </div>
+    </div>
     </div>
   </body>
 </html>

@@ -11,17 +11,16 @@ export const GameConstants={
         max_name_size:25,
     },
     loot:{
-        velocityDecay:2,
         radius:{
-            ammo:0.38,
-            weapon:0.59,
-            consumible:0.38,
-            equipament:0.38,
-            grenade:0.38,
-            skin:0.38
+            ammo:0.4,
+            weapon:0.65,
+            accessory:0.65,
+            consumible:0.4,
+            equipament:0.4,
+            grenade:0.4,
+            skin:0.4
         }
     },
-    tps:25,
     collision:{
         threads:2,
         chunckSize:2
@@ -69,9 +68,11 @@ export enum zIndexes{
     Obstacles3,
     Obstacles4,
     Explosions,
+    SyncedParticle,
     BuildingsCeiling,
     ParachutePlayers,
     Rain1,
+    Parachute,
     Planes,
     DeadZone,
     Lights,
@@ -163,5 +164,8 @@ export enum GameObjectType{
     Bullet,
     Explosion,
     Grenade,
-    Vehicle
+    Vehicle,
+    Creature,
+    Parachute,
+    SyncedParticle,
 }

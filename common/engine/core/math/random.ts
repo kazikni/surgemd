@@ -1,5 +1,6 @@
 import { type DegAngle, type RadAngle } from "./geometry.ts";
 import { Numeric, type ID } from "./utils.ts";
+import { type Vec2 } from "./vec2.ts";
 
 export interface WeightDefinition{
     weight:number
@@ -27,6 +28,11 @@ export const random=Object.freeze({
     },
     deg():DegAngle{
         return this.int(-180,180)
+    },
+    random_in_circle(radius:number):Vec2{
+        const len=this.float(0,radius)
+        const angle=this.rad()
+        return {x:Math.cos(angle)*len,y:Math.sin(angle)*len}
     },
     weight<Item>(items:Item[], weights:number[]) {
         const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
@@ -104,6 +110,18 @@ export class SeededRandom {
     set_seed(seed:number){
         this._rng=this.seed
         this.seed=seed
+    }
+
+    rad():RadAngle{
+        return Math.random()*(Math.PI-(-Math.PI))+(-Math.PI)
+    }
+    deg():DegAngle{
+        return this.int(-180,180)
+    }
+    random_in_circle(radius:number):Vec2{
+        const len=this.float(0,radius)
+        const angle=this.rad()
+        return {x:Math.cos(angle)*len,y:Math.sin(angle)*len}
     }
     reset(){
         this._rng=this.seed

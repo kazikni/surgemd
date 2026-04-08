@@ -1,4 +1,4 @@
-import { BattleRoyaleSolo, CampaignGamemodeManager, LevelPlayer, OfflineGameServer } from "./offline.ts";
+import { BattleRoyaleSolo, LevelPlayer, OfflineGameServer } from "./offline.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
@@ -34,7 +34,9 @@ self.onmessage = (ev) => {
         }
         case "init_mode":{
             server.init(new BattleRoyaleSolo({
-                map:Maps["normal"],
+                map:{
+                    def:Maps["normal"]
+                },
                 players:{
                     limit:100,
                 }
@@ -42,15 +44,16 @@ self.onmessage = (ev) => {
             break
         }
         case "start":{
-            server.mainloop()
+            if(!server.running)server.mainloop()
+            level.start()
             break
         }
         case "stop":{
             server.stop()
             break
         }
-        case "restart_level":{
-            (level.game.modeManager as CampaignGamemodeManager).start_level_again()
+        case "reset_level":{
+            level.reset()
             break
         }
         case "connect":{

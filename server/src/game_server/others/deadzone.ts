@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, cloneDeep, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Game } from "./game.ts";
 import { DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 export const DeadZoneDefinition: DeadZoneStage[] = [
@@ -6,98 +6,111 @@ export const DeadZoneDefinition: DeadZoneStage[] = [
     {
         state: DeadZoneState.Waiting,
         damage: 0,
-        radius: 0.9,
-        new_radius: 0.4,
+        radius:0.4,
         time: 80,
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 2,
-        radius: 0.9,
-        new_radius: 0.4,
-        time: 60,
+        damage: 4,
+        radius:0.4,
+        time: 40,
     },
     // 2th Zone
     {
         state: DeadZoneState.Waiting,
-        damage: 2,
-        radius: 0.4,
-        new_radius: 0.3,
-        time: 80,
-    },
-    {
-        state: DeadZoneState.Advancing,
         damage: 4,
-        radius: 0.4,
-        new_radius: 0.3,
-        time: 60,
-    },
-    // 3th Zone
-    {
-        state: DeadZoneState.Waiting,
-        damage: 4,
-        radius: 0.3,
-        new_radius: 0.2,
-        time: 80,
+        radius:0.3,
+        time: 70,
     },
     {
         state: DeadZoneState.Advancing,
         damage: 6,
-        radius: 0.3,
-        new_radius: 0.2,
+        radius:0.3,
+        time: 40,
+    },
+    // 3th Zone
+    {
+        state: DeadZoneState.Waiting,
+        damage: 6,
+        radius:0.23,
         time: 60,
+    },
+    {
+        state: DeadZoneState.Advancing,
+        damage: 6,
+        radius:0.23,
+        time: 40,
     },
     // 4th Zone
     {
         state: DeadZoneState.Waiting,
         damage: 8,
-        radius: 0.2,
-        new_radius: 0.1,
-        time: 70,
+        radius:0.15,
+        time: 50,
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 10,
-        radius: 0.2,
-        new_radius: 0.1,
-        time: 50,
+        damage: 8,
+        radius:0.15,
+        time: 30,
     },
     // 5th Zone
     {
         state: DeadZoneState.Waiting,
         damage: 10,
-        radius: 0.1,
-        new_radius: 0.05,
+        radius:0.08,
         time: 40,
     },
     {
         state: DeadZoneState.Advancing,
         damage: 10,
-        radius: 0.1,
-        new_radius: 0.05,
+        radius:0.08,
         time: 30,
     },
     //6th zone
     {
         state: DeadZoneState.Waiting,
-        damage: 10,
-        radius: 0.1,
-        new_radius: 0,
-        time: 40,
+        damage: 12,
+        radius:0.05,
+        time: 30,
     },
     {
         state: DeadZoneState.Advancing,
-        damage: 10,
-        radius: 0.1,
-        new_radius: 0,
-        time: 30,
+        damage: 12,
+        radius:0.05,
+        time: 20,
+    },
+    //7th zone
+    {
+        state: DeadZoneState.Waiting,
+        damage: 14,
+        radius:0.02,
+        time: 20,
+    },
+    {
+        state: DeadZoneState.Advancing,
+        damage: 14,
+        radius:0.02,
+        time: 20,
+    },
+    //8th zone
+    {
+        state: DeadZoneState.Waiting,
+        damage: 16,
+        radius:0.0,
+        time: 20,
+    },
+    {
+        state: DeadZoneState.Advancing,
+        damage: 16,
+        radius:0.0,
+        time: 20,
     },
 ]
 
 export interface DeadZoneStage {
     state: DeadZoneState
     radius: number
-    new_radius: number
     time: number
     damage: number
 }
@@ -159,7 +172,7 @@ export class DeadZoneManager {
     }
 
     set_config(config:DeadZoneConfig){
-        this.config=config
+        this.config=cloneDeep(config)
         this.stages = config.stages ?? DeadZoneDefinition
         this.reset()
     }
@@ -171,14 +184,18 @@ export class DeadZoneManager {
     }
 
     reset(){
+        this.dirty=true
         this.radius_size=this.game.map.size.x
 
-        this.state.position=v2.dscale(this.game.map.size,2)
-        this.state.new_position=v2.dscale(this.game.map.size,2)
+        this.state.position=v2.scale(this.game.map.size, 0.5)
+        this.state.new_position=v2.scale(this.game.map.size, 0.5)
 
-        this.state.radius=1*this.radius_size
+        this.state.radius=this.radius_size*0.8
         this.state.new_radius=this.state.radius
         this.state.old_radius=this.state.radius
+
+        this.hitbox.radius = this.state.radius
+        this.hitbox.position = this.state.position
 
         this.running = false
         this.stageIndex = 0
@@ -190,7 +207,6 @@ export class DeadZoneManager {
     advance(){
         const stage = this.stages[this.stageIndex]
         if(!stage){
-            this.running = false
             this.state.state = DeadZoneState.Finished
             return
         }
@@ -202,14 +218,13 @@ export class DeadZoneManager {
         this.damage = stage.damage
 
         this.state.old_radius = this.state.radius
-        this.state.new_radius = stage.new_radius * this.radius_size
+        this.state.new_radius = stage.radius * this.radius_size
 
         if(this.stageIndex === 0){
-            const center = v2.scale(this.game.map.size,0.5)
-
+            const center = v2.scale(this.game.map.size, 0.5)
             this.state.old_position = center
             this.state.position = center
-            this.state.new_position = this.random_point_inside(this.state.new_radius)
+            this.state.new_position = this.random_point_in_map(this.state.new_radius)
         }else if(stage.state === DeadZoneState.Waiting){
             this.state.old_position = this.state.new_position
             this.state.position = this.state.new_position
@@ -224,42 +239,54 @@ export class DeadZoneManager {
         this.stageIndex++
         this.dirty = true
     }
-    tick(dt:number){
-        if(!this.running) return
+    jump_stages(targetStage: number){
+        if(targetStage <= 0) return
+        targetStage = Math.min(targetStage, this.stages.length)
+        for(let i = 0; i < targetStage; i++){
+            this.advance()
 
-        this.timer += dt*(this.config.timeSpeed ?? 1)
-
-        const t = Numeric.clamp(this.timer / this.duration,0,1)
-
-        if(this.state.state === DeadZoneState.Advancing){
-            this.state.radius = Numeric.lerp(
-                this.state.old_radius,
-                this.state.new_radius,
-                t
-            )
-
-            this.state.position = v2.lerp(
-                this.state.old_position,
-                this.state.new_position,
-                t
-            )
+            this.state.radius = this.state.new_radius
+            this.state.position = v2.clone(this.state.new_position)
 
             this.hitbox.radius = this.state.radius
             this.hitbox.position = this.state.position
-
-            this.dirty = true
         }
+        this.dirty = true
+    }
+    tick(dt:number){
+        if(!this.running||this.state.state===DeadZoneState.Deenabled) return
 
+        if(this.state.state!==DeadZoneState.Finished){
+            this.timer += dt*(this.config.timeSpeed ?? 1)
+            const t = Numeric.clamp(this.timer / this.duration,0,1)
+            if(this.state.state === DeadZoneState.Advancing){
+                this.state.radius = Numeric.lerp(
+                    this.state.old_radius,
+                    this.state.new_radius,
+                    t
+                )
+
+                this.state.position = v2.lerp(
+                    this.state.old_position,
+                    this.state.new_position,
+                    t
+                )
+
+                this.hitbox.radius = this.state.radius
+                this.hitbox.position = this.state.position
+
+                this.dirty = true
+            }
+            if(this.timer >= this.duration){
+                this.advance()
+            }
+        }
         if(this.do_damage_timer>0){
             this.do_damage_timer-=dt
             this.do_damage=false
         }else{
             this.do_damage_timer=2
             this.do_damage=true
-        }
-
-        if(this.timer >= this.duration){
-            this.advance()
         }
     }
 
@@ -271,7 +298,8 @@ export class DeadZoneManager {
     }
     random_point_inside(radius:number):Vec2{
         const angle = random.rad()
-        const len = random.float(0, this.hitbox.radius - radius)
+        const maxLen = Math.max(this.state.radius - radius, 0)
+        const len = random.float(0, maxLen)
 
         const pos = v2(
             Math.cos(angle)*len,

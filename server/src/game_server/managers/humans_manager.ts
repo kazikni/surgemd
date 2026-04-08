@@ -1,10 +1,15 @@
 import { Layers } from "common/scripts/others/constants.ts";
 import { Human } from "../objects/human.ts";
 import { type Game } from "../others/game.ts";
-import { type BotAi } from "../human/simple_bot_ai.ts";
+import { type BotAi } from "../human/ai/simple_bot_ai.ts";
 import { DamageParams } from "../others/utils.ts";
+import { type EnemyDef } from "common/scripts/config/level_definition.ts";
+import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
+import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
+import { cloneDeep } from "common/engine/core.ts";
 export class NPC extends Human{
     ai?:BotAi
+    override is_npc: boolean=true
     override update(dt: number): void {
         if(this.ai)this.ai.AI(dt)
         super.update(dt)
@@ -22,6 +27,8 @@ export class HumansManager{
     humans:Human[]=[]
 
     living_npc:NPC[]=[]
+
+    enemies:Record<string,EnemyDef>={}
     constructor(game:Game){
         this.game=game
     }
@@ -48,5 +55,27 @@ export class HumansManager{
             n.destroy()
         }
         this.living_npc.length=0
+    }
+
+    create_enemy(def: EnemyDef|string,npc?:NPC): NPC|undefined {
+        if(typeof def === "string")def=this.enemies[def]
+        if(!def)return undefined
+
+        const bot = this.add_npc(npc)
+        switch(def.ia?.kind){
+            case "advanced":
+                bot.ai = new ADVHumanAI(bot)
+                break
+            default:
+                bot.ai = new EnemyNPCAI(bot)
+        }
+
+        if(def.ia?.params){
+            bot.ai.params = cloneDeep(def.ia.params)
+        }
+
+        bot.set_preset(def)
+
+        return bot
     }
 }

@@ -17,7 +17,7 @@ export interface AmmoDef extends Definition{
 }
 export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
     ammos.insert(
-        //Normals
+        //Main
         {
             idString:"12g",
             ammoType:"12g",
@@ -59,6 +59,17 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             tint:0xffff00,
             quality:ItemQuality.Common
         },
+        //Modes
+        {
+            idString:"45acp",
+            ammoType:"45acp",
+            defaultTrail:0xcea2e0,
+            strongTrail:0x791390,
+            defaultProj:0xefef9f,
+            strongProj:0xefef33,
+            tint:0x791390,
+            quality:ItemQuality.Common
+        },
         {
             idString:"22lr",
             ammoType:"22lr",
@@ -69,7 +80,6 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             tint:0xffffff,
             quality:ItemQuality.Common
         },
-        //Anothers
         {
             idString:"50cal",
             ammoType:"50cal",
@@ -80,6 +90,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             tint:0x000000,
             quality:ItemQuality.Epic
         },
+        //Exotic
         {
             idString:"308sub",
             ammoType:"308sub",

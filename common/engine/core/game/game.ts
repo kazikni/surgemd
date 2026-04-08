@@ -158,6 +158,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
     on_stop():void{}
 
     mainloop(rqf=false,auto_mainloop:boolean=true){
+        if(this.running)return
         // Start
         this.running=true
         this.on_run()
@@ -172,5 +173,9 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
     }
     stop(){
         this.running=false
+        this.clock.stop()
+    }
+    clear(){
+        this.scene_2d.objects.clear()
     }
 }

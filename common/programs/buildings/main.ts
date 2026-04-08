@@ -1,0 +1,59 @@
+import { kxml, rect, v2 } from "../../engine/core.ts";
+import { MakeBuilding } from "./builder.ts";
+const b=MakeBuilding({
+    size:v2(1500,1500),
+    walls:[
+        {
+            walls:[
+                [
+                    v2(10,80),
+                    v2(10,10),
+                    v2(1490,10),
+                    v2(1490,1300),
+                ],
+                [
+                    v2(1490,1420),
+                    v2(1490,1490),
+                    v2(10,1490),
+                    v2(10,200),
+                ],
+                [
+                    v2(200,350),
+                    v2(200,200),
+                    v2(1300,200),
+                    v2(1300,1300),
+                    v2(200,1300),
+                    v2(200,470),
+                ]
+            ],
+            width:20,
+            attr:{
+                ...kxml.svg.fill.color("#656877"),
+                ...kxml.svg.stroke.color("#444753",1.5)
+            }
+        }
+    ],
+    patterns:{
+        /*"bricks-pattern-1":{
+            children:[kxml.svg.create.grid_floor("#bb1919",v2.new(300,100),kxml.svg.stroke.color("#5a0f0f", 2),8,8)],
+            size:v2.new(100,30),
+        },
+        "wood-pattern-1":{
+            children:[kxml.svg.create.grid_floor("rgb(223, 162, 106)",v2.new(100,30),kxml.svg.stroke.color("#8b4320", 1))],
+            size:v2.new(100,30),
+        }*/
+    },
+    floors:[
+        {
+            rect:rect.create(0,0,1500,1500),
+            node:kxml.svg.create.rect(rect.create(0,0,1500,1500),kxml.svg.fill.color("#8b8f98"))
+        },
+        /*{
+            rect:rect.create(100,100,100,100),
+            pattern:{
+                id:"bricks-pattern-1",
+            }
+        }*/
+    ],
+})
+console.log(kxml.stringify(b.svg.floor))

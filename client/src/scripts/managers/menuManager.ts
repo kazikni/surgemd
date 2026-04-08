@@ -2,10 +2,20 @@ import { api, API_BASE } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, formatToHtml, GameSave, HideElement, ManipulativeSoundInstance, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager } from "common/engine/client.ts";
+import { FileManager, formatToHtml, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
+import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+type PhaseIntroConfig = {
+    location: string
+    name: string
+    date?: string
+    style?: "glitch" | "clean"
+    description?: string
+    text_speed?: number
+    wait_time?:number
+}
 export class MenuManager{
     api_settings:ApiSettingsS
     account:AccountManager
@@ -28,6 +38,18 @@ export class MenuManager{
         gameover_text_current:document.body.querySelector("#text-gameover") as HTMLSpanElement,
 
         select_region:document.body.querySelector("#select-region") as HTMLButtonElement,
+        
+        history_overlay:document.body.querySelector("#history-overlay") as HTMLDivElement,
+        history_container:document.body.querySelector("#history-container") as HTMLDivElement,
+        history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
+        history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
+        history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
+
+        phase_intro_overlay: document.querySelector("#phase-intro-overlay") as HTMLDivElement,
+        phase_intro_location: document.querySelector("#phase-intro-location") as HTMLDivElement,
+        phase_intro_name: document.querySelector("#phase-intro-name") as HTMLDivElement,
+        phase_intro_date: document.querySelector("#phase-intro-date") as HTMLDivElement,
+        phase_intro_description: document.querySelector("#phase-intro-description") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
     }
 
@@ -39,6 +61,8 @@ export class MenuManager{
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
+
+    campaign:Record<string,any>={}
     constructor(definitions:GameDefinition){
         const params = new URLSearchParams(self.location.search)
 
@@ -253,33 +277,56 @@ export class MenuManager{
     game_over_messages(text:string[],music:Sound,music_player:ManipulativeSoundInstance,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
         return new Promise<void>((resolve) => {
             this.show_gameover_text()
-
             music_player.set(music)
 
             const elem = this.content.gameover_text_current
             elem.innerText=""
-
-            let idx = 0
             elem.style.transition=`opacity ${opacity_anim}ms linear`
-            const next = () => {
+
+            const baseTime = time_per_message
+            let speed = 1
+            let runId = 0
+
+            const onmousedown=()=> speed = 0.2
+            const onmouseup=()=> speed = 1
+
+            this.content.gameover_text_screen.addEventListener("mousedown",onmousedown)
+            this.content.gameover_text_screen.addEventListener("mouseup",onmouseup)
+
+            const next = (idx:number) => {
                 if(idx >= text.length){
                     this.hide_gameover_text()
                     music_player.set(undefined)
+
+                    this.content.gameover_text_screen.removeEventListener("mousedown",onmousedown)
+                    this.content.gameover_text_screen.removeEventListener("mouseup",onmouseup)
+
                     resolve()
                     return
                 }
-                const msg = text[idx++]
+
+                const currentRun = ++runId
+                const msg = text[idx]
+
                 elem.style.opacity = "0"
 
                 setTimeout(()=>{
+                    if(currentRun !== runId) return
+
                     elem.innerText = msg
                     elem.style.opacity = "1"
 
-                    setTimeout(next, time_per_message)
+                    const delay = baseTime * speed
+
+                    setTimeout(()=>{
+                        if(currentRun !== runId) return
+                        next(idx+1)
+                    }, delay)
+
                 }, opacity_anim)
             }
 
-            setTimeout(()=>next(),1000)
+            requestAnimationFrame(()=>next(0))
         })
     }
     game_popup(content:(ctx:GamePopupCTX)=>void):Promise<any>{
@@ -319,6 +366,158 @@ export class MenuManager{
                 overlay.style.opacity="1"
             })
         })
+    }
+    history_buffer:ImageBuffer=new ImageBuffer()
+    async preload_history_frames(commands: HistoryCommand[], max = 6){
+        let count = 0
+        for(const cmd of commands){
+            if(cmd.type === HistoryCommandType.SetFrame){
+                this.set_loading_current(cmd.frame)
+                await this.history_buffer.load(cmd.frame)
+                count++
+                if(count >= max) break
+            }
+        }
+    }
+    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,ambient_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
+        ShowElement(this.content.history_overlay,true)
+        music_player.set(undefined)
+        ambient_player.set(undefined)
+        const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
+        sleep(1)
+        for (const cmd of commands) {
+            switch (cmd.type) {
+                case HistoryCommandType.Wait: {
+                    await sleep(cmd.time)
+                    this.content.history_dialog_text.style.opacity="0"
+                    break
+                }
+                case HistoryCommandType.WaitInput: {
+                    ShowElement(this.content.history_dialog_indicator)
+                    await input.wait_for_action("next")
+                    HideElement(this.content.history_dialog_indicator)
+                    this.content.history_dialog_text.style.opacity="0"
+                    break
+                }
+                case HistoryCommandType.SetFrame: {
+                    const currentIndex = commands.indexOf(cmd)
+
+                    for (let i = 1; i <= 3; i++) {
+                        const next = commands[currentIndex + i]
+                        if (next?.type === HistoryCommandType.SetFrame) {
+                            this.history_buffer.preload(next.frame)
+                        }
+                    }
+
+                    this.content.history_frame.style.opacity = "0"
+                    await sleep(0.4)
+
+                    const img = await this.history_buffer.load(cmd.frame)
+
+                    this.content.history_frame.src = img.src
+
+                    requestAnimationFrame(() => {
+                        this.content.history_frame.style.opacity = "1"
+                    })
+
+                    break
+                }
+                case HistoryCommandType.SetDialog: {
+                    if(cmd.text){
+                        ShowElement(this.content.history_dialog_text,true)
+                        this.content.history_dialog_text.innerHTML = `
+                            ${cmd.name?`<p class="name">${cmd.name}</p>`:""}
+                            <p class="content"></p>
+                        `
+
+                        const content=this.content.history_dialog_text.querySelector(".content") as HTMLSpanElement
+                        await typewriter(
+                            content,
+                            cmd.text,
+                            cmd.typewriter_delay??20
+                        )
+                        content.style.color = cmd.color ?? "white"
+                        
+                    }else{
+                        HideElement(this.content.history_dialog_text,true)
+                    }
+                    break
+                }
+                case HistoryCommandType.SetMusic: {
+                    if (music_player && resources) {
+                        const s = resources.get_audio(cmd.music)
+                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                    }
+                    break
+                }
+                case HistoryCommandType.SetAmbient: {
+                    if (music_player && resources) {
+                        const s = resources.get_audio(cmd.ambient)
+                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                    }
+                    break
+                }
+                case HistoryCommandType.PlaySoundEffect: {
+                    if (resources) {
+                        const s = resources.get_audio(cmd.sfx)
+                        const inst = sounds_manager.play(s,{
+                            
+                        },cmd.category??"players")
+                    }
+                    break
+                }
+
+                case HistoryCommandType.ShowGameOverMessage: {
+                    if(!resources||!music_player)break
+                    await this.game_over_messages(
+                        cmd.text,
+                        resources.get_audio("gameover_music"),
+                        music_player,
+                        cmd.time_per_message,
+                        cmd.opacity_anim
+                    )
+                    break
+                }
+            }
+        }
+        HideElement(this.content.history_overlay,true)
+        if (music_player) music_player.set(undefined)
+    }
+    open_phase_intro(){
+        // reset
+        this.content.phase_intro_location.innerText = ""
+        this.content.phase_intro_name.innerText = ""
+        this.content.phase_intro_date.innerText = ""
+        this.content.phase_intro_description.innerText = ""
+        ShowElement(this.content.phase_intro_overlay)
+    }
+    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[],sounds:SoundManager): Promise<void> {
+        function play_type_sound(_a:string){
+            sounds.play(random.choose(type_sounds),{
+                volume:0.15
+            },"ui")
+        }
+        const text_speed=config.text_speed??1
+        const wait_time=(config.wait_time??2)*1000
+        this.open_phase_intro()
+        // TYPEWRITER
+        const rand_delay={
+            min:40*text_speed,
+            max:200*text_speed
+        }
+
+        await typewriter(this.content.phase_intro_name, config.name, rand_delay,play_type_sound)
+        await typewriter(this.content.phase_intro_location, config.location, rand_delay,play_type_sound)
+        if (config.date) {
+            await typewriter(this.content.phase_intro_date, config.date, rand_delay,play_type_sound)
+        }
+        if (config.description) {
+            await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
+        }
+        setTimeout(()=>{
+            HideElement(this.content.phase_intro_overlay)
+        },wait_time+1000)
+        await new Promise(r => setTimeout(r, wait_time))
     }
     your_skins:string[]=["default_skin"]
     show_your_skins(){

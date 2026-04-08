@@ -1,0 +1,67 @@
+import { type AccessoryDef } from "common/scripts/definitions/items/equipaments.ts";
+import { type Human } from "../objects/human.ts";
+
+export interface AccessorySlot{
+    droppable:boolean
+    changable:boolean
+    item?:AccessoryDef
+}
+export class AccessorysManager{
+    user:Human
+    accessorys:Record<number,AccessorySlot>={}
+    slots:AccessorySlot[]=[]
+    constructor(user:Human,slots:number){
+        this.user=user
+        for(let i=0;i<slots;i++){
+            const s={
+                droppable:true,
+                changable:true,
+                item:undefined
+            }
+            this.slots.push(s)
+            this.accessorys[i]=s
+        }
+    }
+    has_accessory(idString:string):boolean{
+        for(const s of this.slots){
+            if(s.item&&s.item.idString===idString){
+                return true
+            }
+        }
+        return false
+    }
+    call_event(name:string,e:any){
+        for(const s of this.slots){
+            if(s.item&&s.item.events?.[name]){
+                s.item.events[name](e)
+            }
+        }
+    }
+    apply_modifiers(h:Human){
+        for(const s of this.slots){
+            if(s.item){
+                if(s.item.modifiers)h.apply_modifiers(s.item.modifiers)
+                s.item.events?.["apply_modifiers"]?.(h)
+            }
+        }
+    }
+    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):boolean{
+        if(this.has_accessory(def.idString))return false
+        for(const s of this.slots){
+            if(s.changable){
+                s.item=def
+                s.droppable=droppable
+                s.changable=changable
+                return true
+            }
+        }
+        return false
+    }
+    clear(){
+        for(const s of this.slots){
+            s.item=undefined
+            s.droppable=true
+            s.changable=true
+        }
+    }
+}

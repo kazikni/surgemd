@@ -10,6 +10,8 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Layers } from "common/scripts/others/constants.ts";
+import { HumanDefinition } from "common/scripts/config/level_definition.ts";
+import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -91,6 +93,16 @@ export class Player extends Human{
     constructor(){
         super()
     }
+    override set_preset(preset: HumanDefinition|undefined): void {
+        if(!preset)return
+        super.set_preset(preset)
+        if(preset.team){
+            this.game.modeManager.get_team(preset.team)?.add_human(this)
+        }
+        if(preset.group){
+            this.game.modeManager.get_team(preset.group)?.add_human(this)
+        }
+    }
     override net_update(): void {
         super.net_update()
     }
@@ -104,6 +116,7 @@ export class Player extends Human{
             params.owner.status.damage += (rr[1] + rr[0])
         }
 
+        if(this.team_data.group)this.team_data.group.dirty=true
         return rr
     }
     override down(params: DamageParams): void {
@@ -127,10 +140,23 @@ export class Player extends Human{
                 type:KillFeedMessageType.down,
             })
         }
+        if(this.team_data.group)this.team_data.group.dirty=true
     }
     override die(params: DamageParams): void {
         if(this.health_data.dead)return
         super.die(params)
+
+        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
+            this.game.modeManager.kill_leader=undefined
+            this.player_manager.send_killfeed_message({
+                type:KillFeedMessageType.killleader_dead,
+                player:{
+                    id:this.id,
+                    kills:this.status.kills
+                }
+            })
+        }
+
         if(params.owner&&params.owner instanceof Player){
             if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
                 params.owner.earned.coins+=3
@@ -169,27 +195,29 @@ export class Player extends Human{
             })
         }
 
-        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
-            this.player_manager.send_killfeed_message({
-                type:KillFeedMessageType.killleader_dead,
-                player:{
-                    id:this.id,
-                    kills:this.status.kills
-                }
-            })
-        }
-
-
         //Respawn
         this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);
         this.game.dirty.living_count=true
 
         this.game.modeManager.on_player_die(this)
+        this.game.signals.emit("player_die",{player:this,killer:this.killed_by})
         this.game.update_data()
+
+        if(this.team_data.group)this.team_data.group.dirty=true
+    }
+    override side_effect(sf:SideEffect){
+        super.side_effect(sf)
+        if(this.team_data.group)this.team_data.group.dirty=true
     }
     override self_state(full: boolean): SelfStateUpdate {
         const ret=super.self_state(full)
         ret.money=this.status.money
+        if(this.team_data.group){
+            if(this.team_data.group.dirty||full){
+                ret.dirty.group=true
+                ret.group=this.team_data.group.get_state()
+            }
+        }
         return ret
     }
     reset_status(){

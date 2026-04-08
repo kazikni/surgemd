@@ -1,4 +1,4 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 
 export interface ObstacleBehaviorDoor{
@@ -72,7 +72,7 @@ export interface ObstacleDef extends Definition{
     onDestroyExplosion?:string
     material?:string
 
-    lootTable?:string
+    lootTable?:LootTable
 
     interactDestroy?:boolean
     reflect_bullets?:boolean
@@ -189,10 +189,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         }),
         {
             idString:"barrel",
-            health:110,
+            health:140,
             hitbox:new CircleHitbox2D(v2.new(0,0),0.57),
             scale:{
-                destroy:0.6
+                destroy:0.5
             },
             assets:{
                 frame:{
@@ -261,6 +261,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             }
         },
         CreateCrate("wood_crate",0x583b08,{},"plank_particle",true),
+        CreateCrate("md_crate",0x7021d3,{},"plank_particle",true),
+        CreateCrate("tundra_crate",0x3e58c4,{},"plank_particle",true),
         CreateCrate("copper_crate",0xcc742d,{
             health:160,
             material:"iron",
@@ -274,7 +276,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         CreateCrate("gold_crate",0xffd92b,{
             health:180,
             material:"iron",
+            reflect_bullets:true
+        }),
+        CreateCrate("platinum_crate",0x468edb,{
+            health:500,
+            material:"iron",
             reflect_bullets:true,
+            scale:{
+                destroy:0.75,
+            },
+            hitbox:RectHitbox2D.centered(v2.zero(),v2.new(3,3))
         }),
         {
             idString:"bush",

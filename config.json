@@ -18,10 +18,6 @@
             "deenable_lobby":true,
             "debug_menu":true
         },
-        "options": {
-            "gameTps": 100,
-            "netTps": 30
-        },
         "modes":[
             {
                 "team_size":[1],
@@ -36,7 +32,7 @@
     "this_region":"local",
     "vite":{
         "port":3000,
-        "allowed_hosts":[]
+        "allowed_hosts":true
     },
     "regions": {
         "local": {

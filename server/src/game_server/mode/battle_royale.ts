@@ -3,45 +3,76 @@ import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
-import { random, v2, Vec2 } from "common/engine/core.ts";
-import { GroupsManager, Team, TeamsManager } from "./teams.ts";
+import { random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { type Group, GroupsManager, type Team, TeamsManager } from "./teams.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
+import { LevelEnemys } from "common/scripts/config/level_definition.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 
 export interface BattleRoyaleSettings{
     players?:{
         limit?:number
     }
-    map?:MapDef|string
+    map?:{
+        def:MapDef|string
+        seed?:number
+    }
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
+    enemies?:LevelEnemys
 }
 export class BattleRoyaleSolo extends ModeManager{
     settings:{
         players:{
             limit:number
         }
+        map:{
+            def:MapDef
+            seed?:number
+        }
         spawn_mode:SpawnMode
-        map:MapDef
         deadzone:DeadZoneConfig
+        enemies?:LevelEnemys
     }
 
     constructor(settings:BattleRoyaleSettings){
         super()
-
         this.settings={
             players:{
                 limit:settings.players?.limit??100,
             },
-            map:settings.map?(
-                typeof settings.map==="string"?Maps[settings.map]:settings.map
-            ):Maps["normal"],
+            map:{
+                def:(settings.map?.def===undefined)?Maps["normal"]:(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def),
+                seed:settings.map?.seed
+            },
             spawn_mode:settings.spawn_mode??Spawn.grass,
-            deadzone:settings.deadzone??DefaultDeadzone
+            deadzone:settings.deadzone??DefaultDeadzone,
+            enemies:settings.enemies
+        }
+    }
+
+    add_enemies(enemies:LevelEnemys|undefined=this.settings.enemies){
+        if(!enemies) return
+        for(const e of enemies){
+            const count = e.count ?? 1
+
+            for(let i = 0; i < count; i++){
+                const bot = this.game.players.add_enemy(e.def,new JoinPacket())
+                if(!bot) continue
+
+                if(e.position){
+                    v2m.set(bot.position, e.position.x, e.position.y)
+                }else{
+                    const pos = this.get_human_spawn_position(bot)
+                    if(pos) bot.position = pos
+                }
+            }
         }
     }
 
     override on_start(){
+        this.add_enemies()
         this.game.deadzone.start()
         this.game.add_timeout(()=>{
             this.game.close()
@@ -73,10 +104,15 @@ export class BattleRoyaleSolo extends ModeManager{
             p.conn!.set_spectator(p.killed_by! as Player)
         },2)
         if(this.game.players.living_players.length<=1&&this.game.started){
-            for(const p of this.game.players.living_players){
-                if(p.conn)p.conn.send_game_over(true)
-            }
-            this.game.finish()
+            this.game.add_timeout(()=>{
+                this.game.finish()
+            },3)
+        }
+    }
+
+    override on_finish(): void {
+        for(const p of this.game.players.living_players){
+            if(p.conn)p.conn.send_game_over(true)
         }
     }
 
@@ -85,7 +121,7 @@ export class BattleRoyaleSolo extends ModeManager{
     }
 
     override generate_map(): void {
-        this.game.map.generate(this.settings.map)
+        this.game.map.generate(this.settings.map.def,this.settings.map.seed)
         this.game.deadzone.set_config(this.settings.deadzone)
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
@@ -95,20 +131,20 @@ export class BattleRoyaleSolo extends ModeManager{
 export class BattleRoyaleDebug extends BattleRoyaleSolo{
     constructor(settings:BattleRoyaleSettings) {
         if(!settings.map){
-            settings.map=Maps["debug"]
+            settings.map={def:Maps["debug"]}
         }
         super(settings)
     }
     override on_start(){
     }
     override generate_map(): void {
-        this.game.map.generate(this.settings.map)
+        this.game.map.generate(this.settings.map.def,this.settings.map.seed)
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.game.map.size,2)
     }
 }
-export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
+export class BattleRoyaleGroup extends BattleRoyaleSolo{
     groupsManager:GroupsManager
     group_size:number
     constructor(group_size:number,settings:BattleRoyaleSettings){
@@ -124,6 +160,9 @@ export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
     }
     override is_ally(a:Player,b:Player):boolean{
         return a.team_data.group_id===b.team_data.group_id
+    }
+    override on_net_update(): void {
+        this.groupsManager.net_update()
     }
 
     set_group_for_human(p:Human){
@@ -145,17 +184,22 @@ export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
         }
     }
     override on_player_die(p:Player){
-        if(p.team_data.group){
-            for(const pp of p.team_data.group.get_downed_players()){
-                pp.die({amount:pp.health_data.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downed_by,source:pp.downed_by_source})
-            }
-        }
         if(this.groupsManager.get_living_groups().length<=1){
             this.game.finish()
         }
     }
+    override get_group(group: number): Group | undefined {
+        return this.groupsManager.groups[group]
+    }
+    override get_human_spawn_position(h:Human):Vec2|undefined{
+        if(h.team_data.group){
+            const c=h.team_data.group.choose_human(h)
+            return c?.position??super.get_human_spawn_position(h)
+        }
+        return super.get_human_spawn_position(h)
+    }
 }
-export class BattleRoyaleTeam extends BattleRoyaleGroupMode{
+export class BattleRoyaleTeam extends BattleRoyaleGroup{
     teamsManager:TeamsManager=new TeamsManager()
     f=0
     teams_count:number
@@ -163,6 +207,9 @@ export class BattleRoyaleTeam extends BattleRoyaleGroupMode{
     constructor(teams_count:number=2,group_size:number=4,settings:BattleRoyaleSettings){
         super(group_size,settings)
         this.teams_count=teams_count
+        for(let t=0;t<=teams_count;t++){
+            this.teamsManager.add_team()
+        }
     }
     override can_down(human:Human):boolean{
         return super.can_down(human)&&(human.team_data.team&&human.team_data.team.get_not_downed_humans().length>1)!
@@ -171,7 +218,7 @@ export class BattleRoyaleTeam extends BattleRoyaleGroupMode{
         return this.teamsManager.get_living_teams().length>1
     }
     override is_ally(a:Player,b:Player):boolean{
-        return a.team_data.group_id===b.team_data.group_id
+        return a.team_data.team_id===b.team_data.team_id
     }
     find_team(_p:Player):Team{
         const ret=this.teamsManager.teams[this.f]
@@ -199,11 +246,22 @@ export class BattleRoyaleTeam extends BattleRoyaleGroupMode{
     override on_player_die(p:Player){
         if(p.team_data.team){
             for(const pp of p.team_data.team.get_downed_players()){
-                pp.die({amount:pp.health_data.health,critical:false,position:pp.position,reason:DamageReason.Bleend,owner:pp.downed_by,source:pp.downed_by_source})
+                pp.die({
+                    amount:pp.health_data.health,
+                    critical:false,
+                    position:pp.position,
+                    reason:DamageReason.Bleend,
+                    owner:pp.downed_by,
+                    source:pp.downed_by_source,
+                    direction:0,
+                })
             }
         }
         if(this.teamsManager.get_living_teams().length<=1){
             this.game.finish()
         }
+    }
+    override get_team(team: number): Team | undefined {
+        return this.teamsManager.teams[team]
     }
 }

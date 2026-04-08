@@ -6,8 +6,12 @@ export interface SkinDef extends Definition{
     frame?:{
         base?:string
         base_tint?:number
+        chest?:string
+        chest_tint?:number
         arm?:string
         arm_tint?:string
+        leg?:string
+        leg_tint?:string
         mount?:{
             normal:string
             closed:string
@@ -31,6 +35,9 @@ export function Skins_Default_Init(skins:Definitions<SkinDef,{}>){
         {
             idString:"nick_winner",
             quality:ItemQuality.Rare,
+            frame:{
+                leg:"default_skin_leg"
+            }
         },
         {
             idString:"justin_winner",

@@ -2,7 +2,7 @@ import { GameConstants, GameObjectType } from "common/scripts/others/constants.t
 import { ServerGameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
@@ -35,7 +35,7 @@ export class Loot extends ServerGameObject{
         }
     }
     override can_interact(user: Human): boolean {
-        return user.hitbox.collidingWith(this.hitbox)&&!this.destroyed
+        return user.hitbox.collidingWith(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
     interact(user: Human): void {
         const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)
@@ -48,6 +48,10 @@ export class Loot extends ServerGameObject{
         super.net_update()
     }
     update(dt:number): void {
+        /*if(this.loot_data.real_radius!==(this.base_hitbox as CircleHitbox2D).radius){
+            (this.base_hitbox as CircleHitbox2D).radius=Numeric.lerp((this.base_hitbox as CircleHitbox2D).radius,this.loot_data.real_radius,Numeric.dt_expo_inter(dt,2));
+            (this.hitbox as CircleHitbox2D).radius=(this.base_hitbox as CircleHitbox2D).radius
+        }*/
         const cf=Floors[this.current_floor]
         const speed=1
                   * (cf.speed_mult??1)
@@ -58,7 +62,7 @@ export class Loot extends ServerGameObject{
                     if(other.id===this.id)continue
                     const col=this.hitbox.overlapCollision(other.hitbox)
                     if(col.length>0){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,3*dt))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,6*dt))
                     }
                     break
                 }
@@ -77,16 +81,12 @@ export class Loot extends ServerGameObject{
             
         }
         if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*(
-                GameConstants.loot.velocityDecay/
-                ((cf.acceleration??13)/13)
-            )))
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.55))
             const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }
         if(!v2.is(this.position,this.old_position)){
             this.net_sync.part=true
-
             this.old_position=v2.clone(this.position)
             this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
             this.manager.cells.updateObject(this)
@@ -96,41 +96,43 @@ export class Loot extends ServerGameObject{
         const a=v2.from_RadAngle(angle)
         v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
-    create(args: {position:Vec2,item:GameItem,count:number}): void {
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),0.3)
-
-        this.position=args.position
+    create(args: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
+        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),0)
 
         this.loot_data={
             count:args.count,
             item:args.item,
-            real_radius:this.base_hitbox.radius
+            real_radius:0
         }
 
         switch(this.loot_data.item.item_type){
             case InventoryItemType.gun:
             case InventoryItemType.melee:
-                this.base_hitbox.radius=GameConstants.loot.radius.weapon
+                this.loot_data.real_radius=GameConstants.loot.radius.weapon
                 break
             case InventoryItemType.ammo:
-                this.base_hitbox.radius=GameConstants.loot.radius.ammo
+                this.loot_data.real_radius=GameConstants.loot.radius.ammo
                 break
             case InventoryItemType.consumible:
-                this.base_hitbox.radius=GameConstants.loot.radius.consumible
+                this.loot_data.real_radius=GameConstants.loot.radius.consumible
                 break
             case InventoryItemType.backpack:
             case InventoryItemType.helmet:
             case InventoryItemType.vest:
-                this.base_hitbox.radius=GameConstants.loot.radius.equipament
+                this.loot_data.real_radius=GameConstants.loot.radius.equipament
                 break
             case InventoryItemType.grenade:
-                this.base_hitbox.radius=GameConstants.loot.radius.grenade
+                this.loot_data.real_radius=GameConstants.loot.radius.grenade
                 break
-            case InventoryItemType.accessorie:
+            case InventoryItemType.accessory:
+                this.loot_data.real_radius=GameConstants.loot.radius.accessory
+                break
             case InventoryItemType.skin:
-                this.base_hitbox.radius=GameConstants.loot.radius.skin
+                this.loot_data.real_radius=GameConstants.loot.radius.skin
                 break
         }
+        (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
+        this.position=args.position
 
         this.manager.cells.updateObject(this)
     }

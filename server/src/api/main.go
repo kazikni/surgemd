@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"log"
 	"net/http"
 
@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	os.MkdirAll("database", os.ModePerm)
 	config, err := api.LoadConfig("../config.json")
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -39,7 +40,7 @@ func main() {
 
 		caCertPool := x509.NewCertPool()
 		if config.API.Host.CAFile != "" {
-			caCertBytes, err := ioutil.ReadFile(config.API.Host.CAFile)
+			caCertBytes, err := os.ReadFile(config.API.Host.CAFile)
 			if err != nil {
 				log.Fatalf("Failed to read CA file: %v", err)
 			}

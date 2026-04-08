@@ -32,7 +32,7 @@
     "this_region":"local",
     "vite":{
         "port":3000,
-        "allowed_hosts":[]
+        "allowed_hosts":true
     },
     "regions": {
         "local": {

@@ -1,6 +1,6 @@
 import { random } from "./random.ts"
 import { Numeric } from "./utils.ts";
-import { v2, Vec2 } from "./vec2.ts";
+import { v2, v2m, Vec2 } from "./vec2.ts";
 
 export type Orientation=0|1|2|3
 export type RadAngle=number
@@ -290,3 +290,23 @@ export interface Rect{
     min:Vec2
     max:Vec2
 }
+function rect_new(min:Vec2,max:Vec2):Rect{
+    return {min,max}
+}
+export const rect=Object.assign(rect_new,Object.freeze({
+    new(min:Vec2,max:Vec2){
+        return {min,max}
+    },
+    centered(pos:Vec2,size:Vec2){
+        return {min:pos,max:v2.add(pos,size)}
+    },
+    create(x:number,y:number,width:number,height:number){
+        const pos=v2(x,y)
+        const size=v2(width,height)
+        v2m.add(size,size,pos)
+        return {
+            min:pos,
+            max:size
+        }
+    }
+}))

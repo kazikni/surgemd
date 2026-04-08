@@ -175,7 +175,15 @@ func JSstopServer() error {
 	defer serverLock.Unlock()
 	return stopServerInternal()
 }
-
+func noCache(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+		w.Header().Set("Surrogate-Control", "no-store")
+		h.ServeHTTP(w, r)
+	})
+}
 func runWebServer(w webview.WebView) {
 	gameDir, _ := filepath.Abs("./files")
 	port, err := findFreePort()
@@ -186,7 +194,7 @@ func runWebServer(w webview.WebView) {
 	go func() {
 		addr := fmt.Sprintf("127.0.0.1:%d", port)
 		fmt.Println("Server in http://" + addr)
-		http.ListenAndServe(addr, http.FileServer(http.Dir(gameDir)))
+		http.ListenAndServe(addr, noCache(http.FileServer(http.Dir(gameDir))))
 	}()
 
 	w.Navigate(fmt.Sprintf("http://127.0.0.1:%d", port))

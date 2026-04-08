@@ -224,8 +224,12 @@ function build_setting_input(def: SettingDef,onChange:(val:any)=>void,initial?:a
     return row
 }
 
-export function game_mode_settings_manager_popup(settings:any,def:ModeSettingsPopupDef){
+export function game_mode_settings_manager_popup(settings:any,def?:ModeSettingsPopupDef){
     return (ctx:GamePopupCTX)=>{
+        if(!def)def={
+            title:"Invalid Mode",
+            inputs:[]
+        }
         const parent=ctx.parent
         parent.innerHTML=""
 
@@ -351,8 +355,20 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
             {
                 type:"input",
                 name:"Map",
-                var:"map",
+                var:"map.def",
                 placeholder:"normal"
+            },
+        ]
+    },
+    debug:{
+        title:"Debug",
+        inputs:[
+            {type:"h2",name:"Players"},
+            {
+                type:"input",
+                name:"Limit",
+                var:"players.limit",
+                placeholder:"100"
             },
         ]
     },

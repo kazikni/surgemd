@@ -95,7 +95,7 @@ export class CounterMD extends ModeManager {
             ):NormalCounterMD,*/
             map:settings.map as CounterMapDef??NormalCounterMD,
             rules:{
-                team_need_win:settings.rules?.team_need_win??5,
+                team_need_win:settings.rules?.team_need_win??15,
                 freeze_time:settings.rules?.freeze_time??8,
                 round_time:settings.rules?.round_time??120,
             },

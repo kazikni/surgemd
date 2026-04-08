@@ -25,7 +25,11 @@ export interface PrivateUpdate{
 
     self_state?:SelfStateUpdate
 }
-
+export interface GroupMemberState{
+    boost_type:BoostType
+    boost:number
+    health:number
+}
 export interface SelfStateUpdate{
     dirty:{
         inventory:{
@@ -36,6 +40,8 @@ export interface SelfStateUpdate{
             hand:boolean
         }
         action:boolean
+        team:boolean
+        group:boolean
     }
 
     health:number
@@ -62,6 +68,8 @@ export interface SelfStateUpdate{
     action?:{delay:number,type:ActionsType}
 
     current_scope:number
+
+    group?:Record<number,GroupMemberState>
 }
 function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:GameDefinition){
     stream.writeUint8(state.health)
@@ -80,6 +88,8 @@ function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         state.dirty.inventory.hand,
 
         state.dirty.action,
+        state.dirty.group,
+        state.dirty.team,
 
         state.inventory.hand!==undefined, //has Hand
         state.action!==undefined, //has Action
@@ -129,6 +139,13 @@ function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         stream.writeFloat(state.action.delay,0,20,3)
         stream.writeUint8(state.action.type)
     }
+    if(state.dirty.group){
+        stream.writeNumberDict(state.group??{},(i)=>{
+            stream.writeFloat(i.health,0,1,1)
+            stream.writeFloat(i.boost,0,1,1)
+            stream.writeUint8(i.boost_type)
+        },3)
+    }
     stream.writeUint8(state.current_scope)
 }
 function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:GameDefinition){
@@ -146,6 +163,8 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         dirtyHand,
 
         dirtyAction,
+        dirtyGroup,
+        dirtyTeam,
 
         hasHand,
         hasAction,
@@ -159,7 +178,9 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
             weapons:dirtyWeapons,
             hand:dirtyHand,
         },
-        action:dirtyAction
+        action:dirtyAction,
+        group:dirtyGroup,
+        team:dirtyTeam
     }
     if(dirtyItems){
         state.inventory.items=stream.readArray<InventoryItemData>(()=>{
@@ -215,6 +236,16 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
                 type:stream.readUint8(),
             }
         }
+    }
+    if(dirtyGroup){
+        state.dirty.group=true
+        state.group=stream.readNumberDict(()=>{
+            return {
+                health:stream.readFloat(0,1,1),
+                boost:stream.readFloat(0,1,1),
+                boost_type:stream.readUint8(),
+            }
+        },3)
     }
     state.current_scope=stream.readUint8()
 }
@@ -290,6 +321,8 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                         hand:false,
                     },
                     action:false,
+                    group:false,
+                    team:false,
                 },
                 action:undefined,
                 inventory:{

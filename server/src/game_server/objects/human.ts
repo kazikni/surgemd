@@ -10,7 +10,7 @@ import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, NetStream, Numeric, PolarMovement, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, NetStream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { Loot } from "./loot.ts";
@@ -180,16 +180,17 @@ export class Human extends MovingBody{
         )
     }
     create(_args: Record<string, void>): void {
+        const skin=random.choose(["nick_winner","default_skin"])
         this.loadout={
             dirty:true,
             original:{
                 //skin_id:"default_skin",
-                skin_id:"nick_winner",
+                skin_id:skin,
                 emotes:{
 
                 }
             },
-            skin:this.game.definitions.skins.getFromString("nick_winner"),
+            skin:this.game.definitions.skins.getFromString(skin),
             //skin:this.game.definitions.skins.getFromString("default_skin"),
             emotes:{
 

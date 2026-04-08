@@ -35,10 +35,11 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             if(!g.data.running){
                 g.new_game(config??{
                     mode:"normal",
+                    //group_size:2,
                     mode_settings:{
-                        map:{
+                        /*map:{
                             def:"lobby"
-                        }
+                        }*/
                     }
                 })
                 return g as GameContainer

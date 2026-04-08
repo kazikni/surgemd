@@ -16,6 +16,7 @@ import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { ShopTabApp } from "../apps/shop.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
 import { type Building } from "../objects/building.ts";
+import { MatchTabApp } from "../apps/match.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -96,6 +97,7 @@ export class UiManager{
     boost:number=-1
     boost_type: BoostType=BoostType.Null;
 
+    match_app?:MatchTabApp
     shop_app?:ShopTabApp
 
     money:number=0
@@ -484,6 +486,10 @@ export class UiManager{
 
         this.money=state.money
         this.game.inventory.update_current_scope(state.current_scope)
+
+        if(state.dirty.group&&this.match_app&&state.group){
+            this.match_app.set_group(state.group)
+        }
     }
     hide_game_over(){
         HideElement(this.content.gameOver)

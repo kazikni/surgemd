@@ -41,6 +41,7 @@ import { Creature } from "../objects/creature.ts";
 import { Plane } from "./planes.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
+import { MatchTabApp } from "../apps/match.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -143,6 +144,8 @@ export class Game extends ClientGame<GameObject>{
             offset:v2(0.1,0.1)
         }
 
+        this.ui.match_app=new MatchTabApp(this.tab)
+        this.tab.add_app(this.ui.match_app)
         this.tab.add_app(new MessageTabApp(this.tab))
         this.tab.add_app(new MapTabApp(this.tab))
 

@@ -23,7 +23,7 @@ import { Grenade } from "../objects/grenade.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Building } from "../objects/building.ts";
 import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
-import { BattleRoyaleDebug, BattleRoyaleSolo } from "../mode/battle_royale.ts";
+import { BattleRoyaleDebug, BattleRoyaleGroup, BattleRoyaleSolo } from "../mode/battle_royale.ts";
 import { CounterMD } from "../mode/counter_md.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
@@ -215,7 +215,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(!has_mode){
             switch(game_config.mode){
                 case "normal":
-                    this.init(new BattleRoyaleSolo(game_config.mode_settings))
+                    if((game_config.group_size??1)>1){
+                        this.init(new BattleRoyaleGroup(game_config.group_size??1,game_config.mode_settings))
+                    }else{
+                        this.init(new BattleRoyaleSolo(game_config.mode_settings))
+                    }
                     break
                 case "counter_md":
                     this.init(new CounterMD(game_config.mode_settings))
@@ -294,6 +298,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     override net_update(full:boolean){
         this.players.net_update()
+        this.modeManager.on_net_update()
     }
     override on_update(dt:number): void {
         super.on_update(dt)

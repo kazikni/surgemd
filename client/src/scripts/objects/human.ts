@@ -645,7 +645,8 @@ export class Human extends MovingBody{
                     const angle=random.rad()
                     this.game.particles.add_particle(new ABParticle2D({
                         frame:f.def.particles.frame,
-                        direction:angle,
+                        direction:-Math.PI/2,
+                        angle:angle,
                         life_time:random.float(1,3),
                         position:this.position,
                         speed:random.float(1,3),

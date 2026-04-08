@@ -34,10 +34,10 @@ export class SyncedParticle extends MovingBody {
         this.physical_data.rotation=random.rad()
         this.base_hitbox = new CircleHitbox2D(v2.new(0, 0),3)
         this.def = args.def
-        const vel=random.float(0.4,0.7)
+        const vel=random.float(0.2,0.5)
         this.angular_speed=vel
         if(Math.random()<=0.5)this.angular_speed*=-1
-        this.push(random.float(0.05,0.07),random.rad())
+        this.push(random.float(0.03,0.05),random.rad())
         this.net_sync.enabled.deletion=false
     }
     override interact(user: Human): void {}

@@ -3,7 +3,6 @@ import { Game, GameData } from "./game.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { ConnectionLimiter, SelfGameWorker } from "common/engine/server/worker.ts";
 import { WorkerMessageBase } from "common/engine/server.ts";
-import { LevelPlayer } from "../mode/level_player.ts";
 /*let game:Game|undefined
 let begin:{
     id:number

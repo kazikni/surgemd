@@ -2,6 +2,7 @@ import { HostConfig } from "../../engine/core.ts";
 
 export interface GameConfig{
     mode:string
+    group_size?:number
     mode_settings:any
 }
 export interface GamemodeConfig{

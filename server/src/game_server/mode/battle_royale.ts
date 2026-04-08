@@ -144,7 +144,7 @@ export class BattleRoyaleDebug extends BattleRoyaleSolo{
         return v2.dscale(this.game.map.size,2)
     }
 }
-export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
+export class BattleRoyaleGroup extends BattleRoyaleSolo{
     groupsManager:GroupsManager
     group_size:number
     constructor(group_size:number,settings:BattleRoyaleSettings){
@@ -160,6 +160,9 @@ export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
     }
     override is_ally(a:Player,b:Player):boolean{
         return a.team_data.group_id===b.team_data.group_id
+    }
+    override on_net_update(): void {
+        this.groupsManager.net_update()
     }
 
     set_group_for_human(p:Human){
@@ -188,8 +191,15 @@ export class BattleRoyaleGroupMode extends BattleRoyaleSolo{
     override get_group(group: number): Group | undefined {
         return this.groupsManager.groups[group]
     }
+    override get_human_spawn_position(h:Human):Vec2|undefined{
+        if(h.team_data.group){
+            const c=h.team_data.group.choose_human(h)
+            return c?.position??super.get_human_spawn_position(h)
+        }
+        return super.get_human_spawn_position(h)
+    }
 }
-export class BattleRoyaleTeam extends BattleRoyaleGroupMode{
+export class BattleRoyaleTeam extends BattleRoyaleGroup{
     teamsManager:TeamsManager=new TeamsManager()
     f=0
     teams_count:number

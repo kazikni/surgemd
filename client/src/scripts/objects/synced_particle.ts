@@ -58,10 +58,11 @@ export class SyncedParticle extends MovingBody{
                 this.time=this.def.lifetime
                 this.dead=true
             }
-            if(this.sprite.scale.x<(this.def.frame.scale??2)){
+            const scal=(this.def.frame.scale??2)
+            if(this.sprite.scale.x<scal){
                 v2m.single(this.sprite.scale,this.sprite.scale.x+5*dt)
-            }else if(this.sprite.scale.x!==(this.def.frame.scale??2)){
-                v2m.single(this.sprite.scale,(this.def.frame.scale??2))
+            }else if(this.sprite.scale.x!==scal){
+                v2m.single(this.sprite.scale,scal)
             }
         }
     }
@@ -78,11 +79,11 @@ export class SyncedParticle extends MovingBody{
                 target:this.sprite.tint,
                 duration:1,
                 to:{
-                    a:1
+                    a:0.8
                 }
             })
         }else{
-            this.sprite.tint.a=1
+            this.sprite.tint.a=0.8
         }
     }
     override decode(stream:NetStream,full: boolean):void{

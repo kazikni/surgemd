@@ -115,6 +115,7 @@ export abstract class ModeManager{
 
     on_init(){}
     on_tick(dt:number){}
+    on_net_update(){}
     on_start():void{}
     on_finish():void{}
 

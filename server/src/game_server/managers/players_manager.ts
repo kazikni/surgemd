@@ -259,6 +259,7 @@ export class PlayersManager{
 
         this.game.scene_2d.objects.update_to_net()
         this.game.scene_2d.objects.apply_destroy_queue()
+        
     }
     send_killfeed_message(msg:KillFeedMessage){
         const p=new KillFeedPacket()

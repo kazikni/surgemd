@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="127.6923"
-   height="23.332474"
-   viewBox="0 0 127.6923 23.332474"
+   width="110.04669"
+   height="20.108194"
+   viewBox="0 0 110.04669 20.108195"
    fill="none"
    version="1.1"
    id="svg32"
-   sodipodi:docname="blr.svg"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="blr81.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -22,7 +22,7 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="3.6681818"
-     inkscape:cx="31.895911"
+     inkscape:cx="75.650558"
      inkscape:cy="86.555143"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -33,7 +33,7 @@
   <g
      clip-path="url(#clip0_2940_3886)"
      id="g32"
-     transform="rotate(30,142.04155,44.124161)">
+     transform="matrix(0.74635067,0.43090576,-0.43090576,0.74635067,35.413593,-56.111908)">
     <path
        d="m 55.3722,43.9309 1.1861,-0.6394 c 1.6974,-0.2498 5.4976,-2.1158 7.6623,-3.1998 l 3.8284,-2.0072 -0.1622,0.0938 c -5.1267,3.0455 -7.9572,4.4769 -12.0449,6.544 -0.1116,0.0564 -0.2241,0.1133 -0.3376,0.1707 z"
        fill="#43403d"

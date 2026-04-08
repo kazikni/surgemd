@@ -508,7 +508,7 @@ export class GInventory extends GInventoryBase<LItem>{
 
                 const item=new GrenadeItem(def as unknown as GrenadeDef)
                 item.inventory=this
-                item.limit_per_slot=this.backpack.max[item.def.idString]??this.default_backpack.max[item.def.idString]??5
+                item.limit_per_slot=this.item_limit(def)
 
                 let ov=count
                 //TODO: PUT A BETTER THING THAN INFINIY

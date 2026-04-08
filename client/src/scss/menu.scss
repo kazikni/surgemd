@@ -51,6 +51,12 @@
     50% { transform:rotate(1deg) translate(1%,0.5%); }
     100% { transform:rotate(-1deg) translate(1%,-1%); }
 }
+#game-version{
+    position: absolute;
+    color: #fff;
+    left: 10px;
+    top: 10px;
+}
 #both-ui{
     left: 0px;
     right: 0px;
@@ -819,6 +825,8 @@
 
     z-index: 103;
     opacity: 0;
+    pointer-events: all;
+    cursor: none;
 
     .tv-static {
         filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(6);
@@ -930,6 +938,8 @@
     justify-content: center;
 
     pointer-events: all;
+
+    cursor: none;
 
     .tv-static {
         filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(6);

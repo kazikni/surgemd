@@ -10,9 +10,9 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             idString:"smoke",
             frame:{
                 image:"smoke_particle",
-                scale:1.5
+                scale:2
             },
-            lifetime:30
+            lifetime:33
         },
     )
 }

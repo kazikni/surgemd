@@ -12,12 +12,13 @@ export interface BuildingDef{
             id:string
             rect?:Rect
         }
+        node?:XMLNode
     }[]
-    walls?:{
+    walls?:({
         width:number
         attr?:Record<string,string>
         walls:Vec2[][]
-    }
+    })[]
 }
 
 export interface BuildingOutput{
@@ -40,12 +41,17 @@ export function MakeBuilding(def:BuildingDef):BuildingOutput{
             kxml.append.attrs(re,kxml.svg.fill.pattern(floor.pattern.id,floor.pattern.rect))
             kxml.append.childs(floor_svg,re)
         }
+        if(floor.node){
+            kxml.append.childs(floor_svg,floor.node)
+        }
     }
     if(def.walls){
-        for(const wall of def.walls.walls){
-            const re=kxml.svg.create.walls(wall,def.walls.width)
-            if(def.walls.attr)kxml.append.attrs(re,def.walls.attr)
-            kxml.append.childs(floor_svg,re)
+        for(const wd of def.walls){
+            for(const wall of wd.walls){
+                const re=kxml.svg.create.walls(wall,wd.width)
+                if(wd.attr)kxml.append.attrs(re,wd.attr)
+                kxml.append.childs(floor_svg,re)
+            }
         }
     }
     return {

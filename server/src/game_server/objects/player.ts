@@ -11,6 +11,7 @@ import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
+import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -115,6 +116,7 @@ export class Player extends Human{
             params.owner.status.damage += (rr[1] + rr[0])
         }
 
+        if(this.team_data.group)this.team_data.group.dirty=true
         return rr
     }
     override down(params: DamageParams): void {
@@ -138,6 +140,7 @@ export class Player extends Human{
                 type:KillFeedMessageType.down,
             })
         }
+        if(this.team_data.group)this.team_data.group.dirty=true
     }
     override die(params: DamageParams): void {
         if(this.health_data.dead)return
@@ -199,10 +202,22 @@ export class Player extends Human{
         this.game.modeManager.on_player_die(this)
         this.game.signals.emit("player_die",{player:this,killer:this.killed_by})
         this.game.update_data()
+
+        if(this.team_data.group)this.team_data.group.dirty=true
+    }
+    override side_effect(sf:SideEffect){
+        super.side_effect(sf)
+        if(this.team_data.group)this.team_data.group.dirty=true
     }
     override self_state(full: boolean): SelfStateUpdate {
         const ret=super.self_state(full)
         ret.money=this.status.money
+        if(this.team_data.group){
+            if(this.team_data.group.dirty||full){
+                ret.dirty.group=true
+                ret.group=this.team_data.group.get_state()
+            }
+        }
         return ret
     }
     reset_status(){

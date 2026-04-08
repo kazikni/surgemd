@@ -144,7 +144,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             obstacles:[
                 {
                     id:"iron_ladder_bottom",
-                    position:v2.new(-5.6,-4.55),
+                    position:v2.new(-7.6,-6.1),
                     rotation:0
                 }
             ],
@@ -167,7 +167,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             obstacles:[
                 {
                     id:"iron_ladder_top",
-                    position:v2.new(-5.6,-4.55),
+                    position:v2.new(-7.6,-6.1),
                     rotation:0,
                 }
             ],
@@ -176,17 +176,16 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     image:"watch_tower_floor_1",
                     position:v2.new(0,0),
                     hotspot:v2.new(.5,.5),
-                    scale:2.3,
+                    scale:2,
                 }
             ],
             hitbox:new HitboxGroup2D(
-                new RectHitbox2D(v2.new(-5.5,-5.5),v2.new(-5.25,-5.01)),
-                new RectHitbox2D(v2.new(-5.5,-4.1),v2.new(-5.25,5.5)),
+                new RectHitbox2D(v2.new(-10,-10),v2.new(10,-10)),
 
-                new RectHitbox2D(v2.new(-5.5,-5.5),v2.new(5.5,-5.24)),
+                /*new RectHitbox2D(v2.new(-5.5,-5.5),v2.new(5.5,-5.24)),
                 new RectHitbox2D(v2.new(5.24,-5.5),v2.new(5.5,5.24)),
                 new RectHitbox2D(v2.new(-5.5,5.24),v2.new(5.5,5.5)),
-                RectHitbox2D.centered(v2.new(0,0),v2.new(7.8,7.8))
+                RectHitbox2D.centered(v2.new(0,0),v2.new(7.8,7.8))*/
             ),
             spawnMode:Spawn.grass,
         }

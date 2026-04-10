@@ -10,7 +10,7 @@ import { MeleeDef, Melees_Default_Init } from "./items/melees.ts";
 import { ScopeDef, Scopes_Default_Init } from "./items/scopes.ts";
 import { BadgeDef, Badges_Default_Init } from "./loadout/badges.ts";
 import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
-import { SkinDef, Skins_Default_Init } from "./loadout/skins.ts";
+import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
 import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
@@ -19,8 +19,8 @@ import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { InventoryItemType } from "./utils.ts";
 
-export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef|SkinDef
-export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef
+export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
+export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef|LoadoutItemDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
 
@@ -63,12 +63,10 @@ export class GameDefinition{
     })
 
     // Loadout
+    loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
     badges=new Definitions<BadgeDef,{}>((i)=>{})
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.idString="emote_"+e.idString
-    })
-    skins=new Definitions<SkinDef,{}>((g)=>{
-        g.item_type=InventoryItemType.skin
     })
 
     // Objects
@@ -99,9 +97,9 @@ export class GameDefinition{
         Melees_Default_Init(this.melees)
         Scopes_Default_Init(this.scopes)
 
+        Loadout_Default_Init(this.loadout)
         Badges_Default_Init(this.badges)
         Emotes_Default_Init(this.emotes)
-        Skins_Default_Init(this.skins)
 
         Buildings_Default_Init(this.buildings)
         Creatures_Default_Init(this.creatures)
@@ -120,9 +118,9 @@ export class GameDefinition{
         this.game_items.insert_def(this.melees.value)
         this.game_items.insert_def(this.scopes.value)
         this.game_items.insert_def(this.accessorys.value)
-        this.game_items.insert_def(this.skins.value)
 
         this.game_objects.insert_def(this.game_items.valueString)
+        this.game_objects.insert_def(this.loadout.value)
         this.game_objects.insert_def(this.emotes.value)
         this.game_objects.insert_def(this.badges.value)
         this.game_objects.insert_def(this.buildings.value)

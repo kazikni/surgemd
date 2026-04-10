@@ -16,7 +16,7 @@ export type AnimationInstance = {
     on_complete?: () => void
 }
 export class AnimatedContainer2D extends Container2D{
-    objects=new Map<string,Sprite2D>()
+    objects=new Map<string,Sprite2D|Container2D>()
     override _has_update: boolean=true
 
     current_animations:AnimationInstance[]=[]
@@ -134,7 +134,12 @@ export class AnimatedContainer2D extends Container2D{
         this.add_child(spr)
         return spr
     }
+    override add_container(id:string=""):Container2D{
+        const ret=super.add_container()
+        this.objects.set(id,ret)
+        return ret
+    }
     get_spr(id:string):Sprite2D{
-        return this.objects.get(id)!
+        return this.objects.get(id) as Sprite2D
     }
 }

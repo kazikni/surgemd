@@ -84,6 +84,11 @@ export class Container2D extends Container2DObject{
         this.dirty_zindex=true
         this.dirty_reals=true
     }
+    add_container():Container2D{
+        const container=new Container2D()
+        this.add_child(container)
+        return container
+    }
 
     create_sprite():Sprite2D{
         const s=new Sprite2D()

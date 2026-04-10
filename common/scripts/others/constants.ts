@@ -1,6 +1,4 @@
-import { BadgeDef } from "../definitions/loadout/badges.ts";
-import { EmoteDef } from "../definitions/loadout/emotes.ts";
-import { SkinDef } from "../definitions/loadout/skins.ts";
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -131,20 +129,16 @@ export interface HumanHealthData{
     downed:boolean
 }
 export interface HumanLoadoutData {
-    dirty:boolean
-
-    original:{
-        skin_id:string
-        badge_id?:string
-        emotes:{
-            die?:string
-        }
+    body:{
+        def:LoadoutBodyDef
+        tint:number
     }
-    skin:SkinDef
-    badge?:BadgeDef
-    emotes:{
-        die?:EmoteDef
+    hair:{
+        def:LoadoutHairDef
+        tint:number
     }
+    eyes:LoadoutEyesDef
+    shirt:LoadoutShirtDef
 }
 export interface HumanAnimationData{
     dirty:boolean

@@ -9,7 +9,6 @@ import { BackpackDef, } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { PlayerAnimationType } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -323,7 +322,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                     position:hb.position,
                     reason:DamageReason.Human,
                     owner:user,
-                    source:this.def
+                    source:this.def,
+                    direction:v2.lookTo(user.position,c.position)
                 })
             }else if(c instanceof Human&&c.id!==user.id){
                 c.damage({
@@ -333,7 +333,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                     position:hb.position,
                     reason:DamageReason.Human,
                     owner:user,
-                    source:this.def
+                    source:this.def,
+                    direction:v2.lookTo(user.position,c.position)
                 })
             }
         }
@@ -583,16 +584,6 @@ export class GInventory extends GInventoryBase<LItem>{
                 this.net_sync.weapons=true
                 return s?count-1:count
             }
-            case InventoryItemType.skin:{
-                if(this.owner.loadout.skin.idString!==def.idString){
-                    this.owner.game.add_loot(this.owner.position,this.owner.loadout.skin,1,this.owner.layer)
-                    this.owner.loadout.skin=def as unknown as SkinDef
-
-                    this.owner.loadout.dirty=true
-                    return count-1
-                }
-                break
-            }
             case InventoryItemType.accessory:{
                 const r=this.accessorys.add_accessory(def)
                 count=r?count-1:count
@@ -748,9 +739,6 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.backpack&&this.backpack.level&&this.droppable.backpack){
             l.push(this.owner.game.add_loot(this.owner.position,this.backpack,1,layer))
             this.set_backpack()
-        }
-        if(this.owner.loadout.skin.idString!==this.owner.loadout.original.skin_id){
-            l.push(this.owner.game.add_loot(this.owner.position,this.owner.loadout.skin,1,layer))
         }
         for(const s of this.slots){
             if(s.item&&s.quantity>0){

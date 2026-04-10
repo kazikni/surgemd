@@ -84,7 +84,6 @@ export enum InventoryItemType{
     melee,
     accessory,
     backpack,
-    skin,
     scope
 }
 export interface GameItemBase extends Definition{

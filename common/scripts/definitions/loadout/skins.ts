@@ -1,65 +1,127 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
 
-export interface SkinDef extends Definition{
+export enum LoadoutItemKind{
+    Body,
+    Hair,
+    Eyes,
+    Shirt
+}
+export interface LoadoutBodyDef extends Definition{
+    item:LoadoutItemKind.Body
     frame?:{
         base?:string
-        base_tint?:number
-        chest?:string
-        chest_tint?:number
-        arm?:string
-        arm_tint?:string
-        leg?:string
-        leg_tint?:string
-        mount?:{
-            normal:string
-            closed:string
-        }
-    }
-    animation?:{
-        frames:{delay:number,image:string}[]
-        no?:boolean
-        no_auto_talk:boolean
+        hand?:string
     }
     rank:ItemRank,
-    item_type?:InventoryItemType.skin
 }
-
-export function Skins_Default_Init(skins:Definitions<SkinDef,{}>){
-    skins.insert(
+export interface LoadoutHairDef extends Definition{
+    item:LoadoutItemKind.Hair
+    position:Vec2
+    frame?:{
+        base?:string
+    }
+    rank:ItemRank,
+}
+export interface LoadoutEyesDef extends Definition{
+    item:LoadoutItemKind.Eyes
+    position:Vec2
+    frame?:{
+        base?:string
+        blink?:string
+    }
+    rank:ItemRank,
+}
+export interface LoadoutShirtDef extends Definition{
+    item:LoadoutItemKind.Shirt
+    frame?:{
+        arm?:string
+        arm_tint?:number
+        chest?:string
+        chest_tint?:number
+    }
+    rank:ItemRank,
+}
+export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef
+export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
+    loadout.insert(
         {
-            idString:"default_skin",
+            item:LoadoutItemKind.Body,
+            idString:"body_1",
             rank:ItemRank.E,
+            frame:{
+                hand:"human_hand_1"
+            }
+        },
+        //Hairs
+        {
+            item:LoadoutItemKind.Hair,
+            idString:"hair_1",
+            rank:ItemRank.E,
+            position:v2(-0.19,0)
         },
         {
-            idString:"nick_winner",
+            item:LoadoutItemKind.Hair,
+            idString:"hair_2",
             rank:ItemRank.C,
+            position:v2(-0.15,0)
+        },
+        //Eyes
+        {
+            item:LoadoutItemKind.Eyes,
+            position:v2(0.2,0),
+            idString:"eyes_1",
+            rank:ItemRank.E,
+        },
+        //Shirt
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"white_shirt",
+            rank:ItemRank.E,
             frame:{
-                leg:"default_skin_leg"
+                arm:"human_shirt_1_arm",
+                chest:"human_shirt_1_chest",
             }
         },
         {
-            idString:"justin_winner",
+            item:LoadoutItemKind.Shirt,
+            idString:"blue_shirt",
+            rank:ItemRank.E,
             frame:{
-                mount:{
-                    closed:"player_mounth_1_2",
-                    normal:"player_mounth_2_1"
-                }
-            },
-            rank:ItemRank.C,
+                arm:"human_shirt_1_arm",
+                chest:"human_shirt_1_chest",
+                arm_tint:0x0066ff
+            }
         },
         {
-            idString:"alice_winner",
-            rank:ItemRank.C,
+            item:LoadoutItemKind.Shirt,
+            idString:"black_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:"human_shirt_1_chest",
+                arm_tint:0x222222
+            }
         },
         {
-            idString:"kaklik",
-            rank:ItemRank.S,
+            item:LoadoutItemKind.Shirt,
+            idString:"yellow_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:"human_shirt_1_chest",
+                arm_tint:0xe5ce0c
+            }
         },
         {
-            idString:"kitty",
-            rank:ItemRank.A,
+            item:LoadoutItemKind.Shirt,
+            idString:"red_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:"human_shirt_1_chest",
+                arm_tint:0xf01041
+            }
         },
     )
 }

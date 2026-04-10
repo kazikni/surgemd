@@ -23,6 +23,9 @@ import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -100,7 +103,20 @@ export class Human extends MovingBody{
     get scope_zoom():number{
         return 20/this.equipment_data.scope.scope_view
     }
-    loadout!:HumanLoadoutData&{emote?:GameObjectDef}
+    loadout!:HumanLoadoutData&{
+        dirty:boolean
+        emote?:GameObjectDef
+        emotes:{
+            die?:EmoteDef
+        }
+        badge?:BadgeDef
+        original:{
+            badge_id?:string
+            emotes:{
+                die?:string
+            }
+        }
+    }
     animation_data:HumanAnimationData&{switching:boolean,current_animation?:PlayerAnimation}={
         dirty:true,
         switching:false,
@@ -187,18 +203,25 @@ export class Human extends MovingBody{
         }
     }
     create(_args: Record<string, void>): void {
-        const skin=random.choose(["nick_winner","default_skin"])
+
         this.loadout={
             dirty:true,
             original:{
                 //skin_id:"default_skin",
-                skin_id:skin,
                 emotes:{
 
                 }
             },
-            skin:this.game.definitions.skins.getFromString(skin),
-            //skin:this.game.definitions.skins.getFromString("default_skin"),
+            body:{
+                def:this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
+                tint:0xffc166
+            },
+            hair:{
+                def:this.game.definitions.loadout.getFromString(random.choose(["hair_1","hair_2"])) as LoadoutHairDef,
+                tint:random.choose([0x222222,0xffffff,0xf01041,0x331f00,0x4d3108])
+            },
+            eyes:this.game.definitions.loadout.getFromString("eyes_1") as LoadoutEyesDef,
+            shirt:this.game.definitions.loadout.getFromString(random.choose(["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
             emotes:{
 
             }
@@ -1040,6 +1063,8 @@ export class Human extends MovingBody{
         this.health_data.invensibility_time=1
 
         this.inventory.set_weapon_index(0)
+
+        this.push(-40,params.direction)
     }
     help_up(){
         if(!this.health_data.downed)return
@@ -1131,7 +1156,12 @@ export class Human extends MovingBody{
         }
         // Loadout  
         if(full||this.loadout.dirty){
-            stream.writeUint16(this.loadout.skin.idNumber!)
+            stream.writeUint16(this.loadout.body.def.idNumber!)
+            .writeUint16(this.loadout.hair.def.idNumber!)
+            .writeUint16(this.loadout.eyes.idNumber!)
+            .writeUint16(this.loadout.shirt.idNumber!)
+            .writeUint32(this.loadout.body.tint)
+            .writeUint32(this.loadout.hair.tint)
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])

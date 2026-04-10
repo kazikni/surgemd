@@ -14,11 +14,13 @@ export interface FistRig{
         position:Vec2
         rotation:number
         zIndex?:number
+        visible?:boolean
     }
     right?:{
         position:Vec2
         rotation:number
         zIndex?:number
+        visible?:boolean
     }
 }
 export interface WeaponAssets{
@@ -38,12 +40,12 @@ export interface WeaponRig{
 }
 export const DefaultFistRig:FistRig={
     left:{
-        position:v2(0.5,-0.18),
-        rotation:0.1,
+        position:v2(0.43,-0.15),
+        rotation:0.05,
     },
     right:{
-        position:v2(0.5,0.18),
-        rotation:-0.1,
+        position:v2(0.43,0.15),
+        rotation:-0.05,
     }
 }
 export const WeaponsArmRig={
@@ -59,11 +61,11 @@ export const WeaponsArmRig={
     },
     1:{
         left:{
-            position:v2(0.8,-0.045),
+            position:v2(0.7,-0.045),
             rotation:0.32,
         },
         right:{
-            position:v2(0.5,0),
+            position:v2(0.5,0.05),
             rotation:-0.2,
         }
     },

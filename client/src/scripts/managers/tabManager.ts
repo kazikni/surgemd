@@ -44,22 +44,66 @@ export abstract class TabApp {
 
     initialize():void{}
 }
-export type TabStyle = {
-    primary: string
-    secondary: string
-    text: string
+export type TabDevice = {
+    name: string
+    width: number
+    height: number
+    screen: {
+        x: number
+        y: number
+        width: number
+        height: number
+        radius: number
+    }
+    frame:string
+    theme?:TabTheme
+    exit_style:{
+        kind:"external"|"overlay"
+    }
+}
+export type TabTheme = {
+    primary?: string
+    secondary?: string
+    text?: string
+
     wallpaper?: string
-};
+
+    blur?: number
+    opacity?: number
+
+    border?: string
+    shadow?: string
+}
 export enum TabState{
     InitialPage,
     App,
-
+}
+const MDTabDevice:TabDevice={
+    name: "tablet",
+    width: 1400,
+    height: 780,
+    frame: "/img/menu/gui/tab/tab_border.svg",
+    screen: {
+        x: 85,
+        y: 30,
+        width: 1280,
+        height: 720,
+        radius: 50
+    },
+    exit_style:{
+        kind:"external"
+    }
 }
 export class TabManager {
     game: Game
     tab = document.createElement("div")
-    appsContainer:HTMLDivElement
-    content:Record<string,HTMLElement>
+    content:{
+        header_text_1: HTMLSpanElement
+        wallpaper: HTMLDivElement
+        apps:HTMLDivElement
+        current_app:HTMLDivElement
+        back_button:HTMLButtonElement
+    };
 
     full_tab: boolean = false
     visible_tab: boolean = false
@@ -69,23 +113,23 @@ export class TabManager {
     state:TabState=TabState.InitialPage
 
     // deno-lint-ignore no-explicit-any
-    variables:Record<string,any>={
-
-    }
-
+    variables:Record<string,any>={}
+    device!: TabDevice
     constructor(game: Game) {
         this.game = game
         this.tab.innerHTML=`
-<div id="tab-content">
-    <div id="tab-apps">
+<div id="screen">
+    <div id="content-header">
+        <p id="tab-header-info-1">4AM 10/03/2010</p>
+        <img draggable="false" src="/img/menu/logos/MD/MD.svg">
     </div>
-    <div id="tab-current-app">
+    <div id="screen-content">
+        <div id="screen-apps">
+        </div>
+        <div id="screen-current-app">
 
+        </div>
     </div>
-</div>
-<div id="tab-content-header">
-    <p id="tab-header-info-1">4AM 10/03/2010</p>
-    <img draggable="false" src="/img/menu/logos/MD/MD.svg">
 </div>
 <div id="tab-buttons">
     <div id="tab-exit-button"></div>
@@ -93,19 +137,18 @@ export class TabManager {
 `
         this.content = {
             header_text_1: this.tab.querySelector("#tab-header-info-1") as HTMLSpanElement,
-            wallpaper: this.tab.querySelector("#tab-content") as HTMLDivElement,
-            tab_apps:this.tab.querySelector("#tab-apps") as HTMLDialogElement,
-            tab_current_app:this.tab.querySelector("#tab-current-app") as HTMLDivElement,
+            wallpaper: this.tab.querySelector("#screen-content") as HTMLDivElement,
+            apps:this.tab.querySelector("#screen-apps") as HTMLDivElement,
+            current_app:this.tab.querySelector("#screen-current-app") as HTMLDivElement,
 
             back_button:this.tab.querySelector("#tab-exit-button") as HTMLButtonElement,
         };
         this.tab.id="tab-view"
         this.tab.className="tab-view-minimized"
-        this.appsContainer=this.tab.querySelector("#tab-apps") as HTMLDivElement
-        this.appsContainer.innerHTML=""
+        this.content.apps.innerHTML=""
         this.set_wallpaper("/img/menu/gui/tab/tab_wallpaper_abstract.png")
 
-        HideElement(this.content.tab_current_app)
+        HideElement(this.content.current_app)
         this.content.back_button.onclick=(_e)=>this.back_to_menu()
 
         this.tab.onmouseover=(_e)=>{
@@ -119,6 +162,8 @@ export class TabManager {
         }else{
             if(this.visible_tab)this.toggle_tab_visibility()
         }
+
+        this.set_device(MDTabDevice)
     }
 
     tick(dt:number){
@@ -157,16 +202,36 @@ export class TabManager {
     set_wallpaper(src: string) {
         this.content.wallpaper.style.backgroundImage = `url(${src})`
     }
-    set_style(style: TabStyle) {
+    set_theme(theme: TabTheme) {
         const root = this.tab
 
-        root.style.setProperty("--tab-primary", style.primary)
-        root.style.setProperty("--tab-secondary", style.secondary)
-        root.style.setProperty("--tab-text", style.text)
+        if(theme.primary)root.style.setProperty("--tab-primary", theme.primary)
+        if(theme.secondary)root.style.setProperty("--tab-secondary", theme.secondary)
+        if(theme.text)root.style.setProperty("--tab-text", theme.text)
+        if(theme.blur !== undefined)root.style.setProperty("--tab-blur", `${theme.blur}px`)
+        if(theme.opacity !== undefined)root.style.setProperty("--tab-opacity", `${theme.opacity}`)
+        if(theme.border)root.style.setProperty("--tab-border", theme.border)
+        if(theme.shadow)root.style.setProperty("--tab-shadow", theme.shadow)
+        if(theme.wallpaper)this.set_wallpaper(theme.wallpaper)
+    }
+    set_device(device: TabDevice) {
+        this.device = device
 
-        if (style.wallpaper) {
-            this.set_wallpaper(style.wallpaper)
-        }
+        const tab = this.tab
+        const screen = this.tab.querySelector("#screen") as HTMLDivElement
+
+        tab.style.width = device.width + "px"
+        tab.style.height = device.height + "px"
+        tab.style.backgroundImage = `url(${device.frame})`
+
+        screen.style.left = device.screen.x + "px"
+        screen.style.top = device.screen.y + "px"
+        screen.style.width = device.screen.width + "px"
+        screen.style.height = device.screen.height + "px"
+        screen.style.borderRadius = device.screen.radius + "px"
+
+        tab.style.bottom=""
+        tab.style.right=""
     }
     game_start(){
         if(!this.enabled){
@@ -176,8 +241,8 @@ export class TabManager {
 
     back_to_menu(){
         if(this.state===TabState.InitialPage)return
-        HideElement(this.content.tab_current_app)
-        ShowElement(this.content.tab_apps)
+        HideElement(this.content.current_app)
+        ShowElement(this.content.apps)
         this.state=TabState.InitialPage
     }
 
@@ -185,17 +250,17 @@ export class TabManager {
         if(this.state===TabState.App)return
         app.begin()
         if(app.running){
-            HideElement(this.content.tab_apps)
-            ShowElement(this.content.tab_current_app)
-            this.content.tab_current_app.innerHTML=""
-            this.content.tab_current_app.appendChild(app.element!)
+            HideElement(this.content.apps)
+            ShowElement(this.content.current_app)
+            this.content.current_app.innerHTML=""
+            this.content.current_app.appendChild(app.element!)
             this.state=TabState.App
         }
     }
 
     add_app(app: TabApp) {
         this.apps.push(app)
-        this.appsContainer.appendChild(app.icon_element)
+        this.content.apps.appendChild(app.icon_element)
 
         app.icon_element.onclick=(_e)=>this.open_app(app)
         app.initialize()

@@ -35,12 +35,12 @@ const b=MakeBuilding({
     ],
     patterns:{
         /*"bricks-pattern-1":{
-            children:[kxml.svg.create.grid_floor("#bb1919",v2.new(300,100),kxml.svg.stroke.color("#5a0f0f", 2),8,8)],
-            size:v2.new(100,30),
+            children:[kxml.svg.create.grid_floor("#bb1919",v2(300,100),kxml.svg.stroke.color("#5a0f0f", 2),8,8)],
+            size:v2(100,30),
         },
         "wood-pattern-1":{
-            children:[kxml.svg.create.grid_floor("rgb(223, 162, 106)",v2.new(100,30),kxml.svg.stroke.color("#8b4320", 1))],
-            size:v2.new(100,30),
+            children:[kxml.svg.create.grid_floor("rgb(223, 162, 106)",v2(100,30),kxml.svg.stroke.color("#8b4320", 1))],
+            size:v2(100,30),
         }*/
     },
     floors:[

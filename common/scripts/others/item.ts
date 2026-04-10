@@ -1,12 +1,12 @@
 import { v2, Vec2 } from "../../engine/core.ts";
 
-export enum ItemQuality{
-    Common,
-    Uncommon,
-    Rare,
-    Epic,
-    Mythic,
-    Legendary,
+export enum ItemRank{
+    E,
+    D,
+    C,
+    B,
+    A,
+    S,
     Developer
 }
 export interface FistRig{
@@ -38,55 +38,55 @@ export interface WeaponRig{
 }
 export const DefaultFistRig:FistRig={
     left:{
-        position:v2.new(0.5,-0.18),
+        position:v2(0.5,-0.18),
         rotation:0.1,
     },
     right:{
-        position:v2.new(0.5,0.18),
+        position:v2(0.5,0.18),
         rotation:-0.1,
     }
 }
 export const WeaponsArmRig={
     0:{
         left:{
-            position:v2.new(0.7,-0.05),
+            position:v2(0.7,-0.05),
             rotation:0.35,
         },
         right:{
-            position:v2.new(0.53,0.07),
+            position:v2(0.53,0.07),
             rotation:-0.3,
         }
     },
     1:{
         left:{
-            position:v2.new(0.8,-0.045),
+            position:v2(0.8,-0.045),
             rotation:0.32,
         },
         right:{
-            position:v2.new(0.5,0),
+            position:v2(0.5,0),
             rotation:-0.2,
         }
     },
     2:{
         left:{
-            position:v2.new(0.7,-0.035),
+            position:v2(0.7,-0.035),
             rotation:0.35,
         },
         right:{
-            position:v2.new(0.5,0.05),
+            position:v2(0.5,0.05),
             rotation:-0.3,
         }
     },
     3:{
         right:{
-            position:v2.new(0.55,0),
+            position:v2(0.55,0),
             rotation:-0.45,
         }
     },
 }
 export const WeaponsRig={
     0:{
-        position:v2.new(0.6,0),
+        position:v2(0.6,0),
         rotation:0
     },
 }

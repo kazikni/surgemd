@@ -53,16 +53,16 @@ const Templates={
         spawnMode:Spawn.grass,
         reflect_bullets:true,
         loots:[
-            {position:v2.new(-1,0),table:"ground_loot"},
-            {position:v2.new(1,0),table:"ground_loot"}
+            {position:v2(-1,0),table:"ground_loot"},
+            {position:v2(1,0),table:"ground_loot"}
         ],
-        hitbox:RectHitbox2D.wall_enabled(v2.new(-2.85,-1.42),v2.new(2.85,1.42),{
+        hitbox:RectHitbox2D.wall_enabled(v2(-2.85,-1.42),v2(2.85,1.42),{
             left:true,
             bottom:true,
             right:false,
             top:true
         },0.5),
-        spawnHitbox:new RectHitbox2D(v2.new(-2.85,-1.42),v2.new(2.85,1.42)),
+        spawnHitbox:new RectHitbox2D(v2(-2.85,-1.42),v2(2.85,1.42)),
         material:"iron",
         assets:{
             particles:"metal_particle",
@@ -71,8 +71,8 @@ const Templates={
         floor_image:[
             {
                 image:"container_floor_1",
-                position:v2.new(0,0),
-                hotspot:v2.new(.5,.5),
+                position:v2(0,0),
+                hotspot:v2(.5,.5),
                 scale:2,
                 tint:0x00359f
             }
@@ -81,12 +81,12 @@ const Templates={
             {
                 frame:{
                     image:"container_ceiling_1",
-                    position:v2.new(0,0),
-                    hotspot:v2.new(.5,.5),
+                    position:v2(0,0),
+                    hotspot:v2(.5,.5),
                     scale:2,
                     tint:0x00359f
                 },
-                hitbox:new RectHitbox2D(v2.new(-2.8,-1.3),v2.new(2.8,1.3)),
+                hitbox:new RectHitbox2D(v2(-2.8,-1.3),v2(2.8,1.3)),
             }
         ]
     } satisfies BuildingDef,
@@ -98,10 +98,10 @@ const Templates={
         spawnMode:Spawn.grass,
         reflect_bullets:true,
         loots:[
-            {position:v2.new(-1,0),table:"ground_loot"},
-            {position:v2.new(1,0),table:"ground_loot"}
+            {position:v2(-1,0),table:"ground_loot"},
+            {position:v2(1,0),table:"ground_loot"}
         ],
-        hitbox:RectHitbox2D.wall_enabled(v2.new(-2.85,-1.42),v2.new(2.85,1.42),{
+        hitbox:RectHitbox2D.wall_enabled(v2(-2.85,-1.42),v2(2.85,1.42),{
             left:false,
             bottom:true,
             right:false,
@@ -115,8 +115,8 @@ const Templates={
         floor_image:[
             {
                 image:"container_floor_2",
-                position:v2.new(0,0),
-                hotspot:v2.new(.5,.5),
+                position:v2(0,0),
+                hotspot:v2(.5,.5),
                 scale:2,
                 tint:0x00359f
             }
@@ -125,12 +125,12 @@ const Templates={
             {
                 frame:{
                     image:"container_ceiling_2",
-                    position:v2.new(0,0),
-                    hotspot:v2.new(.5,.5),
+                    position:v2(0,0),
+                    hotspot:v2(.5,.5),
                     scale:2,
                     tint:0x00359f
                 },
-                hitbox:new RectHitbox2D(v2.new(-2.8,-1.3),v2.new(2.8,1.3)),
+                hitbox:new RectHitbox2D(v2(-2.8,-1.3),v2(2.8,1.3)),
             }
         ]
     } satisfies BuildingDef,
@@ -144,7 +144,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             obstacles:[
                 {
                     id:"iron_ladder_bottom",
-                    position:v2.new(-7.6,-6.1),
+                    position:v2(-7.6,-6.1),
                     rotation:0
                 }
             ],
@@ -156,7 +156,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     layer:1
                 }
             ],
-            hitbox:RectHitbox2D.centered(v2.new(0,0),v2.new(6,6)),
+            hitbox:RectHitbox2D.centered(v2(0,0),v2(6,6)),
             spawnMode:Spawn.grass,
         },
         {
@@ -167,25 +167,25 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             obstacles:[
                 {
                     id:"iron_ladder_top",
-                    position:v2.new(-7.6,-6.1),
+                    position:v2(-7.6,-6.1),
                     rotation:0,
                 }
             ],
             floor_image:[
                 {
                     image:"watch_tower_floor_1",
-                    position:v2.new(0,0),
-                    hotspot:v2.new(.5,.5),
+                    position:v2(0,0),
+                    hotspot:v2(.5,.5),
                     scale:2,
                 }
             ],
             hitbox:new HitboxGroup2D(
-                new RectHitbox2D(v2.new(-10,-10),v2.new(10,-10)),
+                new RectHitbox2D(v2(-10,-10),v2(10,-10)),
 
-                /*new RectHitbox2D(v2.new(-5.5,-5.5),v2.new(5.5,-5.24)),
-                new RectHitbox2D(v2.new(5.24,-5.5),v2.new(5.5,5.24)),
-                new RectHitbox2D(v2.new(-5.5,5.24),v2.new(5.5,5.5)),
-                RectHitbox2D.centered(v2.new(0,0),v2.new(7.8,7.8))*/
+                /*new RectHitbox2D(v2(-5.5,-5.5),v2(5.5,-5.24)),
+                new RectHitbox2D(v2(5.24,-5.5),v2(5.5,5.24)),
+                new RectHitbox2D(v2(-5.5,5.24),v2(5.5,5.5)),
+                RectHitbox2D.centered(v2(0,0),v2(7.8,7.8))*/
             ),
             spawnMode:Spawn.grass,
         }

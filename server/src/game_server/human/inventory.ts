@@ -105,7 +105,7 @@ export class GunItem extends GunItemBase implements LItem{
         }
         const position=v2.add(
             user.position,
-            v2.rotate_RadAngle(v2.new(
+            v2.rotate_RadAngle(v2(
               this.def.lenght,
               this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0
             ),user.physical_data.rotation)
@@ -306,7 +306,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     attack(user:Human):void{
         const position=v2.add(
             user.position,
-            v2.mult(v2.from_RadAngle(user.physical_data.rotation),v2.new(this.def.offset,this.def.offset))
+            v2.mult(v2.from_RadAngle(user.physical_data.rotation),v2(this.def.offset,this.def.offset))
         )
         const hb=new CircleHitbox2D(position,this.def.radius)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
@@ -728,12 +728,11 @@ export class GInventory extends GInventoryBase<LItem>{
             const def=this.owner.game.definitions.game_items.valueString[s]
             const dir=random.float(-3.141592,3.141592)
             const r=(this.owner.hitbox as CircleHitbox2D).radius
-            const pos=v2.add(this.owner.position,v2.new((Math.cos(dir)*r),(Math.sin(dir)*r)))
+            const pos=v2.add(this.owner.position,v2((Math.cos(dir)*r),(Math.sin(dir)*r)))
             while(this.aitems[s]>0){
                 const rc=Math.min(this.aitems[s],100)
                 const ll=this.owner.game.add_loot(pos,def,rc,this.owner.layer)
                 l.push(ll);
-                ll.push(random.float(1,7),dir+random.float(-0.03,0.03))
                 this.aitems[s]-=rc
             }
             delete this.aitems[s]

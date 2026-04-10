@@ -273,8 +273,8 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     }
     private net_tick_delay:number=0
     net_full_tick:number=0
-    override async update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): Promise<void> {
-        await super.update(dt,new_list,destroy_queue)
+    override update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): void {
+        super.update(dt,new_list,destroy_queue)
         this.ticks++
 
         this.net_tick_delay+=dt

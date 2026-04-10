@@ -98,7 +98,7 @@ export class Explosion extends ServerGameObject{
         this.defs=args.defs
         this.owner=args.owner
         this.source=args.source
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),this.defs.size.end*2)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),this.defs.size.end*2)
         this.position=args.position
     }
     override encode(stream: NetStream, _full: boolean): void {

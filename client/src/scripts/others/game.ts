@@ -276,7 +276,7 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
             if(isMobile){
             }else{
-                const cam_c=v2.new(this.cam2d.width/2,this.cam2d.height/2)
+                const cam_c=v2(this.cam2d.width/2,this.cam2d.height/2)
                 const mouse_p=v2.dscale(this.input_manager.mouse.position,this.cam2d.zoom)
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
@@ -601,7 +601,7 @@ export class Game extends ClientGame<GameObject>{
         if(this.active_entity){
             this.cam2d.position=this.active_entity.position
             this.sounds.listener_position=this.active_entity.position
-            this.update_grid(this.grid_gfx,5,this.cam2d.position,v2.new(this.cam2d.width,this.cam2d.height),0.06)
+            this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
 
             this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 
@@ -617,15 +617,15 @@ export class Game extends ClientGame<GameObject>{
         }
     }
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
-        this.grid_gfx.position=v2.new(0,0)
+        this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
-        const begin=v2.new(camera_size.x/2,camera_size.y/2)
+        const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)
         v2m.dscale(begin,begin,gridSize)
         v2m.floor(begin)
         v2m.sub_component(begin,1,1)
 
-        const size=v2.new(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
+        const size=v2(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
         v2m.ceil(size)
         grid_gfx.fill_color({r:0,g:0,b:0,a:0.2})
         grid_gfx.drawGrid(begin,size,gridSize,line_size)

@@ -45,6 +45,11 @@
     *{
         pointer-events: auto;
     }
+    /*--ui-theme-primary: #661166;
+    --ui-theme-secondary: #110911;*/
+
+    --ui-theme-primary: #4f6ef7;
+    --ui-theme-secondary: #1c2447;
 }
 #boost-bar-container,
 #health-bar-container{
@@ -54,27 +59,31 @@
     overflow: visible;
     position: absolute;
     left: 5px;
-    background: palette.$transparent_bg;
-    border-radius: 2px;
+    background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
+    box-shadow: 0 0 5px var(--ui-theme-primary);
+    border-radius: 5px;
 
-    width: 330px;
+    width: 400px;
     transform: translateY(-100%),translateX(-100%);
     font-size: 20px;
     font-family: "Russo-One", serif;
     
-    @media screen and (max-width: palette.$screen_large) {
-        width: 190px;
-        font-size: 11px;
+    @media screen and (max-width: palette.$screen_large) {  
+        box-shadow: 0 0 4px var(--ui-theme-primary); 
+        width: 270px;
+        font-size: 10px;
     }
     @media screen and (max-width: palette.$screen_medium) {
-        width: 130px;
+        box-shadow: 0 0 3px var(--ui-theme-primary);
+        font-size: 6px;
+        width: 170px;
         font-size: 10px;
     }
     
 }
 #health-bar-container {
     bottom: 5px;
-    height: 30px;
+    height: 40px;
 
     #health-bar,
     #health-bar-basic-heal,
@@ -105,6 +114,7 @@
 
     #health-bar {
         background: linear-gradient(90deg, #fff,#dfdfdf);
+        transition: width ease-in-out 0.2s;
     }
 
     #health-bar-animation {
@@ -123,15 +133,15 @@
 
     }
     @media screen and (max-width: palette.$screen_large) {
-        height: 25px;
+        height: 30px;
     };
     @media screen and (max-width: palette.$screen_medium) {
         height: 15px;
     };
 }
 #boost-bar-container {
-    bottom: 40px;
-    height: 10px;
+    bottom: 55px;
+    height: 20px;
 
     #boost-bar {
         position: absolute;
@@ -140,7 +150,6 @@
         border-radius: 2px;
         height: 100%;
         width: 0%;
-        transition: width ease-in-out 3s;
         transition: width ease-in-out 0.2s;
     }
 
@@ -154,22 +163,23 @@
         transform: translateY(-50%);
     }
     @media screen and (max-width: palette.$screen_large) {
-        bottom: 34px;
-        height: 8px;
+        bottom: 45px;
+        height: 15px;
     };
     @media screen and (max-width: palette.$screen_medium) {
-        bottom: 24px;
-        height: 7px;
+        bottom: 30px;
+        height: 10px;
     };
 }
 
 #bottom-left-container{
     position: absolute;
     left: 5px;
-    background-color: #0002;
+    background-color: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
+    box-shadow: 0 0 5px var(--ui-theme-primary);
     border-radius: 10px;
-    bottom: 60px;
-    width: 330px;
+    bottom: 85px;
+    width: 400px;
     height: 60px;
     span{
         transform: translate(-50%,-50%);
@@ -192,8 +202,9 @@
         left: 50%;
     }
     @media screen and (max-width: palette.$screen_large) {
-        bottom: 45px;
-        width: 190px;
+        border: 1px solid color-mix(in srgb,var(--ui-theme-primary) 50%, #0000);
+        bottom: 70px;
+        width: 270px;
         height: 20px;
         border-radius: 7px;
         #action-info{
@@ -208,8 +219,8 @@
         }
     }
     @media screen and (max-width: palette.$screen_medium) {
-        bottom: 30px;
-        width: 115px;
+        bottom: 50px;
+        width: 170px;
         height: 30px;
         border-radius: 5px;
         span{
@@ -264,7 +275,7 @@
     flex-direction: column;
     gap: 5px;
     .killfeed-message{
-        background-color: #0003;
+        background-color: color-mix(in srgb,var(--ui-theme-primary) 30%, #0000);
         border-radius: 20px;
         font-family: "Russo-One";
         font-size: 18px;
@@ -353,6 +364,7 @@
     top: 140px;
     right: 5px;
     padding: 15px;
+    color: var(--ui-theme-primary);
     @media screen and (max-width: palette.$screen_large) {
         font-size: 10px;
         top: 5px;

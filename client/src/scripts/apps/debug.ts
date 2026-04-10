@@ -145,8 +145,9 @@ export class DebugTabApp extends TabApp {
         stats.innerHTML = `
             FPS: ${Math.floor(1 / this.tab.game.delta_time)}<br>
             Ping: ${this.tab.game.client?.ping ?? 0}<br>
-            X: ${this.tab.game.active_entity?.position.x}
-            Y: ${this.tab.game.active_entity?.position.y}
+            X: ${this.tab.game.active_entity?.position.x}<br>
+            Y: ${this.tab.game.active_entity?.position.y}<br>
+            Profilers ${Object.values(this.tab.game.clock.profiler.data)}
         `
     }
 

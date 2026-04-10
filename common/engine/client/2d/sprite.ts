@@ -40,7 +40,7 @@ export class Sprite2D extends Container2DObject{
     }
     set frame(f:Frame|undefined){
         this._frame=f
-        this.update_real()
+        this.dirty_reals=true
     }
 
     frames?:KeyFrameSpriteDef[]
@@ -80,7 +80,7 @@ export class Sprite2D extends Container2DObject{
         if(frame.position)this.position=v2.clone(frame.position)
         if(frame.image)this.frame=resources.get_sprite(frame.image)
         if(frame.tint)this.tint=ColorM.number(frame.tint)
-        this.update_real()
+        this.dirty_reals=true
     }
     
     transform_frame(frame:FrameTransform){
@@ -92,7 +92,7 @@ export class Sprite2D extends Container2DObject{
         if(frame.zIndex)this.zIndex=frame.zIndex
         if(frame.position)this.position=v2.clone(frame.position)
         if(frame.layer)this.layer=frame.layer
-        this.update_real()
+        this.dirty_reals=true
     }
     override get_hitbox():RectHitbox2D|undefined{
         return this._hitbox

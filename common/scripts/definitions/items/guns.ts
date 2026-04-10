@@ -1,5 +1,5 @@
 import { cloneDeep, DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
-import { WeaponsArmRig,WeaponsRig, ItemQuality, tracers, FistRig, WeaponRig, WeaponAssets} from "../../others/item.ts";
+import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponRig, WeaponAssets} from "../../others/item.ts";
 import { BulletDef, BulletReflection, InventoryItemType, ItemQualitySettings } from "../utils.ts";
 export type GunDef={
     bullet?:{
@@ -29,7 +29,7 @@ export type GunDef={
     speed_mod?:number
     ammoType:string
     class:GunClasses
-    quality:ItemQuality
+    rank:ItemRank
     muzzleFlash?:MuzzleFlash
     reload?:{
         capacity:number
@@ -113,7 +113,7 @@ export const GunsConstructors={
     extends(gun:GunDef,variant:DeepPartial<GunDef>):GunDef{
         return mergeDeep({}as GunDef,gun,variant)as GunDef
     },
-    create_variant(gun:GunDef,quality:ItemQuality,params:{
+    create_variant(gun:GunDef,rank:ItemRank,params:{
         damage_increment?:number
         capacity_increment?:number
     }):GunDef{
@@ -200,7 +200,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"9mm",
             fireMode:FireMode.Single,
             class:GunClasses.Pistol,
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             ammoSpawnAmount:45,
             bullet:{
                 def:{
@@ -247,7 +247,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"9mm",
             fireMode:FireMode.Single,
             class:GunClasses.Pistol,
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             ammoSpawnAmount:25,
             bullet:{
                 def:{
@@ -295,7 +295,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"308sub",
             fireMode:FireMode.Single,
             class:GunClasses.Pistol,
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
             ammoSpawnAmount:25,
             bullet:{
                 def:{
@@ -338,7 +338,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"762mm",
             ammoSpawnAmount:90,
             class:GunClasses.Assault,
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             bullet:{
                 def:{
                     damage:8,
@@ -378,7 +378,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"556mm",
             ammoSpawnAmount:90,
             class:GunClasses.Assault,
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             bullet:{
                 def:{
                     damage:8,
@@ -424,7 +424,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"556mm",
             ammoSpawnAmount:90,
             class:GunClasses.Assault,
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             bullet:{
                 def:{
                     damage:10,
@@ -464,7 +464,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"9mm",
             ammoSpawnAmount:96,
             class:GunClasses.Assault,
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             bullet:{
                 def:{
                     damage:7,
@@ -501,7 +501,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"9mm",
             ammoSpawnAmount:99,
             class:GunClasses.SMG,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             bullet:{
                 def:{
                     damage:6,
@@ -542,7 +542,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"9mm",
             ammoSpawnAmount:96,
             class:GunClasses.SMG,
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             bullet:{
                 def:{
                     damage:6,
@@ -582,7 +582,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:20,
             fireMode:FireMode.Single,
             class:GunClasses.Sniper,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             bullet:{
                 def:{
                     damage:42,
@@ -631,7 +631,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"762mm",
             fireMode:FireMode.Single,
             class:GunClasses.Sniper,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             ammoSpawnAmount:30,
             bullet:{
                 def:{
@@ -677,7 +677,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"308sub",
             fireMode:FireMode.Single,
             class:GunClasses.Sniper,
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
             ammoSpawnAmount:25,
             bullet:{
                 def:{
@@ -724,7 +724,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:12,
             fireMode:FireMode.Single,
             class:GunClasses.Sniper,
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             bullet:{
                 def:{
                     damage:37,
@@ -767,10 +767,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:0.5,
             lenght:0.9,
             ammoType:"45acp",
-            ammoSpawnAmount:27,
+            ammoSpawnAmount:16,
             fireMode:FireMode.Single,
             class:GunClasses.Sniper,
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             bullet:{
                 def:{
                     damage:34,
@@ -784,7 +784,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:0.6,
-                capacity:9,
+                capacity:8,
                 shotsPerReload:1,
             },
             recoil:{
@@ -818,7 +818,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             jitterRadius:0.45,
             fireMode:FireMode.Single,
             class:GunClasses.Shotgun,
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             bullet:{
                 def:{
                     damage:8,
@@ -861,10 +861,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:2.8,
             lenght:1,
             ammoType:"12g",
-            ammoSpawnAmount:18,
+            ammoSpawnAmount:16,
             jitterRadius:0.14,
             class:GunClasses.Shotgun,
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             fireMode:FireMode.Single,
             bullet:{
                 def:{
@@ -880,7 +880,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:0.6,
-                capacity:9,
+                capacity:8,
                 shotsPerReload:1,
             },
             recoil:{
@@ -912,7 +912,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawnAmount:15,
             jitterRadius:0.2,
             class:GunClasses.Shotgun,
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             fireMode:FireMode.Auto,
             bullet:{
                 def:{
@@ -958,7 +958,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"762mm",
             ammoSpawnAmount:60,
             class:GunClasses.DMR,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             bullet:{
                 def:{
                     damage:25,
@@ -998,7 +998,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"762mm",
             ammoSpawnAmount:200,
             class:GunClasses.LMG,
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
             bullet:{
                 def:{
                     damage:14,
@@ -1038,7 +1038,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"explosive_ammo",
             fireMode:FireMode.Single,
             class:GunClasses.Miscellaneous,
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
             ammoSpawnAmount:11,
             gasParticles:{
                 count:10,
@@ -1057,7 +1057,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:5,
                     radius:0.2,
-                    range:220,
+                    range:80,
                     falloff:0.5,
                     on_hit_explosion:"rocket_explosion",
                     speed:22,
@@ -1095,7 +1095,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"gasoline",
             fireMode:FireMode.Auto,
             class:GunClasses.Miscellaneous,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             ammoSpawnAmount:15.2,
             bullet:{
                 def:{
@@ -1145,7 +1145,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawn:"purple_pills",
             mana_consume:20,
             class:GunClasses.Magic,
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
             fireMode:FireMode.Single,
             projectile:{
                 def:"bomb_staff_projectile",
@@ -1169,7 +1169,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoSpawn:"purple_pills",
             mana_consume:5,
             class:GunClasses.Magic,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             fireMode:FireMode.Auto,
             projectile:{
                 def:"fireball_projectile",
@@ -1185,7 +1185,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
     )
 }
 /*Guns.insert(
-    GunsConstructors.create_variant(Guns.getFromString("ak47"),ItemQuality.Uncommon,{
+    GunsConstructors.create_variant(Guns.getFromString("ak47"),ItemRank.D,{
         damage_increment:-0.5
     })
 )*/

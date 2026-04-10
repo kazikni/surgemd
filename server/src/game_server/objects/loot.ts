@@ -19,7 +19,7 @@ export class Loot extends ServerGameObject{
         item:GameItem
     }
 
-    old_position:Vec2=v2.new(-1,-1)
+    old_position:Vec2=v2(-1,-1)
     velocity:Vec2
 
     constructor(){
@@ -97,7 +97,7 @@ export class Loot extends ServerGameObject{
         v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
     create(args: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),0)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
 
         this.loot_data={
             count:args.count,

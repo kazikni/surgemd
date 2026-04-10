@@ -64,7 +64,7 @@ export class Obstacle extends StaticBody{
         this.container.visible=false
         this.container.add_child(this.sprite)
 
-        this.sprite.hotspot=v2.new(.5,.5)
+        this.sprite.hotspot=v2(.5,.5)
     }
     override on_layer_set(layer: number): void {
         this.container.layer=layer

@@ -14,7 +14,7 @@ export class PlayerBody extends ServerGameObject{
     badge?:BadgeDef
 
     velocity:Vec2
-    old_pos:Vec2=v2.new(-1,-1)
+    old_pos:Vec2=v2(-1,-1)
 
     constructor(angle:number=random.rad(),speed:number=8){
         super()
@@ -36,7 +36,7 @@ export class PlayerBody extends ServerGameObject{
     override interact(_user: Player): void {
     }
     create(args: {position:Vec2,owner_name:string,owner_badge:string}): void {
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),0.3)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0.3)
         this.player_name=args.owner_name
         this.player_badge=args.owner_badge
         this.dirty=true

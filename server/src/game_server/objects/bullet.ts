@@ -35,8 +35,8 @@ export class Bullet extends ServerGameObject{
     reflectionCount:number=0
     constructor(){
         super()
-        this.velocity=v2.new(0,0)
-        this.dir=v2.new(0,0)
+        this.velocity=v2(0,0)
+        this.dir=v2(0,0)
         this.net_sync.enabled.deletion=false
     }
     override interact(user: Human): void {}

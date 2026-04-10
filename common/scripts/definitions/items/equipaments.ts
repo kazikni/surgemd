@@ -1,5 +1,5 @@
 import { InventoryItemType } from "../utils.ts";
-import { ItemQuality } from "../../others/item.ts";
+import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { SideEffectType } from "../player/effects.ts";
@@ -9,7 +9,7 @@ export interface VestDef extends Definition{
     health?:number
     level:number
     tint:number
-    quality:ItemQuality
+    rank:ItemRank
     reflect_bullets?:boolean
     item_type?:InventoryItemType.vest
 }
@@ -20,11 +20,11 @@ export interface HelmetDef extends Definition{
     health_frames?:{frame:string,health:number}[]
     level:number
     position?:Vec2
-    quality:ItemQuality
+    rank:ItemRank
     item_type?:InventoryItemType.helmet
 }
 export interface AccessoryDef extends Definition{
-    quality:ItemQuality
+    rank:ItemRank
     modifiers?:Partial<HumanModifiers>
     events?:Record<string,(e:any)=>void>
     item_type?:InventoryItemType.accessory
@@ -37,8 +37,8 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             level:1,
             health:1000,
             reduction:0.1,
-            position:v2.new(0,0),
-            quality:ItemQuality.Common
+            position:v2(0,0),
+            rank:ItemRank.E
         },
         {
             idString:"regular_helmet",
@@ -56,8 +56,8 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                 }
             ],
             reduction:0.15,
-            position:v2.new(0,0),
-            quality:ItemQuality.Uncommon
+            position:v2(0,0),
+            rank:ItemRank.D
         },
         {
             idString:"tactical_helmet",
@@ -65,16 +65,16 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             level:3,
             health:1600,
             reduction:0.2,
-            position:v2.new(0,0),
-            quality:ItemQuality.Rare
+            position:v2(0,0),
+            rank:ItemRank.C
         },
         {
             idString:"lastman_helmet",
             defence:0,
             level:5,
             reduction:0.3,
-            position:v2.new(0,0),
-            quality:ItemQuality.Legendary
+            position:v2(0,0),
+            rank:ItemRank.S
         },
     )
 }
@@ -88,7 +88,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             health:2000,
             reduction:0.1,
             tint:0xffffff,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"regular_vest",
@@ -97,7 +97,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             health:2300,
             reduction:0.15,
             tint:0x556655,
-            quality:ItemQuality.Uncommon
+            rank:ItemRank.D
         },
         {
             idString:"tactical_vest",
@@ -106,7 +106,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             health:2600,
             reduction:0.2,
             tint:0x010011,
-            quality:ItemQuality.Rare
+            rank:ItemRank.C
         },
         {
             idString:"elite_vest",
@@ -115,7 +115,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             reflect_bullets:true,
             reduction:0.25,
             tint:0x5C322E,
-            quality:ItemQuality.Mythic
+            rank:ItemRank.A
         },
     )
 }
@@ -123,26 +123,24 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
     accessorys.insert(
         {
             idString:"bullet_breaker_barrel",
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
                     let b=e.user.game.add_bullet(e.position,e.angle-0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer)
-                    b.damage*=0.2
-                    b.tracerAlpha*=0.5
+                    b.damage*=0.22
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.5,
+                        size:e.user.modifiers.bullet_size*0.4,
                     }
                     b.set_direction(e.angle-0.02)
 
                     b=e.user.game.add_bullet(e.position,e.angle+0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer)
-                    b.damage*=0.2
-                    b.tracerAlpha*=0.5
+                    b.damage*=0.22
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.5,
+                        size:e.user.modifiers.bullet_size*0.4,
                     }
                     b.set_direction(e.angle+0.02)
                 }
@@ -150,7 +148,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
         },
         {
             idString:"liquid_insanity",
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             events:{
                 "kill":(e)=>{
                     e.owner.health_data.health+=20
@@ -164,7 +162,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
         },
         {
             idString:"nature_leaf",
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             events:{
                 "damage":(e)=>{
                     e.player.health_data.health+=20

@@ -168,7 +168,7 @@ export class DeadZoneManager {
 
     constructor(game:Game){
         this.game = game
-        this.hitbox = new CircleHitbox2D(v2.new(0,0),1)
+        this.hitbox = new CircleHitbox2D(v2(0,0),1)
     }
 
     set_config(config:DeadZoneConfig){
@@ -291,7 +291,7 @@ export class DeadZoneManager {
     }
 
     random_point_in_map(radius:number):Vec2{
-        return v2.new(
+        return v2(
             random.float(radius, this.game.map.size.x - radius),
             random.float(radius, this.game.map.size.y - radius)
         )

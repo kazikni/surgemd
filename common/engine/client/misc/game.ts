@@ -84,7 +84,8 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         return t
     }
 
-    override async draw(dt:number){
+    override draw(dt:number){
+        this.clock.profiler.start(3)
         this.cam2d.fullCanvas()
         this.renderer.clear()
 
@@ -97,14 +98,15 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
             }
         }
 
-        await this.cam2d.draw(dt,this.resources)
-        await super.draw(dt)
+        this.cam2d.draw(dt,this.resources)
+        super.draw(dt)
     
         this.on_render(dt)
+        this.clock.profiler.end(3)
     }
-    override async update(dt:number,new_list: boolean=true, destroy_queue: boolean=true){
-        await super.update(dt,new_list,destroy_queue)
-
+    override update(dt:number,new_list: boolean=true, destroy_queue: boolean=true){
+        this.clock.profiler.start(2)
+        super.update(dt,new_list,destroy_queue)
         for(const t of this.tweens){
             t.update(dt)
         }
@@ -112,6 +114,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.particles.update(dt)
         this.sounds.update(dt)
         this.input_manager.tick()
+        this.clock.profiler.end(2)
     }
     on_render(_dt:number){}
     on_before_render(_dt:number){}

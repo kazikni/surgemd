@@ -152,7 +152,7 @@ export class Vehicle extends MovingBody {
 
     create(args: {position: Vec2, def: VehicleDef}) {
         this.position = v2.clone(args.position)
-        this.base_hitbox = new CircleHitbox2D(v2.new(0, 0),1)
+        this.base_hitbox = new CircleHitbox2D(v2(0, 0),1)
         this.def = args.def
 
         if (this.def.pillot_seat)

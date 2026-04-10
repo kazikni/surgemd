@@ -1,5 +1,5 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
-import { ItemQuality } from "../../others/item.ts";
+import { ItemRank } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 
 export interface SkinDef extends Definition{
@@ -22,7 +22,7 @@ export interface SkinDef extends Definition{
         no?:boolean
         no_auto_talk:boolean
     }
-    quality:ItemQuality,
+    rank:ItemRank,
     item_type?:InventoryItemType.skin
 }
 
@@ -30,11 +30,11 @@ export function Skins_Default_Init(skins:Definitions<SkinDef,{}>){
     skins.insert(
         {
             idString:"default_skin",
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
         },
         {
             idString:"nick_winner",
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             frame:{
                 leg:"default_skin_leg"
             }
@@ -47,19 +47,19 @@ export function Skins_Default_Init(skins:Definitions<SkinDef,{}>){
                     normal:"player_mounth_2_1"
                 }
             },
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
         },
         {
             idString:"alice_winner",
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
         },
         {
             idString:"kaklik",
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
         },
         {
             idString:"kitty",
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
         },
     )
 }

@@ -6,7 +6,7 @@ export function CalculateDoorHitbox(hitbox:RectHitbox2D,side:Orientation,door:Ob
         [-1]:hitbox,
         0:hitbox,
         1:hitbox.transform(
-            v2.new(3,0),
+            v2(3,0),
             1
         )
     }

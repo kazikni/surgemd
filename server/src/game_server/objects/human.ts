@@ -23,7 +23,13 @@ import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
-
+export type HumanPhysicalData=MovingBodyPhysicalData&{
+    dirty:boolean
+    dirty_part:boolean
+    reflective_hitbox?:Hitbox2D
+    scale:number
+    current_floor:FloorType
+}
 export class Human extends MovingBody{
     // Definition
     string_type:string="human"
@@ -41,13 +47,8 @@ export class Human extends MovingBody{
     // Physical
     old_position:Vec2=v2.zero()
     recoil?:{speed:number,delay:number}
-    physical_data:MovingBodyPhysicalData&{
-        dirty:boolean
-        dirty_part:boolean
-
-        scale:number
-        current_floor:FloorType
-    }={
+    reflective_hitbox?:Hitbox2D
+    physical_data:HumanPhysicalData={
         dirty:true,
         dirty_part:true,
 
@@ -175,9 +176,15 @@ export class Human extends MovingBody{
         this.actions=new ActionsManager(this)
 
         this.base_hitbox = new CircleHitbox2D(
-            v2.new(0,0),
+            v2(0,0),
             GameConstants.player.radius
         )
+    }
+    override update_hitbox(): void {
+        super.update_hitbox()
+        if(this.physical_data.reflective_hitbox){
+            this.reflective_hitbox=this.physical_data.reflective_hitbox.transform(this.position)
+        }
     }
     create(_args: Record<string, void>): void {
         const skin=random.choose(["nick_winner","default_skin"])
@@ -441,7 +448,7 @@ export class Human extends MovingBody{
             this.inventory.swamp_guns()
         }
         if(this.input.interaction&&this.seat){
-            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.physical_data.rotation))
+            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
             this.seat.clear_human()
         }
         if(!this.health_data.downed&&!this.parachute){
@@ -814,16 +821,20 @@ export class Human extends MovingBody{
 
             dirty:full?{
                 action:true,
+                group:true,
+                team:true,
                 inventory:{
                     items:true,
                     aitems:true,
                     iitems:true,
                     weapons:true,
-                    hand:true
-                }
+                    hand:true,
+                },
             }:{
                 inventory:this.inventory.net_sync,
-                action:this.actions.dirty
+                action:this.actions.dirty,
+                team:false,
+                group:false
             },
         }
         for(let i=0;i<this.inventory.slots.length;i++){

@@ -12,7 +12,7 @@ export function main(ctx){
                         ammoType:"22lr",
                         ammoSpawnAmount:90,
                         class:ctx.globals.GunClasses.Assault,
-                        quality:ctx.globals.ItemQuality.Rare,
+                        quality:ctx.globals.ItemRank.C,
                         assets:{
                             item:"ak47",
                             world:"ak47_world",
@@ -50,7 +50,7 @@ export function main(ctx){
                         ammoType:"22lr",
                         fireMode:ctx.globals.FireMode.Single,
                         class:ctx.globals.GunClasses.Pistol,
-                        quality:ctx.globals.ItemQuality.Common,
+                        quality:ctx.globals.ItemRank.E,
                         ammoSpawnAmount:45,
                         bullet:{
                             def:{

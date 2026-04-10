@@ -81,8 +81,8 @@ export class Container2D extends Container2DObject{
         if(c.visible){
             this.visible_children.push(c)
         }
-        c.update_real()
         this.dirty_zindex=true
+        this.dirty_reals=true
     }
 
     create_sprite():Sprite2D{

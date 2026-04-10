@@ -1,5 +1,5 @@
 import { Definition, NetStream, WeightDefinition } from "../../engine/core.ts";
-import { ItemQuality } from "../others/item.ts";
+import { ItemRank } from "../others/item.ts";
 import { BoostType } from "./player/boosts.ts";
 export enum BulletReflection{
     All=0,
@@ -32,43 +32,43 @@ export interface BulletDef{
     criticalMult?:number
     on_hit_explosion?:string
 }
-export type ItemQualitySetting={
+export type ItemRankSetting={
     name:string
     color1:string
     color2:string
 }
-export const ItemQualitySettings:Record<ItemQuality,ItemQualitySetting>={
-    [ItemQuality.Common]:{
+export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
+    [ItemRank.E]:{
         name:"common",
         color1:"#eeeeee",
         color2:"#a0a0a0"
     },
-    [ItemQuality.Uncommon]:{
+    [ItemRank.D]:{
         name:"uncommon",
         color1:"#11ef45",
         color2:"#0c913a",
     },
-    [ItemQuality.Rare]:{
+    [ItemRank.C]:{
         name:"rare",
         color1:"#3533ee",
         color2:"#15118a"
     },
-    [ItemQuality.Epic]:{
+    [ItemRank.B]:{
         name:"epic",
         color1:"#9309de",
         color2:"#3b0b7d"
     },
-    [ItemQuality.Mythic]:{
+    [ItemRank.A]:{
         name:"mythic",
         color1:"#f0d107",
         color2:"#ab8c0f"
     },
-    [ItemQuality.Legendary]:{
+    [ItemRank.S]:{
         name:"legendary",
         color1:"#ed092c",
         color2:"#a3050a"
     },
-    [ItemQuality.Developer]:{
+    [ItemRank.Developer]:{
         name:"developer",
         color1:"#eeeeee",
         color2:"#eeeeee"
@@ -89,7 +89,7 @@ export enum InventoryItemType{
 }
 export interface GameItemBase extends Definition{
     item_type:InventoryItemType
-    quality:ItemQuality
+    rank:ItemRank
 }
 export enum DamageReason{
     Human,

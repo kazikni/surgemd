@@ -116,7 +116,7 @@ export const Materials:Record<string,MaterialDef>={
         hit_variations:2
     },
 }
-function CreateStone(id:string,hitbox:Hitbox2D=new CircleHitbox2D(v2.new(0,0),0.82),o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+function CreateStone(id:string,hitbox:Hitbox2D=new CircleHitbox2D(v2(0,0),0.82),o:DeepPartial<ObstacleDef>={}):ObstacleDef{
     return mergeDeep({
         idString:id,
         health:170,
@@ -152,7 +152,7 @@ function CreateCrate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particl
     return mergeDeep({
         idString:id,
         health:70,
-        hitbox:new RectHitbox2D(v2.new(-0.71,-0.71),v2.new(0.71,0.71)),
+        hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
         scale:{
             destroy:0.6,
         },
@@ -161,7 +161,7 @@ function CreateCrate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particl
                 particle:particle,
                 transform:{
                     scale:2,
-                    hotspot:v2.new(0.5,0.5)
+                    hotspot:v2(0.5,0.5)
                 },
             }
         },
@@ -190,7 +190,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"barrel",
             health:140,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.57),
+            hitbox:new CircleHitbox2D(v2(0,0),0.57),
             scale:{
                 destroy:0.5
             },
@@ -216,7 +216,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             idString:"sillo",
             health:1,
             imortal:true,
-            hitbox:new CircleHitbox2D(v2.new(0,0),2.8),
+            hitbox:new CircleHitbox2D(v2(0,0),2.8),
             rotationMode:RotationMode.full,
             zIndex:zIndexes.Obstacles1,
             onDestroyExplosion:"barrel_explosion",
@@ -238,8 +238,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"oak_tree",
             health:120,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.4),
-            spawnHitbox:new CircleHitbox2D(v2.new(0,0),1.5),
+            hitbox:new CircleHitbox2D(v2(0,0),0.4),
+            spawnHitbox:new CircleHitbox2D(v2(0,0),1.5),
             scale:{
                 destroy:0.9,
             },
@@ -285,12 +285,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             scale:{
                 destroy:0.75,
             },
-            hitbox:RectHitbox2D.centered(v2.zero(),v2.new(3,3))
+            hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3))
         }),
         {
             idString:"bush",
             health:70,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.8),
+            hitbox:new CircleHitbox2D(v2(0,0),0.8),
             no_collision:true,
             scale:{
                 destroy:0.8
@@ -313,13 +313,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"wood_door",
             health:180,
-            hitbox:new RectHitbox2D(v2.new(-0.87,-0.15),v2.new(0.87,0.15)),
+            hitbox:new RectHitbox2D(v2(-0.87,-0.15),v2(0.87,0.15)),
             assets:{
                 frame:{
                     
                     transform:{
-                        hotspot:v2.new(0.1,.5),
-                        position:v2.new(0.13,0.15),
+                        hotspot:v2(0.1,.5),
+                        position:v2(0.13,0.15),
                         scale:1.5
                     },
                 }
@@ -339,8 +339,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"christmas_tree",
             health:300,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.6),
-            spawnHitbox:new CircleHitbox2D(v2.new(0,0),1),
+            hitbox:new CircleHitbox2D(v2(0,0),0.6),
+            spawnHitbox:new CircleHitbox2D(v2(0,0),1),
             scale:{
                 destroy:0.9,
                 max:1.2,
@@ -364,12 +364,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             idString:"recorded_tape",
             health:1,
             imortal:true,
-            hitbox:new RectHitbox2D(v2.new(-0.71,-0.71),v2.new(0.26,0.48)),
+            hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.26,0.48)),
             assets:{
                 frame:{
                     particle:"metal_particle",
                     transform:{
-                        hotspot:v2.new(0.5,0.5),
+                        hotspot:v2(0.5,0.5),
                         scale:1.5,
                     },
                 }
@@ -392,7 +392,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"iron_ladder_bottom",
             health:1,
-            hitbox:new RectHitbox2D(v2.new(-0.15,-0.5),v2.new(0.15,0.5)),
+            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
             imortal:true,
 
             material:"metal",
@@ -400,7 +400,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 frame:{
                     particle:"metal_particle",
                     transform:{
-                        hotspot:v2.new(0.5,0.5),
+                        hotspot:v2(0.5,0.5),
                         scale:2,
                     },
                 }
@@ -429,7 +429,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"iron_ladder_top",
             health:1,
-            hitbox:new RectHitbox2D(v2.new(-0.15,-0.5),v2.new(0.15,0.5)),
+            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
             imortal:true,
 
             material:"metal",
@@ -437,7 +437,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 frame:{
                     particle:"metal_particle",
                     transform:{
-                        hotspot:v2.new(0.5,0.5),
+                        hotspot:v2(0.5,0.5),
                         scale:2,
                     },
                 }

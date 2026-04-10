@@ -273,7 +273,7 @@ export const NormalMap:MapDef={
     biome:NormalBiome,
     generation:{
         island:{
-            size:v2.new(500,500),
+            size:v2(500,500),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
@@ -343,7 +343,7 @@ export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(100,100),
+            size:v2(100,100),
             spawn:[
                 [
                     {id:"watchtower",count:1},
@@ -421,7 +421,7 @@ export const NormalCounterMD:CounterMapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(90,90),
+            size:v2(90,90),
             spawn:[
                 [
                     {id:"sillo",count:2},

@@ -191,7 +191,7 @@ export class UiManager{
         })
     }
     emote_wheel={
-        positon:v2.new(0,0),
+        positon:v2(0,0),
         active:false,
         current_side:-1,
         emote:[

@@ -72,7 +72,7 @@ function decode_biome(stream:NetStream):BiomeDef{
 export class MapPacket extends Packet{
     ID=6
     Name="map"
-    map:MapConfig={terrain:[],size:v2.new(0,0),objects:[],seed:0,biome:NormalBiome}
+    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome}
     constructor(){
         super()
     }
@@ -129,7 +129,7 @@ export class MapPacket extends Packet{
             }
         },2)
         this.map.seed=stream.readUint32()
-        this.map.size=v2.new(stream.readUint16(),stream.readUint16())
+        this.map.size=v2(stream.readUint16(),stream.readUint16())
         this.map.biome=decode_biome(stream)
     }
 }

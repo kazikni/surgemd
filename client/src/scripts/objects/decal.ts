@@ -46,7 +46,7 @@ export class Decal extends GameObject{
         super()
         this.sprite=new Sprite2D()
 
-        this.sprite.hotspot=v2.new(0.5,0.5)
+        this.sprite.hotspot=v2(0.5,0.5)
 
         this.sprite.zIndex=zIndexes.Decals
     }

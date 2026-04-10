@@ -5,7 +5,7 @@ import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
-import { ItemQuality } from "common/scripts/others/item.ts";
+import { ItemRank } from "common/scripts/others/item.ts";
 
 export class InventoryManager{
     inventory:GInventory
@@ -85,11 +85,9 @@ export class InventoryManager{
                 w.name.innerText=this.game.language.get(this.inventory.weapons[k as unknown as number]!.def.idString)
                 w.image.src=assets["item"].src
                 w.image.style.display="block"
-                w.main.style.background=`linear-gradient(to right,${ItemQualitySettings[item.def.quality as ItemQuality].color1}42,${ItemQualitySettings[item.def.quality as ItemQuality].color2}42)`
             }else{
                 w.name.innerText=""
                 w.image.style.display="none"
-                w.main.style.background=""
             }
         }
     }
@@ -97,7 +95,6 @@ export class InventoryManager{
         this.inventory.weapon_idx=widx
         if(this.current_weapon!==-1&&this.weapons_html[this.current_weapon]){
             this.weapons_html[this.current_weapon]!.main.classList.remove("weapon-slot-selected")
-            this.weapons_html[this.current_weapon]!.main.style.border=""
         }
         const weapon=this.inventory.weapons[this.inventory.weapon_idx]
         if(!weapon)return
@@ -110,7 +107,6 @@ export class InventoryManager{
             this.content.hand_info.consume_type.style.display=""
         }
         this.current_weapon=this.inventory.weapon_idx
-        this.weapons_html[this.current_weapon]!.main.style.border=`3px solid ${ItemQualitySettings[weapon.def.quality as ItemQuality].color2}`
         this.weapons_html[this.current_weapon]!.main.classList.add("weapon-slot-selected")
     }
     melee_free():boolean{

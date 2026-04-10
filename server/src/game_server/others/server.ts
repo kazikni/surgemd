@@ -34,7 +34,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         for(const g of this.games.values()){
             if(!g.data.running){
                 g.new_game(config??{
-                    mode:"normal",
+                    mode:"debug",
                     //group_size:2,
                     mode_settings:{
                         /*map:{

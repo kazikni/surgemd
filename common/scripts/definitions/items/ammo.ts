@@ -1,5 +1,5 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
-import { ItemQuality } from "../../others/item.ts";
+import { ItemRank } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface AmmoDef extends Definition{
     tint:number
@@ -13,7 +13,7 @@ export interface AmmoDef extends Definition{
     drop_count?:number
 
     item_type?:InventoryItemType.ammo
-    quality:ItemQuality
+    rank:ItemRank
 }
 export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
     ammos.insert(
@@ -27,7 +27,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             strongProj:0xdb2218,
             tint:0xff0000,
             drop_count:15,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"762mm",
@@ -37,7 +37,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0x0000ff,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"556mm",
@@ -47,7 +47,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0x00ff00,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"9mm",
@@ -57,7 +57,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0xffff00,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         //Modes
         {
@@ -68,7 +68,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0x791390,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"22lr",
@@ -78,7 +78,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0xffffff,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"50cal",
@@ -88,7 +88,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0x000000,
-            quality:ItemQuality.Epic
+            rank:ItemRank.B
         },
         //Exotic
         {
@@ -100,7 +100,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             strongProj:0xefef33,
             tint:0x001330,
             drop_count:10,
-            quality:ItemQuality.Mythic
+            rank:ItemRank.A
         },
         {
             idString:"explosive_ammo",
@@ -110,7 +110,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0x001330,
-            quality:ItemQuality.Legendary
+            rank:ItemRank.S
         },
         {
             idString:"gasoline",
@@ -121,7 +121,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             strongProj:0xefef33,
             liquid:true,
             tint:0x001330,
-            quality:ItemQuality.Mythic
+            rank:ItemRank.A
         },
         {
             idString:"mana_mm",
@@ -131,7 +131,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0x001330,
-            quality:ItemQuality.Legendary
+            rank:ItemRank.S
         }
     )
 }

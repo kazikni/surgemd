@@ -67,7 +67,7 @@ export class AmbientManager{
 
                     return new RainParticle2D({
                         frame:{
-                            main:{ image:"raindrop_1", layer:100,scale:random.float(0.5,1), },
+                            main:{ image:"raindrop_1", layer:100,scale:random.float(0.4,0.7), },
                             wave:{ image:"raindrop_2" },
                         },
                         zindex:{
@@ -96,7 +96,7 @@ export class AmbientManager{
                     },
                     life_time:random.float(10,30),
                     direction:dir,
-                    position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2.new(this.game.cam2d.width,this.game.cam2d.height))),
+                    position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height))),
                     speed:random.float(0.4,1),
                     angle:ang,
                     scale:random.float(0.5,1),
@@ -124,7 +124,7 @@ export class AmbientManager{
                     life_time:random.float(5,10),
                     direction:dir,
                     zIndex:zIndexes.Particles,
-                    position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2.new(this.game.cam2d.width,this.game.cam2d.height))),
+                    position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height))),
                     speed:random.float(0.1,0.7),
                     angle:ang,
                     scale:random.float(0.4,0.7),
@@ -143,7 +143,7 @@ export class AmbientManager{
         this.game.sounds.init_html_sound_bindings("ui",this.game.resources)
 
         this.music=this.game.sounds.get_manipulative_si("music")??game.sounds.add_manipulative_si("music")
-        this.music.volume=0.65
+        this.music.volume=0.4
         this.ambience=game.sounds.add_manipulative_si("ambience")
         this.ambience.volume=0.25
         this.game.sounds.signals.on("load",async()=>{

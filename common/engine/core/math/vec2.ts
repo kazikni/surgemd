@@ -13,14 +13,26 @@ export class Vec2M implements Vec2{
     _y:number
 
     get x():number{return this._x}
-    set x(val:number){this._x=val;this.on_set()}
+    set x(val:number){
+        if(this._x!=val){
+            this._x=val
+            this.on_set()
+        }
+    }
     get y():number{return this._y}
-    set y(val:number){this._y=val;this.on_set()}
+    set y(val:number){
+        if(this._y!=val){
+            this._y=val
+            this.on_set()
+        }
+    }
 
     set(x:number,y:number){
-        this._x=x
-        this._y=y
-        this.on_set()
+        if(this._x!=x||this._y!=y){
+            this._x=x
+            this._y=y
+            this.on_set()
+        }
     }
 
     constructor(x:number,y:number,on_set:()=>void=()=>{}){
@@ -71,20 +83,33 @@ export const v2m=Object.freeze({
     floor(a: Vec2) {a.x=Math.floor(a.x);a.y=Math.floor(a.y)},
     ceil(a: Vec2) {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y)},
 
+    add_rotate_RadAngle(out:Vec2,a:Vec2,b:Vec2,angle:RadAngle){
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        out.x = a.x+(b.x * cos - b.y * sin)
+        out.y = a.y+(b.x * sin + b.y * cos)
+    },
+
+    add_rotate_DegAngle(out:Vec2,a:Vec2,b:Vec2,angle:RadAngle){
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        out.x = a.x+(b.x * cos - b.y * sin)
+        out.y = a.y+(b.x * sin + b.y * cos)
+    },
     rotate_RadAngle(vec: Vec2, angle: RadAngle) {
         const cos = Math.cos(angle)
         const sin = Math.sin(angle)
-        const x = vec.x
-        const y = vec.y
-        vec.x = x * cos - y * sin
-        vec.y = x * sin + y * cos
+        const x=vec.x
+        const y=vec.y
+        vec.x=x * cos - y * sin
+        vec.y=x * sin + y * cos
     },
     rotate_DegAngle(vec:Vec2,angle:DegAngle) {
-        const a=Angle.deg2rad(angle)
-        const cos = Math.cos(a)
-        const sin = Math.sin(a)
-        const x = vec.x
-        const y = vec.y
+        angle=Angle.deg2rad(angle)
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        const x=vec.x
+        const y=vec.y
         vec.x=x * cos - y * sin
         vec.y=x * sin + y * cos
     },
@@ -392,9 +417,30 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @param angle `Radians Angle`
      * @returns A new `Vec2` With angle pos
      */
+    add_rotate_RadAngle(a:Vec2,b:Vec2,angle:RadAngle):Vec2 {
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        return this.new(a.x+(x*cos-b.y*sin),b.y+(b.x*sin+b.y*cos))
+    },
+    /**
+     * 
+     * @param angle `Deg Angle`
+     * @returns A new `Vec2` With angle pos
+     */
+    add_rotate_DegAngle(a:Vec2,b:Vec2,angle:DegAngle):Vec2 {
+        angle=Angle.deg2rad(angle)
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
+        return this.new(a.x+(b.x*cos-b.y*sin),b.y+(b.x*sin+b.y*cos))
+    },
+    /**
+     * 
+     * @param angle `Radians Angle`
+     * @returns A new `Vec2` With angle pos
+     */
     rotate_RadAngle(vec:Vec2,angle:RadAngle):Vec2 {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
         return this.new(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos)
     },
     /**
@@ -403,9 +449,9 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @returns A new `Vec2` With angle pos
      */
     rotate_DegAngle(vec:Vec2,angle:DegAngle):Vec2 {
-        const a=Angle.deg2rad(angle)
-        const cos = Math.cos(a);
-        const sin = Math.sin(a);
+        angle=Angle.deg2rad(angle)
+        const cos = Math.cos(angle)
+        const sin = Math.sin(angle)
         return this.new(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos)
     },
     /**

@@ -64,8 +64,8 @@ export class Bullet extends GameObject{
     constructor(){
         super()
 
-        this.sprite_trail.size=v2.new(200,55) // Metter Size * 2
-        this.sprite_trail.hotspot=v2.new(0.965,.5)
+        this.sprite_trail.size=v2(200,55) // Metter Size * 2
+        this.sprite_trail.hotspot=v2(0.965,.5)
         this.sprite_trail.zIndex=1
         this.sprite_trail.position.x=0
         this.sprite_trail.position.y=0
@@ -192,7 +192,7 @@ export class Bullet extends GameObject{
             this.initialPosition=stream.readPos2()
             this.maxDistance=stream.readFloat32()
 
-            this.base_hitbox=new CircleHitbox2D(v2.new(0,0),stream.readFloat(0,2,2))
+            this.base_hitbox=new CircleHitbox2D(v2(0,0),stream.readFloat(0,2,2))
 
             this.speed=stream.readFloat32()
             this.container.rotation=stream.readRad()

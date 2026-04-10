@@ -1,11 +1,11 @@
 import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
-import { DefaultFistRig, ItemQuality } from "../../others/item.ts";
+import { DefaultFistRig, ItemRank } from "../../others/item.ts";
 import { Boosts, BoostType } from "../player/boosts.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface ConsumibleDef extends Definition{
     side_effects:SideEffect[]
-    quality:ItemQuality
+    rank:ItemRank
     use_delay:number
     condition?:ConsumibleCondition[]
     assets?:{
@@ -33,7 +33,7 @@ export const ConsumiblesAnimations={
                     visible:true,
                     scale:1.1,
                     rotation:-0.2,
-                    hotspot:hotspot??v2.new(0.5,.5),
+                    hotspot:hotspot??v2(0.5,.5),
                     zIndex:6,
                     position:DefaultFistRig.right!.position
                 },
@@ -59,7 +59,7 @@ export const ConsumiblesAnimations={
                     fuser:"weapon",
                     to:{
                         rotation:-1.570796,
-                        position:v2.new(.46,0)
+                        position:v2(.46,0)
                     }
                 },
                 {
@@ -67,7 +67,7 @@ export const ConsumiblesAnimations={
                     fuser:"right_arm",
                     to:{
                         rotation:DefaultFistRig.right!.rotation-0.4,
-                        position:v2.new(DefaultFistRig.right!.position.x,DefaultFistRig.right!.position.y-0.2)
+                        position:v2(DefaultFistRig.right!.position.x,DefaultFistRig.right!.position.y-0.2)
                     }
                 }
             ],
@@ -90,7 +90,7 @@ export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:
             }
         ],
         use_delay:2.65,
-        quality:ItemQuality.Uncommon,
+        rank:ItemRank.D,
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking(color+"_soda",2.5),
         drink:true,
@@ -114,7 +114,7 @@ export function CreatePills(color:string,boost_type:BoostType,item:DeepPartial<C
             }
         ],
         use_delay:6,
-        quality:ItemQuality.Epic,
+        rank:ItemRank.B,
         condition:[ConsumibleCondition.UnfullExtra],
         boost_type:boost_type,
         assets:{
@@ -137,7 +137,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 }
             ],
             use_delay:3,
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             condition:[ConsumibleCondition.UnfullHealth],
             assets:{
                 using_particle:"healing_particle"
@@ -154,7 +154,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 }
             ],
             use_delay:5.5,
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             condition:[ConsumibleCondition.UnfullHealth]
         },
 
@@ -172,7 +172,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 }
             ],
             use_delay:4.5,
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             condition:[ConsumibleCondition.UnfullExtra],
             boost_type:BoostType.Adrenaline
         },
@@ -192,12 +192,12 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 }
             ],
             use_delay:4.5,
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             condition:[ConsumibleCondition.UnfullExtra],
             assets:{
                 using_sound:"using_potion"
             },
-            animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2.new(0.5,0.35)),
+            animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2(0.5,0.35)),
             drink:true,
             boost_type:BoostType.Shield
         },
@@ -216,12 +216,12 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 }
             ],
             use_delay:4.5,
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             condition:[ConsumibleCondition.UnfullExtra],
             assets:{
                 using_sound:"using_potion"
             },
-            animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2.new(0.5,0.35)),
+            animation:ConsumiblesAnimations.drinking("purple_potion",4.5,v2(0.5,0.35)),
             drink:true,
             boost_type:BoostType.Mana
         },
@@ -241,7 +241,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                     }
                 }
             ],
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             condition:[ConsumibleCondition.UnfullExtra],
             animation:ConsumiblesAnimations.drinking("small_red_crystal",1.4),
             boost_type:BoostType.Addiction
@@ -258,7 +258,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                     }
                 }
             ],
-            quality:ItemQuality.Epic,
+            rank:ItemRank.B,
             condition:[ConsumibleCondition.UnfullExtra],
             animation:ConsumiblesAnimations.drinking("red_crystal",2.9),
             boost_type:BoostType.Addiction
@@ -277,7 +277,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                     type:SideEffectType.Parachute
                 }
             ],
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             boost_type:BoostType.Mana
         },
     )

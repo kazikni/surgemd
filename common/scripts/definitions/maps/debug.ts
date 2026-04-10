@@ -9,7 +9,7 @@ export const DebugMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(500,500),
+            size:v2(500,500),
             terrain:{
                 base:FloorType.Water,
                 floors:[
@@ -34,7 +34,7 @@ export const DebugMap:MapDef={
         let y=map.size.y/2
         let i=0
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
-            map.game.add_loot(v2.new(x,y),item,Infinity)
+            map.game.add_loot(v2(x,y),item,Infinity)
             i++
             if(i>=15){
                 i=0
@@ -49,7 +49,7 @@ export const DebugMap:MapDef={
         i=0
         for(const def of Object.values(map.game.definitions.obstacles.valueNumber)){
             const o=map.game.map.add_obstacle(def,undefined,Layers.Normal)
-            o.set_position(v2.new(x,y),random.int(0,3))
+            o.set_position(v2(x,y),random.int(0,3))
             i++
             if(i>=15){
                 i=0
@@ -60,7 +60,7 @@ export const DebugMap:MapDef={
             }
         }
         for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
-            const o=map.game.add_vehicle(v2.new(x,y),def,Layers.Normal)
+            const o=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
             i++
             if(i>=15){
                 i=0

@@ -34,7 +34,7 @@ export class DamageSplashOBJ extends GameObject{
         super()
         this.sprite=new Sprite2D()
 
-        this.sprite.hotspot=v2.new(0.5,0.5)
+        this.sprite.hotspot=v2(0.5,0.5)
         this.sprite.scale.x=0
         this.sprite.scale.y=0
 
@@ -75,7 +75,7 @@ export class DamageSplashOBJ extends GameObject{
         this.game.add_tween({
             duration: 0.4,
             target: this.sprite.position,
-            to: v2.add(this.sprite.position, v2.dscale(v2.random2(v2.new(-0.2,-0.5),v2.new(0.3,-0.7)),this.game.cam2d.zoom*(args.critical?0.6:0.8))),
+            to: v2.add(this.sprite.position, v2.dscale(v2.random2(v2(-0.2,-0.5),v2(0.3,-0.7)),this.game.cam2d.zoom*(args.critical?0.6:0.8))),
         })
         this.game.add_tween({
             duration: args.critical?0.1:0.3,

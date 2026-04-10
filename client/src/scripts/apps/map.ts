@@ -24,9 +24,9 @@ export class MapTabApp extends TabApp {
     private minZoom = 0.1
     private maxZoom = 4
 
-    private offset = v2.new(0,0)
+    private offset = v2(0,0)
     private dragging = false
-    private lastMouse = v2.new(0,0)
+    private lastMouse = v2(0,0)
 
     private followPlayer = true
     private players: MapPlayer[] = []
@@ -45,12 +45,12 @@ export class MapTabApp extends TabApp {
 
         const ms = this.tab.game.minimap.ms
 
-        const pos = v2.new(
+        const pos = v2(
             dz.position.x/ms,
             dz.position.y/ms
         )
 
-        const dest_pos = v2.new(
+        const dest_pos = v2(
             dz.dest_position.x/ms,
             dz.dest_position.y/ms
         )
@@ -161,7 +161,7 @@ export class MapTabApp extends TabApp {
 
         this.mapViewport.onmousedown = (e) => {
             this.dragging = true
-            this.lastMouse = v2.new(e.clientX, e.clientY)
+            this.lastMouse = v2(e.clientX, e.clientY)
         }
 
         window.onmouseup = () => this.dragging = false
@@ -172,7 +172,7 @@ export class MapTabApp extends TabApp {
             const dy = e.clientY - this.lastMouse.y
             this.offset.x += dx
             this.offset.y += dy
-            this.lastMouse = v2.new(e.clientX, e.clientY)
+            this.lastMouse = v2(e.clientX, e.clientY)
             this.updateTransform()
         }
 
@@ -192,7 +192,7 @@ export class MapTabApp extends TabApp {
 
     private worldToMap(pos: Vec2): Vec2 {
         const ms = this.tab.game.minimap.ms
-        return v2.new(pos.x / ms, pos.y / ms)
+        return v2(pos.x / ms, pos.y / ms)
     }
 
     private centerOnWorld(pos: Vec2) {

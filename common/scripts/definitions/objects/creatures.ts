@@ -103,7 +103,7 @@ export function Creatures_Default_Init(creatures:Definitions<CreatureDef,{}>){
         {
             idString:"chicken",
             health:50,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.25),
+            hitbox:new CircleHitbox2D(v2(0,0),0.25),
             ai:{
                 speed:0.5,
                 walk_time:3,
@@ -129,7 +129,7 @@ export function Creatures_Default_Init(creatures:Definitions<CreatureDef,{}>){
         {
             idString:"pig",
             health:50,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.25),
+            hitbox:new CircleHitbox2D(v2(0,0),0.25),
             ai:{
                 speed:0.5,
                 walk_time:3,

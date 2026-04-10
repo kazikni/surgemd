@@ -23,7 +23,7 @@ export class Projectile extends GameObject{
         this.sprite.position=this.position
         this.sprite.rotation=this.rotation
         const s=(this.def.zBaseScale+(this.def.zScaleAdd*this.zpos))*2
-        this.sprite.scale=v2.new(s,s)
+        this.sprite.scale=v2(s,s)
     }
     constructor(){
         super()
@@ -31,7 +31,7 @@ export class Projectile extends GameObject{
     set_definition(def:ProjectileDef){
         if(this.def)return
         this.def=def
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),this.def.radius)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.sprite.set_frame({
             image:this.def.frames.world,
             hotspot:CenterHotspot,

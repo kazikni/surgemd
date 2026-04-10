@@ -32,7 +32,7 @@ export class SyncedParticle extends MovingBody {
     create(args: {position: Vec2, def: SyncedParticleDef}) {
         this.position = args.position
         this.physical_data.rotation=random.rad()
-        this.base_hitbox = new CircleHitbox2D(v2.new(0, 0),3)
+        this.base_hitbox = new CircleHitbox2D(v2(0, 0),3)
         this.def = args.def
         const vel=random.float(0.2,0.5)
         this.angular_speed=vel

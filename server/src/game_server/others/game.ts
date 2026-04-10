@@ -349,7 +349,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     planes:PlaneDataServer[]=[]
     add_airdrop(position:Vec2){
-        const dir=v2.lookTo(v2.new(0,0),position)
+        const dir=v2.lookTo(v2(0,0),position)
         this.planes.push({
             id:random.int(0,1000000),
             complete:false,
@@ -363,7 +363,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         })
     }
     add_airstrike(position:Vec2,grenade:GrenadeDef,owner?:Human){
-        const dir=v2.lookTo(v2.new(0,0),position)
+        const dir=v2.lookTo(v2(0,0),position)
         this.planes.push({
             id:random.int(0,1000000),
             direction:dir,

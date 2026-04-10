@@ -69,7 +69,7 @@ export class Obstacle extends GameObject{
         super()
         this.container.visible=false
         this.container.add_child(this.sprite)
-        this.sprite.hotspot=v2.new(.5,.5)
+        this.sprite.hotspot=v2(.5,.5)
     }
     // deno-lint-ignore no-explicit-any
     create(_args: Record<string,any>): void {

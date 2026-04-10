@@ -68,7 +68,7 @@ export class Grenade extends Projectile{
     }
     create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
         this.def=args.def
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),this.def.radius)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.position=args.position
         if(this.def.cook){
             this.fuse_delay=this.def.cook.fuse_time

@@ -1,5 +1,5 @@
 import { Definition, Definitions, FrameDef, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
-import { DefaultFistRig, FistRig, ItemQuality, WeaponAssets, WeaponRig } from "../../others/item.ts"
+import { DefaultFistRig, FistRig, ItemRank, WeaponAssets, WeaponRig } from "../../others/item.ts"
 import { InventoryItemType } from "../utils.ts";
 export type GrenadeDef={
     explosion?:string
@@ -33,7 +33,7 @@ export type GrenadeDef={
     image?:WeaponRig
     assets?:WeaponAssets
 
-    quality:ItemQuality
+    rank:ItemRank
     item_type?:InventoryItemType.grenade
 
     call_airdrop?:{
@@ -54,7 +54,7 @@ export type GrenadeDef={
     }
 }&Definition
 const GrenadeRig={
-    position:v2.new(0.5,0.18),
+    position:v2(0.5,0.18),
     rotation:0.2
 }
 export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
@@ -81,7 +81,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"smoke_grenade",
@@ -105,7 +105,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         //Mirv
         {
@@ -129,7 +129,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"submirv_grenade",
@@ -151,7 +151,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"blue_flare",
@@ -175,7 +175,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             call_airdrop:{
                 delay:9
             },
@@ -183,7 +183,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 spawn_delay:6,
                 tint:0x08b0ce,
                 delay:0.1,
-                spawn:v2.new(0.3,0),
+                spawn:v2(0.3,0),
                 lifetime:{
                     min:2,
                     max:5
@@ -220,7 +220,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             call_airstrike:{
                 delay:3,
                 def:"nuke"
@@ -229,7 +229,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 spawn_delay:3,
                 tint:0xca0819,
                 delay:0.1,
-                spawn:v2.new(0.3,0),
+                spawn:v2(0.3,0),
                 lifetime:{
                     min:2,
                     max:5
@@ -264,7 +264,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Legendary
+            rank:ItemRank.S
         },
     )
 }

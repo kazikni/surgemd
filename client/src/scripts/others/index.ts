@@ -41,23 +41,6 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
     const fs:FileManager=is_binary?new GoFileManager():new FetchFileManager()
     const mods:CModsManager|undefined=sandbox_version&&is_binary?new CModsManager(fs):undefined
 
-    const input = document.getElementById("fileInput") as HTMLInputElement
-    const fm = new BrowserFileManager()
-
-    input.onchange = async () => {
-        const file = input.files?.[0]
-        if (!file) return
-
-        await fm.registerFile("replay", file)
-
-        const handle = await fm.open("replay", "r")
-
-        app.play_game({
-            type:"replay",
-            handle
-        })
-    }
-
     class App{
         game:Game
 

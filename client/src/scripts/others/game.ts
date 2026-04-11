@@ -617,11 +617,10 @@ export class Game extends ClientGame<GameObject>{
                 v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
             }
 
-            const l=Numeric.dt_expo_inter(4, dt)
-            this.free_cam_speed=4/this.free_cam_zoom
-            this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, l)
+            this.free_cam_speed=5/this.free_cam_zoom
+            this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(2, dt))
 
-            v2m.lerp(this.cam2d.position,this.free_cam_pos, l)
+            v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
             v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
             this.sounds.listener_position=this.cam2d.position
 

@@ -2,7 +2,7 @@
 import { cloneDeep, deleteDeep, FetchFileManager, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
-import { formatToHtml, GameSave } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
@@ -454,6 +454,40 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
         "campaign_level_selector":{
             generate:make_menu_campaign(campaign)
         },
+        "replays":{
+            generate: (parent, manager) => {
+                parent.innerHTML = `
+                    <h2>Play Replay</h2>
+
+                    <div class="replay-upload background-menu">
+                        <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="input-green"/>
+                        <button class="btn-green" id="btn-load-replay">Load Replay</button>
+                    </div>
+                `
+
+                const input = parent.querySelector("#replay-file-input") as HTMLInputElement
+                const btn = parent.querySelector("#btn-load-replay") as HTMLButtonElement
+
+                const fm = new BrowserFileManager()
+
+                const loadReplay = async () => {
+                    const file = input.files?.[0]
+                    if (!file) return
+                    await fm.registerFile("replay", file)
+                }
+
+                input.onchange = loadReplay
+                btn.onclick = async()=>{
+                    const handle = await fm.open("replay", "r")
+                    if (manager.play_callback) {
+                        manager.play_callback({
+                            type: "replay",
+                            handle
+                        })
+                    }
+                }
+            }
+        }
     } as Record<string,MenuSubTabDef>
     const play_options:SubMenuOption[]=[
         {
@@ -565,6 +599,18 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
             generate:make_menu_modes(menu.api_settings.modes)
         }
     }
+    play_options.push(
+        {
+            type:"label",
+            name:"Files",
+        },
+        {
+            type:"button",
+            id:"replays",
+            name:"Replay",
+            subtab:"replays"
+        },
+    )
     menu.reload_tabs([
         {
             id:"play",

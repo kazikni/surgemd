@@ -204,6 +204,7 @@ export class Human extends MovingBody{
     }
     create(_args: Record<string, void>): void {
 
+        const female=Math.random()<0.5
         this.loadout={
             dirty:true,
             original:{
@@ -214,13 +215,13 @@ export class Human extends MovingBody{
             },
             body:{
                 def:this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
-                tint:random.choose([0xf0c98e,0xffc166,0xf0a93f,0x4d3108])
+                tint:random.choose([0xffc166,0xf0a93f])
             },
             hair:{
-                def:this.game.definitions.loadout.getFromString(random.choose(["hair_1","hair_2"])) as LoadoutHairDef,
-                tint:random.choose([0x222222,0xffffff,0xf01041,0x331f00,0x4d3108])
+                def:this.game.definitions.loadout.getFromString(female?"hair_2":"hair_1") as LoadoutHairDef,
+                tint:random.choose([0x222222,0xffffff,0xf01041,0x331f00,0x4d3108,0xfbff05])
             },
-            eyes:this.game.definitions.loadout.getFromString("eyes_1") as LoadoutEyesDef,
+            eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
             shirt:this.game.definitions.loadout.getFromString(random.choose(["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
             emotes:{
 
@@ -969,19 +970,19 @@ export class Human extends MovingBody{
         this.piercing_damage(params)
     }
     piercing_damage(params: DamageParams): [number, number] {
-        const totalDamage = params.amount
+        let totalDamage = params.amount
         let shieldDamage = 0
         let healthDamage = 0
         this.net_sync.part = true
         const pos = params.position ?? this.position
         if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
-            shieldDamage = Math.min(this.health_data.boost, totalDamage)
-            if (totalDamage >= this.health_data.boost * 2) {
-                shieldDamage = this.health_data.boost
+            shieldDamage = Math.min(this.health_data.boost, totalDamage*this.game.modeManager.rules.humans.boosts.shield.damage_multiplier)
+            if (totalDamage >= this.health_data.boost * 4) {
                 healthDamage = totalDamage - shieldDamage
                 this.health_data.boost = 0
             } else {
                 this.health_data.boost -= shieldDamage
+                totalDamage=shieldDamage
             }
             this.add_damage_splash(
                 params.owner,

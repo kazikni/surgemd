@@ -68,19 +68,25 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             item:LoadoutItemKind.Hair,
             idString:"hair_1",
             rank:ItemRank.E,
-            position:v2(-0.17,0)
+            position:v2(-0.15,0)
         },
         {
             item:LoadoutItemKind.Hair,
             idString:"hair_2",
-            rank:ItemRank.C,
-            position:v2(-0.15,0)
+            rank:ItemRank.E,
+            position:v2(-0.2,0)
         },
         //Eyes
         {
             item:LoadoutItemKind.Eyes,
             position:v2(0.2,0),
             idString:"eyes_1",
+            rank:ItemRank.E,
+        },
+        {
+            item:LoadoutItemKind.Eyes,
+            position:v2(0.2,0),
+            idString:"eyes_2",
             rank:ItemRank.E,
         },
         //Shirt

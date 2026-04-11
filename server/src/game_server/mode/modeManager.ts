@@ -9,6 +9,9 @@ import { type Group, type Team } from "./teams.ts";
 export interface GameRules{
     humans:{
         boosts:{
+            shield:{
+                damage_multiplier:number
+            }
             adrenaline:{
                 decay:number
                 speed:number
@@ -53,6 +56,9 @@ export abstract class ModeManager{
     rules:GameRules={
         humans:{
             boosts:{
+                shield:{
+                    damage_multiplier:1.25
+                },
                 adrenaline:{
                     decay:0.25,
                     speed:0.1,

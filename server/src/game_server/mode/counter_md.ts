@@ -1,7 +1,7 @@
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
-import { CounterMapDef, Maps } from "common/scripts/definitions/maps/base.ts";
+import { CounterMapDef } from "common/scripts/definitions/maps/base.ts";
 import { Team, TeamsManager } from "./teams.ts";
 import { JoinnedPacket, ShopItemType, type ShopNode } from "common/scripts/packets/joinned_packet.ts";
 import { v2, Vec2 } from "common/engine/core.ts";

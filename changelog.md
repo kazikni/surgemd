@@ -22,6 +22,7 @@ __                                                                              
 * Rework Casing Particles
 __                                                                                                      __
 ### Others
+* shield damage is increased by 25%.
 __                                                                                                      __
 ### Menu
 * Change UI Design

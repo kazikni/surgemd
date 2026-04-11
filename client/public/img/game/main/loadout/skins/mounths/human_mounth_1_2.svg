@@ -5,7 +5,7 @@
    viewBox="0 0 3.1100001 5.0776999"
    version="1.1"
    id="svg3"
-   sodipodi:docname="player_mounth_1_2.svg"
+   sodipodi:docname="human_mounth_1_2.svg"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -22,8 +22,8 @@
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="20.98284"
-     inkscape:cx="0.73869887"
-     inkscape:cy="15.512676"
+     inkscape:cx="4.5513381"
+     inkscape:cy="15.465018"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -55,7 +55,7 @@
     </linearGradient>
   </defs>
   <path
-     style="fill:url(#b);stroke-width:0.265049"
+     style="fill:#d93030;stroke-width:0.265049;fill-opacity:1"
      d="M 10e-4,8.4955657e-4 V 5.0778496 c 0.697,-0.02 3.009,-0.181 3.109,-2.555 C 2.987,0.37584956 0.97,0.05584956 0,-1.5044343e-4 Z"
      id="path2" />
 </svg>

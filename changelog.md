@@ -2,13 +2,15 @@
 ## News
 __                                                                                                      __
 ### Mains
-
+* Dynamic Humans
 __                                                                                                      __
 ### Menu
 
 __                                                                                                      __
 ### Items
-
+* Casing Sounds
+* Humans Drop Consumibles After Use
+* More Casing Particles
 __                                                                                                      __
 ### Others
 
@@ -16,6 +18,7 @@ __                                                                              
 ## Changes
 __                                                                                                      __
 ### Items
+* Rework Casing Particles
 __                                                                                                      __
 ### Others
 __                                                                                                      __

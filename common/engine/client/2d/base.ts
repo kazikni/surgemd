@@ -6,6 +6,7 @@ import { Renderer } from "../rendering/renderer.ts";
 import { Matrix } from "../../core/definition/matrix.ts";
 import { Hitbox2D, RectHitbox2D, } from "../../core/math/hitbox.ts";
 import { type Container2D } from "./container.ts";
+import { FrameTransform } from "../../core/definition/definitions.ts";
 
 export interface CamA{
     matrix:Matrix
@@ -165,6 +166,16 @@ export abstract class Container2DObject {
     }
     get_hitbox():Hitbox2D|undefined{
         return undefined
+    }
+    transform_frame(frame:FrameTransform){
+        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
+        if(frame.scale2)this.scale=frame.scale2
+        if(frame.rotation)this.rotation=frame.rotation
+        if(frame.visible)this.visible=frame.visible
+        if(frame.zIndex)this.zIndex=frame.zIndex
+        if(frame.position)this.position=v2.clone(frame.position)
+        if(frame.layer)this.layer=frame.layer
+        this.dirty_reals=true
     }
     abstract draw(cam:CamA): void;
 }

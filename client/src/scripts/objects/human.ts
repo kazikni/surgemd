@@ -405,6 +405,9 @@ export class Human extends MovingBody{
             shirt:shirt_def
         }
 
+        const body_t=ColorM.number(body_tint)
+        const hair_t=ColorM.number(hair_tint)
+
         const body_f=body_def.frame?.base??"human_"+body_def.idString
         const hand_f=body_def.frame?.hand??"human_"+body_def.idString+"_hand"
         const hair_f=hair_def.frame?.base??"human_"+hair_def.idString
@@ -419,8 +422,8 @@ export class Human extends MovingBody{
         this.sprites.hair.frame=this.game.resources.get_sprite(hair_f)
         this.sprites.eyes.frame=this.game.resources.get_sprite(eyes_f[0])
 
-        this.sprites.body.tint=ColorM.number(body_tint)
-        this.sprites.hair.tint=ColorM.number(hair_tint)
+        this.sprites.body.tint=body_t
+        this.sprites.hair.tint=hair_t
 
         this.sprites.hair.position=hair_def.position
         this.sprites.eyes.position=eyes_def.position
@@ -430,8 +433,8 @@ export class Human extends MovingBody{
 
         this.sprites.left_hand.frame=this.game.resources.get_sprite(hand_f)
         this.sprites.right_hand.frame=this.game.resources.get_sprite(hand_f)
-        this.sprites.left_hand.tint=ColorM.number(body_tint)
-        this.sprites.right_hand.tint=ColorM.number(body_tint)
+        this.sprites.left_hand.tint=body_t
+        this.sprites.right_hand.tint=body_t
 
         if(shirt_def.frame?.arm_tint)this.sprites.left_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
         if(shirt_def.frame?.arm_tint)this.sprites.right_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
@@ -460,23 +463,12 @@ export class Human extends MovingBody{
 
         this.sprites.weapon.zIndex=2
 
-        this.anims.mount_normal="player_mounth_1_1"
-        this.anims.mount_open="player_mounth_1_2"
+        this.anims.mount_normal=body_def.mounth.normal
+        this.anims.mount_open=body_def.mounth.open
+        this.sprites.mounth.tint=body_t
+        this.sprites.mounth.position=body_def.mounth.position
         this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_normal)
-        this.anims.mount_anims.length=0
-        /*if(!this.skin.animation?.no_auto_talk){
-            this.anims.mount_anims.push({delay:random.float(8,14),image:this.anims.mount_normal})
-            const c=random.int(10,20)
-            for(let i=0;i<c;i++){
-                this.anims.mount_anims.push(
-                    {delay:0.15,image:this.anims.mount_normal},
-                    {delay:0.15,image:this.anims.mount_open}
-                )
-            }
-            this.anims.mount_anims.push({delay:random.float(1,5),image:this.anims.mount_normal})
-        }*/
-        this.sprites.mounth.frames=this.anims.mount_anims
-        
+
         this.sprites.eyes.frames=[{delay:random.float(3.4,3.6),image:eyes_f[0]},{delay:0.3,image:eyes_f[1]}]
 
         this.container.update_zindex()
@@ -497,7 +489,7 @@ export class Human extends MovingBody{
             eyes:this.container.add_animated_sprite("eyes",{scale:1.333333,zIndex:5,hotspot:CenterHotspot}),
             hair:this.container.add_sprite("hair",{scale:1.333333,zIndex:6,hotspot:CenterHotspot}),
 
-            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.3,0.5),scale:1.4,position:v2(0.3,0),zIndex:5}),
+            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.4,zIndex:5}),
 
             helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.333333,hotspot:CenterHotspot}),
 
@@ -751,10 +743,7 @@ export class Human extends MovingBody{
         this.container.stop_all_animations()
         this.current_animation=undefined
         if(this.sound_animation.animation)this.sound_animation.animation.stop()
-        if(!this.sprites.mounth.frames&&this.anims.mount_anims){
-            this.sprites.mounth.frames=this.anims.mount_anims
-            this.sprites.mounth.current_delay=1000
-        }
+        this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_normal)
         this.sound_animation.animation=undefined
         this.anims.consumible_particles!.enabled=false
         this.attacking=false
@@ -827,7 +816,30 @@ export class Human extends MovingBody{
                         position:this.position,
                         max_distance:10,
                         on_complete:()=>{
+                            if(def.drop){
+                                const angle=this.physical_data.rotation+(3.141592/2)
+                                const p=new ABParticle2D({
+                                    direction:angle,
+                                    life_time:2,
+                                    position:this.sprites.weapon._real_position,
+                                    angle:this.sprites.weapon.rotation,
+                                    frame:{
+                                        image:this.sprites.weapon.frame?.id,
+                                        hotspot:CenterHotspot,
+                                        layer:this.layer,
+                                        zIndex:zIndexes.Particles
+                                    },
+                                    speed:random.float(0.5,1),
+                                    scale:this.sprites.weapon.scale.x,
+                                    to:{
+                                        angle:angle+random.float(6,10),
+                                        scale:0.6
+                                    }
+                                })
+                                this.game.particles.add_particle(p)
+                            }
                             this.update_weapon(false)
+                            this.reset_anim()
                         }
                     },"humans")
                 }
@@ -958,26 +970,35 @@ export class Human extends MovingBody{
             }
         },d.fireDelay*0.25)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
-            if(d.caseParticle&&!d.caseParticle.at_begin){
+            if(d.case&&!d.case.at_begin){
                 const p=new ABParticle2D({
-                    direction:this.physical_data.rotation+(3.141592/2),
-                    life_time:0.4,
+                    direction:this.physical_data.rotation+(3.141592/2)+random.float(0,0.6),
+                    life_time:1,
                     position:v2.add(
                         this.position,
-                        v2.rotate_RadAngle(d.caseParticle.position,this.physical_data.rotation)
+                        v2.rotate_RadAngle(d.case.position,this.physical_data.rotation)
                     ),
                     frame:{
-                        image:d.caseParticle.frame??"casing_"+d.ammoType,
-                        hotspot:CenterHotspot
+                        image:d.case.frame??"casing_"+d.ammoType,
+                        hotspot:CenterHotspot,
+                        layer:this.layer,
+                        zIndex:zIndexes.Particles
                     },
-                    speed:random.float(3,4),
-                    angle:0,
-                    scale:1,
+                    speed:random.float(1,2),
+                    angle:this.physical_data.rotation,
+                    scale:1.5,
                     to:{
-                        angle:random.float(1,3),
-                        scale:0.7
+                        angle:this.physical_data.rotation+random.float(10,15),
+                        scale:0.5
                     }
                 })
+                const audio=this.game.resources.get_audio(d.case!.sound??"casing_sound_"+d.ammoType)
+                if(audio)this.game.add_timeout(()=>{
+                    this.game.sounds.play(audio,{
+                        position:this.position,
+                        max_distance:10,
+                    },"players")
+                },0.75)
                 this.game.particles.add_particle(p)
             }
             if(d.gasParticles){

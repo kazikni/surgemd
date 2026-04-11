@@ -4,6 +4,7 @@ import { Tween } from "../misc/utils.ts"
 import { type ClientGame } from "../misc/game.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Container2D } from "./container.ts";
+import { Container2DObject } from "./base.ts";
 export type AnimationInstance = {
     loop: boolean
     enabled: boolean
@@ -16,7 +17,7 @@ export type AnimationInstance = {
     on_complete?: () => void
 }
 export class AnimatedContainer2D extends Container2D{
-    objects=new Map<string,Sprite2D|Container2D>()
+    objects=new Map<string,Container2DObject>()
     override _has_update: boolean=true
 
     current_animations:AnimationInstance[]=[]
@@ -77,12 +78,27 @@ export class AnimatedContainer2D extends Container2D{
             a.tweens.length=0
             for(const action of kf.actions){
                 switch(action.type){
-                    case "sprite":
-                        this.get_spr(action.fuser).set_frame(action,this.game.resources)
+                    case "sprite":{
+                        const spr=this.get_object(action.fuser)
+                        if(!spr){
+                            console.log(action.fuser)
+                        }
+                        if(spr instanceof Sprite2D){
+                            spr.set_frame(action,this.game.resources)
+                        }else{
+                            spr.transform_frame(action)
+                        }
                         this.update_zindex()
                         break
+                    }
+                    case "transform":{
+                        const spr=this.get_object(action.fuser)
+                        spr.transform_frame(action)
+                        this.update_zindex()
+                        break
+                    }
                     case "tween":{
-                        const fuser=this.get_spr(action.fuser)
+                        const fuser=this.get_object(action.fuser)
                         if(kf.time>0){
                             if(action.to.position){
                                 a.tweens.push(this.game.add_tween({
@@ -93,7 +109,7 @@ export class AnimatedContainer2D extends Container2D{
                                     to:action.to.position
                                 }))
                             }
-                            if(action.to.hotspot){
+                            if(action.to.hotspot&&fuser instanceof Sprite2D){
                                 a.tweens.push(this.game.add_tween({
                                     duration:kf.time,
                                     target:fuser.hotspot,
@@ -139,7 +155,7 @@ export class AnimatedContainer2D extends Container2D{
         this.objects.set(id,ret)
         return ret
     }
-    get_spr(id:string):Sprite2D{
-        return this.objects.get(id) as Sprite2D
+    get_object(id:string):Container2DObject{
+        return this.objects.get(id)!
     }
 }

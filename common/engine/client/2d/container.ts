@@ -1,4 +1,6 @@
+import { FrameTransform } from "../../core/definition/definitions.ts";
 import { Hitbox2D, HitboxGroup2D } from "../../core/math/hitbox.ts";
+import { v2 } from "../../core/math/vec2.ts";
 import { type ResourcesManager } from "../resources/resources.ts";
 import { type CamA, Container2DObject } from "./base.ts";
 import { Sprite2D } from "./sprite.ts";

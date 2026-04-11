@@ -149,7 +149,6 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     position:DefaultFistRig.left!.position,
                     rotation:DefaultFistRig.left!.rotation,
                     zIndex:2,
-                    visible:false,
                 }
             },
             image:{

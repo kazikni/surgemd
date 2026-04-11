@@ -13,6 +13,11 @@ export interface LoadoutBodyDef extends Definition{
         base?:string
         hand?:string
     }
+    mounth:{
+        position:Vec2
+        normal:string
+        open:string
+    }
     rank:ItemRank,
 }
 export interface LoadoutHairDef extends Definition{
@@ -51,6 +56,11 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 hand:"human_hand_1"
+            },
+            mounth:{
+                position:v2(0.3,0),
+                normal:"human_mounth_1_1",
+                open:"human_mounth_1_2"
             }
         },
         //Hairs
@@ -58,7 +68,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             item:LoadoutItemKind.Hair,
             idString:"hair_1",
             rank:ItemRank.E,
-            position:v2(-0.19,0)
+            position:v2(-0.17,0)
         },
         {
             item:LoadoutItemKind.Hair,

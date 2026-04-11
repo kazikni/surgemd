@@ -51,10 +51,11 @@ export type GunDef={
         reload_sound?:string
         reload_sound_alt?:string
     }
-    caseParticle?:{
+    case?:{
         position:Vec2
         at_begin?:boolean
         frame?:string
+        sound?:string
     }
     gasParticles?:GasParticle
     dual?:DeepPartial<GunDef>&DualAdditional
@@ -113,27 +114,6 @@ export const GunsConstructors={
     extends(gun:GunDef,variant:DeepPartial<GunDef>):GunDef{
         return mergeDeep({}as GunDef,gun,variant)as GunDef
     },
-    create_variant(gun:GunDef,rank:ItemRank,params:{
-        damage_increment?:number
-        capacity_increment?:number
-    }):GunDef{
-        const ret=cloneDeep(gun)
-        ret.idString=ItemQualitySettings[quality].name+"_"+ret.idString
-        ret.quality=quality
-        if(!ret.assets){
-            ret.assets={}
-        }
-        ret.assets.item=gun.assets?.item??gun.idString
-        ret.assets.item_tint=gun.assets?.item_tint
-        ret.assets.item=gun.assets?.world??gun.idString+"_world"
-        ret.assets.world_tint=gun.assets?.world_tint
-        if(ret.bullet){
-            if(params.damage_increment){
-                ret.bullet.def.damage+=params.damage_increment
-            }
-        }
-        return ret
-    }
 }
 
 export const GasParticles={
@@ -228,6 +208,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 world_tint:0xaaaaaa
             },
             gasParticles:GasParticles.pistols,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             muzzleFlash:MuzzleFlash.normal,
             image:WeaponsRig[0],
             dual:{
@@ -273,6 +256,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             arms:WeaponsArmRig[3],
             gasParticles:GasParticles.pistols,
             muzzleFlash:MuzzleFlash.normal,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             image:WeaponsRig[0],
             assets:{
                 world:"weapon_small_world",
@@ -319,6 +305,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.9,
             arms:WeaponsArmRig[3],
             muzzleFlash:MuzzleFlash.normal,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             image:WeaponsRig[0],
             dual:{
                 dual_offset:0.2,
@@ -358,6 +347,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.97,
             gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             assets:{
@@ -400,6 +392,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             muzzleFlash:MuzzleFlash.normal,
             speed_mod:0.95,
             gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
@@ -445,6 +440,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.95,
             gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
+            muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
@@ -485,6 +484,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:1,
             gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             image:{
@@ -522,6 +524,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:1,
             gasParticles:GasParticles.pistols,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             assets:{
@@ -562,6 +567,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:1,
             gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
             arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_small_world",
@@ -609,7 +617,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.95,
             gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
-            caseParticle:{
+            case:{
                 position:v2.new(0.6,0.3)
             },
             arms:WeaponsArmRig[2],
@@ -662,7 +670,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
-            caseParticle:{
+            case:{
                 position:v2.new(0.6,0.3)
             },
             assets:{
@@ -707,7 +715,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
-            caseParticle:{
+            case:{
                 position:v2.new(0.6,0.3)
             },
             assets:{
@@ -747,7 +755,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.95,
             gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
-            caseParticle:{
+            case:{
                 position:v2.new(0.6,0.3)
             },
             arms:WeaponsArmRig[2],
@@ -794,7 +802,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.95,
             gasParticles:GasParticles.sniper,
             muzzleFlash:MuzzleFlash.normal,
-            caseParticle:{
+            case:{
                 position:v2.new(0.6,0.3)
             },
             arms:WeaponsArmRig[2],
@@ -847,7 +855,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 position:v2.new(0.5,0),
                 rotation:0
             },
-            caseParticle:{
+            case:{
                 position:v2.new(0.8,0.3)
             },
             assets:{
@@ -894,7 +902,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 position:v2.new(0.4,0.01),
                 rotation:0
             },
-            caseParticle:{
+            case:{
                 position:v2.new(0.6,0.3)
             },
             assets:{
@@ -937,6 +945,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:1,
             gasParticles:GasParticles.shotgun,
+            case:{
+                position:v2.new(0.8,0.3)
+            },
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             assets:{
@@ -1019,6 +1030,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.8,
             gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.8,0.3)
+            },
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             assets:{

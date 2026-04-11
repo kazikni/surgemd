@@ -214,7 +214,7 @@ export class Human extends MovingBody{
             },
             body:{
                 def:this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
-                tint:0xffc166
+                tint:random.choose([0xf0c98e,0xffc166,0xf0a93f,0x4d3108])
             },
             hair:{
                 def:this.game.definitions.loadout.getFromString(random.choose(["hair_1","hair_2"])) as LoadoutHairDef,

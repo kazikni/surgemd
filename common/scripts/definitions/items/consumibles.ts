@@ -15,6 +15,7 @@ export interface ConsumibleDef extends Definition{
     }
     boost_type?:BoostType
     drink?:boolean
+    drop?:boolean
     animation?:AKeyFrame[]
     item_type?:InventoryItemType.consumible
 }
@@ -40,13 +41,13 @@ export const ConsumiblesAnimations={
                 {
                     ...DefaultFistRig.left!,
                     visible:true,
-                    type:"sprite",
+                    type:"transform",
                     fuser:"left_arm",
                 },
                 {
                     ...DefaultFistRig.right!,
-                    visible:true,   
-                    type:"sprite",
+                    visible:true,
+                    type:"transform",
                     fuser:"right_arm",
                 },
             ],
@@ -94,6 +95,7 @@ export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:
         condition:[ConsumibleCondition.UnfullExtra],
         animation:ConsumiblesAnimations.drinking(color+"_soda",2.5),
         drink:true,
+        drop:true,
         boost_type:boost_type,
         assets:{
             using_sound:"using_soda",
@@ -199,6 +201,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
             },
             animation:ConsumiblesAnimations.drinking("blue_potion",4.5,v2(0.5,0.35)),
             drink:true,
+            drop:true,
             boost_type:BoostType.Shield
         },
         CreatePills("blue",BoostType.Shield),

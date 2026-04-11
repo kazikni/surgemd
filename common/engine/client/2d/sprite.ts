@@ -82,17 +82,9 @@ export class Sprite2D extends Container2DObject{
         if(frame.tint)this.tint=ColorM.number(frame.tint)
         this.dirty_reals=true
     }
-    
-    transform_frame(frame:FrameTransform){
-        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2)this.scale=frame.scale2
+    override transform_frame(frame:FrameTransform){
+        super.transform_frame(frame)
         if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
-        if(frame.rotation)this.rotation=frame.rotation
-        if(frame.visible)this.visible=frame.visible
-        if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.position)this.position=v2.clone(frame.position)
-        if(frame.layer)this.layer=frame.layer
-        this.dirty_reals=true
     }
     override get_hitbox():RectHitbox2D|undefined{
         return this._hitbox

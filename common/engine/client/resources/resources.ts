@@ -27,6 +27,7 @@ export interface SoundDef{
 }
 
 export class Frame{
+    id:string=""
     source:HTMLImageElement
     texture!:WebGLTexture
     src:string
@@ -241,6 +242,7 @@ export class ResourcesManager{
                     rect.x2,rect.y1
                 ]
             );
+            s.id=`${idPrefix}${id}`
             s.frame_rect={
                 x1:frame.x,
                 y1:frame.y,
@@ -252,7 +254,7 @@ export class ResourcesManager{
             s.group=group
 
             s.frame_size=v2(frame.w/json.meta.scale,frame.h/json.meta.scale)
-            this.sources[`${idPrefix}${id}`] = s
+            this.sources[s.id] = s
 
             s.batch_mat=this.renderer.factorys2D.texture_batch.create({
                 texture:tex

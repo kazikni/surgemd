@@ -218,16 +218,26 @@ export class PlayersManager{
 
         return client.human as Player
     }
+    global_buffer_1?:NetStream
+    global_buffer_2?:NetStream
     get_global_update_packet(full:boolean):UpdatePacket{
+        if(!this.global_buffer_1)this.global_buffer_1=new NetStream(new ArrayBuffer(1024*1024*2))
+        this.global_buffer_1.clear()
+
         const up=new UpdatePacket()
         up.priv.splashes=this.splashes
-        up.objects=this.game.scene_2d.objects.encode_all(full)
+        up.objects=this.game.scene_2d.objects.encode_all(full,this.global_buffer_1)
         return up
     }
-    encode_frame(stream:NetStream,full:boolean){
-        const up=this.get_global_update_packet(full)
+    encode_frame(full:boolean){
+        if(!this.global_buffer_2)this.global_buffer_2=new NetStream(new ArrayBuffer(1024*1024*2.2))
+        this.global_buffer_2.clear()
 
-        this.game.clients.packets_manager.encode(up,stream)
+        const up=this.get_global_update_packet(full)
+        this.game.clients.packets_manager.encode(up,this.global_buffer_2)
+
+        this.game.clients.packets_manager.encode(this.general_update,this.global_buffer_2)
+        return this.global_buffer_2
     }
     update(dt:number){
         for(const p of Object.values(this.connected_bots)){
@@ -256,10 +266,10 @@ export class PlayersManager{
         for(const p of Object.values(this.connected_bots)){
             p.net_update(s)
         }
-
+        if(this.game.replay)this.game.replay.update()
+    
         this.game.scene_2d.objects.update_to_net()
         this.game.scene_2d.objects.apply_destroy_queue()
-        
     }
     send_killfeed_message(msg:KillFeedMessage){
         const p=new KillFeedPacket()

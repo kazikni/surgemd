@@ -584,8 +584,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             stream=this.stream_cache
             this.stream_cache.clear()
         }
-        stream.writeID(this.all_objects.size)
+        stream.writeUint8(100) // All Encode
+        const list:GameObject[]=[]
         for(const obj of this.all_objects.values()){
+            if(obj.net_sync.full||full||recreate||obj.net_sync.part)list.push(obj)
+        }
+
+        stream.writeID(list.length)
+        for(const obj of list){
             obj.encodeObject(full||recreate,stream,null)
         }
         return stream

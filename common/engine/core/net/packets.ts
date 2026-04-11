@@ -31,6 +31,7 @@ export class PacketsManager{
         return stream
     }
     decode(stream:NetStream):Packet{
+        if(stream.index>=stream._view.byteLength)return new InvalidPacket()
         const passcode=stream.readUint16()
         if(passcode!=2314){
             return new InvalidPacket()

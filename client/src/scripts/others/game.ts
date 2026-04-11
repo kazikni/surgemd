@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -93,6 +93,12 @@ export class Game extends ClientGame<GameObject>{
         offset:Vec2
     }
     fs?:FileManager
+    watcher?:ReplayWatcher
+    cam_type:number=0
+
+    free_cam_pos = v2(0, 0)
+    free_cam_speed = 2
+    free_cam_zoom=0.5
 
     planes:Record<number,Plane>={}
 
@@ -233,6 +239,7 @@ export class Game extends ClientGame<GameObject>{
                 case "previous_scope":{
                     const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
                     const it=this.inventory.inventory.iitems[oidx-1]
+                    this.free_cam_zoom=Math.min(1,this.free_cam_zoom*1.1)
 
                     if(!it)break
 
@@ -245,6 +252,8 @@ export class Game extends ClientGame<GameObject>{
                 case "next_scope":{
                     const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
                     const it=this.inventory.inventory.iitems[oidx+1]
+                    this.free_cam_zoom=Math.max(0.1,this.free_cam_zoom*0.9)
+
                     if(!it)break
                     this.input.actions.push({
                         type:InputActionType.set_scope,
@@ -402,10 +411,10 @@ export class Game extends ClientGame<GameObject>{
 
         this.happening=true
 
-        this.sounds.listener_position.x=100000
-        this.sounds.listener_position.y=100000
-        this.cam2d.position.x=100000
-        this.cam2d.position.y=100000
+        this.sounds.listener_position.x=-10000
+        this.sounds.listener_position.y=-10000
+        this.cam2d.position.x=-10000
+        this.cam2d.position.y=-10000
         this.cam2d.zoom=6
 
         this.ambient.music.set(undefined)
@@ -428,7 +437,9 @@ export class Game extends ClientGame<GameObject>{
 
         this.ui.start()
         this.join()
+
         this.mainloop(true)
+        this.watcher?.play?.()
     }
     async end_level(kills:number=0){
         this.stop()
@@ -573,6 +584,7 @@ export class Game extends ClientGame<GameObject>{
     }
     override on_stop(): void {
         super.on_stop()
+        this.cam_type=0
         this.happening=false
         if(!this.game_over){
             this.close_game()
@@ -595,22 +607,42 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.update(dt)
         this.ui.update(dt)
         this.tab.tick(dt)
-        if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
-            this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
-        }
-        if(this.active_entity){
-            this.cam2d.position=this.active_entity.position
-            this.sounds.listener_position=this.active_entity.position
-            this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
 
-            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
+        if (this.cam_type === 1) {
+            const move = this.input.movement
 
-            this.ambient.update_camera()
-            if(this.client&&this.client.opened){
-                this.client.emit(this.input)
-                this.reset_input()
+            if (move.scale > 0) {
+                this.free_cam_pos.x += Math.cos(move.dir) * this.free_cam_speed * dt
+                this.free_cam_pos.y += Math.sin(move.dir) * this.free_cam_speed * dt
+                v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
             }
-            if(this.active_entity.dead)this.active_entity=undefined
+
+            const l=Numeric.dt_expo_inter(4, dt)
+            this.free_cam_speed=4/this.free_cam_zoom
+            this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, l)
+
+            v2m.lerp(this.cam2d.position,this.free_cam_pos, l)
+            v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
+            this.sounds.listener_position=this.cam2d.position
+
+        }else{
+            if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
+                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
+            }
+            if(this.active_entity){
+                this.cam2d.position=this.active_entity.position
+                this.sounds.listener_position=this.active_entity.position
+
+                this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
+
+                if(this.active_entity.dead)this.active_entity=undefined
+            }
+        }
+        this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
+        this.ambient.update_camera()
+        if(this.client&&this.client.opened){
+            this.client.emit(this.input)
+            this.reset_input()
         }
         for(const p of Object.values(this.planes)){
             p.update(dt)

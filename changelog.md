@@ -2,6 +2,7 @@
 ## News
 __                                                                                                      __
 ### Mains
+* *Replay Mode!*
 * Dynamic Humans
 __                                                                                                      __
 ### Menu

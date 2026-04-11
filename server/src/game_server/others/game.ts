@@ -1,5 +1,5 @@
 
-import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, NetStream, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -31,6 +31,9 @@ import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
+import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -135,6 +138,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         living_count:false,
         ambient:false,
     }
+
+    replay?:ReplayRecorder
     constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
         super(100,id,clients,[
             Human,
@@ -150,7 +155,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             SyncedParticle
         ])
 
-        this.ntps=30
+        this.ntps=32
         this.main_config=main_config
 
         for(const i of LayersL){
@@ -233,7 +238,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         /*for(let i=0;i<99;i++){
             const b = this.players.add_bot(new JoinPacket())
             if(b.human){
-                if(Math.random()<=0.7){
+                if(Math.random()<=0.1){
                     b.human.set_preset({
                         "inventory":{
                             "infinity_ammo":true,
@@ -415,8 +420,18 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.modeManager.on_start()
         this.started_time=performance.now()
 
+        if(!this.replay){
+            this.replay=new ReplayRecorder(this,(r,full)=>{
+                return this.players.encode_frame(full)
+            },this.ntps);
+            /*(new DenoFileManager().open("database/replays/1.repl","rw")).then((v)=>{
+                this.replay!.startRecording(v,this.map.map_packet_stream)
+            })*/
+        }
+
         this.update_data()
         console.log(`Game ${this.id} Started`)
+
     }
     close(){
         if(this.closed)return
@@ -432,6 +447,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.modeManager.on_finish()
         this.signals.emit("finish",{})
+
+        if(this.replay)this.replay.stopRecording()
 
         console.log(`Game ${this.id} Fineshed`)
     }

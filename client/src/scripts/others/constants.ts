@@ -1,3 +1,5 @@
+import { type FileHandle } from "common/engine/core.ts";
+
 export type PlayArgs={
     type: "online"
     mode:string
@@ -12,4 +14,7 @@ export type PlayArgs={
     password:string
     attempts?:number
     delay?:number
+}|{
+    type: "replay"
+    handle:FileHandle
 }

@@ -519,22 +519,22 @@ export class Human extends MovingBody{
         this.sprites.left_shirt_arm.transform_frame({
             hotspot:v2(1,0.5),
             zIndex:1,
-            scale:1.2,
+            scale:1.1,
         })
         this.sprites.left_hand.transform_frame({
             hotspot:v2(0.5,0.5),
             zIndex:0,
-            scale:1.2,
+            scale:1.1,
         })
         this.sprites.right_shirt_arm.transform_frame({
             hotspot:v2(1,0.5),
             zIndex:1,
-            scale:1.2,
+            scale:1.1,
         })
         this.sprites.right_hand.transform_frame({
             hotspot:v2(0.5,0.5),
             zIndex:0,
-            scale:1.2,
+            scale:1.1,
         })
 
         this.sprites.left_arm.add_child(this.sprites.left_hand)

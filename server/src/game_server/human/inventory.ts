@@ -305,7 +305,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     attack(user:Human):void{
         const position=v2.add(
             user.position,
-            v2.mult(v2.from_RadAngle(user.physical_data.rotation),v2(this.def.offset,this.def.offset))
+            v2.from_RadAngle(user.physical_data.rotation,this.def.offset)
         )
         const hb=new CircleHitbox2D(position,this.def.radius)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)

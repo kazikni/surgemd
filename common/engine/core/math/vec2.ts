@@ -400,8 +400,8 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @param angle `Radians Angle`
      * @returns A new `Vec2` With angle pos
      */
-    from_RadAngle(angle:RadAngle):Vec2 {
-        return this.new(Math.cos(angle),Math.sin(angle) )
+    from_RadAngle(angle:RadAngle,scale:number=1):Vec2 {
+        return this.new(Math.cos(angle)*scale,Math.sin(angle)*scale)
     },
     /**
      * 
@@ -420,7 +420,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     add_rotate_RadAngle(a:Vec2,b:Vec2,angle:RadAngle):Vec2 {
         const cos = Math.cos(angle)
         const sin = Math.sin(angle)
-        return this.new(a.x+(x*cos-b.y*sin),b.y+(b.x*sin+b.y*cos))
+        return this.new(a.x+(a.x*cos-b.y*sin),b.y+(b.x*sin+b.y*cos))
     },
     /**
      * 
@@ -453,6 +453,12 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         const cos = Math.cos(angle)
         const sin = Math.sin(angle)
         return this.new(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos)
+    },
+    perp(vec: Vec2): Vec2 {
+        return { x: -vec.y, y: vec.x }
+    },
+    perp_cw(vec: Vec2): Vec2 {
+        return { x: vec.y, y: -vec.x }
     },
     /**
      * @param x `Vec_A`

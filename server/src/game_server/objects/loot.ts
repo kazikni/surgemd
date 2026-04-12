@@ -127,9 +127,6 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.accessory:
                 this.loot_data.real_radius=GameConstants.loot.radius.accessory
                 break
-            case InventoryItemType.skin:
-                this.loot_data.real_radius=GameConstants.loot.radius.skin
-                break
         }
         (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
         this.position=args.position

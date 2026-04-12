@@ -57,7 +57,7 @@ export class AmbientManager{
                     const radius = Math.max(this.game.cam2d.width, this.game.cam2d.height) * random.float(0.9,1.1)
                     const ang = random.rad()
 
-                    const spawn = v2.add(this.game.cam2d.position, v2.scale(v2.from_RadAngle(ang), radius))
+                    const spawn = v2.add(this.game.cam2d.position, v2.from_RadAngle(ang,radius))
 
                     const dirVec = v2.sub(this.game.cam2d.position, spawn)
                     const dir = Math.atan2(dirVec.y, dirVec.x)

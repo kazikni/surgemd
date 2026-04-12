@@ -122,10 +122,7 @@ export class Vehicle extends MovingBody {
             )
         }
 
-        this.physical_data.velocity = v2.scale(
-            v2.from_RadAngle(this.physical_data.rotation),
-            this.speed
-        )
+        this.physical_data.velocity=v2.from_RadAngle(this.physical_data.rotation,this.speed)
 
         super.update(dt)
 

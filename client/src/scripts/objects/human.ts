@@ -876,7 +876,7 @@ export class Human extends MovingBody{
                     }
                     const position=v2.add(
                         this.position,
-                        v2.mult(v2.from_RadAngle(this.physical_data.rotation),v2(def.offset,def.offset))
+                        v2.from_RadAngle(this.physical_data.rotation,def.offset)
                     )
                     const hb=new CircleHitbox2D(position,def.radius)
                     const collidibles:GameObject[]=this.manager.cells.get_objects(hb,this.layer)
@@ -1008,7 +1008,7 @@ export class Human extends MovingBody{
                         life_time:d.gasParticles.life_time,
                         position:v2.add(
                             this.position,
-                            v2.mult(v2.from_RadAngle(this.physical_data.rotation),v2(d.lenght,d.lenght))
+                            v2.from_RadAngle(this.physical_data.rotation,d.lenght)
                         ),
                         frame:{
                             image:"gas_smoke_particle",

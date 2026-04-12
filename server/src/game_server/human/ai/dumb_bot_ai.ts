@@ -95,7 +95,7 @@ export class DumbBotAI extends BotAi {
             const dist = random.float(3, 10)
             this._dz_target = v2.add(
                 center,
-                v2.scale(v2.from_RadAngle(random.rad()), dist)
+                v2.from_RadAngle(random.rad(), dist)
             )
         }
         if(this._stuck_timer < 0.6){
@@ -183,7 +183,7 @@ export class DumbBotAI extends BotAi {
             const center = dz.state.position
             const testPos = v2.add(
                 self.position,
-                v2.scale(v2.from_RadAngle(dir), 3)
+                v2.from_RadAngle(dir, 3)
             )
             const distNow = v2.distance(self.position, center)
             const distNext = v2.distance(testPos, center)

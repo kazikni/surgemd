@@ -198,8 +198,7 @@ export class Bullet extends GameObject{
             this.container.rotation=stream.readRad()
             this.reflection_count=stream.readUint8()
 
-            this.velocity=v2.from_RadAngle(this.container.rotation)
-            v2m.scale(this.velocity,this.velocity,this.speed)
+            this.velocity=v2.from_RadAngle(this.container.rotation,this.speed)
 
             this.maxLength=stream.readFloat(0,100,3)
             this.sprite_trail.scale!.y=stream.readFloat(0,6,2)

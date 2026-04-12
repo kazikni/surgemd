@@ -1,4 +1,4 @@
-import { AKeyFrame, Angle, Definition, Definitions, ease, v2 } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, Definition, Definitions, ease, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets, WeaponRig } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -19,6 +19,11 @@ export interface MeleeDef extends Definition{
     animation?:AKeyFrame[]
     assets?:WeaponAssets&{
         hit_sound?:string
+    }
+
+    reflective?:{
+        frame?:string
+        offset:number
     }
 
     resistence_damage?:number
@@ -260,6 +265,44 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"heavy_swing",
                 hit_sound:"sledgehammer_hit",
+            }
+        },
+        {
+            idString:"pan",
+            damage:20,
+            offset:0.6,
+            rank:ItemRank.D,
+            radius:0.9,
+            size:2,
+            attack_delay:0.4,
+            switchDelay:0.5,
+            damage_delays:[0.3],
+            arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.2,0.4)
+            },
+            reflective:{
+                frame:"pan_world",
+                offset:0.6
+            },
+            animation:AnimationSwing(0.45),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"axe_hit",
             }
         },
         /*{

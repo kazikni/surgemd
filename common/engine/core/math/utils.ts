@@ -518,7 +518,7 @@ export function getPatterningShape(
         const tauFrac = Math.PI / points;
         return (radius: number, offset = 0): Vec2[] => Array.from(
             { length: points },
-            (_, i) => v2.scale(v2.from_RadAngle(i * tauFrac + offset), radius)
+            (_, i)=>v2.from_RadAngle(i * tauFrac + offset, radius)
         );
     };
 

@@ -2,7 +2,7 @@ import { BulletDef, BulletReflection, DamageReason } from "common/scripts/defini
 import { Obstacle } from "./obstacle.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Collision, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
@@ -59,33 +59,79 @@ export class Bullet extends ServerGameObject{
             switch(obj.number_type){
                 case GameObjectType.Human:{
                     if(!(obj as Human).health_data.dead&&(!this.owner||((obj as Human).id===this.owner.id&&this.reflectionCount>0)||(obj as Human).id!==this.owner.id)&&!(obj as Human).parachute){
-                        const col1=(obj as Obstacle).hitbox.overlapLine(this.old_position,this.position)
-                        if(!col1)continue
-                        const dmg:number=this.damage
-                        *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
-                        *(this.critical?(this.def.criticalMult??1.25):1);
-                        (obj as Human).damage({
-                            amount:dmg,
-                            owner:this.owner,
-                            reason:DamageReason.Human,
-                            position:v2.clone(this.position),
-                            critical:this.critical,
-                            source:this.source as unknown as DamageSourceDef,
-                            direction:Math.atan2(col1.dir.y,col1.dir.x)
-                        })
-                        this.on_hit()
-                        if(this.def.effect){
-                            for(const e of this.def.effect){
-                                (obj as Human).side_effect({
-                                    type:SideEffectType.AddEffect,
-                                    duration:e.time,
-                                    effect:e.id
-                                })
+                        const human = obj as Human
+
+                        const colBody = human.hitbox.overlapLine(this.old_position, this.position)
+
+                        const reflectSeg = null//human.get_reflect_segment()
+                        let colReflect = null
+                        if (reflectSeg) {
+                            const segHit = Collision.segment_intersection(
+                                this.old_position,
+                                this.position,
+                                reflectSeg[0],
+                                reflectSeg[1]
+                            )
+
+                            if (segHit) {
+                                const segDir = v2.sub(reflectSeg[1], reflectSeg[0])
+                                const normal = v2.normalizeSafe(v2(-segDir.y, segDir.x))
+                                colReflect = {
+                                    point: segHit.point,
+                                    dir: normal
+                                }
                             }
                         }
+                        let chosen: typeof colBody | typeof colReflect = null
+                        let isReflect = false
 
-                        if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
-                            this.reflect(col1.dir)
+                        if (colBody || colReflect) {
+                            const distBody = colBody ? v2.distance(this.old_position, colBody.point) : Infinity
+                            const distPan = colReflect ? v2.distance(this.old_position, colReflect.point) : Infinity
+
+                            if (distPan < distBody) {
+                                chosen = colReflect
+                                isReflect = true
+                            } else {
+                                chosen = colBody
+                            }
+                        }
+                        if(chosen) {
+                            if (isReflect) {
+                                this.on_hit()
+                                this.reflect(chosen.dir, chosen.point)
+                                break
+                            }
+
+                            const dmg:number=this.damage
+                                *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
+                                *(this.critical?(this.def.criticalMult??1.25):1);
+
+                            human.damage({
+                                amount:dmg,
+                                owner:this.owner,
+                                reason:DamageReason.Human,
+                                position:v2.clone(chosen.point),
+                                critical:this.critical,
+                                source:this.source as unknown as DamageSourceDef,
+                                direction:Math.atan2(chosen.dir.y,chosen.dir.x)
+                            })
+
+                            if(this.def.effect){
+                                for(const e of this.def.effect){
+                                    human.side_effect({
+                                        type:SideEffectType.AddEffect,
+                                        duration:e.time,
+                                        effect:e.id
+                                    })
+                                }
+                            }
+
+                            // Armor Reflect
+                            if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
+                                this.reflect(chosen.dir,chosen.point)
+                            }
+                            this.on_hit()
                         }
                         break
                     }
@@ -110,7 +156,7 @@ export class Bullet extends ServerGameObject{
                         const col1=obj.hitbox.overlapLine(this.old_position,this.position)
                         if(!col1)continue
                         if(((obj as StaticBody).physical_data.reflect_bullet||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.def.on_hit_explosion){
-                            this.reflect(col1.dir)
+                            this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()
                         const dmg:number=this.damage;
@@ -158,27 +204,28 @@ export class Bullet extends ServerGameObject{
         this.angle=angle;
         (this.base_hitbox as CircleHitbox2D).radius=this.def.radius*this.modifiers.size
     }
-    reflect(normal: Vec2) {
-        v2m.neg(normal)
-        const dot = v2.dot(this.dir,normal)
-        const reflected = {
-            x: this.dir.x - 2 * dot * normal.x,
-            y: this.dir.y - 2 * dot * normal.y,
-        }
+    reflect(normal: Vec2, point: Vec2) {
+        const n = v2.normalizeSafe(normal)
+        const d = this.dir
 
-        const rotation = Math.atan2(reflected.y, reflected.x)
+        const dot = v2.dot(d, n)
 
-        v2m.add(this.position, this.position, reflected)
+        const newDir = v2.sub(
+            d,
+            v2.scale(n, 2 * dot)
+        )
+
+        const pos = v2.add(point, v2.scale(n, 0.05))
 
         const b = this.game.add_bullet(
-            this.position,
-            rotation,
+            pos,
+            Math.atan2(newDir.y, newDir.x),
             this.def,
             this.owner,
             this.ammo,
             this.source
         )
-        b.damage = this.damage / 2
+
         b.reflectionCount = this.reflectionCount + 1
     }
 

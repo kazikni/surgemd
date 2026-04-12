@@ -4,7 +4,6 @@ import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/c
 import { GameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
-import { SkinDef } from "common/scripts/definitions/loadout/skins.ts";
 import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { Human } from "./human.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
@@ -245,19 +244,6 @@ export class Loot extends GameObject{
                     radius=GameConstants.loot.radius.accessory
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.skin:{
-                    const ff=(this.item as unknown as SkinDef).frame?.base??(this.item.idString+"_body")
-                    this.sprite_main.frame=this.game.resources.get_sprite(ff)
-                    this.sprite_main.visible=true
-                    this.sprite_main.scale=v2(0.5,0.5)
-                    this.sprite_main.rotation=τ
-                    this.sprite_outline.frame=this.game.resources.get_sprite(`null_outline`)
-                    this.sprite_outline.visible=true
-                    this.sprite_outline.scale=v2(1.4,1.4)
-                    radius=GameConstants.loot.radius.skin
-                    this.container.add_child(this.sprite_outline)
-                    break
-                }
             }
             if(this.is_new){
                 v2m.single(this.container.scale,0.05)

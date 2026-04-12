@@ -29,7 +29,6 @@ import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
-    reflective_hitbox?:Hitbox2D
     scale:number
     current_floor:FloorType
 }
@@ -50,7 +49,6 @@ export class Human extends MovingBody{
     // Physical
     old_position:Vec2=v2.zero()
     recoil?:{speed:number,delay:number}
-    reflective_hitbox?:Hitbox2D
     physical_data:HumanPhysicalData={
         dirty:true,
         dirty_part:true,
@@ -196,14 +194,24 @@ export class Human extends MovingBody{
             GameConstants.player.radius
         )
     }
-    override update_hitbox(): void {
-        super.update_hitbox()
-        if(this.physical_data.reflective_hitbox){
-            this.reflective_hitbox=this.physical_data.reflective_hitbox.transform(this.position)
-        }
+    get_reflect_segment(): [Vec2, Vec2] {
+        const rot = this.physical_data.rotation
+
+        const center = v2.add(
+            this.position,
+            v2.from_RadAngle(rot, 0.6)
+        )
+
+        const side = v2.perp(v2.from_RadAngle(rot))
+
+        const half = 0.35
+
+        const a = v2.add(center, v2.scale(side, -half))
+        const b = v2.add(center, v2.scale(side,  half))
+
+        return [a, b]
     }
     create(_args: Record<string, void>): void {
-
         const female=Math.random()<0.5
         this.loadout={
             dirty:true,

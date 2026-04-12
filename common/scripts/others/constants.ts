@@ -16,7 +16,6 @@ export const GameConstants={
             consumible:0.4,
             equipament:0.4,
             grenade:0.4,
-            skin:0.4
         }
     },
     collision:{

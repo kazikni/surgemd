@@ -272,19 +272,40 @@ export const Collision=Object.freeze({
             for (let j = 0; j < polyB.length; j++) {
                 const b1 = polyB[j];
                 const b2 = polyB[(j + 1) % polyB.length];
-                if (Collision.segmentsIntersect(a1, a2, b1, b2)) return true;
+                if (Collision.segment_intersection(a1, a2, b1, b2)) return true;
             }
         }
         return false;
     },
 
-    segmentsIntersect(p1: Vec2, p2: Vec2, q1: Vec2, q2: Vec2) {
+    segment_intersect(p1: Vec2, p2: Vec2, q1: Vec2, q2: Vec2) {
         function ccw(a: Vec2, b: Vec2, c: Vec2) {
             return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
         }
         return ccw(p1, q1, q2) !== ccw(p2, q1, q2) &&
             ccw(p1, p2, q1) !== ccw(p1, p2, q2);
     },
+    segment_intersection(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2): { point: Vec2 } | null {
+        const r = v2.sub(a2, a1)
+        const s = v2.sub(b2, b1)
+
+        const denom = r.x * s.y - r.y * s.x
+        if (Math.abs(denom) < 0.00001) return null
+
+        const u = ((b1.x - a1.x) * r.y - (b1.y - a1.y) * r.x) / denom
+        const t = ((b1.x - a1.x) * s.y - (b1.y - a1.y) * s.x) / denom
+
+        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+            return {
+                point: v2(
+                    a1.x + t * r.x,
+                    a1.y + t * r.y
+                )
+            }
+        }
+
+        return null
+    }
 })
 export interface Rect{
     min:Vec2

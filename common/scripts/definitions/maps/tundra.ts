@@ -71,6 +71,7 @@ export const TundraMap:MapDef={
             {item:"sr25",weight:29},
             {item:"model94",weight:29},
             {item:"famas",weight:27},
+            {item:"tommy_gun",weight:26},
             {item:"blr81",weight:25},
             {item:"kar98k",weight:10},
             {item:"awp",weight:1},
@@ -85,6 +86,7 @@ export const TundraMap:MapDef={
             {item:"sr25",weight:30},
             {item:"model94",weight:30},
             {item:"famas",weight:28},
+            {item:"tommy_gun",weight:27},
             {item:"blr81",weight:26},
             {item:"kar98k",weight:11},
             {item:"awp",weight:1.1},
@@ -94,6 +96,7 @@ export const TundraMap:MapDef={
         "tundra_crate":[
             [
                 {item:"famas",weight:30},
+                {item:"tommy_gun",weight:30},
                 {item:"model94",weight:30},
                 {item:"sr25",weight:27},
                 {item:"blr81",weight:15},

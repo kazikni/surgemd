@@ -37,9 +37,9 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                     mode:"normal",
                     //group_size:2,
                     mode_settings:{
-                        map:{
-                            def:"lobby"
-                        }
+                        /*map:{
+                            //def:"lobby"
+                        }*/
                     }
                 })
                 return g as GameContainer

@@ -130,7 +130,7 @@ export class BattleRoyaleSolo extends ModeManager{
 }
 export class BattleRoyaleDebug extends BattleRoyaleSolo{
     constructor(settings:BattleRoyaleSettings) {
-        if(!settings.map){
+        if(!settings.map?.def){
             settings.map={def:Maps["debug"]}
         }
         super(settings)

@@ -22,7 +22,7 @@ export const NormalMap:MapDef={
     loot_tables:{
         //Guns Quality
         "common_guns":[
-            {item:"m9",weight:5},
+            {item:"m9",weight:1},
         ],
         "uncommon_guns":[
             {item:"mp5",weight:1.4},
@@ -35,20 +35,21 @@ export const NormalMap:MapDef={
         ],
         "epic_guns":[
             {item:"famas",weight:6},
-            {item:"spas12",weight:3},
+            {item:"m1a1",weight:3},
+            {item:"spas12",weight:1},
             {item:"model94",weight:1},
             {item:"blr81",weight:0.7},
         ],
         "mythic_guns":[
-            {item:"sr25",weight:10},
-            {item:"vector",weight:10},
+            {item:"sr25",weight:15},
+            {item:"vector",weight:15},
             {item:"kar98k",weight:7},
             {item:"awp",weight:1},
             //{item:"m2_2",weight:0.1},
         ],
         "legendary_guns":[
-            {item:"awms",weight:1},
-            {item:"pfeifer_zeliska",weight:1},
+            {item:"pfeifer_zeliska",weight:10},
+            {item:"awms",weight:6},
             {item:"rpg7",weight:0.8},
         ],
         //Guns Spawn
@@ -63,6 +64,7 @@ export const NormalMap:MapDef={
         "special_guns":[
             {table:"uncommon_guns",weight:21},
             {table:"rare_guns",weight:20},
+            {table:"common_guns",weight:15},
             {table:"epic_guns",weight:3},
             {table:"mythic_guns",weight:0.7},
             {table:"legendary_guns",weight:0.3}
@@ -74,8 +76,10 @@ export const NormalMap:MapDef={
         //Consumibles
         "consumibles":[
             {item:"bandage",count:5,weight:1000},
+
             {item:"yellow_soda",count:1,weight:950},
             {item:"blue_soda",count:2,weight:700},
+
             {item:"inhaler",count:1,weight:400},
             {item:"medikit",count:1,weight:350},
             {item:"blue_potion",count:1,weight:240},
@@ -90,8 +94,10 @@ export const NormalMap:MapDef={
         ],
         "special_consumibles":[
             {item:"bandage",count:10,weight:1000},
+
             {item:"yellow_soda",count:2,weight:950},
             {item:"blue_soda",count:3,weight:700},
+
             {item:"inhaler",count:2,weight:400},
             {item:"medikit",count:1,weight:350},
             {item:"blue_potion",count:2,weight:240},
@@ -111,24 +117,24 @@ export const NormalMap:MapDef={
         ],
         //Ammos
         "ammos":[
-            {item:"12g",count:10,weight:5},
-            {item:"9mm",count:60,weight:5},
+            {item:"12g",count:5,weight:5},
+            {item:"9mm",count:40,weight:5},
             //{item:"22lr",count:60,weight:5},
-            {item:"762mm",count:60,weight:5},
-            {item:"556mm",count:60,weight:5},
-            {item:"45acp",count:60,weight:0.5},
+            {item:"762mm",count:40,weight:5},
+            {item:"556mm",count:40,weight:5},
+            {item:"45acp",count:40,weight:1},
             {item:"50cal",count:20,weight:0.1},
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
             {item:"explosive_ammo",count:2,weight:0.05},
         ],
         "special_ammos":[
-            {item:"12g",count:15,weight:5},
+            {item:"12g",count:10,weight:5},
             {item:"9mm",count:80,weight:5},
             //{item:"22lr",count:80,weight:5},
             {item:"762mm",count:80,weight:5},
             {item:"556mm",count:80,weight:5},
-            {item:"45acp",count:80,weight:0.5},
+            {item:"45acp",count:80,weight:1},
             {item:"50cal",count:40,weight:0.3},
             {item:"308sub",count:10,weight:0.2},
             {item:"gasoline",count:10,weight:0.2},
@@ -136,8 +142,8 @@ export const NormalMap:MapDef={
         ],
         //Throwables
         "throwables":[
-            {item:"frag_grenade",count:1,weight:50},
-            {item:"smoke_grenade",count:2,weight:40},
+            {item:"frag_grenade",count:1,weight:60},
+            {item:"smoke_grenade",count:2,weight:60},
             {item:"mirv_grenade",count:1,weight:20},
             {item:"blue_flare",count:1,weight:1},
             {item:"red_flare",count:1,weight:1},
@@ -159,19 +165,19 @@ export const NormalMap:MapDef={
         ],
         //Armors And Backpacks
         "helmets":[
-            {item:"basic_helmet",weight:100},
+            {item:"basic_helmet",weight:8},
             {item:"regular_helmet",weight:1},
-            {item:"tactical_helmet",weight:0.05},
+            {item:"tactical_helmet",weight:0.2},
         ],
         "vests":[
-            {item:"basic_vest",weight:10},
+            {item:"basic_vest",weight:8},
             {item:"regular_vest",weight:1},
-            {item:"tactical_vest",weight:0.05},
+            {item:"tactical_vest",weight:0.2},
         ],
         "backpacks":[
-            {item:"basic_pack",weight:10},
+            {item:"basic_pack",weight:8},
             {item:"regular_pack",weight:1},
-            {item:"tactical_pack",weight:0.05},
+            {item:"tactical_pack",weight:0.2},
         ],
         "armors":[
             {table:"helmets",weight:1},
@@ -183,19 +189,19 @@ export const NormalMap:MapDef={
             {table:"backpacks",weight:1},
         ],
         "special_equipments":[
-            {item:"basic_vest",weight:10},
+            {item:"basic_vest",weight:8},
             {item:"regular_vest",weight:3},
             {item:"tactical_vest",weight:0.15},
 
-            {item:"basic_helmet",weight:10},
+            {item:"basic_helmet",weight:8},
             {item:"regular_helmet",weight:1},
             {item:"tactical_helmet",weight:0.15},
 
-            {item:"basic_pack",weight:10},
+            {item:"basic_pack",weight:8},
             {item:"regular_pack",weight:1},
             {item:"tactical_pack",weight:0.15},
         ],
-        "airdrop_equipments":[
+        "tactical_equipments":[
             {item:"tactical_vest",weight:1},
             {item:"tactical_helmet",weight:1},
             {item:"tactical_pack",weight:0.8},
@@ -244,21 +250,21 @@ export const NormalMap:MapDef={
         "iron_crate":[
             [{weight:10,table:"special_ammos",count:2}],
             [{weight:10,table:"consumibles"},{weight:1,table:""}],
-            [{weight:1,table:"airdrop_equipments"}],
+            [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
             [{weight:5,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
             [{weight:10,table:"special_ammos",count:2}],
             [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
-            [{weight:10,table:"airdrop_equipments"},{weight:1,count:2,table:"airdrop_equipments"}],
+            [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
             [{weight:10,table:"legendary_guns"},{weight:1,table:"mythic_guns"}],
             [{weight:1,table:"melees"}],
         ],
         "platinum_crate":[
             [{weight:1,table:"special_ammos",count:4}],
             [{weight:1,table:"consumibles",count:7}],
-            [{weight:1,count:6,table:"airdrop_equipments"}],
+            [{weight:1,count:6,table:"tactical_equipments"}],
             [{weight:1,count:7,table:"mythic_guns"}],
             [{weight:1,count:2,table:"legendary_guns"}],
             [{weight:1,count:3,table:"melees"}],

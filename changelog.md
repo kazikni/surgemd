@@ -12,6 +12,7 @@ __                                                                              
 * Casing Sounds
 * Humans Drop Consumibles After Use
 * More Casing Particles
+* M1A1 - 45acp Tommy AR
 __                                                                                                      __
 ### Others
 

@@ -174,5 +174,15 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 }
             }
         },
+        {
+            idString:"high_quality_projectiles",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.damage*=1.1
+                    e.bullet.set_color(true)
+                }
+            }
+        },
     )
 }

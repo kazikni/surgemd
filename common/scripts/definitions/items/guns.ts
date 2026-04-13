@@ -495,6 +495,50 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         },
         {
+            idString:"m1a1",
+            fireDelay:0.1,
+            switchDelay:0.9,
+            spread:4,
+            lenght:0.9,
+            ammoType:"45acp",
+            ammoSpawnAmount:80,
+            class:GunClasses.Assault,
+            rank:ItemRank.B,
+            bullet:{
+                def:{
+                    damage:7.8,
+                    radius:0.014,
+                    range:100,
+                    falloff:0.7,
+                    speed:40,
+                    tracer:tracers.medium
+                }
+            },
+            reload:{
+                delay:2.5,
+                capacity:40
+            },
+            recoil:{
+                duration:0.14,
+                speed:0.6
+            },
+            muzzleFlash:MuzzleFlash.normal,
+            speed_mod:0.95,
+            gasParticles:GasParticles.automatic,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
+            arms:WeaponsArmRig[2],
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f
+            },
+            image:{
+                position:v2.new(0.6,0.0),
+                rotation:0
+            },
+        },
+        {
             idString:"vector",
             fireDelay:0.03,
             switchDelay:0.7,

@@ -7,6 +7,7 @@ import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
+import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 
 export class Bullet extends ServerGameObject{
     string_type:string="bullet"
@@ -21,6 +22,9 @@ export class Bullet extends ServerGameObject{
     velocity:Vec2
     dir:Vec2
     critical!:boolean
+
+    satured:boolean=false
+    ammo?:AmmoDef
 
     modifiers={
         speed:1,
@@ -178,8 +182,7 @@ export class Bullet extends ServerGameObject{
             this.destroy()
         }
     }
-    ammo:string=""
-    create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef}): void {
+    create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
         this.def=args.defs
         this.base_hitbox=new CircleHitbox2D(v2.zero,this.def.radius*this.modifiers.size)
         this.position=args.position
@@ -188,14 +191,19 @@ export class Bullet extends ServerGameObject{
         this.max_distance=this.def.range/2.5
 
         const ad=args.ammo?this.game.definitions.ammos.getFromString(args.ammo):undefined
-        this.tracerColor=this.def.tracer.color??(ad?ad.defaultTrail:0xffffff)
-        this.projColor=this.def.tracer.proj.color??(ad?ad.defaultProj:0xffffff)
         this.owner=args.owner
         this.critical=args.critical??(Math.random()<=0.15)
         this.source=args.source
-        this.ammo=args.ammo
+        this.ammo=ad
+
+        this.set_color(args.satured)
 
         this.damage=args.defs.damage
+    }
+    set_color(satured:boolean=false){
+        this.tracerColor=this.def.tracer.color??(satured?(this.ammo?.strongTrail??0xffffff):(this.ammo?.defaultTrail??0xffffff))
+        this.projColor=this.def.tracer.proj.color??(satured?(this.ammo?.strongProj??0xffffff):(this.ammo?.defaultProj??0xffffff))
+        this.satured=satured
     }
     set_direction(angle:number){
         this.dir=v2.from_RadAngle(angle)
@@ -222,8 +230,10 @@ export class Bullet extends ServerGameObject{
             Math.atan2(newDir.y, newDir.x),
             this.def,
             this.owner,
-            this.ammo,
-            this.source
+            this.ammo?.idString,
+            this.source,
+            this.layer,
+            this.satured
         )
 
         b.reflectionCount = this.reflectionCount + 1

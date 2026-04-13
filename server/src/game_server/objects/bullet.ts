@@ -1,5 +1,4 @@
 import { BulletDef, BulletReflection, DamageReason } from "common/scripts/definitions/utils.ts";
-import { Obstacle } from "./obstacle.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { CircleHitbox2D, Collision, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
@@ -196,9 +195,8 @@ export class Bullet extends ServerGameObject{
         this.source=args.source
         this.ammo=ad
 
-        this.set_color(args.satured)
-
         this.damage=args.defs.damage
+        this.set_color(args.satured)
     }
     set_color(satured:boolean=false){
         this.tracerColor=this.def.tracer.color??(satured?(this.ammo?.strongTrail??0xffffff):(this.ammo?.defaultTrail??0xffffff))
@@ -236,6 +234,7 @@ export class Bullet extends ServerGameObject{
             this.satured
         )
 
+        b.damage=this.damage/2
         b.reflectionCount = this.reflectionCount + 1
     }
 

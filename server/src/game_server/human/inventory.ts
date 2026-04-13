@@ -586,7 +586,10 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             case InventoryItemType.accessory:{
                 const r=this.accessorys.add_accessory(def)
-                count=r?count-1:count
+                if(r){
+                    this.owner.game.add_loot(this.owner.position,r,1,this.owner.layer)
+                    count--
+                }
                 if(drop_overflow&&count>1){
                     this.owner.game.add_loot(this.owner.position,def,count,this.owner.layer)
                 }
@@ -680,8 +683,8 @@ export class GInventory extends GInventoryBase<LItem>{
             }
         }
         if(preset.accessorys){
-            for(const s of Object.keys(preset.accessorys)){
-                this.accessorys.slots[s as unknown as number].item=this.owner.game.definitions.accessorys.getFromString(preset.accessorys[s])
+            for(const s in preset.accessorys){
+                this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(preset.accessorys[s]))
             }
         }
         if(preset.hand){
@@ -721,7 +724,7 @@ export class GInventory extends GInventoryBase<LItem>{
             const r=(this.owner.hitbox as CircleHitbox2D).radius
             const pos=v2.add(this.owner.position,v2((Math.cos(dir)*r),(Math.sin(dir)*r)))
             while(this.aitems[s]>0){
-                const rc=Math.min(this.aitems[s],100)
+                const rc=Math.min(this.aitems[s],80)
                 const ll=this.owner.game.add_loot(pos,def,rc,this.owner.layer)
                 l.push(ll);
                 this.aitems[s]-=rc

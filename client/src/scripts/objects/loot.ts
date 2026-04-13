@@ -207,7 +207,7 @@ export class Loot extends GameObject{
                     this.sprite_outline.visible=true;
                     this.sprite_main.scale=v2(0.8,0.8);
                     this.sprite_outline.scale=v2(1.4,1.4);
-                    (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
+                    (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.scopes
                     this.pickup_sound=this.game.resources.get_audio(`scope_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break

@@ -1,9 +1,10 @@
 import { Definitions, DefinitionsMerge, mergeDeep } from "../../engine/core.ts";
 import { GameADefinitions } from "../others/mods.ts";
+import { AccessoryDef, Accessorys_Default_Init } from "./items/accessorys.ts";
 import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
 import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
 import { ConsumibleDef, Consumibles_Default_Init } from "./items/consumibles.ts";
-import { AccessoryDef, Accessorys_Default_Init, HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
+import { HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
 import { GrenadeDef, Grenades_Default_Init } from "./items/grenades.ts";
 import { GunDef, Guns_Default_Init } from "./items/guns.ts";
 import { MeleeDef, Melees_Default_Init } from "./items/melees.ts";

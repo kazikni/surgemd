@@ -81,7 +81,7 @@ export class Loot extends ServerGameObject{
             
         }
         if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.55))
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.7))
             const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }
@@ -126,6 +126,9 @@ export class Loot extends ServerGameObject{
                 break
             case InventoryItemType.accessory:
                 this.loot_data.real_radius=GameConstants.loot.radius.accessory
+                break
+            case InventoryItemType.scope:
+                this.loot_data.real_radius=GameConstants.loot.radius.scopes
                 break
         }
         (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius

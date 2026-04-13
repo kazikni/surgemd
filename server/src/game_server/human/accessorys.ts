@@ -1,4 +1,4 @@
-import { type AccessoryDef } from "common/scripts/definitions/items/equipaments.ts";
+import { AccessoryDef } from "common/scripts/definitions/items/accessorys.ts";
 import { type Human } from "../objects/human.ts";
 
 export interface AccessorySlot{
@@ -45,17 +45,18 @@ export class AccessorysManager{
             }
         }
     }
-    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):boolean{
-        if(this.has_accessory(def.idString))return false
+    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):AccessoryDef|undefined{
+        if(this.has_accessory(def.idString))return
         for(const s of this.slots){
             if(s.changable){
+                const ret=s.item
                 s.item=def
                 s.droppable=droppable
                 s.changable=changable
-                return true
+                return ret
             }
         }
-        return false
+        return
     }
     clear(){
         for(const s of this.slots){

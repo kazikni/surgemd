@@ -2,7 +2,6 @@ import { InventoryItemType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
-import { SideEffectType } from "../player/effects.ts";
 export interface VestDef extends Definition{
     defence:number
     reduction:number
@@ -22,12 +21,6 @@ export interface HelmetDef extends Definition{
     position?:Vec2
     rank:ItemRank
     item_type?:InventoryItemType.helmet
-}
-export interface AccessoryDef extends Definition{
-    rank:ItemRank
-    modifiers?:Partial<HumanModifiers>
-    events?:Record<string,(e:any)=>void>
-    item_type?:InventoryItemType.accessory
 }
 export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
     helmets.insert(
@@ -116,73 +109,6 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             reduction:0.25,
             tint:0x5C322E,
             rank:ItemRank.A
-        },
-    )
-}
-export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
-    accessorys.insert(
-        {
-            idString:"bullet_breaker_barrel",
-            rank:ItemRank.A,
-            events:{
-                "gun_shoot":(e)=>{
-                    e.bullet.damage*=0.7
-
-                    let b=e.user.game.add_bullet(e.position,e.angle-0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer)
-                    b.damage*=0.22
-                    b.modifiers={
-                        speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.4,
-                    }
-                    b.set_direction(e.angle-0.02)
-
-                    b=e.user.game.add_bullet(e.position,e.angle+0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer)
-                    b.damage*=0.22
-                    b.modifiers={
-                        speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.4,
-                    }
-                    b.set_direction(e.angle+0.02)
-                }
-            },
-        },
-        {
-            idString:"liquid_insanity",
-            rank:ItemRank.A,
-            events:{
-                "kill":(e)=>{
-                    e.owner.health_data.health+=20
-                    e.owner.side_effect({
-                        type:SideEffectType.AddEffect,
-                        duration:4,
-                        effect:"kill_haste"
-                    })
-                }
-            }
-        },
-        {
-            idString:"nature_leaf",
-            rank:ItemRank.A,
-            events:{
-                "damage":(e)=>{
-                    e.player.health_data.health+=20
-                    e.player.side_effect({
-                        type:SideEffectType.AddEffect,
-                        duration:4,
-                        effect:"nature_help"
-                    })
-                }
-            }
-        },
-        {
-            idString:"high_quality_projectiles",
-            rank:ItemRank.A,
-            events:{
-                "gun_shoot":(e)=>{
-                    e.bullet.damage*=1.1
-                    e.bullet.set_color(true)
-                }
-            }
         },
     )
 }

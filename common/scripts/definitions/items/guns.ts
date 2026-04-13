@@ -627,7 +627,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"kar98k",
-            fireDelay:1.1,
+            fireDelay:1.2,
             spread:0.3,
             lenght:0.9,
             ammoType:"762mm",
@@ -677,7 +677,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"awp",
-            fireDelay:1.2,
+            fireDelay:1.3,
             spread:0.3,
             lenght:0.9,
             ammoType:"762mm",
@@ -698,9 +698,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
             reload:{
-                delay:2.9,
-                capacity:10,
-                shotsPerReload:10,
+                delay:2.7,
+                capacity:8,
+                shotsPerReload:8,
             },
             recoil:{
                 duration:1.37,

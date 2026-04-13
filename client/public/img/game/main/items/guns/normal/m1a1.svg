@@ -4,15 +4,15 @@
 <svg
    version="1.1"
    id="svg1"
-   width="128.27577"
-   height="39.12302"
-   viewBox="0 0 128.27577 39.12302"
-   sodipodi:docname="tommy.svg"
+   width="96.351402"
+   height="29.386358"
+   viewBox="0 0 96.351401 29.386358"
+   sodipodi:docname="m1a1.svg"
    inkscape:export-filename="smg.jpeg.svg"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    xml:space="preserve"
-   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +102,8 @@
      inkscape:current-layer="g1" /><g
      inkscape:groupmode="layer"
      inkscape:label="Image"
-     id="g1"><g
+     id="g1"
+     transform="matrix(0.75112705,0,0,0.75112705,-1.7148631e-7,1.8922537e-6)"><g
        id="g421"
        inkscape:label="tommy"
        transform="matrix(0.10354157,-0.05977975,0.05977975,0.10354157,-53.780652,194.9983)"><rect

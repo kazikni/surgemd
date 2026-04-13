@@ -197,7 +197,6 @@ export class Player extends Human{
 
         //Respawn
         this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);
-        this.game.dirty.living_count=true
 
         this.game.modeManager.on_player_die(this)
         this.game.signals.emit("player_die",{player:this,killer:this.killed_by})

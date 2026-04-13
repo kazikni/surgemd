@@ -11,7 +11,6 @@ export const NormalBiome:BiomeDef={
     ambient:{
         particles:["leaf_01_particle_1"],
         rain:true,
-        sound:"storm_ambience"
     },
     musics:[
         "game_normal_music_1",

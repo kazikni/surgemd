@@ -164,7 +164,6 @@ export class DeadZoneManager {
     do_damage_timer=2
 
     running = false
-    dirty = true
 
     constructor(game:Game){
         this.game = game
@@ -184,7 +183,6 @@ export class DeadZoneManager {
     }
 
     reset(){
-        this.dirty=true
         this.radius_size=this.game.map.size.x
 
         this.state.position=v2.scale(this.game.map.size, 0.5)
@@ -237,7 +235,6 @@ export class DeadZoneManager {
         this.hitbox.position = this.state.position
 
         this.stageIndex++
-        this.dirty = true
     }
     jump_stages(targetStage: number){
         if(targetStage <= 0) return
@@ -251,7 +248,6 @@ export class DeadZoneManager {
             this.hitbox.radius = this.state.radius
             this.hitbox.position = this.state.position
         }
-        this.dirty = true
     }
     tick(dt:number){
         if(!this.running||this.state.state===DeadZoneState.Deenabled) return
@@ -274,8 +270,6 @@ export class DeadZoneManager {
 
                 this.hitbox.radius = this.state.radius
                 this.hitbox.position = this.state.position
-
-                this.dirty = true
             }
             if(this.timer >= this.duration){
                 this.advance()

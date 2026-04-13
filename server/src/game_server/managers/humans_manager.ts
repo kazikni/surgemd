@@ -39,7 +39,6 @@ export class HumansManager{
 
         this.humans.push(human)
 
-        this.game.dirty.living_count=true
         this.game.modeManager.on_human_create(h)
         return h
     }

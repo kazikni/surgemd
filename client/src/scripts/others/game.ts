@@ -53,6 +53,7 @@ export class Game extends ClientGame<GameObject>{
         return this.menu.content.gameover_text_screen.style.opacity=="0"
     }
     game_over:boolean=false
+    started:boolean=false
 
     local_server:LocalGameServer
 
@@ -564,6 +565,7 @@ export class Game extends ClientGame<GameObject>{
         this.local_server.stop()
         this.ui.clear()
         this.happening=false
+        this.started=false
         this.soft_reset()
     }
     soft_reset(){
@@ -676,6 +678,15 @@ export class Game extends ClientGame<GameObject>{
             if(!plane)plane=new Plane(this)
             this.planes[p.id]=plane
             plane.update_data(p)
+        }
+        if(up.ambient){
+            this.ambient.update_from_data(up.ambient)
+            if(!this.started)this.ambient.date=up.ambient.date
+        }
+        if(up.started&&!this.started){
+            this.started=true
+        }else if(!up.started){
+            this.started=false
         }
     }
     process_private(priv:PrivateUpdate){

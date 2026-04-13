@@ -111,32 +111,36 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         initial_date:KDate
         rain: number
         thunder_storm: number
+
+        target_rain:number
+        target_thunder:number
+
+        rain_timer:number
+        rain_state:number // 0=clear,1=rain
     }={
         date:{
             second:0,
             minute:30,
-            hour:13,
-            month:13,
+            hour:12,
+            month:5,
             day:10,
             year:2000
         },
         initial_date:{
             second:0,
             minute:30,
-            hour:13,
-            month:13,
+            hour:12,
+            month:5,
             day:10,
             year:2000
         },
         rain:0,
-        thunder_storm:0
-    }
-    dirty:{
-        living_count:boolean
-        ambient:boolean
-    }={
-        living_count:false,
-        ambient:false,
+        thunder_storm:0,
+
+        target_rain:0,
+        target_thunder:0,
+        rain_timer:0,
+        rain_state:0
     }
 
     replay?:ReplayRecorder

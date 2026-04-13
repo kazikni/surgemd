@@ -247,16 +247,12 @@ export class PlayersManager{
     net_update(){
         const s=new NetStream(new ArrayBuffer(5*1024))
 
+        this.general_update.content.started=this.game.started
         this.general_update.content.planes=this.game.planes
         this.general_update.content.deadzone=undefined
         this.general_update.content.ambient=this.game.ambient
-
-        this.general_update.content.dirty=this.game.dirty
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
-
-        if(this.game.deadzone.dirty){
-            this.general_update.content.deadzone=this.game.deadzone.state
-        }
+        this.general_update.content.deadzone=this.game.deadzone.state
 
         this.game.clients.packets_manager.encode(this.general_update,s)
         this.general_update.encode(s)

@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { cloneDeep, deleteDeep, FetchFileManager, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
+import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client.ts";
@@ -79,6 +79,11 @@ type SettingDef =
     }|{
         type:"h1"|"h2"|"h3"|"h4"|"h5"
         name:string
+    }|{
+        var: string
+        name: string
+        type: "color"
+        on_set?:(val:string)=>void
     }
 export type ModeSettingsPopupDef={
     title?:string
@@ -216,6 +221,24 @@ function build_setting_input(def: SettingDef,onChange:(val:any)=>void,initial?:a
             wrap.append(slider,valueLabel)
 
             el=wrap
+            break
+        }
+        case "color":{
+            const input=document.createElement("input")
+            input.type="color"
+            input.className="input-color"
+
+            if(initial!==undefined){
+                input.value=initial
+                def.on_set?.(initial)
+            }
+
+            input.oninput=()=>{
+                onChange(input.value)
+                def.on_set?.(input.value)
+            }
+
+            el=input
             break
         }
     }
@@ -639,7 +662,13 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
                     type:"button",
                     name:"Sounds",
                     subtab:"sounds"
-                }
+                },
+                {
+                    id:"ui",
+                    type:"button",
+                    name:"UI",
+                    subtab:"ui"
+                },
             ],
             subtabs:{
                 "game":{
@@ -752,6 +781,26 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
                             min:0,
                             max:1,
                             step:0.05
+                        },
+                    ]),
+                },
+                "ui":{
+                    generate:make_menu_settings(menu.save,[
+                        {
+                            type:"color",
+                            name:"Primary Color",
+                            var:"sv_ui_primary_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-primary",val)
+                            }
+                        },
+                        {
+                            type:"color",
+                            name:"Secundary Color",
+                            var:"sv_ui_secondary_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-secondary",val)
+                            }
                         },
                     ]),
                 }

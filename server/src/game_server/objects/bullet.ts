@@ -154,11 +154,11 @@ export class Bullet extends ServerGameObject{
                 }*/
                 case GameObjectType.Obstacle:
                 case GameObjectType.Building:
-                    if((obj as StaticBody).physical_data.no_bullet_collision)break
+                    if((obj as StaticBody).physical_data.no_bullets_collision)break
                     if(obj.hitbox){
                         const col1=obj.hitbox.overlapLine(this.old_position,this.position)
                         if(!col1)continue
-                        if(((obj as StaticBody).physical_data.reflect_bullet||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.def.on_hit_explosion){
+                        if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.def.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()

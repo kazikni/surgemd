@@ -567,15 +567,12 @@ export class Human extends MovingBody{
                     this._can_interact=false;
                     (obj as Loot).interact(this)
                 }
-                const ov=[...this.hitbox.overlapCollision((obj as StaticBody).hitbox)]
-                for(const ahb of (obj as StaticBody).alt_hitboxes){
-                    if(ahb.layer===undefined||ahb.layer===this.layer){
-                        ov.push(...ahb.hitbox.overlapCollision(this.hitbox))
-                    }
-                }
+
+                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
                 for(const c of ov){
                     v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
                 }
+
                 break
             }
             case GameObjectType.Vehicle:{

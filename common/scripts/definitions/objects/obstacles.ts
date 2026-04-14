@@ -34,7 +34,7 @@ export interface ObstacleDef extends Definition{
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
     no_collision?:boolean
-    no_bullet_collision?:boolean
+    no_bullets_collision?:boolean
 
     invisibleOnMap?:boolean
     scale?:{
@@ -216,7 +216,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             idString:"sillo",
             health:1,
             imortal:true,
-            hitbox:new CircleHitbox2D(v2(0,0),2.8),
+            hitbox:new CircleHitbox2D(v2(0,0),3),
             rotationMode:RotationMode.full,
             zIndex:zIndexes.Obstacles1,
             onDestroyExplosion:"barrel_explosion",
@@ -312,15 +312,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         },
         {
             idString:"wood_door",
-            health:180,
+            health:80,
             hitbox:new RectHitbox2D(v2(-0.87,-0.15),v2(0.87,0.15)),
             assets:{
                 frame:{
-                    
+                    base:"door",
                     transform:{
                         hotspot:v2(0.1,.5),
                         position:v2(0.13,0.15),
-                        scale:1.5
+                        scale:2,
+                        tint:0x583b08
                     },
                 }
             },

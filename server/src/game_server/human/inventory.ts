@@ -375,6 +375,7 @@ export class GInventory extends GInventoryBase<LItem>{
             this.owner.game.add_loot(this.owner.position,this.backpack,1,this.owner.layer)
         }
         super.set_backpack(backpack)
+        this.net_sync.items=true
     }
     override set_weapon_index(idx:number,force:boolean=false){
         if(this.hand_item!==this.weapons[idx]||force){
@@ -531,6 +532,7 @@ export class GInventory extends GInventoryBase<LItem>{
                     if(this.owner.equipment_data.vest)this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.vest,1)
 
                     this.owner.equipment_data.dirty=true
+                    this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.vest=d
                     this.owner.equipment_data.vest_health=d.health
 
@@ -547,6 +549,7 @@ export class GInventory extends GInventoryBase<LItem>{
                     if(this.owner.equipment_data.helmet)this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
 
                     this.owner.equipment_data.dirty=true
+                    this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.helmet=d
                     this.owner.equipment_data.helmet_health=d.health
 
@@ -561,6 +564,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 const d=def as unknown as BackpackDef
                 if(this.backpack.level<d.level){
                     this.owner.equipment_data.dirty=true
+                    this.owner.equipment_data.dirty_part=true
                     if(this.backpack.level>0){
                         this.owner.game.add_loot(this.owner.position,this.backpack,1,this.owner.layer)
                     }

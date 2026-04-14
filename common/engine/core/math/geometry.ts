@@ -79,6 +79,10 @@ export const Angle=Object.freeze({
             delta += 2 * Math.PI;
         }
         return delta;
+    },
+
+    add_orientation(a:Orientation,b:Orientation):Orientation{
+        return Numeric.loop(a+b,0,3) as Orientation
     }
 })
 export const rotationFull={

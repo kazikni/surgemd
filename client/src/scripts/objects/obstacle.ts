@@ -1,8 +1,8 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, NetStream, ParticlesEmitter2D, random, Sound, SoundInstance, SoundOptions, Sprite2D, v2 } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, NetStream, NullHitbox2D, ParticlesEmitter2D, random, Sound, Sprite2D, v2 } from "common/engine/client.ts";
 import { Materials, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GraphicsDConfig } from "../others/config.ts";
-import { StaticBody, StaticBodyAssetData } from "./static_body.ts";
+import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Human } from "./human.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
@@ -18,6 +18,20 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:numbe
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
     override number_type: number=GameObjectType.Obstacle
+    override physical_data: StaticBodyPhysicalData&{
+        scale:number
+        rotation:number
+    }={
+        hitbox:new NullHitbox2D(v2.zero),
+
+        no_bullets_collision:false,
+        no_collision:false,
+        reflect_bullets:false,
+
+        scale:0,
+        rotation:0,
+        side:0
+    }
     def!:ObstacleDef
 
     container:Container2D=new Container2D()
@@ -86,11 +100,11 @@ export class Obstacle extends StaticBody{
             this.container.zIndex=zIndexes.DeadObstacles
             if(this.emitter_1)this.emitter_1.destroyed=true
 
-            this.physical_data.no_bullet_collision=true
+            this.physical_data.no_bullets_collision=true
         }else{
             this.sprite.frame=this.game.resources.get_sprite(this.assets_data.frame.base)
             this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
-            this.physical_data.no_bullet_collision=false
+            this.physical_data.no_bullets_collision=false
         }
         this.container.visible=true
     }
@@ -114,7 +128,7 @@ export class Obstacle extends StaticBody{
         this.update_frame()
 
         this.physical_data.no_collision=true
-        this.physical_data.no_bullet_collision=true
+        this.physical_data.no_bullets_collision=true
     }
     override render(camera: Camera2D, _dt: number): void {
         /*super.render(camera, _dt)
@@ -254,7 +268,14 @@ export class Obstacle extends StaticBody{
             this.update_frame()
         }
         if(physical_data_part||physical_data||full){
-            this.decode_physical_data(stream,physical_data||full)
+            this.physical_data.scale=stream.readFloat(0,10,2)
+
+            if(full||physical_data){
+                this.position=stream.readPos2()
+                this.physical_data.rotation=stream.readRad()
+                this.physical_data.side=stream.readUint8()
+                this.manager.cells.updateObject(this)
+            }
 
             this.container.scale.x=this.physical_data.scale
             this.container.scale.y=this.physical_data.scale

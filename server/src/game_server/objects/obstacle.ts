@@ -1,7 +1,7 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorStatus } from "common/scripts/definitions/objects/obstacles.ts";
-import { StaticBody } from "./static_body.ts";
+import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, LootTableItemRet, NetStream, Numeric, Orientation, random, RotationMode, v2 } from "common/engine/core.ts";
+import { Angle, LootTableItemRet, NetStream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DamageParams } from "../others/utils.ts";
@@ -37,14 +37,35 @@ export class Obstacle extends StaticBody{
         max_health:1,
     }
 
+    physical_data:{
+        dirty:boolean
+        dirty_part:boolean
+
+        scale:number
+        side:Orientation
+        rotation:number
+    }&StaticBodyPhysicalData={
+        dirty:false,
+        dirty_part:false,
+
+        scale:1,
+        side:0,
+        rotation:0,
+
+        hitbox:new NullHitbox2D(v2.new(0,0)),
+        spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
+
+        reflect_bullets:false,
+        no_collision:true,
+        no_bullets_collision:true,
+    }
+
+    loot:LootTableItemRet<GameItem>[]=[]
+    door?:ObstacleDoorStatus
+
     constructor(){
         super()
     }
-
-
-    loot:LootTableItemRet<GameItem>[]=[]
-
-    door?:ObstacleDoorStatus
 
     override update(_dt:number): void {
         
@@ -123,60 +144,38 @@ export class Obstacle extends StaticBody{
         return (this.def.interactDestroy||this.def.expanded_behavior) as boolean&&!this.destroyed&&user.hitbox.collidingWith(this.hitbox)
     }
     override net_update(): void {
-        super.net_update()
+        this.physical_data.dirty_part=false
+        this.physical_data.dirty=false
 
         this.health_data.dirty=false
         this.visual_data.dirty=false
     }
-    override create(args: {def:ObstacleDef,rotation?:number,variation?:number,skin?:number}): void {
-        this.def=args.def
-
-        if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.clone()
-        if(this.def.spawnHitbox)this.physical_data.spawn_hitbox=this.def.spawnHitbox.clone()
-        else this.physical_data.spawn_hitbox=this.physical_data.hitbox.clone()
+    set_definition(def:ObstacleDef){
+        if(this.def)return
+        this.def=def
 
         this.physical_data.no_collision=this.def.no_collision??false
+        this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
+        this.physical_data.reflect_bullets=this.def.reflect_bullets??false
 
-        this.physical_data.reflect_bullet=this.def.reflect_bullets??false
-
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.clone()
-    
-        if(args.variation){
-            this.visual_data.variation=args.variation
-        }else if(this.def.assets?.frame?.variations){
-            this.visual_data.variation=Numeric.clamp(random.int(1,this.def.assets.frame.variations+1),1,this.def.assets.frame.variations)
-        }
-        if(args.skin){
-            this.visual_data.skin=args.skin
-        }else if(this.def.assets?.frame?.biome_skins){
-            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
-        }
-        if(args.rotation===undefined){
-            if(this.def.rotationMode===RotationMode.limited){
-                this.physical_data.side=random.int(0,3) as Orientation
-                this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
-            }else{
-                this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotationMode??RotationMode.full)
-            }
-        }else if(this.def.rotationMode){
-            if(this.def.rotationMode===RotationMode.limited){
-                this.physical_data.side=args.rotation as Orientation
-                this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
-            }else{
-                this.physical_data.rotation=args.rotation!
-            }
-        }
         this.health_data.max_health=this.def.health
         this.health_data.health=this.def.health
 
+        if(this.def.scale?.min&&this.def.scale.max){
+            this.max_scale=random.float(this.def.scale.min,this.def.scale.max)
+        }
+    }
+    load_loot(){
         if(this.def.lootTable){
             this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true},this.game)
         }
-        if(this.def.scale?.min&&this.def.scale.max){
-            this.max_scale=random.float(this.def.scale.min,this.def.scale.max)
-            this.physical_data.scale=this.max_scale
-        }
-        switch(this.def.expanded_behavior?.type??-1){
+    }
+    override create(args: {def:ObstacleDef}): void {
+        this.updatable=false
+
+        this.set_definition(args.def)
+
+        /*switch(this.def.expanded_behavior?.type??-1){
             case 0:{
                 this.updatable=true
                 this.door={
@@ -186,8 +185,55 @@ export class Obstacle extends StaticBody{
                 break
             }
             default:
-                this.updatable=false
+        }*/
+    }
+    initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0){
+        this.physical_data.dirty=true
+        this.physical_data.dirty_part=true
+        this.physical_data.scale=this.max_scale
+    
+        this.load_loot()
+        if(variation){
+            this.visual_data.variation=variation
+        }else if(this.def.assets?.frame?.variations){
+            this.visual_data.variation=Numeric.clamp(random.int(1,this.def.assets.frame.variations+1),1,this.def.assets.frame.variations)
         }
+
+        if(skin){
+            this.visual_data.skin=skin
+        }else if(this.def.assets?.frame?.biome_skins){
+            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
+        }
+
+        if(rotation===undefined){
+            if(this.def.rotationMode===RotationMode.limited){
+                this.physical_data.side=random.int(0,3) as Orientation
+                this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
+            }else{
+                this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotationMode??RotationMode.full)
+            }
+        }else if(this.def.rotationMode){
+            if(this.def.rotationMode===RotationMode.limited){
+                this.physical_data.side=Angle.add_orientation(rotation as Orientation,parent_side)
+                this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
+            }else{
+                this.physical_data.rotation=rotation!
+            }
+        }
+
+        if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+        if(this.def.spawnHitbox)this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+        else this.physical_data.spawn_hitbox=this.physical_data.hitbox
+    }
+
+    set_position(position:Vec2){
+        this.reset_scale()
+
+        this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
+        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,this.physical_data.scale)
+        this.position=position
+
+        this.manager.cells.updateObject(this)
     }
     reset_scale(){
         if(this.def.hitbox&&this.def.scale){
@@ -203,6 +249,7 @@ export class Obstacle extends StaticBody{
     }
     override damage(params:DamageParams){
         if(this.health_data.dead||this.def.imortal||(this.def.resistence??0)>(params.resistence??0))return
+
         this.health_data.health=Math.max(this.health_data.health-params.amount,0)
         if(this.health_data.health===0){
             this.die(params)
@@ -230,7 +277,7 @@ export class Obstacle extends StaticBody{
         this.health_data.dead=true
         this.health_data.dirty=true
         this.physical_data.no_collision=true
-        this.physical_data.no_bullet_collision=true
+        this.physical_data.no_bullets_collision=true
 
         for(let i=0;i<5;i++){
             for(const loot of loots){
@@ -247,7 +294,7 @@ export class Obstacle extends StaticBody{
         this.net_sync.full=true
 
         this.physical_data.no_collision=this.def.no_collision??false
-        this.physical_data.no_bullet_collision=this.def.no_bullet_collision??false
+        this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
 
         this.health_data.health=this.health_data.max_health
 
@@ -277,7 +324,14 @@ export class Obstacle extends StaticBody{
         if(full){
             stream.writeUint16(this.def.idNumber!)
         }
-        super.encode(stream,full)
+        if(full||this.physical_data.dirty||this.physical_data.dirty_part){
+            stream.writeFloat(this.physical_data.scale,0,10,2)
+            if(this.physical_data.dirty||full){
+                stream.writePos2(this.position)
+                .writeRad(this.physical_data.rotation)
+                .writeUint8(this.physical_data.side)
+            }
+        }
         if(full||this.health_data.dirty){
             stream.writeFloat(this.health_data.health/this.def.health,0,1,1)
         }

@@ -2,7 +2,7 @@
 <svg
    width="115.66927"
    height="123.6692"
-   viewBox="0 0 30.603863 32.721125"
+   viewBox="0 0 30.603861 32.721125"
    version="1.1"
    id="svg8"
    sodipodi:docname="human_body_1.svg"
@@ -22,7 +22,7 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="3.4655719"
-     inkscape:cx="11.109278"
+     inkscape:cx="80.361917"
      inkscape:cy="82.093233"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -99,7 +99,7 @@
          id="stop2-8" /></linearGradient></defs><g
      style="fill:#ffffff;fill-opacity:1;stroke:#656a6a;stroke-width:0.999823;stroke-dasharray:none;stroke-opacity:1"
      id="g8"
-     transform="translate(-0.09256807,1.2871609)"><circle
+     transform="translate(-0.09256908,1.2871609)"><circle
        style="fill:#ffffff;fill-opacity:1;stroke:#656a6a;stroke-width:0.973234;stroke-dasharray:none;stroke-opacity:1"
        id="path1"
        cx="17.643602"
@@ -110,8 +110,8 @@
        cx="17.643602"
        cy="1.615903"
        r="2.4164469" /><circle
-       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#656a6a;stroke-width:1.50001;stroke-dasharray:none;stroke-opacity:1"
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#656a6a;stroke-width:1.50001001;stroke-dasharray:none;stroke-opacity:1"
        id="path9"
        cx="15.3945"
-       cy="15.073411"
+       cy="15.073401"
        r="14.552223" /></g></svg>

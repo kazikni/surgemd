@@ -79,11 +79,11 @@ export class SyncedParticle extends MovingBody{
                 target:this.sprite.tint,
                 duration:1,
                 to:{
-                    a:0.8
+                    a:0.9
                 }
             })
         }else{
-            this.sprite.tint.a=0.8
+            this.sprite.tint.a=0.9
         }
     }
     override decode(stream:NetStream,full: boolean):void{

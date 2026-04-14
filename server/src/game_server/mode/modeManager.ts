@@ -135,39 +135,52 @@ export abstract class ModeManager{
         }
     }
     update_rain(dt:number){
-        const rain_speed=dt*this.rules.ambient.rain_cycle
-        this.game.ambient.rain_timer-=dt*this.rules.ambient.rain_cycle
+        const amb = this.game.ambient
+        const rules = this.rules.ambient
 
-        const rain_target_distance=Math.abs(this.game.ambient.target_rain-this.game.ambient.rain)
+        const rain_speed = dt * rules.rain_cycle
 
-        if(this.game.ambient.rain_timer<=0) {
-            if(this.game.ambient.rain===0&&this.game.ambient.target_rain===0) {
-                this.game.ambient.rain_timer = 1
-                if (Math.random() < this.rules.ambient.rain_chance) {
-                    this.game.ambient.target_rain=Math.min(Math.random()+0.1,1)
-                    this.game.ambient.rain_state=0
+        amb.rain_timer -= rain_speed
+
+        const dist = Math.abs(amb.target_rain - amb.rain)
+
+        if (amb.rain_timer <= 0) {
+            amb.rain_timer = 0
+
+            if (amb.rain === 0 && amb.target_rain === 0) {
+                if (Math.random() < rules.rain_chance) {
+                    amb.target_rain = random.float(0.1, 1)
+                    amb.rain_state = 1
                 }
-            }else{
-                if(rain_target_distance===0&&this.game.ambient.rain_state===1){
-                    this.game.ambient.rain_timer = 1
-                    if(Math.random()<=this.rules.ambient.rain_stop_chance){
-                        this.game.ambient.rain_state=0
-                        this.game.ambient.target_rain=0
-                    }else{
-                        this.game.ambient.rain_state=0
-                        this.game.ambient.target_rain=Math.min(Math.random()+0.1,1)
-                    }
+
+                amb.rain_timer = 1
+            }
+
+            else if (amb.rain_state === 2) {
+                if (Math.random() < rules.rain_stop_chance) {
+                    amb.target_rain = 0
+                    amb.rain_state = 1
+                } else {
+                    amb.target_rain = random.float(0.1, 1)
+                    amb.rain_state = 1
                 }
+
+                amb.rain_timer = 1
             }
         }
 
-        if(rain_target_distance>0.001){
-            this.game.ambient.rain=Numeric.lerp(this.game.ambient.rain,this.game.ambient.target_rain,Numeric.dt_expo_inter(this.rules.ambient.rain_lerp_speed,rain_speed))
-        }else{
-            this.game.ambient.rain=this.game.ambient.target_rain
-            if(this.game.ambient.rain_state===0){
-                this.game.ambient.rain_state=1
-                this.game.ambient.rain_timer=random.float(3,7)
+        if (dist > 0.001) {
+            amb.rain = Numeric.lerp(
+                amb.rain,
+                amb.target_rain,
+                Numeric.dt_expo_inter(rules.rain_lerp_speed, rain_speed)
+            )
+        } else {
+            amb.rain = amb.target_rain
+
+            if (amb.rain_state === 1) {
+                amb.rain_state = 2
+                amb.rain_timer = random.float(3, 7)
             }
         }
     }

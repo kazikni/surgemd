@@ -1,7 +1,7 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D } from "common/engine/client.ts"
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { StaticBody, StaticBodyAssetData } from "./static_body.ts";
+import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 export class Building extends StaticBody{
     ////////////////////////////
     // Definition             //
@@ -10,6 +10,15 @@ export class Building extends StaticBody{
     override number_type: number=GameObjectType.Building
     def!:BuildingDef
 
+    override physical_data: StaticBodyPhysicalData={
+        hitbox:new NullHitbox2D(v2.zero),
+        
+        no_bullets_collision:false,
+        no_collision:false,
+        reflect_bullets:false,
+
+        side:0
+    };
     objects:Container2DObject[]=[]
 
     ceilings:{
@@ -64,7 +73,7 @@ export class Building extends StaticBody{
     }
     set_definition(def:BuildingDef){
         if(this.def)return
-        if(def.hitbox)this.base_hitbox=def.hitbox
+        if(def.hitbox)this.base_hitbox=def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
 
         this.def=def
         const rot=Angle.side_rad(this.physical_data.side as Orientation)
@@ -103,7 +112,7 @@ export class Building extends StaticBody{
             this.ceilings.push({
                 container:sprite,
                 base_hitbox:c.hitbox,
-                hitbox:c.hitbox.transform(this.position),
+                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
                 opacity:c.visible_opacity??0,
                 collided:false
             })
@@ -129,9 +138,10 @@ export class Building extends StaticBody{
         this.manager.cells.updateObject(this)
     }
     override decode(stream: NetStream, full: boolean): void {
-        const [physical_data_part,physical_data]=stream.readBooleanGroup()
-        if(physical_data_part||physical_data||full){
-            this.decode_physical_data(stream,physical_data||full)
+        const [physical_data]=stream.readBooleanGroup()
+        if(physical_data||full){
+            this.position=stream.readPos2()
+            this.physical_data.side=stream.readUint8()
         }
         if(full){
             const def=this.game.definitions.buildings.getFromNumber(stream.readID())

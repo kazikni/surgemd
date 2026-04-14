@@ -35,7 +35,7 @@ export abstract class BaseHitbox2D{
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
     abstract to_rect():Rect
-    abstract transform(position?:Vec2,scale?:number,position_angle?:number):Hitbox2D
+    abstract transform(position?:Vec2,scale?:number,position_angle?:number,side?:number):Hitbox2D
     abstract clone():Hitbox2D
     abstract readonly position:Vec2
     abstract translate(position:Vec2,angle?:number):void
@@ -88,7 +88,7 @@ export class NullHitbox2D extends BaseHitbox2D{
         return true
     }
 
-    override transform(position:Vec2=v2(0,0),_scale:number=1,_position_angle?:number):Hitbox2D{
+    override transform(position:Vec2=v2(0,0),_scale:number=1,_position_angle?:number,_side?:number):Hitbox2D{
         return new NullHitbox2D(position?v2.add(this.position,position):this.position)
     }
     override translate(position: Vec2,_position_angle?:number): void {
@@ -230,7 +230,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
             max:v2.add(this.position,size)
         }
     }
-    override transform(position?:Vec2,scale?:number,position_angle?:number):CircleHitbox2D{
+    override transform(position?:Vec2,scale?:number,position_angle?:number,_side?:number):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D
         if(scale){
             ret.radius*=scale
@@ -498,9 +498,39 @@ export class RectHitbox2D extends BaseHitbox2D{
             max:v2.clone(this.max)
         }
     }
-    override transform(position: Vec2 = v2(0, 0),scale: number=1,position_angle?:number): RectHitbox2D {
+    override transform(position: Vec2 = v2(0, 0),scale: number=1,position_angle?:number,side?:number): RectHitbox2D {
         const min = v2.scale(this.min, scale)
-        const max = v2.scale(this.max, scale);
+        const max = v2.scale(this.max, scale)
+
+        if (side) {
+            const minX = min.x, minY = min.y
+            const maxX = max.x, maxY = max.y
+
+            switch (side & 3) {
+                case 1: // 90°
+                    v2m.set(min, -maxY, minX)
+                    v2m.set(max, -minY, maxX)
+                    break
+
+                case 2: // 180°
+                    v2m.set(min, -maxX, -maxY)
+                    v2m.set(max, -minX, -minY)
+                    break
+
+                case 3: // -90°
+                    v2m.set(min, minY, -maxX)
+                    v2m.set(max, maxY, -minX)
+                    break
+            }
+
+            const minx = Math.min(min.x, max.x)
+            const miny = Math.min(min.y, max.y)
+            const maxx = Math.max(min.x, max.x)
+            const maxy = Math.max(min.y, max.y)
+
+            v2m.set(min, minx, miny)
+            v2m.set(max, maxx, maxy)
+        }
 
         if(position_angle){
             v2m.add_rotate_RadAngle(min,position,min,position_angle)
@@ -605,10 +635,19 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override is_null():boolean{
         return false
     }
-    override transform(position:Vec2=v2(0,0),scale:number=1,position_angle?:number): HitboxGroup2D {
-        return new HitboxGroup2D(
-            ...this.hitboxes.map(hitbox => hitbox.transform(position, scale,position_angle))
-        );
+    override transform(position: Vec2 = v2(0,0),scale: number = 1,position_angle?: number,side: number = 0): HitboxGroup2D {
+        const out: Hitbox2D[] = new Array(this.hitboxes.length)
+
+        for (let i = 0; i < this.hitboxes.length; i++) {
+            out[i] = this.hitboxes[i].transform(
+                position,
+                scale,
+                position_angle,
+                side
+            )
+        }
+
+        return new HitboxGroup2D(...out)
     }
     override translate(position: Vec2,position_angle?:number): void {
         for(const hb of this.hitboxes){

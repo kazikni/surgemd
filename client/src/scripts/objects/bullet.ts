@@ -134,7 +134,7 @@ export class Bullet extends GameObject{
                         break
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
-                        if(!(obj as StaticBody).physical_data.no_bullet_collision){
+                        if(!(obj as StaticBody).physical_data.no_bullets_collision){
                             const col=obj.hitbox.overlapLine(this.old_position,this.position)
                             if(col){
                                 (obj as StaticBody).on_hitted(this.position,this._critical)

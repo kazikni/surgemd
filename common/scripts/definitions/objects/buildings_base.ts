@@ -5,6 +5,8 @@ import { FloorType } from "../../others/terrain.ts";
 export type BuildingObstacles={
     id:string
     position:Vec2
+    skin?:number
+    variation?:number
     layer?:number
     rotation?:number
     scale?:number
@@ -53,8 +55,8 @@ const Templates={
         spawnMode:Spawn.grass,
         reflect_bullets:true,
         loots:[
-            {position:v2(-1,0),table:"ground_loot"},
-            {position:v2(1,0),table:"ground_loot"}
+            {position:v2(-1,0),table:"normal_loot"},
+            {position:v2(1,0),table:"normal_loot"}
         ],
         hitbox:RectHitbox2D.wall_enabled(v2(-2.85,-1.42),v2(2.85,1.42),{
             left:true,

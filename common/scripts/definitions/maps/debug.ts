@@ -49,7 +49,8 @@ export const DebugMap:MapDef={
         i=0
         for(const def of Object.values(map.game.definitions.obstacles.valueNumber)){
             const o=map.game.map.add_obstacle(def,undefined,Layers.Normal)
-            o.set_position(v2(x,y),random.int(0,3))
+            o.initialize()
+            o.set_position(v2(x,y))
             i++
             if(i>=15){
                 i=0
@@ -60,7 +61,19 @@ export const DebugMap:MapDef={
             }
         }
         for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
-            const o=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
+            const v=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
+            i++
+            if(i>=15){
+                i=0
+                x=map.size.x/2
+                y-=5
+            }else{
+                x+=5
+            }
+        }
+        for(const def of Object.values(map.game.definitions.buildings.valueNumber)){
+            const b=map.game.map.add_building(def)
+            b.generate(v2(x,y),1)
             i++
             if(i>=15){
                 i=0

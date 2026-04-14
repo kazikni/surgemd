@@ -169,12 +169,14 @@ export class GameMap{
     }
     generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Obstacle|undefined{
         const o=this.add_obstacle(def,undefined,layer)
+        o.initialize()
+
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode,random)
         if(!p){
             o.destroy()
             return undefined
         }
-        o.set_position(p,0)
+        o.set_position(p)
         o.manager.cells.updateObject(o)
 
         return o

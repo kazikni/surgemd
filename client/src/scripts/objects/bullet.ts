@@ -56,7 +56,6 @@ export class Bullet extends GameObject{
     // Misc                   //
     ////////////////////////////
     owner_id:number=0
-    reflection_count:number=0
 
     particles=0
     par_time=0
@@ -196,7 +195,6 @@ export class Bullet extends GameObject{
 
             this.speed=stream.readFloat32()
             this.container.rotation=stream.readRad()
-            this.reflection_count=stream.readUint8()
 
             this.velocity=v2.from_RadAngle(this.container.rotation,this.speed)
 
@@ -204,7 +202,6 @@ export class Bullet extends GameObject{
             this.sprite_trail.scale!.y=stream.readFloat(0,6,2)
             const col=ColorM.number(stream.readUint32())
             col.a=stream.readUint8()/255
-            col.a/=this.reflection_count+1
             this.sprite_trail.tint=col
 
             const proj=stream.readUint8()

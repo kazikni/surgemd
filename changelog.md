@@ -4,6 +4,8 @@ __                                                                              
 ### Mains
 * *Replay Mode!*
 * Dynamic Humans
+* Buildings Orientation
+* Doors
 __                                                                                                      __
 ### Menu
 

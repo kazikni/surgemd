@@ -7,10 +7,15 @@ export interface ObstacleBehaviorDoor{
     cant_close?:boolean
     open_duration:number
     offset:number
+
+    open_sound?:string
+    close_sound?:string
 }
-export interface ObstacleDoorStatus{
+export interface ObstacleDoorData{
     open:-1|0|1
+    hitboxes:Record<number,Hitbox2D>
     locked:boolean
+    opening:boolean
 }
 export interface ObstacleBehaviorPlaySound{
     type:1
@@ -313,17 +318,20 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"wood_door",
             health:80,
-            hitbox:new RectHitbox2D(v2(-0.87,-0.15),v2(0.87,0.15)),
+            hitbox:new RectHitbox2D(v2(-0.15,0),v2(0.15,1.35)),
             assets:{
                 frame:{
                     base:"door",
+                    particle:"plank_particle",
                     transform:{
-                        hotspot:v2(0.1,.5),
-                        position:v2(0.13,0.15),
+                        hotspot:v2(0.5,0),
                         scale:2,
                         tint:0x583b08
                     },
                 }
+            },
+            particles:{
+                tint:0x583b08
             },
             rotationMode:RotationMode.limited,
             zIndex:zIndexes.Obstacles3,
@@ -332,8 +340,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             expanded_behavior:{
                 type:0,
                 open_duration:0.15,
-                offset:0
-            }
+                offset:0,
+
+                open_sound:"wood_door_open",
+                close_sound:"wood_door_close"
+            },
         },
 
         //Christmas

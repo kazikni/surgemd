@@ -18,6 +18,7 @@ export abstract class BaseObject2D{
         this._base_hitbox=v
         this.update_hitbox()
     }
+
     public _position:Vec2M
     get position():Vec2{
         return this._position
@@ -63,6 +64,7 @@ export abstract class BaseObject2D{
     update_hitbox():void{
         this.hitbox=this.base_hitbox.transform(this._position)
     }
+
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
         this._base_hitbox=new NullHitbox2D(v2(0,0))

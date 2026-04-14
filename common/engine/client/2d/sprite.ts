@@ -84,6 +84,7 @@ export class Sprite2D extends Container2DObject{
     }
     override transform_frame(frame:FrameTransform){
         super.transform_frame(frame)
+        if(frame.tint)this.tint=ColorM.number(frame.tint)
         if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
     }
     override get_hitbox():RectHitbox2D|undefined{

@@ -36,6 +36,10 @@ export class Bullet extends ServerGameObject{
     tticks:number=0
 
     reflectionCount:number=0
+
+    tracerColor:number=0
+    tracerAlpha:number=255
+    projColor:number=0
     constructor(){
         super()
         this.velocity=v2(0,0)
@@ -178,7 +182,7 @@ export class Bullet extends ServerGameObject{
             }
         }
         if(v2.distance(this.initial_position,this.position)>this.max_distance){
-            this.destroy()
+            this.on_hit()
         }
     }
     create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
@@ -234,13 +238,10 @@ export class Bullet extends ServerGameObject{
             this.satured
         )
 
-        b.damage=this.damage/2
+        b.tracerAlpha/=2
+        b.damage/=2
         b.reflectionCount = this.reflectionCount + 1
     }
-
-    tracerColor:number=0
-    tracerAlpha:number=255
-    projColor:number=0
     override encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)
         .writeFloat(this.tticks,0,100,2)
@@ -250,7 +251,6 @@ export class Bullet extends ServerGameObject{
             .writeFloat((this.base_hitbox as CircleHitbox2D).radius,0,2,2)
             .writeFloat32(this.def.speed*this.modifiers.speed)
             .writeRad(this.angle)
-            .writeUint8(this.reflectionCount)
             .writeFloat(this.def.tracer.width,0,100,3)
             .writeFloat(this.def.tracer.height*this.modifiers.size,0,6,2)
             .writeUint32(this.tracerColor)

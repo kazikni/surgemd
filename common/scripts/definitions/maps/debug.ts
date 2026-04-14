@@ -49,7 +49,7 @@ export const DebugMap:MapDef={
         i=0
         for(const def of Object.values(map.game.definitions.obstacles.valueNumber)){
             const o=map.game.map.add_obstacle(def,undefined,Layers.Normal)
-            o.initialize()
+            o.initialize(0)
             o.set_position(v2(x,y))
             i++
             if(i>=15){
@@ -71,7 +71,7 @@ export const DebugMap:MapDef={
                 x+=5
             }
         }
-        for(const def of Object.values(map.game.definitions.buildings.valueNumber)){
+        /*for(const def of Object.values(map.game.definitions.buildings.valueNumber)){
             const b=map.game.map.add_building(def)
             b.generate(v2(x,y),1)
             i++
@@ -82,6 +82,6 @@ export const DebugMap:MapDef={
             }else{
                 x+=5
             }
-        }
+        }*/
     },
 }

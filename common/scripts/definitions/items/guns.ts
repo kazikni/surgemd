@@ -555,6 +555,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:45,
                     criticalMult:1.5,
                     speed:40,
+                    falloff:0.7,
                     tracer:tracers.medium
                 }
             },
@@ -598,6 +599,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     radius:0.014,
                     range:35,
                     speed:34,
+                    falloff:0.7,
                     tracer:tracers.medium
                 }
             },
@@ -1018,6 +1020,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:25,
                     radius:0.014,
+                    falloff:0.7,
                     range:180,
                     speed:50,
                     tracer:tracers.medium

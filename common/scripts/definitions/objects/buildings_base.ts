@@ -227,6 +227,22 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     position:v2(-3.85,-0.59),
                     rotation:0
                 },
+
+                {
+                    id:"normal_tv",
+                    rotation:3,
+                    position:v2(-4,-1.1)
+                },
+                {
+                    id:"couch_3x1",
+                    rotation:1,
+                    position:v2(-4,-5.5)
+                },
+                {
+                    id:"large_drawer",
+                    rotation:3,
+                    position:v2(-4,-1.2)
+                }
             ],
             floor_image:[
                 {

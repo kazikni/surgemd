@@ -1,4 +1,4 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 export interface ObstacleBehaviorDoor{
     type:0,
@@ -27,6 +27,11 @@ export interface ObstacleBehaviorScalable{
     floor_walk:number
     action_time:number
     interact_side:{pos:Vec2,rot?:number,dest_rot?:number,dest_pos?:Vec2}[]
+}
+export interface ObstacleBehaviorTransformInto{
+    type:3,
+    obstacles:(WeightDefinition&{id:string})[]
+    delay:number
 }
 export interface ObstacleDef extends Definition{
     // Life
@@ -87,7 +92,7 @@ export interface ObstacleDef extends Definition{
     hover_alpha?:number
 
     expanded_behavior?:(
-        ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable
+        ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto
     )
 }
 export interface MaterialDef{
@@ -184,7 +189,7 @@ function CreateCrate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particl
 export const create_wall={
     wall(id:string,frame:string,tint:number,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
         return mergeDeep({
-            health:130,
+            health:200,
             idString:id,
             hitbox:new RectHitbox2D(v2(-width,-height),v2(width,height)),
             assets:{
@@ -410,6 +415,98 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         create_wall.wall("wood_wall_20x1","wall_size_20x1",0x583b08,2.46666),
         create_wall.wall("wood_wall_24x1","wall_size_24x1",0x583b08,2.95999),
         create_wall.wall("wood_wall_28x1","wall_size_28x1",0x583b08,3.45332),
+
+        {
+            idString:"airdrop_locked",
+            imortal:true,
+            health:1,
+            hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
+            assets:{
+                frame:{
+                    transform:{
+                        scale:2,
+                        hotspot:v2(0.5,0.5)
+                    },
+                }
+            },
+            rotationMode:RotationMode.null,
+            material:"metal",
+            spawnMode:Spawn.grass,
+            height:1,
+            reflect_bullets:true,
+            expanded_behavior:{
+                type:3,
+                delay:2,
+                obstacles:[
+                    {
+                        id:"iron_crate",
+                        weight:10
+                    },
+                    {
+                        id:"gold_crate",
+                        weight:1
+                    }
+                ]
+            }
+        },
+        //Furnitunes
+        {
+            idString:"normal_tv",
+            health:200,
+            hitbox:new RectHitbox2D(v2(-0.4,-0.4),v2(0.4,0.4)),
+            reflect_bullets:true,
+            assets:{
+                frame:{
+                    transform:{
+                        scale:2
+                    },
+                }
+            },
+            rotationMode:RotationMode.limited,
+            zIndex:zIndexes.Obstacles3,
+            material:"metal",
+            spawnMode:Spawn.grass,
+        },
+        {
+            idString:"couch_3x1",
+            health:130,
+            hitbox:new RectHitbox2D(v2(-0.55,-1.4),v2(0.55,1.4)),
+            scale:{
+                destroy:0.8
+            },
+            assets:{
+                frame:{
+                    transform:{
+                        scale:2
+                    },
+                }
+            },
+            rotationMode:RotationMode.limited,
+            material:"wood",
+            spawnMode:Spawn.grass,
+        },
+        {
+            idString:"large_drawer",
+            health:130,
+            hitbox:new RectHitbox2D(v2(-0.52,-1.15),v2(0.43,1.15)),
+            scale:{
+                destroy:0.8
+            },
+            particles:{
+                tint:0xfff
+            },
+            assets:{
+                frame:{
+                    transform:{
+                        scale:2
+                    }
+                }
+            },
+            rotationMode:RotationMode.limited,
+            material:"wood",
+            spawnMode:Spawn.grass,
+            lootTable:"loot_drawer"
+        },
 
         //Christmas
         {

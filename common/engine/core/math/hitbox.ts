@@ -1,4 +1,4 @@
-import { Collision,OverlapCollision2D, Orientation, Rect } from "./geometry.ts"
+import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 
 import { random, SeededRandom } from "./random.ts";
 import { NetStream } from "../net/stream.ts";

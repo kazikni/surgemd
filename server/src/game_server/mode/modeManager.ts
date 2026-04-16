@@ -173,14 +173,14 @@ export abstract class ModeManager{
             amb.rain = Numeric.lerp(
                 amb.rain,
                 amb.target_rain,
-                Numeric.dt_expo_inter(rules.rain_lerp_speed, rain_speed)
+                Numeric.dt_expo_inter(rules.rain_lerp_speed*0.05,rain_speed)
             )
         } else {
             amb.rain = amb.target_rain
 
             if (amb.rain_state === 1) {
                 amb.rain_state = 2
-                amb.rain_timer = random.float(3, 7)
+                amb.rain_timer = random.float(5, 7)
             }
         }
     }

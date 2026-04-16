@@ -295,10 +295,18 @@ export class DeadZoneManager {
         const maxLen = Math.max(this.state.radius - radius, 0)
         const len = random.float(0, maxLen)
 
-        const pos = v2(
-            Math.cos(angle)*len,
-            Math.sin(angle)*len
-        )
+        const pos = v2(angle,len)
+
+        v2m.add(pos,pos,this.state.position)
+
+        return pos
+    }
+    random_point_inside_new():Vec2{
+        const angle = random.rad()
+        const maxLen = Math.max(this.state.new_radius, 0)
+        const len = random.float(0, maxLen)
+
+        const pos = v2.from_RadAngle(angle,len)
 
         v2m.add(pos,pos,this.state.position)
 

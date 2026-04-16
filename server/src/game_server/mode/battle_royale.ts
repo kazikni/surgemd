@@ -9,7 +9,10 @@ import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-
+export interface AirdropConfig{
+    spawn:number[]
+    obstacle:string
+}
 export interface BattleRoyaleSettings{
     players?:{
         limit?:number
@@ -21,6 +24,7 @@ export interface BattleRoyaleSettings{
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
     enemies?:LevelEnemys
+    airdrops?:AirdropConfig
 }
 export class BattleRoyaleSolo extends ModeManager{
     settings:{
@@ -33,6 +37,7 @@ export class BattleRoyaleSolo extends ModeManager{
         }
         spawn_mode:SpawnMode
         deadzone:DeadZoneConfig
+        airdrops:AirdropConfig
         enemies?:LevelEnemys
     }
 
@@ -48,7 +53,13 @@ export class BattleRoyaleSolo extends ModeManager{
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone,
-            enemies:settings.enemies
+            enemies:settings.enemies,
+            airdrops:settings.airdrops??{
+                obstacle:"iron_crate",
+                spawn:[
+                    20,100,180,260
+                ]
+            }
         }
     }
 
@@ -74,6 +85,13 @@ export class BattleRoyaleSolo extends ModeManager{
     override on_start(){
         this.add_enemies()
         this.game.deadzone.start()
+
+        for(const p of this.settings.airdrops.spawn){
+            this.game.add_timeout(()=>{
+                this.game.add_airdrop()
+            },p)
+        }
+
         this.game.add_timeout(()=>{
             this.game.close()
         },50)

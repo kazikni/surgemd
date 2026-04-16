@@ -304,7 +304,7 @@ export class AmbientManager{
 
             if(!this.game.game_over){
                 if(!this.music.running&&this.musics.length>0){
-                    if(Math.random()<=0.005){
+                    if(Math.random()<=0.01){
                         this.music.set(this.game.resources.get_audio(random.choose(this.musics)))
                     }
                 }

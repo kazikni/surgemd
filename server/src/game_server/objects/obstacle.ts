@@ -63,6 +63,9 @@ export class Obstacle extends StaticBody{
 
     loot:LootTableItemRet<GameItem>[]=[]
     door_data?:ObstacleDoorData&{dirty:boolean}
+    transform_into_data?:{
+        activated:boolean
+    }
 
     constructor(){
         super()
@@ -165,8 +168,24 @@ export class Obstacle extends StaticBody{
                         }
                         /**/
                     }
+                    break
                 }
+                case 3:{
+                    if(!this.transform_into_data?.activated){
+                        this.transform_into_data={
+                            activated:true
+                        }
+                        const def=this.game.definitions.obstacles.getFromString(random.weight2(this.def.expanded_behavior.obstacles)!.id)
+                        this.game.add_timeout(()=>{
+                            this.destroy()
 
+                            const obs=this.game.map.add_obstacle(def)
+                            obs.initialize()
+                            obs.set_position(this.position)
+                        },this.def.expanded_behavior.delay)
+                    }
+                    break
+                }
             }
         }
         /*if(this.door!==undefined){
@@ -238,7 +257,6 @@ export class Obstacle extends StaticBody{
         }else if(this.def.assets?.frame?.biome_skins){
             this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
         }
-
         if(rotation===undefined){
             if(this.def.rotationMode===RotationMode.limited){
                 this.physical_data.side=random.int(0,3) as Orientation

@@ -16,8 +16,8 @@ export const TundraBiome:BiomeDef={
     assets:["normal"],
     musics:[
         "game_tundra_music_1",
-        /*"game_normal_music_2",
-        "game_normal_music_3",*/
+        "game_tundra_music_2",
+        "game_tundra_music_3",
     ],
     ambient:{
         particles:[],
@@ -129,7 +129,7 @@ export const TundraMap:MapDef={
     biome:TundraBiome,
     generation:{
         island:{
-            size:v2(500,500),
+            size:v2(480,480),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
@@ -143,11 +143,9 @@ export const TundraMap:MapDef={
 
                     {id:"md_crate",count:10},
                     {id:"tundra_crate",count:10},
-                    {id:"copper_crate",count:10},
-                    {id:"iron_crate",count:1},
-                    {id:"gold_crate",count:1},
+                    {id:"copper_crate",count:20},
 
-                    {id:"wood_crate",count:200},
+                    {id:"wood_crate",count:190},
 
                     {id:"oak_tree",count:300},
                     {id:"stone",count:200},

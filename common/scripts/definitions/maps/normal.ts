@@ -234,6 +234,11 @@ export const NormalMap:MapDef={
             {weight:0.4,table:"throwables"},
             {weight:0.025,table:"melees"},
         ],
+        "loot_drawer":[
+            {weight:2,count:1,table:"normal_loot"},
+            {weight:1,count:2,table:"normal_loot"},
+            {weight:0.5,count:3,table:"normal_loot"},
+        ],
         "wood_crate":[
             {weight:2,count:1,table:"normal_loot"},
             {weight:1,count:2,table:"normal_loot"},
@@ -287,7 +292,7 @@ export const NormalMap:MapDef={
     biome:NormalBiome,
     generation:{
         island:{
-            size:v2(500,500),
+            size:v2(480,480),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
@@ -301,8 +306,6 @@ export const NormalMap:MapDef={
 
                     {id:"md_crate",count:10},
                     {id:"copper_crate",count:20},
-                    {id:"iron_crate",count:1},
-                    {id:"gold_crate",count:1},
                     {id:"wood_crate",count:700},
 
                     {id:"oak_tree",count:2000},
@@ -376,8 +379,6 @@ export const NormalLobby:MapDef={
 
                     {id:"wood_crate",count:30},
                     {id:"copper_crate",count:6},
-                    {id:"iron_crate",count:1},
-                    {id:"gold_crate",count:1},
                     {id:"barrel",count:13},
                     {id:"normal_loot",count:20},
 

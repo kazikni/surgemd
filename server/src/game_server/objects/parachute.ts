@@ -25,17 +25,18 @@ export class Parachute extends ServerGameObject{
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
             const obs=this.game.map.add_obstacle(this.parachute_data.spawn_obstacle)
-            obs.set_position(this.position,0)
+            obs.initialize()
+            obs.set_position(this.position)
             obs.manager.cells.updateObject(obs)
             this.destroy()
         }
     }
     interact(user: Human): void {
     }
-    create(args: {position:Vec2}): void {
+    create(args: {position:Vec2,obstacle:ObstacleDef}): void {
         this.parachute_data={
             lifetime:15,
-            spawn_obstacle:this.game.definitions.obstacles.getFromString("iron_crate")
+            spawn_obstacle:args.obstacle
         }
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
         this.position=args.position

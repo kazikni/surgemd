@@ -1,10 +1,10 @@
 
-import { AbstractServerGame, Client, ID,  KDate,  LootTablesManager,  ModsManager, NetStream, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Angle, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-import { Layers, LayersL } from "common/scripts/others/constants.ts";
+import { Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
 import { ConfigType, GameConfig, GameDebugOptions } from "common/scripts/config/config.ts";
 import { PlaneData } from "common/scripts/packets/general_update.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
@@ -31,9 +31,7 @@ import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
-import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
+import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -42,6 +40,7 @@ export interface PlaneDataServer extends PlaneData{
     
     owner?:Human
     grenade_def?:GrenadeDef
+    obstacle?:ObstacleDef
 }
 export interface GameData {
     living_count: number[]
@@ -324,7 +323,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
                 switch(p.type){
                     case 0:
-                        this.add_parachute(p.target_pos)
+                        this.add_parachute(p.target_pos,p.obstacle!)
                         break
                     case 1:{
                         const g=this.add_grenade(p.target_pos,p.grenade_def!,p.owner,Layers.Normal)
@@ -357,17 +356,26 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.loot.length=0
     }
     planes:PlaneDataServer[]=[]
-    add_airdrop(position:Vec2){
-        const dir=v2.lookTo(v2(0,0),position)
+    add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
+        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.any,this.map.random,(_hitbox,_map,_random)=>{
+            return this.deadzone.random_point_inside_new()
+        })
+        if(!position)position=v2(3,3)
+        if(!obstacle)obstacle=this.definitions.obstacles.getFromString("airdrop_locked")
+
+        const direction=random.rad()
+        const planePos = v2.from_RadAngle(direction,this.map.size.x+10)
+
         this.planes.push({
             id:random.int(0,1000000),
             complete:false,
-            direction:dir,
+            direction:direction,
             target_pos:position,
             called:false,
-            pos:v2.zero(),
+            pos:planePos,
             speed:13,
             velocity:v2.zero,
+            obstacle,
             type:0
         })
     }
@@ -501,8 +509,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const c=this.scene_2d.objects.add_object(new Creature(),layer,undefined,{position,def}) as Creature
         return c
     }
-    add_parachute(position:Vec2,layer=Layers.Normal):Parachute{
-        const p=this.scene_2d.objects.add_object(new Parachute(),layer,undefined,{position}) as Parachute
+    add_parachute(position:Vec2,obstacle:ObstacleDef,layer=Layers.Normal):Parachute{
+        const p=this.scene_2d.objects.add_object(new Parachute(),layer,undefined,{position,obstacle}) as Parachute
         return p
     }
     add_synced_particle(position:Vec2,def:SyncedParticleDef,layer=Layers.Normal):SyncedParticle{

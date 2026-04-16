@@ -258,6 +258,7 @@ export class Human extends MovingBody{
     downed_by_source?:DamageSourceDef
 
     modifiers:HumanModifiers={
+        size:1,
         boost:1,
         health:1,
         damage_reduction:1,
@@ -291,15 +292,17 @@ export class Human extends MovingBody{
         this.health_data.health=this.health_data.max_health
     }
     apply_modifiers(mods:Partial<HumanModifiers>){
+        this.modifiers.size*=mods.size??1
         this.modifiers.boost*=mods.boost??1
         this.modifiers.bullet_size*=mods.bullet_size??1
         this.modifiers.bullet_speed*=mods.bullet_speed??1
         this.modifiers.damage*=mods.damage??1
         this.modifiers.health*=mods.health??1
         this.modifiers.speed*=mods.speed??1
+        this.modifiers.damage_reduction*=mods.damage_reduction??1
     }
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
+        this.modifiers.size=this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
         this.apply_modifiers(this.temp_modifiers)
         const rules=this.game.modeManager.rules.humans
 
@@ -337,6 +340,15 @@ export class Human extends MovingBody{
         this.health_data.max_boost=100*this.modifiers.boost
 
         this.health_data.health=Math.min(this.health_data.health,this.health_data.max_health)
+
+        if(this.physical_data.scale!==this.modifiers.size){
+            this.physical_data.dirty=true
+            this.physical_data.scale=this.modifiers.size
+            this.base_hitbox = new CircleHitbox2D(
+                v2(0,0),
+                GameConstants.player.radius*this.physical_data.scale
+            )
+        }
     }
     side_effect(sf:SideEffect){
         switch(sf.type){
@@ -1147,7 +1159,7 @@ export class Human extends MovingBody{
         if(full||this.physical_data.dirty_part||this.physical_data.dirty){
             this.physical_encode(stream)
             if(full||this.physical_data.dirty){
-                //stream.writeFloat32(this.physical_data.scale)
+                stream.writeFloat32(this.physical_data.scale)
             }
         }
         // Equipment

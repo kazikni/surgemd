@@ -83,6 +83,7 @@ export enum ActionsType{
 }
 
 export type HumanModifiers={
+    size:number
     damage:number
     speed:number
     health:number

@@ -235,8 +235,9 @@ export class Loot extends GameObject{
                     this.container.add_child(this.sprite_outline)
                     break
                 case InventoryItemType.accessory:
-                    //this.sprite_main.frame=this.game.resources.get_sprite((this.item as MeleeDef).assets?.item??this.item.idString)
-                    this.sprite_main.visible=false
+                    this.sprite_main.frame=this.game.resources.get_sprite((this.item as MeleeDef).assets?.item??this.item.idString)
+                    this.sprite_main.visible=true
+                    this.sprite_main.scale=v2(2,2)
                     this.sprite_outline.frame=this.game.resources.get_sprite(`accessory_outline`)
                     this.sprite_outline.visible=true
                     this.sprite_outline.scale=v2(2,2)

@@ -480,6 +480,12 @@ export class Human extends MovingBody{
         this.container.layer=layer
         this.sprites.emote_container.layer=layer
     }
+    update_scale(scale:number){
+        this.physical_data.scale=scale
+        this.container.scale.x=scale
+        this.container.scale.y=scale
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.player.radius*scale)
+    }
     override create(_args: Record<string, void>): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.player.radius)
         this.container=new AnimatedContainer2D(this.game as unknown as ClientGame)
@@ -1216,6 +1222,10 @@ export class Human extends MovingBody{
         }
         if(full||physical_dirty_part||physical_dirty){
             this.decode_physical_data(stream,full)
+            if(full||physical_dirty){
+                const scale=stream.readFloat32()
+                this.update_scale(scale)
+            }
         }
         if(full||equipment_dirty||equipment_dirty_part){
             const helmet_health=stream.readUint16()

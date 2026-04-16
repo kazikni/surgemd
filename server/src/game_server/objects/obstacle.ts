@@ -344,6 +344,8 @@ export class Obstacle extends StaticBody{
         for(const loot of loots){
             loot.is_new=true
         }
+
+        if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
     }
     revive(){
         if(!this.health_data.dead)return

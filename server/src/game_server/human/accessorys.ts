@@ -45,18 +45,18 @@ export class AccessorysManager{
             }
         }
     }
-    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):AccessoryDef|undefined{
-        if(this.has_accessory(def.idString))return
+    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):[AccessoryDef|undefined,boolean]{
+        if(this.has_accessory(def.idString))return [undefined,false]
         for(const s of this.slots){
             if(s.changable){
                 const ret=s.item
                 s.item=def
                 s.droppable=droppable
                 s.changable=changable
-                return ret
+                return [ret,true]
             }
         }
-        return
+        return [undefined,false]
     }
     clear(){
         for(const s of this.slots){

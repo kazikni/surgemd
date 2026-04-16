@@ -10,6 +10,16 @@ export interface AccessoryDef extends Definition{
     events?:Record<string,(e:any)=>void>
     item_type?:InventoryItemType.accessory
 }
+
+export function AccessoryDropLootFromObstacle(table:string){
+    return (e:any)=>{
+        const loot=e.human.game.loot_tables.get_loot(table,{withammo:true},e.human.game)
+
+        for(const l of loot){
+            e.human.game.add_loot(e.obstacle.hitbox.randomPoint(),l.item,l.count,e.obstacle.layer)
+        }
+    }
+}
 export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
     accessorys.insert(
         {
@@ -46,6 +56,20 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             }
         },
         {
+            idString:"rare_projectile",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    if(e.item.ammo===0){
+                        e.bullet.damage*=1.4
+                        e.bullet.modifiers.size*=1.75
+
+                        e.bullet.set_color(true)
+                    }
+                }
+            }
+        },
+        {
             idString:"liquid_insanity",
             rank:ItemRank.A,
             events:{
@@ -57,6 +81,20 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                         effect:"kill_haste"
                     })
                 }
+            }
+        },
+        {
+            idString:"pygmy_necklace",
+            rank:ItemRank.A,
+            modifiers:{
+                size:0.75
+            },
+        },
+        {
+            idString:"lucky_coin",
+            rank:ItemRank.A,
+            events:{
+                "obstacle_destroy":AccessoryDropLootFromObstacle("normal_loot")
             }
         },
         {

@@ -590,10 +590,10 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             case InventoryItemType.accessory:{
                 const r=this.accessorys.add_accessory(def)
-                if(r){
-                    this.owner.game.add_loot(this.owner.position,r,1,this.owner.layer)
-                    count--
+                if(r[0]){
+                    this.owner.game.add_loot(this.owner.position,r[0],1,this.owner.layer)
                 }
+                if(r[1])count--
                 if(drop_overflow&&count>1){
                     this.owner.game.add_loot(this.owner.position,def,count,this.owner.layer)
                 }

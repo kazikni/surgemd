@@ -250,6 +250,8 @@ export class Obstacle extends StaticBody{
             if(ne===1)new_rot-=(Math.PI/2)
             if(ne===-1)new_rot+=(Math.PI/2)
 
+            this.physical_data.hitbox=this.door_data!.hitboxes[this.door_data!.open]
+
             if(force){
                 this.container.rotation=new_rot
             }else{
@@ -340,6 +342,8 @@ export class Obstacle extends StaticBody{
                 }
             }
 
+            
+            this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
             this.container.scale.x=this.physical_data.scale
             this.container.scale.y=this.physical_data.scale
 

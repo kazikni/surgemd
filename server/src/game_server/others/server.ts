@@ -38,7 +38,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                     //group_size:2,
                     mode_settings:{
                         map:{
-                            //def:"single_building"
+                            //def:"tundra"
                         }
                     }
                 })

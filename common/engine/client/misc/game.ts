@@ -91,14 +91,13 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
 
         this.on_before_render(dt)
 
+        this.cam2d.draw(dt,this.resources)
         for(const l of this.scene_2d.objects.layers){
             for(const o of this.scene_2d.objects.objects[l].renderizables){
                 const obj=this.scene_2d.objects.objects[l].objects[o]
                 obj.render(this.cam2d,dt)
             }
         }
-
-        this.cam2d.draw(dt,this.resources)
         super.draw(dt)
     
         this.on_render(dt)

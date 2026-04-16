@@ -4,7 +4,7 @@ import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap } from "./normal.ts";
 import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
-import { DebugMap } from "./debug.ts";
+import { DebugMap, SingleBuildMap } from "./debug.ts";
 import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2 } from "../../../engine/core.ts";
 import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
@@ -95,5 +95,6 @@ export const Maps:Record<string,MapDef>={
     lobby:NormalLobby,
     tundra:TundraMap,
 
-    debug:DebugMap
+    debug:DebugMap,
+    single_building:SingleBuildMap,
 }

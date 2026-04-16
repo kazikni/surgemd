@@ -109,6 +109,8 @@ export class Obstacle extends StaticBody{
                                 this.door_data!.dirty=true
                                 this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
                                 this.door_data!.opening=false
+
+                                this.manager.cells.updateObject(this)
                             },this.def.expanded_behavior.open_delay)
                         }else{
                             if(this.door_data!.open===0){
@@ -121,6 +123,7 @@ export class Obstacle extends StaticBody{
                             this.door_data!.dirty=true
 
                             this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
+                            this.manager.cells.updateObject(this)
                         }
                     }
                     break

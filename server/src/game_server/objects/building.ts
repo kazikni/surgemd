@@ -1,6 +1,6 @@
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { type Human } from "./human.ts";
-import { Hitbox2D, NetStream, NullHitbox2D, Orientation, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 
@@ -91,24 +91,21 @@ export class Building extends StaticBody {
             const def=this.game.definitions.obstacles.getFromString(o.id)
 
             const p = v2.add_with_orientation(this.position, o.position, side)
-            v2m.add(p,p,this.position)
 
             const obj=this.game.map.add_obstacle(def,o.rotation,this.layer+(o.layer??0))
             obj.initialize(o.rotation,o.variation,o.skin)
             obj.set_position(p)
         }
-        this.manager.cells.updateObject(this)
-
-        /*
-
         for (const b of this.def.sub_building ?? []) {
             const def=this.game.definitions.buildings.getFromString(b.id)
-            const p = v2.rotate_RadAngle(b.position,Angle.side_rad(this.side))
 
-            v2m.add(p,p,this.position)
+            const p = v2.add_with_orientation(this.position, b.position, side)
+
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
-            obj.generate(p,b.rotation??0)
-        }*/
+            obj.generate(p,Angle.add_orientation(side,b.rotation??0))
+        }
+        this.manager.cells.updateObject(this)
+
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writeBooleanGroup(this.physical_data.dirty)

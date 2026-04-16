@@ -1,6 +1,5 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
-
 export interface ObstacleBehaviorDoor{
     type:0,
     open_delay?:number
@@ -182,7 +181,59 @@ function CreateCrate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particl
         height:1,
     },o)
 }
-
+export const create_wall={
+    wall(id:string,frame:string,tint:number,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        return mergeDeep({
+            health:130,
+            idString:id,
+            hitbox:new RectHitbox2D(v2(-width,-height),v2(width,height)),
+            assets:{
+                frame:{
+                    base:frame,
+                    particle:particle,
+                    transform:{
+                        hotspot:v2(0.5,0.5),
+                        scale:2,
+                        tint:tint
+                    },
+                }
+            },
+            particles:{
+                tint:tint
+            },
+            rotationMode:RotationMode.limited,
+            zIndex:zIndexes.Obstacles1,
+            material:material,
+            spawnMode:Spawn.grass,
+        },o)
+    },
+    column_1(id:string,tint:number,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        return mergeDeep({
+            imortal:true,
+            health:1,
+            idString:id,
+            hitbox:new RectHitbox2D(v2(-0.21,-0.21),v2(0.21,0.21)),
+            assets:{
+                frame:{
+                    base:"column_1",
+                    particle:particle,
+                    transform:{
+                        hotspot:v2(0.5,0.5),
+                        scale:2,
+                        tint:tint
+                    },
+                }
+            },
+            particles:{
+                tint:tint
+            },
+            rotationMode:RotationMode.limited,
+            zIndex:zIndexes.Obstacles1,
+            material:material,
+            spawnMode:Spawn.grass,
+        },o)
+    }
+}
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
         CreateStone("stone",undefined,{
@@ -346,6 +397,19 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 close_sound:"wood_door_close"
             },
         },
+        create_wall.column_1("wood_column",0x583b08),
+
+        create_wall.wall("wood_wall_2x1","wall_size_2x1",0x583b08),
+        create_wall.wall("wood_wall_4x1","wall_size_4x1",0x583b08,0.4933),
+        create_wall.wall("wood_wall_6x1","wall_size_6x1",0x583b08,0.739998),
+        create_wall.wall("wood_wall_8x1","wall_size_8x1",0x583b08,0.986664),
+        create_wall.wall("wood_wall_10x1","wall_size_10x1",0x583b08,1.23333),
+        create_wall.wall("wood_wall_12x1","wall_size_12x1",0x583b08,1.47999),
+        create_wall.wall("wood_wall_14x1","wall_size_14x1",0x583b08,1.72666),
+        create_wall.wall("wood_wall_16x1","wall_size_16x1",0x583b08,1.97332),
+        create_wall.wall("wood_wall_20x1","wall_size_20x1",0x583b08,2.46666),
+        create_wall.wall("wood_wall_24x1","wall_size_24x1",0x583b08,2.95999),
+        create_wall.wall("wood_wall_28x1","wall_size_28x1",0x583b08,3.45332),
 
         //Christmas
         {

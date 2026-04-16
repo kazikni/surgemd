@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, Material, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -103,6 +103,8 @@ export class Game extends ClientGame<GameObject>{
 
     planes:Record<number,Plane>={}
 
+    hitboxes_gfx:Graphics2D=new Graphics2D()
+
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
@@ -158,6 +160,9 @@ export class Game extends ClientGame<GameObject>{
 
         this.ui.shop_app=new ShopTabApp(this.tab)
         this.tab.add_app(this.ui.shop_app)
+
+        this.hitboxes_gfx.layer=9999
+        this.cam2d.addObject(this.hitboxes_gfx)
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()

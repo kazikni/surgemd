@@ -85,3 +85,36 @@ export const DebugMap:MapDef={
         }*/
     },
 }
+
+export const SingleBuildMap:MapDef={
+    biome:NormalBiome,
+    loot_tables:NormalMap.loot_tables,
+    generation:{
+        island:{
+            size:v2(80,80),
+            terrain:{
+                base:FloorType.Water,
+                floors:[
+                    {
+                        padding:10,
+                        type:FloorType.Sand,
+                        spacing:3,
+                        variation:1.3,
+                    },
+                    {
+                        padding:5,
+                        type:FloorType.Grass,
+                        spacing:3,
+                        variation:1.3,
+                    }
+                ]
+            },
+        },
+    },
+    gen_callback(map) {
+        const def=map.game.definitions.buildings.getFromString("small_house_1")
+
+        const b=map.game.map.add_building(def)
+        b.generate(v2.dscale(map.size,2),0)
+    },
+}

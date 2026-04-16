@@ -1,8 +1,8 @@
 
-import { ABParticle2D, AnimatedContainer2D, AnimationInstance, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, KeyFrameSpriteDef, Light2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, SoundInstance, SoundOptions, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AnimationInstance, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, KeyFrameSpriteDef, Light2D, model2d, NetStream, Numeric, ParticlesEmitter2D, random, Sound, SoundInstance, SoundOptions, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GameObject } from "../others/gameObject.ts"
-import { GraphicsDConfig } from "../others/config.ts"
+import { Debug, GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
@@ -592,14 +592,19 @@ export class Human extends MovingBody{
             hotspot:CenterHotspot,
             scale:2.6
         })
+
+        /*if(Debug.hitbox){
+            this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
+            this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.base_hitbox))
+        }*/
     }
     distance_since_last_footstep=0
 
     override render(camera: Camera2D, _dt: number): void {
-        camera.ctx.fill_style=this.game.world_shadow.color
+        /*camera.ctx.fill_style=this.game.world_shadow.color
         camera.ctx.begin_path()
         camera.ctx.arc(this.position.x+this.game.world_shadow.offset.x,this.position.y+this.game.world_shadow.offset.y,GameConstants.player.radius*this.game.world_shadow.radius,0,Math.PI*2)
-        camera.ctx.fill()
+        camera.ctx.fill()*/
 
         /*camera.ctx.fill_style=ColorM.default.red
         camera.ctx.begin_path()

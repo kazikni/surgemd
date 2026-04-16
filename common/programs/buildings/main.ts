@@ -6,6 +6,63 @@ const b=MakeBuilding({
         {
             walls:[
                 [
+                    v2(700,12),
+                    v2(700,210),
+                ],
+                [
+                    v2(700,350),
+                    v2(700,700),
+                    v2(12,700),
+                ]
+            ],
+            width:20,
+            attr:{
+                ...kxml.svg.fill.color("#ffee00"),
+            }
+        },
+        {
+            walls:[
+                [
+                    v2(12,80),
+                    v2(12,12),
+                    v2(1490,12),
+                    v2(1490,1490),
+                    v2(12,1490),
+                    v2(12,210),
+                ],
+            ],
+            width:20,
+            attr:{
+                ...kxml.svg.fill.color("#f0e3c0"),
+                ...kxml.svg.stroke.color("#684f0a",4)
+            }
+        },
+    ],
+    patterns:{
+        /*"bricks-pattern-1":{
+            children:[kxml.svg.create.grid_floor("#bb1919",v2(300,100),kxml.svg.stroke.color("#5a0f0f", 2),8,8)],
+            size:v2(100,30),
+        },*/
+        "wood-pattern-1":{
+            children:[kxml.svg.create.grid_floor("#f5c08e",v2(200,60),kxml.svg.stroke.color("#8b4320", 1))],
+            size:v2(200,60),
+        }
+    },
+    floors:[
+        {
+            rect:rect.create(0,0,1490,1490),
+            pattern:{
+                id:"wood-pattern-1",
+            }
+        }
+    ],
+})
+/*MakeBuilding({
+    size:v2(1500,1500),
+    walls:[
+        {
+            walls:[
+                [
                     v2(10,80),
                     v2(10,10),
                     v2(1490,10),
@@ -41,7 +98,7 @@ const b=MakeBuilding({
         "wood-pattern-1":{
             children:[kxml.svg.create.grid_floor("rgb(223, 162, 106)",v2(100,30),kxml.svg.stroke.color("#8b4320", 1))],
             size:v2(100,30),
-        }*/
+        }
     },
     floors:[
         {
@@ -53,7 +110,7 @@ const b=MakeBuilding({
             pattern:{
                 id:"bricks-pattern-1",
             }
-        }*/
+        }
     ],
-})
+})*/
 console.log(kxml.stringify(b.svg.floor))

@@ -1,6 +1,8 @@
 import { Definition, Definitions, FrameDef, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
+//20mm = 0.17619
+//2mm  = 0.017619
 
 export type BuildingObstacles={
     id:string
@@ -190,6 +192,61 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                 RectHitbox2D.centered(v2(0,0),v2(7.8,7.8))*/
             ),
             spawnMode:Spawn.grass,
-        }
+        },
+        {
+            idString:"small_house_1",
+            obstacles:[
+                {
+                    id:"wood_door",
+                    position:v2(-7.37,-6.7),
+                    rotation:0
+                },
+                {
+                    id:"wood_door",
+                    position:v2(-0.54,-4.03),
+                    rotation:2
+                },
+
+                {
+                    id:"wood_column",
+                    position:v2(-0.54,-0.59),
+                },
+                {
+                    id:"wood_wall_8x1",
+                    position:v2(-0.54,-6.3),
+                    rotation:1
+                },
+                {
+                    id:"wood_wall_14x1",
+                    position:v2(-0.54,-2.4),
+                    rotation:1
+                },
+
+                {
+                    id:"wood_wall_28x1",
+                    position:v2(-3.85,-0.59),
+                    rotation:0
+                },
+            ],
+            floor_image:[
+                {
+                    image:"small_house_1_floor",
+                    position:v2(0,0),
+                    hotspot:v2(.5,.5),
+                    scale:2,
+                }
+            ],
+            sub_building:[
+            ],
+            hitbox:new HitboxGroup2D(
+                new RectHitbox2D(v2(-7.5,-7.5),v2(7.5,-7.25)),
+                new RectHitbox2D(v2(-7.5,-7.5),v2(-7.25,-6.65)),
+                new RectHitbox2D(v2(-7.5,-5.44),v2(-7.25,7.5)),
+
+                new RectHitbox2D(v2(7.25,-7.5),v2(7.5,7.5)),
+                new RectHitbox2D(v2(-7.5,7.25),v2(7.5,7.5)),
+            ),
+            spawnMode:Spawn.grass,
+        },
     )
 }

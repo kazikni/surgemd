@@ -1,7 +1,7 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, NetStream, NullHitbox2D, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
 import { Materials, ObstacleBehaviorDoor, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { GraphicsDConfig } from "../others/config.ts";
+import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
@@ -334,6 +334,10 @@ export class Obstacle extends StaticBody{
                 this.physical_data.side=stream.readUint8()
 
                 this.initialize_hitboxes()
+                if(Debug.hitbox){
+                    this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
+                    this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
+                }
             }
 
             this.container.scale.x=this.physical_data.scale

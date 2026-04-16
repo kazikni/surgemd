@@ -1,7 +1,8 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, Graphics2D, model2d } from "common/engine/client.ts"
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
+import { Debug } from "../others/config.ts";
 export class Building extends StaticBody{
     ////////////////////////////
     // Definition             //
@@ -68,8 +69,9 @@ export class Building extends StaticBody{
     constructor(){
         super()
     }
+
     override create(_args: Record<string, any>): void {
-        this.updatable=true
+        this.updatable=false
     }
     set_definition(def:BuildingDef){
         if(this.def)return
@@ -134,6 +136,11 @@ export class Building extends StaticBody{
             for(let i=0;i<this.def.assets.particles_variation;i++){
                 this.assets_data.frame.particles.push(`${fn}_${i+1}`)
             }
+        }
+
+        if(Debug.hitbox){
+            this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
+            this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
         }
         this.manager.cells.updateObject(this)
     }

@@ -53,36 +53,14 @@
 }
 #boost-bar-container,
 #health-bar-container{
+    width: 100%;
     display: block;
-    justify-content: space-between;
     align-items: center;
-    overflow: visible;
-    position: absolute;
-    left: 5px;
-    background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
-    box-shadow: 0 0 5px var(--ui-theme-primary);
-    border-radius: 5px;
-
-    width: 400px;
     transform: translateY(-100%),translateX(-100%);
     font-size: 20px;
     font-family: "Russo-One", serif;
-    
-    @media screen and (max-width: palette.$screen_large) {  
-        box-shadow: 0 0 4px var(--ui-theme-primary); 
-        width: 270px;
-        font-size: 10px;
-    }
-    @media screen and (max-width: palette.$screen_medium) {
-        box-shadow: 0 0 3px var(--ui-theme-primary);
-        font-size: 6px;
-        width: 170px;
-        font-size: 10px;
-    }
-    
 }
 #health-bar-container {
-    bottom: 5px;
     height: 40px;
 
     #health-bar,
@@ -94,6 +72,7 @@
         border-radius: 2px;
         height: 100%;
         width: 100%;
+        border-radius: 8px;
     }
     #health-bar-basic-heal{
         width: 75%;
@@ -132,22 +111,15 @@
         transform: translateY(-50%);
 
     }
-    @media screen and (max-width: palette.$screen_large) {
-        height: 30px;
-    };
-    @media screen and (max-width: palette.$screen_medium) {
-        height: 15px;
-    };
 }
 #boost-bar-container {
-    bottom: 55px;
     height: 20px;
 
     #boost-bar {
         position: absolute;
         top: 0;
         left: 0;
-        border-radius: 2px;
+        border-radius: 8px;
         height: 100%;
         width: 0%;
         transition: width ease-in-out 0.2s;
@@ -162,108 +134,58 @@
         left: 103%;
         transform: translateY(-50%);
     }
-    @media screen and (max-width: palette.$screen_large) {
-        bottom: 45px;
-        height: 15px;
-    };
-    @media screen and (max-width: palette.$screen_medium) {
-        bottom: 30px;
-        height: 10px;
-    };
 }
 
 #bottom-left-container{
     position: absolute;
-    left: 5px;
-    background-color: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
-    box-shadow: 0 0 5px var(--ui-theme-primary);
-    border-radius: 10px;
-    bottom: 85px;
+    left: 10px;
+    bottom: 10px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
     width: 400px;
-    height: 60px;
-    span{
-        transform: translate(-50%,-50%);
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        font-family: "Russo-One";
-        font-size: 36px;
+
+    > div{
+        position: relative;
+        background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
+        box-shadow: 0 0 5px var(--ui-theme-primary);
+        border-radius: 8px;
+        padding: 6px 10px;
     }
-    img{
-        position: absolute;
-        width: 30px;
-        height: auto;
-        right: 5px;
-        bottom: 5px;
-    }
+
     #action-info{
-        position: absolute;
-        top: -30px;
-        left: 50%;
-    }
-    @media screen and (max-width: palette.$screen_large) {
-        border: 1px solid color-mix(in srgb,var(--ui-theme-primary) 50%, #0000);
-        bottom: 70px;
-        width: 270px;
         height: 20px;
-        border-radius: 7px;
-        #action-info{
-            top:-15px;
-        }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
         span{
-            font-size: 15px;
-        }
-        img{
-            width: 15px;
-            bottom: 2px;
+            position: static;
+            transform: none;
+            font-size: 20px;
+            font-family: "Russo-One";
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
-        bottom: 50px;
-        width: 170px;
-        height: 30px;
-        border-radius: 5px;
+    #hand-info{
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
         span{
-            font-size: 15px;
+            position: static;
+            transform: none;
+            font-size: 20px;
+            font-family: "Russo-One";
         }
+
         img{
-            width: 20px;
-        }
-    }
-}
-#equipaments{
-    position: absolute;
-    background-color: #0002;
-    top: 5px;
-    right: 5px;
-    height: 150px;
-    width: 200px;
-    overflow-y: hidden;
-    overflow-x: hidden;
-    .skin-closeup{
-        position: absolute;
-        scale:30%;
-        transition: -50%,-50%;
-        left: 26%;
-        top: -26%;
-    }
-    .inventory-item-slot{
-        margin: 0%;
-        img{
-            transform: unset;
-            rotate: unset;
-        }
-    }
-    @media screen and (max-width: palette.$screen_medium) {
-        height: 60px;
-        width: 100px;
-        top: 3px;
-        right: 3px;
-        .skin-closeup{
-            scale:10%;
-            transition: -50%,-50%;
-            left: 0px;
-            top: -90px;
+            position: static;
+            width: 28px;
+            height: auto;
         }
     }
 }

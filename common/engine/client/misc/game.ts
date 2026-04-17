@@ -60,6 +60,10 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         super.clear()
         this.particles.clear()
     }
+    override mainloop(rqf?: boolean, auto_mainloop?: boolean): void {
+        this.input_manager.clear()
+        super.mainloop(rqf,auto_mainloop)
+    }
     set_meter_size(size:number){
         this.cam2d.meter_size=size
         this.input_manager.mouse.meter_size=size
@@ -113,6 +117,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.particles.update(dt)
         this.sounds.update(dt)
         this.input_manager.tick()
+        this.ui_manager.update(dt)
         this.clock.profiler.end(2)
     }
     on_render(_dt:number){}

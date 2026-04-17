@@ -14,6 +14,13 @@ type PlayerVisual = {
     target: Vec2
     color: Color
 }
+type MapPing = {
+    id:number
+    pos:Vec2
+    time:number
+    duration:number
+    color:Color
+}
 export class MapTabApp extends TabApp {
     private mapImg!: HTMLImageElement
     private mapViewport!: HTMLDivElement
@@ -34,6 +41,9 @@ export class MapTabApp extends TabApp {
 
     private deadzoneEl!: HTMLDivElement
     private deadzoneDestEl!: HTMLDivElement
+
+    private pings: MapPing[] = []
+    private pingsLayer!: HTMLDivElement
 
     constructor(tab: TabManager) {
         super("Map", "/img/menu/gui/tab/icons/map.svg", tab)
@@ -110,7 +120,7 @@ export class MapTabApp extends TabApp {
 
         this.mapImg.src = this.tab.game.minimap.image.src
 
-        this.minZoom=300/this.game.minimap.image.width
+        this.minZoom=700/this.game.minimap.image.width
 
         this.deadzoneEl = this.element!.querySelector(".map-deadzone")!
         this.deadzoneDestEl = this.element!.querySelector(".map-deadzone-dest")!
@@ -153,9 +163,30 @@ export class MapTabApp extends TabApp {
 
         this.mapViewport.onwheel = (e) => {
             e.preventDefault()
-            const delta = -e.deltaY * 0.0004
-            this.zoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoom + delta))
-            zoomInput.value = this.zoom.toString()
+
+            const rect = this.mapViewport.getBoundingClientRect()
+
+            const mx = e.clientX - rect.left
+            const my = e.clientY - rect.top
+
+            const before = {
+                x: (mx - this.offset.x) / this.zoom,
+                y: (my - this.offset.y) / this.zoom
+            }
+
+            const delta = -e.deltaY * 0.001
+            const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoom + delta))
+
+            this.zoom = newZoom
+
+            const after = {
+                x: before.x * this.zoom + this.offset.x,
+                y: before.y * this.zoom + this.offset.y
+            }
+
+            this.offset.x += mx - after.x
+            this.offset.y += my - after.y
+
             this.updateTransform()
         }
 
@@ -208,6 +239,15 @@ export class MapTabApp extends TabApp {
         this.centerOnWorld(pos)
     }
 
+    add_ping(pos:Vec2,color:Color){
+        this.pings.push({
+            id: Math.random(),
+            pos: v2.clone(pos),
+            time: 0,
+            duration: 3,
+            color
+        })
+    }
     update_players(players: MapPlayer[]) {
         for (const p of players) {
             let v = this.visuals[p.id]
@@ -252,6 +292,27 @@ export class MapTabApp extends TabApp {
             const m = this.worldToMap(v.pos)
             v.el.style.setProperty('--px', `${m.x}px`)
             v.el.style.setProperty('--py', `${m.y}px`)
+        }
+        this.pings = this.pings.filter(p => p.time < p.duration)
+        for(const p of this.pings){
+            p.time += dt
+
+            let el = document.getElementById("ping-"+p.id) as HTMLDivElement
+
+            if(!el){
+                el = document.createElement("div")
+                el.className = "map-ping"
+                el.id = "ping-"+p.id
+                this.pingsLayer.appendChild(el)
+            }
+
+            const m = this.worldToMap(p.pos)
+
+            el.style.setProperty('--px', `${m.x}px`)
+            el.style.setProperty('--py', `${m.y}px`)
+
+            const alpha = 1 - (p.time / p.duration)
+            el.style.opacity = alpha.toString()
         }
     }
 

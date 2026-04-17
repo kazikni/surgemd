@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, Material, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -8,7 +8,6 @@ import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
 import { TabManager } from "../managers/tabManager.ts";
 import { Human } from "../objects/human.ts";
-import { InventoryManager } from "../managers/inventoryManager.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
@@ -32,7 +31,7 @@ import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { MapTabApp } from "../apps/map.ts";
-import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
@@ -42,6 +41,7 @@ import { Plane } from "./planes.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { MatchTabApp } from "../apps/match.ts";
+import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -69,7 +69,7 @@ export class Game extends ClientGame<GameObject>{
 
     ui:UiManager
     menu:MenuManager
-    inventory:InventoryManager
+    inventory:GInventory
     dead_zone:DeadZoneManager
     ambient:AmbientManager
     tab:TabManager
@@ -133,7 +133,7 @@ export class Game extends ClientGame<GameObject>{
         this.ui=new UiManager(this)
         this.menu=menu
 
-        this.inventory=new InventoryManager(this)
+        this.inventory=new GInventory()
         this.dead_zone=new DeadZoneManager(this)
         this.ambient=new AmbientManager(this)
         this.tab=new TabManager(this)
@@ -163,6 +163,12 @@ export class Game extends ClientGame<GameObject>{
 
         this.hitboxes_gfx.layer=9999
         this.cam2d.addObject(this.hitboxes_gfx)
+
+        this.inventory.initialize(this.definitions,{
+            0:MeleeItem as (new(item:GameItem)=>LItem),
+            1:GunItem as (new(item:GameItem)=>LItem),
+            2:GunItem as (new(item:GameItem)=>LItem)
+        })
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()
@@ -237,14 +243,14 @@ export class Game extends ClientGame<GameObject>{
                     this.input.actions.push({type:InputActionType.use_item,slot:6})
                     break
                 case "previous_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:this.inventory.current_weapon-1})
+                    //this.input.actions.push({type:InputActionType.set_hand,hand:this.inventory.current_weapon-1})
                     break
                 case "next_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventory.current_weapon+1,-1,3)})
+                    //this.input.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventory.current_weapon+1,-1,3)})
                     break
                 case "previous_scope":{
-                    const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
-                    const it=this.inventory.inventory.iitems[oidx-1]
+                    const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
+                    const it=this.inventory.iitems[oidx-1]
                     this.free_cam_zoom=Math.min(1,this.free_cam_zoom*1.1)
 
                     if(!it)break
@@ -256,8 +262,8 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "next_scope":{
-                    const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
-                    const it=this.inventory.inventory.iitems[oidx+1]
+                    const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
+                    const it=this.inventory.iitems[oidx+1]
                     this.free_cam_zoom=Math.max(0.1,this.free_cam_zoom*0.9)
 
                     if(!it)break
@@ -348,6 +354,7 @@ export class Game extends ClientGame<GameObject>{
     }
     set_scope(scope:ScopeDef){
         this.scope_zoom=scope.scope_view
+        this.ui_manager.signal("current_scope_dirty",scope)
     }
     async load_resources(textures:string[]=["main"]){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return

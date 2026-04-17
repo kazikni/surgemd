@@ -1,7 +1,6 @@
 import { HideElement, KDate, ShowElement } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
 
-
 export abstract class TabApp {
     name: string
     icon: string

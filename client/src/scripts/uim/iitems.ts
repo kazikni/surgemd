@@ -69,8 +69,11 @@ export class IItemsModule extends UIModule<Game> {
     
     override on_update(dt: number): void {
     }
-    override on_dirty(): void {
-    }
     override on_destroy(): void {
+    }
+    override on_clear(): void {
+        this.container.innerHTML = ""
+        this.elements = {}
+        this.currentScope = undefined
     }
 }

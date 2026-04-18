@@ -71,7 +71,6 @@ export class Player extends Human{
         rank:0,
         money:0,
         score:0,
-
         time_alive:0
     }
     account_status={

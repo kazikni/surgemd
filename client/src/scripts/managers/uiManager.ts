@@ -149,6 +149,7 @@ export class UiManager{
         this.enableCrosshair()
 
         this.game.inventory.clear()
+        this.game.ui_manager.clear()
         disableContextMenuPrevent() 
     }
     _makeHint(texts: string[]) {

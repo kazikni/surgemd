@@ -28,10 +28,6 @@ export abstract class UIModule<Game> {
         this.game=game
         this.root=root
         this.on_init()
-        this.dirty()
-    }
-    dirty(): void{
-        this.on_dirty()
     }
     update(dt: number): void{
         this.on_update(dt)
@@ -39,12 +35,15 @@ export abstract class UIModule<Game> {
     destroy(): void{
         this.on_destroy()
     }
+    clear(): void{
+        this.on_clear()
+    }
 
     abstract on_signal(signal:string,content:any):void
     abstract on_init():void
     abstract on_update(dt:number):void
-    abstract on_dirty():void
     abstract on_destroy():void
+    abstract on_clear():void
 }
 export class UIRoot<Game> extends HTMLManager<Game> {
     private modules: UIModule<Game>[] = []
@@ -70,6 +69,11 @@ export class UIRoot<Game> extends HTMLManager<Game> {
     update(dt: number) {
         for (const m of this.modules) {
             m.update?.(dt)
+        }
+    }
+    clear() {
+        for (const m of this.modules) {
+            m.clear()
         }
     }
 

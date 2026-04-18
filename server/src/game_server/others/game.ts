@@ -464,7 +464,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         console.log(`Game ${this.id} Fineshed`)
     }
-    add_bullet(position:Vec2,angle:number,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured:boolean=false):Bullet{
+    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured:boolean=false):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
             defs:def,
             position:v2.clone(position),
@@ -473,7 +473,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             source,
             satured
         })as Bullet
-        b.set_direction(angle)
         return b
     }
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Human,source?:DamageSourceDef,layer:number=Layers.Normal):Explosion{

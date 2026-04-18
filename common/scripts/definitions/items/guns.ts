@@ -1,6 +1,6 @@
-import { cloneDeep, DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponRig, WeaponAssets} from "../../others/item.ts";
-import { BulletDef, BulletReflection, InventoryItemType, ItemQualitySettings } from "../utils.ts";
+import { BulletDef, BulletReflection, InventoryItemType } from "../utils.ts";
 export type GunDef={
     bullet?:{
         def:BulletDef
@@ -34,10 +34,11 @@ export type GunDef={
     reload?:{
         capacity:number
         delay:number
-        shotsPerReload?:number
+        reload_count?:number
+        extended_capacity?:number
         reload_alt?:{
             delay:number
-            shotsPerReload?:number
+            reload_count?:number
         }
         ammo_consume?:number
     }
@@ -143,6 +144,19 @@ export const GasParticles={
         life_time:1.1,
         direction_variation:0.43
     } satisfies GasParticle,
+    dmr:{
+        count:3,
+        size:{
+            min:0.6,
+            max:1.4
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:1.1,
+        direction_variation:0.43
+    } satisfies GasParticle,
     automatic:{
         count:1, 
         size:{
@@ -175,6 +189,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"m9",
             fireDelay:0.2,
+            switchDelay:0.5,
             spread:0.7,
             lenght:0.8,
             ammoType:"9mm",
@@ -188,7 +203,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     radius:0.02,
                     range:90,
                     falloff:0.8,
-                    speed:31,
+                    speed:40,
                     obstacleMult:1.2,
                     tracer:tracers.small
                 }
@@ -196,6 +211,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2,
                 capacity:15,
+                extended_capacity:20,
             },
             recoil:{
                 duration:0.34,
@@ -225,6 +241,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"yellow_laser_gun",
             fireDelay:0.2,
+            switchDelay:0.5,
             spread:0.7,
             lenght:0.8,
             ammoType:"9mm",
@@ -238,7 +255,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     radius:0.02,
                     range:90,
                     falloff:0.8,
-                    speed:31,
+                    speed:40,
                     obstacleMult:1.2,
                     tracer:tracers.small,
                     reflection:BulletReflection.All
@@ -247,6 +264,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.5,
                 capacity:15,
+                extended_capacity:20,
             },
             recoil:{
                 duration:0.34,
@@ -276,6 +294,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"pfeifer_zeliska",
             fireDelay:1.4,
+            switchDelay:0.1,
             spread:0.7,
             lenght:0.8,
             ammoType:"308sub",
@@ -289,7 +308,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     radius:0.02,
                     range:130,
                     falloff:0.7,
-                    speed:38,
+                    speed:50,
                     obstacleMult:1.7,
                     tracer:tracers.large
                 }
@@ -297,6 +316,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:3.2,
                 capacity:5,
+                extended_capacity:7,
             },
             recoil:{
                 duration:1.45,
@@ -332,14 +352,15 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:8,
                     radius:0.014,
-                    range:100,
-                    speed:40,
+                    range:102,
+                    speed:41,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:2.5,
-                capacity:30
+                capacity:30,
+                extended_capacity:45,
             },
             recoil:{
                 duration:0.12,
@@ -365,7 +386,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             idString:"ar15",
             fireDelay:0.05,
             switchDelay:0.9,
-            spread:6,
+            spread:5,
             lenght:0.9,
             ammoType:"556mm",
             ammoSpawnAmount:90,
@@ -377,13 +398,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     radius:0.014,
                     range:102,
                     falloff:0.7,
-                    speed:42,
+                    speed:41,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:2.5,
-                capacity:30
+                capacity:30,
+                extended_capacity:45,
             },
             recoil:{
                 duration:0.14,
@@ -426,13 +448,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     radius:0.014,
                     range:102,
                     falloff:0.7,
-                    speed:42,
+                    speed:41,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:2.5,
-                capacity:25
+                capacity:25,
+                extended_capacity:35,
             },
             recoil:{
                 duration:0.4,
@@ -468,7 +491,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:7,
                     radius:0.014,
-                    range:92,
+                    range:95,
                     falloff:0.9,
                     speed:37,
                     tracer:tracers.medium
@@ -476,7 +499,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:2,
-                capacity:32
+                capacity:32,
+                extended_capacity:48,
             },
             recoil:{
                 duration:0.11,
@@ -498,7 +522,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             idString:"m1a1",
             fireDelay:0.1,
             switchDelay:0.9,
-            spread:4,
+            spread:6,
             lenght:0.9,
             ammoType:"45acp",
             ammoSpawnAmount:80,
@@ -506,17 +530,18 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.B,
             bullet:{
                 def:{
-                    damage:7.8,
+                    damage:7.5,
                     radius:0.014,
-                    range:100,
+                    range:102,
                     falloff:0.7,
-                    speed:40,
+                    speed:41,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:2.5,
-                capacity:40
+                capacity:40,
+                extended_capacity:50,
             },
             recoil:{
                 duration:0.14,
@@ -552,16 +577,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:6,
                     radius:0.014,
-                    range:45,
+                    range:38,
                     criticalMult:1.5,
-                    speed:40,
+                    speed:39,
                     falloff:0.7,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:1.7,
-                capacity:33
+                capacity:33,
+                extended_capacity:44,
             },
             recoil:{
                 duration:0.07,
@@ -584,7 +610,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         },
         {
-            idString:"uzi",
+            idString:"micro_uzi",
             fireDelay:0.03,
             switchDelay:0.7,
             spread:9,
@@ -592,20 +618,21 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammoType:"9mm",
             ammoSpawnAmount:96,
             class:GunClasses.SMG,
-            rank:ItemRank.C,
+            rank:ItemRank.D,
             bullet:{
                 def:{
                     damage:6,
                     radius:0.014,
-                    range:35,
-                    speed:34,
+                    range:38,
+                    speed:39,
                     falloff:0.7,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:1.7,
-                capacity:32
+                capacity:32,
+                extended_capacity:48,
             },
             recoil:{
                 duration:0.07,
@@ -630,6 +657,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"kar98k",
             fireDelay:1.2,
+            switchDelay:0.1,
             spread:0.3,
             lenght:0.9,
             ammoType:"762mm",
@@ -641,20 +669,21 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:42,
                     radius:0.02,
-                    range:110,
+                    range:115,
                     falloff:0.8,
                     criticalMult:1.1,
-                    speed:50,
+                    speed:53,
                     tracer:tracers.large
                 }
             },
             reload:{
                 delay:0.9,
                 capacity:5,
-                shotsPerReload:1,
+                extended_capacity:7,
+                reload_count:1,
                 reload_alt:{
                     delay:2.7,
-                }
+                },
             },
             recoil:{
                 duration:1.25,
@@ -680,6 +709,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"awp",
             fireDelay:1.3,
+            switchDelay:0.1,
             spread:0.3,
             lenght:0.9,
             ammoType:"762mm",
@@ -691,9 +721,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:45,
                     radius:0.025,
-                    range:115,
+                    range:120,
                     falloff:0.7,
-                    speed:55,
+                    speed:56,
                     criticalMult:1.1,
                     tracer:tracers.xl,
                     obstacleMult:1.5,
@@ -702,7 +732,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.7,
                 capacity:8,
-                shotsPerReload:8,
+                extended_capacity:10,
             },
             recoil:{
                 duration:1.37,
@@ -726,6 +756,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"awms",
             fireDelay:1.5,
+            switchDelay:0.1,
             spread:0.6,
             lenght:1,
             ammoType:"308sub",
@@ -737,10 +768,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:99,
                     radius:0.02,
-                    range:130,
+                    range:135,
                     falloff:0.7,
-                    speed:38,
-                    criticalMult:1.2,
+                    speed:45,
+                    criticalMult:1.1,
                     obstacleMult:2,
                     tracer:tracers.large
                 }
@@ -748,6 +779,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:3.9,
                 capacity:5,
+                extended_capacity:6,
             },
             recoil:{
                 duration:1.45,
@@ -772,6 +804,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"blr81",
             fireDelay:0.9,
+            switchDelay:0.1,
             spread:0.3,
             lenght:0.9,
             ammoType:"556mm",
@@ -783,8 +816,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:37,
                     radius:0.02,
-                    range:105,
-                    falloff:0.8,
+                    range:110,
+                    falloff:0.7,
                     criticalMult:1.1,
                     speed:45,
                     tracer:tracers.medium
@@ -793,6 +826,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.5,
                 capacity:3,
+                extended_capacity:4,
             },
             recoil:{
                 duration:1,
@@ -818,6 +852,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"model94",
             fireDelay:0.9,
+            switchDelay:0.1,
             spread:0.5,
             lenght:0.9,
             ammoType:"45acp",
@@ -829,8 +864,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:34,
                     radius:0.02,
-                    range:100,
-                    falloff:0.8,
+                    range:105,
+                    falloff:0.7,
                     criticalMult:1.1,
                     speed:45,
                     tracer:tracers.medium
@@ -839,7 +874,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.6,
                 capacity:8,
-                shotsPerReload:1,
+                extended_capacity:13,
+                reload_count:1,
             },
             recoil:{
                 duration:1,
@@ -864,7 +900,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"m870",
-            fireDelay:1,
+            fireDelay:1.1,
+            switchDelay:0.1,
             spread:6,
             lenght:0.9,
             ammoType:"12g",
@@ -888,7 +925,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.8,
                 capacity:5,
-                shotsPerReload:1,
+                extended_capacity:10,
+                reload_count:1,
             },
             recoil:{
                 duration:1,
@@ -911,7 +949,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"spas12",
-            fireDelay:1,
+            fireDelay:1.1,
+            switchDelay:0.1,
             spread:2.8,
             lenght:1,
             ammoType:"12g",
@@ -925,7 +964,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:6,
                     radius:0.012,
                     speed:32,
-                    range:54,
+                    range:45,
                     criticalMult:1.1,
                     falloff:0.65,
                     tracer:tracers.small
@@ -935,7 +974,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.6,
                 capacity:8,
-                shotsPerReload:1,
+                extended_capacity:11,
+                reload_count:1,
             },
             recoil:{
                 duration:1,
@@ -959,7 +999,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"hp18",
             fireDelay:0.3,
-            switchDelay:0.3,
+            switchDelay:0.5,
             spread:11,
             lenght:0.9,
             ammoType:"12g",
@@ -983,7 +1023,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.8,
                 capacity:5,
-                shotsPerReload:1,
+                extended_capacity:6,
+                reload_count:1,
             },
             recoil:{
                 duration:0.4,
@@ -1018,24 +1059,25 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.A,
             bullet:{
                 def:{
-                    damage:25,
+                    damage:23,
                     radius:0.014,
                     falloff:0.7,
-                    range:180,
-                    speed:50,
+                    range:100,
+                    speed:47,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:2.5,
-                capacity:20
+                capacity:20,
+                extended_capacity:25,
             },
             recoil:{
                 duration:0.4,
                 speed:0.75
             },
             speed_mod:0.97,
-            gasParticles:GasParticles.sniper,
+            gasParticles:GasParticles.dmr,
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
             assets:{
@@ -1063,13 +1105,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     obstacleMult:1.5,
                     radius:0.014,
                     range:100,
-                    speed:45,
+                    speed:47,
                     tracer:tracers.medium
                 }
             },
             reload:{
                 delay:5,
-                capacity:200
+                capacity:200,
+                extended_capacity:250,
             },
             recoil:{
                 duration:0.12,
@@ -1082,10 +1125,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             muzzleFlash:MuzzleFlash.normal,
             arms:WeaponsArmRig[2],
-            assets:{
-                world:"weapon_medium_world",
-                world_tint:0x3f3a2f
-            },
             image:{
                 position:v2.new(0.6,0.0),
                 rotation:0
@@ -1094,6 +1133,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"rpg7",
             fireDelay:1,
+            switchDelay:0.1,
             spread:0.2,
             lenght:1,
             ammoType:"explosive_ammo",
@@ -1151,6 +1191,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"m2_2",
             fireDelay:0.07,
+            switchDelay:1,
             spread:3,
             lenght:1,
             ammoType:"gasoline",

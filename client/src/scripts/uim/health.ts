@@ -10,8 +10,6 @@ export class HealthModule extends UIModule<Game>{
     health:number=100
     max_health:number=100
 
-    override on_dirty(): void {
-    }
     override on_signal(signal: string, content: SelfStateUpdate): void {
         if(signal==="self_state"){
             if(this.health==content.health&&this.max_health===content.max_health)return
@@ -37,5 +35,12 @@ export class HealthModule extends UIModule<Game>{
         this.bar_interior.style.width =`${p*100}%`
         this.bar_animation.style.width=`${p*100}%`
         this.bar_amount.innerText=`${this.health}/${this.max_health}`
+    }
+    override on_clear(): void {
+        this.health = 100
+        this.max_health = 100
+        this.bar_interior.style.width = "100%"
+        this.bar_animation.style.width = "100%"
+        this.bar_amount.innerText = "100/100"
     }
 }

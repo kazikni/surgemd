@@ -45,6 +45,10 @@ export class ActionsModule extends UIModule<Game> {
         }
     }
 
-    override on_dirty(): void {}
     override on_destroy(): void {}
+    override on_clear(): void {
+        this.action = undefined
+        this.text.innerText = ""
+        HideElement(this.container)
+    }
 }

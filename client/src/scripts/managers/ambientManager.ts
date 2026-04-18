@@ -1,4 +1,4 @@
-import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ManipulativeSoundInstance, ParticlesEmitter2D, RainParticle2D, random, Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ManipulativeSoundInstance, ParticlesEmitter2D, RainParticle2D, random, Sound, Tween, v2 } from "common/engine/client.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { BiomeDef } from "common/scripts/definitions/maps/base.ts";
@@ -13,6 +13,7 @@ export class AmbientManager{
     biome!:BiomeDef
     music:ManipulativeSoundInstance
     ambience:ManipulativeSoundInstance
+    deadzone_ambience:ManipulativeSoundInstance
 
     fog_color:number=0
     fog_saturate:number=1
@@ -50,6 +51,7 @@ export class AmbientManager{
 
     thunders:number=0
     rain_value:number=0
+    deadzone_ambience_sound?:Sound
 
     constructor(game:Game){
         this.game=game
@@ -150,6 +152,7 @@ export class AmbientManager{
         this.music.volume=0.4
         this.ambience=game.sounds.add_manipulative_si("ambience")
         this.ambience.volume=0.25
+        this.deadzone_ambience=game.sounds.add_manipulative_si("ambience")
         this.game.sounds.signals.on("load",async()=>{
             await this.game.resources.load_audio("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
             await this.game.resources.load_audio("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
@@ -252,6 +255,7 @@ export class AmbientManager{
         this.global_ilumination=1
 
         this.set_rain_state(0,0)
+        this.deadzone_ambience_sound=this.game.resources.get_audio("deadzone_ambience")
     }
     /*musics:string[]=[
         "game_snow_music_1",

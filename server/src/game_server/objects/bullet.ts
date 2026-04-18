@@ -229,7 +229,6 @@ export class Bullet extends ServerGameObject{
 
         const b = this.game.add_bullet(
             pos,
-            Math.atan2(newDir.y, newDir.x),
             this.def,
             this.owner,
             this.ammo?.idString,
@@ -237,10 +236,13 @@ export class Bullet extends ServerGameObject{
             this.layer,
             this.satured
         )
-
-        b.tracerAlpha/=2
-        b.damage/=2
+        b.modifiers.size=this.modifiers.size
+        b.modifiers.speed=this.modifiers.speed
+        b.tracerAlpha=this.tracerAlpha/2
+        b.damage=this.damage/2
         b.reflectionCount = this.reflectionCount + 1
+
+        b.set_direction(Math.atan2(newDir.y, newDir.x))
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)

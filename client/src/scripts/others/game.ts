@@ -614,13 +614,14 @@ export class Game extends ClientGame<GameObject>{
         super.on_update(dt)
 
         if(this.save.get_variable("sv_game_interpolation")){
-            this.global_interpolation=Numeric.dt_expo_inter(15,dt)
+            this.global_interpolation=Numeric.dt_expo_inter(20,dt)
         }else{
             this.global_interpolation=1
         }
         this.ambient.update(dt)
         this.ui.update(dt)
         this.tab.tick(dt)
+        this.dead_zone.tick(dt)
 
         if (this.cam_type === 1) {
             const move = this.input.movement

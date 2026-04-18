@@ -9,8 +9,6 @@ export class HandInfoModule extends UIModule<Game>{
     count!:HTMLSpanElement
     consume_type!:HTMLImageElement
 
-    override on_dirty(): void {
-    }
     override on_signal(signal: string, content: SelfStateUpdate): void {
         if(signal==="self_state"){
             if(content.dirty.inventory.hand)this.render()
@@ -39,5 +37,13 @@ export class HandInfoModule extends UIModule<Game>{
             this.container.style.visibility="hidden"
             this.container.style.display="none"
         }
+    }
+    override on_clear(): void {
+        this.count.innerText = ""
+        this.consume_type.src = ""
+        this.consume_type.style.display = "none"
+
+        this.container.style.visibility = "hidden"
+        this.container.style.display = "none"
     }
 }

@@ -32,7 +32,8 @@ export class Explosion extends ServerGameObject{
             this.manager.cells.updateObject(this)
             if(this.defs.bullet){
                 for(let i=0;i<this.defs.bullet.count;i++){
-                    this.game.add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner,undefined,this.defs)
+                    const b=this.game.add_bullet(this.position,this.defs.bullet.def,this.owner,undefined,this.defs)
+                    b.set_direction(random.rad())
                 }
             }
             if(this.defs.projectiles){

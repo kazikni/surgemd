@@ -8,16 +8,21 @@ __                                                                              
 * Doors
 __                                                                                                      __
 ### Menu
-
+* Customizable UI
 __                                                                                                      __
 ### Items
 * Casing Sounds
 * Humans Drop Consumibles After Use
 * More Casing Particles
 * M1A1 - 45acp Tommy AR
+* Pygmy Necklance
+* Luck Coin
+* Rare Projectile
+* Ghost Ammo
+* Biggerst Maganize
 __                                                                                                      __
 ### Others
-
+* Deadzone Ambience
 __                                                                                                      __
 ## Changes
 __                                                                                                      __

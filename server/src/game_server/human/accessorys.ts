@@ -30,6 +30,14 @@ export class AccessorysManager{
         }
         return false
     }
+    has_property(property:string):boolean{
+        for(const s of this.slots){
+            if(s.item&&(s.item.property??[]).includes(property)){
+                return true
+            }
+        }
+        return false
+    }
     call_event(name:string,e:any){
         for(const s of this.slots){
             if(s.item&&s.item.events?.[name]){
@@ -53,6 +61,9 @@ export class AccessorysManager{
                 s.item=def
                 s.droppable=droppable
                 s.changable=changable
+
+                if(ret&&ret.events&&ret.events["drop"])ret.events["drop"]({def:ret,user:this.user})
+                if(def.events&&def.events["pickup"])def.events["pickup"]({def:def,user:this.user})
                 return [ret,true]
             }
         }

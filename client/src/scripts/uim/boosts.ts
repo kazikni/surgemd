@@ -11,8 +11,6 @@ export class BoostModule extends UIModule<Game>{
     max_boost:number=100
     boost_def:BoostDef=Boosts[BoostType.Null]
         
-    override on_dirty(): void {
-    }
     override on_signal(signal: string, content: SelfStateUpdate): void {
         if(signal==="self_state"){
             if(this.boost==content.boost&&this.max_boost===content.max_boost&&this.boost_def.type===content.boost_type)return
@@ -39,5 +37,14 @@ export class BoostModule extends UIModule<Game>{
         this.bar_interior.style.width =`${p*100}%`
         this.bar_amount.innerText=`${this.boost}/${this.max_boost}`
         this.bar_interior.style.backgroundColor=this.boost_def.color
+    }
+    override on_clear(): void {
+        this.boost = 0
+        this.max_boost = 100
+        this.boost_def = Boosts[BoostType.Null]
+
+        this.bar_interior.style.width = "0%"
+        this.bar_amount.innerText = "0/100"
+        this.bar_interior.style.backgroundColor = this.boost_def.color
     }
 }

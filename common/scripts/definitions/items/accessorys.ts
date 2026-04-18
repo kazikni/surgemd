@@ -6,6 +6,7 @@ import { InventoryItemType } from "../utils.ts";
 
 export interface AccessoryDef extends Definition{
     rank:ItemRank
+    property?:string[]
     modifiers?:Partial<HumanModifiers>
     events?:Record<string,(e:any)=>void>
     item_type?:InventoryItemType.accessory
@@ -29,19 +30,21 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
-                    let b=e.user.game.add_bullet(e.position,e.angle-0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
+                    let b=e.user.game.add_bullet(e.position,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
                     b.damage*=0.2
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
+                    b.set_direction(e.angle-0.02)
 
-                    b=e.user.game.add_bullet(e.position,e.angle+0.02,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
+                    b=e.user.game.add_bullet(e.position,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
                     b.damage*=0.2
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
+                    b.set_direction(e.angle+0.02)
                 }
             },
         },
@@ -61,9 +64,8 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     if(e.item.ammo===0){
-                        e.bullet.damage*=1.4
+                        e.bullet.damage*=1.5
                         e.bullet.modifiers.size*=1.75
-
                         e.bullet.set_color(true)
                     }
                 }
@@ -87,7 +89,8 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             idString:"pygmy_necklace",
             rank:ItemRank.A,
             modifiers:{
-                size:0.75
+                size:0.75,
+                speed:1.1
             },
         },
         {
@@ -102,12 +105,38 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "damage":(e)=>{
-                    e.player.health_data.health+=20
                     e.player.side_effect({
                         type:SideEffectType.AddEffect,
-                        duration:4,
+                        duration:2,
                         effect:"nature_help"
                     })
+                }
+            }
+        },
+
+        {
+            idString:"ghost_ammo",
+            rank:ItemRank.A,
+            property:["infinity_ammo"],
+            events:{
+                "pickup":(e)=>{
+                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                },
+                "drop":(e)=>{
+                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                }
+            }
+        },
+        {
+            idString:"biggest_magazine",
+            rank:ItemRank.A,
+            property:["extended_capacity"],
+            events:{
+                "pickup":(e)=>{
+                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                },
+                "drop":(e)=>{
+                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
                 }
             }
         },

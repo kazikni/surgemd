@@ -10,9 +10,9 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
-import { PlayerAnimationType } from "common/scripts/others/constants.ts";
+import { GameObjectType, PlayerAnimationType } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { Angle, CircleHitbox2D, getPatterningShape, Numeric, random, Slot, v2 } from "common/engine/core.ts";
+import { Angle, CircleHitbox2D, getPatterningShape, Numeric, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { type Loot } from "../objects/loot.ts";
 import { StaticBody } from "../objects/static_body.ts";
@@ -41,6 +41,9 @@ export class GunItem extends GunItemBase implements LItem{
     ammo:number=0
     reloading=false
     dd:boolean=false
+    get_capacity():number{
+        return (this.inventory.extended_capacity?(this.def.reload?.extended_capacity??this.def.reload?.capacity):this.def.reload?.capacity)??0
+    }
     on_use(_user: Human, _slot?: Slot<LItem>): void {
         
     }
@@ -77,7 +80,7 @@ export class GunItem extends GunItemBase implements LItem{
     }
     reload(user:Human){
         if(!this.def.reload||user.health_data.downed)return
-        if(this.ammo>=this.def.reload.capacity||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammoType])||this.use_delay>0){
+        if(this.ammo>=this.get_capacity()||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammoType])||this.use_delay>0){
             this.reloading=false
             return
         }
@@ -89,6 +92,43 @@ export class GunItem extends GunItemBase implements LItem{
         }
 
         user.actions.play(new ReloadAction(this))
+    }
+    private clip_muzzle(user: Human, muzzle: Vec2): Vec2 {
+        const start = user.position
+        let bestDist = v2.distance(start, muzzle)
+        const objs = user.manager.cells.ray(
+            start,
+            muzzle,
+            user.layer
+        )
+
+        for(const obj of objs){
+            if(obj.number_type!==GameObjectType.Obstacle||obj.number_type!==GameObjectType.Building)continue
+
+            const body = obj as StaticBody
+            const hit = body.hitbox.overlapLine(
+                start,
+                muzzle
+            )
+
+            if(!hit)continue
+
+            const dist = v2.distance(
+                start,
+                hit.point
+            )
+
+            if(dist < bestDist){
+                bestDist = dist - 0.03
+            }
+        }
+        if(bestDist < 0)bestDist = 0
+
+        const ret=v2.sub(muzzle,start)
+        v2m.normalizeSafe(ret,v2(1,0))
+        v2m.scale(ret,ret,bestDist)
+        v2m.add(ret,start,ret)
+        return ret
     }
     shot(user:Human,consume:boolean=true){
         user.actions.cancel()
@@ -102,13 +142,15 @@ export class GunItem extends GunItemBase implements LItem{
             if(this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload!.ammo_consume??1))
             if(this.def.mana_consume)user.health_data.boost=Math.max(user.health_data.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
         }
-        const position=v2.add(
-            user.position,
-            v2.rotate_RadAngle(v2(
-              this.def.lenght,
-              this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0
-            ),user.physical_data.rotation)
+
+        const barrel_position=v2(
+            this.def.lenght,
+            this.def.dual_from
+                ? (this.dd ? -this.def.dual_offset : this.def.dual_offset)
+                : 0
         )
+        const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
+        const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
         if(this.def.dual_from){
             this.dd=!this.dd
         }
@@ -121,7 +163,7 @@ export class GunItem extends GunItemBase implements LItem{
                   ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
                 }
                 const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
-                const b=user.game.add_bullet(pos,ang,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
+                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
                 b.modifiers={
                     speed:user.modifiers.bullet_speed,
                     size:user.modifiers.bullet_size,
@@ -357,6 +399,7 @@ export class GInventory extends GInventoryBase<LItem>{
     owner:Human
 
     infinity_ammo:boolean=false
+    extended_capacity:boolean=false
 
     droppable:InventoryDroppable={
         backpack:true,

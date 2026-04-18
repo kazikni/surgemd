@@ -22,7 +22,8 @@ export const NormalMap:MapDef={
     loot_tables:{
         //Guns Quality
         "common_guns":[
-            {item:"m9",weight:1},
+            {item:"m9",weight:10},
+            {item:"micro_uzi",weight:3},
         ],
         "uncommon_guns":[
             {item:"mp5",weight:1.4},

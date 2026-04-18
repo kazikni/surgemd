@@ -56,6 +56,13 @@ export class DeadZoneManager{
     }
     color:Color=ColorM.hex("#21f2")
     tick(dt:number){
+        if(this.game.active_entity){
+            if(this.hitbox.pointInside(this.game.active_entity.position)){
+                this.game.ambient.deadzone_ambience.set(null)
+            }else{
+                this.game.ambient.deadzone_ambience.set(this.game.ambient.deadzone_ambience_sound,true)
+            }
+        }
     }
     update_from_data(data:DeadZoneUpdate){
         this.set_current(data.position,data.radius)

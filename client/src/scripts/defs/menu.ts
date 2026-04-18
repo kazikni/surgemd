@@ -612,14 +612,108 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
             }
         }
     }else{
-        play_options.push({
-            type:"button",
-            id:"play-online",
-            name:"Play",
-            subtab:"play_online"
-        })
+        play_options.push(
+            {
+                type:"button",
+                id:"play-online",
+                name:"Play",
+                subtab:"play_online"
+            },
+            {
+                type:"button",
+                id:"group",
+                name:"Group",
+                subtab:"group"
+            }
+        )
         play_subtabs["play_online"]={
             generate:make_menu_modes(menu.api_settings.modes)
+        }
+        play_subtabs["group"]={
+            generate:(p,m)=>{
+                if(!m.group_state){
+                    p.innerHTML=`
+<div><input class="input-green" placeholder="Group ID" id="insert-group-id"></input></div>
+<button class="btn-green" id="btn-create-group" value="{}">Create</input>
+<button class="btn-green" id="btn-join-game" value="{}">Join</input>
+`
+                    const id_input=p.querySelector("#insert-group-id") as HTMLInputElement
+
+                    const create_btn=p.querySelector("#btn-create-group") as HTMLButtonElement
+                    const joinBtn=p.querySelector("#btn-join-game") as HTMLButtonElement
+                    create_btn.onclick=() => {
+                        m.create_group()
+                    }
+                    joinBtn.onclick=()=>{
+                        if(!id_input.value.trim())return
+                        m.join_group(id_input.value.trim())
+                    }
+                }else{
+                    const g=m.group_state
+                    const isLeader=g.self===g.leader
+
+                    p.innerHTML=`
+                    <h3>Group ${g.code}
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+<button id="btn-copy-code" class="btn-blue">Copy Code</button>
+${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Link</button></h3>`}
+</div>
+<p>Leader:${isLeader?"You":"Player "+g.leader}</p>
+<div class="settings-row">
+    <span>Locked</span>
+    ${
+        isLeader
+        ? `<input
+            type="checkbox"
+            id="group-lock-toggle"
+            class="checkbox-blue"
+            ${g.locked?"checked":""}
+        >`
+        : `<span>${g.locked?"Yes":"No"}</span>`
+    }
+</div>
+
+<div class="settings-row">
+    <span>Autofill</span>
+    ${
+        isLeader
+        ? `<input
+            type="checkbox"
+            id="group-autofill-toggle"
+            class="checkbox-blue"
+            ${g.autofill?"checked":""}
+        >`
+        : `<span>${g.autofill?"On":"Off"}</span>`
+    }
+</div>
+<button id="btn-leave" class="btn-red">Leave</button>`;
+                    (p.querySelector("#btn-leave") as HTMLButtonElement).onclick=()=>m.leave_group();
+                    (p.querySelector("#btn-copy-code") as HTMLButtonElement).onclick=async()=>{
+                        await navigator.clipboard.writeText(g.code)
+                        alert("Group code copied.")
+                    }
+                    if(!sandbox_version){
+                        (p.querySelector("#btn-copy-link") as HTMLButtonElement).onclick=async()=>{
+                            await navigator.clipboard.writeText(`${location.origin}/?group-id=${g.code}`)
+                            alert("Invite link copied.")
+                        }
+                    }
+                    if(isLeader){
+                        const lockToggle=p.querySelector("#group-lock-toggle") as HTMLInputElement
+                        const fillToggle= p.querySelector("#group-autofill-toggle") as HTMLInputElement
+                        lockToggle.onchange=()=>{
+                            const value=lockToggle.checked
+                            g.locked=value
+                            m.team_ws?.send(JSON.stringify({type:"lock",value }))
+                        }
+                        fillToggle.onchange=()=>{
+                            const value=fillToggle.checked
+                            g.autofill=value
+                            m.team_ws?.send(JSON.stringify({type:"autofill",value}))
+                        }
+                    }
+                }
+            }
         }
     }
     play_options.push(

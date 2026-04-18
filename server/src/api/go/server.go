@@ -29,7 +29,7 @@ type ApiServer struct {
 		Data            []NewsData
 		ExpandedContent map[string]string
 	}
-	Teams map[string]*Team
+	Groups map[string]*Group
 }
 
 func (s *ApiServer) corsMiddleware(next http.Handler) http.Handler {
@@ -60,6 +60,7 @@ func NewApiServer(dbFile string, cfg *Config) (*ApiServer, error) {
 		accounts_db: accounts_db,
 		shopSkins:   cfg.Shop.Skins,
 		Config:      cfg,
+		Groups:      make(map[string]*Group),
 	}
 	err = server.DBInit()
 	server.load_news()
@@ -188,9 +189,9 @@ func (s *ApiServer) HandleFunctions() {
 	news_r.HandleFunc("/get", s.handleGetNewsDefs)
 	news_r.HandleFunc("/expanded/{id}", s.handleGetNewsExpanded)
 
-	team_r := r.PathPrefix("/team").Subrouter()
-	team_r.HandleFunc("/connect", s.handleTeamConnect).Methods("POST")
-	team_r.HandleFunc("/ws/{id}/{player}", s.handleTeamWS).Methods("POST")
+	group_r := r.PathPrefix("/group").Subrouter()
+	group_r.HandleFunc("/create", s.handleGroupCreateWS)
+	group_r.HandleFunc("/join/{code}", s.handleGroupJoinWS)
 
 	forum_r := r.PathPrefix("/forum").Subrouter()
 	forum_r.HandleFunc("/create-post", s.handleCreatePost)

@@ -1009,6 +1009,14 @@ export class Human extends MovingBody{
                 pos,
                 this.health_data.boost === 0
             )
+            this.add_damage_splash(
+                params.owner,
+                totalDamage,
+                true,
+                params.critical,
+                pos,
+                this.health_data.boost === 0
+            )
             if (this.health_data.boost === 0) {
                 this.health_data.invensibility_time = 0.35
                 this.health_data.boost_def = Boosts[BoostType.Null]
@@ -1039,34 +1047,53 @@ export class Human extends MovingBody{
     }
     add_damage_splash(owner: Human | undefined,count: number,shield: boolean,critical: boolean,position: Vec2,shield_break: boolean = false){
         const splash: DamageSplash = {
-            count: count,
+            count,
             shield,
             critical,
             position,
+
             taker: this.id,
             taker_layer: this.layer,
-            shield_break
+
+            shield_break,
         }
+
         this.splashes.push(splash)
-        if (owner && owner.is_player && owner.id !== this.id){
-            let merged = false
-            for (const ds of owner.splashes){
-                if (ds.shield === splash.shield && ds.taker === splash.taker){
-                    ds.critical = ds.critical || splash.critical
-                    if (ds.shield){
-                        ds.shield_break = ds.shield_break || splash.shield_break
+        if(owner&&owner.is_player&&owner.id !== this.id){
+            owner.splashes.push({
+                ...splash
+            })
+            owner.splash_delay = 5
+        }
+    }
+    merge_damage_splashes(){
+        if(this.splashes.length <= 1) return
+        const merged: DamageSplash[] = []
+        for(const splash of this.splashes){
+            let found = false
+            for(const m of merged){
+                const same_taker=m.taker===splash.taker&&m.taker_layer===splash.taker_layer
+                const same_damage_type=m.shield === splash.shield
+                if(same_taker&&same_damage_type){
+                    m.count += splash.count
+                    if(splash.critical){
+                        m.critical = true
                     }
-                    ds.count += splash.count
-                    merged = true
+                    if(splash.shield_break){
+                        m.shield_break = true
+                    }
+                    found = true
                     break
                 }
             }
-            if (!merged){
-                owner.splashes.push(splash)
-            } else {
-                owner.splash_delay = 4
+            if(!found){
+                merged.push({
+                    ...splash
+                })
             }
         }
+
+        this.splashes = merged
     }
     down(params:DamageParams){
         if(this.health_data.downed)return

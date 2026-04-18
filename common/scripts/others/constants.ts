@@ -10,13 +10,13 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.4,
+            ammo:0.42,
             weapon:0.65,
             accessory:0.65,
-            consumible:0.4,
-            equipament:0.4,
-            grenade:0.4,
-            scopes:0.4,
+            consumible:0.42,
+            equipament:0.42,
+            grenade:0.42,
+            scopes:0.42,
         }
     },
     collision:{

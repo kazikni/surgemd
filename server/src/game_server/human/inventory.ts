@@ -730,8 +730,9 @@ export class GInventory extends GInventoryBase<LItem>{
             }
         }
         if(preset.accessorys){
-            for(const s in preset.accessorys){
-                this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(preset.accessorys[s]))
+            for(const s of preset.accessorys){
+                const w=random.weight2(s)
+                if(w)this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(w.item),w.droppable,w.droppable)
             }
         }
         if(preset.hand){

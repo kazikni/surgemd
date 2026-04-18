@@ -58,6 +58,7 @@ export class PlayerClient extends PlayerConnManager{
             up.priv.self_state=this.human.self_state(this.human.is_new)
             if(this.human instanceof Player){
                 if(this.human.splash_delay<=0){
+                    this.human.merge_damage_splashes()
                     up.priv.splashes=this.human.splashes
                     this.human.splashes=[]
                 }else{

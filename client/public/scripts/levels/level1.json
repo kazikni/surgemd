@@ -261,9 +261,6 @@
         }
     },
     "player":{
-        "modifiers":{
-            "health":2
-        },
         "inventory":{
             "hand":1,
             "team":0,
@@ -295,22 +292,30 @@
                 [{"item":"mirv_grenade","count":4,"weight":1}],
                 [{"item":"red_flare","count":1,"weight":1}]
             ],
-            "aitems":{
-                "762mm":300,
-                "556mm":300,
-                "9mm":400,
-                "12g":90,
-                "308sub":40
-            },
             "iitems":[
                 "scope_2",
                 "scope_3",
                 "scope_4"
             ],
-            "accessorys":{
-                "0":"bullet_breaker_barrel",
-                "1":"liquid_insanity"
-            },
+            "accessorys":[
+                [{
+                    "item":"omni_necklance",
+                    "weight":1,
+                    "droppable":false
+                }],
+                [
+                    {
+                        "item":"bullet_breaker_barrel",
+                        "weight":1,
+                        "droppable":false
+                    },
+                    {
+                        "item":"high_quality_projectiles",
+                        "weight":1,
+                        "droppable":false
+                    }
+                ]
+            ],
             "boosts":[
                 {"weight":1,"boost_type":5,"boost":1}
             ]

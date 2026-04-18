@@ -247,7 +247,7 @@ export class Loot extends GameObject{
                     break
             }
             if(this.is_new){
-                v2m.single(this.container.scale,0.05)
+                v2m.single(this.container.scale,0.02)
                 this.game.add_tween({
                     duration:3,
                     target:this.container.scale,

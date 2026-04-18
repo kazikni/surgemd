@@ -158,7 +158,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             SyncedParticle
         ])
 
-        this.ntps=32
+        this.ntps=35
         this.main_config=main_config
 
         for(const i of LayersL){

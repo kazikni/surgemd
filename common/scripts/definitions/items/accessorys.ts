@@ -63,7 +63,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
-                    if(e.item.ammo===0){
+                    if(e.item.ammo===0||e.item.ammo===e.item.get_capacity()-1){
                         e.bullet.damage*=1.5
                         e.bullet.modifiers.size*=1.75
                         e.bullet.set_color(true)
@@ -137,6 +137,33 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 },
                 "drop":(e)=>{
                     e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                }
+            }
+        },
+
+        {
+            idString:"omni_necklance",
+            rank:ItemRank.S,
+            property:["extended_capacity","infinity_ammo"],
+            modifiers:{
+                health:2
+            },
+            events:{
+                "kill":(e)=>{
+                    e.owner.health_data.health+=20
+                    e.owner.side_effect({
+                        type:SideEffectType.AddEffect,
+                        duration:4,
+                        effect:"kill_haste"
+                    })
+                },
+                "pickup":(e)=>{
+                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                },
+                "drop":(e)=>{
+                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
                 }
             }
         },

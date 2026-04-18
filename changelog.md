@@ -11,6 +11,7 @@ __                                                                              
 * Customizable UI
 __                                                                                                      __
 ### Items
+* *Omni Necklance*
 * Casing Sounds
 * Humans Drop Consumibles After Use
 * More Casing Particles

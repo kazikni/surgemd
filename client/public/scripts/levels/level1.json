@@ -189,6 +189,7 @@
                         {"item":"spas12","weight":1},
                         {"item":"kar98k","weight":1},
                         {"item":"awp","weight":0.5},
+                        {"item":"m2_2","weight":0.5},
                         {"item":"pkp","weight":0.1},
                         {"item":"awms","weight":0.1}
                     ],
@@ -282,8 +283,9 @@
             ],
             "gun2":[
                 {"item":"pkp","weight":30},
+                {"item":"m2_2","weight":10},
                 {"item":"awms","weight":10},
-                {"item":"awp","weight":5}
+                {"item":"awp","weight":10}
             ],
             "items":[
                 [{"item":"bandage","count":15,"weight":1}],

@@ -44,9 +44,9 @@ export const NormalMap:MapDef={
         "mythic_guns":[
             {item:"sr25",weight:15},
             {item:"vector",weight:15},
+            {item:"m2_2",weight:10},
             {item:"kar98k",weight:7},
             {item:"awp",weight:1},
-            //{item:"m2_2",weight:0.1},
         ],
         "legendary_guns":[
             {item:"pfeifer_zeliska",weight:10},

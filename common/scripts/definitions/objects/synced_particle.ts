@@ -1,12 +1,22 @@
-import { Definition, Definitions, FrameDef } from "../../../engine/core.ts";
+import { CircleHitbox2D, Definition, Definitions, FrameDef, Hitbox2D, v2 } from "../../../engine/core.ts";
+import { SideEffect, SideEffectType } from "../player/effects.ts";
 export interface SyncedParticleDef extends Definition{
     frame:FrameDef
     lifetime:number
+    action_time?:number
+    side_effect?:SideEffect[]
+    no_hit_owner?:boolean
+    hitbox?:Hitbox2D
     movement?:({
         type:"walk"
         velocity:{
             min:number
             max:number
+            decay?:number
+        }
+    }|{
+        type:"direction"
+        velocity:{
             decay?:number
         }
     })&{
@@ -57,8 +67,8 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                     decay:0.1
                 },
                 angular:{
-                    min:0.1,
-                    max:0.6
+                    min:0.6,
+                    max:2
                 },
             },
             animation:{
@@ -97,8 +107,8 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                     decay:1.7
                 },
                 angular:{
-                    min:0.1,
-                    max:0.6
+                    min:0.6,
+                    max:2
                 },
             },
             animation:{
@@ -107,6 +117,60 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                     alpha:{
                         to:0,
                         duration:1,
+                    },
+                }
+            }
+        },
+
+        {
+            idString:"m2_2_fire",
+            lifetime:1.5,
+            no_hit_owner:true,
+            hitbox:new CircleHitbox2D(v2.zero,0.5),
+            side_effect:[
+                {
+                    type:SideEffectType.AddEffect,
+                    duration:5,
+                    effect:"fire"
+                },
+                {
+                    type:SideEffectType.Damage,
+                    amount:1.5,
+                    obstacle_mult:1.5
+                }
+            ],
+            frame:{
+                image:"smoke_particle",
+                scale:0.01,
+                tint:0xe68302
+            },
+            movement:{
+                type:"direction",
+                velocity:{
+                    decay:1.5
+                },
+                angular:{
+                    min:5,
+                    max:10
+                },
+            },
+            animation:{
+                spawn:{
+                    alpha:{
+                        from:0,
+                        to:0.7,
+                        duration:0.2,
+                    },
+                    scale:{
+                        to:1,
+                        duration:0.5,
+                    }
+                },
+                destroy:{
+                    time:1,
+                    alpha:{
+                        to:0,
+                        duration:0.3,
                     },
                 }
             }

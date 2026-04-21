@@ -32,12 +32,15 @@ export type SideEffect=({
     type:SideEffectType.AddEffect
     effect:string
     duration:number
+    merge?:boolean
 }|{
     type:SideEffectType.Modify,
     modify:Partial<HumanModifiers>
 }|{
-    type:SideEffectType.Damage,
+    type:SideEffectType.Damage
     amount:number
+    piercing?:boolean
+    obstacle_mult?:number
 }|{
     type:SideEffectType.Heal,
     health?:{
@@ -71,7 +74,8 @@ Effects.insert(
         side_effects:[
             {
                 type:SideEffectType.Damage,
-                amount:4
+                amount:4,
+                piercing:true,
             },
         ],
     },

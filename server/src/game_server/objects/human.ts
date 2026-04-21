@@ -354,12 +354,16 @@ export class Human extends MovingBody{
             )
         }
     }
-    side_effect(sf:SideEffect){
+    side_effect(sf:SideEffect,owner?:Human){
         switch(sf.type){
             case SideEffectType.AddEffect:{
                 const def=Effects.getFromString(sf.effect)
                 if(this.effects.has(def.idNumber!)){
-                    this.effects.get(def.idNumber!)!.time+=sf.duration
+                    if(sf.merge){
+                        this.effects.get(def.idNumber!)!.time+=sf.duration
+                    }else{
+                        this.effects.get(def.idNumber!)!.time=sf.duration
+                    }
                 }else{
                     this.effects.set(def.idNumber!,{
                         effect:def,
@@ -371,12 +375,21 @@ export class Human extends MovingBody{
                 break
             }
             case SideEffectType.Damage:
-                this.piercing_damage({
+                if(sf.piercing)this.piercing_damage({
                     amount:sf.amount,
                     critical:false,
                     position:this.position,
                     reason:DamageReason.SideEffect,
                     direction:0,
+                    owner:owner
+                })
+                else this.damage({
+                    amount:sf.amount,
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.SideEffect,
+                    direction:0,
+                    owner:owner
                 })
                 break
             case SideEffectType.Heal:
@@ -573,7 +586,7 @@ export class Human extends MovingBody{
     }
 
     _can_interact=true
-    override on_collided(obj: ServerGameObject): void {
+    override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Obstacle:
             case GameObjectType.Building:{

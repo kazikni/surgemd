@@ -80,7 +80,7 @@ export class Creature extends MovingBody {
             this.kill()
         }
     }
-    override on_collided(obj: ServerGameObject) {
+    override on_collided(obj: ServerGameObject,_dt:number) {
         this.def.on_collided?.(obj, false)
     }
     override net_update(): void {

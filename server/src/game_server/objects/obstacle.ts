@@ -8,6 +8,7 @@ import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { DamageParams } from "../others/utils.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Loot } from "./loot.ts";
+import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
@@ -320,6 +321,38 @@ export class Obstacle extends StaticBody{
             this.physical_data.dirty_part=true
 
             this.manager.cells.updateObject(this)
+        }
+    }
+    override side_effect(sf:SideEffect,owner?:Human){
+        switch(sf.type){
+            /*case SideEffectType.AddEffect:{
+                const def=Effects.getFromString(sf.effect)
+                if(this.effects.has(def.idNumber!)){
+                    if(sf.merge){
+                        this.effects.get(def.idNumber!)!.time+=sf.duration
+                    }else{
+                        this.effects.get(def.idNumber!)!.time=sf.duration
+                    }
+                }else{
+                    this.effects.set(def.idNumber!,{
+                        effect:def,
+                        tick_time:0,
+                        time:sf.duration
+                    })
+                    this.effects_dirty=true
+                }
+                break
+            }*/
+            case SideEffectType.Damage:
+                this.damage({
+                    amount:sf.amount*(sf.obstacle_mult??1),
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.SideEffect,
+                    direction:0,
+                    owner:owner
+                })
+                break
         }
     }
     override damage(params:DamageParams){

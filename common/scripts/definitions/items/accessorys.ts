@@ -159,7 +159,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.S,
             property:["extended_capacity","infinity_ammo"],
             modifiers:{
-                health:2
+                health:2,
             },
             events:{
                 "kill":(e)=>{

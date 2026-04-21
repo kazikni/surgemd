@@ -1,4 +1,4 @@
-import { DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, mergeDeep, MinMax1, Random1, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponRig, WeaponAssets} from "../../others/item.ts";
 import { BulletDef, BulletReflection, InventoryItemType } from "../utils.ts";
 export type GunDef={
@@ -11,6 +11,11 @@ export type GunDef={
         count?:number
         angular_speed?:number
         speed?:number
+    }
+    synsed_particle?:{
+        def:string
+        count?:number
+        speed?:Random1
     }
     alt_func?:GunAltFunc
     mana_consume?:number
@@ -1072,7 +1077,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"pkp",
             fireDelay:0.1,
-            switchDelay:0.6,
+            switchDelay:1,
             spread:5.5,
             lenght:0.9,
             ammoType:"762mm",
@@ -1168,44 +1173,27 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"m2_2",
-            fireDelay:0.07,
+            fireDelay:0.1,
             switchDelay:1,
-            spread:3,
+            spread:10,
             lenght:1,
             ammoType:"gasoline",
             fireMode:FireMode.Auto,
             class:GunClasses.Miscellaneous,
             rank:ItemRank.A,
-            ammoSpawnAmount:15.2,
-            bullet:{
-                def:{
-                    damage:1,
-                    effect:[{
-                        id:"fire",
-                        time:5
-                    }],
-                    range:28,
-                    falloff:0.4,
-                    speed:30,
-                    criticalMult:4,
-                    obstacleMult:5,
-                    reflection:BulletReflection.None,
-                    tracer:{
-                        height:6,
-                        width:6,
-                        proj:{
-                            img:0,
-                            height:1,
-                            width:1
-                        },
-                    },
+            ammoSpawnAmount:15,
+            synsed_particle:{
+                count:2,
+                def:"m2_2_fire",
+                speed:{
+                    min:10,
+                    max:20
                 },
-                count:3
             },
             reload:{
                 delay:5,
-                capacity:7.6,
-                ammo_consume:0.03,
+                capacity:5,
+                ammo_consume:0.05,
             },
             recoil:{
                 duration:1.45,

@@ -152,6 +152,7 @@ export class GunItem extends GunItemBase implements LItem{
         )
         const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
         const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
+
         if(this.def.dual_from){
             this.dd=!this.dd
         }
@@ -161,7 +162,7 @@ export class GunItem extends GunItemBase implements LItem{
             for(let i=0;i<bc;i++){
                 let ang=user.physical_data.rotation
                 if(this.def.spread){
-                  ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
+                    ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
                 }
                 const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
                 const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
@@ -171,6 +172,23 @@ export class GunItem extends GunItemBase implements LItem{
                 }
                 b.set_direction(ang)
                 user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,position:pos})
+            }
+        }
+        if(this.def.synsed_particle){
+            const scc=this.def.synsed_particle.count??1
+            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??1)
+            const pdef=user.game.definitions.synced_particle.getFromString(this.def.synsed_particle.def)
+
+            for(let i=0;i<scc;i++){
+                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
+                const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
+                if(this.def.synsed_particle.speed){
+                    let ang=user.physical_data.rotation
+                    if(this.def.spread){
+                        ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
+                    }
+                    part.push(random.random1(this.def.synsed_particle.speed),ang)
+                }
             }
         }
         if(this.def.recoil){
@@ -684,6 +702,12 @@ export class GInventory extends GInventoryBase<LItem>{
         }
     }
     load_preset(preset:InventoryPreset){
+        if(preset.accessorys){
+            for(const s of preset.accessorys){
+                const w=random.weight2(s)
+                if(w)this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(w.item),w.droppable,w.droppable)
+            }
+        }
         if(preset.helmet){
             const choose=random.weight2(preset.helmet)
             if(choose&&choose.item){
@@ -714,13 +738,13 @@ export class GInventory extends GInventoryBase<LItem>{
             const choose=random.weight2(preset.gun1)!
             this.set_weapon(1,this.owner.game.definitions.guns.getFromString(choose.item))
             const wep=this.weapons[1] as GunItem
-            wep.ammo=wep.def.reload?.capacity??0
+            wep.ammo=wep.get_capacity()
         }
         if(preset.gun2){
             const choose=random.weight2(preset.gun2)!
             this.set_weapon(2,this.owner.game.definitions.guns.getFromString(choose.item))
             const wep=this.weapons[2] as GunItem
-            wep.ammo=wep.def.reload?.capacity??0
+            wep.ammo=wep.get_capacity()
         }
         if(preset.aitems){
             for(const o of Object.keys(preset.aitems)){
@@ -734,12 +758,6 @@ export class GInventory extends GInventoryBase<LItem>{
             for(const s of preset.iitems){
                 const scope=this.owner.game.definitions.scopes.getFromString(s)
                 this.give_item(scope,1)
-            }
-        }
-        if(preset.accessorys){
-            for(const s of preset.accessorys){
-                const w=random.weight2(s)
-                if(w)this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(w.item),w.droppable,w.droppable)
             }
         }
         if(preset.hand){

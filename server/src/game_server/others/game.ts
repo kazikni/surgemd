@@ -516,8 +516,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const p=this.scene_2d.objects.add_object(new Parachute(),layer,undefined,{position,obstacle}) as Parachute
         return p
     }
-    add_synced_particle(position:Vec2,def:SyncedParticleDef,layer=Layers.Normal):SyncedParticle{
-        const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position}) as SyncedParticle
+    add_synced_particle(position:Vec2,def:SyncedParticleDef,owner?:Human,layer=Layers.Normal):SyncedParticle{
+        const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position,owner}) as SyncedParticle
         return p
     }
     override handle_connection(client:Client,username:string){

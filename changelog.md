@@ -9,6 +9,7 @@ __                                                                              
 __                                                                                                      __
 ### Menu
 * Customizable UI
+* Map Pings
 __                                                                                                      __
 ### Items
 * *Omni Necklance*
@@ -30,6 +31,7 @@ __                                                                              
 __                                                                                                      __
 ### Items
 * Rework Casing Particles
+* Rework M2-2
 __                                                                                                      __
 ### Others
 * shield damage is increased by 25%.

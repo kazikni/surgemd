@@ -2,6 +2,8 @@ import { Hitbox2D } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { DamageParams } from "../others/utils.ts";
+import { type Human } from "./human.ts";
+import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 export type StaticBodyPhysicalData={
     spawn_hitbox:Hitbox2D
     hitbox:Hitbox2D
@@ -23,4 +25,5 @@ export abstract class StaticBody extends ServerGameObject{
     }
 
     damage(_params:DamageParams){}
+    side_effect(_sf:SideEffect,_owner?:Human){}
 }

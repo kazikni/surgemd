@@ -33,10 +33,10 @@ export abstract class Projectile extends MovingBody{
         super.push(speed,dir)
         this.physical_data.angular_velocity=Numeric.clamp(this.physical_data.angular_velocity+angular_velocity,-40,40)
     }
-    override on_collided(obj: ServerGameObject): void {
-        super.on_collided(obj)
+    override on_collided(obj: ServerGameObject,dt:number): void {
+        super.on_collided(obj,dt)
         if(this.projectile_data.collision_damage&&[GameObjectType.Human,GameObjectType.Obstacle].includes(obj.number_type)){
-            (obj as Human|Obstacle).damage({amount:this.projectile_data.collision_damage,critical:false,position:this.position,reason:DamageReason.Human,owner:this.owner,resistence:this.projectile_data.collision_damage_resistence})
+            (obj as Human|Obstacle).damage({amount:this.projectile_data.collision_damage,direction:0,critical:false,position:this.position,reason:DamageReason.Human,owner:this.owner,resistence:this.projectile_data.collision_damage_resistence})
         }
     }
     override update(dt:number): void {

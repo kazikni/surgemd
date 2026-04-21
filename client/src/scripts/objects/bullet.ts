@@ -81,6 +81,7 @@ export class Bullet extends GameObject{
     override create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_sprite("base_trail")
         this.game.cam2d.addObject(this.container)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
     override on_destroy(): void {
         this.container.destroy()
@@ -190,8 +191,6 @@ export class Bullet extends GameObject{
         if(full){
             this.initialPosition=stream.readPos2()
             this.maxDistance=stream.readFloat32()
-
-            this.base_hitbox=new CircleHitbox2D(v2(0,0),stream.readFloat(0,2,2))
 
             this.speed=stream.readFloat32()
             this.container.rotation=stream.readRad()

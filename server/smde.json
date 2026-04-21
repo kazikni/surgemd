@@ -4,6 +4,9 @@
     "task":{
         "dev":{
             "childs":{
+                "test":{
+                    "task":"deno run --watch -A ./src/test/stress_test.ts"
+                },
                 "game":{
                     "task":"deno run --watch -A ./src/game_server/others/main.ts"
                 },

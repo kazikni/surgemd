@@ -664,7 +664,7 @@ export class Human extends MovingBody{
                     this.sound_animation.footsteps=this.game.sounds.play(this.game.resources.get_audio(random.choose(this.assets.footstep_sounds)),{
                         position:this.position,
                         max_distance: 15,
-                        volume:0.7
+                        volume:0.5
                     },"humans")
                 }
                 if(Floors[f].floor_kind===FloorKind.Liquid){

@@ -1,6 +1,9 @@
-.tab-debug-app {
+.debug-app {
     padding: 16px;
     color: white;
+    input{
+        font-size: 50px;
+    }
     .debug-container {
         display: flex;
         flex-direction: column;
@@ -20,7 +23,7 @@
     }
     .debug-info {
         margin-top: 12px;
-        font-size: 13px;
+        font-size: 25px;
         opacity: 0.8;
     }
     .text-input{
@@ -45,7 +48,7 @@
     .search-item {
         padding: 6px 10px;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 30px;
     }
     .search-item:hover,
     .search-item.active {

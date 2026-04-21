@@ -15,7 +15,7 @@ export class SyncedParticle extends MovingBody{
     sprite:Sprite2D=new Sprite2D()
     time:number=0
     dead:boolean=false
-    tween?:Tween<Color>
+    tweens:Tween<any>[]=[]
 
     override on_layer_set(layer: number): void {
         this.sprite.layer=layer
@@ -34,35 +34,44 @@ export class SyncedParticle extends MovingBody{
 
     override on_destroy(): void {
         this.sprite.destroy()
-        if(this.tween)this.tween.kill()
+        for(const t of this.tweens)t.kill()
     }
-    override update(dt: number): void {
+    override update(dt:number){
         if(!this.def)return
         super.update(dt)
 
         this.sprite.position=this.position
         this.sprite.rotation=this.physical_data.rotation
 
-        if(this.dead){
-            if(this.tween)this.tween.kill()
-            this.tween=this.game.add_tween({
-                target:this.sprite.tint,
-                duration:0.5,
-                to:{
-                    a:0
+        this.time+=dt
+
+        if(this.time>=this.def.lifetime&&!this.dead){
+            this.dead=true
+            for(const t of this.tweens)t.kill()
+
+            this.game.add_timeout(()=>this.destroy(),this.def.animation?.destroy?.time??0)
+            if(this.def.animation?.destroy){
+                if(this.def.animation.destroy.alpha){
+                    const t=this.game.add_tween({
+                        target:this.sprite.tint,
+                        to:{
+                            a:this.def.animation.destroy.alpha.to
+                        },
+                        duration:this.def.animation.destroy.alpha.duration,
+                    })
+                    this.tweens.push(t)
                 }
-            })
-        }else{
-            this.time+=dt
-            if(this.time>=this.def.lifetime){
-                this.time=this.def.lifetime
-                this.dead=true
-            }
-            const scal=(this.def.frame.scale??2)
-            if(this.sprite.scale.x<scal){
-                v2m.single(this.sprite.scale,this.sprite.scale.x+5*dt)
-            }else if(this.sprite.scale.x!==scal){
-                v2m.single(this.sprite.scale,scal)
+                if(this.def.animation.destroy.scale){
+                    const t=this.game.add_tween({
+                        target:this.sprite.scale,
+                        to:{
+                            x:this.def.animation.destroy.scale.to,
+                            y:this.def.animation.destroy.scale.to,
+                        },
+                        duration:this.def.animation.destroy.scale.duration,
+                    })
+                    this.tweens.push(t)
+                }
             }
         }
     }
@@ -71,19 +80,40 @@ export class SyncedParticle extends MovingBody{
         this.def=def
         this.sprite.hotspot=CenterHotspot
         this.sprite.zIndex=zIndexes.SyncedParticle
-        this.sprite.tint=ColorM.rgba(255,255,255,0)
+
         this.sprite.set_frame(def.frame,this.game.resources)
-        v2m.single(this.sprite.scale,0.01)
-        if(this.is_new){
-            this.tween=this.game.add_tween({
-                target:this.sprite.tint,
-                duration:1,
-                to:{
-                    a:0.9
-                }
-            })
-        }else{
-            this.sprite.tint.a=0.9
+
+        if(def.animation?.spawn){
+            if(def.animation.spawn.alpha){
+                this.sprite.tint.a=def.animation.spawn.alpha.from
+                const t=this.game.add_tween({
+                    target:this.sprite.tint,
+                    to:{
+                        a:def.animation.spawn.alpha.to
+                    },
+                    duration:def.animation.spawn.alpha.duration,
+                    onComplete:()=>{
+                        const idx=this.tweens.indexOf(t)
+                        if(idx!==-1)this.tweens.splice(idx,1)
+                    }
+                })
+                this.tweens.push(t)
+            }
+            if(def.animation.spawn.scale){
+                const t=this.game.add_tween({
+                    target:this.sprite.scale,
+                    to:{
+                        x:def.animation.spawn.scale.to,
+                        y:def.animation.spawn.scale.to,
+                    },
+                    duration:def.animation.spawn.scale.duration,
+                    onComplete:()=>{
+                        const idx=this.tweens.indexOf(t)
+                        if(idx!==-1)this.tweens.splice(idx,1)
+                    }
+                })
+                this.tweens.push(t)
+            }
         }
     }
     override decode(stream:NetStream,full: boolean):void{

@@ -11,7 +11,6 @@ export interface BulletDef{
     falloff?:number
     range:number
     speed:number
-    radius:number
     effect?:{id:string,time:number}[]
     tracer:{
         width:number
@@ -97,7 +96,8 @@ export enum DamageReason{
     Abstinence,
     SideEffect,
     Disconnect,
-    Bleend
+    Bleend,
+    Airdrop
 }
 export interface InventoryItemData{
     count:number

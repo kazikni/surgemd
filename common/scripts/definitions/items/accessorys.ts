@@ -36,7 +36,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
-                    b.set_direction(e.angle-0.02)
+                    b.set_direction(e.angle-0.025)
 
                     b=e.user.game.add_bullet(e.position,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
                     b.damage*=0.2
@@ -44,7 +44,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
-                    b.set_direction(e.angle+0.02)
+                    b.set_direction(e.angle+0.025)
                 }
             },
         },
@@ -140,6 +140,19 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 }
             }
         },
+        {
+            idString:"self_revive",
+            rank:ItemRank.A,
+            property:["self_revive"],
+            events:{
+                "pickup":(e)=>{
+                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                },
+                "drop":(e)=>{
+                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                }
+            }
+        },
 
         {
             idString:"omni_necklance",
@@ -164,7 +177,11 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "drop":(e)=>{
                     e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
                     e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
-                }
+                },
+                /*"gun_shoot":(e)=>{
+                    e.bullet.damage*=1.1
+                    e.bullet.set_color(true)
+                }*/
             }
         },
     )

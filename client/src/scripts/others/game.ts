@@ -6,7 +6,6 @@ import { TerrainM } from "../objects/terrain.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
-import { TabManager } from "../managers/tabManager.ts";
 import { Human } from "../objects/human.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
@@ -21,16 +20,13 @@ import { Explosion } from "../objects/explosion.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { MessageTabApp } from "../apps/message.ts";
-import { DebugTabApp } from "../apps/debug.ts";
-import { ShopTabApp } from "../apps/shop.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { LevelDefinition } from "common/scripts/config/level_definition.ts";
 import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { MapTabApp } from "../apps/map.ts";
+import { MapApp } from "../apps/map.ts";
 import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
@@ -40,8 +36,10 @@ import { Creature } from "../objects/creature.ts";
 import { Plane } from "./planes.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
-import { MatchTabApp } from "../apps/match.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
+import { GameDeviceManager } from "../managers/deviceManager.ts";
+import { MessageApp } from "../apps/message.ts";
+import { DebugApp } from "../apps/debug.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -72,7 +70,7 @@ export class Game extends ClientGame<GameObject>{
     inventory:GInventory
     dead_zone:DeadZoneManager
     ambient:AmbientManager
-    tab:TabManager
+    device:GameDeviceManager
     minimap:MinimapManager
 
     active_entity?:Human
@@ -136,7 +134,7 @@ export class Game extends ClientGame<GameObject>{
         this.inventory=new GInventory()
         this.dead_zone=new DeadZoneManager(this)
         this.ambient=new AmbientManager(this)
-        this.tab=new TabManager(this)
+        this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
 
         this.cam2d.addObject(this.terrain_gfx)
@@ -153,14 +151,6 @@ export class Game extends ClientGame<GameObject>{
             offset:v2(0.1,0.1)
         }
 
-        this.ui.match_app=new MatchTabApp(this.tab)
-        this.tab.add_app(this.ui.match_app)
-        this.tab.add_app(new MessageTabApp(this.tab))
-        this.tab.add_app(new MapTabApp(this.tab))
-
-        this.ui.shop_app=new ShopTabApp(this.tab)
-        this.tab.add_app(this.ui.shop_app)
-
         this.hitboxes_gfx.layer=9999
         this.cam2d.addObject(this.hitboxes_gfx)
 
@@ -169,6 +159,10 @@ export class Game extends ClientGame<GameObject>{
             1:GunItem as (new(item:GameItem)=>LItem),
             2:GunItem as (new(item:GameItem)=>LItem)
         })
+
+        this.device.add_app(new MapApp)
+        this.device.add_app(new MessageApp)
+        this.device.add_app(new DebugApp)
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()
@@ -216,10 +210,10 @@ export class Game extends ClientGame<GameObject>{
                     this.input.actions.push({type:InputActionType.set_hand,hand:2})
                     break
                 case "full_tab":
-                    this.tab.toggle_tab_full()
+                    this.device.toggle_full()
                     break
                 case "hide_tab":
-                    this.tab.toggle_tab_visibility()
+                    this.device.toggle_visibility()
                     break
                 case "use_item1":
                     this.input.actions.push({type:InputActionType.use_item,slot:0})
@@ -275,9 +269,9 @@ export class Game extends ClientGame<GameObject>{
                 }
                 case "debug_menu":
                     //if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
-                    if(!this.tab.apps.some((a)=>a instanceof DebugTabApp)){
-                        this.tab.add_app(new DebugTabApp(this.tab))
-                    }
+                    /*if(!this.device.apps.some((a)=>a instanceof DebugTabApp)){
+                        this.device.add_app(new DebugTabApp(this.tab))
+                    }*/
                     break
             }
         })
@@ -581,8 +575,8 @@ export class Game extends ClientGame<GameObject>{
         this.soft_reset()
     }
     soft_reset(){
-        this.tab.stop_all()
         this.clear()
+        //this.device.clear()
         this.game_over=false
         this.ui.hide_game_over()
         this.cam2d.zoom=6
@@ -620,7 +614,7 @@ export class Game extends ClientGame<GameObject>{
         }
         this.ambient.update(dt)
         this.ui.update(dt)
-        this.tab.tick(dt)
+        this.device.tick(dt)
         this.dead_zone.tick(dt)
 
         if (this.cam_type === 1) {
@@ -718,7 +712,9 @@ export class Game extends ClientGame<GameObject>{
         }
         if(priv.self_state){
             this.ui.update_self_state(priv.self_state)
+            this.device.update_self_state(priv.self_state)
         }
+        this.device.update_private(priv)
     }
     join(){
         if(!this.client)return

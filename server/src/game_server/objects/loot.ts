@@ -62,7 +62,7 @@ export class Loot extends ServerGameObject{
                     if(other.id===this.id)continue
                     const col=this.hitbox.overlapCollision(other.hitbox)
                     if(col.length>0){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,6*dt))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,4*dt))
                     }
                     break
                 }
@@ -81,7 +81,7 @@ export class Loot extends ServerGameObject{
             
         }
         if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.7))
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.5))
             const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }

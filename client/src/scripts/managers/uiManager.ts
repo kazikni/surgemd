@@ -1,6 +1,6 @@
 import { Game } from "../others/game.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { ActionsType, GameObjectType } from "common/scripts/others/constants.ts";
+import { GameObjectType } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
@@ -12,11 +12,8 @@ import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { ShopTabApp } from "../apps/shop.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
 import { type Building } from "../objects/building.ts";
-import { MatchTabApp } from "../apps/match.ts";
-import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { HealthModule } from "../uim/health.ts";
 import { BoostModule } from "../uim/boosts.ts";
 import { AItemsModule } from "../uim/aitems.ts";
@@ -30,17 +27,6 @@ export interface HelpGuiState{
     gun:boolean
     interact:boolean
     information_box_message:string
-}
-export interface UIState {
-    self?: SelfStateUpdate
-    general?: GeneralUpdate
-
-    dirty:{
-        health:boolean,
-        inventory:boolean,
-        team:boolean,
-        map:boolean
-    }
 }
 export class UiManager{
     game!:Game
@@ -103,9 +89,6 @@ export class UiManager{
         id:number
         kills:number
     }
-
-    match_app?:MatchTabApp
-    shop_app?:ShopTabApp
 
     money:number=0
 
@@ -280,9 +263,6 @@ export class UiManager{
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     proccess_joinned_packet(jp:JoinnedPacket){
-        if((jp.mode.shop&&jp.mode.shop.length>0)&&this.shop_app){
-            this.shop_app.set_shop(jp.mode.shop)
-        }
         for(const p of jp.players){
             const badge_frame=p.badge!==undefined?this.game.definitions.emotes.getFromNumber(p.badge).idString:""
             const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/main/loadout/badges/${badge_frame}.svg">`
@@ -495,10 +475,6 @@ export class UiManager{
         */
 
         this.money=state.money
-
-        if(state.dirty.group&&this.match_app&&state.group){
-            this.match_app.set_group(state.group)
-        }
         this.game.ui_manager.signal("self_state",state)
     }
     handle_slot_click(e:MouseEvent){
@@ -631,7 +607,6 @@ export class UiManager{
             }
         }*/
         this.update_hint()
-
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(
                 v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse.position)

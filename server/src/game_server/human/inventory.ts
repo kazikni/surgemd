@@ -19,6 +19,7 @@ import { StaticBody } from "../objects/static_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { AccessorysManager } from "./accessorys.ts";
+import { type Obstacle } from "../objects/obstacle.ts";
 export abstract class LItem extends MDItem{
     declare inventory:GInventory
     abstract on_use(user:Human,slot?:Slot<LItem>):void
@@ -357,6 +358,12 @@ export class MeleeItem extends MeleeItemBase implements LItem{
         for(const c of collidibles){
             if(!hb.collidingWith(c.hitbox))continue
             if(c instanceof StaticBody){
+                if(c.number_type===GameObjectType.Obstacle){
+                    if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior){
+                        user._can_interact=false
+                        c.interact(user)
+                    }
+                }
                 c.damage({
                     amount:this.def.damage,
                     resistence:this.def.resistence_damage??0,
@@ -466,11 +473,11 @@ export class GInventory extends GInventoryBase<LItem>{
             }
         }
         if(this.weapons_kind[this.weapon_idx]==GunItem){
-            this.set_weapon(this.weapon_idx,dd)
+            const set=this.set_weapon(this.weapon_idx,dd)
             if(full_ammo){
                 (this.weapons[this.weapon_idx] as GunItem).ammo=dd.reload?.capacity??0
             }
-            return true
+            return set
         }
         return false
     }

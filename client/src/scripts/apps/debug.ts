@@ -1,161 +1,171 @@
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
-import { TabApp, TabManager } from "../managers/tabManager.ts";
+import { GameApp } from "../managers/deviceManager.ts";
+export class DebugApp extends GameApp {
+    stats!:HTMLDivElement
+    idInput!:HTMLInputElement
+    countInput!:HTMLInputElement
+    resultsBox!:HTMLDivElement
+    filtered:string[]=[]
+    selectedIndex=-1
 
-export class DebugTabApp extends TabApp {
-
-    constructor(tab: TabManager) {
-        super("Debug", "/img/menu/gui/tab/icons/debug.svg", tab)
+    constructor(){
+        super({
+            name:"Debug",
+            icon:"/img/menu/gui/tab/icons/debug.svg"
+        })
     }
 
-    override on_run(): void {
-        this.element!.classList.add("tab-debug-app")
+    on_init(){
+        this.element.className="debug-app"
+        this.element.innerHTML=`
+<div class="debug-container">
+    <h2>Debug Tools</h2>
+    <div class="debug-section search-section">
+        <label>Item ID</label>
+        <input class="text-input" id="debug-item-id" placeholder="Search item...">
+        <div class="search-results"></div>
+    </div>
+    <div class="debug-section">
+        <label>Item Count</label>
+        <input class="text-input" id="debug-item-count" value="1" type="number">
+    </div>
+    <div class="debug-actions">
+        <button id="debug-give-item" class="btn-blue">Give Item</button>
+        <button id="debug-spawn-item" class="btn-blue">Spawn Item</button>
+    </div>
+    <div class="debug-info">
+        <div id="debug-stats"></div>
+    </div>
+</div>
+`
 
-        this.element!.innerHTML = `
-        <div class="debug-container">
-            <h2>Debug Tools</h2>
+        this.idInput=this.element.querySelector("#debug-item-id") as HTMLInputElement
+        this.countInput=this.element.querySelector("#debug-item-count") as HTMLInputElement
+        this.resultsBox=this.element.querySelector(".search-results") as HTMLDivElement
+        this.stats=this.element.querySelector("#debug-stats") as HTMLDivElement
+        const giveBtn=this.element.querySelector("#debug-give-item") as HTMLButtonElement
+        const spawnBtn=this.element.querySelector("#debug-spawn-item") as HTMLButtonElement
+        const allItems=Object.keys(
+            this.device.game.definitions
+            .game_items
+            .keysString
+        )
 
-            <div class="debug-section search-section">
-                <label>Item ID</label>
-                <input class="text-input" id="debug-item-id" placeholder="Search item...">
-                <div class="search-results" id="debug-search-results"></div>
-            </div>
+        this.idInput.addEventListener("input",()=>{
+                const v=this.idInput.value.toLowerCase()
 
-            <div class="debug-section">
-                <label>Item Count</label>
-                <input class="text-input" id="debug-item-count" value="1" type="number">
-            </div>
-
-            <div class="debug-actions">
-                <button class="btn-blue" id="debug-give-item">Give Item</button>
-                <button class="btn-blue" id="debug-spawn-item">Spawn Item</button>
-            </div>
-
-            <div class="debug-info">
-                <div id="debug-stats"></div>
-            </div>
-        </div>
-        `
-
-        const idInput = this.element!.querySelector("#debug-item-id") as HTMLInputElement
-        const countInput = this.element!.querySelector("#debug-item-count") as HTMLInputElement
-        const resultsBox = this.element!.querySelector("#debug-search-results") as HTMLDivElement
-        const giveBtn = this.element!.querySelector("#debug-give-item") as HTMLButtonElement
-        const spawnBtn = this.element!.querySelector("#debug-spawn-item") as HTMLButtonElement
-
-        const allItems = Object.keys(this.tab.game.definitions.game_items.keysString)
-
-        let selectedIndex = -1
-        let filtered: string[] = []
-
-        const renderResults = () => {
-            resultsBox.innerHTML = ""
-
-            if (!filtered.length) {
-                resultsBox.style.display = "none"
-                return
-            }
-
-            resultsBox.style.display = "block"
-
-            filtered.slice(0, 20).forEach((item, i) => {
-                const div = document.createElement("div")
-                div.className = "search-item" + (i === selectedIndex ? " active" : "")
-                div.innerText = item
-
-                div.onclick = () => {
-                    idInput.value = item
-                    resultsBox.style.display = "none"
+                if(!v){
+                    this.filtered=[]
+                    this.renderResults()
+                    return
                 }
 
-                resultsBox.appendChild(div)
+                const starts=allItems.filter(x=>x.startsWith(v))
+                const contains=allItems.filter(x=>x.includes(v)&&!x.startsWith(v))
+
+                this.filtered=[...starts,...contains]
+                this.selectedIndex=-1
+
+                this.renderResults()
+            }
+        )
+
+        this.idInput.addEventListener(
+            "keydown",
+            (e)=>{
+                if(!this.filtered.length)return
+
+                if(e.key==="ArrowDown"){
+                    this.selectedIndex=(this.selectedIndex+1)%this.filtered.length
+                    this.renderResults()
+                    e.preventDefault()
+                }
+                if(e.key==="ArrowUp"){
+                    this.selectedIndex=(this.selectedIndex-1+this.filtered.length)%this.filtered.length
+                    this.renderResults()
+                    e.preventDefault()
+                }
+                if(e.key==="Enter"&&this.selectedIndex>=0){
+                    this.idInput.value=this.filtered[this.selectedIndex]
+                    this.resultsBox.style.display="none"
+                }
+            }
+        )
+
+        this.idInput.onfocus=()=>{
+            this.device.game.can_act=false
+        }
+
+        this.idInput.onblur=()=>{
+            setTimeout(()=>{
+                    this.resultsBox.style.display="none"
+            },100)
+            this.device.game.can_act=true
+        }
+
+        giveBtn.onclick=()=>{
+            this.device.game.input.actions.push({
+                type:InputActionType.debug_give,
+                item:this.idInput.value,
+                count:parseInt(this.countInput.value)||1
             })
         }
 
-        idInput.addEventListener("input", () => {
-            const value = idInput.value.toLowerCase()
-
-            if (!value) {
-                filtered = []
-                renderResults()
-                return
-            }
-
-            const starts = allItems.filter(k => k.startsWith(value))
-            const contains = allItems.filter(k => k.includes(value) && !k.startsWith(value))
-
-            filtered = [...starts, ...contains]
-            selectedIndex = -1
-            renderResults()
-        })
-
-        idInput.addEventListener("keydown", (e) => {
-            if (!filtered.length) return
-
-            if (e.key === "ArrowDown") {
-                selectedIndex = (selectedIndex + 1) % filtered.length
-                renderResults()
-                e.preventDefault()
-            }
-
-            if (e.key === "ArrowUp") {
-                selectedIndex = (selectedIndex - 1 + filtered.length) % filtered.length
-                renderResults()
-                e.preventDefault()
-            }
-
-            if (e.key === "Enter" && selectedIndex >= 0) {
-                idInput.value = filtered[selectedIndex]
-                resultsBox.style.display = "none"
-            }
-        })
-
-        const disableAct = () => this.tab.game.can_act = false
-        const enableAct = () => this.tab.game.can_act = true
-
-        idInput.onfocus = disableAct
-        idInput.onblur = () => {
-            setTimeout(() => resultsBox.style.display = "none", 100)
-            enableAct()
-        }
-
-        countInput.onfocus = disableAct
-        countInput.onblur = enableAct
-
-        giveBtn.onclick = () => {
-            this.tab.game.input.actions.push({
-                type: InputActionType.debug_give,
-                item: idInput.value,
-                count: parseInt(countInput.value) || 1
+        spawnBtn.onclick=()=>{
+            this.device.game.input.actions.push({
+                type:InputActionType.debug_spawn,
+                item:this.idInput.value,
+                count:parseInt(
+                    this.countInput.value
+                )||1
             })
-        }
 
-        spawnBtn.onclick = () => {
-            this.tab.game.input.actions.push({
-                type: InputActionType.debug_spawn,
-                item: idInput.value,
-                count: parseInt(countInput.value) || 1
-            })
         }
     }
 
-    override on_tick(dt: number): void {
-        const stats = this.element!.querySelector("#debug-stats") as HTMLDivElement
-        if (!stats) return
+    renderResults(){
+        this.resultsBox.innerHTML=""
+        if(!this.filtered.length){
+            this.resultsBox.style.display="none"
+            return
+        }
+        this.resultsBox.style.display="block"
+        this.filtered.slice(0,20).forEach((item,i)=>{
+            const div=document.createElement("div")
+
+            div.className="search-item"+(i===this.selectedIndex?" active":"")
+            div.innerText=item
+            div.onclick=()=>{
+                this.idInput.value=item
+                this.resultsBox.style.display="none"
+            }
+
+            this.resultsBox.appendChild(div)
+
+        })
+    }
+
+    on_open(){}
+    on_close(){}
+    on_clear(){}
+    on_event(_type:string,_data:any){}
+
+    on_tick(_dt:number){
+        if(!this.stats)return
 
         let prof=`
-main:${this.tab.game.clock.profiler.data[0]}<br>
-draw:${this.tab.game.clock.profiler.data[1]}<br>
-2:${this.tab.game.clock.profiler.data[2]}<br>
-        `
+main:${this.device.game.clock.profiler.data[0]}<br>
+draw:${this.device.game.clock.profiler.data[1]}<br>
+2:${this.device.game.clock.profiler.data[2]}`
 
-        stats.innerHTML = `
-            FPS: ${Math.floor(1 / this.tab.game.delta_time)}<br>
-            Ping: ${this.tab.game.client?.ping ?? 0}<br>
-            X: ${this.tab.game.active_entity?.position.x}<br>
-            Y: ${this.tab.game.active_entity?.position.y}<br>
-            Profilers ${prof}
-        `
+        this.stats.innerHTML=`
+FPS:${Math.floor(1/this.device.game.delta_time)}<br>
+Ping:
+${this.device.game.client?.ping??0}<br>
+
+X:${this.device.game.active_entity?.position.x}<br>
+Y:${this.device.game.active_entity?.position.y}<br>
+
+Profilers${prof}`
     }
-
-    override on_stop(): void {}
 }

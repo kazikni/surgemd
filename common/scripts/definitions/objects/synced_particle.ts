@@ -2,17 +2,114 @@ import { Definition, Definitions, FrameDef } from "../../../engine/core.ts";
 export interface SyncedParticleDef extends Definition{
     frame:FrameDef
     lifetime:number
+    movement?:({
+        type:"walk"
+        velocity:{
+            min:number
+            max:number
+            decay?:number
+        }
+    })&{
+        angular?:{
+            min:number
+            max:number
+        }
+    }
+    animation?:{
+        spawn?:{
+            scale?:{
+                to:number
+                duration:number
+            }
+            alpha?:{
+                from:number
+                to:number
+                duration:number
+            }
+        }
+        destroy?:{
+            time:number
+            scale?:{
+                to:number
+                duration:number
+            }
+            alpha?:{
+                to:number
+                duration:number
+            }
+        }
+    }
 }
-
 export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedParticleDef,{}>){
     synced_particles.insert(
         {
             idString:"smoke",
+            lifetime:33,
             frame:{
                 image:"smoke_particle",
-                scale:2
+                scale:0.01
             },
-            lifetime:33
+            movement:{
+                type:"walk",
+                velocity:{
+                    min:0.1,
+                    max:0.25,
+                    decay:0.1
+                },
+                angular:{
+                    min:0.1,
+                    max:0.6
+                },
+            },
+            animation:{
+                spawn:{
+                    alpha:{
+                        from:0,
+                        to:0.98,
+                        duration:2,
+                    },
+                    scale:{
+                        to:2,
+                        duration:1,
+                    }
+                },
+                destroy:{
+                    time:1,
+                    alpha:{
+                        to:0,
+                        duration:1,
+                    },
+                }
+            }
+        },
+        {
+            idString:"airdrop_smoke",
+            lifetime:1,
+            frame:{
+                image:"smoke_particle",
+                scale:1.25
+            },
+            movement:{
+                type:"walk",
+                velocity:{
+                    min:1,
+                    max:3,
+                    decay:1.7
+                },
+                angular:{
+                    min:0.1,
+                    max:0.6
+                },
+            },
+            animation:{
+                destroy:{
+                    time:1,
+                    alpha:{
+                        to:0,
+                        duration:1,
+                    },
+                }
+            }
         },
     )
 }

@@ -22,20 +22,19 @@ export function ImageToRect(
     meter_size: number = 100,
     position: Vec2 = { x:0, y:0 }
 ): RectHitbox2D {
-    const sizeR = v2(
-        (size.x / meter_size) * (scale.x / 2),
-        (size.y / meter_size) * (scale.y / 2)
-    );
+    const width  = (size.x / meter_size) * scale.x;
+    const height = (size.y / meter_size) * scale.y;
 
-    const x1 = -sizeR.x * hotspot.x
-    const y1 = -sizeR.y * hotspot.y
-    const x2 = sizeR.x + x1
-    const y2 = sizeR.y + y1
+    const x1 = -width  * hotspot.x;
+    const y1 = -height * hotspot.y;
+
+    const x2 = x1 + width;
+    const y2 = y1 + height;
 
     return new RectHitbox2D(
         v2(x1 + position.x, y1 + position.y),
         v2(x2 + position.x, y2 + position.y)
-    )
+    );
 }
 export function ImageModel2D(
     scale: Vec2,

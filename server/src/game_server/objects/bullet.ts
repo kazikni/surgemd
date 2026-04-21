@@ -162,7 +162,7 @@ export class Bullet extends ServerGameObject{
                     if(obj.hitbox){
                         const col1=obj.hitbox.overlapLine(this.old_position,this.position)
                         if(!col1)continue
-                        if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&this.reflectionCount<3&&!this.def.on_hit_explosion){
+                        if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&!this.def.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()
@@ -187,7 +187,7 @@ export class Bullet extends ServerGameObject{
     }
     create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
         this.def=args.defs
-        this.base_hitbox=new CircleHitbox2D(v2.zero,this.def.radius*this.modifiers.size)
+        this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
         this.position=args.position
         this.initial_position=v2.clone(this.position)
         this.old_position=this.position
@@ -212,9 +212,9 @@ export class Bullet extends ServerGameObject{
         this.velocity=v2.scale(this.dir,this.def.speed*this.modifiers.speed)
         this.net_sync.full=true
         this.angle=angle;
-        (this.base_hitbox as CircleHitbox2D).radius=this.def.radius*this.modifiers.size
     }
     reflect(normal: Vec2, point: Vec2) {
+        if(this.reflectionCount>=3)return
         const n = v2.normalizeSafe(normal)
         const d = this.dir
 
@@ -250,7 +250,6 @@ export class Bullet extends ServerGameObject{
         if(full){
             stream.writePos2(this.initial_position)
             .writeFloat32(this.max_distance)
-            .writeFloat((this.base_hitbox as CircleHitbox2D).radius,0,2,2)
             .writeFloat32(this.def.speed*this.modifiers.speed)
             .writeRad(this.angle)
             .writeFloat(this.def.tracer.width,0,100,3)
@@ -265,7 +264,7 @@ export class Bullet extends ServerGameObject{
             }
             stream.writeUint8(this.def.tracer.particles?.frame??0)
             .writeBooleanGroup(this.critical)
-            .writeID(this.owner!.id)
+            .writeID(this.owner?.id??0)
         }
     }
 }

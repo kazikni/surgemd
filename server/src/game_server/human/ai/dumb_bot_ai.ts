@@ -323,7 +323,7 @@ export class DumbBotAI extends BotAi {
     }
     AI(dt:number){
         this.reset_inputs()
-        this.update_target()
+        //this.update_target()
         this.update_loot_target()
         const intent = this.choose_intent(dt)
 

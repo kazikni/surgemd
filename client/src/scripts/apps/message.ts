@@ -1,215 +1,108 @@
-import { TabApp, TabManager } from "../managers/tabManager.ts";
+import { GameApp } from "../managers/deviceManager.ts";
 
-export interface Message {
-    sender: string
-    text: string
-    time: number
+type MessageData = {
+    from:string
+    text:string
+    sent?:boolean
 }
 
-export interface Contact {
-    id: string
-    visible: boolean
-    can_talk: boolean
-    name: string
-    icon: string
-}
-export class MessageTabApp extends TabApp{
-    contacts: Record<string, Contact> = {}
-    messages: Record<string, Message[]> = {}
-    currentContact?: string
-    messagesContainer!: HTMLDivElement
-    override on_run(): void {
-        this.element!.classList.add("tab-message-app");
-        this.element!.innerHTML = `
+export class MessageApp extends GameApp {
+    messages:MessageData[]=[]
+
+    contacts_panel!:HTMLDivElement
+    chat_messages!:HTMLDivElement
+
+    input!:HTMLInputElement
+    send_btn!:HTMLButtonElement
+    constructor(){
+        super({
+            name:"Chitchat",
+            icon:"/img/menu/icons/chat.svg"
+        })
+    }
+    on_init(){
+        this.element.className="message-app"
+
+        this.element.innerHTML=`
 <div class="contacts-panel">
+    <div class="contact">
+        <div class="avatar">R</div>
+        <div class="contact-info">
+            <div class="contact-name">Radio</div>
+            <div class="contact-last">System channel</div>
+        </div>
+        <div class="contact-time">Now</div>
+    </div>
 </div>
 <div class="chat-panel">
-    <div class="chat-header">
-    </div>
+    <div class="chat-header">Radio</div>
     <div class="chat-messages"></div>
     <div class="chat-input">
-        <input type="text" id="tab-message-app-input-msg" placeholder="Type A Message..." />
-        <button id="tab-message-app-send-button">➤</button>
+        <input type="text" placeholder="Type message...">
+        <button>></button>
     </div>
 </div>
 `
-    
-        this.messagesContainer = this.element!.querySelector(".chat-messages")!;
+        this.chat_messages=this.element.querySelector(".chat-messages") as HTMLDivElement
 
-        this.renderContacts();
+        this.input=this.element.querySelector("input") as HTMLInputElement
 
-        this.currentContact = "self";
-        this.renderMessages("self");
-        this.updateHeaderName("My Notes");
+        this.send_btn=
+            this.element.querySelector(
+                "button"
+            ) as HTMLButtonElement
 
-        const btn = this.element!.querySelector("#tab-message-app-send-button")!;
-        const input = this.element!.querySelector("#tab-message-app-input-msg")! as HTMLInputElement;
-    
-        /*btn.onclick = () => {
-            this.sendCurrent(input.value);
-            input.value = "";
-        };*/
-    }
-    initiliaze(){
-        
-    }
-    override on_stop(): void {
-    }
-    override on_tick(dt: number): void {
-    }
-    addMessage(text: string, from: "you" | "other") {
-        if (!this.messagesContainer) return
-        const msg = document.createElement("div")
-        msg.classList.add("msg", from === "you" ? "sent" : "received")
-        msg.innerText = text
-        this.messagesContainer.appendChild(msg)
+        this.send_btn.onclick=()=>{
 
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight
-    }
-    constructor(tab: TabManager) {
-        super("ChitChat", "/img/menu/gui/tab/icons/message_app.svg", tab);
+            if(!this.input.value.trim()) return
 
-        this.registerContact({
-            id: "self",
-            name: "My Notes",
-            icon: "A",
-            visible: true,
-            can_talk: true
-        })
+            this.add_message({
+                from:"You",
+                text:this.input.value,
+                sent:true
+            })
 
-        this.registerContact({
-            id: "team",
-            name: "Team Chat",
-            icon: "T",
-            visible: false,
-            can_talk: true
-        })
-
-        this.registerContact({
-            id: "killfeed",
-            name: "Match",
-            icon: "M",
-            visible: true,
-            can_talk: false
-        })
-
-        this.registerContact({
-            id: "administration",
-            name: "Administration",
-            icon: "⚠",
-            visible: false,
-            can_talk: false
-        });
-
-        this.tab.game.signals.on("killfeed_message",(msg:{text:string})=>{
-            this.addMessageTo("killfeed","received",msg.text)
-        })
-    }
-    registerContact(c: Contact) {
-        this.contacts[c.id] = c;
-        this.messages[c.id] = [];
-    }
-    clear(){
-        for(const c of Object.keys(this.contacts)){
-            this.messages[c].length=0
+            this.input.value=""
         }
     }
-    addMessageTo(contactId: string, sender: string, text: string) {
-        if (!this.messages[contactId]) this.messages[contactId] = [];
-    
-        this.messages[contactId].push({
-            sender,
-            text,
-            time: performance.now()
-        });
 
-        if (this.currentContact === contactId) {
-            this.renderMessages(contactId);
+    on_open(){
+    }
+    on_close(){
+    }
+
+    on_clear(){
+        this.messages=[]
+        this.chat_messages.innerHTML=""
+    }
+
+    on_event(type:string,data:any){
+        switch(type){
+            case "chat_message":
+                this.add_message({
+                    from:data.from,
+                    text:data.text,
+                    sent:false
+                })
+                break
+            case "radio_message":
+                this.add_message({
+                    from:"Radio",
+                    text:data.text,
+                    sent:false
+                })
+                break
         }
     }
-    sanitizeHTML(html: string) {
-        const template = document.createElement("template");
-        template.innerHTML = html;
-    
-        const allowedTags = new Set(["IMG", "SPAN", "B", "I", "EM", "STRONG"]);
-        const allowedAttrs = new Set(["src", "class", "alt"]);
-    
-        const clean = (node: Node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-                const el = node as HTMLElement;
-    
-                if (!allowedTags.has(el.tagName)) {
-                    el.replaceWith(...Array.from(el.childNodes));
-                    return;
-                }
+    on_tick(_dt:number){
 
-                // deno-lint-ignore ban-ts-comment
-                //@ts-ignore
-                for (const attr of [...el.attributes]) {
-                    if (!allowedAttrs.has(attr.name)) el.removeAttribute(attr.name);
-                }
-            }
-
-            // deno-lint-ignore ban-ts-comment
-            //@ts-ignore
-            for (const child of [...node.childNodes]) clean(child);
-        };
-    
-        clean(template.content);
-        return template.innerHTML;
-    }    
-    renderMessages(contactId: string) {
-        if (!this.messagesContainer) return;
-    
-        const msgs = this.messages[contactId];
-        this.messagesContainer.innerHTML = "";
-    
-        for (const m of msgs) {
-            const div = document.createElement("div");
-            div.classList.add("msg");
-    
-            div.classList.add(
-                m.sender === "you"
-                    ? "sent"
-                    : m.sender === "system"
-                    ? "received"
-                    : "received"
-            );
-    
-            div.innerHTML=this.sanitizeHTML(m.text);
-            this.messagesContainer.appendChild(div);
-        }
-    
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
-    renderContacts() {
-        const contactPanel = this.element!.querySelector(".contacts-panel")!;
-        contactPanel.innerHTML = "";
-    
-        for (const id in this.contacts) {
-            const c = this.contacts[id];
-            if (!c.visible) continue;
-    
-            const div = document.createElement("div");
-            div.classList.add("contact");
-            div.innerHTML = `
-                <div class="avatar">${c.icon}</div>
-                <div class="contact-info">
-                    <div class="contact-name">${c.name}</div>
-                </div>
-            `;
-    
-            div.onclick = () => {
-                this.currentContact = id;
-                this.renderMessages(id);
-                this.updateHeaderName(c.name);
-            };
-    
-            contactPanel.appendChild(div);
-        }
-    }
-    updateHeaderName(name: string) {
-        const el = this.element!.querySelector(".chat-contact");
-        if (el) el.innerHTML = name;
+    add_message(msg:MessageData){
+        this.messages.push(msg)
+        const div=document.createElement("div")
+        div.className=msg.sent?"msg sent":"msg received"
+        div.innerHTML=msg.text
+        this.chat_messages.appendChild(div)
+        this.chat_messages.scrollTop=this.chat_messages.scrollHeight
     }
 }

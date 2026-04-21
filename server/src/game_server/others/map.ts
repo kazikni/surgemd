@@ -17,7 +17,7 @@ export const generation={
         return (map:GameMap,random:SeededRandom)=>{
             //Terrain
             map.size=def.size
-            map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),Layers.Normal,false)
+            map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),Layers.Normal,false,false)
             let cp=0
             const hitboxes:Hitbox2D[]=[]
             for(const f of def.terrain.floors.sort()){

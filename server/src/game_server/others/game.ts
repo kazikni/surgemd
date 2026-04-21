@@ -32,6 +32,7 @@ import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
+import { PingData } from "common/scripts/packets/update_packet.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -102,6 +103,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     
     loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item)
     loot:Loot[]=[]
+
+    pings:PingData[]=[]
 
     mods?:ModsManager<any,any,any,ModResult,MDModModule<Game,any,ModResult>>
 
@@ -307,6 +310,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     override net_update(full:boolean){
         this.players.net_update()
         this.modeManager.on_net_update()
+        this.pings.length=0
     }
     override on_update(dt:number): void {
         super.on_update(dt)

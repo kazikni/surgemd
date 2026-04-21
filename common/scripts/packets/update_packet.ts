@@ -1,9 +1,15 @@
-import { Numeric, UpdatePacketBase, Vec2 } from "../../engine/core.ts";
+import { Numeric, UpdatePacketBase, v2, Vec2 } from "../../engine/core.ts";
 import { NetStream } from "../../engine/core/net/stream.ts";
 import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
 import { ActionsType } from "../others/constants.ts";
+export interface PingData{
+    position:Vec2
+    def:number
+    id:number
+    color:number
+}
 export interface DamageSplash{
     count:number
 
@@ -22,6 +28,7 @@ export interface PrivateUpdate{
         dirty:boolean
         id:number
     }
+    pings:PingData[]
 
     self_state?:SelfStateUpdate
 }
@@ -259,7 +266,8 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             active_entity:{
                 dirty:false,
                 id:0,
-            }
+            },
+            pings:[]
         })
     }
     override encode_private(stream: NetStream): void {
@@ -273,6 +281,12 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             .writeID(d.taker)
             .writeUint8(d.taker_layer)
             .writePos2(d.position)
+        },1)
+        .writeArray(this.priv.pings,(e)=>{
+            stream.writePos2(e.position)
+            .writeUint8(e.def)
+            .writeInt8(e.id)
+            .writeUint32(e.color)
         },1)
         if(this.priv.active_entity.dirty){
             stream.writeID(this.priv.active_entity.id)
@@ -293,6 +307,14 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                critical:bg[0],
                shield:bg[1],
                shield_break:bg[2], 
+            }
+        },1)
+        this.priv.pings=stream.readArray(()=>{
+            return {
+                position:stream.readPos2(),
+                def:stream.readUint8(),
+                id:stream.readUint8(),
+                color:stream.readUint32()
             }
         },1)
         if(bg[0]){

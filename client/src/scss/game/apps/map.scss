@@ -1,4 +1,4 @@
-.tab-map-app {
+.map-app {
     height: 100%;
     background: #0f1115;
     color: #fff;
@@ -105,11 +105,6 @@
         border-radius:50%;
         pointer-events:none;
 
-        /*left:1500px;
-        top: 0px;
-        width: 100px;
-        height: 100px;*/
-
         left:var(--dx);
         top:var(--dy);
 
@@ -117,6 +112,7 @@
         height:var(--dr);
 
         transform:translate(-50%,-50%);
+        box-shadow: 0 0 0 8000px var(--deadzone-color);
     }
     .map-deadzone-dest{
         position:absolute;
@@ -137,9 +133,59 @@
         transform:translate(-50%,-50%);
         box-shadow:0 0 0 30px #fff5;
     }
-}
+    .map-deadzone-safe-line{
+        position:absolute;
+        height:10px;
+        background:var(--game-device-primary);
+        transform-origin:left center;
+        pointer-events:none;
+    }
+    .map-ping{
+        position:absolute;
 
-@keyframes pingAnim {
-    0% { transform: scale(0.5); opacity: 1; }
-    100% { transform: scale(2); opacity: 0; }
+        width:50px;
+        height:50px;
+
+        pointer-events:none;
+
+        left: var(--px);
+        top: var(--py);
+
+        scale: var(--scale);
+
+        transform:translate(-50%,-50%);
+        z-index:40;
+
+        .map-ping-icon{
+            position:absolute;
+
+            left:0;
+            top:0;
+
+            width:50px;
+            height:50px;
+
+            z-index:2;
+            svg path {
+                fill: var(--ping-color);
+            }
+        }
+        .map-ping-pulse{
+            position:absolute;
+
+            left:50%;
+            top:50%;
+
+            width:20px;
+            height:20px;
+
+            border-radius:50%;
+
+            border:3px solid var(--ping-color);
+
+            transform:translate(-50%,-50%);
+
+            z-index:1;
+        }
+    }
 }

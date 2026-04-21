@@ -49,6 +49,7 @@ export class PlayerClient extends PlayerConnManager{
     get_update_packet():UpdatePacket{
         const up=new UpdatePacket()
         up.definition=this.game.definitions
+        up.priv.pings=[...this.game.pings]
         if(this.human&&!this.spectating){
             up.priv.active_entity={
                 dirty:true,

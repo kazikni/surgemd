@@ -156,7 +156,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 sound:"explosion_1"
             },
             synced_particles:{
-                count:10,
+                count:8,
                 def:"smoke"
             }
         },

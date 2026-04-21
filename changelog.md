@@ -20,6 +20,7 @@ __                                                                              
 * Luck Coin
 * Rare Projectile
 * Ghost Ammo
+* Self Revive
 * Biggerst Maganize
 __                                                                                                      __
 ### Others

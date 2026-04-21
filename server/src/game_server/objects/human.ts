@@ -134,11 +134,15 @@ export class Human extends MovingBody{
         combat_enabled:boolean
         friendly_fire:boolean
         alternative_vehicle_control:boolean
+
+        self_revive:boolean
     }={
         movement_enabled:true,
         combat_enabled:true,
         friendly_fire:false,
         alternative_vehicle_control:true,
+
+        self_revive:false
     }
 
     input:{
@@ -837,7 +841,7 @@ export class Human extends MovingBody{
     }
     self_state(full:boolean):SelfStateUpdate{
         const ret:SelfStateUpdate={
-            health:this.health_data.health,
+            health:Math.ceil(this.health_data.health),
             max_health:this.health_data.max_health,
             boost:this.health_data.boost,
             max_boost:this.health_data.max_boost,
@@ -987,31 +991,21 @@ export class Human extends MovingBody{
         this.piercing_damage(params)
     }
     piercing_damage(params: DamageParams): [number, number] {
-        let totalDamage = params.amount
         let shieldDamage = 0
         let healthDamage = 0
         this.net_sync.part = true
         const pos = params.position ?? this.position
         if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
-            shieldDamage = Math.min(this.health_data.boost, totalDamage*this.game.modeManager.rules.humans.boosts.shield.damage_multiplier)
-            if (totalDamage >= this.health_data.boost * 4) {
-                healthDamage = totalDamage - shieldDamage
+            shieldDamage = Math.min(this.health_data.boost, params.amount*this.game.modeManager.rules.humans.boosts.shield.damage_multiplier)
+            if (params.amount >= this.health_data.boost * 2) {
+                healthDamage = params.amount - this.health_data.boost
                 this.health_data.boost = 0
             } else {
                 this.health_data.boost -= shieldDamage
-                totalDamage=shieldDamage
             }
             this.add_damage_splash(
                 params.owner,
-                totalDamage,
-                true,
-                params.critical,
-                pos,
-                this.health_data.boost === 0
-            )
-            this.add_damage_splash(
-                params.owner,
-                totalDamage,
+                shieldDamage,
                 true,
                 params.critical,
                 pos,
@@ -1022,21 +1016,21 @@ export class Human extends MovingBody{
                 this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
-            healthDamage = Math.min(this.health_data.health, totalDamage)
+            healthDamage = Math.min(this.health_data.health, params.amount)
+        }
+        if (healthDamage > 0) {
+            this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
             this.add_damage_splash(
                 params.owner,
-                totalDamage,
+                healthDamage,
                 false,
                 params.critical,
                 pos,
                 false
             )
         }
-        if (healthDamage > 0) {
-            this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
-        }
         if (this.health_data.health === 0) {
-            if (!this.health_data.downed && this.game.modeManager.can_down(this)) {
+            if (!this.health_data.downed && (this.game.modeManager.can_down(this)||this.human_data.self_revive)) {
                 this.down(params)
             } else {
                 this.die(params)

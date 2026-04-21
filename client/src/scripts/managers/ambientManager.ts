@@ -314,7 +314,7 @@ export class AmbientManager{
                 }
             }
 
-            this.game.tab.update_header(this.date)
+            this.game.device.update_header(this.date)
             this.update_day_light()
         }
 

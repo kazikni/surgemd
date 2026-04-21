@@ -227,23 +227,23 @@
     transform: translateX(-50%);
     .scope-slot{
         display: flex;
-        border-radius: 100%;
+        border-radius: 10%;
         background-color: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
         width: fit-content;
         height: fit-content;
         box-shadow: 0 0 3px var(--ui-theme-primary);
         .icon{
-            padding: 10px;
-            width: 30px;
-            height: 30px;
+            padding: 5px;
+            width: 40px;
+            height: 40px;
         }
     }
     .scope-slot-selected{
         border: 2px solid var(--ui-theme-primary);
         .icon{
-            padding: 13px;
-            width: 45px;
-            height: 45px;
+            padding: 7px;
+            width: 50px;
+            height: 50px;
         }
     }
     @media screen and (max-width: palette.$screen_large){

@@ -1,4 +1,4 @@
-import { TabApp, TabManager } from "../managers/tabManager.ts";
+import { TabApp, TabManager } from "../managers/deviceManager.ts";
 import { ShopItemType, ShopNode } from "common/scripts/packets/joinned_packet.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 

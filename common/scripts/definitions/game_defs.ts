@@ -11,6 +11,7 @@ import { MeleeDef, Melees_Default_Init } from "./items/melees.ts";
 import { ScopeDef, Scopes_Default_Init } from "./items/scopes.ts";
 import { BadgeDef, Badges_Default_Init } from "./loadout/badges.ts";
 import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
+import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
 import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
 import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
@@ -21,7 +22,7 @@ import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { InventoryItemType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
-export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef|LoadoutItemDef
+export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef|LoadoutItemDef|PingDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
 
@@ -69,6 +70,9 @@ export class GameDefinition{
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.idString="emote_"+e.idString
     })
+    ping=new Definitions<PingDef,{}>((e)=>{
+        e.idString="ping_"+e.idString
+    })
 
     // Objects
     buildings=new Definitions<BuildingDef,{}>((i)=>{})
@@ -101,6 +105,7 @@ export class GameDefinition{
         Loadout_Default_Init(this.loadout)
         Badges_Default_Init(this.badges)
         Emotes_Default_Init(this.emotes)
+        Ping_Default_Init(this.ping)
 
         Buildings_Default_Init(this.buildings)
         Creatures_Default_Init(this.creatures)
@@ -124,6 +129,7 @@ export class GameDefinition{
         this.game_objects.insert_def(this.loadout.value)
         this.game_objects.insert_def(this.emotes.value)
         this.game_objects.insert_def(this.badges.value)
+        this.game_objects.insert_def(this.ping.value)
         this.game_objects.insert_def(this.buildings.value)
         this.game_objects.insert_def(this.creatures.value)
         this.game_objects.insert_def(this.explosions.value)

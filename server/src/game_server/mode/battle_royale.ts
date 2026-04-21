@@ -113,6 +113,9 @@ export class BattleRoyaleSolo extends ModeManager{
                 if(this.can_start())this.game.start()
             },3)
         }
+        if(!this.can_join()){
+            this.game.close()
+        }
     }
     override on_player_die(p:Player){
         if(p.conn){

@@ -22,7 +22,8 @@ export const NormalMap:MapDef={
     loot_tables:{
         //Guns Quality
         "common_guns":[
-            {item:"m9",weight:10},
+            {item:"m9",weight:15},
+            {item:"taurustx",weight:12},
             {item:"micro_uzi",weight:3},
         ],
         "uncommon_guns":[
@@ -120,10 +121,10 @@ export const NormalMap:MapDef={
         "ammos":[
             {item:"12g",count:5,weight:5},
             {item:"9mm",count:40,weight:5},
-            //{item:"22lr",count:60,weight:5},
+            {item:"22lr",count:60,weight:5},
             {item:"762mm",count:40,weight:5},
             {item:"556mm",count:40,weight:5},
-            {item:"45acp",count:40,weight:1},
+            {item:"45acp",count:40,weight:5},
             {item:"50cal",count:20,weight:0.1},
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
@@ -132,10 +133,10 @@ export const NormalMap:MapDef={
         "special_ammos":[
             {item:"12g",count:10,weight:5},
             {item:"9mm",count:80,weight:5},
-            //{item:"22lr",count:80,weight:5},
+            {item:"22lr",count:100,weight:5},
             {item:"762mm",count:80,weight:5},
             {item:"556mm",count:80,weight:5},
-            {item:"45acp",count:80,weight:1},
+            {item:"45acp",count:80,weight:5},
             {item:"50cal",count:40,weight:0.3},
             {item:"308sub",count:10,weight:0.2},
             {item:"gasoline",count:10,weight:0.2},

@@ -18,6 +18,7 @@ __                                                                              
 * Humans Drop Consumibles After Use
 * More Casing Particles
 * M1A1 - 45acp Tommy AR
+* TaurusTX - 22LR Pistol
 * Pygmy Necklance
 * Luck Coin
 * Rare Projectile

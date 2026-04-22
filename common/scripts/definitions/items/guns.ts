@@ -198,10 +198,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:0.7,
             lenght:0.8,
             ammoType:"9mm",
+            ammoSpawnAmount:45,
             fireMode:FireMode.Single,
             class:GunClasses.Pistol,
             rank:ItemRank.E,
-            ammoSpawnAmount:45,
             bullet:{
                 def:{
                     damage:11,
@@ -238,6 +238,65 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 fireDelay:0.1,
                 reload:{
                     capacity:30,
+                    delay:3
+                }
+            }
+        },
+        {
+            idString:"taurustx",
+            fireDelay:0.3,
+            switchDelay:0.5,
+            spread:2,
+            lenght:0.8,
+            ammoType:"22lr",
+            ammoSpawnAmount:60,
+            fireMode:FireMode.Burst,
+            burst:{
+                delay:0.05,
+                sequence:4
+            },
+            class:GunClasses.Pistol,
+            rank:ItemRank.E,
+            bullet:{
+                def:{
+                    damage:3.5,
+                    range:80,
+                    falloff:0.6,
+                    speed:30,
+                    tracer:tracers.tiny
+                }
+            },
+            reload:{
+                delay:2,
+                capacity:20,
+                extended_capacity:40,
+            },
+            recoil:{
+                duration:0.34,
+                speed:0.8
+            },
+            arms:WeaponsArmRig[3],
+            assets:{
+                world:"weapon_small_world",
+                world_tint:0xaaaaaa
+            },
+            gasParticles:GasParticles.pistols,
+            case:{
+                position:v2.new(0.5,0.1)
+            },
+            muzzleFlash:MuzzleFlash.normal,
+            image:WeaponsRig[0],
+            dual:{
+                dual_offset:0.2,
+                fireDelay:0.15,
+                spread:3.5,
+                burst:{
+                    delay:0.05,
+                    sequence:8
+                },
+                reload:{
+                    capacity:40,
+                    extended_capacity:80,
                     delay:3
                 }
             }
@@ -301,10 +360,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:0.7,
             lenght:0.8,
             ammoType:"308sub",
+            ammoSpawnAmount:25,
             fireMode:FireMode.Single,
             class:GunClasses.Pistol,
             rank:ItemRank.S,
-            ammoSpawnAmount:25,
             bullet:{
                 def:{
                     damage:55,

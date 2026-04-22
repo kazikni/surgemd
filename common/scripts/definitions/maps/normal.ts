@@ -269,6 +269,7 @@ export const NormalMap:MapDef={
             [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
             [{weight:1,table:"throwables"}],
+            [{weight:1,table:"special_scopes"}],
             [{weight:10,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
@@ -277,6 +278,7 @@ export const NormalMap:MapDef={
             [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
             [{weight:10,table:"legendary_guns"}],
             [{weight:1,table:"throwables"}],
+            [{weight:1,table:"special_scopes"}],
             [{weight:1,table:""},{weight:4,table:"melees"}],
         ],
         "platinum_crate":[
@@ -286,7 +288,8 @@ export const NormalMap:MapDef={
             [{weight:1,count:7,table:"mythic_guns"}],
             [{weight:1,count:2,table:"legendary_guns"}],
             [{weight:1,count:2,table:"melees"}],
-            [{weight:1,count:4,table:"throwables"}],
+            [{weight:1,count:5,table:"throwables"}],
+            [{weight:1,count:4,table:"special_scopes"}],
         ],
         //Animals
         "animal_medium":[

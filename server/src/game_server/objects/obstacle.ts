@@ -66,6 +66,7 @@ export class Obstacle extends StaticBody{
     door_data?:ObstacleDoorData&{dirty:boolean}
     transform_into_data?:{
         activated:boolean
+        def:number
     }
 
     constructor(){
@@ -173,10 +174,13 @@ export class Obstacle extends StaticBody{
                 }
                 case 3:{
                     if(!this.transform_into_data?.activated){
+                        this.net_sync.part=true
+                        const choose=random.weight2(this.def.expanded_behavior.obstacles)!
                         this.transform_into_data={
-                            activated:true
+                            activated:true,
+                            def:this.def.expanded_behavior.obstacles.indexOf(choose)
                         }
-                        const def=this.game.definitions.obstacles.getFromString(random.weight2(this.def.expanded_behavior.obstacles)!.id)
+                        const def=this.game.definitions.obstacles.getFromString(choose.id)
                         this.game.add_timeout(()=>{
                             this.destroy()
 
@@ -429,7 +433,8 @@ export class Obstacle extends StaticBody{
             this.health_data.dirty,
             this.health_data.dead,
 
-            door_dirty
+            door_dirty,
+            this.transform_into_data?.activated
         )
         if(full||this.visual_data.dirty){
             stream.writeUint8(this.visual_data.variation)
@@ -452,6 +457,9 @@ export class Obstacle extends StaticBody{
 
         if(door_dirty){
             stream.writeInt8(this.door_data!.open)
+        }
+        if(this.transform_into_data?.activated){
+            stream.writeUint8(this.transform_into_data.def)
         }
     }
 }

@@ -1,4 +1,4 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 export interface ObstacleBehaviorDoor{
     type:0,
@@ -31,7 +31,14 @@ export interface ObstacleBehaviorScalable{
 export interface ObstacleBehaviorTransformInto{
     type:3,
     obstacles:(WeightDefinition&{id:string})[]
+    sprites?:Record<number,FrameDef>
+    particles?:{
+        frame:FrameDef
+        delay:number
+        count:number
+    }[]
     delay:number
+    sound?:string
 }
 export interface ObstacleDef extends Definition{
     // Life
@@ -429,6 +436,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                     },
                 }
             },
+            zIndex:zIndexes.Obstacles1,
             rotationMode:RotationMode.null,
             material:"metal",
             spawnMode:Spawn.grass,
@@ -436,7 +444,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             reflect_bullets:true,
             expanded_behavior:{
                 type:3,
-                delay:2,
+                delay:2.8,
+                sound:"airdrop_unlocking_1",
                 obstacles:[
                     {
                         id:"iron_crate",
@@ -445,6 +454,25 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                     {
                         id:"gold_crate",
                         weight:1
+                    }
+                ],
+                sprites:{
+                    0:{
+                        image:"airdrop_locked_1"
+                    },
+                    1:{
+                        image:"airdrop_locked_2"
+                    }
+                },
+                particles:[
+                    {
+                        frame:{
+                            image:"airdrop_particle_1",
+                            scale:2,
+                            zIndex:zIndexes.Particles
+                        },
+                        count:1,
+                        delay:0
                     }
                 ]
             }

@@ -1,5 +1,5 @@
 import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
-import { Materials, ObstacleBehaviorDoor, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
+import { Materials, ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -47,6 +47,10 @@ export class Obstacle extends StaticBody{
     skin=0
 
     interacted:boolean=false
+
+    transform_into_data?:{
+        activated:boolean
+    }
 
     ////////////////////////////
     // Assets                 //
@@ -218,6 +222,16 @@ export class Obstacle extends StaticBody{
         this.physical_data.no_collision=this.def.no_collision??false
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
+
+        if(this.def.expanded_behavior){
+            switch(this.def.expanded_behavior.type){
+                case 3:
+                    this.transform_into_data={
+                        activated:false
+                    }
+                    break
+            }
+        }
     }
     initialize_hitboxes(){
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
@@ -236,6 +250,39 @@ export class Obstacle extends StaticBody{
         }
 
         this.manager.cells.updateObject(this)
+    }
+    transform_into_update(def:number){
+        if(this.transform_into_data?.activated)return
+        this.transform_into_data!.activated=true
+
+        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound)this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound!),{
+            max_distance:30,
+        },"obstacles")
+        for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).particles??[]){
+            this.game.add_timeout(()=>{
+                for(let c=0;c<p.count;c++){
+                    this.game.particles.add_particle(new ABParticle2D({
+                        frame:p.frame,
+
+                        position:this.position,
+                        speed:random.float(1,2),
+                        angle:this.physical_data.rotation,
+                        direction:random.rad(),
+                        life_time:2,
+                        zIndex:zIndexes.Particles,
+
+                        tint:this.assets_data.particles_tint,
+                        to:{
+                            speed:random.float(0.1,1),
+                            angle:this.physical_data.rotation+random.rad(),
+                        }
+                    }))
+                }
+            },p.delay)
+        }
+        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites&&(this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def]){
+            this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def],this.game.resources)
+        }
     }
     update_door(ne:number,force:boolean=false){
         const old=this.door_data!.open
@@ -316,7 +363,8 @@ export class Obstacle extends StaticBody{
             health_data,
             dead,
 
-            door_dirty
+            door_dirty,
+            transform_into_active
         ]=stream.readBooleanGroup()
         if(visual||full){
             this.variation=stream.readUint8()
@@ -366,6 +414,13 @@ export class Obstacle extends StaticBody{
 
         if(door_dirty){
             this.update_door(stream.readInt8(),full)
+        }
+        if(this.transform_into_data){
+            if(this.transform_into_data.activated&&!transform_into_active){
+                this.transform_into_data.activated=false
+            }else if(transform_into_active){
+                this.transform_into_update(stream.readUint8())
+            }
         }
     }
 }

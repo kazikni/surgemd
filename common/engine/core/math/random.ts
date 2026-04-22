@@ -35,6 +35,7 @@ export const random=Object.freeze({
         return {x:Math.cos(angle)*len,y:Math.sin(angle)*len}
     },
     weight<Item>(items:Item[], weights:number[]) {
+        if(items.length===1)return items[0]
         const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
         let randomNum = Math.random() * totalWeight;
         
@@ -46,6 +47,7 @@ export const random=Object.freeze({
         }
     },
     weight2<TP extends WeightDefinition>(items:TP[]) {
+        if(items.length===1)return items[0]
         const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
         let randomNum = Math.random() * totalWeight;
     

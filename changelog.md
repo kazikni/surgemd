@@ -13,6 +13,7 @@ __                                                                              
 __                                                                                                      __
 ### Items
 * *Omni Necklance*
+* Molotov Cocktail
 * Casing Sounds
 * Humans Drop Consumibles After Use
 * More Casing Particles

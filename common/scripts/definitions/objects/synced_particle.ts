@@ -1,4 +1,5 @@
 import { CircleHitbox2D, Definition, Definitions, FrameDef, Hitbox2D, v2 } from "../../../engine/core.ts";
+import { zIndexes } from "../../others/constants.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 export interface SyncedParticleDef extends Definition{
     frame:FrameDef
@@ -140,7 +141,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 }
             ],
             frame:{
-                image:"smoke_particle",
+                image:"firing_particle",
                 scale:0.01,
                 tint:0xe68302
             },
@@ -171,6 +172,61 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                     alpha:{
                         to:0,
                         duration:0.3,
+                    },
+                }
+            }
+        },
+        {
+            idString:"molotov_fire",
+            lifetime:33,
+            hitbox:new CircleHitbox2D(v2.zero,0.5),
+            side_effect:[
+                {
+                    type:SideEffectType.AddEffect,
+                    duration:5,
+                    effect:"fire"
+                },
+                {
+                    type:SideEffectType.Damage,
+                    amount:0.5,
+                    obstacle_mult:1
+                }
+            ],
+            frame:{
+                image:"firing_particle",
+                scale:0.01,
+                zIndex:zIndexes.Decals,
+                tint:0xe68302
+            },
+            movement:{
+                type:"walk",
+                velocity:{
+                    min:0.7,
+                    max:4,
+                    decay:2
+                },
+                angular:{
+                    min:1,
+                    max:4
+                },
+            },
+            animation:{
+                spawn:{
+                    alpha:{
+                        from:0,
+                        to:0.5,
+                        duration:0.2,
+                    },
+                    scale:{
+                        to:1,
+                        duration:0.2,
+                    }
+                },
+                destroy:{
+                    time:1,
+                    alpha:{
+                        to:0,
+                        duration:0.2,
                     },
                 }
             }

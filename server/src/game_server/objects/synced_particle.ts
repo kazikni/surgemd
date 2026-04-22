@@ -25,36 +25,39 @@ export class SyncedParticle extends MovingBody {
     spiral_origin=v2.zero()
 
     override on_collided(obj:ServerGameObject,dt:number){
-        if(this.def.movement?.type==="direction"){
-            switch(obj.number_type){
-                case GameObjectType.Obstacle:
-                case GameObjectType.Building:{
-                    const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
-                    if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
-                        for(const s of this.def.side_effect){
-                            (obj as StaticBody).side_effect(s,this.owner)
-                        }
+        switch(obj.number_type){
+            case GameObjectType.Obstacle:
+            case GameObjectType.Building:{
+                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
+                if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
+                    for(const s of this.def.side_effect){
+                        (obj as StaticBody).side_effect(s,this.owner)
                     }
+                }
+                if(this.def.movement?.type==="direction"){
                     if((obj as StaticBody).physical_data.no_collision)break
                     for(const c of ov){
                         v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
                     }
-                    break
                 }
-                case GameObjectType.Human:{
-                    const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
+                break
+            }
+            case GameObjectType.Human:{
+                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
+                
+                if(this.def.movement?.type==="direction"){
                     for(const c of ov){
                         v2m.sub(this.physical_data.velocity,this.physical_data.velocity,v2.scale((c.dir.x===1&&c.dir.y===0)?v2.random(-1,1):c.dir,4*dt))
                     }
-
-                    if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
-                        if(this.def.no_hit_owner&&obj.id===this.owner?.id)return
-                        for(const s of this.def.side_effect){
-                            (obj as Human).side_effect(s,this.owner)
-                        }
-                    }
-                    break
                 }
+
+                if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
+                    if(this.def.no_hit_owner&&obj.id===this.owner?.id)break
+                    for(const s of this.def.side_effect){
+                        (obj as Human).side_effect(s,this.owner)
+                    }
+                }
+                break
             }
         }
     }

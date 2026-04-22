@@ -145,6 +145,7 @@ export const NormalMap:MapDef={
         "throwables":[
             {item:"frag_grenade",count:2,weight:60},
             {item:"smoke_grenade",count:2,weight:60},
+            {item:"molotov",count:1,weight:30},
             {item:"mirv_grenade",count:1,weight:20},
             {item:"blue_flare",count:1,weight:1},
             {item:"red_flare",count:1,weight:1},
@@ -263,18 +264,20 @@ export const NormalMap:MapDef={
             {weight:0.25,count:4,table:"special_loot"},
         ],
         "iron_crate":[
-            [{weight:10,table:"special_ammos",count:2}],
-            [{weight:10,table:"consumibles"},{weight:1,table:""}],
+            [{weight:1,table:"special_ammos",count:2}],
+            [{weight:1,table:"special_consumibles",count:2}],
             [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
-            [{weight:5,table:""},{weight:1,table:"melees"}],
+            [{weight:1,table:"throwables"}],
+            [{weight:10,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
-            [{weight:10,table:"special_ammos",count:2}],
-            [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
+            [{weight:1,table:"special_ammos",count:2}],
+            [{weight:1,table:"special_consumibles",count:2}],
             [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
-            [{weight:10,table:"legendary_guns"},{weight:1,table:"mythic_guns"}],
-            [{weight:1,table:"melees"}],
+            [{weight:10,table:"legendary_guns"}],
+            [{weight:1,table:"throwables"}],
+            [{weight:1,table:""},{weight:4,table:"melees"}],
         ],
         "platinum_crate":[
             [{weight:1,table:"special_ammos",count:4}],
@@ -282,7 +285,8 @@ export const NormalMap:MapDef={
             [{weight:1,count:6,table:"tactical_equipments"}],
             [{weight:1,count:7,table:"mythic_guns"}],
             [{weight:1,count:2,table:"legendary_guns"}],
-            [{weight:1,count:3,table:"melees"}],
+            [{weight:1,count:2,table:"melees"}],
+            [{weight:1,count:4,table:"throwables"}],
         ],
         //Animals
         "animal_medium":[

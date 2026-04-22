@@ -31,6 +31,8 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
 
                 "frag_grenade":9,
                 "smoke_grenade":12,
+                "mirv_grenade":7,
+                "molotov":5,
                 "red_flare":2,
                 "blue_flare":2,
 

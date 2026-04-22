@@ -43,11 +43,8 @@ export class Grenade extends MovingBody{
         if(this.def)return
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
-        this.sprite.set_frame({
-            image:this.def.frames.world,
-            hotspot:CenterHotspot,
-            scale:1
-        },this.game.resources)
+        this.sprite.hotspot=CenterHotspot
+        this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
             this.particles_spawner=this.game.particles.add_emiter({
                 delay:def.particles!.delay,

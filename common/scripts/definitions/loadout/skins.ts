@@ -168,6 +168,63 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 arm_tint:0xf01041
             }
         },
+
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"white_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0xffffff
+                },
+                arm_tint:0xffffff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"blue_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0x0066ff
+                },
+                arm_tint:0x0066ff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"yellow_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0x0066ff
+                },
+                arm_tint:0x0066ff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"red_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0xe5ce0c
+                },
+                arm_tint:0xe5ce0c
+            }
+        },
         //Legs
         {
             item:LoadoutItemKind.Leg,

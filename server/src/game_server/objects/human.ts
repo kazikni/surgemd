@@ -234,7 +234,7 @@ export class Human extends MovingBody{
                 tint:random.choose([0x222222,0xffffff,0xf01041,0x331f00,0x4d3108,0xfbff05])
             },
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
-            shirt:this.game.definitions.loadout.getFromString(random.choose(["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
+            shirt:this.game.definitions.loadout.getFromString(random.choose(female?["white_dress","blue_dress","yellow_dress","red_dress","blue_shirt","white_shirt","red_shirt","yellow_shirt"]:["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
             legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
             emotes:{
 

@@ -165,7 +165,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:0.3,
                 end:0.5
             },
-            damage:0,
+            damage:5,
             assets:{
                 sound:"explosion_6"
             },

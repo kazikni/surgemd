@@ -27,11 +27,11 @@
         "enemies":[
             {
                 "def":"basic",
-                "count":15
+                "count":20
             },
             {
                 "def":"advanced",
-                "count":15
+                "count":10
             }
         ]
     },

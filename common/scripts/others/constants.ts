@@ -1,4 +1,4 @@
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -140,6 +140,7 @@ export interface HumanLoadoutData {
     }
     eyes:LoadoutEyesDef
     shirt:LoadoutShirtDef
+    legs:LoadoutLegDef
 }
 export interface HumanAnimationData{
     dirty:boolean

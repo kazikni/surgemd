@@ -1,11 +1,12 @@
-import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, Definitions, FrameDef, v2, Vec2 } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 
 export enum LoadoutItemKind{
     Body,
     Hair,
     Eyes,
-    Shirt
+    Shirt,
+    Leg
 }
 export interface LoadoutBodyDef extends Definition{
     item:LoadoutItemKind.Body
@@ -22,9 +23,8 @@ export interface LoadoutBodyDef extends Definition{
 }
 export interface LoadoutHairDef extends Definition{
     item:LoadoutItemKind.Hair
-    position:Vec2
     frame?:{
-        base?:string
+        base?:FrameDef
     }
     rank:ItemRank,
 }
@@ -42,12 +42,19 @@ export interface LoadoutShirtDef extends Definition{
     frame?:{
         arm?:string
         arm_tint?:number
-        chest?:string
-        chest_tint?:number
+        chest?:FrameDef
     }
     rank:ItemRank,
 }
-export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef
+export interface LoadoutLegDef extends Definition{
+    item:LoadoutItemKind.Leg
+    frame?:{
+        foot?:FrameDef
+        leg?:FrameDef
+    }
+    rank:ItemRank,
+}
+export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef
 export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
     loadout.insert(
         {
@@ -55,7 +62,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"body_1",
             rank:ItemRank.E,
             frame:{
-                hand:"human_hand_1"
+                hand:"human_hand_1",
             },
             mounth:{
                 position:v2(0.3,0),
@@ -68,13 +75,21 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             item:LoadoutItemKind.Hair,
             idString:"hair_1",
             rank:ItemRank.E,
-            position:v2(-0.15,0)
+            frame:{
+                base:{
+                    position:v2(-0.15,0)
+                }
+            },
         },
         {
             item:LoadoutItemKind.Hair,
             idString:"hair_2",
             rank:ItemRank.E,
-            position:v2(-0.2,0)
+            frame:{
+                base:{
+                    position:v2(-0.2,0)
+                }
+            }
         },
         //Eyes
         {
@@ -96,7 +111,9 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
-                chest:"human_shirt_1_chest",
+                chest:{
+                    image:"human_shirt_1_chest",
+                },
             }
         },
         {
@@ -105,7 +122,10 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
-                chest:"human_shirt_1_chest",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x0066ff
+                },
                 arm_tint:0x0066ff
             }
         },
@@ -115,7 +135,10 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
-                chest:"human_shirt_1_chest",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x222222
+                },
                 arm_tint:0x222222
             }
         },
@@ -125,7 +148,10 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
-                chest:"human_shirt_1_chest",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0xe5ce0c
+                },
                 arm_tint:0xe5ce0c
             }
         },
@@ -135,8 +161,27 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 arm:"human_shirt_1_arm",
-                chest:"human_shirt_1_chest",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0xf01041
+                },
                 arm_tint:0xf01041
+            }
+        },
+        //Legs
+        {
+            item:LoadoutItemKind.Leg,
+            idString:"jeans_pants",
+            rank:ItemRank.E,
+            frame:{
+                leg:{
+                    image:"human_leg_1_1",
+                    tint:0x343f4e
+                },
+                foot:{
+                    image:"human_leg_1_2",
+                    tint:0x353c7e,
+                },
             }
         },
     )

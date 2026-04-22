@@ -17,7 +17,7 @@ import { StaticBody } from "./static_body.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -71,8 +71,16 @@ export class Human extends MovingBody{
         right_hand:Sprite2D
 
         chest:Sprite2D
-        left_leg:Sprite2D
-        right_leg:Sprite2D
+
+        left_leg:Container2D
+        right_leg:Container2D
+
+        left_leg_l:Sprite2D
+        right_leg_l:Sprite2D
+
+        left_leg_foot:Sprite2D
+        right_leg_foot:Sprite2D
+
         weapon:Sprite2D
         weapon2:Sprite2D
         muzzle_flash:Sprite2D
@@ -385,7 +393,7 @@ export class Human extends MovingBody{
         }
         this.container.update_zindex()
     }
-    set_skin(body_def:LoadoutBodyDef,hair_def:LoadoutHairDef,eyes_def:LoadoutEyesDef,shirt_def:LoadoutShirtDef,body_tint:number,hair_tint:number){
+    set_skin(body_def:LoadoutBodyDef,hair_def:LoadoutHairDef,eyes_def:LoadoutEyesDef,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number,hair_tint:number){
         if(
             this.loadout&&
             this.loadout.body.def===body_def&&this.loadout.body.tint==body_tint&&
@@ -402,30 +410,26 @@ export class Human extends MovingBody{
                 tint:hair_tint
             },
             eyes:eyes_def,
-            shirt:shirt_def
+            shirt:shirt_def,
+            legs:legs_def
         }
 
         const body_t=ColorM.number(body_tint)
-        const hair_t=ColorM.number(hair_tint)
 
         const body_f=body_def.frame?.base??"human_"+body_def.idString
         const hand_f=body_def.frame?.hand??"human_"+body_def.idString+"_hand"
-        const hair_f=hair_def.frame?.base??"human_"+hair_def.idString
         const eyes_f=[eyes_def.frame?.base??"human_"+eyes_def.idString+"_1",eyes_def.frame?.blink??"human_"+eyes_def.idString+"_2"]
 
         const arm_f=shirt_def.frame?.arm??("human_"+shirt_def.idString+"_arm")
-        const cf=("_chest")
-
-        const lrf="_leg"
 
         this.sprites.body.frame=this.game.resources.get_sprite(body_f)
-        this.sprites.hair.frame=this.game.resources.get_sprite(hair_f)
+
+        this.sprites.hair.tint=ColorM.number(hair_tint)
+        if(hair_def.frame?.base)this.sprites.hair.set_frame(Object.assign({image:"human_"+hair_def.idString},hair_def.frame?.base),this.game.resources)
         this.sprites.eyes.frame=this.game.resources.get_sprite(eyes_f[0])
 
         this.sprites.body.tint=body_t
-        this.sprites.hair.tint=hair_t
 
-        this.sprites.hair.position=hair_def.position
         this.sprites.eyes.position=eyes_def.position
 
         this.sprites.left_shirt_arm.frame=this.game.resources.get_sprite(arm_f)
@@ -439,8 +443,16 @@ export class Human extends MovingBody{
         if(shirt_def.frame?.arm_tint)this.sprites.left_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
         if(shirt_def.frame?.arm_tint)this.sprites.right_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
 
-        this.sprites.left_leg.frame=this.game.resources.get_sprite(lrf)
-        this.sprites.right_leg.frame=this.game.resources.get_sprite(lrf)
+        if(legs_def.frame?.leg){
+            this.sprites.left_leg_l.set_frame(legs_def.frame.leg,this.game.resources)
+            this.sprites.right_leg_l.set_frame(legs_def.frame.leg,this.game.resources)
+        }
+        if(legs_def.frame?.foot){
+            this.sprites.left_leg_foot.position=v2(0.05,0)
+            this.sprites.right_leg_foot.position=v2(0.05,0)
+            this.sprites.left_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
+            this.sprites.right_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
+        }
 
         this.sprites.left_leg.position=v2(-0.75,-0.22)
         this.sprites.right_leg.position=v2(-0.75,0.22)
@@ -451,15 +463,9 @@ export class Human extends MovingBody{
         this.sprites.left_leg.zIndex=1
         this.sprites.right_leg.zIndex=1
 
-        this.sprites.chest.frame=this.game.resources.get_sprite(cf)
         this.sprites.chest.position=v2(-0.25,0)
-        this.sprites.chest.scale=v2(1.33333,1.33333)
         this.sprites.chest.visible=false
-        this.sprites.chest.zIndex=1
-
-        this.sprites.left_leg.hotspot=v2(0,0.5)
-        this.sprites.right_leg.hotspot=v2(0,0.5)
-        this.sprites.backpack.hotspot=v2(1,0.5)
+        if(shirt_def.frame?.chest)this.sprites.chest.set_frame(shirt_def.frame.chest,this.game.resources)
 
         this.sprites.weapon.zIndex=2
 
@@ -499,7 +505,7 @@ export class Human extends MovingBody{
 
             helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.333333,hotspot:CenterHotspot}),
 
-            backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),scale:1.34,zIndex:3}),
+            backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.34,zIndex:3}),
             vest:this.container.add_sprite("vest",{zIndex:0,scale:1.333333,hotspot:CenterHotspot}),
 
             left_arm:this.container.add_container("left_arm"),
@@ -510,9 +516,15 @@ export class Human extends MovingBody{
             right_shirt_arm:new Sprite2D(),
             right_hand:new Sprite2D(),
 
-            left_leg:this.container.add_sprite("left_leg",{scale:1.333333}),
-            right_leg:this.container.add_sprite("right_leg",{scale:1.333333}),
-            chest:this.container.add_sprite("chest"),
+            left_leg:this.container.add_container("left_leg"),
+            right_leg:this.container.add_container("right_leg"),
+
+            left_leg_l:new Sprite2D(),
+            left_leg_foot:new Sprite2D(),
+            right_leg_l:new Sprite2D(),
+            right_leg_foot:new Sprite2D(),
+
+            chest:this.container.add_sprite("chest",{scale:1.333333,hotspot:CenterHotspot,zIndex:1}),
             muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,.5)}),
             parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2(0.5,0.5),visible:false}),
             weapon:this.container.add_sprite("weapon"),
@@ -548,8 +560,30 @@ export class Human extends MovingBody{
         this.sprites.right_arm.add_child(this.sprites.right_hand)
         this.sprites.right_arm.add_child(this.sprites.right_shirt_arm)
 
-        this.container.add_child(this.sprites.left_arm)
-        this.container.add_child(this.sprites.right_arm)
+        this.sprites.left_leg_l.transform_frame({
+            hotspot:v2(0,0.5),
+            zIndex:1
+        })
+        this.sprites.left_leg_foot.transform_frame({
+            hotspot:v2(0.5,0.5),
+            zIndex:0
+        })
+
+        this.sprites.right_leg_l.transform_frame({
+            hotspot:v2(0,0.5),
+            zIndex:1
+        })
+        this.sprites.right_leg_foot.transform_frame({
+            hotspot:v2(0.5,0.5),
+            zIndex:0
+        })
+        v2m.set(this.sprites.left_leg.scale,1.333333,1.333333)
+        v2m.set(this.sprites.right_leg.scale,1.333333,1.333333)
+
+        this.sprites.left_leg.add_child(this.sprites.left_leg_l)
+        this.sprites.left_leg.add_child(this.sprites.left_leg_foot)
+        this.sprites.right_leg.add_child(this.sprites.right_leg_l)
+        this.sprites.right_leg.add_child(this.sprites.right_leg_foot)
 
         this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
         this.anims.consumible_particles=this.game.particles.add_emiter({
@@ -575,13 +609,6 @@ export class Human extends MovingBody{
 
         this.game.cam2d.addObject(this.container)
         this.sprites.parachute.frame=this.game.resources.get_sprite("parachute")
-        this.set_skin(
-            this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
-            this.game.definitions.loadout.getFromString("hair_1") as LoadoutHairDef,
-            this.game.definitions.loadout.getFromString("eyes_1") as LoadoutEyesDef,
-            this.game.definitions.loadout.getFromString("white_shirt") as LoadoutShirtDef,
-            0,0
-        )
         this.sprites.vest._frame=this.game.resources.get_sprite("player_vest")
         this.sprites.vest.sync_rotation=false
         this.sprites.emote_container.sync_rotation=false
@@ -598,6 +625,15 @@ export class Human extends MovingBody{
             hotspot:CenterHotspot,
             scale:2.6
         })
+
+        this.set_skin(
+            this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
+            this.game.definitions.loadout.getFromString("hair_1") as LoadoutHairDef,
+            this.game.definitions.loadout.getFromString("eyes_1") as LoadoutEyesDef,
+            this.game.definitions.loadout.getFromString("white_shirt") as LoadoutShirtDef,
+            this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
+            0,0
+        )
 
         /*if(Debug.hitbox){
             this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
@@ -1244,9 +1280,10 @@ export class Human extends MovingBody{
             const hair_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutHairDef
             const eyes_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutEyesDef
             const shirt_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutShirtDef
+            const legs_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutLegDef
             const body_tint=stream.readUint32()
             const hair_tint=stream.readUint32()
-            this.set_skin(body_def,hair_def,eyes_def,shirt_def,body_tint,hair_tint)
+            this.set_skin(body_def,hair_def,eyes_def,shirt_def,legs_def,body_tint,hair_tint)
         }
         if(has_emote){
             this.add_emote(this.game.definitions.game_objects.valueNumber[stream.readUint16()])

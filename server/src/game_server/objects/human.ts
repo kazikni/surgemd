@@ -23,7 +23,7 @@ import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
@@ -235,6 +235,7 @@ export class Human extends MovingBody{
             },
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
             shirt:this.game.definitions.loadout.getFromString(random.choose(["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
+            legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
             emotes:{
 
             }
@@ -1212,6 +1213,7 @@ export class Human extends MovingBody{
             .writeUint16(this.loadout.hair.def.idNumber!)
             .writeUint16(this.loadout.eyes.idNumber!)
             .writeUint16(this.loadout.shirt.idNumber!)
+            .writeUint16(this.loadout.legs.idNumber!)
             .writeUint32(this.loadout.body.tint)
             .writeUint32(this.loadout.hair.tint)
         }

@@ -265,6 +265,7 @@ export class Bullet extends ServerGameObject{
             stream.writeUint8(this.def.tracer.particles?.frame??0)
             .writeBooleanGroup(this.critical)
             .writeID(this.owner?.id??0)
+            .writeUint8(this.reflectionCount)
         }
     }
 }

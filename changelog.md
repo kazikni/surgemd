@@ -32,6 +32,7 @@ __                                                                              
 ## Changes
 __                                                                                                      __
 ### Items
+* Some Balacing Changes
 * Rework Casing Particles
 * Rework M2-2
 __                                                                                                      __

@@ -50,6 +50,7 @@ export class Bullet extends GameObject{
     ////////////////////////////
     dying:boolean=false
     sendDelete: boolean=true;
+    reflection_count:number=0;
     private tticks:number=0
 
     ////////////////////////////
@@ -107,7 +108,7 @@ export class Bullet extends GameObject{
             this.manager.cells.updateObject(this)
 
             // Bullet Whiz Sound
-            if(this._play_bullet_whiz&&this.owner_id!==this.game.active_entity_id){
+            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){
                 if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.collidingWith(this.hitbox)){
                     this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
@@ -222,6 +223,7 @@ export class Bullet extends GameObject{
             this.container.visible=true
             this._critical=stream.readBooleanGroup()[0]
             this.owner_id=stream.readID()
+            this.reflection_count=stream.readUint8()
         }
     }
 }

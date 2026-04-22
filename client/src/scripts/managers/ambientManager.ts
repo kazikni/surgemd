@@ -187,31 +187,23 @@ export class AmbientManager{
 
         let light = 0
         if (time < 5) {
-            light = 0.2
-        }
-
-        else if (time >= 5 && time < 6) {
+            light = 0.4
+        }else if (time >= 5 && time < 6) {
             const t = (time - 5) / 1
-            light = 0.2 + (1.0 - 0.2) * t
-        }
-
-        else if (time >= 6 && time < 19) {
+            light = 0.4 + (1.0 - 0.4) * t
+        }else if (time >= 6 && time < 19) {
             light = 1.0
-        }
-
-        else if (time >= 19 && time < 20) {
+        }else if (time >= 19 && time < 20) {
             const t = (time - 19) / 1
-            light = 1.0 - (1.0 - 0.2) * t
-        }
-
-        else {
-            light = 0.2
+            light = 1.0 - (1.0 - 0.4) * t
+        }else{
+            light = 0.4
         }
 
         light = ease.quadraticInOut(light)
-        const rainDark = this.rain_value * 0.4
+        const rainDark = this.rain_value * 0.2
 
-        this.global_ilumination = Math.max(light * (1 - rainDark),0.2)
+        this.global_ilumination = Math.max(light * (1 - rainDark),0.4)
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
         this.rain_value=value

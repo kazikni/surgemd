@@ -32,7 +32,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"762mm",
             ammoType:"762mm",
-            defaultTrail:0x779bbd,
+            defaultTrail:0xb8ccde,
             strongTrail:0x0034f2,
             defaultProj:0xefef9f,
             strongProj:0xefef33,

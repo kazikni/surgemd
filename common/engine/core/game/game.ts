@@ -147,6 +147,10 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         }
     }
     add_timeout(callback:()=>void,delay:number):number{
+        if(delay==0){
+            callback()
+            return -1
+        }
         this.timeouts.push({c:callback,delay:delay})
         return this.timeouts.length-1
     }

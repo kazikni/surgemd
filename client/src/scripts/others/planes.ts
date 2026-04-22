@@ -67,7 +67,7 @@ export class Plane{
                 case 0:
                     this.sprite.set_frame({
                         image:"airdrop_plane",
-                        scale:9,
+                        scale:11,
                         hotspot:CenterHotspot
                     },this.game.resources)
                     break

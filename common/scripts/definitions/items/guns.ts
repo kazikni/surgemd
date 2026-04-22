@@ -193,7 +193,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
     guns.insert(
         {
             idString:"m9",
-            fireDelay:0.2,
+            fireDelay:0.15,
             switchDelay:0.5,
             spread:0.7,
             lenght:0.8,
@@ -235,7 +235,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             image:WeaponsRig[0],
             dual:{
                 dual_offset:0.2,
-                fireDelay:0.15,
+                fireDelay:0.1,
                 reload:{
                     capacity:30,
                     delay:3
@@ -576,7 +576,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:38,
                     speed:29,
                     falloff:0.7,
-                    tracer:tracers.medium
+                    tracer:tracers.small
                 }
             },
             reload:{
@@ -620,7 +620,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:38,
                     speed:29,
                     falloff:0.7,
-                    tracer:tracers.medium
+                    tracer:tracers.small
                 }
             },
             reload:{

@@ -177,7 +177,7 @@ export class GameMap{
             return undefined
         }
         o.set_position(p)
-        o.manager.cells.updateObject(o)
+        o.manager.cells.update_object(o)
 
         return o
     }
@@ -190,7 +190,7 @@ export class GameMap{
         }
         o.position=p
         o.physical_data.dirty=true
-        o.manager.cells.updateObject(o)
+        o.manager.cells.update_object(o)
         return o
     }
     generate_building(def:BuildingDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Building|undefined{

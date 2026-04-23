@@ -1,5 +1,5 @@
 import { Rect } from "../../core/math/geometry.ts";
-import { v2, v2m } from "../mod.ts";
+import { v2 } from "../mod.ts";
 import { type ResourcesManager } from "../resources/resources.ts";
 import { type CamA, Container2DObject } from "./base.ts";
 import { Sprite2D } from "./sprite.ts";

@@ -107,9 +107,9 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.on_render(dt)
         this.clock.profiler.end(3)
     }
-    override update(dt:number,new_list: boolean=true, destroy_queue: boolean=true){
+    override update(dt:number,net_update: boolean=false, destroy_queue: boolean=true){
         this.clock.profiler.start(2)
-        super.update(dt,new_list,destroy_queue)
+        super.update(dt,net_update,destroy_queue)
         for(const t of this.tweens){
             t.update(dt)
         }

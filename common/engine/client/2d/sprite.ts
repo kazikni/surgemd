@@ -86,6 +86,7 @@ export class Sprite2D extends Container2DObject{
         if(frame.position)this.position=v2.clone(frame.position)
         if(frame.image)this.frame=resources.get_sprite(frame.image)
         if(frame.tint)this.tint=ColorM.number(frame.tint)
+        if(frame.alpha)this.tint.a=frame.alpha
         this.dirty_reals=true
     }
     override transform_frame(frame:FrameTransform){

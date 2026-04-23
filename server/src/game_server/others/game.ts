@@ -1,5 +1,5 @@
 
-import { AbstractServerGame, Angle, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -161,7 +161,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             SyncedParticle
         ])
 
-        this.ntps=35
+        this.ntps=30
         this.main_config=main_config
 
         for(const i of LayersL){
@@ -311,6 +311,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.players.net_update()
         this.modeManager.on_net_update()
         this.pings.length=0
+        super.net_update(full)
     }
     override on_update(dt:number): void {
         super.on_update(dt)

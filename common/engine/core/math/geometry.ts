@@ -9,8 +9,8 @@ export const π = 3.141592
 export const π2 = 3.141592*2
 export const τ = 1.570796
 
-const prime1 = BigInt("2654435761")
-const prime2 = BigInt("2246822519")
+/*const prime1 = BigInt("2654435761")
+const prime2 = BigInt("2246822519")*/
 
 export enum RotationMode{
     null,

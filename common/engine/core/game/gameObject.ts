@@ -37,8 +37,6 @@ export abstract class BaseObject2D{
     net_sync:{
         full:boolean
         part:boolean
-        segments:Record<string,boolean>
-
         enabled:{
             deletion:boolean,
             dirty:boolean,
@@ -47,7 +45,6 @@ export abstract class BaseObject2D{
     }={
         full:false,
         part:false,
-        segments:{},
         enabled:{
             deletion:true,
             creation:true,
@@ -55,8 +52,7 @@ export abstract class BaseObject2D{
         },
     }
 
-    public is_new:boolean=true
-
+    is_new:boolean=true
     updatable=true
     visible=true
 
@@ -350,14 +346,11 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     ondestroy:(obj:GameObject)=>void=(_)=>{}
     oncreate:(_id:number,_layer:number,_type:number)=>GameObject|undefined
     destroy_queue:GameObject[]=[]
-    new_objects:GameObject[]=[]
 
-    stream_cache:NetStream
+    stream_cache?:NetStream
     constructor(cellsSize?:number,oncreate?:((_id:number,_layer:number,_type:number)=>GameObject|undefined)){
         this.cells=new CellsManager2D(cellsSize)
         this.oncreate=oncreate??((_k,_t)=>{return undefined})
-
-        this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
     }
     clear(){
         for(const obj of this.all_objects.values()){
@@ -370,7 +363,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.all_objects.clear()
 
         this.layers.length = 0
-        this.new_objects.length = 0
         this.destroy_queue.length = 0
         this.cells.clear()
     }
@@ -421,15 +413,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         obj.on_layer_set(obj.layer)
     }
-    add_object(
-        obj: GameObject,
-        layer: number,
-        id?: number,
-        // deno-lint-ignore no-explicit-any
-        args?: Record<string, any>,
-        // deno-lint-ignore no-explicit-any
-        sv: Record<string, any> = {},
-    ): GameObject {
+    // deno-lint-ignore no-explicit-any
+    add_object(obj: GameObject,layer: number,id?: number,args?: Record<string, any>,sv: Record<string, any> = {},): GameObject {
         if (!this.objects[layer]) {
             this.add_layer(layer);
         }
@@ -455,7 +440,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             // @ts-ignore
             obj[key] = sv[key];
         }
-        this.new_objects.push(obj);
         obj.create(args ?? {});
         this.cells.registry(obj);
 
@@ -466,6 +450,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             this.objects[layer].renderizables.push(obj.id);
         }
         obj.on_layer_set(obj.layer)
+
+        this.cells.update_object(obj)
         return obj;
     }
     registry(obj: GameObject){
@@ -487,7 +473,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects[obj.layer].objects[obj.id] = obj;
         this.objects[obj.layer].orden.push(obj.id);
         this.cells.registry(obj);
-        this.new_objects.push(obj);
 
         if(obj.updatable){
             this.objects[obj.layer].updatables.push(obj.id);
@@ -500,6 +485,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(idx !== -1) this.destroy_queue.splice(idx,1)
 
         obj.on_layer_set(obj.layer)
+        this.cells.update_object(obj)
     }
     get_object(id:number):GameObject|undefined{
         return this.all_objects.get(id)
@@ -595,6 +581,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     encode_all(full:boolean=false,stream?:NetStream,recreate:boolean=false):NetStream{
         if(!stream){
+            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
@@ -612,6 +599,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     encode_list(objects_list:GameObject[],last_list:GameObject[]=[],force_dirty:boolean=false,object_options?:(obj:GameObject)=>any,stream?:NetStream,recreate:boolean=false):{last:GameObject[],strm:NetStream}{
         if(!stream){
+            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
@@ -642,29 +630,29 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         return {strm:stream,last:objects_list}
     }
     update(dt:number){
-        this.cells.update()
         for(const l in this.objects){
             for(let j=0;j<this.objects[l].updatables.length;j++){
                 const o=this.objects[l].updatables[j]
                 const obj=this.objects[l].objects[o]
                 if(obj.destroyed)continue
                 obj.update(dt)
+                if(this.cells.dirty_objects.has(obj)){
+                    this.cells.update_object(obj)
+                }
             }
         }
+        this.cells.update()
     }
     update_to_net(){
-        for(const o of this.new_objects){
-            o.is_new=false
-        }
         for(const l of this.layers){
             for(let j=0;j<this.objects[l].orden.length;j++){
                 const idx=this.objects[l].orden[j]
                 this.objects[l].objects[idx].net_sync.part=false
                 this.objects[l].objects[idx].net_sync.full=false
+                this.objects[l].objects[idx].is_new=false
                 this.objects[l].objects[idx].net_update()
             }
         }
-        this.new_objects.length=0
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){

@@ -256,6 +256,7 @@ export interface FrameTransform{
     visible?:boolean
     zIndex?:number
     tint?:number
+    alpha?:number
     layer?:number
 }
 export type FrameDef={image?:string}&FrameTransform
@@ -271,7 +272,6 @@ export interface AKeyFrameTransformAction extends FrameTransform {
     type: "transform"
     fuser: string
 }
-
 
 export interface AKeyFrameTweenAction {
     type: "tween"

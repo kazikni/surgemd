@@ -1,4 +1,4 @@
-import { CenterHotspot, CircleHitbox2D, Color, ColorM, NetStream, Sprite2D, type Tween, v2, v2m } from "common/engine/client.ts"
+import { CenterHotspot, CircleHitbox2D, NetStream, Sprite2D, type Tween, v2} from "common/engine/client.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
@@ -33,23 +33,13 @@ export class SyncedParticle extends MovingBody{
     }
 
     override on_destroy(): void {
-        this.sprite.destroy()
         for(const t of this.tweens)t.kill()
-    }
-    override update(dt:number){
-        if(!this.def)return
-        super.update(dt)
-
-        this.sprite.position=this.position
-        this.sprite.rotation=this.physical_data.rotation
-
-        this.time+=dt
-
-        if(this.time>=this.def.lifetime&&!this.dead){
-            this.dead=true
+        const time=this.time>=0.98?this.def.animation?.destroy?.time??0:0
+        this.game.add_timeout(()=>{
+            this.sprite.destroy()
             for(const t of this.tweens)t.kill()
-
-            this.game.add_timeout(()=>this.destroy(),this.def.animation?.destroy?.time??0)
+        },time)
+        if(time){
             if(this.def.animation?.destroy){
                 if(this.def.animation.destroy.alpha){
                     const t=this.game.add_tween({
@@ -74,6 +64,15 @@ export class SyncedParticle extends MovingBody{
                 }
             }
         }
+    }
+    override update(dt:number){
+        if(!this.def)return
+        super.update(dt)
+
+        this.sprite.position=this.position
+        this.sprite.rotation=this.physical_data.rotation
+
+        this.time+=dt
     }
     set_definition(def:SyncedParticleDef){
         if(this.def)return

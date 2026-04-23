@@ -68,9 +68,9 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 
-    update(dt:number,new_list:boolean=true,destroy_queue:boolean=true):void{
+    update(dt:number,net_update:boolean=true,destroy_queue:boolean=true):void{
         this.objects.update(dt)
-        if(new_list){
+        if(net_update){
             this.objects.update_to_net()
         }
         if(destroy_queue){
@@ -117,7 +117,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
             c.on_render(dt)
         }
     }
-    update(dt:number,new_list: boolean=true, destroy_queue: boolean=true){
+    update(dt:number,net_update:boolean=true,destroy_queue:boolean=true){
         this.clock.profiler.start(1)
         this.delta_time=dt
 
@@ -127,7 +127,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
             c.on_update(dt)
         }
 
-        this.scene_2d.update(dt,new_list,destroy_queue)
+        this.scene_2d.update(dt,net_update,destroy_queue)
         this.update_timeouts(dt)
 
         if(!this.running){

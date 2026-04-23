@@ -63,9 +63,9 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             movement:{
                 type:"walk",
                 velocity:{
-                    min:0.1,
-                    max:0.25,
-                    decay:0.1
+                    min:0,
+                    max:1.7,
+                    decay:0.66
                 },
                 angular:{
                     min:0.6,
@@ -76,19 +76,19 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.98,
+                        to:0.92,
                         duration:2,
                     },
                     scale:{
                         to:2,
-                        duration:1,
+                        duration:0.5,
                     }
                 },
                 destroy:{
                     time:1,
                     alpha:{
                         to:0,
-                        duration:1,
+                        duration:0.5,
                     },
                 }
             }
@@ -98,7 +98,8 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             lifetime:1,
             frame:{
                 image:"smoke_particle",
-                scale:1.25
+                scale:1.25,
+                alpha:0.92
             },
             movement:{
                 type:"walk",

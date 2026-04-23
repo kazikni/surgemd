@@ -380,7 +380,7 @@ export class CounterMD extends ModeManager {
         const pos=this.get_human_spawn_position(p)
         if(pos)p.position=pos
         if(this.state==CounterMDState.Playing){
-            p.die({amount:0,critical:false,position:v2(0,0),reason:DamageReason.Disconnect})
+            p.die({amount:0,critical:false,position:v2(0,0),reason:DamageReason.Disconnect,direction:0})
         }
 
         if (!this.game.started && this.can_start()) {

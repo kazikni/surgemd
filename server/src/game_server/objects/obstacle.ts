@@ -382,9 +382,9 @@ export class Obstacle extends StaticBody{
         this.physical_data.no_collision=true
         this.physical_data.no_bullets_collision=true
 
-        for(let i=0;i<5;i++){
+        for(let i=0;i<10;i++){
             for(const loot of loots){
-                loot.update(1/60)
+                loot.update(1/30)
             }
         }
         for(const loot of loots){

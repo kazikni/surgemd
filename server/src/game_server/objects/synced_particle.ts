@@ -84,7 +84,6 @@ export class SyncedParticle extends MovingBody {
                     break
             }
         }
-        this.net_sync.enabled.deletion=false
     }
 
     override update(dt:number){
@@ -105,7 +104,9 @@ export class SyncedParticle extends MovingBody {
             switch(this.def.movement.type){
                 case "walk":
                 case "direction":
-                    if(this.def.movement.velocity.decay)v2m.scale(this.physical_data.velocity,this.physical_data.velocity,1/(1+dt*this.def.movement.velocity.decay))
+                    if(this.def.movement.velocity.decay){
+                        v2m.scale(this.physical_data.velocity,this.physical_data.velocity,1/(1+dt*this.def.movement.velocity.decay))
+                    }
                     break
             }
         }

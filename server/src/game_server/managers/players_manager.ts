@@ -265,9 +265,6 @@ export class PlayersManager{
             p.net_update(s)
         }
         if(this.game.replay)this.game.replay.update()
-    
-        this.game.scene_2d.objects.update_to_net()
-        this.game.scene_2d.objects.apply_destroy_queue()
     }
     send_killfeed_message(msg:KillFeedMessage){
         const p=new KillFeedPacket()

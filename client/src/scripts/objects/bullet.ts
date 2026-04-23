@@ -105,7 +105,6 @@ export class Bullet extends GameObject{
             const dst=v2.scale(this.velocity,dt)
 
             v2m.add(this._position,this._position,dst)
-            this.manager.cells.updateObject(this)
 
             // Bullet Whiz Sound
             if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){

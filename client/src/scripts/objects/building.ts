@@ -142,7 +142,6 @@ export class Building extends StaticBody{
             this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
             this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
         }
-        this.manager.cells.updateObject(this)
     }
     override decode(stream: NetStream, full: boolean): void {
         const [physical_data]=stream.readBooleanGroup()
@@ -153,7 +152,6 @@ export class Building extends StaticBody{
         if(full){
             const def=this.game.definitions.buildings.getFromNumber(stream.readID())
             this.set_definition(def)
-            this.manager.cells.updateObject(this)
         }
     }
 }

@@ -333,5 +333,19 @@ export const rect=Object.assign(rect_new,Object.freeze({
             min:pos,
             max:size
         }
+    },
+
+    manager:{
+        from_rects_group(dest:Rect,group:Rect[]){
+            v2m.single(dest.min,Infinity)
+            v2m.single(dest.max,-Infinity)
+
+            for(const r of group){
+                if(r.min.x<dest.min.x)dest.min.x=r.min.x
+                if(r.min.y<dest.min.y)dest.min.y=r.min.y
+                if(r.max.x>dest.max.x)dest.max.x=r.max.x
+                if(r.max.y>dest.max.y)dest.max.y=r.max.y
+            }
+        }
     }
 }))

@@ -29,7 +29,6 @@ export class Parachute extends ServerGameObject{
             const obs=this.game.map.add_obstacle(this.parachute_data.spawn_obstacle)
             obs.initialize()
             obs.set_position(this.position)
-            obs.manager.cells.updateObject(obs)
             this.destroy()
 
             const objects:ServerGameObject[]=this.manager.cells.get_objects(obs.hitbox,obs.layer)
@@ -59,7 +58,7 @@ export class Parachute extends ServerGameObject{
 
             const def=this.game.definitions.synced_particle.getFromString("airdrop_smoke")
             for(let i=0;i<8;i++){
-                this.game.add_synced_particle(this.position,def,this.layer)
+                this.game.add_synced_particle(this.position,def,undefined,this.layer)
             }
         }
     }
@@ -72,7 +71,6 @@ export class Parachute extends ServerGameObject{
         }
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
         this.position=args.position
-        this.manager.cells.updateObject(this)
 
         this.game.pings.push({
             position:this.position,

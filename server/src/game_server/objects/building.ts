@@ -104,7 +104,6 @@ export class Building extends StaticBody {
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
             obj.generate(p,Angle.add_orientation(side,b.rotation??0))
         }
-        this.manager.cells.updateObject(this)
 
     }
     override encode(stream: NetStream, full: boolean): void {

@@ -4,8 +4,9 @@ import { v2 } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Context2D, GLContext2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/definition/matrix.ts";
-import { RectHitbox2D } from "../../core/math/hitbox.ts";
 import { Container2D } from "./container.ts";
+import { v2m } from "../mod.ts";
+import { Rect } from "../../core/math/geometry.ts";
 
 export class Camera2D{
     renderer:Renderer
@@ -40,11 +41,19 @@ export class Camera2D{
         this.ctx=new GLContext2D(renderer as WebglRenderer)
     }
 
-    get_hitbox():RectHitbox2D{
+    get_rect():Rect{
         if(this.center_pos){
-            return RectHitbox2D.centered(v2.clone(this.position),v2(this.width,this.height))
+            const sizeH=v2(this.width,this.height)
+            v2m.scale(sizeH,sizeH,0.5)
+            return {
+                min:v2.sub(this.position,sizeH),
+                max:v2.add(this.position,sizeH),
+            }
         }else{
-            return RectHitbox2D.positioned(v2.clone(this.position),v2(this.width,this.height))
+            return {
+                min:this.position,
+                max:v2.add(this.position,v2(this.width,this.height)),
+            }
         }
     }
 
@@ -101,7 +110,7 @@ export class Camera2D{
             ctx:this.ctx,
             renderer:this.renderer,
 
-            hitbox:this.get_hitbox()
+            rect:this.get_rect()
         }
 
         this.container.draw(cam)

@@ -231,7 +231,7 @@ export class Human extends MovingBody{
             },
             hair:{
                 def:this.game.definitions.loadout.getFromString(female?"hair_2":"hair_1") as LoadoutHairDef,
-                tint:random.choose([0x222222,0xffffff,0xf01041,0x331f00,0x4d3108,0xfbff05])
+                tint:random.choose([0x222222,0xffffff,0xf01041,0x0066ff,0x331f00,0x4d3108,0xfbff05])
             },
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
             shirt:this.game.definitions.loadout.getFromString(random.choose(female?["white_dress","blue_dress","yellow_dress","red_dress","blue_shirt","white_shirt","red_shirt","yellow_shirt"]:["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
@@ -808,7 +808,6 @@ export class Human extends MovingBody{
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
-            this.manager.cells.updateObject(this)
         }
 
         if(this.health_data.downed){

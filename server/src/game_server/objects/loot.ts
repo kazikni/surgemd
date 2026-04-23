@@ -89,7 +89,6 @@ export class Loot extends ServerGameObject{
             this.net_sync.part=true
             this.old_position=v2.clone(this.position)
             this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
-            this.manager.cells.updateObject(this)
         }
     }
     push(speed:number,angle:number){
@@ -133,8 +132,6 @@ export class Loot extends ServerGameObject{
         }
         (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
         this.position=args.position
-
-        this.manager.cells.updateObject(this)
     }
     override on_destroy(): void {
         const idx=this.game.loot.indexOf(this)

@@ -29,7 +29,6 @@ export class Explosion extends ServerGameObject{
     }
     update(_dt:number): void {
         if(this.delay==0){
-            this.manager.cells.updateObject(this)
             if(this.defs.bullet){
                 for(let i=0;i<this.defs.bullet.count;i++){
                     const b=this.game.add_bullet(this.position,this.defs.bullet.def,this.owner,undefined,this.defs)

@@ -52,7 +52,6 @@ export class Loot extends GameObject{
             v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
         }
         this.container.position=this.position
-        this.manager.cells.updateObject(this)
     }
     override on_destroy(): void {
         this.container.destroy()

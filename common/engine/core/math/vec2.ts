@@ -1,7 +1,6 @@
 import { Angle, DegAngle, Orientation, PolarMovement, RadAngle } from "./geometry.ts"
 import { random, SeededRandom } from "./random.ts"
 
-export type HashVec2=bigint
 export interface Vec2{
     x:number
     y:number
@@ -163,6 +162,12 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     one:Object.assign(()=>{
         return {x:1,y:1} as Vec2
     },{x:1,y:1}),
+    infinity:Object.assign(()=>{
+        return {x:Infinity,y:Infinity} as Vec2
+    },{x:Infinity,y:Infinity}),
+    infinity_neg:Object.assign(()=>{
+        return {x:-Infinity,y:-Infinity} as Vec2
+    },{x:-Infinity,y:-Infinity}),
     sided(side:Orientation):Vec2{
         switch(side){
             case 0:
@@ -576,13 +581,11 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @param Vec2 The `Vec2` To hash
      * @returns Hashed Vec2
      */
-    /*hash(Vec2:Vec2):HashVec2{
-        let hash = BigInt(float32ToUint32(Vec2.x))
-        hash = (hash * prime1) & BigInt("4294967295")
-        hash ^= BigInt(float32ToUint32(Vec2.y))
-        hash = (hash * prime2) & BigInt("4294967295")
-        return hash
-    },*/
+    hash(v: Vec2): number {
+        const x = v.x | 0
+        const y = v.y | 0
+        return (x << 16) ^ y
+    },
     toString(Vec2:Vec2):string{
         return `{${Vec2.x},${Vec2.y}}`
     },

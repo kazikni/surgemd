@@ -59,7 +59,6 @@ export class Bullet extends ServerGameObject{
         const disT=v2.distance(this.initial_position,this.position)/this.max_distance
         v2m.add_component(this.position,this.velocity.x*dt,this.velocity.y*dt)
 
-        this.manager.cells.updateObject(this)
         const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
         for(const obj of objs){
             if(this.destroyed)break

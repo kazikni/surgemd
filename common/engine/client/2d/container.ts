@@ -1,4 +1,5 @@
-import { Hitbox2D, HitboxGroup2D } from "../../core/math/hitbox.ts";
+import { Rect } from "../../core/math/geometry.ts";
+import { v2, v2m } from "../mod.ts";
 import { type ResourcesManager } from "../resources/resources.ts";
 import { type CamA, Container2DObject } from "./base.ts";
 import { Sprite2D } from "./sprite.ts";
@@ -13,7 +14,10 @@ export class Container2D extends Container2DObject{
     visible_children:Container2DObject[]=[]
     override _has_update: boolean=true
 
-    _hitbox:HitboxGroup2D=new HitboxGroup2D()
+    _rect:Rect={
+        min:v2.new(0,0),
+        max:v2.new(0,0),
+    }
 
     object_group:boolean=false
 
@@ -43,15 +47,21 @@ export class Container2D extends Container2DObject{
     }
     override update_real(): void {
         super.update_real()
-        this._hitbox.hitboxes.length=0
-        for (const c of this.children){
+    
+        for (let i = 0; i < this.children.length; i++) {
+            const c = this.children[i]
             c.update_real()
             c.dirty_reals = false
-            const hb=c.get_hitbox()
-            if(hb)this._hitbox.hitboxes.push(hb)
+
+            const r = c.get_rect()
+
+            if(r.min.x<this._rect.min.x)this._rect.min.x=r.min.x
+            if(r.min.y<this._rect.min.y)this._rect.min.y=r.min.y
+            if(r.max.x>this._rect.max.x)this._rect.max.x=r.max.x
+            if(r.max.y>this._rect.max.y)this._rect.max.y=r.max.y
         }
     }
-    draw(cam:CamA,objects?:Container2DObject[]):void{
+    draw(cam:CamA):void{
         this.draw_super()
         if(this.dirty_zindex){
             this.update_zindex()
@@ -61,13 +71,11 @@ export class Container2D extends Container2DObject{
             this.update_visibility()
             this.dirty_children=false
         }
-        if (!objects) objects = this.visible_children
 
-        for (let o = 0; o < objects.length; o++) {
-            const c = objects[o]
-            const hb = c.get_hitbox()
-            if (hb!==undefined&&!hb.collidingWith(cam.hitbox))continue
-            c.draw(cam)
+        for (let o = 0; o < this.visible_children.length; o++) {
+            const c=this.visible_children[o]
+            const rect=c.get_rect()
+            if(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y)c.draw(cam)
         }
     }
     add_child(c:Container2DObject){
@@ -100,8 +108,8 @@ export class Container2D extends Container2DObject{
         this.add_child(s)
         return s
     }
-    override get_hitbox(): Hitbox2D | undefined {
-        return this._hitbox
+    override get_rect(): Rect {
+        return this._rect
     }
     constructor(){
         super()

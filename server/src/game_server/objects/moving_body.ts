@@ -35,7 +35,6 @@ export abstract class MovingBody extends ServerGameObject{
     update(dt:number): void {
         const pos=v2.add(this.position,v2.scale(this.physical_data.velocity,dt))
         this.position=this.game.map.clamp_hitbox(pos,this.hitbox)
-        this.manager.cells.updateObject(this)
 
         const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
         for(const obj of objs){

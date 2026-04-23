@@ -18,11 +18,9 @@ export abstract class MovingBody extends GameObject{
     override update(dt: number): void {
         if(!this.old_pos){
             this.old_pos=v2.clone(this.position)
-            this.manager.cells.updateObject(this)
         }else if(!v2.is(this.old_pos,this._position)){
             const dist = v2.distance(this.old_pos, this.position)
             this.old_pos=v2.clone(this.position)
-            this.manager.cells.updateObject(this)
             this.distance_walked=dist
         }
         v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)

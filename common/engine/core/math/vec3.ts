@@ -306,6 +306,24 @@ export const v3 = Object.assign((x:number, y:number,z:number)=>{
     clone(v:Vec3):Vec3{
         return this.new(v.x,v.y,v.z)
     },
+    hash(v: Vec3): number {
+        const x = v.x | 0
+        const y = v.y | 0
+        const z = v.z | 0
+
+        return ((x * 73856093) ^ (y * 19349663) ^ (z * 83492791)) | 0
+    },
+    hash_big(v: Vec3): bigint {
+        const x = BigInt(v.x | 0) & 0xffffffffn
+        const y = BigInt(v.y | 0) & 0xffffffffn
+        const z = BigInt(v.z | 0) & 0xffffffffn
+
+        let hash = x
+        hash = (hash << 21n) ^ y
+        hash = (hash << 21n) ^ z
+
+        return hash & 0xffffffffffffffffn
+    },
     toString(v:Vec3):string{
         return `{${v.x},${v.y},${v.z}}`
     },

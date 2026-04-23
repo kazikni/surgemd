@@ -248,8 +248,6 @@ export class Obstacle extends StaticBody{
                     }
             }
         }
-
-        this.manager.cells.updateObject(this)
     }
     transform_into_update(def:number){
         if(this.transform_into_data?.activated)return

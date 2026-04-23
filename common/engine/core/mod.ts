@@ -17,6 +17,7 @@ export * from "./lang/xml.ts"
 
 export * from "./math/color.ts"
 export * from "./math/geometry.ts"
+export * from "./math/hash.ts"
 export * from "./math/hitbox.ts"
 export * from "./math/random.ts"
 export * from "./math/utils.ts"

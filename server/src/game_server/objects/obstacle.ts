@@ -114,8 +114,6 @@ export class Obstacle extends StaticBody{
                                 this.door_data!.dirty=true
                                 this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
                                 this.door_data!.opening=false
-
-                                this.manager.cells.updateObject(this)
                             },this.def.expanded_behavior.open_delay)
                         }else{
                             if(this.door_data!.open===0){
@@ -123,12 +121,9 @@ export class Obstacle extends StaticBody{
                             }else{
                                 this.door_data!.open=0
                             }
-
                             this.net_sync.part=true
                             this.door_data!.dirty=true
-
                             this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
-                            this.manager.cells.updateObject(this)
                         }
                     }
                     break
@@ -307,8 +302,6 @@ export class Obstacle extends StaticBody{
         this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
         this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,this.physical_data.scale)
         this.position=position
-
-        this.manager.cells.updateObject(this)
     }
     reset_scale(){
         if(this.def.hitbox&&this.def.scale){
@@ -323,8 +316,6 @@ export class Obstacle extends StaticBody{
 
             this.net_sync.part=true
             this.physical_data.dirty_part=true
-
-            this.manager.cells.updateObject(this)
         }
     }
     override side_effect(sf:SideEffect,owner?:Human){
@@ -413,7 +404,6 @@ export class Obstacle extends StaticBody{
         this.health_data.health=this.health_data.max_health
 
         this.reset_scale()
-        this.manager.cells.updateObject(this)
     }
     reset(){
         if(this.health_data.dead){

@@ -1,6 +1,6 @@
 import { WebglRenderer } from "../rendering/renderer.ts"
 import { GLContext2D } from "../rendering/context.ts"
-import { Matrix, matrix4 } from "../../core/definition/matrix.ts"
+import { Matrix, matrix4 } from "../../core/math/matrix.ts"
 import { v2 } from "../../core/math/vec2.ts"
 import { Color } from "../../core/math/color.ts"
 import { model2d } from "../../core/definition/models.ts"

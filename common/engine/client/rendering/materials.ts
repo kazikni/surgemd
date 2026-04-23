@@ -1,9 +1,9 @@
-import { Matrix } from "../../core/definition/matrix.ts";
+import { Matrix } from "../../core/math/matrix.ts";
 import { Model2D, Model3D } from "../../core/definition/models.ts";
 import { Color } from "../../core/math/color.ts";
 import { Vec2 } from "../../core/math/vec2.ts";
 import { Vec3 } from "../../core/math/vec3.ts";
-import { GLMaterial, GLMaterialFactory, GLMaterialFactoryCall, type WebglRenderer } from "./renderer.ts";
+import { GLDynamicBuffer, GLMaterial, GLMaterialFactory, GLMaterialFactoryCall, type WebglRenderer } from "./renderer.ts";
 
 export type GL2D_SimpleBatchArgs = {
 }
@@ -55,7 +55,7 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
     const aColor = gl.gl.getAttribLocation(fac.program, "a_Color")!
     const uProj = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
 
-    const buffers = {
+    const buffers:Record<string,WebGLBuffer> = {
         position: gl.gl.createBuffer()!,
         translation: gl.gl.createBuffer()!,
         scale: gl.gl.createBuffer()!,
@@ -63,11 +63,7 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
         color: gl.gl.createBuffer()!,
     }
 
-    const draw = (
-        mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
-        matrix: Matrix,
-        attr:GL2D_SimpleBatchAttr
-    ) => {
+    const draw = (mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,matrix: Matrix,attr:GL2D_SimpleBatchAttr) => {
         if(!attr["vertices"])return
         gl.set_program(fac.program)
         gl.gl.uniformMatrix4fv(uProj, false, matrix)
@@ -109,7 +105,12 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
         ...arg,
         factory: fac,
         group: "simple_batch",
-        draw
+        draw,
+        free:()=>{
+            for(const b in buffers){
+                gl.gl.deleteBuffer(buffers[b])
+            }
+        }
     })
 }
 }
@@ -145,16 +146,12 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
     const aColor = gl.gl.getAttribLocation(fac.program, "a_Color")!
     const uProj = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
 
-    const buffers = {
+    const buffers:Record<string,WebGLBuffer> = {
         position: gl.gl.createBuffer()!,
         color: gl.gl.createBuffer()!,
     }
 
-    const draw = (
-        mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
-        matrix: Matrix,
-        attr:GL2D_SimpleBatchAttr
-    ) => {
+    const draw = (mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,matrix: Matrix,attr:GL2D_SimpleBatchAttr) => {
         if(!attr["vertices"])return
         gl.set_program(fac.program)
         gl.gl.uniformMatrix4fv(uProj, false, matrix)
@@ -178,7 +175,12 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
         ...arg,
         factory: fac,
         group: "simple_batch",
-        draw
+        draw,
+        free:()=>{
+            for(const b in buffers){
+                gl.gl.deleteBuffer(buffers[b])
+            }
+        }
     })
 }
 }
@@ -237,7 +239,10 @@ create(gl:WebglRenderer,fac:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatA
             ...arg,
             group:"",
             factory:fac,
-            draw:draw
+            draw:draw,
+            free:()=>{
+                gl.gl.deleteBuffer(vertexBuffer)
+            }
         }
     }
 }
@@ -302,7 +307,11 @@ create(gl:WebglRenderer,fac:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatA
             ...arg,
             factory:fac,
             group:"",
-            draw:draw
+            draw:draw,
+            free:()=>{
+                gl.gl.deleteBuffer(indexBuffer)
+                gl.gl.deleteBuffer(vertexBuffer)
+            }
         }
     }
 }
@@ -384,7 +393,10 @@ create(gl:WebglRenderer,fac:GLMaterialFactory<GL2D_GridMatArgs,GL2D_GridMatAttr>
             ...arg,
             factory:fac,
             group:"",
-            draw:draw
+            draw:draw,
+            free:()=>{
+                gl.gl.deleteBuffer(vertexBuffer)
+            }
         }
     }
 }
@@ -467,12 +479,15 @@ create(glr: WebglRenderer, fac: GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAtt
         gl.drawArrays(gl.TRIANGLES, 0, attr.model.vertices.length / 2)
     }
 
-
     return (arg: GL2D_TexMatArgs) => ({
         ...arg,
         factory: fac,
         group:"",
-        draw
+        draw,
+        free:()=>{
+            gl.deleteBuffer(vertexBuffer)
+            gl.deleteBuffer(textureCoordBuffer)
+        }
     })
 }
 }
@@ -527,10 +542,10 @@ void main() {
         const uProj  = gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
         const uTex   = gl.getUniformLocation(fac.program, "u_Texture")!
 
-        const buffers = {
-            position: gl.createBuffer()!,
-            uv: gl.createBuffer()!,
-            tint: gl.createBuffer()!,
+        const buffers:Record<string,GLDynamicBuffer>={
+            position:new GLDynamicBuffer(gl),
+            uv:new GLDynamicBuffer(gl),
+            tint:new GLDynamicBuffer(gl),
         }
 
         const draw = (mat:GLMaterial<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,matrix: Matrix,attr: GL2D_TexBatchAttr) => {
@@ -540,20 +555,17 @@ void main() {
             gl.uniformMatrix4fv(uProj, false, matrix)
 
             // vertices
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position)
-            gl.bufferData(gl.ARRAY_BUFFER, attr.vertices, gl.STATIC_DRAW)
+            buffers.position.upload(gl.ARRAY_BUFFER,attr.vertices,gl.STATIC_DRAW)
             gl.enableVertexAttribArray(aPos)
             gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
 
             // uv
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.uv)
-            gl.bufferData(gl.ARRAY_BUFFER, attr.tex_coord, gl.STATIC_DRAW)
+            buffers.uv.upload(gl.ARRAY_BUFFER,attr.tex_coord,gl.STATIC_DRAW)
             gl.enableVertexAttribArray(aUV)
             gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0)
 
             // tint
-            gl.bindBuffer(gl.ARRAY_BUFFER, buffers.tint)
-            gl.bufferData(gl.ARRAY_BUFFER, attr.tint, gl.STATIC_DRAW)
+            buffers.tint.upload(gl.ARRAY_BUFFER,attr.tint,gl.STATIC_DRAW)
             gl.enableVertexAttribArray(aTint)
             gl.vertexAttribPointer(aTint, 4, gl.FLOAT, false, 0, 0)
 
@@ -569,7 +581,12 @@ void main() {
             ...arg,
             factory: fac,
             group: "texture_batch",
-            draw
+            draw,
+            free(){
+                for(const b in buffers){
+                    buffers[b].free()
+                }
+            }
         })
     }
 }
@@ -632,6 +649,11 @@ void main() {
             ...arg,
             factory: fac,
             draw,
+            free(){
+                for(const b in buffers){
+                    gl.gl.deleteBuffer(buffers[b])
+                }
+            },
             group:""
         });
     }

@@ -1,9 +1,8 @@
 import { Vec2 } from "../../core/math/vec2.ts";
 import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_GridMatArgs, GL2D_GridMatAttr, GL2D_LightMatArgs, GL2D_LightMatAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Grid, GLF_Light, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
-
 import { Color, ColorM } from "../../core/math/color.ts";
 import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
-import { Matrix } from "../../core/definition/matrix.ts";
+import { Matrix } from "../../core/math/matrix.ts";
 
 export type Material=GLMaterial
 
@@ -17,37 +16,46 @@ export abstract class Renderer {
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
     abstract clear(): void
 }
+export class GLDynamicBuffer {
+    buffer: WebGLBuffer
+    size = 0
+    private disposed = false
+    constructor(private gl: WebGLRenderingContext) {
+        this.buffer = gl.createBuffer()!
+    }
+    upload(target: number, data: Float32Array, usage: number = 35048) {
+        if (this.disposed) return
 
-const texVertexShaderSource = `
-attribute vec2 a_Position;
-attribute vec2 a_TexCoord;
-    
-uniform mat4 u_ProjectionMatrix;
-uniform vec2 u_Translation;
+        const gl = this.gl
+        gl.bindBuffer(target, this.buffer)
 
-varying highp vec2 vTextureCoord;
+        if (data.length > this.size) {
+            this.size = data.length
+            gl.bufferData(target, data, usage)
+        } else {
+            gl.bufferSubData(target, 0, data)
+        }
+    }
+    exists(): boolean {
+        return !!this.buffer && this.gl.isBuffer(this.buffer)
+    }
+    free() {
+        if (this.disposed) return
+        if (this.buffer && this.gl.isBuffer(this.buffer)) {
+            this.gl.deleteBuffer(this.buffer)
+        }
 
-void main(void) {
-    gl_Position = u_ProjectionMatrix*vec4(a_Position+u_Translation.xy,0.0,1.0);
-    vTextureCoord = a_TexCoord;
-}`;
-
-const texFragmentShaderSource = `
-precision mediump float;
-
-varying highp vec2 vTextureCoord;
-uniform sampler2D u_Texture;
-uniform vec4 u_Tint;
-
-void main(void) {
-    vec2 flippedCoord = vec2(vTextureCoord.x, 1.0 - vTextureCoord.y);
-    gl_FragColor = texture2D(u_Texture, flippedCoord)*u_Tint;
-}`;
+        this.buffer = null as any
+        this.size = 0
+        this.disposed = true
+    }
+}
 // deno-lint-ignore no-explicit-any
 export type GLMaterial<Args=any,Attr=any>={
     group:string
     factory:GLMaterialFactory<Args,Attr>
     draw:(mat:GLMaterial<Args,Attr>,matrix:Matrix,attr:Attr)=>void
+    free:()=>void
 }&Args
 export interface GLMaterialFactory<Args,Attr>{
     create:(arg:Args)=>GLMaterial<Args,Attr>

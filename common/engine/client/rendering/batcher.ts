@@ -1,4 +1,4 @@
-import { Matrix } from "../../core/definition/matrix.ts";
+import { Matrix } from "../../core/math/matrix.ts";
 import { Model2D } from "../../core/definition/models.ts";
 import { Color } from "../../core/math/color.ts";
 import { Vec2 } from "../../core/math/vec2.ts";

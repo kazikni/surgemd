@@ -1,12 +1,11 @@
 import { Model2D, model2d } from "../../core/definition/models.ts"
 import { Color } from "../../core/math/color.ts"
-import { cloneDeep } from "../../core/math/utils.ts"
 import { Vec2 } from "../../core/math/vec2.ts"
 import { Batcher } from "./batcher.ts"
 import { Material, WebglRenderer } from "./renderer.ts"
 import { Frame } from "../resources/resources.ts"
 import { v2 } from "../mod.ts"
-import { Matrix, matrix4 } from "../../core/definition/matrix.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 
 export type ContextGradient = {
     type: "linear" | "radial"
@@ -47,7 +46,17 @@ export abstract class Context2D{
         this.canvas=canvas
     }
     save() {
-        this.stack.push(cloneDeep(this.state))
+        const s = this.state
+        this.stack.push({
+            fill_style: { ...s.fill_style },
+            stroke_style: { ...s.stroke_style },
+            global_tint: { ...s.global_tint },
+            transform_matrix: matrix4.clone(s.transform_matrix),
+
+            line_width: s.line_width,
+            line_inner: s.line_inner,
+            line_outer: s.line_outer,
+        })
     }
     restore() {
         if (this.stack.length) {

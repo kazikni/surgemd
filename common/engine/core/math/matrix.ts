@@ -1,6 +1,6 @@
-import { RadAngle } from "../math/geometry.ts";
-import { Vec2 } from "../math/vec2.ts";
-import { Vec3 } from "../math/vec3.ts";
+import { RadAngle } from "./geometry.ts";
+import { Vec2 } from "./vec2.ts";
+import { Vec3 } from "./vec3.ts";
 
 export type Matrix=Float32Array
 export const matrix4={
@@ -142,4 +142,8 @@ export const matrix4={
             0, 0, 0, 1,
         ])
     },
+
+    clone(matrix:Matrix){
+        return new Float32Array(matrix)
+    }
 }

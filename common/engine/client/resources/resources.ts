@@ -188,6 +188,7 @@ export class ResourcesManager{
                 ret.batch_mat=this.renderer.factorys2D.texture_batch.create({
                     texture:sp.texture
                 })
+                ret.batch_mat_free=false
                 resolve(ret)
             });
             ret.source.src=src

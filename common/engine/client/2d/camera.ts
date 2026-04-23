@@ -3,7 +3,7 @@ import { CamA, Container2DObject } from "./base.ts"
 import { v2 } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Context2D, GLContext2D } from "../rendering/context.ts";
-import { Matrix, matrix4 } from "../../core/definition/matrix.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { v2m } from "../mod.ts";
 import { Rect } from "../../core/math/geometry.ts";

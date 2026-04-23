@@ -3,7 +3,7 @@ import { Vec4M, Color, ColorM} from "../../core/math/color.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { type Context2D } from "../rendering/context.ts";
 import { Renderer } from "../rendering/renderer.ts";
-import { Matrix } from "../../core/definition/matrix.ts";
+import { Matrix } from "../../core/math/matrix.ts";
 import { type Container2D } from "./container.ts";
 import { FrameTransform } from "../../core/definition/definitions.ts";
 import { Rect } from "../../core/math/geometry.ts";

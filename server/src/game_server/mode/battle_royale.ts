@@ -144,6 +144,7 @@ export class BattleRoyaleSolo extends ModeManager{
     override generate_map(): void {
         this.game.map.generate(this.settings.map.def,this.settings.map.seed)
         this.game.deadzone.set_config(this.settings.deadzone)
+        //this.game.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)

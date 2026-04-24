@@ -77,45 +77,42 @@ export const NormalMap:MapDef={
         ],
         //Consumibles
         "consumibles":[
-            {item:"bandage",count:5,weight:1000},
-
-            {item:"yellow_soda",count:1,weight:950},
-            {item:"blue_soda",count:2,weight:700},
-
-            {item:"inhaler",count:1,weight:400},
-            {item:"medikit",count:1,weight:350},
-            {item:"blue_potion",count:1,weight:240},
-            {item:"small_red_crystal",count:4,weight:130},
-            {item:"red_soda",count:1,weight:110},
-            {item:"red_crystal",count:2,weight:60},
-            {item:"yellow_pills",count:1,weight:4},
-            {item:"blue_pills",count:1,weight:4},
-            {item:"red_pills",count:1,weight:2.5},
-            {item:"green_soda",count:1,weight:3},
-            {item:"black_soda",count:1,weight:1.25}
+            {table:"health_consumibles",count:1,weight:10},
+            {table:"adrenaline_consumibles",count:1,weight:7},
+            {table:"shield_consumibles",count:1,weight:6},
+            {table:"addiction_consumibles",count:1,weight:1},
+            {table:"green_bless_consumibles",count:1,weight:0.1},
+            {table:"death_consumibles",count:1,weight:0.1},
         ],
-        "special_consumibles":[
-            {item:"bandage",count:10,weight:1000},
-
-            {item:"yellow_soda",count:2,weight:950},
-            {item:"blue_soda",count:3,weight:700},
-
-            {item:"inhaler",count:2,weight:400},
-            {item:"medikit",count:1,weight:350},
-            {item:"blue_potion",count:2,weight:240},
-            {item:"small_red_crystal",count:6,weight:130},
-            {item:"red_soda",count:2,weight:110},
-            {item:"red_crystal",count:2,weight:60},
-            {item:"yellow_pills",count:1,weight:4},
-            {item:"blue_pills",count:1,weight:4},
-            {item:"red_pills",count:1,weight:2.5},
-            {item:"green_soda",count:2,weight:3},
-            {item:"black_soda",count:2,weight:1.25}
+        "health_consumibles":[
+            {item:"bandage",count:5,weight:8},
+            {item:"medikit",count:5,weight:1},
         ],
-        "mana":[
-            {item:"purple_soda",count:2,weight:100},
-            {item:"purple_potion",count:1,weight:40},
-            {item:"purple_pills",count:1,weight:3},
+        "adrenaline_consumibles":[
+            {item:"yellow_soda",count:2,weight:8},
+            {item:"inhaler",count:1,weight:1},
+            {item:"yellow_pills",count:1,weight:0.1},
+        ],
+        "shield_consumibles":[
+            {item:"blue_soda",count:2,weight:8},
+            {item:"blue_potion",count:1,weight:1},
+            {item:"blue_pills",count:1,weight:0.1},
+        ],
+        "addiction_consumibles":[
+            {item:"red_soda",count:2,weight:5},
+            {item:"small_red_crystal",count:4,weight:1},
+            {item:"red_crystal",count:2,weight:0.1},
+        ],
+        "mana_consumibles":[
+            {item:"purple_soda",count:2,weight:8},
+            {item:"purple_potion",count:1,weight:1},
+            {item:"purple_pills",count:1,weight:0.1},
+        ],
+        "green_bless_consumibles":[
+            {item:"green_soda",count:1,weight:1},
+        ],
+        "death_consumibles":[
+            {item:"black_soda",count:1,weight:1},
         ],
         //Ammos
         "ammos":[
@@ -144,8 +141,8 @@ export const NormalMap:MapDef={
         ],
         //Throwables
         "throwables":[
-            {item:"frag_grenade",count:2,weight:60},
-            {item:"smoke_grenade",count:2,weight:60},
+            {item:"frag_grenade",count:2,weight:70},
+            {item:"smoke_grenade",count:2,weight:70},
             {item:"molotov",count:1,weight:30},
             {item:"mirv_grenade",count:1,weight:20},
             {item:"blue_flare",count:1,weight:1},
@@ -235,7 +232,7 @@ export const NormalMap:MapDef={
         ],
         "special_loot":[
             {weight:1,table:"special_ammos"},
-            {weight:1,table:"special_consumibles"},
+            {weight:1,table:"consumibles"},
             {weight:0.85,table:"special_guns"},
             {weight:0.6,table:"special_equipments"},
             {weight:0.4,table:"special_scopes"},
@@ -271,7 +268,7 @@ export const NormalMap:MapDef={
         ],
         "iron_crate":[
             [{weight:1,table:"special_ammos",count:2}],
-            [{weight:1,table:"special_consumibles",count:2}],
+            [{weight:1,table:"consumibles",count:2}],
             [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
             [{weight:1,table:"throwables"}],
@@ -280,7 +277,7 @@ export const NormalMap:MapDef={
         ],
         "gold_crate":[
             [{weight:1,table:"special_ammos",count:2}],
-            [{weight:1,table:"special_consumibles",count:2}],
+            [{weight:1,table:"consumibles",count:2}],
             [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
             [{weight:10,table:"legendary_guns"}],
             [{weight:1,table:"throwables"}],
@@ -299,7 +296,7 @@ export const NormalMap:MapDef={
         ],
         //Animals
         "animal_medium":[
-            [{weight:1,count:1,table:"special_consumibles"}],
+            [{weight:1,count:1,table:"consumibles"}],
             [{weight:10,count:1,table:""},{weight:1,count:1,table:"ammos"}],
         ]
     },

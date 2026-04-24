@@ -230,7 +230,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
         CreatePills("purple",BoostType.Mana),
         //Addiction
-        CreateSoda("red",BoostType.Addiction),
+        CreateSoda("red",BoostType.Addiction,0.5,50),
         {
             idString:"small_red_crystal",
             use_delay:1.5,
@@ -239,7 +239,6 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                     type:SideEffectType.Heal,
                     boost:{
                         amount:25,
-                        max:.5,
                         def:Boosts[BoostType.Addiction]
                     }
                 }

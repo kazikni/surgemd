@@ -59,7 +59,7 @@ export const PacifictCreature1 = {
         const turn_speed = c.def.ai?.turn_speed ?? 10
 
         function get_offset(angle: number): Vec2 {
-            return v2.scale(v2.from_RadAngle(angle), random.float(1, 4))
+            return v2.from_RadAngle(angle, random.float(1, 4))
         }
 
         function is_valid_direction(angle: number): boolean {
@@ -90,10 +90,7 @@ export const PacifictCreature1 = {
             choose_new_angle()
             c.physical_data.velocity = v2.zero
         } else {
-            c.physical_data.velocity = v2.scale(
-                v2.from_RadAngle(c.physical_data.rotation),
-                speed
-            )
+            c.physical_data.velocity=v2.from_RadAngle(c.physical_data.rotation,speed)
         }
         ai.time -= dt
     }
@@ -103,7 +100,7 @@ export function Creatures_Default_Init(creatures:Definitions<CreatureDef,{}>){
         {
             idString:"chicken",
             health:50,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.25),
+            hitbox:new CircleHitbox2D(v2(0,0),0.25),
             ai:{
                 speed:0.5,
                 walk_time:3,
@@ -129,7 +126,7 @@ export function Creatures_Default_Init(creatures:Definitions<CreatureDef,{}>){
         {
             idString:"pig",
             health:50,
-            hitbox:new CircleHitbox2D(v2.new(0,0),0.25),
+            hitbox:new CircleHitbox2D(v2(0,0),0.25),
             ai:{
                 speed:0.5,
                 walk_time:3,

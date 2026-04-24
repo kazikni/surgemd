@@ -45,7 +45,7 @@ export class Plane{
             switch(data.type){
                 case 0:
                     this.sound=this.game.sounds.play(this.game.resources.get_audio("airdrop_plane_sfx"),{
-                        max_distance:80,
+                        max_distance:40,
                         position:v2.clone(this.container.position),
                         loop:true,
                         volume:0.5
@@ -53,7 +53,7 @@ export class Plane{
                     break
                 case 1:
                     this.sound=this.game.sounds.play(this.game.resources.get_audio("airstrike_plane_sfx"),{
-                        max_distance:130,
+                        max_distance:40,
                         position:v2.clone(this.container.position),
                         loop:false,
                         volume:0.5
@@ -67,7 +67,7 @@ export class Plane{
                 case 0:
                     this.sprite.set_frame({
                         image:"airdrop_plane",
-                        scale:14,
+                        scale:11,
                         hotspot:CenterHotspot
                     },this.game.resources)
                     break

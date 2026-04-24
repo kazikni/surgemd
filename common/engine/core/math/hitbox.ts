@@ -1,4 +1,4 @@
-import { Collision,OverlapCollision2D, Orientation, Rect } from "./geometry.ts"
+import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 
 import { random, SeededRandom } from "./random.ts";
 import { NetStream } from "../net/stream.ts";
@@ -35,10 +35,10 @@ export abstract class BaseHitbox2D{
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
     abstract to_rect():Rect
-    abstract transform(position?:Vec2,scale?:number):Hitbox2D
+    abstract transform(position?:Vec2,scale?:number,position_angle?:number,side?:number):Hitbox2D
     abstract clone():Hitbox2D
     abstract readonly position:Vec2
-    abstract translate(position:Vec2):void
+    abstract translate(position:Vec2,angle?:number):void
     abstract clamp(position:Vec2,min:Vec2,max:Vec2):Vec2 // returns clamped position
     abstract encode(stream:NetStream):void
 
@@ -88,10 +88,10 @@ export class NullHitbox2D extends BaseHitbox2D{
         return true
     }
 
-    override transform(position:Vec2=v2(0,0),_scale:number=1):Hitbox2D{
+    override transform(position:Vec2=v2(0,0),_scale:number=1,_position_angle?:number,_side?:number):Hitbox2D{
         return new NullHitbox2D(position?v2.add(this.position,position):this.position)
     }
-    override translate(position: Vec2): void {
+    override translate(position: Vec2,_position_angle?:number): void {
         v2m.add(this.position,this.position,position)
     }
     override clone():Hitbox2D{
@@ -230,18 +230,20 @@ export class CircleHitbox2D extends BaseHitbox2D{
             max:v2.add(this.position,size)
         }
     }
-    override transform(position?:Vec2,scale?:number):CircleHitbox2D{
+    override transform(position?:Vec2,scale?:number,position_angle?:number,_side?:number):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D
         if(scale){
             ret.radius*=scale
         }
         if(position){
-            v2m.add(ret.position,this.position,position)
+            if(position_angle)v2m.add_rotate_RadAngle(ret.position,this.position,position,position_angle)
+            else v2m.add(ret.position,this.position,position)
         }
         return ret
     }
-    override translate(position: Vec2): void {
-        v2m.add(this.position,this.position,position)
+    override translate(position: Vec2,position_angle?:number): void {
+        if(position_angle)v2m.add_rotate_RadAngle(this.position,this.position,position,position_angle)
+        else v2m.add(this.position,this.position,position)
     }
     override clone():CircleHitbox2D{
         return new CircleHitbox2D(v2.clone(this.position),this.radius)
@@ -496,15 +498,47 @@ export class RectHitbox2D extends BaseHitbox2D{
             max:v2.clone(this.max)
         }
     }
-    override transform(
-        position: Vec2 = v2(0, 0),
-        scale: number=1
-    ): RectHitbox2D {
+    override transform(position: Vec2 = v2(0, 0),scale: number=1,position_angle?:number,side?:number): RectHitbox2D {
         const min = v2.scale(this.min, scale)
-        const max = v2.scale(this.max, scale);
+        const max = v2.scale(this.max, scale)
 
-        v2m.add(min,position,min)
-        v2m.add(max,position,max)
+        if (side) {
+            const minX = min.x, minY = min.y
+            const maxX = max.x, maxY = max.y
+
+            switch (side & 3) {
+                case 1: // 90°
+                    v2m.set(min, -maxY, minX)
+                    v2m.set(max, -minY, maxX)
+                    break
+
+                case 2: // 180°
+                    v2m.set(min, -maxX, -maxY)
+                    v2m.set(max, -minX, -minY)
+                    break
+
+                case 3: // -90°
+                    v2m.set(min, minY, -maxX)
+                    v2m.set(max, maxY, -minX)
+                    break
+            }
+
+            const minx = Math.min(min.x, max.x)
+            const miny = Math.min(min.y, max.y)
+            const maxx = Math.max(min.x, max.x)
+            const maxy = Math.max(min.y, max.y)
+
+            v2m.set(min, minx, miny)
+            v2m.set(max, maxx, maxy)
+        }
+
+        if(position_angle){
+            v2m.add_rotate_RadAngle(min,position,min,position_angle)
+            v2m.add_rotate_RadAngle(max,position,max,position_angle)
+        }else{
+            v2m.add(min,position,min)
+            v2m.add(max,position,max)
+        }
 
         return new RectHitbox2D(min, max);
     }
@@ -601,14 +635,23 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override is_null():boolean{
         return false
     }
-    override transform(position:Vec2=v2(0,0),scale:number=1,orientation?:Orientation): HitboxGroup2D {
-        return new HitboxGroup2D(
-            ...this.hitboxes.map(hitbox => hitbox.transform(position, scale,orientation))
-        );
+    override transform(position: Vec2 = v2(0,0),scale: number = 1,position_angle?: number,side: number = 0): HitboxGroup2D {
+        const out: Hitbox2D[] = new Array(this.hitboxes.length)
+
+        for (let i = 0; i < this.hitboxes.length; i++) {
+            out[i] = this.hitboxes[i].transform(
+                position,
+                scale,
+                position_angle,
+                side
+            )
+        }
+
+        return new HitboxGroup2D(...out)
     }
-    override translate(position: Vec2): void {
+    override translate(position: Vec2,position_angle?:number): void {
         for(const hb of this.hitboxes){
-            hb.translate(position)
+            hb.translate(position,position_angle)
         }
     }
     override clone(deep:boolean=true): HitboxGroup2D {
@@ -794,16 +837,16 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         }
     }
 
-    override transform(position: Vec2 = v2(0,0), scale = 1, orientation: Orientation = 0): PolygonHitbox2D {
+    override transform(position: Vec2 = v2(0,0), scale = 1,position_angle?:number): PolygonHitbox2D {
         const transformed = this.points.map(p => 
-            v2.add_with_orientation(position, v2.scale(p, scale), orientation)
+            position_angle?v2.add_rotate_RadAngle(position, v2.scale(p, scale), position_angle):v2.add(position,v2.scale(p,scale))
         );
-        const newCenter = v2.add_with_orientation(position, v2.scale(this.position, scale), orientation);
+        const newCenter = position_angle?v2.add_rotate_RadAngle(position, v2.scale(this.position, scale), position_angle):v2.add(position,v2.scale(this.position, scale))
         return new PolygonHitbox2D(transformed, newCenter);
     }
 
-    override translate(position: Vec2, orientation: Orientation = 0): void {
-        const offset = v2.sided(orientation);
+    override translate(position: Vec2, position_angle?:number): void {
+        const offset = v2(1,0);
         const dx = position.x * offset.x;
         const dy = position.y * offset.y;
         for (let i = 0; i < this.points.length; i++) {

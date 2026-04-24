@@ -1,7 +1,7 @@
 import { FrameDef, FrameTransform, KeyFrameSpriteDef } from "../../core/definition/definitions.ts"
-import { ImageModel2D, ImageToRect } from "../../core/definition/models.ts"
+import { ImageModel2D } from "../../core/definition/models.ts"
 import { ColorM } from "../../core/math/color.ts"
-import { RectHitbox2D } from "../../core/math/hitbox.ts";
+import { Rect } from "../../core/math/geometry.ts";
 import { Numeric } from "../../core/math/utils.ts"
 import { v2, Vec2, Vec2M } from "../../core/math/vec2.ts"
 import { Frame, ResourcesManager } from "../resources/resources.ts"
@@ -9,7 +9,7 @@ import { CamA, Container2DObject } from "./base.ts"
 export class Sprite2D extends Container2DObject{
     object_type:string="sprite2d"
     _frame?:Frame
-    _hitbox?:RectHitbox2D
+    _rect:Rect
     hotspot:Vec2=v2(0,0)
     _size?:Vec2M
 
@@ -40,7 +40,7 @@ export class Sprite2D extends Container2DObject{
     }
     set frame(f:Frame|undefined){
         this._frame=f
-        this.update_real()
+        this.dirty_reals=true
     }
 
     frames?:KeyFrameSpriteDef[]
@@ -57,15 +57,21 @@ export class Sprite2D extends Container2DObject{
     update_model(){
         if(!this.frame||!this.frame.source)return
         this._real_size=this.size??this.frame.frame_size??v2(this.frame.source.width,this.frame.source.height)
-        this.model=ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100,this._real_position)
-        this._hitbox=ImageToRect(this._real_scale,this.hotspot,this._real_size,100,this._real_position)
+        ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100,this._real_position,this._rect,this.model)
     }
 
     model:Float32Array
 
     constructor(){
         super()
-        this.model=ImageModel2D(this._real_scale,this.rotation,this.hotspot,v2(0,0),100)
+        this._rect={
+            min:v2(0,0),
+            max:v2(1,1),
+        }
+        this.model=new Float32Array([
+            0,0,0,0,0,0,
+            0,0,0,0,0,0,
+        ])
     }
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
@@ -80,22 +86,16 @@ export class Sprite2D extends Container2DObject{
         if(frame.position)this.position=v2.clone(frame.position)
         if(frame.image)this.frame=resources.get_sprite(frame.image)
         if(frame.tint)this.tint=ColorM.number(frame.tint)
-        this.update_real()
+        if(frame.alpha)this.tint.a=frame.alpha
+        this.dirty_reals=true
     }
-    
-    transform_frame(frame:FrameTransform){
-        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2)this.scale=frame.scale2
+    override transform_frame(frame:FrameTransform){
+        super.transform_frame(frame)
+        if(frame.tint)this.tint=ColorM.number(frame.tint)
         if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
-        if(frame.rotation)this.rotation=frame.rotation
-        if(frame.visible)this.visible=frame.visible
-        if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.position)this.position=v2.clone(frame.position)
-        if(frame.layer)this.layer=frame.layer
-        this.update_real()
     }
-    override get_hitbox():RectHitbox2D|undefined{
-        return this._hitbox
+    override get_rect():Rect{
+        return this._rect
     }
     override draw(cam:CamA): void {
         this.draw_super()

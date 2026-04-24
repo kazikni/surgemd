@@ -13,6 +13,7 @@ ___
 ___
 ## Sound Designers
 * Free Sounds On Net
+* Half Life
 * @teardwop
 ___
 ## Musics
@@ -31,9 +32,9 @@ ___
 * @bien.star
 ___
 ## Inspirations
+* Hotline Miami 1 and 2
 * Surviv.io
 * Suroi.io
-* Hotline Miami
 * Roblox Doors
 * Pixel Gun 3D
 * Fortnite

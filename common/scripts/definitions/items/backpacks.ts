@@ -1,11 +1,11 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
-import { ItemQuality } from "../../others/item.ts";
+import { ItemRank } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 
 export interface BackpackDef extends Definition{
     max:Record<string,number>
     item_type?:InventoryItemType.backpack
-    quality:ItemQuality
+    rank:ItemRank
     level:number
     no_world_image?:boolean
     slots:number
@@ -31,6 +31,8 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
 
                 "frag_grenade":9,
                 "smoke_grenade":12,
+                "mirv_grenade":7,
+                "molotov":5,
                 "red_flare":2,
                 "blue_flare":2,
 
@@ -56,7 +58,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "green_pills":2,
                 "pocket_portal":3,
             },
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             no_world_image:true,
             slots:3,
         },
@@ -77,7 +79,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "explosive_ammo":10,
                 "gasoline":10,
             },
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             slots:4,
         },
         {
@@ -97,7 +99,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "explosive_ammo":15,
                 "gasoline":15,
             },
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             slots:5,
         },
         {
@@ -117,7 +119,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "explosive_ammo":20,
                 "gasoline":20,
             },
-            quality:ItemQuality.Rare,
+            rank:ItemRank.C,
             slots:6,
         }
     )

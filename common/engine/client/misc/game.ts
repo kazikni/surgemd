@@ -60,6 +60,10 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         super.clear()
         this.particles.clear()
     }
+    override mainloop(rqf?: boolean, auto_mainloop?: boolean): void {
+        this.input_manager.clear()
+        super.mainloop(rqf,auto_mainloop)
+    }
     set_meter_size(size:number){
         this.cam2d.meter_size=size
         this.input_manager.mouse.meter_size=size
@@ -84,27 +88,28 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         return t
     }
 
-    override async draw(dt:number){
+    override draw(dt:number){
+        this.clock.profiler.start(3)
         this.cam2d.fullCanvas()
         this.renderer.clear()
 
         this.on_before_render(dt)
 
+        this.cam2d.draw(dt,this.resources)
         for(const l of this.scene_2d.objects.layers){
             for(const o of this.scene_2d.objects.objects[l].renderizables){
                 const obj=this.scene_2d.objects.objects[l].objects[o]
                 obj.render(this.cam2d,dt)
             }
         }
-
-        await this.cam2d.draw(dt,this.resources)
-        await super.draw(dt)
+        super.draw(dt)
     
         this.on_render(dt)
+        this.clock.profiler.end(3)
     }
-    override async update(dt:number,new_list: boolean=true, destroy_queue: boolean=true){
-        await super.update(dt,new_list,destroy_queue)
-
+    override update(dt:number,net_update: boolean=false, destroy_queue: boolean=true){
+        this.clock.profiler.start(2)
+        super.update(dt,net_update,destroy_queue)
         for(const t of this.tweens){
             t.update(dt)
         }
@@ -112,6 +117,8 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.particles.update(dt)
         this.sounds.update(dt)
         this.input_manager.tick()
+        this.ui_manager.update(dt)
+        this.clock.profiler.end(2)
     }
     on_render(_dt:number){}
     on_before_render(_dt:number){}

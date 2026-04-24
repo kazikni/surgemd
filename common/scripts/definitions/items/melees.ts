@@ -1,8 +1,8 @@
-import { AKeyFrame, Angle, Definition, Definitions, ease, v2 } from "../../../engine/core.ts";
-import { DefaultFistRig, FistRig, ItemQuality, WeaponAssets, WeaponRig } from "../../others/item.ts";
+import { AKeyFrame, Angle, Definition, Definitions, ease, v2, Vec2 } from "../../../engine/core.ts";
+import { DefaultFistRig, FistRig, ItemRank, WeaponAssets, WeaponRig } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
-    quality:ItemQuality
+    rank:ItemRank
     item_type?:InventoryItemType.melee
     damage:number
     radius:number
@@ -19,6 +19,11 @@ export interface MeleeDef extends Definition{
     animation?:AKeyFrame[]
     assets?:WeaponAssets&{
         hit_sound?:string
+    }
+
+    reflective?:{
+        frame?:string
+        offset:number
     }
 
     resistence_damage?:number
@@ -39,7 +44,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:r+0.4,
-                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0.1))
+                        position:v2.add(DefaultFistRig.left!.position,v2(0,0.1))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -48,7 +53,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:DefaultFistRig.left!.rotation-0.2,
-                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0.1))
+                        position:v2.add(DefaultFistRig.left!.position,v2(0,0.1))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -57,7 +62,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:DefaultFistRig.right!.rotation+0.2,
-                        position:v2.add(DefaultFistRig.right!.position,v2.new(-0.07,0.05))
+                        position:v2.add(DefaultFistRig.right!.position,v2(-0.07,0.05))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -71,7 +76,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:r-1,
-                        position:v2.add(DefaultFistRig.left!.position,v2.new(0,0))
+                        position:v2.add(DefaultFistRig.left!.position,v2(0,0))
                     },
                 },
                 {
@@ -79,7 +84,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:DefaultFistRig.left!.rotation+0.1,
-                        position:v2.add(DefaultFistRig.left!.position,v2.new(-0.05,0.1))
+                        position:v2.add(DefaultFistRig.left!.position,v2(-0.05,0.1))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -88,7 +93,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:DefaultFistRig.right!.rotation-0.3,
-                        position:v2.add(DefaultFistRig.right!.position,v2.new(0.15,-0.15))
+                        position:v2.add(DefaultFistRig.right!.position,v2(0.15,-0.15))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -133,7 +138,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             idString:"survival_knife",
             damage:15,
             offset:0.5,
-            quality:ItemQuality.Common,
+            rank:ItemRank.E,
             radius:0.5,
             size:0,
             attack_delay:0.25,
@@ -155,7 +160,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.right!.position,
                 rotation:-0.5,
                 zIndex:1,
-                hotspot:v2.new(0.33,0.5)
+                hotspot:v2(0.33,0.5)
             },
             animation:[
                 {
@@ -172,7 +177,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                             yoyo:true,
                             to:{
                                 rotation:DefaultFistRig.right!.rotation-1,
-                                position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                                position:v2.add(DefaultFistRig.right!.position,v2(0,-0.2))
                             }
                         },
                         {
@@ -181,7 +186,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                             yoyo:true,
                             to:{
                                 rotation:DefaultFistRig.right!.rotation-0.4,
-                                position:v2.add(DefaultFistRig.right!.position,v2.new(0,-0.2))
+                                position:v2.add(DefaultFistRig.right!.position,v2(0,-0.2))
                             }
                         }
                     ]
@@ -196,7 +201,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             idString:"axe",
             damage:33,
             offset:0.6,
-            quality:ItemQuality.Uncommon,
+            rank:ItemRank.D,
             radius:0.9,
             size:2,
             attack_delay:0.4,
@@ -219,7 +224,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
-                hotspot:v2.new(0.2,0.4)
+                hotspot:v2(0.2,0.4)
             },
             animation:AnimationSwing(0.45),
             assets:{
@@ -231,7 +236,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             idString:"sledgehammer",
             damage:49.5,
             offset:0.6,
-            quality:ItemQuality.Mythic,
+            rank:ItemRank.A,
             radius:0.9,
             size:3,
             attack_delay:0.6,
@@ -254,7 +259,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
-                hotspot:v2.new(0.2,0.3)
+                hotspot:v2(0.2,0.3)
             },
             animation:AnimationSwing(0.55),
             assets:{
@@ -262,11 +267,49 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 hit_sound:"sledgehammer_hit",
             }
         },
+        {
+            idString:"pan",
+            damage:20,
+            offset:0.6,
+            rank:ItemRank.D,
+            radius:0.9,
+            size:2,
+            attack_delay:0.4,
+            switchDelay:0.5,
+            damage_delays:[0.3],
+            arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.2,0.4)
+            },
+            reflective:{
+                frame:"pan_world",
+                offset:0.6
+            },
+            animation:AnimationSwing(0.45),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"axe_hit",
+            }
+        },
         /*{
             idString:"bonesaw",
             damage:49.5,
             offset:0.6,
-            quality:ItemQuality.Legendary,
+            rank:ItemRank.S,
             radius:0.9,
             size:3,
             attack_delay:0.8,
@@ -290,7 +333,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 rotation:0,
                 zIndex:1,
                 scale:1.5,
-                hotspot:v2.new(0,0.3)
+                hotspot:v2(0,0.3)
             },
             //animation:AnimationSwing(0.9),
             assets:{

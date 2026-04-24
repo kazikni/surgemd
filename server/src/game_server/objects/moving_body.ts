@@ -18,7 +18,7 @@ export abstract class MovingBody extends ServerGameObject{
         v2m.scale(vel,vel,speed)
         v2m.add(this.physical_data.velocity,this.physical_data.velocity,vel)
     }
-    on_collided(obj:ServerGameObject){
+    on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
             case GameObjectType.Obstacle:
             case GameObjectType.Building:{
@@ -35,12 +35,11 @@ export abstract class MovingBody extends ServerGameObject{
     update(dt:number): void {
         const pos=v2.add(this.position,v2.scale(this.physical_data.velocity,dt))
         this.position=this.game.map.clamp_hitbox(pos,this.hitbox)
-        this.manager.cells.updateObject(this)
 
         const objs:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
         for(const obj of objs){
             if(obj.id===this.id)continue
-            this.on_collided(obj)
+            this.on_collided(obj,dt)
         }
     }
     physical_encode(stream:NetStream){

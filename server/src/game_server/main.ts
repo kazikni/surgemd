@@ -17,5 +17,9 @@ async function hostGame(){
 }
 
 if (import.meta.main) {
+    await Deno.mkdir("database/replays",{
+        recursive:true,
+        mode:0o700
+    })
     hostGame()
 }

@@ -1,5 +1,5 @@
 import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
-import { TabApp, type TabManager } from "../managers/tabManager.ts";
+import { TabApp, type TabManager } from "../managers/deviceManager.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 
 export class MatchTabApp extends TabApp {

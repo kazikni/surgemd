@@ -12,6 +12,7 @@ export * from "./2d/surface_container.ts"
 
 export * from "./3d/container.ts"
 
+export * from "./misc/file.ts"
 export * from "./misc/game.ts"
 export * from "./misc/html_manager.ts"
 export * from "./misc/keys.ts"

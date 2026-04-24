@@ -1,0 +1,200 @@
+@use "../palette.scss";
+
+@use "./apps/message.scss";
+@use "./apps/shop.scss";
+@use "./apps/debug.scss";
+@use "./apps/map.scss";
+@use "./apps/match.scss";
+#game-device-view {
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    transition:
+        left 0.5s ease-out,
+        top 0.5s ease-out,
+        scale 0.5s ease-out,
+        transform 0.5s ease-out,
+        opacity 0.6s ease-in-out;
+
+    --game-device-primary: #4f6ef7;
+    --game-device-secondary: #1a1a1a;
+    --game-device-surface: #222;
+    --game-device-text: #ffffff;
+
+    --game-device-accent: color-mix(in srgb, var(--game-device-primary) 60%, white);
+    --game-device-muted: rgba(255,255,255,0.4);
+    #screen {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+
+        overflow: hidden;
+    }
+    #content-header {
+        width: 100%;
+        height: 30px;
+
+        background: linear-gradient(
+            to right,
+            var(--game-device-secondary),
+            color-mix(in srgb, var(--game-device-secondary) 80%, black)
+        );
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 0 12px;
+
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+
+        p {
+            font-size: 14px;
+            color: var(--game-device-muted);
+        }
+
+        img {
+            width: 22px;
+            opacity: 0.8;
+        }
+    }
+    #game-device-exit-button {
+        position: absolute;
+        left: 45px;
+        top: 50%;
+        transform: translate(-50%, -50%);
+
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+
+        background-color: #222;
+
+        cursor: pointer;
+        border: 2px solid #000;
+
+        &:active {
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+    }
+    #screen-content {
+        width: 100%;
+        height: 100%;
+
+        background-repeat: no-repeat;
+        background-size: cover;
+
+        color: var(--game-device-text);
+
+        overflow: hidden;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0.03),
+                rgba(0,0,0,0.4)
+            );
+            pointer-events: none;
+        }
+        #screen-apps {
+            position: absolute;
+            display: grid;
+
+            margin: 12px;
+            gap: 16px;
+
+            grid-template-columns: repeat(6, auto);
+
+            .game-device-app {
+                width: 140px;
+                height: 140px;
+
+                border-radius: 25%;
+
+                background: color-mix(
+                    in srgb,
+                    var(--game-device-surface) 85%,
+                    transparent
+                );
+
+                border: 2px solid var(--game-device-primary);
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                backdrop-filter: blur(8px);
+
+                box-shadow:
+                    0 6px 14px rgba(0,0,0,0.4),
+                    inset 0 1px 2px rgba(255,255,255,0.15);
+
+                transition: all 0.15s ease;
+
+                cursor: pointer;
+
+                img {
+                    width: 60%;
+                    height: 60%;
+                    object-fit: contain;
+                    filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));
+                }
+
+                &:hover {
+                    transform: translateY(-4px) scale(1.05);
+                    box-shadow:
+                        0 10px 20px rgba(0,0,0,0.6),
+                        0 0 10px var(--game-device-primary);
+                }
+
+                &:active {
+                    transform: scale(0.9);
+                    box-shadow: inset 0 4px 10px rgba(0,0,0,0.7);
+                }
+            }
+        }
+        .game-device-app-content,
+        #screen-current-app {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.game-device-view-full {
+    position: absolute;
+    transform: scale(100%) translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+
+    @media screen and (max-width: palette.$screen_large) {
+        transform:translate(-50%, -50%) scale(50%);
+    }
+
+    @media screen and (max-width: palette.$screen_medium) {
+        transform:translate(-50%, -50%) scale(30%);
+    }
+}
+.game-device-view-minimized {
+    position: absolute;
+    transform: scale(25%);
+    left: -510px;
+    top: -280px;
+
+    @media screen and (max-width: palette.$screen_large) {
+        left: -550px;
+        top: -300px;
+        transform:scale(20%);
+    }
+
+    @media screen and (max-width: palette.$screen_medium) {
+        left: -610px;
+        top: -335px;
+        transform:scale(12%);
+    }
+}

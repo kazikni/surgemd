@@ -15,7 +15,7 @@ export class MinimapManager{
     }
     image: HTMLImageElement=new Image()
     ms=0.1
-    position:Vec2=v2.new(0,0)
+    position:Vec2=v2(0,0)
 
     private drawHitbox(color:string,hb: Hitbox2D) {
         switch (hb.type) {

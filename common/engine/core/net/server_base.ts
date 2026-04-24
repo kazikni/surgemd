@@ -1,4 +1,4 @@
-import { PacketsManager,ConnectPacket, DisconnectPacket,Packet, PingPacket, PongPacket } from "./packets.ts";
+import { PacketsManager,ConnectPacket, DisconnectPacket,Packet, PingPacket, PongPacket, InvalidPacket } from "./packets.ts";
 import { ID } from "../math/utils.ts";
 import { SignalManager } from "../math/utils.ts"
 import { NetStream } from "./stream.ts"
@@ -24,7 +24,7 @@ export class BasicSocket{
     readonly CLOSING = 2;
     readonly CLOSED = 3;
 
-    send:((this:BasicSocket,_data: ArrayBuffer|Uint8Array|SharedArrayBuffer) => void)|null=null;
+    send(data: ArrayBuffer|Uint8Array|SharedArrayBuffer):void{}
     // deno-lint-ignore no-explicit-any
     onmessage:((this:BasicSocket,_ev: MessageEvent<any>) => void)|null=null;
     close:((this:BasicSocket,_code?: number, _reason?: string) => void)|null=(code?: number, reason?: string)=>{
@@ -38,23 +38,27 @@ export class BasicSocket{
 export class OfflineSocket extends BasicSocket{
     output?:OfflineSocket
     private static _event: MessageEvent<any> = { data: null } as any;
-    constructor(output?:OfflineSocket,lag=10){
+    lag:number=0
+    constructor(output?:OfflineSocket,lag:number=0){
         super()
         this.output=output
-        
-        this.send = (s) => {
-            if (!this.output) return;
-            const out = this.output;
-            const ev = OfflineSocket._event;
-            // deno-lint-ignore ban-ts-comment
-            //@ts-ignore
-            ev.data = s;
-            if (out.onmessage){
-                setTimeout(() => {
-                    out.onmessage!(ev);
-                }, lag)
-            }
-        };
+        this.lag=lag
+    }
+    override send(data: ArrayBuffer|Uint8Array|SharedArrayBuffer){
+        if (!this.output) return;
+        const out = this.output;
+        const ev = OfflineSocket._event;
+        // deno-lint-ignore ban-ts-comment
+        //@ts-ignore
+        ev.data = data
+
+        if(this.lag){
+            setTimeout(() => {
+                out.message!(ev)
+            }, this.lag)
+        }else{
+            out.message!(ev)
+        }
     }
     open(){
         this.readyState=this.OPEN
@@ -89,7 +93,6 @@ export class Client{
         this.signals=new SignalManager
         this.manager=packet_manager
         this.ws.onopen=()=>{
-            
         }
         this.ws.onclose=()=>{
             this.opened=false
@@ -98,14 +101,21 @@ export class Client{
         if(this.show_errors){
             this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
                 let buf: ArrayBufferLike | null = null
-                if (msg.data instanceof ArrayBuffer) buf = msg.data
-                else if (msg.data instanceof Blob) {
+                if (msg.data instanceof ArrayBuffer){
+                    buf = msg.data
+                }else if(msg.data instanceof Uint8Array){
+                    buf=msg.data.buffer
+                }else if(msg.data instanceof Blob) {
                     buf=await msg.data.arrayBuffer()
                 }
-
                 if (buf) {
-                    const packet = this.manager.decode(new NetStream(buf));
-                    this.signals.emit(packet.Name, packet);
+                    const stream=new NetStream(buf as ArrayBuffer)
+
+                    let packet = this.manager.decode(stream)
+                    while(!(packet instanceof InvalidPacket)){
+                        this.signals.emit(packet.Name, packet)
+                        packet=this.manager.decode(stream)
+                    }
                 }
             }
         }else{
@@ -133,7 +143,7 @@ export class Client{
                 this.opened=true
                 this.ID=packet.client_id
                 if(this.onopen)this.onopen()
-                this.emit(new ConnectPacket(this.ID))
+                this.emit_connect()
             })
         }
 
@@ -181,6 +191,10 @@ export class Client{
         this.lastPingTime = performance.now()
         this.emit(new PingPacket(this.lastPingTime))
     }
+
+    emit_connect(){
+        this.emit(new ConnectPacket(this.ID))
+    }
 }
 export class OfflineClientsManager{
     clients:Map<ID,Client>
@@ -212,7 +226,7 @@ export class OfflineClientsManager{
         client.on(DefaultSignals.CONNECT,()=>{
             if(this.onconnection)this.onconnection(client,username)
         })
-        client.emit(new ConnectPacket(client.ID))
+        client.emit_connect()
 
         return client.ID
     }
@@ -236,6 +250,12 @@ export class OfflineClientsManager{
         s1.output=s2
         this.activate_ws(s1,random.id(),"localhost","localhost")
         return s2
+    }
+    create_conn(lag:number):[OfflineSocket,OfflineSocket]{
+        const s1=new OfflineSocket(undefined,lag)
+        const s2=new OfflineSocket(s1,lag)
+        s1.output=s2
+        return [s1,s2]
     }
     fake_connect_other_s(socket:BasicSocket){
         this.activate_ws(socket,random.id(),"localhost","localhost")
@@ -273,8 +293,8 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     }
     private net_tick_delay:number=0
     net_full_tick:number=0
-    override async update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): Promise<void> {
-        await super.update(dt,new_list,destroy_queue)
+    override update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): void {
+        super.update(dt,new_list,destroy_queue)
         this.ticks++
 
         this.net_tick_delay+=dt

@@ -94,6 +94,40 @@ export class SignalManager {
     }
 }
 
+export class TicksProfiler {
+    data: Record<number, {
+        _delta: number
+        delta: number
+        start: number
+    }> = {}
+
+    enabled = true
+
+    start(id:number) {
+        if (!this.enabled) return
+        const d = this.data[id] ??= {
+            delta: 0,
+            _delta:0,
+            start: performance.now(),
+        }
+    }
+
+    end(id:number) {
+        if (!this.enabled) return
+
+        const d = this.data[id]
+        if (!d || d.start === undefined) return
+
+        d._delta = performance.now() - d.start
+        d.start=0
+    }
+
+    finish(){
+        for (const k in this.data) {
+            this.data[k].delta=this.data[k]._delta
+        }
+    }
+}
 export class Clock {
     private frameDuration: number;
     private lastFrameTime: number;
@@ -104,6 +138,8 @@ export class Clock {
 
     running:boolean=false
     tps:number=60
+
+    profiler:TicksProfiler=new TicksProfiler()
 
     constructor(targetFPS: number, timeScale: number, callback: (dt:number)=>void) {
         this.frameDuration = 1000 / targetFPS
@@ -130,6 +166,7 @@ export class Clock {
     }
     tick(){
         if(this.running){
+            this.profiler.start(0)
             const currentTime = performance.now();
             const elapsedTime = currentTime - this.lastFrameTime;
             this.lastFrameTime = currentTime
@@ -140,6 +177,8 @@ export class Clock {
             for (const i of this.intervals.values()) {
                 i(dt);
             }
+            this.profiler.end(0)
+            this.profiler.finish()
         }
     }
     _tick(){
@@ -479,7 +518,7 @@ export function getPatterningShape(
         const tauFrac = Math.PI / points;
         return (radius: number, offset = 0): Vec2[] => Array.from(
             { length: points },
-            (_, i) => v2.scale(v2.from_RadAngle(i * tauFrac + offset), radius)
+            (_, i)=>v2.from_RadAngle(i * tauFrac + offset, radius)
         );
     };
 

@@ -2,7 +2,7 @@ import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
 import { NewMDLanguageManager } from "./languages.ts";
-import { BasicSocket, FetchFileManager, FileManager, IPLocation, isMobile } from "common/engine/client.ts";
+import { BasicSocket, BrowserFileManager, Client, FetchFileManager, FileManager, IPLocation, isMobile, OfflineClientsManager, OfflineSocket, random, ReplayWatcher } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
 import { sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
@@ -114,6 +114,35 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                 case "join":{
                     this.join_on_game(play.url,play.password,play.attempts,play.delay)
                     break
+                }
+                case "replay": {
+                    this.game.watcher = new ReplayWatcher()
+                    const ocm = new OfflineClientsManager(PacketManager, undefined, this.file)
+                    const [serverSocket, clientSocket] = ocm.create_conn(0)
+                    this.game.set_socket(clientSocket)
+                    clientSocket.open()
+                    serverSocket.open()
+                    ocm.activate_ws(serverSocket, random.id(), "localhost", "replay")
+
+                    this.game.watcher.on_load = (stream) => {
+                        if (stream) {
+                            serverSocket.send(stream.buffer)
+                        }
+                    }
+                    this.game.watcher.on_frame = (stream) => {
+                        if (stream) {
+                            serverSocket.send(stream.buffer)
+                        }
+                    }
+                    this.game.watcher.on_finish=()=>{
+                        this.game.watcher!.reset()
+                        this.game.add_timeout(()=>{
+                            this.game.watcher?.play()
+                        },1)
+                    }
+
+                    this.game.cam_type=1
+                    await this.game.watcher.load(play.handle)
                 }
             }
         }

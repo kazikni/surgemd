@@ -1,7 +1,7 @@
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
-import { CounterMapDef, Maps } from "common/scripts/definitions/maps/base.ts";
+import { CounterMapDef } from "common/scripts/definitions/maps/base.ts";
 import { Team, TeamsManager } from "./teams.ts";
 import { JoinnedPacket, ShopItemType, type ShopNode } from "common/scripts/packets/joinned_packet.ts";
 import { v2, Vec2 } from "common/engine/core.ts";
@@ -380,7 +380,7 @@ export class CounterMD extends ModeManager {
         const pos=this.get_human_spawn_position(p)
         if(pos)p.position=pos
         if(this.state==CounterMDState.Playing){
-            p.die({amount:0,critical:false,position:v2(0,0),reason:DamageReason.Disconnect})
+            p.die({amount:0,critical:false,position:v2(0,0),reason:DamageReason.Disconnect,direction:0})
         }
 
         if (!this.game.started && this.can_start()) {

@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -6,9 +6,7 @@ import { TerrainM } from "../objects/terrain.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
-import { TabManager } from "../managers/tabManager.ts";
 import { Human } from "../objects/human.ts";
-import { InventoryManager } from "../managers/inventoryManager.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
@@ -22,17 +20,14 @@ import { Explosion } from "../objects/explosion.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { MessageTabApp } from "../apps/message.ts";
-import { DebugTabApp } from "../apps/debug.ts";
-import { ShopTabApp } from "../apps/shop.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { LevelDefinition } from "common/scripts/config/level_definition.ts";
 import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { MapTabApp } from "../apps/map.ts";
-import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { MapApp } from "../apps/map.ts";
+import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
@@ -41,7 +36,10 @@ import { Creature } from "../objects/creature.ts";
 import { Plane } from "./planes.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
-import { MatchTabApp } from "../apps/match.ts";
+import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
+import { GameDeviceManager } from "../managers/deviceManager.ts";
+import { MessageApp } from "../apps/message.ts";
+import { DebugApp } from "../apps/debug.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -53,6 +51,7 @@ export class Game extends ClientGame<GameObject>{
         return this.menu.content.gameover_text_screen.style.opacity=="0"
     }
     game_over:boolean=false
+    started:boolean=false
 
     local_server:LocalGameServer
 
@@ -68,10 +67,10 @@ export class Game extends ClientGame<GameObject>{
 
     ui:UiManager
     menu:MenuManager
-    inventory:InventoryManager
+    inventory:GInventory
     dead_zone:DeadZoneManager
     ambient:AmbientManager
-    tab:TabManager
+    device:GameDeviceManager
     minimap:MinimapManager
 
     active_entity?:Human
@@ -93,8 +92,16 @@ export class Game extends ClientGame<GameObject>{
         offset:Vec2
     }
     fs?:FileManager
+    watcher?:ReplayWatcher
+    cam_type:number=0
+
+    free_cam_pos = v2(0, 0)
+    free_cam_speed = 2
+    free_cam_zoom=0.5
 
     planes:Record<number,Plane>={}
+
+    hitboxes_gfx:Graphics2D=new Graphics2D()
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
@@ -124,10 +131,10 @@ export class Game extends ClientGame<GameObject>{
         this.ui=new UiManager(this)
         this.menu=menu
 
-        this.inventory=new InventoryManager(this)
+        this.inventory=new GInventory()
         this.dead_zone=new DeadZoneManager(this)
         this.ambient=new AmbientManager(this)
-        this.tab=new TabManager(this)
+        this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
 
         this.cam2d.addObject(this.terrain_gfx)
@@ -144,13 +151,17 @@ export class Game extends ClientGame<GameObject>{
             offset:v2(0.1,0.1)
         }
 
-        this.ui.match_app=new MatchTabApp(this.tab)
-        this.tab.add_app(this.ui.match_app)
-        this.tab.add_app(new MessageTabApp(this.tab))
-        this.tab.add_app(new MapTabApp(this.tab))
+        this.hitboxes_gfx.layer=9999
+        this.cam2d.addObject(this.hitboxes_gfx)
 
-        this.ui.shop_app=new ShopTabApp(this.tab)
-        this.tab.add_app(this.ui.shop_app)
+        this.inventory.initialize(this.definitions,{
+            0:MeleeItem as (new(item:GameItem)=>LItem),
+            1:GunItem as (new(item:GameItem)=>LItem),
+            2:GunItem as (new(item:GameItem)=>LItem)
+        })
+
+        this.device.add_app(new MapApp)
+        //this.device.add_app(new MessageApp)
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()
@@ -198,10 +209,10 @@ export class Game extends ClientGame<GameObject>{
                     this.input.actions.push({type:InputActionType.set_hand,hand:2})
                     break
                 case "full_tab":
-                    this.tab.toggle_tab_full()
+                    this.device.toggle_full()
                     break
                 case "hide_tab":
-                    this.tab.toggle_tab_visibility()
+                    this.device.toggle_visibility()
                     break
                 case "use_item1":
                     this.input.actions.push({type:InputActionType.use_item,slot:0})
@@ -225,14 +236,15 @@ export class Game extends ClientGame<GameObject>{
                     this.input.actions.push({type:InputActionType.use_item,slot:6})
                     break
                 case "previous_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:this.inventory.current_weapon-1})
+                    //this.input.actions.push({type:InputActionType.set_hand,hand:this.inventory.current_weapon-1})
                     break
                 case "next_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventory.current_weapon+1,-1,3)})
+                    //this.input.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventory.current_weapon+1,-1,3)})
                     break
                 case "previous_scope":{
-                    const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
-                    const it=this.inventory.inventory.iitems[oidx-1]
+                    const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
+                    const it=this.inventory.iitems[oidx-1]
+                    this.free_cam_zoom=Math.min(1,this.free_cam_zoom*1.1)
 
                     if(!it)break
 
@@ -243,8 +255,10 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "next_scope":{
-                    const oidx=this.inventory.inventory.iitems.indexOf(this.inventory.scope!)
-                    const it=this.inventory.inventory.iitems[oidx+1]
+                    const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
+                    const it=this.inventory.iitems[oidx+1]
+                    this.free_cam_zoom=Math.max(0.1,this.free_cam_zoom*0.9)
+
                     if(!it)break
                     this.input.actions.push({
                         type:InputActionType.set_scope,
@@ -253,9 +267,9 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "debug_menu":
-                    //if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
-                    if(!this.tab.apps.some((a)=>a instanceof DebugTabApp)){
-                        this.tab.add_app(new DebugTabApp(this.tab))
+                    if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
+                    if(!this.device.apps.some((a)=>a instanceof DebugApp)){
+                        this.device.add_app(new DebugApp)
                     }
                     break
             }
@@ -276,7 +290,7 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
             if(isMobile){
             }else{
-                const cam_c=v2.new(this.cam2d.width/2,this.cam2d.height/2)
+                const cam_c=v2(this.cam2d.width/2,this.cam2d.height/2)
                 const mouse_p=v2.dscale(this.input_manager.mouse.position,this.cam2d.zoom)
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
@@ -333,6 +347,7 @@ export class Game extends ClientGame<GameObject>{
     }
     set_scope(scope:ScopeDef){
         this.scope_zoom=scope.scope_view
+        this.ui_manager.signal("current_scope_dirty",scope)
     }
     async load_resources(textures:string[]=["main"]){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
@@ -402,10 +417,10 @@ export class Game extends ClientGame<GameObject>{
 
         this.happening=true
 
-        this.sounds.listener_position.x=100000
-        this.sounds.listener_position.y=100000
-        this.cam2d.position.x=100000
-        this.cam2d.position.y=100000
+        this.sounds.listener_position.x=-10000
+        this.sounds.listener_position.y=-10000
+        this.cam2d.position.x=-10000
+        this.cam2d.position.y=-10000
         this.cam2d.zoom=6
 
         this.ambient.music.set(undefined)
@@ -428,7 +443,9 @@ export class Game extends ClientGame<GameObject>{
 
         this.ui.start()
         this.join()
+
         this.mainloop(true)
+        this.watcher?.play?.()
     }
     async end_level(kills:number=0){
         this.stop()
@@ -553,11 +570,12 @@ export class Game extends ClientGame<GameObject>{
         this.local_server.stop()
         this.ui.clear()
         this.happening=false
+        this.started=false
         this.soft_reset()
     }
     soft_reset(){
-        this.tab.stop_all()
         this.clear()
+        //this.device.clear()
         this.game_over=false
         this.ui.hide_game_over()
         this.cam2d.zoom=6
@@ -573,6 +591,7 @@ export class Game extends ClientGame<GameObject>{
     }
     override on_stop(): void {
         super.on_stop()
+        this.cam_type=0
         this.happening=false
         if(!this.game_over){
             this.close_game()
@@ -588,44 +607,64 @@ export class Game extends ClientGame<GameObject>{
         super.on_update(dt)
 
         if(this.save.get_variable("sv_game_interpolation")){
-            this.global_interpolation=Numeric.dt_expo_inter(15,dt)
+            this.global_interpolation=Numeric.dt_expo_inter(25,dt)
         }else{
             this.global_interpolation=1
         }
         this.ambient.update(dt)
         this.ui.update(dt)
-        this.tab.tick(dt)
-        if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
-            this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
-        }
-        if(this.active_entity){
-            this.cam2d.position=this.active_entity.position
-            this.sounds.listener_position=this.active_entity.position
-            this.update_grid(this.grid_gfx,5,this.cam2d.position,v2.new(this.cam2d.width,this.cam2d.height),0.06)
+        this.device.tick(dt)
+        this.dead_zone.tick(dt)
 
-            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
+        if (this.cam_type === 1) {
+            const move = this.input.movement
 
-            this.ambient.update_camera()
-            if(this.client&&this.client.opened){
-                this.client.emit(this.input)
-                this.reset_input()
+            if (move.scale > 0) {
+                this.free_cam_pos.x += Math.cos(move.dir) * this.free_cam_speed * dt
+                this.free_cam_pos.y += Math.sin(move.dir) * this.free_cam_speed * dt
+                v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
             }
-            if(this.active_entity.dead)this.active_entity=undefined
+
+            this.free_cam_speed=5/this.free_cam_zoom
+            this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(2, dt))
+
+            v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
+            v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
+            this.sounds.listener_position=this.cam2d.position
+
+        }else{
+            if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
+                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
+            }
+            if(this.active_entity){
+                this.cam2d.position=this.active_entity.position
+                this.sounds.listener_position=this.active_entity.position
+
+                this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
+
+                if(this.active_entity.dead)this.active_entity=undefined
+            }
+        }
+        this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
+        this.ambient.update_camera()
+        if(this.client&&this.client.opened){
+            this.client.emit(this.input)
+            this.reset_input()
         }
         for(const p of Object.values(this.planes)){
             p.update(dt)
         }
     }
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
-        this.grid_gfx.position=v2.new(0,0)
+        this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
-        const begin=v2.new(camera_size.x/2,camera_size.y/2)
+        const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)
         v2m.dscale(begin,begin,gridSize)
         v2m.floor(begin)
         v2m.sub_component(begin,1,1)
 
-        const size=v2.new(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
+        const size=v2(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
         v2m.ceil(size)
         grid_gfx.fill_color({r:0,g:0,b:0,a:0.2})
         grid_gfx.drawGrid(begin,size,gridSize,line_size)
@@ -646,6 +685,15 @@ export class Game extends ClientGame<GameObject>{
             this.planes[p.id]=plane
             plane.update_data(p)
         }
+        if(up.ambient){
+            this.ambient.update_from_data(up.ambient)
+            if(!this.started)this.ambient.date=up.ambient.date
+        }
+        if(up.started&&!this.started){
+            this.started=true
+        }else if(!up.started){
+            this.started=false
+        }
     }
     process_private(priv:PrivateUpdate){
         if(priv.active_entity.dirty){
@@ -663,7 +711,9 @@ export class Game extends ClientGame<GameObject>{
         }
         if(priv.self_state){
             this.ui.update_self_state(priv.self_state)
+            this.device.update_self_state(priv.self_state)
         }
+        this.device.update_private(priv)
     }
     join(){
         if(!this.client)return

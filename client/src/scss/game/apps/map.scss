@@ -1,4 +1,4 @@
-.tab-map-app {
+.map-app {
     height: 100%;
     background: #0f1115;
     color: #fff;
@@ -36,10 +36,13 @@
 
     .map-player {
         position: absolute;
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         border: 2px solid #000;
+        box-shadow:
+            0 0 10px rgba(0,0,0,0.8),
+            0 0 6px currentColor;
         pointer-events: none;
 
         transform:
@@ -55,7 +58,8 @@
     .map-viewport {
         position: relative;
         overflow: hidden;
-        background: #0a0c10;
+        background:
+            radial-gradient(circle at center, #111 0%, #050607 100%);
         cursor: grab;
     }
 
@@ -83,23 +87,23 @@
 
     .map-ping {
         position: absolute;
-        width: 12px;
-        height: 12px;
-        background: #ff3b3b;
+        width: 20px;
+        height: 20px;
+
+        transform:
+            translate(-50%, -50%)
+            translate(var(--px), var(--py))
+            scale(var(--inv-zoom));
+
         border-radius: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow: 0 0 8px #ff3b3b;
-        pointer-events: none;
+        background: radial-gradient(circle, #fff, transparent);
+
+        animation: pingAnim 1s ease-out infinite;
     }
     .map-deadzone{
         position:absolute;
         border-radius:50%;
         pointer-events:none;
-
-        /*left:1500px;
-        top: 0px;
-        width: 100px;
-        height: 100px;*/
 
         left:var(--dx);
         top:var(--dy);
@@ -108,6 +112,7 @@
         height:var(--dr);
 
         transform:translate(-50%,-50%);
+        box-shadow: 0 0 0 8000px var(--deadzone-color);
     }
     .map-deadzone-dest{
         position:absolute;
@@ -127,5 +132,60 @@
 
         transform:translate(-50%,-50%);
         box-shadow:0 0 0 30px #fff5;
+    }
+    .map-deadzone-safe-line{
+        position:absolute;
+        height:10px;
+        background:var(--game-device-primary);
+        transform-origin:left center;
+        pointer-events:none;
+    }
+    .map-ping{
+        position:absolute;
+
+        width:50px;
+        height:50px;
+
+        pointer-events:none;
+
+        left: var(--px);
+        top: var(--py);
+
+        scale: var(--scale);
+
+        transform:translate(-50%,-50%);
+        z-index:40;
+
+        .map-ping-icon{
+            position:absolute;
+
+            left:0;
+            top:0;
+
+            width:50px;
+            height:50px;
+
+            z-index:2;
+            svg path {
+                fill: var(--ping-color);
+            }
+        }
+        .map-ping-pulse{
+            position:absolute;
+
+            left:50%;
+            top:50%;
+
+            width:20px;
+            height:20px;
+
+            border-radius:50%;
+
+            border:3px solid var(--ping-color);
+
+            transform:translate(-50%,-50%);
+
+            z-index:1;
+        }
     }
 }

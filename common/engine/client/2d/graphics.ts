@@ -3,7 +3,7 @@ import { Color } from "../../core/math/color.ts";
 import { model2d, Model2D } from "../../core/definition/models.ts";
 import { CamA, Container2DObject } from "./base.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts";
-import { SmoothShape2D } from "../../core/math/geometry.ts";
+import { Rect, SmoothShape2D } from "../../core/math/geometry.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
 type Graphics2DCommand =
   | { type: 'fillMaterial'; mat:Material }
@@ -120,5 +120,8 @@ export class Graphics2D extends Container2DObject {
                     break
             }
         }
+    }
+    override get_rect(): Rect {
+        return {min:v2.infinity_neg,max:v2.infinity}
     }
 }

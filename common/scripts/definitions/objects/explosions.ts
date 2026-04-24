@@ -48,7 +48,6 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             bullet:{
                 def:{
                     damage:7,
-                    radius:0.02,
                     speed:20,
                     range:25,
                     tracer:tracers.black_projectile
@@ -116,7 +115,6 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             bullet:{
                 def:{
                     damage:7,
-                    radius:0.0125,
                     speed:18,
                     range:8,
                     tracer:tracers.medium
@@ -153,11 +151,27 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             },
             damage:0,
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_4"
             },
             synced_particles:{
                 count:10,
                 def:"smoke"
+            }
+        },
+        {
+            idString:"molotov_explosion",
+            tint:"#ff7b00",
+            size:{
+                begin:0.3,
+                end:0.5
+            },
+            damage:5,
+            assets:{
+                sound:"explosion_6"
+            },
+            synced_particles:{
+                count:15,
+                def:"molotov_fire"
             }
         },
         {
@@ -171,7 +185,6 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             bullet:{
                 def:{
                     damage:7,
-                    radius:0.0125,
                     speed:18,
                     range:8,
                     tracer:tracers.mirv
@@ -217,7 +230,6 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             bullet:{
                 def:{
                     damage:7,
-                    radius:0.0125,
                     speed:18,
                     range:8,
                     tracer:tracers.mirv
@@ -254,7 +266,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             },
             damage:0,
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_3"
             },
         },
         {
@@ -266,7 +278,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             },
             damage:0,
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_3"
             },
         },
         {
@@ -280,7 +292,6 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             bullet:{
                 def:{
                     damage:30,
-                    radius:0.02,
                     speed:20,
                     range:50,
                     tracer:tracers.black_projectile

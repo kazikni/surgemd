@@ -50,13 +50,13 @@ export class Bullet extends GameObject{
     ////////////////////////////
     dying:boolean=false
     sendDelete: boolean=true;
+    reflection_count:number=0;
     private tticks:number=0
 
     ////////////////////////////
     // Misc                   //
     ////////////////////////////
     owner_id:number=0
-    reflection_count:number=0
 
     particles=0
     par_time=0
@@ -64,8 +64,8 @@ export class Bullet extends GameObject{
     constructor(){
         super()
 
-        this.sprite_trail.size=v2.new(200,55) // Metter Size * 2
-        this.sprite_trail.hotspot=v2.new(0.965,.5)
+        this.sprite_trail.size=v2(200,55) // Metter Size * 2
+        this.sprite_trail.hotspot=v2(0.965,.5)
         this.sprite_trail.zIndex=1
         this.sprite_trail.position.x=0
         this.sprite_trail.position.y=0
@@ -82,6 +82,7 @@ export class Bullet extends GameObject{
     override create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_sprite("base_trail")
         this.game.cam2d.addObject(this.container)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
     override on_destroy(): void {
         this.container.destroy()
@@ -104,10 +105,9 @@ export class Bullet extends GameObject{
             const dst=v2.scale(this.velocity,dt)
 
             v2m.add(this._position,this._position,dst)
-            this.manager.cells.updateObject(this)
 
             // Bullet Whiz Sound
-            if(this._play_bullet_whiz&&this.owner_id!==this.game.active_entity_id){
+            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){
                 if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.collidingWith(this.hitbox)){
                     this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
@@ -134,7 +134,7 @@ export class Bullet extends GameObject{
                         break
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
-                        if(!(obj as StaticBody).physical_data.no_bullet_collision){
+                        if(!(obj as StaticBody).physical_data.no_bullets_collision){
                             const col=obj.hitbox.overlapLine(this.old_position,this.position)
                             if(col){
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
@@ -192,20 +192,15 @@ export class Bullet extends GameObject{
             this.initialPosition=stream.readPos2()
             this.maxDistance=stream.readFloat32()
 
-            this.base_hitbox=new CircleHitbox2D(v2.new(0,0),stream.readFloat(0,2,2))
-
             this.speed=stream.readFloat32()
             this.container.rotation=stream.readRad()
-            this.reflection_count=stream.readUint8()
 
-            this.velocity=v2.from_RadAngle(this.container.rotation)
-            v2m.scale(this.velocity,this.velocity,this.speed)
+            this.velocity=v2.from_RadAngle(this.container.rotation,this.speed)
 
             this.maxLength=stream.readFloat(0,100,3)
             this.sprite_trail.scale!.y=stream.readFloat(0,6,2)
             const col=ColorM.number(stream.readUint32())
             col.a=stream.readUint8()/255
-            col.a/=this.reflection_count+1
             this.sprite_trail.tint=col
 
             const proj=stream.readUint8()
@@ -227,6 +222,7 @@ export class Bullet extends GameObject{
             this.container.visible=true
             this._critical=stream.readBooleanGroup()[0]
             this.owner_id=stream.readID()
+            this.reflection_count=stream.readUint8()
         }
     }
 }

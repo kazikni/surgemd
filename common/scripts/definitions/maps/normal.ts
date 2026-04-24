@@ -11,7 +11,6 @@ export const NormalBiome:BiomeDef={
     ambient:{
         particles:["leaf_01_particle_1"],
         rain:true,
-        sound:"storm_ambience"
     },
     musics:[
         "game_normal_music_1",
@@ -23,7 +22,9 @@ export const NormalMap:MapDef={
     loot_tables:{
         //Guns Quality
         "common_guns":[
-            {item:"m9",weight:5},
+            {item:"m9",weight:15},
+            {item:"taurustx",weight:12},
+            {item:"micro_uzi",weight:3},
         ],
         "uncommon_guns":[
             {item:"mp5",weight:1.4},
@@ -36,20 +37,21 @@ export const NormalMap:MapDef={
         ],
         "epic_guns":[
             {item:"famas",weight:6},
-            {item:"spas12",weight:3},
+            {item:"m1a1",weight:3},
+            {item:"spas12",weight:1},
             {item:"model94",weight:1},
             {item:"blr81",weight:0.7},
         ],
         "mythic_guns":[
-            {item:"sr25",weight:10},
-            {item:"vector",weight:10},
+            {item:"sr25",weight:15},
+            {item:"vector",weight:15},
+            {item:"m2_2",weight:10},
             {item:"kar98k",weight:7},
             {item:"awp",weight:1},
-            //{item:"m2_2",weight:0.1},
         ],
         "legendary_guns":[
-            {item:"awms",weight:1},
-            {item:"pfeifer_zeliska",weight:1},
+            {item:"pfeifer_zeliska",weight:10},
+            {item:"awms",weight:6},
             {item:"rpg7",weight:0.8},
         ],
         //Guns Spawn
@@ -64,6 +66,7 @@ export const NormalMap:MapDef={
         "special_guns":[
             {table:"uncommon_guns",weight:21},
             {table:"rare_guns",weight:20},
+            {table:"common_guns",weight:15},
             {table:"epic_guns",weight:3},
             {table:"mythic_guns",weight:0.7},
             {table:"legendary_guns",weight:0.3}
@@ -74,62 +77,63 @@ export const NormalMap:MapDef={
         ],
         //Consumibles
         "consumibles":[
-            {item:"bandage",count:5,weight:1000},
-            {item:"yellow_soda",count:1,weight:950},
-            {item:"blue_soda",count:2,weight:700},
-            {item:"inhaler",count:1,weight:400},
-            {item:"medikit",count:1,weight:350},
-            {item:"blue_potion",count:1,weight:240},
-            {item:"small_red_crystal",count:4,weight:130},
-            {item:"red_soda",count:1,weight:110},
-            {item:"red_crystal",count:2,weight:60},
-            {item:"yellow_pills",count:1,weight:4},
-            {item:"blue_pills",count:1,weight:4},
-            {item:"red_pills",count:1,weight:2.5},
-            {item:"green_soda",count:1,weight:3},
-            {item:"black_soda",count:1,weight:1.25}
+            {table:"health_consumibles",count:1,weight:10},
+            {table:"adrenaline_consumibles",count:1,weight:7},
+            {table:"shield_consumibles",count:1,weight:6},
+            {table:"addiction_consumibles",count:1,weight:1},
+            {table:"green_bless_consumibles",count:1,weight:0.1},
+            {table:"death_consumibles",count:1,weight:0.1},
         ],
-        "special_consumibles":[
-            {item:"bandage",count:10,weight:1000},
-            {item:"yellow_soda",count:2,weight:950},
-            {item:"blue_soda",count:3,weight:700},
-            {item:"inhaler",count:2,weight:400},
-            {item:"medikit",count:1,weight:350},
-            {item:"blue_potion",count:2,weight:240},
-            {item:"small_red_crystal",count:6,weight:130},
-            {item:"red_soda",count:2,weight:110},
-            {item:"red_crystal",count:2,weight:60},
-            {item:"yellow_pills",count:1,weight:4},
-            {item:"blue_pills",count:1,weight:4},
-            {item:"red_pills",count:1,weight:2.5},
-            {item:"green_soda",count:2,weight:3},
-            {item:"black_soda",count:2,weight:1.25}
+        "health_consumibles":[
+            {item:"bandage",count:5,weight:8},
+            {item:"medikit",count:5,weight:1},
         ],
-        "mana":[
-            {item:"purple_soda",count:2,weight:100},
-            {item:"purple_potion",count:1,weight:40},
-            {item:"purple_pills",count:1,weight:3},
+        "adrenaline_consumibles":[
+            {item:"yellow_soda",count:2,weight:8},
+            {item:"inhaler",count:1,weight:1},
+            {item:"yellow_pills",count:1,weight:0.1},
+        ],
+        "shield_consumibles":[
+            {item:"blue_soda",count:2,weight:8},
+            {item:"blue_potion",count:1,weight:1},
+            {item:"blue_pills",count:1,weight:0.1},
+        ],
+        "addiction_consumibles":[
+            {item:"red_soda",count:2,weight:5},
+            {item:"small_red_crystal",count:4,weight:1},
+            {item:"red_crystal",count:2,weight:0.1},
+        ],
+        "mana_consumibles":[
+            {item:"purple_soda",count:2,weight:8},
+            {item:"purple_potion",count:1,weight:1},
+            {item:"purple_pills",count:1,weight:0.1},
+        ],
+        "green_bless_consumibles":[
+            {item:"green_soda",count:1,weight:1},
+        ],
+        "death_consumibles":[
+            {item:"black_soda",count:1,weight:1},
         ],
         //Ammos
         "ammos":[
-            {item:"12g",count:10,weight:5},
-            {item:"9mm",count:60,weight:5},
-            //{item:"22lr",count:60,weight:5},
-            {item:"762mm",count:60,weight:5},
-            {item:"556mm",count:60,weight:5},
-            {item:"45acp",count:60,weight:0.5},
+            {item:"12g",count:5,weight:5},
+            {item:"9mm",count:40,weight:5},
+            {item:"762mm",count:40,weight:5},
+            {item:"556mm",count:40,weight:5},
+            {item:"45acp",count:40,weight:5},
+            {item:"22lr",count:60,weight:4},
             {item:"50cal",count:20,weight:0.1},
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
             {item:"explosive_ammo",count:2,weight:0.05},
         ],
         "special_ammos":[
-            {item:"12g",count:15,weight:5},
-            {item:"9mm",count:80,weight:5},
-            //{item:"22lr",count:80,weight:5},
-            {item:"762mm",count:80,weight:5},
-            {item:"556mm",count:80,weight:5},
-            {item:"45acp",count:80,weight:0.5},
+            {item:"12g",count:10,weight:6},
+            {item:"9mm",count:80,weight:6},
+            {item:"762mm",count:80,weight:6},
+            {item:"556mm",count:80,weight:6},
+            {item:"45acp",count:80,weight:6},
+            {item:"22lr",count:100,weight:4},
             {item:"50cal",count:40,weight:0.3},
             {item:"308sub",count:10,weight:0.2},
             {item:"gasoline",count:10,weight:0.2},
@@ -137,42 +141,45 @@ export const NormalMap:MapDef={
         ],
         //Throwables
         "throwables":[
-            {item:"frag_grenade",count:1,weight:50},
-            {item:"smoke_grenade",count:2,weight:40},
+            {item:"frag_grenade",count:2,weight:70},
+            {item:"smoke_grenade",count:2,weight:70},
+            {item:"molotov",count:1,weight:30},
             {item:"mirv_grenade",count:1,weight:20},
             {item:"blue_flare",count:1,weight:1},
             {item:"red_flare",count:1,weight:1},
         ],
         //Scopes
         "scopes":[
-            {item:"scope_2",count:1,weight:120},
-            {item:"scope_3",count:1,weight:50},
-            {item:"scope_4",count:1,weight:6},
-            {item:"scope_5",count:1,weight:0.8},
+            {item:"scope_2",count:1,weight:130},
+            {item:"scope_3",count:1,weight:60},
+            {item:"scope_4",count:1,weight:30},
+            {item:"scope_5",count:1,weight:1.5},
             {item:"scope_6",count:1,weight:0.1},
+            {item:"scope_7",count:1,weight:0.005},
         ],
         "special_scopes":[
-            {item:"scope_2",count:1,weight:120},
+            {item:"scope_2",count:1,weight:130},
             {item:"scope_3",count:1,weight:60},
-            {item:"scope_4",count:1,weight:9},
-            {item:"scope_5",count:1,weight:1.7},
-            {item:"scope_6",count:1,weight:0.3},
+            {item:"scope_4",count:1,weight:20},
+            {item:"scope_5",count:1,weight:2},
+            {item:"scope_6",count:1,weight:0.2},
+            {item:"scope_7",count:1,weight:0.01},
         ],
         //Armors And Backpacks
         "helmets":[
-            {item:"basic_helmet",weight:100},
+            {item:"basic_helmet",weight:8},
             {item:"regular_helmet",weight:1},
-            {item:"tactical_helmet",weight:0.05},
+            {item:"tactical_helmet",weight:0.2},
         ],
         "vests":[
-            {item:"basic_vest",weight:10},
+            {item:"basic_vest",weight:8},
             {item:"regular_vest",weight:1},
-            {item:"tactical_vest",weight:0.05},
+            {item:"tactical_vest",weight:0.2},
         ],
         "backpacks":[
-            {item:"basic_pack",weight:10},
+            {item:"basic_pack",weight:8},
             {item:"regular_pack",weight:1},
-            {item:"tactical_pack",weight:0.05},
+            {item:"tactical_pack",weight:0.2},
         ],
         "armors":[
             {table:"helmets",weight:1},
@@ -184,41 +191,58 @@ export const NormalMap:MapDef={
             {table:"backpacks",weight:1},
         ],
         "special_equipments":[
-            {item:"basic_vest",weight:10},
+            {item:"basic_vest",weight:8},
             {item:"regular_vest",weight:3},
             {item:"tactical_vest",weight:0.15},
 
-            {item:"basic_helmet",weight:10},
+            {item:"basic_helmet",weight:8},
             {item:"regular_helmet",weight:1},
             {item:"tactical_helmet",weight:0.15},
 
-            {item:"basic_pack",weight:10},
+            {item:"basic_pack",weight:8},
             {item:"regular_pack",weight:1},
             {item:"tactical_pack",weight:0.15},
         ],
-        "airdrop_equipments":[
+        "tactical_equipments":[
             {item:"tactical_vest",weight:1},
             {item:"tactical_helmet",weight:1},
             {item:"tactical_pack",weight:0.8},
+        ],
+        "accessorys":[
+            {weight:5,item:"lucky_coin"},
+            {weight:5,item:"pygmy_necklace"},
+            {weight:5,item:"liquid_insanity"},
+            {weight:5,item:"ghost_ammo"},
+            {weight:5,item:"biggest_magazine"},
+            {weight:5,item:"self_revive"},
+            {weight:4,item:"nature_leaf"},
+            {weight:4,item:"bullet_breaker_barrel"},
+            {weight:4,item:"rare_projectile"},
+            {weight:4,item:"high_quality_projectiles"},
         ],
         //Loot Tables
         "normal_loot":[
             {weight:1,table:"ammos"},
             {weight:1,table:"consumibles"},
-            {weight:0.75,table:"guns"},
-            {weight:0.75,table:"equipments"},
-            {weight:0.5,table:"scopes"},
+            {weight:0.85,table:"guns"},
+            {weight:0.6,table:"equipments"},
+            {weight:0.4,table:"scopes"},
             {weight:0.25,table:"throwables"},
             {weight:0.01,table:"melees"},
         ],
         "special_loot":[
             {weight:1,table:"special_ammos"},
-            {weight:1,table:"special_consumibles"},
-            {weight:0.75,table:"special_equipments"},
-            {weight:0.75,table:"special_guns"},
-            {weight:0.7,table:"special_scopes"},
-            {weight:0.4,table:"throwables"},
-            {weight:0.025,table:"melees"},
+            {weight:1,table:"consumibles"},
+            {weight:0.85,table:"special_guns"},
+            {weight:0.6,table:"special_equipments"},
+            {weight:0.4,table:"special_scopes"},
+            {weight:0.25,table:"throwables"},
+            {weight:0.03,table:"melees"},
+        ],
+        "loot_drawer":[
+            {weight:2,count:1,table:"normal_loot"},
+            {weight:1,count:2,table:"normal_loot"},
+            {weight:0.5,count:3,table:"normal_loot"},
         ],
         "wood_crate":[
             {weight:2,count:1,table:"normal_loot"},
@@ -243,42 +267,51 @@ export const NormalMap:MapDef={
             {weight:0.25,count:4,table:"special_loot"},
         ],
         "iron_crate":[
-            [{weight:10,table:"special_ammos",count:2}],
-            [{weight:10,table:"consumibles"},{weight:1,table:""}],
-            [{weight:1,table:"airdrop_equipments"}],
+            [{weight:1,table:"special_ammos",count:2}],
+            [{weight:1,table:"consumibles",count:2}],
+            [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
-            [{weight:5,table:""},{weight:1,table:"melees"}],
+            [{weight:1,table:"throwables"}],
+            [{weight:1,table:"special_scopes"}],
+            [{weight:10,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
-            [{weight:10,table:"special_ammos",count:2}],
-            [{weight:10,table:"consumibles",count:2},{weight:1,table:""}],
-            [{weight:10,table:"airdrop_equipments"},{weight:1,count:2,table:"airdrop_equipments"}],
-            [{weight:10,table:"legendary_guns"},{weight:1,table:"mythic_guns"}],
-            [{weight:1,table:"melees"}],
+            [{weight:1,table:"special_ammos",count:2}],
+            [{weight:1,table:"consumibles",count:2}],
+            [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
+            [{weight:10,table:"legendary_guns"}],
+            [{weight:1,table:"throwables"}],
+            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:""},{weight:4,table:"melees"}],
         ],
         "platinum_crate":[
             [{weight:1,table:"special_ammos",count:4}],
             [{weight:1,table:"consumibles",count:7}],
-            [{weight:1,count:6,table:"airdrop_equipments"}],
+            [{weight:1,count:6,table:"tactical_equipments"}],
             [{weight:1,count:7,table:"mythic_guns"}],
             [{weight:1,count:2,table:"legendary_guns"}],
-            [{weight:1,count:3,table:"melees"}],
+            [{weight:1,count:2,table:"melees"}],
+            [{weight:1,count:5,table:"throwables"}],
+            [{weight:1,count:4,table:"special_scopes"}],
         ],
         //Animals
         "animal_medium":[
-            [{weight:1,count:1,table:"special_consumibles"}],
+            [{weight:1,count:1,table:"consumibles"}],
             [{weight:10,count:1,table:""},{weight:1,count:1,table:"ammos"}],
         ]
     },
     biome:NormalBiome,
     generation:{
         island:{
-            size:v2.new(500,500),
+            size:v2(480,480),
             spawn:[
                 [
                     {id:"recorded_tape",count:1},
 
                     {id:"watchtower",count:5},
+
+                    {id:"jeep",count:5},
+                    {id:"bike",count:5},
 
                     {id:"container_1",count:10},
                     {id:"container_2",count:10},
@@ -287,8 +320,6 @@ export const NormalMap:MapDef={
 
                     {id:"md_crate",count:10},
                     {id:"copper_crate",count:20},
-                    {id:"iron_crate",count:1},
-                    {id:"gold_crate",count:1},
                     {id:"wood_crate",count:700},
 
                     {id:"oak_tree",count:2000},
@@ -343,7 +374,7 @@ export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(100,100),
+            size:v2(100,100),
             spawn:[
                 [
                     {id:"watchtower",count:1},
@@ -362,8 +393,6 @@ export const NormalLobby:MapDef={
 
                     {id:"wood_crate",count:30},
                     {id:"copper_crate",count:6},
-                    {id:"iron_crate",count:1},
-                    {id:"gold_crate",count:1},
                     {id:"barrel",count:13},
                     {id:"normal_loot",count:20},
 
@@ -421,7 +450,7 @@ export const NormalCounterMD:CounterMapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2.new(90,90),
+            size:v2(90,90),
             spawn:[
                 [
                     {id:"sillo",count:2},

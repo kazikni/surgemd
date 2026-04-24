@@ -47,8 +47,12 @@ export class Grenade extends Projectile{
             v2m.scale(vel, vel, speedDecay)
 
             this.physical_data.angular_velocity *= rotDecay
+
+            if(this.def.cook?.ground){
+                this.kill()
+            }
         }
-        if(this.def.cook){
+        if(this.def.cook&&this.def.cook.fuse_time){
             this.fuse_delay-=dt
             if(this.fuse_delay<=0){
                 this.kill()
@@ -68,10 +72,10 @@ export class Grenade extends Projectile{
     }
     create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
         this.def=args.def
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),this.def.radius)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.position=args.position
         if(this.def.cook){
-            this.fuse_delay=this.def.cook.fuse_time
+            this.fuse_delay=this.def.cook.fuse_time??0
         }
         this.owner=args.owner
 

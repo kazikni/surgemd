@@ -3,7 +3,7 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { delay } from "https://deno.land/std@0.204.0/async/delay.ts"
 import { BasicSocket, Client } from "common/engine/core.ts";
 const SERVER_URL = "http://localhost:8080"
-const BOT_COUNT = 199
+const BOT_COUNT = 5
 const TICK_RATE = 60
 const CONNECTION_DELAY=0.05
 
@@ -24,7 +24,6 @@ class Bot {
     async connect():Promise<boolean>{
         const con=await(await fetch(`${SERVER_URL}/api/get-game`)).json()
         if(con.status===0){
-            console.log(con.address)
             this.ws=new WebSocket(con.address)
             this.client=new Client(this.ws as BasicSocket,PacketManager)
             this.ws.onopen = () => this.start()

@@ -49,6 +49,7 @@ export class PlayerClient extends PlayerConnManager{
     get_update_packet():UpdatePacket{
         const up=new UpdatePacket()
         up.definition=this.game.definitions
+        up.priv.pings=[...this.game.pings]
         if(this.human&&!this.spectating){
             up.priv.active_entity={
                 dirty:true,
@@ -58,6 +59,7 @@ export class PlayerClient extends PlayerConnManager{
             up.priv.self_state=this.human.self_state(this.human.is_new)
             if(this.human instanceof Player){
                 if(this.human.splash_delay<=0){
+                    this.human.merge_damage_splashes()
                     up.priv.splashes=this.human.splashes
                     this.human.splashes=[]
                 }else{
@@ -65,7 +67,7 @@ export class PlayerClient extends PlayerConnManager{
                 }
             }
             const scope_view:number=this.human?.equipment_data.scope.scope_view??0.75
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2.new(40/scope_view,20/scope_view))
+            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list(objs,this.view_objects,undefined,undefined,undefined,this.first_tick)
@@ -90,7 +92,7 @@ export class PlayerClient extends PlayerConnManager{
             }
 
             const scope_view:number=this.human?.equipment_data.scope.scope_view??0.75
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2.new(40/scope_view,20/scope_view))
+            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list(objs,this.view_objects,undefined,undefined,undefined,this.first_tick)
@@ -218,16 +220,26 @@ export class PlayersManager{
 
         return client.human as Player
     }
+    global_buffer_1?:NetStream
+    global_buffer_2?:NetStream
     get_global_update_packet(full:boolean):UpdatePacket{
+        if(!this.global_buffer_1)this.global_buffer_1=new NetStream(new ArrayBuffer(1024*1024*2))
+        this.global_buffer_1.clear()
+
         const up=new UpdatePacket()
         up.priv.splashes=this.splashes
-        up.objects=this.game.scene_2d.objects.encode_all(full)
+        up.objects=this.game.scene_2d.objects.encode_all(full,this.global_buffer_1)
         return up
     }
-    encode_frame(stream:NetStream,full:boolean){
-        const up=this.get_global_update_packet(full)
+    encode_frame(full:boolean){
+        if(!this.global_buffer_2)this.global_buffer_2=new NetStream(new ArrayBuffer(1024*1024*2.2))
+        this.global_buffer_2.clear()
 
-        this.game.clients.packets_manager.encode(up,stream)
+        const up=this.get_global_update_packet(full)
+        this.game.clients.packets_manager.encode(up,this.global_buffer_2)
+
+        this.game.clients.packets_manager.encode(this.general_update,this.global_buffer_2)
+        return this.global_buffer_2
     }
     update(dt:number){
         for(const p of Object.values(this.connected_bots)){
@@ -237,16 +249,12 @@ export class PlayersManager{
     net_update(){
         const s=new NetStream(new ArrayBuffer(5*1024))
 
+        this.general_update.content.started=this.game.started
         this.general_update.content.planes=this.game.planes
         this.general_update.content.deadzone=undefined
         this.general_update.content.ambient=this.game.ambient
-
-        this.general_update.content.dirty=this.game.dirty
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
-
-        if(this.game.deadzone.dirty){
-            this.general_update.content.deadzone=this.game.deadzone.state
-        }
+        this.general_update.content.deadzone=this.game.deadzone.state
 
         this.game.clients.packets_manager.encode(this.general_update,s)
         this.general_update.encode(s)
@@ -256,10 +264,7 @@ export class PlayersManager{
         for(const p of Object.values(this.connected_bots)){
             p.net_update(s)
         }
-
-        this.game.scene_2d.objects.update_to_net()
-        this.game.scene_2d.objects.apply_destroy_queue()
-        
+        if(this.game.replay)this.game.replay.update()
     }
     send_killfeed_message(msg:KillFeedMessage){
         const p=new KillFeedPacket()

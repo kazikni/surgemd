@@ -36,18 +36,18 @@
                             {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
                         ],
                         "gun1":[
+                            {"item":"m9","weight":6},
                             {"item":"model94","weight":6},
-                            {"item":"blr","weight":4},
-                            {"item":"spas12","weight":1.5},
+                            {"item":"blr81","weight":4},
                             {"item":"kar98k","weight":1.5},
                             {"item":"awp","weight":0.5},
                             {"item":"awms","weight":0.1}
                         ],
                         "gun2":[
-                            {"item":"mp5","weight":7},
-                            {"item":"ak47","weight":7},
                             {"item":"model94","weight":6},
-                            {"item":"blr","weight":4},
+                            {"item":"mp5","weight":4},
+                            {"item":"ak47","weight":4},
+                            {"item":"blr81","weight":4},
                             {"item":"sr25","weight":1},
                             {"item":"kar98k","weight":1},
                             {"item":"awp","weight":0.5},

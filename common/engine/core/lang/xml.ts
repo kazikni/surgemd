@@ -233,10 +233,14 @@ export const kxml = Object.freeze({
     svg:Object.freeze({
         create:{
             main(rect:Rect):XMLNode{
+                const width = rect.max.x - rect.min.x
+                const height = rect.max.y - rect.min.y
                 return {
                     tag:"svg",
                     attrs:{
-                        viewBox: `${rect.min.x} ${rect.min.y} ${rect.max.x} ${rect.max.y}`,
+                        viewBox: `${rect.min.x} ${rect.min.y} ${width} ${height}`,
+                        width: String(width),
+                        height: String(height),
                         xmlns: "http://www.w3.org/2000/svg",
                     },
                     children:[]

@@ -1,259 +1,374 @@
-import { TabApp, TabManager } from "../managers/tabManager.ts"
-import { ColorM, v2, v2m, Vec2 } from "common/engine/client.ts"
-import { Color } from "common/engine/client.ts"
-
-type MapPlayer = {
+import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
+import { GameApp } from "../managers/deviceManager.ts";
+import { ColorM, v2, Vec2 } from "common/engine/client.ts";
+import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
+type MapPing={
     id:number
-    pos: Vec2
-    color: Color
+
+    def:PingDef
+    pos:Vec2
+
+    time:number
+    duration:number
+
+    color:string
+
+    el?:HTMLDivElement
+    icon_el?:HTMLImageElement
+
+    pulseTime:number
 }
-type PlayerVisual = {
-    el: HTMLDivElement
-    id:number
-    pos: Vec2 
-    target: Vec2
-    color: Color
-}
-export class MapTabApp extends TabApp {
-    private mapImg!: HTMLImageElement
-    private mapViewport!: HTMLDivElement
-    private mapInner!: HTMLDivElement
-    private playersLayer!: HTMLDivElement
+export class MapApp extends GameApp {
+    mapViewport!:HTMLDivElement
+    mapInner!:HTMLDivElement
+    mapImage!:HTMLImageElement
 
-    private zoom = 3
-    private minZoom = 0.1
-    private maxZoom = 4
+    deadzoneEl!:HTMLDivElement
+    deadzoneDestEl!:HTMLDivElement
+    deadzoneLineEl!:HTMLDivElement
 
-    private offset = v2.new(0,0)
-    private dragging = false
-    private lastMouse = v2.new(0,0)
+    pingsLayer!:HTMLDivElement
 
-    private followPlayer = true
-    private players: MapPlayer[] = []
-    private visuals: Record<string,PlayerVisual> = {}
+    dragging=false
+    lastMouse=v2(0,0)
 
-    private deadzoneEl!: HTMLDivElement
-    private deadzoneDestEl!: HTMLDivElement
+    zoom=1
+    zoom_input!:HTMLInputElement
 
-    constructor(tab: TabManager) {
-        super("Map", "/img/menu/gui/tab/icons/map.svg", tab)
+    followPlayer=true
+    offset=v2(0,0)
+
+    pings:MapPing[]=[]
+
+    constructor(){
+        super({
+            name:"Map",
+            icon:"/img/menu/gui/tab/icons/map.svg"
+        })
     }
-    private updateDeadzone(){
-        const dz = this.game.dead_zone
 
-        if(!dz || dz.radius<=0)return
+    on_init(){
+        this.element.className="map-app"
 
-        const ms = this.tab.game.minimap.ms
-
-        const pos = v2.new(
-            dz.position.x/ms,
-            dz.position.y/ms
-        )
-
-        const dest_pos = v2.new(
-            dz.dest_position.x/ms,
-            dz.dest_position.y/ms
-        )
-
-        const r = dz.radius/ms
-        const dr = dz.dest_radius/ms
-
-        this.deadzoneEl.style.setProperty('--dx',`${pos.x}px`)
-        this.deadzoneEl.style.setProperty('--dy',`${pos.y}px`)
-        this.deadzoneEl.style.setProperty('--dr',`${r*2}px`)
-        this.deadzoneEl.style.boxShadow=`0 0 0 8000px ${ColorM.rgba2hex(this.game.dead_zone.color)}`
-        
-        this.deadzoneDestEl.style.setProperty('--dx',`${dest_pos.x}px`)
-        this.deadzoneDestEl.style.setProperty('--dy',`${dest_pos.y}px`)
-        this.deadzoneDestEl.style.setProperty('--dr',`${dr*2}px`)
-
-    }
-    override on_run(): void {
-        this.element!.classList.add("tab-map-app")
-
-        this.element!.innerHTML = `
-        <div class="map-root">
-            <div class="map-sidebar">
-                <h2>Map Tools</h2>
-
-                <div class="map-section">
-                    <label>Zoom</label>
-                    <input type="range" min="0.1" max="4" step="0.1" value="3" id="map-zoom">
-                </div>
-
-                <div class="map-section">
-                    <label class="checkbox">
-                        <input type="checkbox" id="map-follow-player" checked/>
-                        Follow Player
-                    </label>
-                </div>
-
-                <div class="map-section">
-                    <button class="btn-blue" id="map-center-player">Center Now</button>
-                </div>
-            </div>
-            <div class="map-viewport">
-                <div class="map-inner">
-                    <img class="map-image" draggable="false"/>
-                    <div class="map-deadzone"></div>
-                    <div class="map-deadzone-dest"></div>
-                    <div class="map-players"></div>
-                </div>
-            </div>
+        this.element.innerHTML=`
+<div class="map-root">
+    <div class="map-sidebar">
+        <h2>Map Tools</h2>
+        <div class="map-section">
+            <label>Zoom</label>
+            <input type="range" min="0.1" max="4" step="0.1" value="3" id="map-zoom">
         </div>
-        `
+        <div class="map-section">
+            <label class="checkbox">
+                <input type="checkbox" id="map-follow-player" checked/>
+                Follow Player
+            </label>
+        </div>
+        <div class="map-section">
+            <button class="btn-blue" id="map-center-player">Center Now</button>
+        </div>
+    </div>
+    <div class="map-viewport">
+        <div class="map-inner">
+            <img class="map-image" draggable="false"/>
+            <div class="map-deadzone"></div>
+            <div class="map-deadzone-dest"></div>
+            <div class="map-deadzone-safe-line"></div>
+            <div class="map-pings"></div>
+            <div class="map-players"></div>
+        </div>
+    </div>
+</div>`
 
-        this.mapViewport  = this.element!.querySelector(".map-viewport")!
-        this.mapInner     = this.element!.querySelector(".map-inner")!
-        this.mapImg       = this.element!.querySelector(".map-image")!
-        this.playersLayer = this.element!.querySelector(".map-players")!
+        this.mapViewport=this.element.querySelector(".map-viewport") as HTMLDivElement
+        this.mapInner=this.element.querySelector(".map-inner") as HTMLDivElement
+        this.mapImage=this.element.querySelector(".map-image") as HTMLImageElement
 
-        this.mapImg.src = this.tab.game.minimap.image.src
+        const followChk=this.element.querySelector("#map-follow-player") as HTMLInputElement
 
-        this.minZoom=300/this.game.minimap.image.width
+        followChk.onchange=()=>{
+            this.followPlayer=followChk.checked
+        }
 
-        this.deadzoneEl = this.element!.querySelector(".map-deadzone")!
-        this.deadzoneDestEl = this.element!.querySelector(".map-deadzone-dest")!
-        this.setupControls()
-        this.updateTransform()
-
-    }
-    private clampOffset() {
-        const vw = this.mapViewport.clientWidth
-        const vh = this.mapViewport.clientHeight
-
-        const img = this.mapImg
-
-        const mapW = img.width  * this.zoom
-        const mapH = img.height * this.zoom
-
-        const margin = 100 * this.zoom
-
-        const minX = vw - mapW - margin
-        const maxX = margin
-
-        const minY = vh - mapH - margin
-        const maxY = margin
-
-        this.offset.x = Math.max(minX, Math.min(maxX, this.offset.x))
-        this.offset.y = Math.max(minY, Math.min(maxY, this.offset.y))
-    }
-    private setupControls() {
-        const zoomInput = this.element!.querySelector("#map-zoom") as HTMLInputElement
-        zoomInput.min=this.minZoom.toString()
-        zoomInput.oninput = () => {
-            this.zoom = parseFloat(zoomInput.value)
+        this.zoom_input=this.element.querySelector("#map-zoom") as HTMLInputElement
+        this.zoom_input.oninput=()=>{
+            this.zoom=parseFloat(this.zoom_input.value)
             this.updateTransform()
         }
 
-        const followChk = this.element!.querySelector("#map-follow-player") as HTMLInputElement
-        followChk.onchange = () => {
-            this.followPlayer = followChk.checked
+        let dragButton=-1
+
+        this.mapViewport.onmousedown=(e)=>{
+            dragButton=e.button
+            if(e.button===0||e.button===2){
+                this.dragging=true
+                this.lastMouse=v2(e.clientX,e.clientY)
+                this.followPlayer=false
+                followChk.checked=false
+            }
         }
 
-        this.mapViewport.onwheel = (e) => {
+        self.addEventListener("mouseup",()=>{
+            this.dragging=false
+            dragButton=-1
+        })
+
+        self.addEventListener("mousemove",(e)=>{
+            if(!this.dragging)return
+            if(dragButton!==0&&dragButton!==2)return
+
+            const dx=e.clientX-this.lastMouse.x
+            const dy=e.clientY-this.lastMouse.y
+
+            this.offset.x+=dx
+            this.offset.y+=dy
+
+            this.lastMouse=v2(e.clientX,e.clientY)
+            this.updateTransform()
+
+            this.followPlayer=false
+            followChk.checked=false
+        })
+
+        this.mapViewport.onwheel=(e)=>{
             e.preventDefault()
-            const delta = -e.deltaY * 0.0004
-            this.zoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoom + delta))
-            zoomInput.value = this.zoom.toString()
+            const rect=this.mapViewport.getBoundingClientRect()
+            const mx=e.clientX-rect.left
+            const my=e.clientY-rect.top
+
+            const before=v2((mx-this.offset.x)/this.zoom,(my-this.offset.y)/this.zoom)
+            const delta=-e.deltaY*0.001
+
+            const minZoom=this.mapViewport.clientHeight/this.mapImage.height
+            const maxZoom=4
+
+            this.zoom=Math.min(maxZoom,Math.max(minZoom,this.zoom+delta))
+
+            const after=v2(before.x*this.zoom+this.offset.x,before.y*this.zoom+this.offset.y)
+
+            this.offset.x+=mx-after.x
+            this.offset.y+=my-after.y
+
             this.updateTransform()
         }
-
-        this.mapViewport.onmousedown = (e) => {
-            this.dragging = true
-            this.lastMouse = v2.new(e.clientX, e.clientY)
-        }
-
-        window.onmouseup = () => this.dragging = false
-
-        window.onmousemove = (e) => {
-            if (!this.dragging) return
-            const dx = e.clientX - this.lastMouse.x
-            const dy = e.clientY - this.lastMouse.y
-            this.offset.x += dx
-            this.offset.y += dy
-            this.lastMouse = v2.new(e.clientX, e.clientY)
-            this.updateTransform()
-        }
-
-        const centerBtn = this.element!.querySelector("#map-center-player")! as HTMLButtonElement
-        centerBtn.onclick = () => this.centerOnPlayer()
-    }
-
-    private updateTransform() {
-        this.clampOffset()
-
-        this.mapInner.style.transform =
-            `translate(${this.offset.x}px, ${this.offset.y}px) scale(${this.zoom})`
-
-        const inv = 1 / this.zoom
-        this.mapInner.style.setProperty('--inv-zoom', inv.toString())
-    }
-
-    private worldToMap(pos: Vec2): Vec2 {
-        const ms = this.tab.game.minimap.ms
-        return v2.new(pos.x / ms, pos.y / ms)
-    }
-
-    private centerOnWorld(pos: Vec2) {
-        const m = this.worldToMap(pos)
-        this.offset.x = -m.x * this.zoom + this.mapViewport.clientWidth  / 2
-        this.offset.y = -m.y * this.zoom + this.mapViewport.clientHeight / 2
         this.updateTransform()
+
+        this.deadzoneEl=this.element.querySelector(".map-deadzone") as HTMLDivElement
+        this.deadzoneDestEl=this.element.querySelector(".map-deadzone-dest") as HTMLDivElement
+        this.deadzoneLineEl=this.element.querySelector(".map-deadzone-safe-line") as HTMLDivElement
+
+        this.pingsLayer=this.element.querySelector(".map-pings") as HTMLDivElement
     }
+    add_ping(position:Vec2,def:PingDef, color:string,id?:number){
+        const ping:MapPing={
+            id:id??Math.random(),
+            def:def,
+            pos:v2.clone(position),
+            time:0,
+            duration: def.lifetime ?? -1,
+            color,
+            pulseTime:0,
+        }
+        this.pings.push(ping)
 
-    private centerOnPlayer() {
-        const pos = this.tab.game.active_entity?.position
-        if (!pos) return
-        this.centerOnWorld(pos)
+        const el=document.createElement("div")
+        el.className="map-ping"
+        el.id="ping-"+ping.id
+        el.innerHTML=`
+<div class="map-ping-pulse"></div>
+<img class="map-ping-icon" src="/img/menu/gui/pings/${def.idString}.svg" draggable="false">`
+
+        ping.el=el
+        ping.icon_el=ping.el.querySelector(".map-ping-icon") as HTMLImageElement
+
+        this.pingsLayer.appendChild(el)
+        this.updatePingVisual(ping)
+        this.device.game.sounds.play(this.device.game.resources.get_audio(def.idString+"_audio"))
     }
+    updatePingVisual(p:MapPing){
+        if(!p.el)return
+        
+        const m=this.worldToMap(p.pos.x,p.pos.y)
 
-    update_players(players: MapPlayer[]) {
-        for (const p of players) {
-            let v = this.visuals[p.id]
-
-            if (!v) {
-                const el = document.createElement("div")
-                el.className = "map-player"
-                this.playersLayer.appendChild(el)
-
-                v = this.visuals[p.id] = {
-                    el,
-                    id: p.id,
-                    pos: v2(p.pos.x, p.pos.y),
-                    target: v2(p.pos.x, p.pos.y),
-                    color: p.color
+        p.el.style.setProperty("--ping-color",p.color)
+        p.el.style.setProperty("--px",`${m.x}px`)
+        p.el.style.setProperty("--py",`${m.y}px`)
+    }
+    updatePings(dt:number){
+        for(let i=this.pings.length-1;i>=0;i--){
+            const p=this.pings[i]
+            if(p.duration>=0){
+                p.time+=dt
+                if(p.time>=p.duration){
+                    p.el?.remove()
+                    this.pings.splice(i,1)
+                    continue
                 }
             }
 
-            v.target.x = p.pos.x
-            v.target.y = p.pos.y
-            v.color = p.color
+            p.pulseTime+=dt
+            const pulse=p.pulseTime/(p.def.pulse?.duration??5)
+            const pulseEl=p.el!.querySelector(".map-ping-pulse") as HTMLDivElement
 
-            v.el.style.background =
-                `rgba(${v.color.r*255},${v.color.g*255},${v.color.b*255},1)`
+            if(p.el){
+                p.el.style.setProperty("--scale",`${1/this.zoom}`);
+            }
+            if(pulseEl){
+                if(pulse>=1){
+                    if(p.def.pulse?.infinity){
+                        p.pulseTime=0
+                    }else{
+                        pulseEl.style.display="none"
+                    }
+                }
+
+                const size=500*(p.def.pulse?.scale??1)
+
+                pulseEl.style.width=(size*pulse)+"px"
+                pulseEl.style.height=(size*pulse)+"px"
+
+                pulseEl.style.opacity=(1-pulse).toString()
+            }
+
+            this.updatePingVisual(p)
         }
     }
+    remove_ping(id:number){
+        const i=this.pings.findIndex(p=>p.id===id)
+        if(i<0)return
 
-    override on_tick(dt: number): void {
-        if (this.followPlayer) {
-            const pos=this.tab.game.active_entity?.position
-            if (pos)this.centerOnWorld(pos)
+        this.pings[i].el?.remove()
+        this.pings.splice(i,1)
+    }
+    clampOffset(){
+        const vw=this.mapViewport.clientWidth
+        const vh=this.mapViewport.clientHeight
+
+        const mapW=this.mapImage.width*this.zoom
+        const mapH=this.mapImage.height*this.zoom
+
+        const minX=vw-mapW
+        const minY=vh-mapH
+
+        this.offset.x=Math.max(minX,Math.min(0,this.offset.x))
+        this.offset.y=Math.max(minY,Math.min(0,this.offset.y))
+    }
+    updateTransform(){
+        this.clampOffset()
+        this.mapInner.style.transformOrigin="0 0"
+        this.mapInner.style.transform=`translate(${this.offset.x}px,${this.offset.y}px) scale(${this.zoom})`
+    }
+    worldToMap(x:number,y:number){
+        const ms=this.device.game.minimap.ms
+        return {
+            x:x/ms,
+            y:y/ms
         }
-        this.update_players([{
-            id:this.game.active_entity_id??0,
-            color:ColorM.number(0x3a6699),
-            pos:this.game.active_entity?.position??v2.zero
-        }])
+    }
+    centerOnPlayer(){
+        const p=this.device.game.active_entity?.position
+        if(!p) return
+
+        const m=this.worldToMap(p.x,p.y)
+
+        this.offset.x=-m.x*this.zoom+this.mapViewport.clientWidth/2
+        this.offset.y=-m.y*this.zoom+this.mapViewport.clientHeight/2
+
+        this.updateTransform()
+    }
+    updateDeadzone(){
+        const dz=this.device.game.dead_zone
+        if(!dz||dz.radius<=0){
+            this.deadzoneEl.style.display="none"
+            this.deadzoneDestEl.style.display="none"
+            this.deadzoneLineEl.style.display="none"
+            return
+        }
+
+        this.deadzoneEl.style.display="block"
+        this.deadzoneDestEl.style.display="block"
+        this.deadzoneLineEl.style.display="block"
+
+        const ms=this.device.game.minimap.ms
+        const pos=v2(dz.position.x/ms,dz.position.y/ms)
+
+        const dest=v2(dz.dest_position.x/ms,dz.dest_position.y/ms)
+
+        const r=dz.radius/ms
+        const dr=dz.dest_radius/ms
+
+        this.deadzoneEl.style.setProperty("--dx",`${pos.x}px`)
+        this.deadzoneEl.style.setProperty("--dy", `${pos.y}px`)
+        this.deadzoneEl.style.setProperty("--dr",`${r*2}px`)
+        this.deadzoneEl.style.setProperty("--deadzone-color",`${ColorM.rgba2hex(this.device.game.dead_zone.color)}`)
+
+        this.deadzoneDestEl.style.setProperty("--dx",`${dest.x}px`)
+        this.deadzoneDestEl.style.setProperty("--dy", `${dest.y}px`)
+        this.deadzoneDestEl.style.setProperty("--dr",`${dr*2}px`)
+
+        this.updateSafeLine()
+    }
+    updateSafeLine(){
+        const p=this.device.game.active_entity?.position
+        const dz=this.device.game.dead_zone
+
+        if(!p||!dz){
+            this.deadzoneLineEl.style.display="none"
+            return
+        }
+
+        const ms=this.device.game.minimap.ms
+
+        const px=p.x/ms
+        const py=p.y/ms
+
+        const zx=dz.dest_position.x/ms
+        const zy=dz.dest_position.y/ms
+
+        const dx=zx-px
+        const dy=zy-py
+
+        const len=Math.sqrt(dx*dx+dy*dy)
+
+        if(len<5){
+            this.deadzoneLineEl.style.display="none"
+            return
+        }
+
+        const ang=Math.atan2(dy,dx)*180/Math.PI
+
+        this.deadzoneLineEl.style.display="block"
+        this.deadzoneLineEl.style.left=`${px}px`
+
+        this.deadzoneLineEl.style.top=`${py}px`
+        this.deadzoneLineEl.style.width=`${len}px`
+
+        this.deadzoneLineEl.style.transform=`translateY(-50%) rotate(${ang}deg)`
+    }
+    on_tick(dt:number){
+        if(this.followPlayer){
+            this.centerOnPlayer()
+        }
         this.updateDeadzone()
-        for (const id in this.visuals) {
-            const v = this.visuals[id]
-            v2m.lerp(v.pos,v.target,this.game.global_interpolation*1.2)
-            const m = this.worldToMap(v.pos)
-            v.el.style.setProperty('--px', `${m.x}px`)
-            v.el.style.setProperty('--py', `${m.y}px`)
-        }
+        this.updatePings(dt)
     }
 
-    override on_stop(): void {}
+    on_open(){
+        this.mapImage.src = this.device.game.minimap.image.src
+        this.mapImage.onload=()=>{
+            const minZoom=this.mapViewport.clientHeight/this.mapImage.height
+            this.zoom_input.min=minZoom.toString()
+            if(this.zoom<minZoom)this.zoom=minZoom
+            this.updateTransform()
+        }
+    }
+    on_close(){}
+    on_clear(){}
+    on_event(type:string, data:PrivateUpdate){
+        if(type!=="private")return
+
+        for(const p of data.pings){
+            this.add_ping(p.position,this.device.game.definitions.ping.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
+        }
+    }
 }

@@ -32,7 +32,7 @@ export class Vehicle extends MovingBody {
         if (this.def) return
         this.def = def
 
-        this.base_hitbox = new RectHitbox2D(v2.new(-1,-1), v2.new(1,1))
+        this.base_hitbox = new RectHitbox2D(v2(-1,-1), v2(1,1))
 
         this.main_sprite.zIndex = 2
         this.main_sprite.frame = this.game.resources.get_sprite(
@@ -40,8 +40,8 @@ export class Vehicle extends MovingBody {
         )
 
         if (def.frame.base_scale) {
-            this.main_sprite.hotspot=v2.new(0.5,0.5)
-            this.main_sprite.scale = v2.new(def.frame.base_scale, def.frame.base_scale)
+            this.main_sprite.hotspot=v2(0.5,0.5)
+            this.main_sprite.scale = v2(def.frame.base_scale, def.frame.base_scale)
         }
 
         for (let i = 0; i < def.wheels.defs.length; i++) {
@@ -49,9 +49,9 @@ export class Vehicle extends MovingBody {
             const spr = new Sprite2D()
             spr.frame = this.game.resources.get_sprite("wheel")
             spr.position = v2.clone(w.position)
-            spr.scale = v2.new(w.scale, w.scale)
+            spr.scale = v2(w.scale, w.scale)
             spr.zIndex = 1
-            spr.hotspot = v2.new(0.5, 0.5)
+            spr.hotspot = v2(0.5, 0.5)
 
             this.wheels.push(spr)
             if (w.movable) this.movable_wheels.push(spr)

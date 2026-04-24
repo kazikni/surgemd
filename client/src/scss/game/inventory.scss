@@ -5,18 +5,18 @@
 }
 #ui-items{
     position: absolute;
-    bottom: 125px;
+    bottom: 130px;
     left: 50%;
     transform: translateX(-50%);
     width: max-content;
 
     display: flex;
     flex-direction: row;
-    gap: 5px;
+    gap: 10px;
 
     @media screen and (max-width: palette.$screen_large) {
-        bottom: 75px;
-        gap: 3px;
+        bottom: 85px;
+        gap: 7px;
         .inventory-item-slot{
             width: 40px;
             height: 40px;
@@ -34,7 +34,7 @@
     }
     @media screen and (max-width: palette.$screen_medium) {
         bottom: 65px;
-        gap: 2px;
+        gap: 5px;
         .inventory-item-slot{
             width: 23px;
             height: 23px;
@@ -53,10 +53,11 @@
 }
 .inventory-item-slot {
     position: relative;
-    background-color: #0004;
-    width: 60px;
-    height: 60px;
-    border-radius: 8px; 
+    background-color: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
+    box-shadow: 0 0 3px var(--ui-theme-primary);
+    width: 70px;
+    height: 70px;
+    border-radius: 10%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -65,8 +66,9 @@
     font-family: "Russo-One", serif;
 
     .slot-image {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
+        border-radius: 10%;
         object-fit: contain;
         pointer-events: none;
     }
@@ -86,11 +88,11 @@
         left: 4px;
         font-size: 12px;
         color: #fff9;
-        text-shadow: 0 0 2px #000;
+        color: var(--ui-theme-primary)
     }
     @media screen and (max-width: palette.$screen_large) {
-        width: 40px;
-        height: 40px;
+        width: 55px;
+        height: 55px;
         .slot-count{
             font-size: 9px;
         }
@@ -103,8 +105,8 @@
         }
     }
     @media screen and (max-width: palette.$screen_medium) {
-        width: 23px;
-        height: 23px;
+        width: 30px;
+        height: 30px;
         .slot-count{
             font-size: 6px;
         }
@@ -117,61 +119,68 @@
         }
     }
 }
-.weapon-slot {
-    width: 300px;
-    height: 110px;
-    background-color: #0003;
-    border-radius: 10px;
-    font-size: 20px;
-    font-family: "Russo-One", serif;
-
-    .weapon-slot-number {
-        position: relative;
-        top: 5px;
-        left: 93%;
-    }
-    .weapon-slot-name {
-        position: absolute;
-        bottom: 5px;
-        right: 10px;
-    }
-    .weapon-slot-image {
-        position: absolute;
-        top: 50%;
-        left: 5px;
-        width: 100px;
-        height: auto;
-        transform: translateY(-50%);
-    }
-}
 .weapon-slot-selected{
-    border: 3px solid #eee;
+    border: 2px solid var(--ui-theme-primary);
 }
 #ui-weapons{
     position: absolute;
     bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
-    width: max-content;
 
     display: flex;
     flex-direction: row;
-    gap: 5px;
-
-    width: 38%;
+    gap: 10px;
+    width: 40%;
 
     .weapon-slot{
-        width: 100%;
         display: block;
         position: relative;
+        width: 300px;
+        height: 110px;
+        border-radius: 10px;
+        font-size: 20px;
+        font-family: "Russo-One", serif;
+        background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
+        box-shadow: 0 0 3px var(--ui-theme-primary);
+        .weapon-slot-number {
+            position: relative;
+            top: 5px;
+            left: 93%;
+            color: var(--ui-theme-primary);
+        }
+        .weapon-slot-name {
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            color: #fff;
+        }
+        .weapon-slot-image {
+            position: absolute;
+            top: 50%;
+            left: 5px;
+            object-fit: contain;
+
+            width: auto;
+            height: auto;
+
+            min-width: 150px;
+            max-width: 250px;
+            max-height: 75px;
+
+            transform: translateY(-50%) rotate(-10deg);
+        }
     }
     @media screen and (max-width: palette.$screen_large) {
-        width: 35%;
+        gap: 7px;
         .weapon-slot{
-            height: 60px;
+            height: 70px;
             font-size: 10px;
+            box-shadow: 0 0 3px var(--ui-theme-primary);
             .weapon-slot-image{
-                width: 50px;
+                min-width: 100px;
+                max-width: 200px;
+                max-height: 50px;
             }
             .weapon-slot-number{
                 left:86%;
@@ -183,11 +192,14 @@
         }
     }
     @media screen and (max-width: palette.$screen_medium) {
+        gap: 5px;
         .weapon-slot{
             height: 50px;
             font-size: 7px;
             .weapon-slot-image{
-                width: 30px;
+                min-width: 75px;
+                max-width: 80px;
+                max-height: 35px;
             }
             .weapon-slot-number{
                 left:86%;
@@ -203,7 +215,7 @@
     position: absolute;
     display: flex;
     flex-direction: row;
-    gap:2px;
+    gap:5px;
     width: fit-content;
     height: fit-content;
     top:10px;
@@ -211,22 +223,23 @@
     transform: translateX(-50%);
     .scope-slot{
         display: flex;
-        border-radius: 100%;
-        background-color: #0003;
+        border-radius: 10%;
+        background-color: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
         width: fit-content;
         height: fit-content;
+        box-shadow: 0 0 3px var(--ui-theme-primary);
         .icon{
-            padding: 10px;
-            width: 30px;
-            height: 30px;
+            padding: 5px;
+            width: 40px;
+            height: 40px;
         }
     }
     .scope-slot-selected{
-        border: 1px solid #fff3;
+        border: 2px solid var(--ui-theme-primary);
         .icon{
-            padding: 13px;
-            width: 45px;
-            height: 45px;
+            padding: 7px;
+            width: 50px;
+            height: 50px;
         }
     }
     @media screen and (max-width: palette.$screen_large){
@@ -273,7 +286,7 @@
     justify-items: end;
     pointer-events: none;
     .aitem-slot{
-        background-color: #0003;
+        background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
         display: flex;
         flex-direction: column;
         border-radius: 5px;
@@ -291,11 +304,11 @@
             padding-top: 5px;
             padding-left: 5px;
             padding-right: 5px;
-            
         }
+        box-shadow: 0 0 3px var(--ui-theme-primary);
     }
     .aitem-slot:hover{
-        border: 2px solid #ccc;
+        border: 2px solid var(--ui-theme-primary);
     }
     @media screen and (max-width: palette.$screen_large){
         .aitem-slot{

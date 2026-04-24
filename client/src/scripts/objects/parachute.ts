@@ -44,10 +44,10 @@ export class Parachute extends GameObject{
             this.time=this.parachute_data.lifetime
             this.destroy()
         }
-        const s=v2.new(1,1)
+        const s=v2(1,1)
         v2m.scale(s,s,1-this.time/this.parachute_data.lifetime)
 
-        v2m.add(this.sprite.scale,s,v2.new(1,1))
+        v2m.add(this.sprite.scale,s,v2(1,1))
         this.sprite.position=this.position
     }
     override decode(stream:NetStream,full: boolean):void{

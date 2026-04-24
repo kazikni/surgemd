@@ -21,34 +21,19 @@ export class ReloadAction extends Action<Human>{
     on_execute(user:Human){
         if(this.item.item_type!=InventoryItemType.gun)return
         const def=this.item.def
-        const cap=this.item.def.reload!.capacity
-        let consumed=0
+        const capacity=this.item.get_capacity()
+        const request=Math.min(
+            this.alt_reload?(def.reload!.reload_alt!.reload_count??capacity):def.reload!.reload_count??capacity,
+            capacity - this.item.ammo
+        )
 
-        if(this.alt_reload){
-            if(def.reload!.reload_alt!.shotsPerReload){
-                consumed=def.reload!.reload_alt!.shotsPerReload
-            }else{
-                consumed=cap
-            }
-        }else{
-            if(def.reload!.shotsPerReload){
-                consumed=def.reload!.shotsPerReload
-            }else{
-                consumed=cap
-            }
-        }
-        if(consumed+this.item.ammo>this.item.def.reload!.capacity){
-            consumed=cap-this.item.ammo
-        }
-        if(consumed>user.inventory.aitems[def.ammoType]){
-            consumed=user.inventory.aitems[def.ammoType]
-        }
         if(this.item.inventory.infinity_ammo){
-            this.item.ammo=cap
+            this.item.ammo+=request
         }else{
-            this.item.ammo+=user.inventory.consume_aitems(def.ammoType,consumed)
+            this.item.ammo+=user.inventory.consume_aitems(def.ammoType,request)
         }
-        if(this.item.ammo>=this.item.def.reload!.capacity){
+
+        if(this.item.ammo>=capacity){
             this.item.reloading=false
         }
 

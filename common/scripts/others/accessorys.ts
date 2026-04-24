@@ -1,4 +1,4 @@
-import { AccessoryDef } from "../definitions/items/equipaments.ts";
+import { AccessoryDef } from "../definitions/items/accessorys.ts";
 
 export interface AccessorySlot{
     item?:AccessoryDef

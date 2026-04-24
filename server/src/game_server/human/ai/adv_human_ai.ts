@@ -108,7 +108,7 @@ export class MovementController extends BotExecutor {
 
         return v2.add(
             ctx.target_pos,
-            v2.scale(v2.from_RadAngle(orbitDir), this.orbit_distance)
+            v2.from_RadAngle(orbitDir, this.orbit_distance)
         )
     }
     update(ctx: BotExecutionContext){
@@ -512,7 +512,7 @@ export class CombatMovementNode implements BTNode<BotExecutionContext> {
             const dir = v2.lookTo(target.position, human.position)
             targetPos = v2.add(
                 human.position,
-                v2.scale(v2.from_RadAngle(dir), 4)
+                v2.from_RadAngle(dir, 4)
             )
         }else if (dist < 10) {
             targetPos = move.compute_orbit_pos(ctx)

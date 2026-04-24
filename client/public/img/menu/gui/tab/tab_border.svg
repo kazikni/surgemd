@@ -1,1 +1,46 @@
-<svg width="227.364" height="123.597" viewBox="0 0 60.157 32.702" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(0 .81754 -1.00262 0 60.149 -.006)"><path d="M2.646 0h34.708A2.646 2.646 45 0 1 40 2.646v54.708A2.646 2.646 135 0 1 37.354 60H2.646A2.646 2.646 45 0 1 0 57.354V2.646A2.646 2.646 135 0 1 2.646 0Z" style="fill:#1e7798;fill-opacity:1;stroke:#131313;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" transform="matrix(.95239 0 0 .96773 .96 .96)"/><path style="fill:#131313;fill-opacity:1;stroke:none;stroke-width:2;stroke-dasharray:none;stroke-opacity:1" d="M1.526 53.679h37.493v4.738H1.526z"/><path style="fill:#131313;fill-opacity:1;stroke:none;stroke-width:1.37946;stroke-dasharray:none;stroke-opacity:1" d="M.875 1.631h37.493v2.254H.875z"/><ellipse style="fill:#3c3c3c;fill-opacity:1;stroke:none;stroke-width:.501716;stroke-dasharray:none;stroke-opacity:1" cx="20.008" cy="1.585" rx="1.507" ry="1.229"/></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1400"
+   height="780"
+   viewBox="0 0 370.41837 206.37685"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="tab_border.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.40808029"
+     inkscape:cx="736.37469"
+     inkscape:cy="160.50763"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <g
+     transform="matrix(0,5.096333,-6.0837129,0,387.69937,7.8397803)"
+     id="g3">
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;fill:#181716;fill-opacity:1;stroke:none;stroke-width:1.01359472;stroke-dasharray:none;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="M 1.1404374,2.8403881 H 36.278093 a 2.6787552,2.6851236 0 0 1 2.678755,2.6851236 V 61.042425 a 2.6787552,2.6851236 0 0 1 -2.678755,2.685124 H 1.1404374 A 2.6787552,2.6851236 0 0 1 -1.5383179,61.042425 V 5.5255117 A 2.6787552,2.6851236 0 0 1 1.1404374,2.8403881 Z"
+       id="path5" />
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#333b3e;stroke:none;stroke-width:0.931148;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+       d="M 2.4918854,4.3364824 H 34.926645 a 2.4726971,2.4549702 0 0 1 2.472697,2.4549702 V 57.549772 a 2.4726971,2.4549702 0 0 1 -2.472697,2.45497 H 2.4918854 A 2.4726971,2.4549702 0 0 1 0.01918825,57.549772 V 6.7914526 A 2.4726971,2.4549702 0 0 1 2.4918854,4.3364824 Z"
+       id="path4" />
+  </g>
+</svg>

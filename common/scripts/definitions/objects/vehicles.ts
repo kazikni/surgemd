@@ -57,15 +57,15 @@ export const VehicleTemplates={
             desacceleration:0.5
         },
         pillot_seat:{
-            position:v2.new(0,0),
-            leave:v2.new(0,1),
+            position:v2(0,0),
+            leave:v2(0,1),
             doors:[v2(0,0.5),v2(0,-0.5)]
         },
         wheels:{
             defs:[
                 {
                     movable:true,
-                    position:v2.new(.5,0),
+                    position:v2(.5,0),
                     scale:2.5
                 }
             ]
@@ -85,33 +85,33 @@ export const VehicleTemplates={
             desacceleration:0.8
         },
         pillot_seat:{
-            position:v2.new(0,-0.7),
-            leave:v2.new(0,-1.5),
+            position:v2(0,-0.7),
+            leave:v2(0,-1.5),
             doors:[v2(0,-1.5)]
         },
         seats:[
-            {position:v2.new(0,0.7),leave:v2.new(0,2),doors:[v2(0,1.5)]}
+            {position:v2(0,0.7),leave:v2(0,2),doors:[v2(0,1.5)]}
         ],
         wheels:{
             defs:[
                 {
                     movable:true,
-                    position:v2.new(.4,-1.4),
+                    position:v2(.4,-1.4),
                     scale:2.5
                 },
                 {
                     movable:true,
-                    position:v2.new(.4,1.4),
+                    position:v2(.4,1.4),
                     scale:2.5
                 },
                 {
                     movable:false,
-                    position:v2.new(-1.5,-1.4),
+                    position:v2(-1.5,-1.4),
                     scale:2.5
                 },
                 {
                     movable:false,
-                    position:v2.new(-1.5,1.4),
+                    position:v2(-1.5,1.4),
                     scale:2.5
                 }
             ]
@@ -137,8 +137,8 @@ export function Vehicles_Default_Init(vehicles:Definitions<VehicleDef,{}>){
                 desacceleration:0
             },
             battle_plane:{
-                main_seat:v2.new(0,0),
-                leave_position:v2.new(0,0),
+                main_seat:v2(0,0),
+                leave_position:v2(0,0),
                 seats_count:100,
             },
             wheels:{

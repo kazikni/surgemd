@@ -5,7 +5,7 @@ import { Color, ColorM } from "../../core/math/color.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Renderer } from "../rendering/renderer.ts"
 import { Angle } from "../../core/math/geometry.ts"
-import { Matrix, matrix4 } from "../../core/definition/matrix.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 export interface CamA3{
     matrix:Matrix
     position:Vec3

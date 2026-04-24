@@ -1,5 +1,5 @@
 import { Definition, Definitions, FrameDef, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
-import { DefaultFistRig, FistRig, ItemQuality, WeaponAssets, WeaponRig } from "../../others/item.ts"
+import { DefaultFistRig, FistRig, ItemRank, WeaponAssets, WeaponRig } from "../../others/item.ts"
 import { InventoryItemType } from "../utils.ts";
 export type GrenadeDef={
     explosion?:string
@@ -16,12 +16,13 @@ export type GrenadeDef={
 
     cook?:{
         allow_hand:boolean
-        fuse_time:number
+        fuse_time?:number
+        ground?:boolean
     }
     throw_max_speed?:number
 
     frames:{
-        world:string
+        world:FrameDef
     }
 
     destroy_on_collide?:boolean
@@ -33,7 +34,7 @@ export type GrenadeDef={
     image?:WeaponRig
     assets?:WeaponAssets
 
-    quality:ItemQuality
+    rank:ItemRank
     item_type?:InventoryItemType.grenade
 
     call_airdrop?:{
@@ -54,7 +55,7 @@ export type GrenadeDef={
     }
 }&Definition
 const GrenadeRig={
-    position:v2.new(0.5,0.18),
+    position:v2(0.5,0.18),
     rotation:0.2
 }
 export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
@@ -76,12 +77,14 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             throw_max_speed:15,
             explosion:"frag_grenade_explosion",
             frames:{
-                world:"proj_frag"
+                world:{
+                    image:"proj_frag"
+                }
             },
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"smoke_grenade",
@@ -100,12 +103,41 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             throw_max_speed:17,
             explosion:"smoke_grenade_explosion",
             frames:{
-                world:"proj_smoke"
+                world:{
+                    image:"proj_smoke"
+                }
             },
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
+        },
+        {
+            idString:"molotov",
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.7,
+            zScaleAdd:0.4,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                ground:true
+            },
+            throw_max_speed:10,
+            explosion:"molotov_explosion",
+            frames:{
+                world:{
+                    image:"proj_molotov",
+                    hotspot:v2(0.35,0.35)
+                }
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            rank:ItemRank.D,
         },
         //Mirv
         {
@@ -125,11 +157,13 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             explosion:"mirv_grenade_explosion",
             throw_max_speed:15,
             frames:{
-                world:"proj_mirv"
+                world:{
+                    image:"proj_mirv"
+                }
             },
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.C
         },
         {
             idString:"submirv_grenade",
@@ -147,11 +181,13 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             explosion:"submirv_grenade_explosion",
             frames:{
-                world:"proj_submirv"
+                world:{
+                    image:"proj_submirv"
+                }
             },
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"blue_flare",
@@ -170,12 +206,14 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             throw_max_speed:20,
             explosion:"blue_flare_explosion",
             frames:{
-                world:"proj_blue_flare"
+                world:{
+                    image:"proj_blue_flare"
+                }
             },
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common,
+            rank:ItemRank.A,
             call_airdrop:{
                 delay:9
             },
@@ -183,7 +221,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 spawn_delay:6,
                 tint:0x08b0ce,
                 delay:0.1,
-                spawn:v2.new(0.3,0),
+                spawn:v2(0.3,0),
                 lifetime:{
                     min:2,
                     max:5
@@ -215,12 +253,14 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             throw_max_speed:20,
             explosion:"red_flare_explosion",
             frames:{
-                world:"proj_red_flare"
+                world:{
+                    image:"proj_red_flare"
+                }
             },
             speed_mod:1,
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Common,
+            rank:ItemRank.A,
             call_airstrike:{
                 delay:3,
                 def:"nuke"
@@ -229,7 +269,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 spawn_delay:3,
                 tint:0xca0819,
                 delay:0.1,
-                spawn:v2.new(0.3,0),
+                spawn:v2(0.3,0),
                 lifetime:{
                     min:2,
                     max:5
@@ -256,15 +296,17 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:false,
-                fuse_time:3
+                ground:true,
             },
             explosion:"nuke_explosion",
             frames:{
-                world:"proj_nuke"
+                world:{
+                    image:"proj_nuke"
+                }
             },
             arms:DefaultFistRig,
             image:GrenadeRig,
-            quality:ItemQuality.Legendary
+            rank:ItemRank.S
         },
     )
 }

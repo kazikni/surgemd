@@ -1,4 +1,4 @@
-import { RectHitbox2D } from "../../client/mod.ts";
+import { Rect } from "../math/geometry.ts";
 import { HitboxType2D, type Hitbox2D } from "../math/hitbox.ts"
 import { v2, Vec2 } from "../math/vec2.ts";
 import { v3, Vec3 } from "../math/vec3.ts";
@@ -7,72 +7,57 @@ export interface Model2D{
     vertices:Float32Array
     tex_coords:Float32Array
 }
-function rotatePoint(x:number, y:number, angle:number) {
-    const cosTheta = Math.cos(angle)
-    const sinTheta = Math.sin(angle)
-    return {
-        x: cosTheta * x - sinTheta * y,
-        y: sinTheta * x + cosTheta * y
-    }
-}
-export function ImageToRect(
-    scale: Vec2,
-    hotspot: Vec2 = v2(0,0),
-    size: Vec2,
-    meter_size: number = 100,
-    position: Vec2 = { x:0, y:0 }
-): RectHitbox2D {
-    const sizeR = v2(
-        (size.x / meter_size) * (scale.x / 2),
-        (size.y / meter_size) * (scale.y / 2)
-    );
+export function ImageModel2D(scale: Vec2,angle: number,hotspot: Vec2,size: Vec2,meter_size: number,position: Vec2,rect: Rect,out: Float32Array) {
+    const hw = (size.x / meter_size) * (scale.x * 0.5)
+    const hh = (size.y / meter_size) * (scale.y * 0.5)
 
-    const x1 = -sizeR.x * hotspot.x
-    const y1 = -sizeR.y * hotspot.y
-    const x2 = sizeR.x + x1
-    const y2 = sizeR.y + y1
+    const x1 = -hw * hotspot.x
+    const y1 = -hh * hotspot.y
+    const x2 = x1 + hw
+    const y2 = y1 + hh
 
-    return new RectHitbox2D(
-        v2(x1 + position.x, y1 + position.y),
-        v2(x2 + position.x, y2 + position.y)
-    )
-}
-export function ImageModel2D(
-    scale: Vec2,
-    angle: number,
-    hotspot: Vec2 = v2(0,0),
-    size: Vec2,
-    meter_size: number = 100,
-    position:Vec2={x:0,y:0}
-): Float32Array {
-    const sizeR = v2(
-        (size.x / meter_size) * (scale.x / 2),
-        (size.y / meter_size) * (scale.y / 2)
-    );
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
 
-    const x1 = -sizeR.x*hotspot.x
-    const y1 = -sizeR.y*hotspot.y
-    const x2 = sizeR.x+x1
-    const y2 = sizeR.y+y1
+    let minX = Infinity, minY = Infinity
+    let maxX = -Infinity, maxY = -Infinity
 
-    const base = [
-        { x: x1, y: y1 }, // 0
-        { x: x2, y: y1 }, // 1
-        { x: x1, y: y2 }, // 2
-        { x: x2, y: y2 }  // 3
-    ];
+    let rx, ry
 
-    const rot = base.map(v => rotatePoint(v.x, v.y, angle));
+    rx = x1 * cos - y1 * sin + position.x
+    ry = x1 * sin + y1 * cos + position.y
+    out[0] = rx; out[1] = ry
+    minX = rx; maxX = rx
+    minY = ry; maxY = ry
 
-    return new Float32Array([
-        rot[0].x+position.x, rot[0].y+position.y,
-        rot[1].x+position.x, rot[1].y+position.y,
-        rot[2].x+position.x, rot[2].y+position.y,
+    rx = x2 * cos - y1 * sin + position.x
+    ry = x2 * sin + y1 * cos + position.y
+    out[2] = rx; out[3] = ry
+    if (rx < minX) minX = rx; else if (rx > maxX) maxX = rx
+    if (ry < minY) minY = ry; else if (ry > maxY) maxY = ry
 
-        rot[2].x+position.x, rot[2].y+position.y,
-        rot[1].x+position.x, rot[1].y+position.y,
-        rot[3].x+position.x, rot[3].y+position.y,
-    ]);
+    rx = x1 * cos - y2 * sin + position.x
+    ry = x1 * sin + y2 * cos + position.y
+    out[4] = rx; out[5] = ry
+    if (rx < minX) minX = rx; else if (rx > maxX) maxX = rx
+    if (ry < minY) minY = ry; else if (ry > maxY) maxY = ry
+
+    out[6] = out[4]
+    out[7] = out[5]
+
+    out[8] = out[2]
+    out[9] = out[3]
+
+    rx = x2 * cos - y2 * sin + position.x
+    ry = x2 * sin + y2 * cos + position.y
+    out[10] = rx; out[11] = ry
+    if (rx < minX) minX = rx; else if (rx > maxX) maxX = rx
+    if (ry < minY) minY = ry; else if (ry > maxY) maxY = ry
+
+    rect.min.x = minX
+    rect.min.y = minY
+    rect.max.x = maxX
+    rect.max.y = maxY
 }
 export function ImageModel3D(
     scale: Vec2,
@@ -154,7 +139,7 @@ export const model2d={
             { x: len,  y: -halfW }
         ];
 
-        const verticesRotated = verticesBase.map(v => rotatePoint(v.x, v.y, angle));
+        const verticesRotated = verticesBase.map(v => v2.rotate_RadAngle(v,angle));
 
         const verticesTranslated = verticesRotated.map(v => ({
             x: v.x + start.x,

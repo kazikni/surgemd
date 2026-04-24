@@ -1,16 +1,18 @@
 import { Definitions, DefinitionsMerge, mergeDeep } from "../../engine/core.ts";
 import { GameADefinitions } from "../others/mods.ts";
+import { AccessoryDef, Accessorys_Default_Init } from "./items/accessorys.ts";
 import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
 import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
 import { ConsumibleDef, Consumibles_Default_Init } from "./items/consumibles.ts";
-import { AccessoryDef, Accessorys_Default_Init, HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
+import { HelmetDef, Helmets_Default_Init, VestDef, Vests_Default_Init } from "./items/equipaments.ts";
 import { GrenadeDef, Grenades_Default_Init } from "./items/grenades.ts";
 import { GunDef, Guns_Default_Init } from "./items/guns.ts";
 import { MeleeDef, Melees_Default_Init } from "./items/melees.ts";
 import { ScopeDef, Scopes_Default_Init } from "./items/scopes.ts";
 import { BadgeDef, Badges_Default_Init } from "./loadout/badges.ts";
 import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
-import { SkinDef, Skins_Default_Init } from "./loadout/skins.ts";
+import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
+import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
 import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
@@ -19,8 +21,8 @@ import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { InventoryItemType } from "./utils.ts";
 
-export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef|SkinDef
-export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef
+export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
+export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef|LoadoutItemDef|PingDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
 
@@ -63,12 +65,13 @@ export class GameDefinition{
     })
 
     // Loadout
+    loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
     badges=new Definitions<BadgeDef,{}>((i)=>{})
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.idString="emote_"+e.idString
     })
-    skins=new Definitions<SkinDef,{}>((g)=>{
-        g.item_type=InventoryItemType.skin
+    ping=new Definitions<PingDef,{}>((e)=>{
+        e.idString="ping_"+e.idString
     })
 
     // Objects
@@ -99,9 +102,10 @@ export class GameDefinition{
         Melees_Default_Init(this.melees)
         Scopes_Default_Init(this.scopes)
 
+        Loadout_Default_Init(this.loadout)
         Badges_Default_Init(this.badges)
         Emotes_Default_Init(this.emotes)
-        Skins_Default_Init(this.skins)
+        Ping_Default_Init(this.ping)
 
         Buildings_Default_Init(this.buildings)
         Creatures_Default_Init(this.creatures)
@@ -120,11 +124,12 @@ export class GameDefinition{
         this.game_items.insert_def(this.melees.value)
         this.game_items.insert_def(this.scopes.value)
         this.game_items.insert_def(this.accessorys.value)
-        this.game_items.insert_def(this.skins.value)
 
         this.game_objects.insert_def(this.game_items.valueString)
+        this.game_objects.insert_def(this.loadout.value)
         this.game_objects.insert_def(this.emotes.value)
         this.game_objects.insert_def(this.badges.value)
+        this.game_objects.insert_def(this.ping.value)
         this.game_objects.insert_def(this.buildings.value)
         this.game_objects.insert_def(this.creatures.value)
         this.game_objects.insert_def(this.explosions.value)

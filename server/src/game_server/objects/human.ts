@@ -23,7 +23,15 @@ import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { type Player } from "./player.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
-
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+export type HumanPhysicalData=MovingBodyPhysicalData&{
+    dirty:boolean
+    dirty_part:boolean
+    scale:number
+    current_floor:FloorType
+}
 export class Human extends MovingBody{
     // Definition
     string_type:string="human"
@@ -41,13 +49,7 @@ export class Human extends MovingBody{
     // Physical
     old_position:Vec2=v2.zero()
     recoil?:{speed:number,delay:number}
-    physical_data:MovingBodyPhysicalData&{
-        dirty:boolean
-        dirty_part:boolean
-
-        scale:number
-        current_floor:FloorType
-    }={
+    physical_data:HumanPhysicalData={
         dirty:true,
         dirty_part:true,
 
@@ -99,7 +101,20 @@ export class Human extends MovingBody{
     get scope_zoom():number{
         return 20/this.equipment_data.scope.scope_view
     }
-    loadout!:HumanLoadoutData&{emote?:GameObjectDef}
+    loadout!:HumanLoadoutData&{
+        dirty:boolean
+        emote?:GameObjectDef
+        emotes:{
+            die?:EmoteDef
+        }
+        badge?:BadgeDef
+        original:{
+            badge_id?:string
+            emotes:{
+                die?:string
+            }
+        }
+    }
     animation_data:HumanAnimationData&{switching:boolean,current_animation?:PlayerAnimation}={
         dirty:true,
         switching:false,
@@ -119,11 +134,15 @@ export class Human extends MovingBody{
         combat_enabled:boolean
         friendly_fire:boolean
         alternative_vehicle_control:boolean
+
+        self_revive:boolean
     }={
         movement_enabled:true,
         combat_enabled:true,
         friendly_fire:false,
         alternative_vehicle_control:true,
+
+        self_revive:false
     }
 
     input:{
@@ -175,23 +194,48 @@ export class Human extends MovingBody{
         this.actions=new ActionsManager(this)
 
         this.base_hitbox = new CircleHitbox2D(
-            v2.new(0,0),
+            v2(0,0),
             GameConstants.player.radius
         )
     }
+    get_reflect_segment(): [Vec2, Vec2] {
+        const rot = this.physical_data.rotation
+
+        const center = v2.add(
+            this.position,
+            v2.from_RadAngle(rot, 0.6)
+        )
+
+        const side = v2.perp(v2.from_RadAngle(rot))
+
+        const half = 0.35
+
+        const a = v2.add(center, v2.scale(side, -half))
+        const b = v2.add(center, v2.scale(side,  half))
+
+        return [a, b]
+    }
     create(_args: Record<string, void>): void {
-        const skin=random.choose(["nick_winner","default_skin"])
+        const female=Math.random()<0.5
         this.loadout={
             dirty:true,
             original:{
                 //skin_id:"default_skin",
-                skin_id:skin,
                 emotes:{
 
                 }
             },
-            skin:this.game.definitions.skins.getFromString(skin),
-            //skin:this.game.definitions.skins.getFromString("default_skin"),
+            body:{
+                def:this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
+                tint:random.choose([0xffc166,0xf0a93f])
+            },
+            hair:{
+                def:this.game.definitions.loadout.getFromString(female?"hair_2":"hair_1") as LoadoutHairDef,
+                tint:random.choose([0x222222,0xffffff,0xf01041,0x0066ff,0x331f00,0x4d3108,0xfbff05])
+            },
+            eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
+            shirt:this.game.definitions.loadout.getFromString(random.choose(female?["white_dress","blue_dress","yellow_dress","red_dress","blue_shirt","white_shirt","red_shirt","yellow_shirt"]:["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
+            legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
             emotes:{
 
             }
@@ -219,6 +263,7 @@ export class Human extends MovingBody{
     downed_by_source?:DamageSourceDef
 
     modifiers:HumanModifiers={
+        size:1,
         boost:1,
         health:1,
         damage_reduction:1,
@@ -252,15 +297,17 @@ export class Human extends MovingBody{
         this.health_data.health=this.health_data.max_health
     }
     apply_modifiers(mods:Partial<HumanModifiers>){
+        this.modifiers.size*=mods.size??1
         this.modifiers.boost*=mods.boost??1
         this.modifiers.bullet_size*=mods.bullet_size??1
         this.modifiers.bullet_speed*=mods.bullet_speed??1
         this.modifiers.damage*=mods.damage??1
         this.modifiers.health*=mods.health??1
         this.modifiers.speed*=mods.speed??1
+        this.modifiers.damage_reduction*=mods.damage_reduction??1
     }
     update_modifiers(){
-        this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
+        this.modifiers.size=this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
         this.apply_modifiers(this.temp_modifiers)
         const rules=this.game.modeManager.rules.humans
 
@@ -298,13 +345,26 @@ export class Human extends MovingBody{
         this.health_data.max_boost=100*this.modifiers.boost
 
         this.health_data.health=Math.min(this.health_data.health,this.health_data.max_health)
+
+        if(this.physical_data.scale!==this.modifiers.size){
+            this.physical_data.dirty=true
+            this.physical_data.scale=this.modifiers.size
+            this.base_hitbox = new CircleHitbox2D(
+                v2(0,0),
+                GameConstants.player.radius*this.physical_data.scale
+            )
+        }
     }
-    side_effect(sf:SideEffect){
+    side_effect(sf:SideEffect,owner?:Human){
         switch(sf.type){
             case SideEffectType.AddEffect:{
                 const def=Effects.getFromString(sf.effect)
                 if(this.effects.has(def.idNumber!)){
-                    this.effects.get(def.idNumber!)!.time+=sf.duration
+                    if(sf.merge){
+                        this.effects.get(def.idNumber!)!.time+=sf.duration
+                    }else{
+                        this.effects.get(def.idNumber!)!.time=sf.duration
+                    }
                 }else{
                     this.effects.set(def.idNumber!,{
                         effect:def,
@@ -316,12 +376,21 @@ export class Human extends MovingBody{
                 break
             }
             case SideEffectType.Damage:
-                this.piercing_damage({
+                if(sf.piercing)this.piercing_damage({
                     amount:sf.amount,
                     critical:false,
                     position:this.position,
                     reason:DamageReason.SideEffect,
                     direction:0,
+                    owner:owner
+                })
+                else this.damage({
+                    amount:sf.amount,
+                    critical:false,
+                    position:this.position,
+                    reason:DamageReason.SideEffect,
+                    direction:0,
+                    owner:owner
                 })
                 break
             case SideEffectType.Heal:
@@ -441,7 +510,7 @@ export class Human extends MovingBody{
             this.inventory.swamp_guns()
         }
         if(this.input.interaction&&this.seat){
-            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2.new(0,-1),this.seat.vehicle.physical_data.rotation))
+            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
             this.seat.clear_human()
         }
         if(!this.health_data.downed&&!this.parachute){
@@ -518,7 +587,7 @@ export class Human extends MovingBody{
     }
 
     _can_interact=true
-    override on_collided(obj: ServerGameObject): void {
+    override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Obstacle:
             case GameObjectType.Building:{
@@ -528,15 +597,12 @@ export class Human extends MovingBody{
                     this._can_interact=false;
                     (obj as Loot).interact(this)
                 }
-                const ov=[...this.hitbox.overlapCollision((obj as StaticBody).hitbox)]
-                for(const ahb of (obj as StaticBody).alt_hitboxes){
-                    if(ahb.layer===undefined||ahb.layer===this.layer){
-                        ov.push(...ahb.hitbox.overlapCollision(this.hitbox))
-                    }
-                }
+
+                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
                 for(const c of ov){
                     v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
                 }
+
                 break
             }
             case GameObjectType.Vehicle:{
@@ -566,7 +632,7 @@ export class Human extends MovingBody{
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
         const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
-        let speed=5*(this.recoil?this.recoil.speed:1)
+        let speed=5.5*(this.recoil?this.recoil.speed:1)
                   * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
                   * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
                   * this.modifiers.speed
@@ -742,7 +808,6 @@ export class Human extends MovingBody{
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
-            this.manager.cells.updateObject(this)
         }
 
         if(this.health_data.downed){
@@ -789,7 +854,7 @@ export class Human extends MovingBody{
     }
     self_state(full:boolean):SelfStateUpdate{
         const ret:SelfStateUpdate={
-            health:this.health_data.health,
+            health:Math.ceil(this.health_data.health),
             max_health:this.health_data.max_health,
             boost:this.health_data.boost,
             max_boost:this.health_data.max_boost,
@@ -814,16 +879,20 @@ export class Human extends MovingBody{
 
             dirty:full?{
                 action:true,
+                group:true,
+                team:true,
                 inventory:{
                     items:true,
                     aitems:true,
                     iitems:true,
                     weapons:true,
-                    hand:true
-                }
+                    hand:true,
+                },
             }:{
                 inventory:this.inventory.net_sync,
-                action:this.actions.dirty
+                action:this.actions.dirty,
+                team:false,
+                group:false
             },
         }
         for(let i=0;i<this.inventory.slots.length;i++){
@@ -935,23 +1004,21 @@ export class Human extends MovingBody{
         this.piercing_damage(params)
     }
     piercing_damage(params: DamageParams): [number, number] {
-        const totalDamage = params.amount
         let shieldDamage = 0
         let healthDamage = 0
         this.net_sync.part = true
         const pos = params.position ?? this.position
         if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
-            shieldDamage = Math.min(this.health_data.boost, totalDamage)
-            if (totalDamage >= this.health_data.boost * 2) {
-                shieldDamage = this.health_data.boost
-                healthDamage = totalDamage - shieldDamage
+            shieldDamage = Math.min(this.health_data.boost, params.amount*this.game.modeManager.rules.humans.boosts.shield.damage_multiplier)
+            if (params.amount >= this.health_data.boost * 2) {
+                healthDamage = params.amount - this.health_data.boost
                 this.health_data.boost = 0
             } else {
                 this.health_data.boost -= shieldDamage
             }
             this.add_damage_splash(
                 params.owner,
-                totalDamage,
+                shieldDamage,
                 true,
                 params.critical,
                 pos,
@@ -962,21 +1029,21 @@ export class Human extends MovingBody{
                 this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
-            healthDamage = Math.min(this.health_data.health, totalDamage)
+            healthDamage = Math.min(this.health_data.health, params.amount)
+        }
+        if (healthDamage > 0) {
+            this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
             this.add_damage_splash(
                 params.owner,
-                totalDamage,
+                healthDamage,
                 false,
                 params.critical,
                 pos,
                 false
             )
         }
-        if (healthDamage > 0) {
-            this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
-        }
         if (this.health_data.health === 0) {
-            if (!this.health_data.downed && this.game.modeManager.can_down(this)) {
+            if (!this.health_data.downed && (this.game.modeManager.can_down(this)||this.human_data.self_revive)) {
                 this.down(params)
             } else {
                 this.die(params)
@@ -987,34 +1054,53 @@ export class Human extends MovingBody{
     }
     add_damage_splash(owner: Human | undefined,count: number,shield: boolean,critical: boolean,position: Vec2,shield_break: boolean = false){
         const splash: DamageSplash = {
-            count: count,
+            count,
             shield,
             critical,
             position,
+
             taker: this.id,
             taker_layer: this.layer,
-            shield_break
+
+            shield_break,
         }
+
         this.splashes.push(splash)
-        if (owner && owner.is_player && owner.id !== this.id){
-            let merged = false
-            for (const ds of owner.splashes){
-                if (ds.shield === splash.shield && ds.taker === splash.taker){
-                    ds.critical = ds.critical || splash.critical
-                    if (ds.shield){
-                        ds.shield_break = ds.shield_break || splash.shield_break
+        if(owner&&owner.is_player&&owner.id !== this.id){
+            owner.splashes.push({
+                ...splash
+            })
+            owner.splash_delay = 5
+        }
+    }
+    merge_damage_splashes(){
+        if(this.splashes.length <= 1) return
+        const merged: DamageSplash[] = []
+        for(const splash of this.splashes){
+            let found = false
+            for(const m of merged){
+                const same_taker=m.taker===splash.taker&&m.taker_layer===splash.taker_layer
+                const same_damage_type=m.shield === splash.shield
+                if(same_taker&&same_damage_type){
+                    m.count += splash.count
+                    if(splash.critical){
+                        m.critical = true
                     }
-                    ds.count += splash.count
-                    merged = true
+                    if(splash.shield_break){
+                        m.shield_break = true
+                    }
+                    found = true
                     break
                 }
             }
-            if (!merged){
-                owner.splashes.push(splash)
-            } else {
-                owner.splash_delay = 4
+            if(!found){
+                merged.push({
+                    ...splash
+                })
             }
         }
+
+        this.splashes = merged
     }
     down(params:DamageParams){
         if(this.health_data.downed)return
@@ -1029,6 +1115,8 @@ export class Human extends MovingBody{
         this.health_data.invensibility_time=1
 
         this.inventory.set_weapon_index(0)
+
+        this.push(-40,params.direction)
     }
     help_up(){
         if(!this.health_data.downed)return
@@ -1105,7 +1193,7 @@ export class Human extends MovingBody{
         if(full||this.physical_data.dirty_part||this.physical_data.dirty){
             this.physical_encode(stream)
             if(full||this.physical_data.dirty){
-                //stream.writeFloat32(this.physical_data.scale)
+                stream.writeFloat32(this.physical_data.scale)
             }
         }
         // Equipment
@@ -1120,7 +1208,13 @@ export class Human extends MovingBody{
         }
         // Loadout  
         if(full||this.loadout.dirty){
-            stream.writeUint16(this.loadout.skin.idNumber!)
+            stream.writeUint16(this.loadout.body.def.idNumber!)
+            .writeUint16(this.loadout.hair.def.idNumber!)
+            .writeUint16(this.loadout.eyes.idNumber!)
+            .writeUint16(this.loadout.shirt.idNumber!)
+            .writeUint16(this.loadout.legs.idNumber!)
+            .writeUint32(this.loadout.body.tint)
+            .writeUint32(this.loadout.hair.tint)
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])

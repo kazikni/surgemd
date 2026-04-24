@@ -7,8 +7,6 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         super(server,config)
 
         this.add_container(new GameContainer())
-        //this.add_container(new GameContainer())
-        //this.add_container(new GameContainer())
 
         this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
             const game=this.get_game()
@@ -37,9 +35,9 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                     mode:"normal",
                     //group_size:2,
                     mode_settings:{
-                        /*map:{
-                            def:"lobby"
-                        }*/
+                        map:{
+                            //def:"lobby"
+                        }
                     }
                 })
                 return g as GameContainer

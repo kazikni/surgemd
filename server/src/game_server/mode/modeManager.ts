@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts";
-import { v2, Vec2 } from "common/engine/core.ts";
+import { Numeric, random, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -9,6 +9,9 @@ import { type Group, type Team } from "./teams.ts";
 export interface GameRules{
     humans:{
         boosts:{
+            shield:{
+                damage_multiplier:number
+            }
             adrenaline:{
                 decay:number
                 speed:number
@@ -38,8 +41,13 @@ export interface GameRules{
         keep_inventory:boolean
     }
     ambient:{
-        day_night_cycle:boolean
-        rain_cycle:boolean
+        day_night_cycle:number
+
+        rain_lerp_speed:number
+        rain_cycle:number
+        thunderstorm_cycle:number
+        rain_chance:number
+        rain_stop_chance:number
     }
     deadzone:{
         enabled:boolean
@@ -53,6 +61,9 @@ export abstract class ModeManager{
     rules:GameRules={
         humans:{
             boosts:{
+                shield:{
+                    damage_multiplier:1.25
+                },
                 adrenaline:{
                     decay:0.25,
                     speed:0.1,
@@ -82,8 +93,13 @@ export abstract class ModeManager{
             keep_inventory:false
         },
         ambient:{
-            day_night_cycle:false,
-            rain_cycle:false
+            day_night_cycle:1,
+
+            rain_lerp_speed:1,
+            rain_cycle:1,
+            thunderstorm_cycle:1,
+            rain_stop_chance:0.3,
+            rain_chance:0.01,
         },
         deadzone:{
             enabled:true,
@@ -98,19 +114,66 @@ export abstract class ModeManager{
         this.on_init()
     }
     tick(dt:number){
-        if(this.rules.ambient.day_night_cycle&&this.game.started)this.game.ambient.date.second+=dt
-        if(this.game.ambient.date.second>=1){
-            this.game.ambient.date.second=0
-            this.game.ambient.date.minute++
-            if(this.game.ambient.date.minute>=60){
-                this.game.ambient.date.hour+=1
-                this.game.ambient.date.second=0
-                this.game.ambient.date.minute=0
-
-                this.game.dirty.ambient=true
-            }
+        if(this.game.started){
+            this.update_day_and_night(dt)
+            this.update_rain(dt)
         }
         this.on_tick(dt)
+    }
+    update_day_and_night(dt:number){
+        if(this.rules.ambient.day_night_cycle){
+            this.game.ambient.date.second+=dt*this.rules.ambient.day_night_cycle
+            if(this.game.ambient.date.second>=1){
+                this.game.ambient.date.second=0
+                this.game.ambient.date.minute++
+                if(this.game.ambient.date.minute>=60){
+                    this.game.ambient.date.hour+=1
+                    this.game.ambient.date.second=0
+                    this.game.ambient.date.minute=0
+                }
+            }
+        }
+    }
+    update_rain(dt:number){
+        const amb = this.game.ambient
+        const rules = this.rules.ambient
+
+        const dt_scaled = dt * rules.rain_cycle
+        amb.rain_timer -= dt_scaled
+        if (amb.rain_timer <= 0) {
+            if (amb.rain === 0 && amb.target_rain === 0) {
+                if (Math.random() < rules.rain_chance) {
+                    amb.target_rain = random.float(0.1, 1)
+                    amb.rain_state = 1
+                }
+                amb.rain_timer = random.float(10, 30)
+            }else if (amb.rain_state === 2) {
+                if (Math.random() < rules.rain_stop_chance) {
+                    amb.target_rain = 0
+                } else {
+                    amb.target_rain = random.float(0.1, 1)
+                }
+
+                amb.rain_state = 1
+                amb.rain_timer = random.float(5, 15)
+            }
+        }
+
+        const dist = Math.abs(amb.target_rain - amb.rain)
+
+        if (dist > 0.01) {
+            amb.rain = Numeric.lerp(
+                amb.rain,
+                amb.target_rain,
+                Numeric.dt_expo_inter(rules.rain_lerp_speed*0.1, dt)
+            )
+        } else {
+            amb.rain = amb.target_rain
+            if (amb.rain_state === 1) {
+                amb.rain_state = 2
+                amb.rain_timer = random.float(20, 60)
+            }
+        }
     }
 
     on_init(){}

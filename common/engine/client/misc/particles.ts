@@ -97,8 +97,7 @@ export class ABParticle2D extends ClientParticle2D{
         if(this.config.to?.tint){
             this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
         }
-        const vel=v2.from_RadAngle(dire)
-        v2m.scale(vel,vel,speed*dt)
+        const vel=v2.from_RadAngle(dire,speed*dt)
         
         this.sprite._position._x+=vel.x
         this.sprite.position.y+=vel.y
@@ -129,7 +128,7 @@ export class RainParticle2D extends ClientParticle2D{
         v2m.single(this.sprite.scale,config.scale?.main??1)
         this.sprite.rotation=config.rotation
         this.sprite.hotspot=v2(1,.5)
-        this.vel=v2.scale(v2.from_RadAngle(config.rotation),config.speed??12)
+        this.vel=v2.from_RadAngle(config.rotation,config.speed??12)
         if(config.zindex){
             this.sprite.zIndex=config.zindex.main
         }

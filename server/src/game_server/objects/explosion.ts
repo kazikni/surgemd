@@ -29,10 +29,10 @@ export class Explosion extends ServerGameObject{
     }
     update(_dt:number): void {
         if(this.delay==0){
-            this.manager.cells.updateObject(this)
             if(this.defs.bullet){
                 for(let i=0;i<this.defs.bullet.count;i++){
-                    this.game.add_bullet(this.position,random.rad(),this.defs.bullet.def,this.owner,undefined,this.defs)
+                    const b=this.game.add_bullet(this.position,this.defs.bullet.def,this.owner,undefined,this.defs)
+                    b.set_direction(random.rad())
                 }
             }
             if(this.defs.projectiles){
@@ -85,7 +85,7 @@ export class Explosion extends ServerGameObject{
             if(this.defs.synced_particles){
                 const def=this.game.definitions.synced_particle.getFromString(this.defs.synced_particles.def)
                 for(let i=0;i<this.defs.synced_particles.count;i++){
-                    this.game.add_synced_particle(this.position,def,this.layer)
+                    this.game.add_synced_particle(this.position,def,this.owner,this.layer)
                 }
             }
             //this.game.play_sound(this.position,this.layer,"explosion")
@@ -98,7 +98,7 @@ export class Explosion extends ServerGameObject{
         this.defs=args.defs
         this.owner=args.owner
         this.source=args.source
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),this.defs.size.end*2)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),this.defs.size.end*2)
         this.position=args.position
     }
     override encode(stream: NetStream, _full: boolean): void {

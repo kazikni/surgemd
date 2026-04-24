@@ -1,5 +1,6 @@
 import { type AbstractGame } from "../game/game.ts";
 import { NetStream } from "../net/stream.ts";
+import { type FileHandle } from "./file.ts";
 
 export interface RecordedReplay{
     header:{
@@ -12,106 +13,210 @@ export class ReplayRecorder {
     game: AbstractGame<any>
 
     recording = false
-    frames: Uint8Array[] = []
+    file?: FileHandle
+    frameCount = 0
 
-    tickRate = 60
+    tickRate:number
     version = 1
+
+    private sizeBuf = new Uint8Array(4)
+    private sizeView = new DataView(this.sizeBuf.buffer)
 
     frame_generator?: (r: ReplayRecorder,full:boolean) => NetStream
 
     constructor(
         game: AbstractGame<any>,
-        frame_generator?: (r: ReplayRecorder,full:boolean) => NetStream
+        frame_generator?: (r: ReplayRecorder,full:boolean) => NetStream,
+        tick_rate:number=32
     ) {
         this.game = game
         this.frame_generator = frame_generator
+        this.tickRate=tick_rate
     }
 
     /* ================= RECORD ================= */
-    startRecording() {
-        this.frames = []
+    async startRecording(file: FileHandle, loadStream?: NetStream) {
         this.recording = true
+        this.file = file
+        this.frameCount = 0
+
+        const header = new Uint8Array(32)
+        const view = new DataView(header.buffer)
+
+        header.set(new TextEncoder().encode(".REPL"), 0)
+
+        view.setUint16(5, this.version, true)
+        view.setUint8(7, this.tickRate)
+        view.setUint32(8, 0, true)
+
+        await this.file.write(header)
+
+        if (loadStream) {
+            const data = new Uint8Array(loadStream._u8Array.slice(0, loadStream.length))
+
+            this.sizeView.setUint32(0, data.length, true)
+
+            await this.file.write(this.sizeBuf)
+            await this.file.write(data)
+        } else {
+            this.sizeView.setUint32(0, 0, true)
+            await this.file.write(this.sizeBuf)
+        }
     }
-    stopRecording() {
+    async stopRecording() {
         this.recording = false
+        if (!this.file) return
+
+        await this.file.seek(8)
+
+        const buf = new Uint8Array(4)
+        new DataView(buf.buffer).setUint32(0, this.frameCount, true)
+
+        await this.file.write(buf)
+
+        await this.file.close()
+        this.file = undefined
     }
-    updateRecord() {
-        if (!this.recording) return
+    async updateRecord() {
+        if (!this.recording || !this.file) return
 
         let stream: NetStream
         if (this.frame_generator) {
-            stream = this.frame_generator(this,true)
+            stream = this.frame_generator(this, this.frameCount===0)
         } else {
             stream = this.game.scene_2d.objects.encode_all(true)
         }
 
-        this.frames.push(
-            new Uint8Array(stream._u8Array.slice(0, stream.length))
-        )
+        const data = new Uint8Array(stream._u8Array.slice(0, stream.length))
+
+        this.sizeView.setUint32(0, data.length, true)
+
+        await this.file.write(this.sizeBuf)
+        await this.file.write(data)
+
+        this.frameCount++
+
+        if (this.frameCount % 60 === 0) {
+            await this.file.flush()
+        }
     }
-    update(){
-        this.updateRecord()
-    }
-    /* ================= EXPORT ================= */
-    export(): Uint8Array {
-        const headerSize = 16
-        let totalSize = headerSize
-
-        for (const f of this.frames) {
-            totalSize += 4 + f.length
-        }
-
-        const buffer = new ArrayBuffer(totalSize)
-        const view = new DataView(buffer)
-        const u8 = new Uint8Array(buffer)
-
-        // Magic
-        u8.set(new TextEncoder().encode(".REPL"), 0)
-
-        view.setUint16(4, this.version, true)
-        view.setUint16(6, this.tickRate, true)
-        view.setUint32(8, this.frames.length, true)
-
-        let offset = headerSize
-
-        for (const frame of this.frames) {
-            view.setUint32(offset, frame.length, true)
-            offset += 4
-            u8.set(frame, offset)
-            offset += frame.length
-        }
-
-        return new Uint8Array(buffer)
-    }
-
-    /* ================= IMPORT ================= */
-    load(data: Uint8Array) {
-        const view = new DataView(data.buffer)
-
-        const magic = new TextDecoder().decode(data.slice(0, 5))
-        if (magic !== ".REPL") {
-            throw new Error("Invalid replay file")
-        }
-
-        this.version = view.getUint16(4, true)
-        this.tickRate = view.getUint16(6, true)
-
-        const frameCount = view.getUint32(8, true)
-
-        this.frames = []
-        let offset = 16
-
-        for (let i = 0; i < frameCount; i++) {
-            const size = view.getUint32(offset, true)
-            offset += 4
-
-            this.frames.push(
-                data.slice(offset, offset + size)
-            )
-
-            offset += size
-        }
+    async update(){
+        await this.updateRecord()
     }
     stop() {
+    }
+}
+export class ReplayWatcher {
+    file?: FileHandle
+
+    version = 0
+    tickRate = 60
+    frameCount = 0
+
+    currentFrame = 0
+    playing = false
+
+    interval?: number
+
+    on_frame?: (frame: NetStream, index: number) => void
+    on_load?: (stream: NetStream|null) => void
+    on_finish?: () => void
+
+    private sizeBuf = new Uint8Array(4)
+    private sizeView = new DataView(this.sizeBuf.buffer)
+
+    async load(file: FileHandle) {
+        this.file = file
+
+        const header = new Uint8Array(32)
+        await this.readExact(header)
+
+        const view = new DataView(header.buffer)
+
+        const magic = new TextDecoder().decode(header.slice(0, 5))
+        if (magic !== ".REPL") {
+            throw new Error("Invalid replay")
+        }
+
+        this.version = view.getUint16(5, true)
+        this.tickRate = view.getUint8(7)
+        this.frameCount = view.getUint32(8, true)
+
+        await this.readExact(this.sizeBuf)
+        const size = this.sizeView.getUint32(0, true)
+
+        let loadStream: NetStream | null = null
+
+        if (size > 0) {
+            const data = new Uint8Array(size)
+            await this.readExact(data)
+            loadStream = new NetStream(data.buffer)
+        }
+
+        if (this.on_load) {
+            this.on_load(loadStream)
+        }
+
+        this.currentFrame = 0
+    }
+    private async readExact(buffer: Uint8Array) {
+        if (!this.file) throw new Error("No file")
+        let offset = 0
+        while (offset < buffer.length) {
+            const chunk = new Uint8Array(buffer.buffer, offset)
+            const n = await (this.file as any).read(chunk)
+            if (!n) throw new Error("Unexpected EOF")
+            offset += n
+        }
+    }
+    play() {
+        if (this.playing) return
+        this.playing = true
+
+        const delay = 1000 / this.tickRate
+
+        this.interval = setInterval(() => {
+            void this.nextFrame()
+        }, delay)
+    }
+    pause() {
+        this.playing = false
+        if (this.interval) {
+            clearInterval(this.interval)
+            this.interval = undefined
+        }
+    }
+    async reset() {
+        if (!this.file) return
+        this.pause()
+        await this.file.seek(0)
+        await this.load(this.file)
+    }
+    async nextFrame() {
+        if (!this.file || !this.playing) return
+
+        if (this.currentFrame >= this.frameCount) {
+            this.pause()
+
+            if (this.on_finish) {
+                this.on_finish()
+            }
+
+            return
+        }
+
+        await this.readExact(this.sizeBuf)
+        const size = this.sizeView.getUint32(0, true)
+
+        const data = new Uint8Array(size)
+        await this.readExact(data)
+
+        const stream = new NetStream(data.buffer)
+
+        if (this.on_frame) {
+            this.on_frame(stream, this.currentFrame)
+        }
+
+        this.currentFrame++
     }
 }

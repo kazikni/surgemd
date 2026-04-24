@@ -3,6 +3,7 @@ import { NetStream } from "../net/stream.ts";
 import { random } from "../math/random.ts";
 import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
+import { hash } from "../math/hash.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -18,6 +19,7 @@ export abstract class BaseObject2D{
         this._base_hitbox=v
         this.update_hitbox()
     }
+
     public _position:Vec2M
     get position():Vec2{
         return this._position
@@ -35,8 +37,6 @@ export abstract class BaseObject2D{
     net_sync:{
         full:boolean
         part:boolean
-        segments:Record<string,boolean>
-
         enabled:{
             deletion:boolean,
             dirty:boolean,
@@ -45,7 +45,6 @@ export abstract class BaseObject2D{
     }={
         full:false,
         part:false,
-        segments:{},
         enabled:{
             deletion:true,
             creation:true,
@@ -53,16 +52,18 @@ export abstract class BaseObject2D{
         },
     }
 
-    public is_new:boolean=true
-
+    is_new:boolean=true
     updatable=true
     visible=true
+
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
 
     update_hitbox():void{
         this.hitbox=this.base_hitbox.transform(this._position)
+        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
     }
+
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
         this._base_hitbox=new NullHitbox2D(v2(0,0))
@@ -115,25 +116,30 @@ export interface Layer2D<GameObject extends BaseObject2D> {
     renderizables:number[]
 }
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
-    cellSize: number;
-    cells: Map<number, Map<string, Set<GameObject>>> = new Map();
-    objectCells: Map<GameObject, { layer: number; keys: Set<string> }> = new Map();
+    cell_size: number;
+    cells: Map<bigint,GameObject[]> = new Map();
+    object_cells: Map<number, bigint[]> = new Map();
 
-    constructor(cellSize = 5) {
-        this.cellSize = cellSize;
+    dirty_objects:Set<GameObject>=new Set()
+
+    constructor(cell_size = 5) {
+        this.cell_size = cell_size;
     }
 
-    private key(x: number, y: number): string {
-        return `${x}:${y}`;
+    update(){
+        for(const o of this.dirty_objects){
+            this.update_object(o)
+        }
+        this.dirty_objects.clear()
     }
 
     cell_pos(pos: Vec2) {
-        v2m.dscale(pos,pos,this.cellSize)
+        v2m.dscale(pos,pos,this.cell_size)
         v2m.floor(pos)
     }
 
     registry(obj: GameObject) {
-        this.updateObject(obj);
+        this.dirty_objects.add(obj)
     }
 
     unregistry(obj: GameObject) {
@@ -142,57 +148,46 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 
     clear() {
         this.cells.clear()
-        this.objectCells.clear()
+        this.object_cells.clear()
+        this.dirty_objects.clear()
     }
-
-    private getLayerMap(layer: number): Map<string, Set<GameObject>> {
-        if (!this.cells.has(layer)) {
-            this.cells.set(layer, new Map());
-        }
-        return this.cells.get(layer)!;
-    }
-
     private removeObjectFromCells(obj: GameObject) {
-        const entry = this.objectCells.get(obj);
-        if (!entry) return;
+        this.dirty_objects.delete(obj)
 
-        const layerMap = this.cells.get(entry.layer);
-        if (layerMap) {
-            for (const cellKey of entry.keys) {
-                const set = layerMap.get(cellKey);
-                if (set) {
-                    set.delete(obj);
-                    if (set.size === 0) layerMap.delete(cellKey);
-                }
+        const keys = this.object_cells.get(obj.id)
+        if (!keys) return
+        for (const key of keys) {
+            const arr = this.cells.get(key)
+            if (!arr) continue
+
+            const idx = arr.indexOf(obj)
+            if (idx !== -1) arr.splice(idx, 1)
+
+            if (arr.length === 0) {
+                this.cells.delete(key)
             }
         }
-        this.objectCells.delete(obj)
+        this.object_cells.delete(obj.id)
     }
 
-    updateObject(obj: GameObject) {
+    update_object(obj: GameObject) {
         this.removeObjectFromCells(obj)
 
         const rect = obj.hitbox.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 
-        const layer = obj.layer
-        const layerMap = this.getLayerMap(layer)
-        let entry = this.objectCells.get(obj)
-        if (!entry){
-            this.objectCells.set(obj, { layer, keys: new Set() })
-            entry=this.objectCells.get(obj)
+        if(!this.object_cells.has(obj.id)){
+            this.object_cells.set(obj.id, [])
         }
-        entry!.keys.clear()
+        this.object_cells.get(obj.id)!.length=0
 
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
-                const key = this.key(x, y);
-                if (!layerMap.has(key)) {
-                    layerMap.set(key, new Set());
-                }
-                layerMap.get(key)!.add(obj);
-                entry!.keys.add(key);
+                const key=hash.hash_3d_big(x,y,obj.layer)
+                if(!this.cells.has(key))this.cells.set(key,[])
+                this.cells.get(key)!.push(obj)
+                this.object_cells.get(obj.id)!.push(key)
             }
         }
     }
@@ -202,14 +197,12 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         this.cell_pos(rect.max)
 
         const results:GameObject[] = []
-        const layerMap = this.cells.get(layer);
-        if (!layerMap) return [];
 
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
-                const set = layerMap.get(this.key(x, y));
-                if (set) {
-                    for (const obj of set) {
+                const objects=this.cells.get(hash.hash_3d_big(x,y,layer))
+                if(objects){
+                    for(const obj of objects){
                         if(!results.includes(obj))results.push(obj);
                     }
                 }
@@ -226,15 +219,11 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         const visited = new Set<GameObject>()
 
         for (const layer of layers) {
-            const layerMap = this.cells.get(layer)
-            if (!layerMap) continue
-
             for (let y = rect.min.y; y <= rect.max.y; y++) {
                 for (let x = rect.min.x; x <= rect.max.x; x++) {
-                    const set = layerMap.get(this.key(x, y))
-                    if (!set) continue
-
-                    for (const obj of set) {
+                    const objects=this.cells.get(hash.hash_3d_big(x,y,layer))
+                    if(!objects)continue
+                    for (const obj of objects) {
                         if (visited.has(obj)) continue
                         visited.add(obj)
                         results.push(obj)
@@ -245,85 +234,108 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 
         return results
     }
-    ray(
-        origin: Vec2,
-        dest: Vec2,
-        layer?: number,
-        stopOnFirst: boolean = false
-    ): GameObject[] {
+    ray(origin: Vec2, dest: Vec2, layer?: number, stopOnFirst: boolean = false): GameObject[] {
         const results: GameObject[] = []
         const tested = new Set<GameObject>()
-        
-        const diff = v2.sub(dest, origin)
-        const maxDist = v2.len(diff)
+
+        const dx = dest.x - origin.x
+        const dy = dest.y - origin.y
+
+        const maxDist = Math.sqrt(dx * dx + dy * dy)
         if (maxDist < 1e-6) return results
-        const dir = v2(diff.x / maxDist, diff.y / maxDist)
-        const currentCell = v2.clone(origin)
-        this.cell_pos(currentCell)
-        const endCell = v2.clone(dest)
-        this.cell_pos(endCell)
-        const cellSize = this.cellSize
-        const stepX = dir.x >= 0 ? 1 : -1
-        const stepY = dir.y >= 0 ? 1 : -1
-        const tDeltaX = Math.abs(cellSize / dir.x)
-        const tDeltaY = Math.abs(cellSize / dir.y)
-        let tMaxX: number, tMaxY: number
-        if (dir.x === 0) {
+
+        const invLen = 1 / maxDist
+        const dirX = dx * invLen
+        const dirY = dy * invLen
+
+        let cx = Math.floor(origin.x / this.cell_size)
+        let cy = Math.floor(origin.y / this.cell_size)
+
+        const endX = Math.floor(dest.x / this.cell_size)
+        const endY = Math.floor(dest.y / this.cell_size)
+
+        const stepX = dirX >= 0 ? 1 : -1
+        const stepY = dirY >= 0 ? 1 : -1
+
+        const cellSize = this.cell_size
+
+        const tDeltaX = dirX !== 0 ? Math.abs(cellSize / dirX) : Infinity
+        const tDeltaY = dirY !== 0 ? Math.abs(cellSize / dirY) : Infinity
+
+        let tMaxX: number
+        let tMaxY: number
+
+        if (dirX === 0) {
             tMaxX = Infinity
         } else {
-            const boundaryX = (currentCell.x + (dir.x > 0 ? 1 : 0)) * cellSize
-            tMaxX = (boundaryX - origin.x) / dir.x
+            const boundaryX = (cx + (dirX > 0 ? 1 : 0)) * cellSize
+            tMaxX = (boundaryX - origin.x) / dirX
         }
-        if (dir.y === 0) {
+
+        if (dirY === 0) {
             tMaxY = Infinity
         } else {
-            const boundaryY = (currentCell.y + (dir.y > 0 ? 1 : 0)) * cellSize
-            tMaxY = (boundaryY - origin.y) / dir.y
+            const boundaryY = (cy + (dirY > 0 ? 1 : 0)) * cellSize
+            tMaxY = (boundaryY - origin.y) / dirY
         }
+
         while (true) {
-            const processLayer = (layerId: number) => {
-                const layerMap = this.cells.get(layerId)
-                if (!layerMap) return;
-                const key = this.key(currentCell.x, currentCell.y)
-                const set = layerMap.get(key)
-                if (set) {
-                    for (const obj of set) {
+            if (layer !== undefined) {
+                const key = hash.hash_3d_big(cx, cy, layer)
+                const objects = this.cells.get(key)
+
+                if (objects) {
+                    for (const obj of objects) {
                         if (tested.has(obj)) continue
                         tested.add(obj)
+
+                        if (obj.hitbox.colliding_with_line(origin, dest)) {
+                            results.push(obj)
+                        }
+                    }
+                }
+            } else {
+                for (const [key, objects] of this.cells) {
+                    for (const obj of objects) {
+                        if (tested.has(obj)) continue
+                        tested.add(obj)
+
                         if (obj.hitbox.colliding_with_line(origin, dest)) {
                             results.push(obj)
                         }
                     }
                 }
             }
-            if (layer !== undefined) {
-                processLayer(layer)
-            } else {
-                for (const id of this.cells.keys()) {
-                    processLayer(id)
-                }
-            }
 
             if (stopOnFirst && results.length > 0) {
-                results.sort((a, b) => 
-                    v2.distanceSquared(origin, a.position) - v2.distanceSquared(origin, b.position)
-                );
-                return [results[0]];
+                let best = results[0]
+                let bestDist = v2.distanceSquared(origin, best.position)
+
+                for (let i = 1; i < results.length; i++) {
+                    const d = v2.distanceSquared(origin, results[i].position)
+                    if (d < bestDist) {
+                        best = results[i]
+                        bestDist = d
+                    }
+                }
+
+                return [best]
             }
 
-            if (currentCell.x === endCell.x && currentCell.y === endCell.y) break;
+            if (cx === endX && cy === endY) break
 
             if (tMaxX < tMaxY) {
                 if (tMaxX > maxDist) break
-                currentCell.x += stepX
+                cx += stepX
                 tMaxX += tDeltaX
             } else {
                 if (tMaxY > maxDist) break
-                currentCell.y += stepY
+                cy += stepY
                 tMaxY += tDeltaY
             }
         }
-        return results;
+
+        return results
     }
 }
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
@@ -334,14 +346,11 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     ondestroy:(obj:GameObject)=>void=(_)=>{}
     oncreate:(_id:number,_layer:number,_type:number)=>GameObject|undefined
     destroy_queue:GameObject[]=[]
-    new_objects:GameObject[]=[]
 
-    stream_cache:NetStream
+    stream_cache?:NetStream
     constructor(cellsSize?:number,oncreate?:((_id:number,_layer:number,_type:number)=>GameObject|undefined)){
         this.cells=new CellsManager2D(cellsSize)
         this.oncreate=oncreate??((_k,_t)=>{return undefined})
-
-        this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
     }
     clear(){
         for(const obj of this.all_objects.values()){
@@ -354,7 +363,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.all_objects.clear()
 
         this.layers.length = 0
-        this.new_objects.length = 0
         this.destroy_queue.length = 0
         this.cells.clear()
     }
@@ -405,15 +413,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         obj.on_layer_set(obj.layer)
     }
-    add_object(
-        obj: GameObject,
-        layer: number,
-        id?: number,
-        // deno-lint-ignore no-explicit-any
-        args?: Record<string, any>,
-        // deno-lint-ignore no-explicit-any
-        sv: Record<string, any> = {},
-    ): GameObject {
+    // deno-lint-ignore no-explicit-any
+    add_object(obj: GameObject,layer: number,id?: number,args?: Record<string, any>,sv: Record<string, any> = {},): GameObject {
         if (!this.objects[layer]) {
             this.add_layer(layer);
         }
@@ -439,7 +440,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             // @ts-ignore
             obj[key] = sv[key];
         }
-        this.new_objects.push(obj);
         obj.create(args ?? {});
         this.cells.registry(obj);
 
@@ -449,8 +449,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(obj.visible){
             this.objects[layer].renderizables.push(obj.id);
         }
-        this.cells.updateObject(obj)
         obj.on_layer_set(obj.layer)
+
+        this.cells.update_object(obj)
         return obj;
     }
     registry(obj: GameObject){
@@ -472,7 +473,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects[obj.layer].objects[obj.id] = obj;
         this.objects[obj.layer].orden.push(obj.id);
         this.cells.registry(obj);
-        this.new_objects.push(obj);
 
         if(obj.updatable){
             this.objects[obj.layer].updatables.push(obj.id);
@@ -484,8 +484,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         const idx = this.destroy_queue.indexOf(obj)
         if(idx !== -1) this.destroy_queue.splice(idx,1)
 
-        this.cells.updateObject(obj)
         obj.on_layer_set(obj.layer)
+        this.cells.update_object(obj)
     }
     get_object(id:number):GameObject|undefined{
         return this.all_objects.get(id)
@@ -581,17 +581,25 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     encode_all(full:boolean=false,stream?:NetStream,recreate:boolean=false):NetStream{
         if(!stream){
+            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
-        stream.writeID(this.all_objects.size)
+        stream.writeUint8(100) // All Encode
+        const list:GameObject[]=[]
         for(const obj of this.all_objects.values()){
+            if(obj.net_sync.full||full||recreate||obj.net_sync.part)list.push(obj)
+        }
+
+        stream.writeID(list.length)
+        for(const obj of list){
             obj.encodeObject(full||recreate,stream,null)
         }
         return stream
     }
     encode_list(objects_list:GameObject[],last_list:GameObject[]=[],force_dirty:boolean=false,object_options?:(obj:GameObject)=>any,stream?:NetStream,recreate:boolean=false):{last:GameObject[],strm:NetStream}{
         if(!stream){
+            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
@@ -628,22 +636,23 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const obj=this.objects[l].objects[o]
                 if(obj.destroyed)continue
                 obj.update(dt)
+                if(this.cells.dirty_objects.has(obj)){
+                    this.cells.update_object(obj)
+                }
             }
         }
+        this.cells.update()
     }
     update_to_net(){
-        for(const o of this.new_objects){
-            o.is_new=false
-        }
         for(const l of this.layers){
             for(let j=0;j<this.objects[l].orden.length;j++){
                 const idx=this.objects[l].orden[j]
                 this.objects[l].objects[idx].net_sync.part=false
                 this.objects[l].objects[idx].net_sync.full=false
+                this.objects[l].objects[idx].is_new=false
                 this.objects[l].objects[idx].net_update()
             }
         }
-        this.new_objects.length=0
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){

@@ -19,7 +19,7 @@ export class Loot extends ServerGameObject{
         item:GameItem
     }
 
-    old_position:Vec2=v2.new(-1,-1)
+    old_position:Vec2=v2(-1,-1)
     velocity:Vec2
 
     constructor(){
@@ -62,7 +62,7 @@ export class Loot extends ServerGameObject{
                     if(other.id===this.id)continue
                     const col=this.hitbox.overlapCollision(other.hitbox)
                     if(col.length>0){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,6*dt))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,4*dt))
                     }
                     break
                 }
@@ -81,7 +81,7 @@ export class Loot extends ServerGameObject{
             
         }
         if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.55))
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.4))
             const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }
@@ -89,7 +89,6 @@ export class Loot extends ServerGameObject{
             this.net_sync.part=true
             this.old_position=v2.clone(this.position)
             this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
-            this.manager.cells.updateObject(this)
         }
     }
     push(speed:number,angle:number){
@@ -97,7 +96,7 @@ export class Loot extends ServerGameObject{
         v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
     create(args: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),0)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
 
         this.loot_data={
             count:args.count,
@@ -127,14 +126,12 @@ export class Loot extends ServerGameObject{
             case InventoryItemType.accessory:
                 this.loot_data.real_radius=GameConstants.loot.radius.accessory
                 break
-            case InventoryItemType.skin:
-                this.loot_data.real_radius=GameConstants.loot.radius.skin
+            case InventoryItemType.scope:
+                this.loot_data.real_radius=GameConstants.loot.radius.scopes
                 break
         }
         (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
         this.position=args.position
-
-        this.manager.cells.updateObject(this)
     }
     override on_destroy(): void {
         const idx=this.game.loot.indexOf(this)

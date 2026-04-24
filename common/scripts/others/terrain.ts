@@ -345,8 +345,8 @@ export function generate_river_hitboxes(
         const prev = seg[Math.max(i - 1, 0)].position;
         const next = seg[Math.min(i + 1, seg.length - 1)].position;
 
-        const tangent = v2.normalizeSafe(v2.sub(next, prev), v2.new(1, 0));
-        const normal = v2.new(-tangent.y, tangent.x);
+        const tangent = v2.normalizeSafe(v2.sub(next, prev), v2(1, 0));
+        const normal = v2(-tangent.y, tangent.x);
 
         for (const def of defs) {
           const pad = def.padding ?? 0;
@@ -371,8 +371,8 @@ export function generate_river_hitboxes(
           const prev = seg[Math.max(i - 1, 0)].position;
           const next = seg[Math.min(i + 1, seg.length - 1)].position;
 
-          const tangent = v2.normalizeSafe(v2.sub(next, prev), v2.new(1, 0));
-          const normal = v2.new(-tangent.y, tangent.x);
+          const tangent = v2.normalizeSafe(v2.sub(next, prev), v2(1, 0));
+          const normal = v2(-tangent.y, tangent.x);
 
           const half = seg[i].width * 0.5 + (def.padding ?? 0);
           topD.push(v2.add(cur, v2.scale(normal, half)));

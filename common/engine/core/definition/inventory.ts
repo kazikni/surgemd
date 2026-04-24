@@ -1,5 +1,5 @@
 import { type AbstractGame } from "../game/game.ts";
-import { random, type WeightDefinition } from "../math/random.ts";
+import { random, SeededRandom, type WeightDefinition } from "../math/random.ts";
 import { Numeric, Tags, hasTag, hasTags } from "../math/utils.ts"
 
 export abstract class Item{
@@ -494,9 +494,10 @@ export class LootTablesManager<TP,Aditional>{
         if(!lt){
             return []
         }
+        const rand=random
         const multiLoot=Array.isArray(lt)&&lt.length>0&&Array.isArray(lt[0])
         if(Array.isArray(lt)&&!multiLoot){
-            const obj=random.weight2(lt as LootTableItem[])
+            const obj=rand.weight2(lt as LootTableItem[])
             if(obj){
                 if(obj.item){
                     ret.push(...this.get_item(obj.item,obj.count??1,aditional,game))
@@ -510,7 +511,7 @@ export class LootTablesManager<TP,Aditional>{
             }
         }else if(multiLoot){
             for(const slt of (lt as LootTableItem[][])){
-                const obj=random.weight2(slt)
+                const obj=rand.weight2(slt)
                 if(obj){
                     if(obj.item){
                         ret.push(...this.get_item(obj.item,obj.count??1,aditional,game))
@@ -524,9 +525,9 @@ export class LootTablesManager<TP,Aditional>{
                 }
             }
         }else{
-            const count=random.int((lt as LootTableObject).min,(lt as LootTableObject).max)
+            const count=rand.int((lt as LootTableObject).min,(lt as LootTableObject).max)
             for(let i=0;i<count;i++){
-                const obj=random.weight2((lt as LootTableObject).content)
+                const obj=rand.weight2((lt as LootTableObject).content)
                 if(obj){
                     if(obj.item){
                         ret.push(...this.get_item(obj.item,obj.count??1,aditional,game))

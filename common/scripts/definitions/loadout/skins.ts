@@ -1,65 +1,245 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
-import { ItemQuality } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { Definition, Definitions, FrameDef, v2, Vec2 } from "../../../engine/core.ts";
+import { ItemRank } from "../../others/item.ts";
 
-export interface SkinDef extends Definition{
+export enum LoadoutItemKind{
+    Body,
+    Hair,
+    Eyes,
+    Shirt,
+    Leg
+}
+export interface LoadoutBodyDef extends Definition{
+    item:LoadoutItemKind.Body
     frame?:{
         base?:string
-        base_tint?:number
-        chest?:string
-        chest_tint?:number
-        arm?:string
-        arm_tint?:string
-        leg?:string
-        leg_tint?:string
-        mount?:{
-            normal:string
-            closed:string
-        }
+        hand?:string
     }
-    animation?:{
-        frames:{delay:number,image:string}[]
-        no?:boolean
-        no_auto_talk:boolean
+    mounth:{
+        position:Vec2
+        normal:string
+        open:string
     }
-    quality:ItemQuality,
-    item_type?:InventoryItemType.skin
+    rank:ItemRank,
 }
-
-export function Skins_Default_Init(skins:Definitions<SkinDef,{}>){
-    skins.insert(
+export interface LoadoutHairDef extends Definition{
+    item:LoadoutItemKind.Hair
+    frame?:{
+        base?:FrameDef
+    }
+    rank:ItemRank,
+}
+export interface LoadoutEyesDef extends Definition{
+    item:LoadoutItemKind.Eyes
+    position:Vec2
+    frame?:{
+        base?:string
+        blink?:string
+    }
+    rank:ItemRank,
+}
+export interface LoadoutShirtDef extends Definition{
+    item:LoadoutItemKind.Shirt
+    frame?:{
+        arm?:string
+        arm_tint?:number
+        chest?:FrameDef
+    }
+    rank:ItemRank,
+}
+export interface LoadoutLegDef extends Definition{
+    item:LoadoutItemKind.Leg
+    frame?:{
+        foot?:FrameDef
+        leg?:FrameDef
+    }
+    rank:ItemRank,
+}
+export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef
+export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
+    loadout.insert(
         {
-            idString:"default_skin",
-            quality:ItemQuality.Common,
+            item:LoadoutItemKind.Body,
+            idString:"body_1",
+            rank:ItemRank.E,
+            frame:{
+                hand:"human_hand_1",
+            },
+            mounth:{
+                position:v2(0.3,0),
+                normal:"human_mounth_1_1",
+                open:"human_mounth_1_2"
+            }
+        },
+        //Hairs
+        {
+            item:LoadoutItemKind.Hair,
+            idString:"hair_1",
+            rank:ItemRank.E,
+            frame:{
+                base:{
+                    position:v2(-0.15,0)
+                }
+            },
         },
         {
-            idString:"nick_winner",
-            quality:ItemQuality.Rare,
+            item:LoadoutItemKind.Hair,
+            idString:"hair_2",
+            rank:ItemRank.E,
             frame:{
-                leg:"default_skin_leg"
+                base:{
+                    position:v2(-0.2,0)
+                }
+            }
+        },
+        //Eyes
+        {
+            item:LoadoutItemKind.Eyes,
+            position:v2(0.2,0),
+            idString:"eyes_1",
+            rank:ItemRank.E,
+        },
+        {
+            item:LoadoutItemKind.Eyes,
+            position:v2(0.2,0),
+            idString:"eyes_2",
+            rank:ItemRank.E,
+        },
+        //Shirt
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"white_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                },
             }
         },
         {
-            idString:"justin_winner",
+            item:LoadoutItemKind.Shirt,
+            idString:"blue_shirt",
+            rank:ItemRank.E,
             frame:{
-                mount:{
-                    closed:"player_mounth_1_2",
-                    normal:"player_mounth_2_1"
-                }
-            },
-            quality:ItemQuality.Rare,
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x0066ff
+                },
+                arm_tint:0x0066ff
+            }
         },
         {
-            idString:"alice_winner",
-            quality:ItemQuality.Rare,
+            item:LoadoutItemKind.Shirt,
+            idString:"black_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x222222
+                },
+                arm_tint:0x222222
+            }
         },
         {
-            idString:"kaklik",
-            quality:ItemQuality.Legendary,
+            item:LoadoutItemKind.Shirt,
+            idString:"yellow_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0xe5ce0c
+                },
+                arm_tint:0xe5ce0c
+            }
         },
         {
-            idString:"kitty",
-            quality:ItemQuality.Mythic,
+            item:LoadoutItemKind.Shirt,
+            idString:"red_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0xf01041
+                },
+                arm_tint:0xf01041
+            }
+        },
+
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"white_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0xffffff
+                },
+                arm_tint:0xffffff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"blue_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0x0066ff
+                },
+                arm_tint:0x0066ff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"yellow_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0x0066ff
+                },
+                arm_tint:0x0066ff
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"red_dress",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_dress_1_chest",
+                    hotspot:v2.new(0.7,0.5),
+                    tint:0xe5ce0c
+                },
+                arm_tint:0xe5ce0c
+            }
+        },
+        //Legs
+        {
+            item:LoadoutItemKind.Leg,
+            idString:"jeans_pants",
+            rank:ItemRank.E,
+            frame:{
+                leg:{
+                    image:"human_leg_1_1",
+                    tint:0x343f4e
+                },
+                foot:{
+                    image:"human_leg_1_2",
+                    tint:0x353c7e,
+                },
+            }
         },
     )
 }

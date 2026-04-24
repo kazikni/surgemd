@@ -4,7 +4,7 @@ import { DeadZoneUpdate } from "common/scripts/packets/general_update.ts"
 import { ABParticle2D, CircleHitbox2D, ClientParticle2D, Color, ColorM, Graphics2D, model2d, Numeric, ParticlesEmitter2D, random, v2, Vec2 } from "common/engine/client.ts";
 export class DeadZoneManager{
     radius:number=5
-    position:Vec2=v2.new(0,0)
+    position:Vec2=v2(0,0)
     sprite:Graphics2D=new Graphics2D()
     map_sprite:Graphics2D=new Graphics2D()
     game:Game
@@ -15,11 +15,11 @@ export class DeadZoneManager{
     constructor(game:Game){
         this.game=game
         this.sprite.zIndex=zIndexes.DeadZone
-        this.sprite.scale=v2.new(1,1)
+        this.sprite.scale=v2(1,1)
         this.sprite.layer=100
         this.game.cam2d.addObject(this.sprite)
     }
-    hitbox:CircleHitbox2D=new CircleHitbox2D(v2.new(0,0),1)
+    hitbox:CircleHitbox2D=new CircleHitbox2D(v2(0,0),1)
     append(){
         const model=model2d.outlineCircle(1,100*1000,200)
         this.sprite.fill_color(this.color)
@@ -27,11 +27,11 @@ export class DeadZoneManager{
         const model2=model2d.outlineCircle(0.997,0.003,200)
         this.sprite.fill_color(ColorM.rgba(255,255,255,40))
         this.sprite.drawModel(model2)
-        this.set_current(v2.new(20,20),10)
+        this.set_current(v2(20,20),10)
         this.pa=this.game.particles.add_emiter({
             delay:0.3,
             particle:()=>{
-                const pos=v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2.new(this.game.cam2d.width,this.game.cam2d.height)))
+                const pos=v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height)))
                 if(this.hitbox.pointInside(pos))return undefined
                 return new ABParticle2D({
                     frame:{
@@ -56,6 +56,13 @@ export class DeadZoneManager{
     }
     color:Color=ColorM.hex("#21f2")
     tick(dt:number){
+        if(this.game.active_entity){
+            if(this.hitbox.pointInside(this.game.active_entity.position)){
+                this.game.ambient.deadzone_ambience.set(null)
+            }else{
+                this.game.ambient.deadzone_ambience.set(this.game.ambient.deadzone_ambience_sound,true)
+            }
+        }
     }
     update_from_data(data:DeadZoneUpdate){
         this.set_current(data.position,data.radius)
@@ -68,7 +75,7 @@ export class DeadZoneManager{
         this.radius=radius
 
         if(radius===0)radius=0.01
-        this.sprite.scale=v2.new(radius,radius)
+        this.sprite.scale=v2(radius,radius)
         this.sprite.position=position
 
         this.hitbox.position=position

@@ -1,52 +1,53 @@
-# Surgemd Pre-Beta-5
+# Surgemd Pre-Beta-6
 ## News
 __                                                                                                      __
 ### Mains
-* Airdrops And Parachutes
-* Downeds Animation
-* Tundra Mode
-* Better Bots AI
-* See Through Containers
+* *Replay Mode!*
+* Dynamic Humans
+* Buildings Orientation
+* Doors
+* Join In A Group Menu!!
 __                                                                                                      __
 ### Menu
-* Match Tab App
-* Campaign Mode History Test
+* Customizable UI
+* Map Pings
+* Tab Rework
 __                                                                                                      __
 ### Items
-* Smoke Grenade
-* SR25 - 762mm DMR
-* Model94 - 45acp Sniper
-* BLR-81 - 556mm Sniper
-* 45ACP
-* Blue Flare
-* Red Flare
-* Nuke
-* Liquid Insanity Particle
+* *Omni Necklance*
+* Molotov Cocktail
+* Casing Sounds
+* Humans Drop Consumibles After Use
+* More Casing Particles
+* Casing Sounds
+* M1A1 - 45acp Tommy AR
+* TaurusTX - 22LR Pistol
+* Pygmy Necklance
+* Luck Coin
+* Rare Projectile
+* Ghost Ammo
+* Self Revive
+* Biggerst Maganize
 __                                                                                                      __
 ### Others
-* MD Crate
-* Tundra Crate
-* Buildings Ceiling Now Have Opacity
+* Deadzone Ambience
+* Deadzone Now Have 10 Zones
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
 ### Items
-* Change Mirv Design
-* Change Axe Design
-* Change Sledgehammer Design
+* Some Balacing Changes
+* Rework Casing Particles
+* Rework M2-2
+* Change Smokes
 __                                                                                                      __
 ### Others
-* Creatures Reword
-* Balance Changes
-* Sillo Redesign
-* Nick Winner Skin Redesign
+* shield damage is increased by 25%.
+* bullet whiz for reflected bullets
 __                                                                                                      __
-## Fixes
-* Fix Bullet Range
-* Fix Damage Splash
-* Fix Ammos Gui
-* Fix Health Bar Animation
-* Fix Mouse Into Some Web Browsers
+### Menu
+* Change UI Design
+* Change Tab Design
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)

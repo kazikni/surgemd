@@ -68,18 +68,14 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 
-    update(dt:number,new_list:boolean=true,destroy_queue:boolean=true):Promise<void>{
-        return new Promise<void>((resolve) => {
-            this.objects.update(dt)
-            if(new_list){
-                this.objects.update_to_net()
-            }
-            if(destroy_queue){
-                this.objects.apply_destroy_queue()
-            }
-            resolve()
-        })
-
+    update(dt:number,net_update:boolean=true,destroy_queue:boolean=true):void{
+        this.objects.update(dt)
+        if(net_update){
+            this.objects.update_to_net()
+        }
+        if(destroy_queue){
+            this.objects.apply_destroy_queue()
+        }
     }
 }
 
@@ -116,12 +112,13 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
     add_component(component:GameComponent<this>){
         this.components.push(component)
     }
-    async draw(dt:number):Promise<void>{
+    draw(dt:number):void{
         for(const c of this.components){
             c.on_render(dt)
         }
     }
-    async update(dt:number,new_list: boolean=true, destroy_queue: boolean=true){
+    update(dt:number,net_update:boolean=true,destroy_queue:boolean=true){
+        this.clock.profiler.start(1)
         this.delta_time=dt
 
         this.signals.emit("update")
@@ -130,13 +127,14 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
             c.on_update(dt)
         }
 
-        await this.scene_2d.update(dt,new_list,destroy_queue)
+        this.scene_2d.update(dt,net_update,destroy_queue)
         this.update_timeouts(dt)
 
         if(!this.running){
             this.clock.stop()
             this.on_stop()
         }
+        this.clock.profiler.end(1)
     }
     update_timeouts(dt:number){
         for(let i=0;i<this.timeouts.length;i++){
@@ -149,6 +147,10 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         }
     }
     add_timeout(callback:()=>void,delay:number):number{
+        if(delay==0){
+            callback()
+            return -1
+        }
         this.timeouts.push({c:callback,delay:delay})
         return this.timeouts.length-1
     }

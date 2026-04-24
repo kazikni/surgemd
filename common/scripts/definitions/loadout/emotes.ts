@@ -1,26 +1,26 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
-import { ItemQuality } from "../../others/item.ts";
+import { ItemRank } from "../../others/item.ts";
 
 export interface EmoteDef extends Definition{
-    quality:ItemQuality
+    rank:ItemRank
 }
 export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
     emotes.insert(
         {
             idString:"happy",
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"sad",
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"neutral",
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"md_logo",
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
     )
 }

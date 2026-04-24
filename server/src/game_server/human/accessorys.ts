@@ -1,4 +1,4 @@
-import { type AccessoryDef } from "common/scripts/definitions/items/equipaments.ts";
+import { AccessoryDef } from "common/scripts/definitions/items/accessorys.ts";
 import { type Human } from "../objects/human.ts";
 
 export interface AccessorySlot{
@@ -30,6 +30,14 @@ export class AccessorysManager{
         }
         return false
     }
+    has_property(property:string):boolean{
+        for(const s of this.slots){
+            if(s.item&&(s.item.property??[]).includes(property)){
+                return true
+            }
+        }
+        return false
+    }
     call_event(name:string,e:any){
         for(const s of this.slots){
             if(s.item&&s.item.events?.[name]){
@@ -45,17 +53,21 @@ export class AccessorysManager{
             }
         }
     }
-    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):boolean{
-        if(this.has_accessory(def.idString))return false
+    add_accessory(def:AccessoryDef,droppable:boolean=true,changable:boolean=true):[AccessoryDef|undefined,boolean]{
+        if(this.has_accessory(def.idString))return [undefined,false]
         for(const s of this.slots){
             if(s.changable){
+                const ret=s.item
                 s.item=def
                 s.droppable=droppable
                 s.changable=changable
-                return true
+
+                if(ret&&ret.events&&ret.events["drop"])ret.events["drop"]({def:ret,user:this.user})
+                if(def.events&&def.events["pickup"])def.events["pickup"]({def:def,user:this.user})
+                return [ret,true]
             }
         }
-        return false
+        return [undefined,false]
     }
     clear(){
         for(const s of this.slots){

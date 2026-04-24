@@ -1,7 +1,6 @@
 import { Game } from "../others/game.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { ActionsType, GameObjectType } from "common/scripts/others/constants.ts";
-import { BoostType,Boosts } from "common/scripts/definitions/player/boosts.ts";
+import { GameObjectType } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
@@ -13,10 +12,16 @@ import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { ShopTabApp } from "../apps/shop.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
 import { type Building } from "../objects/building.ts";
-import { MatchTabApp } from "../apps/match.ts";
+import { HealthModule } from "../uim/health.ts";
+import { BoostModule } from "../uim/boosts.ts";
+import { AItemsModule } from "../uim/aitems.ts";
+import { IItemsModule } from "../uim/iitems.ts";
+import { WeaponsModule } from "../uim/weapons.ts";
+import { HandInfoModule } from "../uim/hand_info.ts";
+import { ItemsModule } from "../uim/items.ts";
+import { ActionsModule } from "../uim/actions.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -30,12 +35,6 @@ export class UiManager{
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
         game_gui:document.querySelector("#game-gui") as HTMLDivElement,
-        health_bar_interior:document.querySelector("#health-bar") as HTMLDivElement,
-        health_bar_animation:document.querySelector("#health-bar-animation") as HTMLDivElement,
-        health_bar_amount:document.querySelector("#health-bar-amount") as HTMLSpanElement,
-
-        _bar_interior:document.querySelector("#boost-bar") as HTMLDivElement,
-        _bar_amount:document.querySelector("#boost-bar-amount") as HTMLSpanElement,
 
         action_info_delay:document.querySelector("#action-info-delay") as HTMLSpanElement,
         action_info:document.querySelector("#action-info") as HTMLDivElement,
@@ -86,25 +85,16 @@ export class UiManager{
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
     }
 
-    action?:{delay:number,start:number,type:ActionsType}
-
     killleader?:{
         id:number
         kills:number
     }
 
-    health:number=-1
-    boost:number=-1
-    boost_type: BoostType=BoostType.Null;
-
-    match_app?:MatchTabApp
-    shop_app?:ShopTabApp
-
     money:number=0
+
     constructor(game:Game){
         this.game=game
 
-        this.set_health(100,100)
         HideElement(this.content.gameOver)
 
         HideElement(this.content.emote_wheel.main)
@@ -115,6 +105,15 @@ export class UiManager{
         }
 
         this.content.gameOver_menu_btn.onclick=this.game.close_game.bind(this.game)
+
+        this.game.ui_manager.add(new HealthModule())
+        this.game.ui_manager.add(new BoostModule())
+        this.game.ui_manager.add(new AItemsModule())
+        this.game.ui_manager.add(new IItemsModule())
+        this.game.ui_manager.add(new WeaponsModule())
+        this.game.ui_manager.add(new HandInfoModule())
+        this.game.ui_manager.add(new ItemsModule())
+        this.game.ui_manager.add(new ActionsModule())
     }
     clear(){
         this.content.killfeed.innerHTML=""
@@ -133,6 +132,7 @@ export class UiManager{
         this.enableCrosshair()
 
         this.game.inventory.clear()
+        this.game.ui_manager.clear()
         disableContextMenuPrevent() 
     }
     _makeHint(texts: string[]) {
@@ -191,7 +191,7 @@ export class UiManager{
         })
     }
     emote_wheel={
-        positon:v2.new(0,0),
+        positon:v2(0,0),
         active:false,
         current_side:-1,
         emote:[
@@ -263,9 +263,6 @@ export class UiManager{
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     proccess_joinned_packet(jp:JoinnedPacket){
-        if((jp.mode.shop&&jp.mode.shop.length>0)&&this.shop_app){
-            this.shop_app.set_shop(jp.mode.shop)
-        }
         for(const p of jp.players){
             const badge_frame=p.badge!==undefined?this.game.definitions.emotes.getFromNumber(p.badge).idString:""
             const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/main/loadout/badges/${badge_frame}.svg">`
@@ -445,50 +442,59 @@ export class UiManager{
         this.crosshair=false
     }
     update_self_state(state:SelfStateUpdate){
-        this.set_health(state.health,state.max_health)
-        this.set_boost(state.boost,state.max_boost,state.boost_type)
-
-        if(state.dirty.inventory.items) {
-            this.game.inventory.update_items(state.inventory.items)
-        }
-        if(state.dirty.inventory.aitems){
-            this.game.inventory.inventory.aitems={}
-            for(const a of Object.keys(state.inventory.aitems)){
-                const def=this.game.definitions.ammos.getFromNumber(a as unknown as number)
-                this.game.inventory.inventory.aitems[def.idString]=state.inventory.aitems[a as unknown as number]
+        if (state.dirty.inventory.aitems) {
+            this.game.inventory.aitems = {}
+            for (const a of Object.keys(state.inventory.aitems)) {
+                const def = this.game.definitions.ammos.getFromNumber(a as unknown as number)
+                this.game.inventory.aitems[def.idString] = state.inventory.aitems[a as unknown as number]
             }
-            this.game.inventory.update_aitems()
         }
-        if(state.dirty.inventory.iitems){
-            this.game.inventory.update_iitems(state.inventory.iitems)
+        if(state.dirty.inventory.iitems) {
+            this.game.inventory.iitems = state.inventory.iitems
+            this.game.inventory.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
         }
+
+        const scope_def=this.game.definitions.scopes.getFromNumber(state.current_scope)
+        if(!this.game.inventory.scope||this.game.inventory.scope!==scope_def){
+            this.game.inventory.scope=scope_def
+            this.game.set_scope(scope_def)
+        }
+
         if(state.dirty.inventory.weapons){
             for(const idx in state.inventory.weapons){
-                this.game.inventory.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
-            }
-            this.game.inventory.update_weapons()
-        }
-        if(state.dirty.inventory.hand&&state.inventory.hand){
-            this.game.inventory.inventory.set_weapon_index(state.inventory.hand.slot)
-            this.game.inventory.update_hand(state.inventory.hand.ammo,state.inventory.hand.slot,state.inventory.hand.liquid)
-        }
-        if(state.dirty.action){
-            if(state.action){
-                this.action={
-                    delay:state.action.delay,
-                    start:Date.now(),
-                    type:state.action.type
-                }
-            }else{
-                this.action=undefined
+                this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
             }
         }
+        if(state.dirty.inventory.hand){
+            this.game.inventory.hand_settings=state.inventory.hand
+            if(state.inventory.hand)this.game.inventory.set_weapon_index(state.inventory.hand.slot,true)
+        }
+        /*if(state.dirty.inventory.items) {
+            this.game.inventory.update_items(state.inventory.items)
+        }
+        */
 
         this.money=state.money
-        this.game.inventory.update_current_scope(state.current_scope)
-
-        if(state.dirty.group&&this.match_app&&state.group){
-            this.match_app.set_group(state.group)
+        this.game.ui_manager.signal("self_state",state)
+    }
+    handle_slot_click(e:MouseEvent){
+        const t=e.currentTarget as HTMLDivElement
+        if(e.button==2){
+            if(t.dataset.drop_kind==="2"){
+                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.drop!),drop_kind:2})
+            }else if(t.dataset.drop_kind==="3"){
+                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.slot!),drop_kind:3})
+            }
+        }else if(e.button===0){
+            if(t.dataset.drop_kind==="3"){
+                this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+            }
+        }
+    }
+    handle_slot_touch(e:TouchEvent){
+        const t=e.currentTarget as HTMLDivElement
+        if(t.dataset.drop_kind==="3"){
+            this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
         }
     }
     hide_game_over(){
@@ -527,17 +533,6 @@ export class UiManager{
     }
     ping_time:number=0
     update(dt:number){
-        if(this.action){
-            const w=(Date.now()-this.action.start)/1000
-            if(w<this.action.delay){
-                ShowElement(this.content.action_info)
-                this.content.action_info_delay.innerText=`${Numeric.maxDecimals(this.action.delay-w,1)}s`
-            }else{
-                this.action=undefined
-            }
-        }else{
-            HideElement(this.content.action_info)
-        }
         if(this.information_killbox_messages.length>0){
             if(this.information_killbox_time<=0){
                 ShowElement(this.content.information_killbox)
@@ -612,7 +607,6 @@ export class UiManager{
             }
         }*/
         this.update_hint()
-
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(
                 v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse.position)
@@ -657,28 +651,9 @@ export class UiManager{
             }
         }
 
-        if(player.backpack?.idString!==this.game.inventory.inventory.backpack.idString){
-            this.game.inventory.inventory.set_backpack(player.backpack)
-            this.game.inventory.update_aitems()
+        if(player.backpack?.idString!==this.game.inventory.backpack.idString){
+            this.game.inventory.set_backpack(player.backpack)
+            this.game.ui_manager.signal("backpack_dirty",player.backpack)
         }
-    }
-    set_health(health:number,max_health:number){
-        const p=health/max_health
-        if(p==this.health)return
-
-        this.health=health
-        this.content.health_bar_interior.style.width =`${p*100}%`
-        this.content.health_bar_animation.style.width=`${p*100}%`
-        this.content.health_bar_amount.innerText=`${health}/${max_health}`
-    }
-    set_boost(boost:number,max_boost:number,type:BoostType){
-        if(boost==this.boost&&this.boost_type==type)return
-
-        const p=boost/max_boost
-        this.boost=boost
-        this.boost_type=type
-        this.content._bar_interior.style.width =`${p*100}%`
-        this.content._bar_amount.innerText=`${boost}/${max_boost}`
-        this.content._bar_interior.style.backgroundColor=Boosts[type].color
     }
 }

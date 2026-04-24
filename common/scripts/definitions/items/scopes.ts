@@ -1,10 +1,10 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
-import { ItemQuality } from "../../others/item.ts";
+import { ItemRank } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface ScopeDef extends Definition{
     scope_view:number
     droppable:boolean
-    quality:ItemQuality
+    rank:ItemRank
     item_type?:InventoryItemType.scope
 }
 
@@ -14,43 +14,43 @@ export function Scopes_Default_Init(scopes:Definitions<ScopeDef,{}>){
             idString:"scope_1", // 1x
             scope_view:0.9,
             droppable:false,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"scope_2", //2x
-            scope_view:0.72, //80% of 0.9
+            scope_view:0.693, //77% of 0.9
             droppable:true,
-            quality:ItemQuality.Common
+            rank:ItemRank.E
         },
         {
             idString:"scope_3", //4x
-            scope_view:0.576,    //80% of 0.576
+            scope_view: 0.53361,
             droppable:true,
-            quality:ItemQuality.Uncommon
+            rank:ItemRank.D
         },
         {
             idString:"scope_4", //6x
-            scope_view:0.4608, //80% of 0.576
+            scope_view:0.41087,
             droppable:true,
-            quality:ItemQuality.Rare
+            rank:ItemRank.C
         },
         {
             idString:"scope_5", // 8x
-            scope_view: 0.3686, //80% of 0.4608
+            scope_view: 0.31637,
             droppable:true,
-            quality:ItemQuality.Epic
+            rank:ItemRank.B
         },
         {
             idString:"scope_6",
-            scope_view:0.29491,  //80% of 0.3686
+            scope_view:0.24361,
             droppable:true,
-            quality:ItemQuality.Mythic
+            rank:ItemRank.A
         },
         {
             idString:"scope_7",
-            scope_view:0.23592, //80% of 0.29491
+            scope_view:0.18758, //80% of 0.29491
             droppable:true,
-            quality:ItemQuality.Legendary
+            rank:ItemRank.S
         },
     )
 }

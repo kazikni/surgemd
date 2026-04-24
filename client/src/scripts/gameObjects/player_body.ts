@@ -20,7 +20,7 @@ export class PlayerBody extends GameObject{
 
     // deno-lint-ignore no-explicit-any
     create(_args: any) {
-        this.base_hitbox=new NullHitbox2D(v2.new(0,0))
+        this.base_hitbox=new NullHitbox2D(v2(0,0))
         this.game.cam2d.addObject(this.container)
         this.sprite.frame=this.game.resources.get_sprite("player_body")
         this.updatable=false
@@ -33,11 +33,11 @@ export class PlayerBody extends GameObject{
     }
     constructor(){
         super()
-        this.sprite_text.hotspot=v2.new(0.5,0)
+        this.sprite_text.hotspot=v2(0.5,0)
         this.sprite_text.position.y=0.65
         this.sprite_badge.position.y=0.65
-        this.sprite_badge.hotspot=v2.new(1,0)
-        this.sprite.hotspot=v2.new(0.5,0.5)
+        this.sprite_badge.hotspot=v2(1,0)
+        this.sprite.hotspot=v2(0.5,0.5)
         this.container.zIndex=zIndexes.PlayersBody
         this.container.add_child(this.sprite_text)
         this.container.add_child(this.sprite_badge)

@@ -3,9 +3,10 @@ import { Vec4M, Color, ColorM} from "../../core/math/color.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { type Context2D } from "../rendering/context.ts";
 import { Renderer } from "../rendering/renderer.ts";
-import { Matrix } from "../../core/definition/matrix.ts";
-import { Hitbox2D, RectHitbox2D, } from "../../core/math/hitbox.ts";
+import { Matrix } from "../../core/math/matrix.ts";
 import { type Container2D } from "./container.ts";
+import { FrameTransform } from "../../core/definition/definitions.ts";
+import { Rect } from "../../core/math/geometry.ts";
 
 export interface CamA{
     matrix:Matrix
@@ -19,7 +20,7 @@ export interface CamA{
     ctx:Context2D
     renderer:Renderer
 
-    hitbox:RectHitbox2D
+    rect:Rect
 }
 export abstract class Container2DObject {
     abstract object_type: string;
@@ -163,8 +164,18 @@ export abstract class Container2DObject {
             this.dirty_reals=false
         }
     }
-    get_hitbox():Hitbox2D|undefined{
-        return undefined
+    get_rect():Rect{
+        return {min:v2.zero,max:v2.zero}
+    }
+    transform_frame(frame:FrameTransform){
+        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
+        if(frame.scale2)this.scale=frame.scale2
+        if(frame.rotation)this.rotation=frame.rotation
+        if(frame.visible)this.visible=frame.visible
+        if(frame.zIndex)this.zIndex=frame.zIndex
+        if(frame.position)this.position=v2.clone(frame.position)
+        if(frame.layer)this.layer=frame.layer
+        this.dirty_reals=true
     }
     abstract draw(cam:CamA): void;
 }

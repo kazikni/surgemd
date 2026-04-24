@@ -1,6 +1,4 @@
-import { BadgeDef } from "../definitions/loadout/badges.ts";
-import { EmoteDef } from "../definitions/loadout/emotes.ts";
-import { SkinDef } from "../definitions/loadout/skins.ts";
+import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -12,13 +10,13 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.4,
+            ammo:0.42,
             weapon:0.65,
             accessory:0.65,
-            consumible:0.4,
-            equipament:0.4,
-            grenade:0.4,
-            skin:0.4
+            consumible:0.42,
+            equipament:0.42,
+            grenade:0.42,
+            scopes:0.42,
         }
     },
     collision:{
@@ -85,6 +83,7 @@ export enum ActionsType{
 }
 
 export type HumanModifiers={
+    size:number
     damage:number
     speed:number
     health:number
@@ -131,20 +130,17 @@ export interface HumanHealthData{
     downed:boolean
 }
 export interface HumanLoadoutData {
-    dirty:boolean
-
-    original:{
-        skin_id:string
-        badge_id?:string
-        emotes:{
-            die?:string
-        }
+    body:{
+        def:LoadoutBodyDef
+        tint:number
     }
-    skin:SkinDef
-    badge?:BadgeDef
-    emotes:{
-        die?:EmoteDef
+    hair:{
+        def:LoadoutHairDef
+        tint:number
     }
+    eyes:LoadoutEyesDef
+    shirt:LoadoutShirtDef
+    legs:LoadoutLegDef
 }
 export interface HumanAnimationData{
     dirty:boolean

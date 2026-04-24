@@ -256,6 +256,7 @@ export interface FrameTransform{
     visible?:boolean
     zIndex?:number
     tint?:number
+    alpha?:number
     layer?:number
 }
 export type FrameDef={image?:string}&FrameTransform
@@ -265,6 +266,10 @@ export type KeyFrameSpriteDef={
 export interface AKeyFrameSpriteAction extends FrameTransform {
     type: "sprite"
     image?: string
+    fuser: string
+}
+export interface AKeyFrameTransformAction extends FrameTransform {
+    type: "transform"
     fuser: string
 }
 
@@ -278,6 +283,7 @@ export interface AKeyFrameTweenAction {
 export type AKeyFrameAction =
     | AKeyFrameSpriteAction
     | AKeyFrameTweenAction
+    | AKeyFrameTransformAction
 export interface AKeyFrame{
     actions:AKeyFrameAction[]
     time:number

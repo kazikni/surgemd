@@ -282,25 +282,30 @@ export class ImageBuffer {
     tick = 0
     max = 6
 
-    async load(src: string): Promise<HTMLImageElement> {
+    async load(src:string){
         this.tick++
-        if (this.cache.has(src)) return this.cache.get(src)!
-
-        if (this.loading.has(src)) {
-            return new Promise(res => {
-                const check = () => {
-                    if (this.cache.has(src)) res(this.cache.get(src)!)
+        if(this.cache.has(src)){
+            this.lastUsed.set(src,this.tick)
+            return this.cache.get(src)!
+        }
+        if(this.loading.has(src)){
+            return new Promise(res=>{
+                const check=()=>{
+                    if(this.cache.has(src)){
+                        this.lastUsed.set(src,this.tick)
+                        res(this.cache.get(src)!)
+                    }
                     else requestAnimationFrame(check)
                 }
                 check()
             })
         }
-
         this.loading.add(src)
         const img = new Image()
         img.src = src
         await img.decode().catch(()=>{})
-        this.cache.set(src, img)
+        this.cache.set(src,img)
+        this.lastUsed.set(src,this.tick)
         this.loading.delete(src)
         this.cleanup()
         return img
@@ -311,13 +316,13 @@ export class ImageBuffer {
     cleanup() {
         if (this.cache.size <= this.max) return
 
-        const entries = [...this.lastUsed.entries()]
+        const entries = [...this.lastUsed.entries()].filter(([key]) => this.cache.has(key))
+
         entries.sort((a,b)=>a[1]-b[1])
-
         const toRemove = this.cache.size - this.max
-
-        for (let i = 0; i < toRemove; i++) {
+        for (let i = 0; i < Math.min(toRemove, entries.length); i++) {
             const key = entries[i][0]
+
             this.cache.delete(key)
             this.lastUsed.delete(key)
         }

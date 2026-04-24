@@ -4,7 +4,7 @@ import { v2, Vec2 } from "../../core/math/vec2.ts";
 import { ImageModel2D, model2d, Model2D } from "../../core/definition/models.ts";
 import { Camera2D } from "./camera.ts"
 import { DefaultTexCoords, ResourcesManager } from "../resources/resources.ts";
-import { Matrix, matrix4 } from "../../core/definition/matrix.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 export class SubCanvas2D extends Container2DObject {
     override object_type = "sub_canvas";

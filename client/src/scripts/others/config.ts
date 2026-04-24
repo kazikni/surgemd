@@ -9,7 +9,7 @@ export const api_server=new IPLocation("localhost",3000,false,false,"api")
 export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 */
 //export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
-export const api_server=new IPLocation("localhost",3000,false,false,"api")
+export const api_server=new IPLocation("localhost",8000,false,true,"")
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
@@ -47,6 +47,9 @@ export const ConfigCasters=Object.freeze({
     sv_sounds_master_volume:Casters.toNumber,
     sv_sounds_music_volume:Casters.toNumber,
     sv_sounds_ambient_volume:Casters.toNumber,
+
+    sv_ui_primary_color:Casters.toString,
+    sv_ui_secondary_color:Casters.toString,
 })
 export const ConfigDefaultValues={
     sv_loadout_skin:"default_skin",
@@ -71,6 +74,9 @@ export const ConfigDefaultValues={
     sv_sounds_master_volume:1,
     sv_sounds_music_volume:1,
     sv_sounds_ambient_volume:1,
+
+    sv_ui_primary_color:"#4f6ef7",
+    sv_ui_secondary_color:"#1c2447",
 }
 export const ConfigDefaultActions={
     "move_up":{

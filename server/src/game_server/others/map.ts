@@ -17,12 +17,12 @@ export const generation={
         return (map:GameMap,random:SeededRandom)=>{
             //Terrain
             map.size=def.size
-            map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2.new(0,0),v2.new(map.size.x,map.size.y)),Layers.Normal,false)
+            map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),Layers.Normal,false,false)
             let cp=0
             const hitboxes:Hitbox2D[]=[]
             for(const f of def.terrain.floors.sort()){
                 cp+=f.padding
-                const min=v2.new(cp,cp),max=v2.new(map.size.x-cp,map.size.y-cp)
+                const min=v2(cp,cp),max=v2(map.size.x-cp,map.size.y-cp)
                 const hb=new PolygonHitbox2D(jaggedRectangle(min,max,f.spacing,f.variation,random))
                 hitboxes.push(hb)
                 map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,hb)
@@ -42,7 +42,7 @@ export const generation={
                     if(map.game.definitions.creatures.exist(item.id)){
                         const def=map.game.definitions.creatures.getFromString(item.id)
                         for(let idx=0;idx<count;idx++){
-                            const obj=map.game.add_creature(v2.new(0,0),def,item.layer)
+                            const obj=map.game.add_creature(v2(0,0),def,item.layer)
                             const pos=map.getRandomPosition(obj.hitbox,obj.id,obj.layer,item.spawn??def.spawn??{
                                 type:SpawnModeType.whitelist,
                                 list:[FloorType.Grass,FloorType.Ice]
@@ -76,7 +76,7 @@ export const generation={
                         const layer=item.layer??Layers.Normal
                         for(let idx=0;idx<count;idx++){
                             const loot=map.game.loot_tables.get_loot(item.id,{withammo:true},map.game)
-                            const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2.new(0,0),0.6),-1,layer,{
+                            const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer,{
                                 type:SpawnModeType.blacklist,
                                 list:[map.def.default_floor??FloorType.Water]
                             },random)
@@ -97,7 +97,7 @@ export class GameMap{
     size:Vec2
     game:Game
     constructor(game:Game,_seed:number=0){
-        this.size=v2.new(10,10)
+        this.size=v2(10,10)
         this.game=game
     }
     map_packet_stream:NetStream=new NetStream(new ArrayBuffer(400*1024))
@@ -154,7 +154,7 @@ export class GameMap{
         return pos
     }
     clamp_hitbox(position:Vec2,hb:Hitbox2D):Vec2{
-        return hb.clamp(position,v2.new(0,0),this.size)
+        return hb.clamp(position,v2(0,0),this.size)
     }
     clamp(v:Vec2){
         v2m.clamp2(v,v2.zero,this.size)
@@ -169,18 +169,20 @@ export class GameMap{
     }
     generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Obstacle|undefined{
         const o=this.add_obstacle(def,undefined,layer)
+        o.initialize()
+
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode,random)
         if(!p){
             o.destroy()
             return undefined
         }
-        o.set_position(p,0)
-        o.manager.cells.updateObject(o)
+        o.set_position(p)
+        o.manager.cells.update_object(o)
 
         return o
     }
     generate_vehicle(def:VehicleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Vehicle|undefined{
-        const o=this.game.add_vehicle(v2.new(0,0),def,layer)
+        const o=this.game.add_vehicle(v2(0,0),def,layer)
         const p=this.getRandomPosition(o.base_hitbox,o.id,layer??o.layer,spawn??Spawn.grass,random)
         if(!p){
             o.destroy()
@@ -188,7 +190,7 @@ export class GameMap{
         }
         o.position=p
         o.physical_data.dirty=true
-        o.manager.cells.updateObject(o)
+        o.manager.cells.update_object(o)
         return o
     }
     generate_building(def:BuildingDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Building|undefined{

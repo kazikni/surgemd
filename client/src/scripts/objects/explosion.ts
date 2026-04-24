@@ -24,13 +24,13 @@ export class Explosion extends GameObject{
         super()
         this.sprite.visible=false
         this.sprite.hotspot=CenterHotspot
-        this.sprite.size=v2.new(300,300)
+        this.sprite.size=v2(300,300)
     }
     override on_layer_set(layer: number): void {
         this.sprite.layer=layer
     }
     create(_args: Record<string, void>): void {
-        this.base_hitbox=new CircleHitbox2D(v2.new(0,0),0)
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
 
         this.sprite.frame=this.game.resources.get_sprite("base_explosion")
         this.game.cam2d.addObject(this.sprite)
@@ -40,7 +40,7 @@ export class Explosion extends GameObject{
             this.sprite.tint.a=1-this.t
             this.t+=3*dt;
             (this.base_hitbox as CircleHitbox2D).radius=this.maxRadius*this.t
-            this.sprite.scale=v2.new((this.base_hitbox as CircleHitbox2D).radius,(this.base_hitbox as CircleHitbox2D).radius)
+            this.sprite.scale=v2((this.base_hitbox as CircleHitbox2D).radius,(this.base_hitbox as CircleHitbox2D).radius)
             if(this.t>=1){
                 this.destroy()
             }
@@ -57,7 +57,7 @@ export class Explosion extends GameObject{
 
         this.set_definition(this.game.definitions.explosions.getFromNumber(stream.readID()))
 
-        this._base_hitbox=new CircleHitbox2D(v2.new(0,0),this.maxRadius)
+        this._base_hitbox=new CircleHitbox2D(v2(0,0),this.maxRadius)
 
         this.sprite.position=this.position
         this.sprite.visible=true

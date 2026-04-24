@@ -122,10 +122,7 @@ export class Vehicle extends MovingBody {
             )
         }
 
-        this.physical_data.velocity = v2.scale(
-            v2.from_RadAngle(this.physical_data.rotation),
-            this.speed
-        )
+        this.physical_data.velocity=v2.from_RadAngle(this.physical_data.rotation,this.speed)
 
         super.update(dt)
 
@@ -152,7 +149,7 @@ export class Vehicle extends MovingBody {
 
     create(args: {position: Vec2, def: VehicleDef}) {
         this.position = v2.clone(args.position)
-        this.base_hitbox = new CircleHitbox2D(v2.new(0, 0),1)
+        this.base_hitbox = new CircleHitbox2D(v2(0, 0),1)
         this.def = args.def
 
         if (this.def.pillot_seat)

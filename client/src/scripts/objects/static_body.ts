@@ -1,8 +1,15 @@
-import { ABParticle2D, Color, NetStream, random, Sound, Vec2 } from "common/engine/client.ts"
+import { ABParticle2D, Color, Hitbox2D, NetStream, NullHitbox2D, random, Sound, v2, Vec2 } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
+export type StaticBodyPhysicalData={
+    hitbox:Hitbox2D
+    side:number
 
+    reflect_bullets:boolean
+    no_collision:boolean
+    no_bullets_collision:boolean
+}
 export interface StaticBodyAssetData{
     particles_tint?:Color
     frame:{
@@ -19,21 +26,14 @@ export abstract class StaticBody extends GameObject{
     string_type:string="static_body"
     number_type: number=GameObjectType.StaticBody
 
-    physical_data:{
-        no_bullet_collision:boolean
-        no_collision:boolean
-        scale:number
-        side:number
-        rotation:number
-    }={
-        no_collision:false,
-        no_bullet_collision:false,
-        scale:1,
-        side:0,
-        rotation:0,
+    abstract physical_data:StaticBodyPhysicalData
+
+    constructor(){
+        super()
     }
 
     abstract assets_data:StaticBodyAssetData
+
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         if(!this.assets_data.frame.particles)return
         const p=new ABParticle2D({
@@ -73,17 +73,5 @@ export abstract class StaticBody extends GameObject{
     }
 
     override on_destroy(): void {
-    }
-    constructor(){
-        super()
-    }
-    decode_physical_data(stream:NetStream,full: boolean):void{
-        this.physical_data.scale=stream.readFloat(0,10,2)
-        if(full){
-            this.position=stream.readPos2()
-            this.physical_data.rotation=stream.readRad()
-            this.physical_data.side=stream.readUint8()
-            this.manager.cells.updateObject(this)
-        }
     }
 }

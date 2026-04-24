@@ -1,4 +1,4 @@
-import { api, API_BASE } from "../others/config.ts";
+import { api, API_BASE, api_server } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
@@ -63,6 +63,7 @@ export class MenuManager{
     play_callback?:(play_args:PlayArgs)=>void
 
     campaign:Record<string,any>={}
+
     constructor(definitions:GameDefinition){
         const params = new URLSearchParams(self.location.search)
 
@@ -106,6 +107,19 @@ export class MenuManager{
 
         setTimeout(()=>{
             HideElement(this.content.initial_screen,true)
+
+            const invite=params.get("group-id")
+            if(invite){
+                this.join_group(invite)
+                this.load_tab("play")
+                const playTab=this.tabs["play"]
+                if(playTab){
+                    const groupOption=playTab.def.options.find(o=>o.type==="button"&&o.subtab==="group")
+                    if(groupOption){
+                        this.opt_click_callback(groupOption,playTab)(new MouseEvent("click"))
+                    }
+                }
+            }
         },1000)
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
@@ -243,19 +257,82 @@ export class MenuManager{
         if(this.api_settings.database.enabled){
             this.account.enable(this)
         }
+    }
+    team_ws?:WebSocket
+    group_state?:{
+        code:string
+        leader:number
+        self:number
+        locked:boolean
+        autofill:boolean
+    }
+    manage_team_message(ev:MessageEvent){
+        const msg = JSON.parse(ev.data)
+        switch(msg.type){
+            case "snapshot":
+                this.group_state = {
+                    code:msg.code,
+                    leader:msg.leader,
+                    self:msg.self,
+                    locked:msg.locked,
+                    autofill:msg.autofill
+                }
+                this.reload_group_ui()
+                break
+            case "lock_changed":
+                if(this.group_state){
+                    this.group_state.locked=msg.locked
+                }
 
-        const newsS=this.content.menu_content.querySelector("#about-news-sm-extra") as HTMLDivElement
-        newsS.innerHTML=""
-        const news=await(await fetch(`${API_BASE}/news/get`)).json() as {title:string,id:string,content:string}[]
-        for(const n of news){
-            newsS.innerHTML+=`<h2>${n.title}</h2>`
-            const d=document.createElement("div")
-            d.classList.add("update-item")
-            d.innerHTML=formatToHtml(n.content)
-            d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3>See More</h3></a>`
-            newsS.appendChild(d)
+                this.reload_group_ui()
+                break
+            case "autofill_changed":
+                if(this.group_state){
+                    this.group_state.autofill=msg.autofill
+                }
+
+                this.reload_group_ui()
+                break
+            case "kicked":
+                this.leave_group()
+                break
         }
     }
+    create_group():WebSocket|undefined{
+        if(api){
+            const ws:WebSocket=new WebSocket(`${api_server.toString("ws")}/group/create`)
+            ws.addEventListener("message",this.manage_team_message.bind(this))
+            ws.addEventListener("close",this.leave_group.bind(this))
+            this.team_ws=ws
+            return ws
+        }
+    }
+    join_group(code:string){
+        if(!api)return
+        const ws=new WebSocket(`${api_server.toString("ws")}/group/join/${code}`)
+        ws.addEventListener("message",this.manage_team_message.bind(this))
+        ws.addEventListener("close",this.leave_group.bind(this))
+        this.team_ws=ws
+    }
+    reload_group_ui(){
+        const tab=this.tabs["play"]
+        if(!tab) return
+        const panel=tab.tabs["group"] as HTMLDivElement
+        if(!panel) return
+        tab.def.subtabs["group"].generate(
+            panel,
+            this
+        )
+    }
+    leave_group(){
+        this.group_state=undefined
+        if(this.team_ws){
+            this.team_ws.close()
+            this.team_ws=undefined
+        }
+        this.reload_group_ui()
+    }
+    
     // Loading Screen
     show_loading_screen(){
         ShowElement(this.content.loading_screen,true)

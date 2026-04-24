@@ -9,7 +9,10 @@ import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-
+export interface AirdropConfig{
+    spawn:number[]
+    obstacle:string
+}
 export interface BattleRoyaleSettings{
     players?:{
         limit?:number
@@ -21,6 +24,7 @@ export interface BattleRoyaleSettings{
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
     enemies?:LevelEnemys
+    airdrops?:AirdropConfig
 }
 export class BattleRoyaleSolo extends ModeManager{
     settings:{
@@ -33,6 +37,7 @@ export class BattleRoyaleSolo extends ModeManager{
         }
         spawn_mode:SpawnMode
         deadzone:DeadZoneConfig
+        airdrops:AirdropConfig
         enemies?:LevelEnemys
     }
 
@@ -48,7 +53,13 @@ export class BattleRoyaleSolo extends ModeManager{
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone,
-            enemies:settings.enemies
+            enemies:settings.enemies,
+            airdrops:settings.airdrops??{
+                obstacle:"iron_crate",
+                spawn:[
+                    20,100,180,260
+                ]
+            }
         }
     }
 
@@ -74,6 +85,13 @@ export class BattleRoyaleSolo extends ModeManager{
     override on_start(){
         this.add_enemies()
         this.game.deadzone.start()
+
+        for(const p of this.settings.airdrops.spawn){
+            this.game.add_timeout(()=>{
+                this.game.add_airdrop()
+            },p)
+        }
+
         this.game.add_timeout(()=>{
             this.game.close()
         },50)
@@ -94,6 +112,9 @@ export class BattleRoyaleSolo extends ModeManager{
             this.game.add_timeout(()=>{
                 if(this.can_start())this.game.start()
             },3)
+        }
+        if(!this.can_join()){
+            this.game.close()
         }
     }
     override on_player_die(p:Player){
@@ -123,6 +144,7 @@ export class BattleRoyaleSolo extends ModeManager{
     override generate_map(): void {
         this.game.map.generate(this.settings.map.def,this.settings.map.seed)
         this.game.deadzone.set_config(this.settings.deadzone)
+        //this.game.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)
@@ -130,7 +152,7 @@ export class BattleRoyaleSolo extends ModeManager{
 }
 export class BattleRoyaleDebug extends BattleRoyaleSolo{
     constructor(settings:BattleRoyaleSettings) {
-        if(!settings.map){
+        if(!settings.map?.def){
             settings.map={def:Maps["debug"]}
         }
         super(settings)

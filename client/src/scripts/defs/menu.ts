@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
-import { cloneDeep, deleteDeep, FetchFileManager, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
+import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
-import { formatToHtml, GameSave } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
-import { sandbox_version } from "../others/config.ts";
+import { api, API_BASE, sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 
 export type GamePopupCTX={
@@ -79,6 +79,11 @@ type SettingDef =
     }|{
         type:"h1"|"h2"|"h3"|"h4"|"h5"
         name:string
+    }|{
+        var: string
+        name: string
+        type: "color"
+        on_set?:(val:string)=>void
     }
 export type ModeSettingsPopupDef={
     title?:string
@@ -216,6 +221,24 @@ function build_setting_input(def: SettingDef,onChange:(val:any)=>void,initial?:a
             wrap.append(slider,valueLabel)
 
             el=wrap
+            break
+        }
+        case "color":{
+            const input=document.createElement("input")
+            input.type="color"
+            input.className="input-color"
+
+            if(initial!==undefined){
+                input.value=initial
+                def.on_set?.(initial)
+            }
+
+            input.oninput=()=>{
+                onChange(input.value)
+                def.on_set?.(input.value)
+            }
+
+            el=input
             break
         }
     }
@@ -454,6 +477,40 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
         "campaign_level_selector":{
             generate:make_menu_campaign(campaign)
         },
+        "replays":{
+            generate: (parent, manager) => {
+                parent.innerHTML = `
+                    <h2>Play Replay</h2>
+
+                    <div class="replay-upload background-menu">
+                        <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="input-green"/>
+                        <button class="btn-green" id="btn-load-replay">Load Replay</button>
+                    </div>
+                `
+
+                const input = parent.querySelector("#replay-file-input") as HTMLInputElement
+                const btn = parent.querySelector("#btn-load-replay") as HTMLButtonElement
+
+                const fm = new BrowserFileManager()
+
+                const loadReplay = async () => {
+                    const file = input.files?.[0]
+                    if (!file) return
+                    await fm.registerFile("replay", file)
+                }
+
+                input.onchange = loadReplay
+                btn.onclick = async()=>{
+                    const handle = await fm.open("replay", "r")
+                    if (manager.play_callback) {
+                        manager.play_callback({
+                            type: "replay",
+                            handle
+                        })
+                    }
+                }
+            }
+        }
     } as Record<string,MenuSubTabDef>
     const play_options:SubMenuOption[]=[
         {
@@ -555,16 +612,122 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
             }
         }
     }else{
-        play_options.push({
-            type:"button",
-            id:"play-online",
-            name:"Play",
-            subtab:"play_online"
-        })
+        play_options.push(
+            {
+                type:"button",
+                id:"play-online",
+                name:"Play",
+                subtab:"play_online"
+            },
+            {
+                type:"button",
+                id:"group",
+                name:"Group",
+                subtab:"group"
+            }
+        )
         play_subtabs["play_online"]={
             generate:make_menu_modes(menu.api_settings.modes)
         }
+        play_subtabs["group"]={
+            generate:(p,m)=>{
+                if(!m.group_state){
+                    p.innerHTML=`
+<div><input class="input-green" placeholder="Group ID" id="insert-group-id"></input></div>
+<button class="btn-green" id="btn-create-group" value="{}">Create</input>
+<button class="btn-green" id="btn-join-game" value="{}">Join</input>
+`
+                    const id_input=p.querySelector("#insert-group-id") as HTMLInputElement
+
+                    const create_btn=p.querySelector("#btn-create-group") as HTMLButtonElement
+                    const joinBtn=p.querySelector("#btn-join-game") as HTMLButtonElement
+                    create_btn.onclick=() => {
+                        m.create_group()
+                    }
+                    joinBtn.onclick=()=>{
+                        if(!id_input.value.trim())return
+                        m.join_group(id_input.value.trim())
+                    }
+                }else{
+                    const g=m.group_state
+                    const isLeader=g.self===g.leader
+
+                    p.innerHTML=`
+                    <h3>Group ${g.code}
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+<button id="btn-copy-code" class="btn-blue">Copy Code</button>
+${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Link</button></h3>`}
+</div>
+<p>Leader:${isLeader?"You":"Player "+g.leader}</p>
+<div class="settings-row">
+    <span>Locked</span>
+    ${
+        isLeader
+        ? `<input
+            type="checkbox"
+            id="group-lock-toggle"
+            class="checkbox-blue"
+            ${g.locked?"checked":""}
+        >`
+        : `<span>${g.locked?"Yes":"No"}</span>`
     }
+</div>
+
+<div class="settings-row">
+    <span>Autofill</span>
+    ${
+        isLeader
+        ? `<input
+            type="checkbox"
+            id="group-autofill-toggle"
+            class="checkbox-blue"
+            ${g.autofill?"checked":""}
+        >`
+        : `<span>${g.autofill?"On":"Off"}</span>`
+    }
+</div>
+<button id="btn-leave" class="btn-red">Leave</button>`;
+                    (p.querySelector("#btn-leave") as HTMLButtonElement).onclick=()=>m.leave_group();
+                    (p.querySelector("#btn-copy-code") as HTMLButtonElement).onclick=async()=>{
+                        await navigator.clipboard.writeText(g.code)
+                        alert("Group code copied.")
+                    }
+                    if(!sandbox_version){
+                        (p.querySelector("#btn-copy-link") as HTMLButtonElement).onclick=async()=>{
+                            await navigator.clipboard.writeText(`${location.origin}/?group-id=${g.code}`)
+                            alert("Invite link copied.")
+                        }
+                    }
+                    if(isLeader){
+                        const lockToggle=p.querySelector("#group-lock-toggle") as HTMLInputElement
+                        const fillToggle= p.querySelector("#group-autofill-toggle") as HTMLInputElement
+                        lockToggle.onchange=()=>{
+                            const value=lockToggle.checked
+                            g.locked=value
+                            m.team_ws?.send(JSON.stringify({type:"lock",value }))
+                        }
+                        fillToggle.onchange=()=>{
+                            const value=fillToggle.checked
+                            g.autofill=value
+                            m.team_ws?.send(JSON.stringify({type:"autofill",value}))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    play_options.push(
+        {
+            type:"label",
+            name:"Files",
+        },
+        {
+            type:"button",
+            id:"replays",
+            name:"Replay",
+            subtab:"replays"
+        },
+    )
     menu.reload_tabs([
         {
             id:"play",
@@ -593,7 +756,13 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
                     type:"button",
                     name:"Sounds",
                     subtab:"sounds"
-                }
+                },
+                {
+                    id:"ui",
+                    type:"button",
+                    name:"UI",
+                    subtab:"ui"
+                },
             ],
             subtabs:{
                 "game":{
@@ -708,6 +877,26 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
                             step:0.05
                         },
                     ]),
+                },
+                "ui":{
+                    generate:make_menu_settings(menu.save,[
+                        {
+                            type:"color",
+                            name:"Primary Color",
+                            var:"sv_ui_primary_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-primary",val)
+                            }
+                        },
+                        {
+                            type:"color",
+                            name:"Secundary Color",
+                            var:"sv_ui_secondary_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-secondary",val)
+                            }
+                        },
+                    ]),
                 }
             }
         },
@@ -762,8 +951,19 @@ export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CMod
                     }
                 },
                 "news":{
-                    generate:(parent:HTMLDivElement,_m:MenuManager)=>{
-                        parent.innerHTML=``
+                    generate:async(parent:HTMLDivElement,_m:MenuManager)=>{
+                        parent.innerHTML=""
+                        if(api){
+                            const news=await(await fetch(`${API_BASE}/news/get`)).json() as {title:string,id:string,content:string}[]
+                            for(const n of news){
+                                parent.innerHTML+=`<h2>${n.title}</h2>`
+                                const d=document.createElement("div")
+                                d.classList.add("update-item")
+                                d.innerHTML=formatToHtml(n.content)
+                                d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3>See More</h3></a>`
+                                parent.appendChild(d)
+                            }
+                        }
                     }
                 },
                 "rules":{

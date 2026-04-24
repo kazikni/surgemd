@@ -1,3 +1,9 @@
+export abstract class FileHandle {
+    abstract write(data: Uint8Array): Promise<void>
+    abstract seek(position: number): Promise<void>
+    abstract close(): Promise<void>
+    abstract flush(): Promise<void>
+}
 export abstract class FileManager{
     abstract read_file(path:string):Promise<string>
     abstract write_file(path:string,content:string):Promise<void>
@@ -6,6 +12,7 @@ export abstract class FileManager{
     abstract write_fileb(path:string,content:Uint8Array):Promise<void>
 
     abstract list_dir(path:string):Promise<string[]>
+    abstract open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle>
 }
 
 export class FetchFileManager extends FileManager {
@@ -39,5 +46,8 @@ export class FetchFileManager extends FileManager {
     }
     async list_dir(_path: string): Promise<string[]> {
         throw new Error("list_dir not supported over HTTP")
+    }
+    async open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {
+        throw new Error("FetchFileManager Dont Support Open")
     }
 }

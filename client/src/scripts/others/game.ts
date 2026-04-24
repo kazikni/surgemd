@@ -161,8 +161,7 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.device.add_app(new MapApp)
-        this.device.add_app(new MessageApp)
-        this.device.add_app(new DebugApp)
+        //this.device.add_app(new MessageApp)
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()
@@ -268,10 +267,10 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "debug_menu":
-                    //if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
-                    /*if(!this.device.apps.some((a)=>a instanceof DebugTabApp)){
-                        this.device.add_app(new DebugTabApp(this.tab))
-                    }*/
+                    if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
+                    if(!this.device.apps.some((a)=>a instanceof DebugApp)){
+                        this.device.add_app(new DebugApp)
+                    }
                     break
             }
         })
@@ -608,7 +607,7 @@ export class Game extends ClientGame<GameObject>{
         super.on_update(dt)
 
         if(this.save.get_variable("sv_game_interpolation")){
-            this.global_interpolation=Numeric.dt_expo_inter(20,dt)
+            this.global_interpolation=Numeric.dt_expo_inter(25,dt)
         }else{
             this.global_interpolation=1
         }

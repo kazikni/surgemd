@@ -85,65 +85,64 @@
     opacity: 1;
     transition: ease 1s opacity;
 }
-#loading-screen{
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
-    position: absolute;
+#loading-screen {
+    position: fixed;
+    inset: 0;
     background-image: url("/img/menu/background/loading_background.png");
     background-size: cover;
-    width: 100%;
-    height: 100%;
+    background-position: center;
     z-index: 101;
-    display: flex;
-    flex-direction: row;
-    padding: 10px;
+    transition: opacity 0.5s ease-in-out;
     pointer-events: all;
-    #loading-screen-logo{
-        left: 20px;
-        top: 20px;
-        background-image: url("/img/menu/logos/MD/MD.svg");
-        background-size: cover;
-        width: 100px;
-        height: 100px;
-        animation: rotating 0.7s infinite alternate linear;
+
+    #loading-screen-logo-container {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+
+        #loading-screen-logo {
+            width: 100px;
+            height: 100px;
+            background-image: url("/img/menu/logos/MD/MD.svg");
+            background-size: cover;
+            background-position: center;
+
+            animation: rotating 0.7s infinite alternate linear;
+        }
     }
-    .loading-background{
+
+    .loading-background {
         position: absolute;
-        padding: 2px;
         background-color: #0003;
         border-top-right-radius: 10px;
+        text-align: center;
     }
-    #loading-hint{
-        left: 0px;
-        bottom: 0px;
+
+    #loading-hint {
+        position: absolute;
+        left: 0;
+        bottom: 0;
     }
-    #loading-current{
-        transform: translateX(-50%);
-        bottom: 5px;
+
+    #loading-current {
+        position: absolute;
         left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
         border-top-left-radius: 10px;
     }
-    transition: opacity 0.5s ease-in-out;
+
     @media screen and (max-width: palette.$screen_large) {
-        #loading-screen-logo{
-            left: 15px;
-            top: 15px;
-        }
-        .loading-background{
-            width: 200px;
-            height: 75px;
+        #loading-screen-logo {
+            width: 80px;
+            height: 80px;
         }
     }
+
     @media screen and (max-width: palette.$screen_medium) {
-        #loading-screen-logo{
-            left: 10px;
-            top: 10px;
-        }
-        .loading-background{
-            width: 150px;
-            height: 50px;
+        #loading-screen-logo {
+            width: 60px;
+            height: 60px;
         }
     }
 }
@@ -758,13 +757,12 @@
         background-repeat:repeat;
 
         animation:tvNoise 0.25s steps(6) infinite;
-        
-        @media screen and (max-width: palette.$screen_large) {
-            background-size:6000px 600px;
-        }
-        @media screen and (max-width: palette.$screen_medium) {
-            background-size:5000px 500px;
-        }
+    }
+    @media screen and (max-width: palette.$screen_large) {
+        background-size:6000px 600px;
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        background-size:5000px 500px;
     }
 }
 @keyframes tvNoise{
@@ -956,11 +954,6 @@
         text-align: center;
         font-family: "Russo-One", monospace;
     }
-    #phase-intro-location {
-        font-size: 18px;
-        opacity: 0.6;
-        letter-spacing: 2px;
-    }
     #phase-intro-name {
         font-size: 120px;
         font-weight: bold;
@@ -971,6 +964,11 @@
             0 0 10px #27b34a65,
             0 0 25px #27b34a6b;
     }
+    #phase-intro-location {
+        font-size: 18px;
+        opacity: 0.6;
+        letter-spacing: 2px;
+    }
     #phase-intro-date {
         font-size: 14px;
         opacity: 0.5;
@@ -980,6 +978,34 @@
         font-size: 16px;
         opacity: 0.8;
         letter-spacing: 1px;
+    }
+    @media screen and (max-width: palette.$screen_large) {
+        #phase-intro-name {
+            font-size: 80px;
+        }
+        #phase-intro-location {
+            font-size: 12px;
+        }
+        #phase-intro-date {
+            font-size: 9px;
+        }
+        #phase-intro-description {
+            font-size: 12px;
+        }
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        #phase-intro-name {
+            font-size: 60px;
+        }
+        #phase-intro-location {
+            font-size: 9px;
+        }
+        #phase-intro-date {
+            font-size: 7px;
+        }
+        #phase-intro-description {
+            font-size: 8px;
+        }
     }
 }
 @keyframes glitchText {

@@ -257,18 +257,6 @@ export class MenuManager{
         if(this.api_settings.database.enabled){
             this.account.enable(this)
         }
-
-        const newsS=this.content.menu_content.querySelector("#about-news-sm-extra") as HTMLDivElement
-        newsS.innerHTML=""
-        const news=await(await fetch(`${API_BASE}/news/get`)).json() as {title:string,id:string,content:string}[]
-        for(const n of news){
-            newsS.innerHTML+=`<h2>${n.title}</h2>`
-            const d=document.createElement("div")
-            d.classList.add("update-item")
-            d.innerHTML=formatToHtml(n.content)
-            d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3>See More</h3></a>`
-            newsS.appendChild(d)
-        }
     }
     team_ws?:WebSocket
     group_state?:{

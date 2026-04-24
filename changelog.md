@@ -6,10 +6,12 @@ __                                                                              
 * Dynamic Humans
 * Buildings Orientation
 * Doors
+* Join In A Group Menu!!
 __                                                                                                      __
 ### Menu
 * Customizable UI
 * Map Pings
+* Tab Rework
 __                                                                                                      __
 ### Items
 * *Omni Necklance*
@@ -17,6 +19,7 @@ __                                                                              
 * Casing Sounds
 * Humans Drop Consumibles After Use
 * More Casing Particles
+* Casing Sounds
 * M1A1 - 45acp Tommy AR
 * TaurusTX - 22LR Pistol
 * Pygmy Necklance
@@ -28,6 +31,7 @@ __                                                                              
 __                                                                                                      __
 ### Others
 * Deadzone Ambience
+* Deadzone Now Have 10 Zones
 __                                                                                                      __
 ## Changes
 __                                                                                                      __
@@ -35,16 +39,15 @@ __                                                                              
 * Some Balacing Changes
 * Rework Casing Particles
 * Rework M2-2
+* Change Smokes
 __                                                                                                      __
 ### Others
 * shield damage is increased by 25%.
+* bullet whiz for reflected bullets
 __                                                                                                      __
 ### Menu
 * Change UI Design
 * Change Tab Design
-__                                                                                                      __
-## Fixes
-
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)

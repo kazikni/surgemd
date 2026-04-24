@@ -4,7 +4,7 @@ import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
-import { sandbox_version } from "../others/config.ts";
+import { api, API_BASE, sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 
 export type GamePopupCTX={
@@ -951,8 +951,19 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     }
                 },
                 "news":{
-                    generate:(parent:HTMLDivElement,_m:MenuManager)=>{
-                        parent.innerHTML=``
+                    generate:async(parent:HTMLDivElement,_m:MenuManager)=>{
+                        parent.innerHTML=""
+                        if(api){
+                            const news=await(await fetch(`${API_BASE}/news/get`)).json() as {title:string,id:string,content:string}[]
+                            for(const n of news){
+                                parent.innerHTML+=`<h2>${n.title}</h2>`
+                                const d=document.createElement("div")
+                                d.classList.add("update-item")
+                                d.innerHTML=formatToHtml(n.content)
+                                d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3>See More</h3></a>`
+                                parent.appendChild(d)
+                            }
+                        }
                     }
                 },
                 "rules":{

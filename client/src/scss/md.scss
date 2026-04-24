@@ -1,9 +1,16 @@
+@use "./palette.scss";
 kl-md-submenu{
     display: flex;
     gap: 50px; /*Default*/
     flex-direction: row;
     width: fit-content;
     height: fit-content;
+    @media screen and (max-width: palette.$screen_large) {
+        gap: 35px;
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        gap: 25px;
+    }
 }
 kl-md-submenu-options {
     display: flex;
@@ -15,6 +22,14 @@ kl-md-submenu-options button,
 kl-md-submenu-options select {
     width: 300px;
     height: 50px;
+    @media screen and (max-width: palette.$screen_large) {
+        width: 200px;
+        height: 35px;
+    }
+    @media screen and (max-width: palette.$screen_medium) {
+        width: 150px;
+        height: 25px;
+    }
 }
 
 kl-md-extra {

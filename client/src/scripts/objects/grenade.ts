@@ -1,4 +1,4 @@
-import { GameObjectType } from "common/scripts/others/constants.ts";
+import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, NetStream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
@@ -44,6 +44,7 @@ export class Grenade extends MovingBody{
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.sprite.hotspot=CenterHotspot
+        this.sprite.zIndex=zIndexes.Grenade
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
             this.particles_spawner=this.game.particles.add_emiter({

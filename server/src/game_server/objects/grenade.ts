@@ -4,6 +4,9 @@ import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type Human } from "./human.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
+import { type ServerGameObject } from "../others/gameObject.ts";
+import { type StaticBody } from "./static_body.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export type GrenadePhysicalData=ProjectilePhysicalData&{
     current_floor:FloorType
@@ -32,6 +35,32 @@ export class Grenade extends Projectile{
         }
     }
 
+    override on_collided(obj:ServerGameObject,dt:number){
+        switch(obj.number_type){
+            case GameObjectType.Obstacle:
+            case GameObjectType.Building:{
+                if((obj as StaticBody).physical_data.no_collision)break
+                if(obj.number_type===GameObjectType.Obstacle){
+                    if((obj as Obstacle).def.height===2||((obj as Obstacle).def.height===1&&this.physical_data.zpos>=0.5))break
+                }
+                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
+                for(const c of ov){
+                    const normal = c.dir
+                    const vel = this.physical_data.velocity
+
+                    const dot = v2.dot(vel, normal)
+                    const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
+
+                    this.physical_data.velocity=v2.scale(reflected, 0.4)
+                    if(this.def.cook?.impact){
+                        this.kill()
+                        break
+                    }
+                }
+                break
+            }
+        }
+    }
     override update(dt:number): void {
         super.update(dt)
 

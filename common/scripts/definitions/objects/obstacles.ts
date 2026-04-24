@@ -182,7 +182,6 @@ function CreateCrate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particl
             }
         },
         rotationMode:RotationMode.null,
-        zIndex:zIndexes.Obstacles3,
         material:"wood",
         interactDestroy:interactDestroy,
         lootTable:id,
@@ -353,7 +352,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             scale:{
                 destroy:0.75,
             },
-            hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3))
+            hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3)),
+            height:0,
         }),
         {
             idString:"bush",

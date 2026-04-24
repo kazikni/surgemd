@@ -4,6 +4,10 @@ import { InventoryItemType } from "../utils.ts";
 export type GrenadeDef={
     explosion?:string
 
+    resistance?:{
+        push_force?:number
+        zindex_set?:boolean
+    }
     gravity:number
     radius:number
     zBaseScale:number
@@ -18,14 +22,13 @@ export type GrenadeDef={
         allow_hand:boolean
         fuse_time?:number
         ground?:boolean
+        impact?:boolean
     }
     throw_max_speed?:number
 
     frames:{
         world:FrameDef
     }
-
-    destroy_on_collide?:boolean
     collision_damage?:number
 
     speed_mod?:number
@@ -299,6 +302,10 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground:true,
             },
             explosion:"nuke_explosion",
+            resistance:{
+                push_force:0,
+                zindex_set:true
+            },
             frames:{
                 world:{
                     image:"proj_nuke"

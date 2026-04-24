@@ -481,7 +481,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         return b
     }
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Human,source?:DamageSourceDef,layer:number=Layers.Normal):Explosion{
-        const e=this.scene_2d.objects.add_object(new Explosion(),layer,undefined,{defs:def,owner,position:position,source}) as Explosion
+        const e=this.scene_2d.objects.add_object(new Explosion(),layer,undefined,{def:def,owner,position:position,source}) as Explosion
         return e
     }
     /*add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{

@@ -63,6 +63,7 @@ export enum zIndexes{
     Creatures,
     Players,
     Particles,
+    Grenade,
     Obstacles3,
     Obstacles4,
     Explosions,

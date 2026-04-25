@@ -1,6 +1,6 @@
 import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
 import { type Human } from "./human.ts";
-import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, v2, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, RotationMode, v2, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -93,10 +93,11 @@ export class Building extends StaticBody {
 
             const p = v2.add_with_orientation(this.position, o.position, side)
 
-            const obj=this.game.map.add_obstacle(def,o.rotation,this.layer+(o.layer??0))
+            const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
             obj.parent=this
             if(o.id)this.objects_ids[o.id]=obj
-            obj.initialize(o.rotation,o.variation,o.skin)
+            const rot=def.rotationMode===RotationMode.full?(o.rotation??0)+Angle.side_rad(side):(o.rotation??0)+side
+            obj.initialize(rot,o.variation,o.skin)
             obj.set_position(p)
 
             if(o.stairs_dest){
@@ -114,7 +115,7 @@ export class Building extends StaticBody {
             }
         }
         for (const b of this.def.sub_building ?? []) {
-            const def=this.game.definitions.buildings.getFromString(b.id)
+            const def=this.game.definitions.buildings.getFromString(b.def)
 
             const p = v2.add_with_orientation(this.position, b.position, side)
 

@@ -157,16 +157,13 @@ export class GameMap{
     clamp(v:Vec2){
         v2m.clamp2(v,v2.zero,this.size)
     }
-    add_obstacle(def:ObstacleDef,rotation?:number,layer?:number):Obstacle{
-        const o=this.game.scene_2d.objects.add_object(new Obstacle(),layer??Layers.Normal,undefined,{
-            def:def,
-            rotation
-        }) as Obstacle
+    add_obstacle(def:ObstacleDef,layer?:number):Obstacle{
+        const o=this.game.scene_2d.objects.add_object(new Obstacle(),layer??Layers.Normal,undefined,{def:def}) as Obstacle
         this.objects.push(o)
         return o
     }
     generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Obstacle|undefined{
-        const o=this.add_obstacle(def,undefined,layer)
+        const o=this.add_obstacle(def,layer)
         o.initialize()
 
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode,random)
@@ -195,7 +192,7 @@ export class GameMap{
         const b=new Building()
         b.set_definition(def)
         b.layer=layer??Layers.Normal
-        const p=this.getRandomPosition(b.physical_data.spawn_hitbox,b.id,layer??b.layer,spawn??b.def.spawnMode,random)
+        const p=this.getRandomPosition(b.physical_data.spawn_hitbox,b.id,layer??b.layer,spawn??b.def.spawnMode??Spawn.grass,random)
         if(!p){
             b.destroy()
             return undefined

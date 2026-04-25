@@ -308,13 +308,13 @@ export const NormalMap:MapDef={
                 [
                     {id:"recorded_tape",count:1},
 
-                    {id:"watchtower",count:5},
+                    //{id:"watchtower",count:5},
 
                     {id:"jeep",count:5},
                     {id:"bike",count:5},
 
-                    {id:"container_1",count:10},
-                    {id:"container_2",count:10},
+                    {id:"blue_container_1",count:10},
+                    {id:"blue_container_2",count:10},
 
                     {id:"sillo",count:10},
 
@@ -375,8 +375,8 @@ export const NormalLobby:MapDef={
             spawn:[
                 [
                     {id:"watchtower",count:1},
-                    {id:"container_1",count:1},
-                    {id:"container_2",count:1},
+                    {id:"blue_container_1",count:1},
+                    {id:"blue_container_2",count:1},
 
                     {id:"recorded_tape",count:1},
                     {id:"sillo",count:2},

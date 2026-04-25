@@ -141,8 +141,8 @@ export const TundraMap:MapDef={
 
                     {id:"watchtower",count:7},
 
-                    {id:"container_1",count:10},
-                    {id:"container_2",count:10},
+                    {id:"blue_container_1",count:10},
+                    {id:"blue_container_2",count:10},
 
                     {id:"sillo",count:3},
 

@@ -48,7 +48,7 @@ export const DebugMap:MapDef={
         y=map.size.y/2-10
         i=0
         for(const def of Object.values(map.game.definitions.obstacles.valueNumber)){
-            const o=map.game.map.add_obstacle(def,undefined,Layers.Normal)
+            const o=map.game.map.add_obstacle(def,Layers.Normal)
             o.initialize(0)
             o.set_position(v2(x,y))
             i++
@@ -113,8 +113,9 @@ export const SingleBuildMap:MapDef={
     },
     gen_callback(map) {
         //const def=map.game.definitions.buildings.getFromString("shed")
-        const def=map.game.definitions.buildings.getFromString("small_iron_stairs")
+        const def=map.game.definitions.buildings.getFromString("kar98k_bunker")
         //const def=map.game.definitions.buildings.getFromString("small_house_1")
+        //const def=map.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,2)}`)
 
         const b=map.game.map.add_building(def)
         b.generate(v2.dscale(map.size,2),0)

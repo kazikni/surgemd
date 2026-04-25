@@ -267,9 +267,6 @@ export const obstacles_factory={
         }
     }
 }
-export const create_wall={
-    
-}
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
         obstacles_factory.stone("stone",undefined,{
@@ -678,19 +675,19 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             idString:"small_iron_stairs_part",
             health:1,
             imortal:true,
-            hitbox:RectHitbox2D.wall_enabled(v2(-0.71,-0.71),v2(0.71,0.71),{
+            hitbox:RectHitbox2D.wall_enabled(v2(-0.83,-0.83),v2(0.83,0.83),{
                 bottom:true,
                 top:true,
                 left:false,
-                right:false
-            },0.2),
+                right:true
+            },0.14),
             assets:{
                 frame:{
-                    base:"small_iron_stairs",
+                    base:"small_iron_stairs_floor_1",
                     particle:"metal_particle",
                     transform:{
                         hotspot:v2(0.5,0.5),
-                        scale:1.5,
+                        scale:2,
                     },
                 }
             },
@@ -703,7 +700,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             },
             spawnMode:Spawn.grass,
             stair_data:[{
-                hitbox:RectHitbox2D.centered(v2(0.71,0),v2(0.1,1.35)),
+                hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
             }]
         },
     )

@@ -931,10 +931,11 @@ export class Human extends MovingBody{
                         if(!hb.collidingWith(c.hitbox))continue
                         switch(c.number_type){
                             case GameObjectType.Obstacle:
-                            case GameObjectType.Building:
-                                if((c as StaticBody).physical_data.no_collision)continue
+                            case GameObjectType.Building:{
+                                if((c as StaticBody).physical_data.no_bullets_collision)continue
                                 (c as StaticBody).on_hitted(position,true)
                                 break
+                            }
                             case GameObjectType.Human:
                                 if((c as Human).dead||c.id===this.id)continue
                                 (c as Human).on_hitted(position,false,def.assets?.hit_sound)

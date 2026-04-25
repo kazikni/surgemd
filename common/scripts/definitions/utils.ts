@@ -96,8 +96,9 @@ export enum DamageReason{
     Abstinence,
     SideEffect,
     Disconnect,
+    Connection,
     Bleend,
-    Airdrop
+    Airdrop,
 }
 export interface InventoryItemData{
     count:number

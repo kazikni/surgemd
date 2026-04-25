@@ -112,7 +112,8 @@ export const SingleBuildMap:MapDef={
         },
     },
     gen_callback(map) {
-        const def=map.game.definitions.buildings.getFromString("small_house_1")
+        const def=map.game.definitions.buildings.getFromString("shed")
+        //const def=map.game.definitions.buildings.getFromString("small_house_1")
 
         const b=map.game.map.add_building(def)
         b.generate(v2.dscale(map.size,2),0)

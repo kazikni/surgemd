@@ -591,21 +591,6 @@ export class UiManager{
             }
             break
         }
-        /*const objects:ClientGameObject2D[]=this.manager.cells.get_objects(this.hitbox,this.layer)
-        for(const obj of objects){
-            if(obj.id===this.id)continue
-            switch(obj.stringType){
-                case "building":{
-                    const o:Building=obj as Building
-                    for(const ceiling of o.ceilings){
-                        if(ceiling.hitbox.collidingWith(this.hitbox)){
-                            ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,1/(1+dt*1000))
-                            ceiling.collided=true
-                        }
-                    }
-                }
-            }
-        }*/
         this.update_hint()
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(

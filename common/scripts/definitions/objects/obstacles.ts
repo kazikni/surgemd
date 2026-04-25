@@ -381,13 +381,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"wood_door",
             health:80,
-            hitbox:new RectHitbox2D(v2(-0.15,0),v2(0.15,1.35)),
+            hitbox:new RectHitbox2D(v2(0,-0.15),v2(1.479996,0.15)),
             assets:{
                 frame:{
                     base:"door",
                     particle:"plank_particle",
                     transform:{
-                        hotspot:v2(0.5,0),
+                        hotspot:v2(0,0.5),
                         scale:2,
                         tint:0x583b08
                     },
@@ -398,7 +398,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             },
             rotationMode:RotationMode.limited,
             zIndex:zIndexes.Obstacles3,
-            material:"tree",
+            material:"wood",
             spawnMode:Spawn.grass,
             expanded_behavior:{
                 type:0,

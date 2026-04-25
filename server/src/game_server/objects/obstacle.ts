@@ -9,12 +9,15 @@ import { DamageParams } from "../others/utils.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Loot } from "./loot.ts";
 import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { type Building } from "./building.ts";
 
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
     override number_type: number=GameObjectType.Obstacle
 
     def!:ObstacleDef
+    parent?:Building
+    connections:Obstacle[]=[]
 
     max_scale:number=1
 
@@ -392,6 +395,21 @@ export class Obstacle extends StaticBody{
         }
 
         if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
+        for(const c of this.connections){
+            if(c.def.imortal)continue
+            c.die({
+                amount:9999,
+                critical:false,
+                direction:0,
+                position:this.position,
+                reason:DamageReason.Connection,
+                owner:params.owner,
+                resistence:10,
+                source:params.source
+            })
+        }
+
+        if(this.parent)this.parent.verify_childrens()
     }
     revive(){
         if(!this.health_data.dead)return

@@ -278,9 +278,8 @@ export class RectHitbox2D extends BaseHitbox2D{
         return new RectHitbox2D(position,v2.add(position,size))
     }
     static centered(position:Vec2,size:Vec2):RectHitbox2D{
-        v2m.sub_component(position,size.x/2,size.y/2)
-        v2m.add(size,position,size)
-        return new RectHitbox2D(position,size)
+        v2m.dscale(size,size,2)
+        return new RectHitbox2D(v2.sub(position,size),v2.add(position,size))
     }
     static wall_enabled(min:Vec2,max:Vec2,walls:{
         left:boolean

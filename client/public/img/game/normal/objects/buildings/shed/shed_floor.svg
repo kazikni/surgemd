@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 367.86768 310.03739"
+   width="367.86768"
+   height="310.03738"
+   version="1.1"
+   id="svg14"
+   sodipodi:docname="shed_floor.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs14">
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#wood-pattern-1"
+       id="pattern14"
+       patternTransform="translate(81.488142,-21.029198)" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.7608469"
+     inkscape:cx="222.77806"
+     inkscape:cy="214.89212"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg14" />
+  <pattern
+     id="wood-pattern-1"
+     patternUnits="userSpaceOnUse"
+     width="200"
+     height="60"
+     inkscape:label="wood-pattern-1">
+    <g
+       id="g11">
+      <rect
+         x="0"
+         y="0"
+         width="200"
+         height="60"
+         fill="#8b4320"
+         id="rect1" />
+      <path
+         d="M 0 0 H 200"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path1" />
+      <path
+         d="M 0 20 H 200"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path2" />
+      <path
+         d="M 0 40 H 200"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path3" />
+      <path
+         d="M 0 60 H 200"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path4" />
+      <path
+         d="M 0 0 V 20"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path5" />
+      <path
+         d="M 100 0 V 20"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path6" />
+      <path
+         d="M 200 0 V 20"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path7" />
+      <path
+         d="M 33.333333333333336 20 V 40"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path8" />
+      <path
+         d="M 133.33333333333334 20 V 40"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path9" />
+      <path
+         d="M 66.66666666666667 40 V 60"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path10" />
+      <path
+         d="M 166.66666666666669 40 V 60"
+         stroke="#53330d"
+         stroke-width="1"
+         stroke-linejoin="miter"
+         stroke-linecap="butt"
+         id="path11" />
+    </g>
+  </pattern>
+  <rect
+     x="0"
+     y="0"
+     width="367.86768"
+     height="310.03738"
+     fill="url(#wood-pattern-1)"
+     id="rect11"
+     style="fill:url(#pattern14);stroke-width:1.06804" />
+</svg>

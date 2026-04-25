@@ -1,9 +1,11 @@
-import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
+import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
 import { type Human } from "./human.ts";
-import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, v2, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-
+import { type Obstacle } from "./obstacle.ts";
+export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
+export type BuildingCeilingChild={type:1,def:BuildingCeilingDef,alive:boolean,connections:Obstacle[]}
 export class Building extends StaticBody {
     override string_type = "building"
     override number_type = GameObjectType.Building
@@ -28,9 +30,8 @@ export class Building extends StaticBody {
         no_collision:true,
         no_bullets_collision:true,
     }
-
-
-    dead = false
+    children:(BuildingObstacleChild|BuildingCeilingChild)[]=[]
+    objects_ids:Record<number,Obstacle>={}
 
     constructor() {
         super()
@@ -88,13 +89,22 @@ export class Building extends StaticBody {
         }
 
         for (const o of this.def.obstacles ?? []) {
-            const def=this.game.definitions.obstacles.getFromString(o.id)
+            const def=this.game.definitions.obstacles.getFromString(o.def)
 
             const p = v2.add_with_orientation(this.position, o.position, side)
 
             const obj=this.game.map.add_obstacle(def,o.rotation,this.layer+(o.layer??0))
+            obj.parent=this
+            if(o.id)this.objects_ids[o.id]=obj
             obj.initialize(o.rotation,o.variation,o.skin)
             obj.set_position(p)
+            this.children.push({obj,def:o,type:0})
+        }
+        for(const child of this.children){
+            if(child.type!==0)continue
+            for(const conn of child.def.connections??[]){
+                child.obj.connections.push(this.objects_ids[conn])
+            }
         }
         for (const b of this.def.sub_building ?? []) {
             const def=this.game.definitions.buildings.getFromString(b.id)
@@ -104,7 +114,35 @@ export class Building extends StaticBody {
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
             obj.generate(p,Angle.add_orientation(side,b.rotation??0))
         }
+       for(const c of this.def.ceiling??[]){
+            const conns:Obstacle[]=[]
+            for(const conn of c.connections??[]){
+                conns.push(this.objects_ids[conn])
+            }
+            this.children.push({
+                type:1,
+                def:c,
+                alive:true,
+                connections:conns,
+            })
+        }
+    }
 
+    verify_childrens(){
+        for(const child of this.children){
+            if(child.type===1){
+                if(child.alive&&child.def.destroy){
+                    let alive_count:number=0
+                    for(const c of child.connections){
+                        if(!c.health_data.dead)alive_count++
+                    }
+                    if(alive_count<=child.def.destroy.count){
+                        child.alive=false
+                        this.net_sync.part=true
+                    }
+                }
+            }
+        }
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writeBooleanGroup(this.physical_data.dirty)
@@ -115,5 +153,8 @@ export class Building extends StaticBody {
         if(full){
             stream.writeID(this.def.idNumber!)
         }
+        stream.writeArray(this.children.filter((o)=>o.type===1),(v)=>{
+            stream.writeBooleanGroup(v.alive)
+        },1)
     }
 }

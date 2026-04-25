@@ -38,7 +38,8 @@ export abstract class StaticBody extends GameObject{
         if(!this.assets_data.frame.particles)return
         const p=new ABParticle2D({
             frame:{
-                image:random.choose(this.assets_data.frame.particles)
+                image:random.choose(this.assets_data.frame.particles),
+                layer:this.layer
             },
 
             position,

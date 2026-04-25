@@ -305,6 +305,43 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_2"
             },
+        },{
+            idString:"m79_grenade_explosion",
+            tint:"#355",
+            size:{
+                begin:3,
+                end:5
+            },
+            damage:60,
+            bullet:{
+                def:{
+                    damage:7,
+                    speed:20,
+                    range:25,
+                    tracer:tracers.black_projectile
+                },
+                count:6
+            },
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
         },
     )
 }

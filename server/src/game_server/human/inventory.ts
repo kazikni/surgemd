@@ -146,9 +146,7 @@ export class GunItem extends GunItemBase implements LItem{
 
         const barrel_position=v2(
             this.def.lenght,
-            this.def.dual_from
-                ? (this.dd ? -this.def.dual_offset : this.def.dual_offset)
-                : 0
+            (this.def.barrel_offset??0)+(this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0)
         )
         const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
         const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
@@ -191,11 +189,23 @@ export class GunItem extends GunItemBase implements LItem{
                 }
             }
         }
+        if(this.def.projectile){
+            const scc=this.def.projectile.count??1
+            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??1)
+            const gdef=user.game.definitions.grenades.getFromString(this.def.projectile.def)
+
+            for(let i=0;i<scc;i++){
+                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
+                const proj=user.game.add_grenade(pos,gdef,user,user.layer)
+                proj.physical_data.zpos=0.01
+                proj.physical_data.zpos_speed=1.8
+                const limit=(gdef.throw_max_speed??0)
+                proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
+            }
+        }
         if(this.def.recoil){
             user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
         }
-
-        //if(!this.def.supresed)user.game.play_sound(position,user.layer,"shot",user)
     }
     update(user:Human){
         if(this.use_delay>0)this.use_delay-=user.game.delta_time

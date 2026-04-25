@@ -1,4 +1,4 @@
-import { DeepPartial, Definition, Definitions, mergeDeep, MinMax1, Random1, v2, Vec2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponRig, WeaponAssets} from "../../others/item.ts";
 import { BulletDef, BulletReflection, InventoryItemType } from "../utils.ts";
 export type GunDef={
@@ -25,6 +25,7 @@ export type GunDef={
     switchDelay?:number
     spread?:number
     lenght:number
+    barrel_offset?:number
     jitterRadius?:number
     fireMode?:FireMode
     burst?:{
@@ -1176,7 +1177,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         {
             idString:"rpg7",
             fireDelay:1,
-            switchDelay:0.1,
+            switchDelay:0.3,
             spread:0.2,
             lenght:1,
             ammoType:"explosive_ammo",
@@ -1231,6 +1232,53 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.5,
         },
         {
+            idString:"m79",
+            fireDelay:1,
+            switchDelay:0.1,
+            spread:0.2,
+            lenght:1,
+            barrel_offset:0.45,
+            ammoType:"explosive_ammo",
+            ammoSpawnAmount:11,
+            fireMode:FireMode.Single,
+            class:GunClasses.Miscellaneous,
+            rank:ItemRank.A,
+            gasParticles:{
+                count:10,
+                life_time:1.2,
+                speed:{
+                    min:1,
+                    max:2
+                },
+                direction_variation:0.4,
+                size:{
+                    min:0.6,
+                    max:2,
+                }
+            },
+            projectile:{
+                def:"m79_grenade",
+            },
+            reload:{
+                delay:2,
+                capacity:1,
+            },
+            speed_mod:0.75,
+            recoil:{
+                duration:1,
+                speed:0.6
+            },
+            arms:WeaponsArmRig[2],
+            assets:{
+                world:"weapon_medium_world",
+                world_tint:0x3f3a2f
+            },
+            image:{
+                position:v2.new(0.6,0.45),
+                rotation:0
+            },
+        },
+        {
             idString:"m2_2",
             fireDelay:0.1,
             switchDelay:1,
@@ -1260,30 +1308,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.6,
         },
-        /*{
-            idString:"bomb_staff",
-            fireDelay:0.9,
-            spread:3,
-            lenght:0.7,
-            size:3.8,
-            ammoType:"mana",
-            ammoSpawnAmount:2,
-            ammoSpawn:"purple_pills",
-            mana_consume:20,
-            class:GunClasses.Magic,
-            rank:ItemRank.S,
-            fireMode:FireMode.Single,
-            projectile:{
-                def:"bomb_staff_projectile",
-                angular_speed:0,
-                speed:11
-            },
-            recoil:{
-                duration:1,
-                speed:0.6
-            },
-            speed_mod:0.97,
-        },
+        /*
         {
             idString:"fireball_staff",
             fireDelay:0.5,

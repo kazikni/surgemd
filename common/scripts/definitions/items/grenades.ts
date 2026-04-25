@@ -315,5 +315,32 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             image:GrenadeRig,
             rank:ItemRank.S
         },
+        {
+            idString:"m79_grenade",
+            gravity:1.7,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.7,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:true,
+                ground:true,
+                impact:true,
+            },
+            throw_max_speed:11,
+            explosion:"m79_grenade_explosion",
+            frames:{
+                world:{
+                    image:"proj_m79"
+                }
+            },
+            speed_mod:1,
+            arms:DefaultFistRig,
+            image:GrenadeRig,
+            rank:ItemRank.E
+        },
     )
 }

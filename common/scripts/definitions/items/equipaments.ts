@@ -1,7 +1,6 @@
 import { InventoryItemType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 export interface VestDef extends Definition{
     defence:number
     reduction:number

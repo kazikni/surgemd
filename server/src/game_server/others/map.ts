@@ -1,9 +1,9 @@
-import { CircleHitbox2D, Hitbox2D, jaggedRectangle, NetStream, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Hitbox2D, NetStream, polygon2, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef } from "common/scripts/definitions/maps/base.ts"
 import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
-import { FloorType, generate_rivers, TerrainManager } from "common/scripts/others/terrain.ts"
+import { FloorType, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
@@ -23,16 +23,14 @@ export const generation={
             for(const f of def.terrain.floors.sort()){
                 cp+=f.padding
                 const min=v2(cp,cp),max=v2(map.size.x-cp,map.size.y-cp)
-                const hb=new PolygonHitbox2D(jaggedRectangle(min,max,f.spacing,f.variation,random))
+                const hb=new PolygonHitbox2D(polygon2.jagged_rectangle(min,max,f.spacing,f.variation,random))
                 hitboxes.push(hb)
                 map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,hb)
             }
             if(def.terrain.rivers){
                 const r=hitboxes[def.terrain.rivers.spawn_floor].to_rect()
-                const rivers=generate_rivers(new RectHitbox2D(r.min,r.max),def.terrain.rivers.defs,def.terrain.rivers.divisions,random,def.terrain.rivers.expansion,[
-                    {name:"main",padding:0}
-                ])
-                for(const r of rivers){
+                const ri=rivers.generate(new RectHitbox2D(r.min,r.max),def.terrain.rivers.defs,random,def.terrain.rivers.expansion)
+                for(const r of ri){
                     map.terrain.add_floor(def.terrain.rivers.floor??FloorType.Water,r.collisions.main,Layers.Normal)
                 }
             }

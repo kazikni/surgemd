@@ -672,33 +672,6 @@ export class HitboxGroup2D extends BaseHitbox2D{
         return new NullHitbox2D(stream.readPos2())
     }
 }
-export function jaggedRectangle(
-    min: Vec2,
-    max: Vec2,
-    spacing: number,
-    variation: number,
-    random: SeededRandom
-): Vec2[] {
-    const points: Vec2[] = [];
-    const v = variation / 2;
-    const getVar = () => random.float(-v, v)
-
-    for (let x = min.x; x <= max.x; x += spacing) {
-        points.push(v2(x, min.y + getVar()))
-    }
-    for (let y = min.y; y <= max.y; y += spacing) {
-        points.push(v2(max.x + getVar(), y))
-    }
-    for (let x = max.x; x >= min.x; x -= spacing) {
-        points.push(v2(x, max.y + getVar()))
-    }
-    for (let y = max.y; y >= min.y; y -= spacing) {
-        points.push(v2(min.x + getVar(), y))
-    }
-
-    return points;
-}
-
 export class PolygonHitbox2D extends BaseHitbox2D {
     override readonly type = HitboxType2D.polygon;
     points: Vec2[];

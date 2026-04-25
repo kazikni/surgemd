@@ -132,122 +132,144 @@ export const Materials:Record<string,MaterialDef>={
         hit_variations:2
     },
 }
-function CreateStone(id:string,hitbox:Hitbox2D=new CircleHitbox2D(v2(0,0),0.82),o:DeepPartial<ObstacleDef>={}):ObstacleDef{
-    return mergeDeep({
-        idString:id,
-        health:170,
-        hitbox:hitbox,
-        scale:{
-            destroy:0.65,
-        },
-        assets:{
-            frame:{
-                particle:"stone_particle",
-                transform:{
-                    scale:2
-                },
-                biome_skins:[
-                    "snow"
-                ],
-            }
-        },
-        rotationMode:RotationMode.full,
-        zIndex:zIndexes.Obstacles1,
-        material:"stone",
-        particles:{
-            variations:2
-        },
-        spawnMode:Spawn.grass,
-        height:1,
-        world_shadow:{
-            model:model2d.circle(0.82)
-        }
-    },o)
-}
-function CreateCrate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particle:string="metal_particle",interactDestroy:boolean=false):ObstacleDef{
-    return mergeDeep({
-        idString:id,
-        health:70,
-        hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
-        scale:{
-            destroy:0.6,
-        },
-        assets:{
-            frame:{
-                particle:particle,
-                transform:{
-                    scale:2,
-                    hotspot:v2(0.5,0.5)
-                },
-            }
-        },
-        rotationMode:RotationMode.null,
-        material:"wood",
-        interactDestroy:interactDestroy,
-        lootTable:id,
-        particles:{
-            tint:tint
-        },
-        spawnMode:Spawn.grass,
-        height:1,
-    },o)
-}
-export const create_wall={
-    wall(id:string,frame:string,tint:number,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+export const obstacles_factory={
+    stone(id:string,hitbox:Hitbox2D=new CircleHitbox2D(v2(0,0),0.82),o:DeepPartial<ObstacleDef>={}):ObstacleDef{
         return mergeDeep({
-            health:200,
             idString:id,
-            hitbox:new RectHitbox2D(v2(-width,-height),v2(width,height)),
+            health:170,
+            hitbox:hitbox,
+            scale:{
+                destroy:0.65,
+            },
             assets:{
                 frame:{
-                    base:frame,
-                    particle:particle,
+                    particle:"stone_particle",
                     transform:{
-                        hotspot:v2(0.5,0.5),
-                        scale:2,
-                        tint:tint
+                        scale:2
                     },
+                    biome_skins:[
+                        "snow"
+                    ],
                 }
             },
-            particles:{
-                tint:tint
-            },
-            rotationMode:RotationMode.limited,
+            rotationMode:RotationMode.full,
             zIndex:zIndexes.Obstacles1,
-            material:material,
+            material:"stone",
+            particles:{
+                variations:2
+            },
             spawnMode:Spawn.grass,
+            height:1,
+            world_shadow:{
+                model:model2d.circle(0.82)
+            }
         },o)
     },
-    column_1(id:string,tint:number,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+    crate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particle:string="metal_particle",interactDestroy:boolean=false):ObstacleDef{
         return mergeDeep({
-            imortal:true,
-            health:1,
             idString:id,
-            hitbox:new RectHitbox2D(v2(-0.21,-0.21),v2(0.21,0.21)),
+            health:70,
+            hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
+            scale:{
+                destroy:0.6,
+            },
             assets:{
                 frame:{
-                    base:"column_1",
                     particle:particle,
                     transform:{
-                        hotspot:v2(0.5,0.5),
                         scale:2,
-                        tint:tint
+                        hotspot:v2(0.5,0.5)
                     },
                 }
             },
+            rotationMode:RotationMode.null,
+            material:"wood",
+            interactDestroy:interactDestroy,
+            lootTable:id,
             particles:{
                 tint:tint
             },
-            rotationMode:RotationMode.limited,
-            zIndex:zIndexes.Obstacles1,
-            material:material,
             spawnMode:Spawn.grass,
+            height:1,
         },o)
+    },
+    walls:{
+        wall(id:string,frame:string,tint:number,health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+            return mergeDeep({
+                health:health,
+                idString:id,
+                hitbox:new RectHitbox2D(v2(-width,-height),v2(width,height)),
+                assets:{
+                    frame:{
+                        base:frame,
+                        particle:particle,
+                        transform:{
+                            hotspot:v2(0.5,0.5),
+                            scale:2,
+                            tint:tint
+                        },
+                    }
+                },
+                particles:{
+                    tint:tint
+                },
+                rotationMode:RotationMode.limited,
+                zIndex:zIndexes.Obstacles1,
+                material:material,
+                spawnMode:Spawn.grass,
+            },o)
+        },
+        column_1(id:string,tint:number,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+            return mergeDeep({
+                imortal:true,
+                health:1,
+                idString:id,
+                hitbox:new RectHitbox2D(v2(-0.21,-0.21),v2(0.21,0.21)),
+                assets:{
+                    frame:{
+                        base:"column_1",
+                        particle:particle,
+                        transform:{
+                            hotspot:v2(0.5,0.5),
+                            scale:2,
+                            tint:tint
+                        },
+                    }
+                },
+                particles:{
+                    tint:tint
+                },
+                rotationMode:RotationMode.limited,
+                zIndex:zIndexes.Obstacles1,
+                material:material,
+                spawnMode:Spawn.grass,
+            },o)
+        },
+        group(id:string,tint:number,health:number=15,particle?:string,material?:string,o?:DeepPartial<ObstacleDef>):ObstacleDef[]{
+            return [
+                this.column_1(id+"_column",tint,particle,material,o),
+
+                this.wall(id+"_wall_2x1","wall_size_2x1",tint,health*2,undefined,undefined,particle,material,o),
+                this.wall(id+"_wall_4x1","wall_size_4x1",tint,health*4,0.4933,undefined,particle,material,o),
+                this.wall(id+"_wall_6x1","wall_size_6x1",tint,health*6,0.739998,undefined,particle,material,o),
+                this.wall(id+"_wall_8x1","wall_size_8x1",tint,health*8,0.986664,undefined,particle,material,o),
+                this.wall(id+"_wall_10x1","wall_size_10x1",tint,health*10,1.23333,undefined,particle,material,o),
+                this.wall(id+"_wall_12x1","wall_size_12x1",tint,health*12,1.47999,undefined,particle,material,o),
+                this.wall(id+"_wall_14x1","wall_size_14x1",tint,health*14,1.72666,undefined,particle,material,o),
+                this.wall(id+"_wall_16x1","wall_size_16x1",tint,health*16,1.97332,undefined,particle,material,o),
+                this.wall(id+"_wall_20x1","wall_size_20x1",tint,health*20,2.46666,undefined,particle,material,o),
+                this.wall(id+"_wall_24x1","wall_size_24x1",tint,health*24,2.95999,undefined,particle,material,o),
+                this.wall(id+"_wall_28x1","wall_size_28x1",tint,health*28,3.45332,undefined,particle,material,o),
+            ]
+        }
     }
+}
+export const create_wall={
+    
 }
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
-        CreateStone("stone",undefined,{
+        obstacles_factory.stone("stone",undefined,{
             assets:{
                 frame:{
                     variations:2
@@ -327,25 +349,25 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 model:model2d.circle(2,20)
             }
         },
-        CreateCrate("wood_crate",0x583b08,{},"plank_particle",true),
-        CreateCrate("md_crate",0x7021d3,{},"plank_particle",true),
-        CreateCrate("tundra_crate",0x3e58c4,{},"plank_particle",true),
-        CreateCrate("copper_crate",0xcc742d,{
+        obstacles_factory.crate("wood_crate",0x583b08,{},"plank_particle",true),
+        obstacles_factory.crate("md_crate",0x7021d3,{},"plank_particle",true),
+        obstacles_factory.crate("tundra_crate",0x3e58c4,{},"plank_particle",true),
+        obstacles_factory.crate("copper_crate",0xcc742d,{
             health:160,
             material:"iron",
             reflect_bullets:true,
         }),
-        CreateCrate("iron_crate",0x656877,{
+        obstacles_factory.crate("iron_crate",0x656877,{
             health:170,
             material:"iron",
             reflect_bullets:true,
         }),
-        CreateCrate("gold_crate",0xffd92b,{
+        obstacles_factory.crate("gold_crate",0xffd92b,{
             health:180,
             material:"iron",
             reflect_bullets:true
         }),
-        CreateCrate("platinum_crate",0x468edb,{
+        obstacles_factory.crate("platinum_crate",0x468edb,{
             health:500,
             material:"iron",
             reflect_bullets:true,
@@ -409,20 +431,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 close_sound:"wood_door_close"
             },
         },
-        create_wall.column_1("wood_column",0x583b08),
-
-        create_wall.wall("wood_wall_2x1","wall_size_2x1",0x583b08),
-        create_wall.wall("wood_wall_4x1","wall_size_4x1",0x583b08,0.4933),
-        create_wall.wall("wood_wall_6x1","wall_size_6x1",0x583b08,0.739998),
-        create_wall.wall("wood_wall_8x1","wall_size_8x1",0x583b08,0.986664),
-        create_wall.wall("wood_wall_10x1","wall_size_10x1",0x583b08,1.23333),
-        create_wall.wall("wood_wall_12x1","wall_size_12x1",0x583b08,1.47999),
-        create_wall.wall("wood_wall_14x1","wall_size_14x1",0x583b08,1.72666),
-        create_wall.wall("wood_wall_16x1","wall_size_16x1",0x583b08,1.97332),
-        create_wall.wall("wood_wall_20x1","wall_size_20x1",0x583b08,2.46666),
-        create_wall.wall("wood_wall_24x1","wall_size_24x1",0x583b08,2.95999),
-        create_wall.wall("wood_wall_28x1","wall_size_28x1",0x583b08,3.45332),
-
+        ...obstacles_factory.walls.group("wood",0x583b08),
         {
             idString:"airdrop_locked",
             imortal:true,

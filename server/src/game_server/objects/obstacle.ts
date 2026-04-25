@@ -207,7 +207,7 @@ export class Obstacle extends StaticBody{
         }*/
     }
     override can_interact(user: Human): boolean {
-        return (this.def.interactDestroy||this.def.expanded_behavior) as boolean&&!this.destroyed&&user.hitbox.collidingWith(this.hitbox)
+        return (this.def.interactDestroy||this.def.expanded_behavior)as boolean&&!this.destroyed&&user.hitbox.collidingWith(this.hitbox)&&!this.health_data.dead
     }
     override net_update(): void {
         if(this.door_data)this.door_data.dirty=false

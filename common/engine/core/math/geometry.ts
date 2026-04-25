@@ -1,4 +1,4 @@
-import { random } from "./random.ts"
+import { random, SeededRandom } from "./random.ts"
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
 
@@ -349,3 +349,71 @@ export const rect=Object.assign(rect_new,Object.freeze({
         }
     }
 }))
+
+export type Polygon2D=Vec2[]
+export const polygon2={
+    jagged_rectangle(min: Vec2,max: Vec2,spacing: number,variation: number,random: SeededRandom): Polygon2D {
+        const points:Polygon2D=[]
+        const v = variation / 2;
+        const getVar = () => random.float(-v, v)
+
+        for (let x = min.x; x <= max.x; x += spacing) {
+            points.push(v2(x, min.y + getVar()))
+        }
+        for (let y = min.y; y <= max.y; y += spacing) {
+            points.push(v2(max.x + getVar(), y))
+        }
+        for (let x = max.x; x >= min.x; x -= spacing) {
+            points.push(v2(x, max.y + getVar()))
+        }
+        for (let y = max.y; y >= min.y; y -= spacing) {
+            points.push(v2(min.x + getVar(), y))
+        }
+        return points
+    },
+    from_point_line(points: { position: Vec2, width: number }[],padding: number = 0): Polygon2D {
+        if(points.length < 2)return []
+        const top:Vec2[]=[]
+        const bottom:Vec2[]=[]
+        for (let i = 0; i < points.length; i++) {
+            const cur = points[i].position
+            const prev = points[Math.max(i - 1, 0)].position
+            const next = points[Math.min(i + 1, points.length - 1)].position
+
+            const tangent = v2.normalizeSafe(v2.sub(next, prev), v2(1, 0))
+            const normal = v2(-tangent.y, tangent.x)
+
+            const half = points[i].width * 0.5 + padding
+
+            top.push(v2.add(cur, v2.scale(normal, half)))
+            bottom.push(v2.sub(cur, v2.scale(normal, half)))
+        }
+
+        const poly = [...top, ...bottom.reverse()]
+
+        return this.clean_polygon(poly)
+    },
+    clean_polygon(points: Vec2[], eps = 1e-5):Polygon2D{
+        if (points.length<=3) return points.slice()
+        const tmp: Vec2[] = []
+        for (let i = 0; i < points.length; i++) {
+            const p = points[i]
+            const prev = tmp[tmp.length - 1]
+            if (!prev || v2.distanceSquared(prev, p) > eps * eps) {
+                tmp.push(p)
+            }
+        }
+
+        const out: Vec2[] = []
+        for (let i = 0; i < tmp.length; i++) {
+            const a = tmp[(i - 1 + tmp.length) % tmp.length]
+            const b = tmp[i]
+            const c = tmp[(i + 1) % tmp.length]
+            const ab = v2.sub(b, a)
+            const bc = v2.sub(c, b)
+            const cross = Math.abs(ab.x * bc.y - ab.y * bc.x)
+            if (cross > eps) out.push(b)
+        }
+        return out.length ? out : tmp
+    }
+}

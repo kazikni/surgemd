@@ -169,17 +169,14 @@ export const TundraMap:MapDef={
                     defs:[
                         {
                             rivers:[
-                                {sub_river_width:2,width:7,width_variation:1,sub_river_chance:0.5},
-                                {sub_river_width:1,width:8,width_variation:1,sub_river_chance:0.1},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:9,width_variation:2},
+                                {width:9,width_variation:2},
                             ],
                             weight:10
                         },
-                        {
-                            rivers:[
-                                {sub_river_width:3,width:15,width_variation:1,sub_river_chance:0.9},
-                            ],
-                            weight:1
-                        }
                     ]
                 },
                 floors:[

@@ -1,4 +1,4 @@
-import { Hitbox2D, Numeric, Orientation, PolygonHitbox2D, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
+import { Collision, Hitbox2D, Orientation, polygon2, PolygonHitbox2D, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
 
 export enum FloorType {
     Void = 0,
@@ -74,13 +74,10 @@ export interface Floor {
 export type RiverPoint = {
     position: Vec2;
     width: number;
-    branch?:RiverPoint[];
 };
 export interface RiverDef{
     width:number
     width_variation?:number
-    sub_river_chance?:number
-    sub_river_width:number
 }
 
 export class TerrainManager {
@@ -137,269 +134,197 @@ export class TerrainManager {
         v2m.floor(p)
     }
 }
-export function init_river(points:RiverPoint[],defs: RiverHitboxDef[]):River{
-    const hb=generate_river_hitboxes(points,defs)
-    const river={
-        points:points,
-        collisions:hb
-    }
-    return river
-}
-export function generate_rivers(
-    hitbox: RectHitbox2D,
-    rivers: RiversDef[],
-    divisions: number,
-    random: SeededRandom,
-    hb_expand: number = 0,
-    hitboxes:RiverHitboxDef[]
-): River[] {
-    const ret: River[] = [];
 
-    const defs = random.weight(rivers.map(g => g.weight));
+export const rivers={
+    init(points:RiverPoint[]):River{
+        const hb=new PolygonHitbox2D(polygon2.from_point_line(points))
+        const river:River={
+            points:points,
+            collisions:{main:hb},
+        }
+        return river
+    },
+    generate(hitbox: RectHitbox2D,rivers: RiversDef[],random: SeededRandom,hb_expand: number = 0): River[] {
+        const ret: River[] = [];
+        const defs = random.weight(rivers.map(g => g.weight));
+        for (const r of rivers[defs].rivers) {
+            let attempts = 0
+            while (attempts++ < 10) {
+                const s_orientation = random.float(0, 1) <= 0.5 ? 0 : 2;
+                const e_orientation =
+                    s_orientation === 0
+                        ? random.choose([2, 1, 3])
+                        : random.choose([0, 1, 3]);
 
-    for (const r of rivers[defs].rivers) {
-        const s_orientation = random.float(0, 1) <= 0.5 ? 0 : 2;
-        const e_orientation =
-            s_orientation === 0
-                ? random.choose([2, 1, 3])
-                : random.choose([0, 1, 3]);
+                const point1 = v2.orientation_random(s_orientation, hitbox.min, hitbox.max, hb_expand, random);
+                const point2 = v2.orientation_random(e_orientation as Orientation, hitbox.min, hitbox.max, hb_expand, random);
+                if (v2.distance(point1, point2) < 50) continue
 
-        const point1 = v2.orientation_random(s_orientation, hitbox.min, hitbox.max, hb_expand, random);
-        const point2 = v2.orientation_random(e_orientation as Orientation, hitbox.min, hitbox.max, hb_expand, random);
+                const path = this.generate_path(point1, point2, random)
+                if (path.length < 5) continue
 
-        if (!hitbox.colliding_with_line(point1, point2)) continue;
-
-        ret.push(init_river(create_river_points(point1, point2, r,random,divisions,hitbox,hb_expand,0),hitboxes))
-    }
-
-    return ret;
-}
-export function create_river_points(
-    start: Vec2,
-    end: Vec2,
-    def: RiverDef,
-    random: SeededRandom,
-    divisions: number,
-    hitbox: RectHitbox2D,
-    hb_expand: number,
-    depth: number = 0
-): RiverPoint[] {
-    const points: RiverPoint[] = [];
-
-    for (let i = 0; i <= divisions; i++) {
-        const t = i / divisions;
-        const pos = v2.lerp(start, end, t);
-
-        let w = def.width;
-        if (def.width_variation) {
-            w = random.float(def.width, def.width*(1+def.width_variation))
+                const smooth = this.smooth_path(path)
+                let final = this.apply_width(smooth, r, random)
+                //final = this.process_river_interactions(final, ret)
+                ret.push(this.init(final))
+                break
+            }
         }
 
-        points.push({ position: pos, width: w, branch: [] });
-    }
+        return ret;
+    },
+    generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 6,strength = 0.25): Vec2[] {
+        let points: Vec2[] = [start, end]
+        const globalDir = v2.normalizeSafe(v2.sub(end, start), v2(1, 0))
+        const globalNormal = v2(-globalDir.y, globalDir.x)
+        for (let p = 0; p < passes; p++) {
+            const next: Vec2[] = []
 
-    if (def.sub_river_chance && random.float(0, 1) < def.sub_river_chance && depth < 1) {
-        const idx = Numeric.clamp(random.int(1, points.length - 2), 0, points.length - 1);
-        const branchStart = points[idx].position;
+            for (let i = 0; i < points.length - 1; i++) {
+                const a = points[i]
+                const b = points[i + 1]
 
-        const branchEnd = v2.orientation_random(
-            random.choose([0, 1, 2, 3]),
-            hitbox.min,
-            hitbox.max,
-            hb_expand,
-            random
-        );
+                next.push(a)
 
-        if (hitbox.colliding_with_line(branchStart, branchEnd)) {
-            points[idx].branch = create_river_points(
-                branchStart,
-                branchEnd,
-                {
-                    width: def.sub_river_width,
-                    width_variation: def.width_variation ? def.width_variation * 0.5 : undefined,
-                    sub_river_chance: def.sub_river_chance! * 0.5,
-                    sub_river_width: def.sub_river_width * 0.7
-                },
-                random,
-                divisions,
-                hitbox,
-                hb_expand,
-                depth + 1
-            );
+                const mid = v2.scale(v2.add(a, b), 0.5)
+
+                const dir = v2.normalizeSafe(v2.sub(b, a), globalDir)
+                const normal = v2.normalizeSafe(
+                    v2.add(
+                        v2(-dir.y, dir.x),
+                        v2.scale(globalNormal, 0.5)
+                    ),
+                    globalNormal
+                )
+
+                const dist = v2.distance(a, b)
+                const falloff = Math.min(1, dist * 0.1)
+
+                const offset = random.float(-1, 1) * dist * strength * falloff
+                next.push(v2.add(mid, v2.scale(normal, offset)))
+            }
+
+            next.push(points[points.length - 1])
+            points = next
+
+            strength *= 0.55
         }
+
+        return points
+    },
+    smooth_path(points: Vec2[], steps = 2): Vec2[] {
+        const out: Vec2[] = []
+
+        for (let i = 0; i < points.length - 1; i++) {
+            const p0 = points[Math.max(i-1,0)]
+            const p1 = points[i]
+            const p2 = points[i+1]
+            const p3 = points[Math.min(i+2, points.length-1)]
+
+            for (let t = 0; t < 1; t += 1/steps) {
+                const tt = t*t
+                const ttt = tt*t
+
+                const q = v2(
+                    0.5 * ((2*p1.x) + (-p0.x+p2.x)*t + (2*p0.x-5*p1.x+4*p2.x-p3.x)*tt + (-p0.x+3*p1.x-3*p2.x+p3.x)*ttt),
+                    0.5 * ((2*p1.y) + (-p0.y+p2.y)*t + (2*p0.y-5*p1.y+4*p2.y-p3.y)*tt + (-p0.y+3*p1.y-3*p2.y+p3.y)*ttt)
+                )
+
+                out.push(q)
+            }
+        }
+
+        out.push(points[points.length-1])
+        return out
+    },
+    apply_width(points: Vec2[],def: RiverDef,random: SeededRandom): RiverPoint[] {
+        const out: RiverPoint[] = []
+        for (let i = 0; i < points.length; i++) {
+            let width = def.width
+            if (def.width_variation) {
+                width += random.float(0, def.width_variation)
+            }
+            out.push({
+                position: points[i],
+                width
+            })
+        }
+
+        return out
+    },
+    find_intersection(a: RiverPoint[],b: RiverPoint[]): { ai: number, bi: number, point: Vec2 } | null {
+        for (let i = 1; i < a.length; i++) {
+            const a1 = a[i - 1].position
+            const a2 = a[i].position
+
+            for (let j = 1; j < b.length; j++) {
+                const b1 = b[j - 1].position
+                const b2 = b[j].position
+
+                const hit = Collision.segment_intersection(a1, a2, b1, b2)
+                if (hit) {
+                    return { ai: i, bi: j, point: hit.point }
+                }
+            }
+        }
+        return null
+    },
+    merge_rivers(base: RiverPoint[],other: RiverPoint[]): RiverPoint[] {
+        const hit = this.find_intersection(base, other)
+        if (!hit) return base
+
+        const { ai, point } = hit
+
+        const newPoints = base.slice(0, ai)
+
+        newPoints.push({
+            position: point,
+            width: base[ai].width
+        })
+
+        return newPoints
+    },
+    apply_river_repulsion(points: RiverPoint[],others: River[],strength = 8) {
+        for (const p of points) {
+            for (const r of others) {
+                for (const op of r.points) {
+                    const d = v2.sub(p.position, op.position)
+                    const dist = v2.len(d)
+                    if (dist < (p.width + op.width)) {
+                        const push = (1 - dist / (p.width + op.width)) * strength
+
+                        const dir = v2.normalizeSafe(d, v2(1, 0))
+                        v2m.add(p.position, p.position, v2.scale(dir, push))
+                    }
+                }
+            }
+        }
+    },
+    apply_river_width_interaction(points: RiverPoint[],others: River[]) {
+        for (const p of points) {
+            let extra = 0
+            for (const r of others) {
+                for (const op of r.points) {
+                    const dist = v2.distance(p.position, op.position)
+                    if (dist < 100) {
+                        extra += (1 - dist / 100) * op.width * 0.5
+                    }
+                }
+            }
+            p.width += extra
+        }
+    },
+    process_river_interactions(newRiver: RiverPoint[],existing: River[]): RiverPoint[] {
+        for (const r of existing) {
+            newRiver = this.merge_rivers(newRiver, r.points)
+        }
+        this.apply_river_repulsion(newRiver, existing)
+        this.apply_river_width_interaction(newRiver, existing)
+
+        return newRiver
     }
-
-    return points;
 }
-
 export interface River{
     collisions:Record<string, PolygonHitbox2D>
     points:RiverPoint[]
-}
-
-export interface RiverHitboxDef {
-    name: string;
-    padding: number;
-}
-
-function squaredDist(a: Vec2, b: Vec2) {
-    return v2.distanceSquared(a, b);
-}
-
-function polygonArea(points: Vec2[]) {
-    let a = 0;
-    for (let i = 0, n = points.length; i < n; i++) {
-      const p = points[i];
-      const q = points[(i + 1) % n];
-      a += p.x * q.y - q.x * p.y;
-    }
-    return a * 0.5;
-}
-
-function removeDuplicateAndCollinear(points: Vec2[], eps = 1e-5): Vec2[] {
-    if (points.length <= 3) return points.slice();
-
-    // remove consecutivos iguais (ou quase)
-    const tmp: Vec2[] = [];
-    for (let i = 0; i < points.length; i++) {
-      const p = points[i];
-      const prev = tmp.length ? tmp[tmp.length - 1] : null;
-      if (!prev || squaredDist(prev, p) > eps * eps) tmp.push(p);
-    }
-
-    // remove colineares A-B-C (|cross| pequeno)
-    const out: Vec2[] = [];
-    for (let i = 0; i < tmp.length; i++) {
-      const a = tmp[(i - 1 + tmp.length) % tmp.length];
-      const b = tmp[i];
-      const c = tmp[(i + 1) % tmp.length];
-
-      const abx = b.x - a.x;
-      const aby = b.y - a.y;
-      const bcx = c.x - b.x;
-      const bcy = c.y - b.y;
-
-      const cross = Math.abs(abx * bcy - aby * bcx);
-      if (cross > eps) out.push(b);
-    }
-
-    return out.length ? out : tmp;
-}
-
-function closestPairIndices(A: Vec2[], B: Vec2[]) {
-    let best = { ai: 0, bj: 0, d: Number.MAX_VALUE };
-    for (let i = 0; i < A.length; i++) {
-      for (let j = 0; j < B.length; j++) {
-        const d = squaredDist(A[i], B[j]);
-        if (d < best.d) {
-          best = { ai: i, bj: j, d };
-        }
-      }
-    }
-    return best;
-}
-
-function stitchPolygons(A: Vec2[], B: Vec2[]) {
-    if (!A.length) return B.slice();
-    if (!B.length) return A.slice();
-
-    const areaA = polygonArea(A);
-    const areaB = polygonArea(B);
-    if (areaA === 0 || areaB === 0) {
-      return [...A, ...B];
-    }
-    if (areaA * areaB < 0) B = B.slice().reverse();
-
-    const { ai, bj } = closestPairIndices(A, B);
-    const result: Vec2[] = [];
-    for (let k = 0; k < A.length; k++) result.push(A[(ai + k) % A.length]);
-    for (let k = 0; k < B.length; k++) result.push(B[(bj + k) % B.length]);
-
-    return removeDuplicateAndCollinear(result);
-}
-
-export function generate_river_hitboxes(
-    rootPoints: RiverPoint[],
-    defs: RiverHitboxDef[]
-): Record<string, PolygonHitbox2D> {
-    const segments: RiverPoint[][] = [];
-    function collectSegments(segment: RiverPoint[]) {
-      segments.push(segment);
-      for (const p of segment) {
-        if (p.branch && p.branch.length) {
-          collectSegments(p.branch);
-        }
-      }
-    }
-    collectSegments(rootPoints);
-
-    const polysByDef: Record<string, Vec2[][]> = {};
-    for (const def of defs) polysByDef[def.name] = [];
-
-    for (const seg of segments) {
-      const top: Vec2[] = [];
-      const bottom: Vec2[] = [];
-
-      for (let i = 0; i < seg.length; i++) {
-        const cur = seg[i].position;
-        const prev = seg[Math.max(i - 1, 0)].position;
-        const next = seg[Math.min(i + 1, seg.length - 1)].position;
-
-        const tangent = v2.normalizeSafe(v2.sub(next, prev), v2(1, 0));
-        const normal = v2(-tangent.y, tangent.x);
-
-        for (const def of defs) {
-          const pad = def.padding ?? 0;
-          const half = seg[i].width * 0.5 + pad;
-          const topPt = v2.add(cur, v2.scale(normal, half));
-          const bottomPt = v2.sub(cur, v2.scale(normal, half));
-
-          const listIndex = defs.indexOf(def);
-          if (!polysByDef[def.name][listIndex]) {
-            // 
-          }
-
-          top.push(topPt);
-          bottom.push(bottomPt);
-        }
-      }
-      for (const def of defs) {
-        const topD: Vec2[] = [];
-        const bottomD: Vec2[] = [];
-        for (let i = 0; i < seg.length; i++) {
-          const cur = seg[i].position;
-          const prev = seg[Math.max(i - 1, 0)].position;
-          const next = seg[Math.min(i + 1, seg.length - 1)].position;
-
-          const tangent = v2.normalizeSafe(v2.sub(next, prev), v2(1, 0));
-          const normal = v2(-tangent.y, tangent.x);
-
-          const half = seg[i].width * 0.5 + (def.padding ?? 0);
-          topD.push(v2.add(cur, v2.scale(normal, half)));
-          bottomD.push(v2.sub(cur, v2.scale(normal, half)));
-        }
-        const poly = [...topD, ...bottomD.reverse()];
-        polysByDef[def.name].push(removeDuplicateAndCollinear(poly));
-      }
-    }
-
-    const result: Record<string, PolygonHitbox2D> = {};
-    for (const def of defs) {
-      const list = polysByDef[def.name];
-      if (!list || list.length === 0) {
-        result[def.name] = new PolygonHitbox2D([]);
-        continue;
-      }
-
-      let merged = list[0].slice();
-      for (let i = 1; i < list.length; i++) {
-        const other = list[i];
-        merged = stitchPolygons(merged, other);
-      }
-
-      const cleaned = removeDuplicateAndCollinear(merged);
-      result[def.name] = new PolygonHitbox2D(cleaned);
-    }
-
-    return result;
 }

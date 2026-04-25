@@ -5,6 +5,7 @@ import { MovingBody } from "./moving_body.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { type StaticBody } from "./static_body.ts";
+import { type Obstacle } from "./obstacle.ts";
 export class SyncedParticle extends MovingBody {
     string_type="synced"
     number_type=GameObjectType.SyncedParticle
@@ -26,7 +27,13 @@ export class SyncedParticle extends MovingBody {
 
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
+            // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                    }
+                }
             case GameObjectType.Building:{
                 const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
                 if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){

@@ -406,10 +406,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             newLayerData.renderizables.push(obj.id)
         }
 
-        this.cells.registry(obj)
-
         obj.net_sync.full = true
         obj.net_sync.part = true
+
+        this.cells.update_object(obj)
 
         obj.on_layer_set(obj.layer)
     }
@@ -561,10 +561,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         os=stream.readUint16()
         for(let i=0;i<os;i++){
-            const c=stream.readUint8()
             const id=stream.readID()
-            if(process_deletion&&this.objects[c]&&this.objects[c].objects[id]){
-                const obj=this.objects[c].objects[id]
+            if(process_deletion&&this.all_objects.has(id)){
+                const obj=this.all_objects.get(id)!
                 if(obj.net_sync.enabled.deletion)obj.destroy()
                 else obj.on_destroy()
             }
@@ -624,7 +623,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         stream.writeUint16(deletions.length)
         for(let i=0;i<deletions.length;i++){
-            stream.writeUint8(deletions[i].layer)
             stream.writeID(deletions[i].id)
         }
         return {strm:stream,last:objects_list}

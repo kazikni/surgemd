@@ -26,6 +26,7 @@ import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+import { type Obstacle } from "./obstacle.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -589,7 +590,13 @@ export class Human extends MovingBody{
     _can_interact=true
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
+            // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                    }
+                }
             case GameObjectType.Building:{
                 if((obj as StaticBody).physical_data.no_collision)break
 

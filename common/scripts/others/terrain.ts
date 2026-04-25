@@ -1,4 +1,4 @@
-import { Collision, Hitbox2D, Orientation, polygon2, PolygonHitbox2D, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
+import { Collision, hash, Hitbox2D, Orientation, polygon2, PolygonHitbox2D, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
 
 export enum FloorType {
     Void = 0,
@@ -64,11 +64,12 @@ export const Floors: Record<FloorType, FloorDef> = {
 
 export interface Floor {
     type: FloorType;
+    layer:number;
     smooth: boolean;
-    jagged:boolean;
+    jagged: boolean;
+    visible:boolean
     hb: Hitbox2D;
     final_hb:Hitbox2D;
-    layer: number;
 }
 
 export type RiverPoint = {
@@ -82,23 +83,23 @@ export interface RiverDef{
 
 export class TerrainManager {
     floors: Floor[] = [];
-    grid = new Map<number,Map<number, Map<number, { floors: Floor[] }>>>();
+    grid = new Map<bigint,Floor[]>();
 
-    add_floor(type: FloorType, hb: Hitbox2D, layer = 0, smooth = true,jagged:boolean=false,final_hb?:Hitbox2D) {
-        const floor: Floor = { type, hb, smooth, layer,jagged,final_hb:final_hb??hb };
+    add_floor(type: FloorType, hb: Hitbox2D, layer = 0, smooth = true,jagged:boolean=false,visible:boolean=true,final_hb?:Hitbox2D) {
+        const floor: Floor = { type, hb, smooth,jagged,final_hb:final_hb??hb,visible,layer };
         this.floors.push(floor);
 
         const rect = hb.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 
-        if (!this.grid.has(layer))this.grid.set(layer, new Map())
         for (let y = rect.min.y; y <= rect.max.y; y++) {
-            if (!this.grid.get(layer)!.has(y)) this.grid.get(layer)!.set(y, new Map());
-
             for (let x = rect.min.x; x <= rect.max.x; x++) {
-                if (!this.grid.get(layer)!.get(y)!.has(x))this.grid.get(layer)!.get(y)!.set(x, { floors: [] });
-                this.grid.get(layer)!.get(y)!.get(x)!.floors.push(floor);
+                const h=hash.hash_3d_big(x,y,layer)
+                if(!this.grid.has(h)){
+                    this.grid.set(h,[])
+                }
+                this.grid.get(h)!.push(floor);
             }
         }
     }
@@ -106,11 +107,10 @@ export class TerrainManager {
     get_floor(position: Vec2, layer: number): Floor | undefined {
         const pos=v2.clone(position)
         this.cell_pos(pos)
-        const floorsInCell = this.grid.get(layer)?.get(pos.y)?.get(pos.x)?.floors ?? [];
-
+        const floorsInCell = this.grid.get(hash.hash_3d_big(pos.x,pos.y,layer))??[]
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
-            if (floor.layer === layer && floor.hb.pointInside(position)) {
+            if (floor.final_hb.pointInside(position)) {
                 return floor
             }
         }
@@ -120,10 +120,10 @@ export class TerrainManager {
     get_floor_type(position:Vec2,layer:number,place_holder:FloorType):FloorType{
         const pos=v2.clone(position)
         this.cell_pos(pos)
-        const floorsInCell = this.grid.get(layer)?.get(pos.y)?.get(pos.x)?.floors ?? [];
+        const floorsInCell = this.grid.get(hash.hash_3d_big(pos.x,pos.y,layer))??[]
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
-            if (floor.hb.pointInside(position)) {
+            if (floor.final_hb.pointInside(position)) {
                 return floor.type
             }
         }

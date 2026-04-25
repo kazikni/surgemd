@@ -37,7 +37,13 @@ export class Grenade extends Projectile{
 
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
+            // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                    }
+                }
             case GameObjectType.Building:{
                 if((obj as StaticBody).physical_data.no_collision)break
                 if(obj.number_type===GameObjectType.Obstacle){

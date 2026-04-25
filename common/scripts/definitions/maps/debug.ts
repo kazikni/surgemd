@@ -1,4 +1,4 @@
-import { random, v2 } from "../../../engine/core.ts";
+import { random, v2, v2m } from "../../../engine/core.ts";
 import { Layers } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { MapDef } from "./base.ts";
@@ -112,10 +112,24 @@ export const SingleBuildMap:MapDef={
         },
     },
     gen_callback(map) {
-        const def=map.game.definitions.buildings.getFromString("shed")
+        //const def=map.game.definitions.buildings.getFromString("shed")
+        const def=map.game.definitions.buildings.getFromString("small_iron_stairs")
         //const def=map.game.definitions.buildings.getFromString("small_house_1")
 
         const b=map.game.map.add_building(def)
         b.generate(v2.dscale(map.size,2),0)
+
+        /*let pos=v2.dscale(map.size,2)
+        for(let i=0;i<5;i++){
+            v2m.add(pos,pos,v2(5,0))
+            const b=map.game.map.add_building(def,Layers.Normal-i-1)
+            b.generate(pos,0)
+        }
+        pos=v2.dscale(map.size,2)
+        for(let i=0;i<5;i++){
+            v2m.sub(pos,pos,v2(5,0))
+            const b=map.game.map.add_building(def,Layers.Normal+i+1)
+            b.generate(pos,2)
+        }*/
     },
 }

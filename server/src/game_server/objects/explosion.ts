@@ -95,7 +95,7 @@ export class Explosion extends ServerGameObject{
 
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){
-                const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.def)
+                const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.def,this.layer)
                 b.set_direction(random.rad())
             }
         }

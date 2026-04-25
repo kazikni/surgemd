@@ -98,6 +98,13 @@ export class Building extends StaticBody {
             if(o.id)this.objects_ids[o.id]=obj
             obj.initialize(o.rotation,o.variation,o.skin)
             obj.set_position(p)
+
+            if(o.stairs_dest){
+                for(const s in o.stairs_dest){
+                    obj.physical_data.stairs[s].dest_layer=o.stairs_dest[s]
+                }
+            }
+
             this.children.push({obj,def:o,type:0})
         }
         for(const child of this.children){

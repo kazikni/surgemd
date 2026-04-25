@@ -25,7 +25,7 @@ export const generation={
                 const min=v2(cp,cp),max=v2(map.size.x-cp,map.size.y-cp)
                 const hb=new PolygonHitbox2D(polygon2.jagged_rectangle(min,max,f.spacing,f.variation,random))
                 hitboxes.push(hb)
-                map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,hb)
+                map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,true,hb)
             }
             if(def.terrain.rivers){
                 const r=hitboxes[def.terrain.rivers.spawn_floor].to_rect()
@@ -229,9 +229,8 @@ export class GameMap{
             }
         }
 
-        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
-
         this.game.deadzone.reset()
+        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
     }
     generate_with_algorithm(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
         const random=new SeededRandom(seed)
@@ -258,7 +257,7 @@ export class GameMap{
         const objects:MapObjectEncode[]=[]
         for(const o of this.objects){
             if(o instanceof Obstacle){
-                if(!o.def.invisibleOnMap){
+                if(!o.def.invisible_on_map){
                     objects.push({
                         type:0,
                         def:o.def.idNumber!,
@@ -273,11 +272,8 @@ export class GameMap{
         }
         p.map={
             terrain:this.terrain.floors,
-
             size:this.size,
-
             seed:seed,
-
             objects,
             biome:this.def.biome
         }

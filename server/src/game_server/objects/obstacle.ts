@@ -1,7 +1,7 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, LootTableItemRet, NetStream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, LootTableItemRet, NetStream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
@@ -49,6 +49,13 @@ export class Obstacle extends StaticBody{
         scale:number
         side:Orientation
         rotation:number
+
+        stairs:{
+            index:number
+            hitbox:Hitbox2D
+            base_hitbox:Hitbox2D
+            dest_layer:number
+        }[]
     }&StaticBodyPhysicalData={
         dirty:false,
         dirty_part:false,
@@ -63,6 +70,8 @@ export class Obstacle extends StaticBody{
         reflect_bullets:false,
         no_collision:true,
         no_bullets_collision:true,
+
+        stairs:[]
     }
 
     loot:LootTableItemRet<GameItem>[]=[]
@@ -191,20 +200,6 @@ export class Obstacle extends StaticBody{
                 }
             }
         }
-        /*if(this.door!==undefined){
-            this.door!.open=this.door!.open===0?1:0
-            const dd=this.def.expanded_behavior!
-            if(dd.open_delay!==undefined&&dd.open_delay>0){
-                this.actived=true
-                this.game.addTimeout(()=>{
-                    this.actived=false
-                    this.door_change_hb()
-                },dd.open_delay!)
-            }else{
-                this.door_change_hb()
-            }
-            this.dirtyPart=true
-        }*/
     }
     override can_interact(user: Human): boolean {
         return (this.def.interactDestroy||this.def.expanded_behavior)as boolean&&!this.destroyed&&user.hitbox.collidingWith(this.hitbox)&&!this.health_data.dead
@@ -231,6 +226,17 @@ export class Obstacle extends StaticBody{
 
         if(this.def.scale?.min&&this.def.scale.max){
             this.max_scale=random.float(this.def.scale.min,this.def.scale.max)
+        }
+
+        let idx=0
+        for(const s of this.def.stair_data??[]){
+            this.physical_data.stairs.push({
+                index:idx,
+                dest_layer:0,
+                hitbox:s.hitbox,
+                base_hitbox:s.hitbox,
+            })
+            idx++
         }
     }
     load_loot(){
@@ -297,28 +303,30 @@ export class Obstacle extends StaticBody{
                     break
             }
         }
+
+        for(const s of this.physical_data.stairs){
+            s.base_hitbox=s.base_hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+        }
     }
 
     set_position(position:Vec2){
-        this.reset_scale()
-
-        this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,this.physical_data.scale)
         this.position=position
+        this.reset_scale()
     }
     reset_scale(){
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.max_scale;
             this.physical_data.scale=Math.max(this.health_data.health / this.def.health*(this.max_scale - destroyScale) + destroyScale,0)
-
-            if(this.door_data){
-                this.base_hitbox=this.door_data.hitboxes[this.door_data.open].transform(undefined,this.physical_data.scale)
-            }else{
-                this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
-            }
-
             this.net_sync.part=true
             this.physical_data.dirty_part=true
+        }
+        if(this.door_data){
+            this.base_hitbox=this.door_data.hitboxes[this.door_data.open].transform(undefined,this.physical_data.scale)
+        }else{
+            this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
+        }
+        for(const s of this.physical_data.stairs){
+            s.hitbox=s.base_hitbox.transform(this.position,this.physical_data.scale)
         }
     }
     override side_effect(sf:SideEffect,owner?:Human){

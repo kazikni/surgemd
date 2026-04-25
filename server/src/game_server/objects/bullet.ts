@@ -7,6 +7,7 @@ import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export class Bullet extends ServerGameObject{
     string_type:string="bullet"
@@ -155,7 +156,16 @@ export class Bullet extends ServerGameObject{
                     }
                     break
                 }*/
+                // deno-lint-ignore no-fallthrough
                 case GameObjectType.Obstacle:
+                    if((obj as Obstacle).physical_data.stairs.length>0){
+                        for(const s of (obj as Obstacle).physical_data.stairs){
+                            if(s.hitbox.collidingWith(this.hitbox)){
+                                this.destroy()
+                                break
+                            }
+                        }
+                    }
                 case GameObjectType.Building:
                     if((obj as StaticBody).physical_data.no_bullets_collision)break
                     if(obj.hitbox){

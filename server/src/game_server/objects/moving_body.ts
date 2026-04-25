@@ -2,6 +2,7 @@ import { ServerGameObject } from "../others/gameObject.ts";
 import { NetStream, v2, v2m, Vec2} from "common/engine/core.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export interface MovingBodyPhysicalData{
     velocity:Vec2
@@ -20,7 +21,13 @@ export abstract class MovingBody extends ServerGameObject{
     }
     on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
+            // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                    }
+                }
             case GameObjectType.Building:{
                 if((obj as StaticBody).physical_data.no_collision)break
                 const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)

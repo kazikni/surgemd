@@ -2,10 +2,11 @@ import { GameConstants, GameObjectType } from "common/scripts/others/constants.t
 import { ServerGameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export class Loot extends ServerGameObject{
     string_type:string="loot"
@@ -66,8 +67,14 @@ export class Loot extends ServerGameObject{
                     }
                     break
                 }
-                case GameObjectType.StaticBody:
+                // deno-lint-ignore no-fallthrough
                 case GameObjectType.Obstacle:
+                    if((other as Obstacle).physical_data.stairs.length>0){
+                        for(const s of (other as Obstacle).physical_data.stairs){
+                            if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                        }
+                    }
+                case GameObjectType.StaticBody:
                 case GameObjectType.Building:{
                     if((other as StaticBody).physical_data.no_collision)break
                     const col=this.hitbox.overlapCollision(other.hitbox)

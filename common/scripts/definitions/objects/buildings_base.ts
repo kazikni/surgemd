@@ -28,6 +28,7 @@ export type BuildingObstacles={
     layer?:number
     rotation?:number
     scale?:number
+    stairs_dest?:Record<number,number>
 }
 export type BuildingLoot={
     table:string
@@ -364,6 +365,32 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             sub_building:[
             ],
             hitbox:RectHitbox2D.centered(v2(0,-0.73),v2(3,3)),
+            spawnMode:Spawn.grass,
+        },
+        
+        {
+            idString:"small_iron_stairs",
+            obstacles:[
+                {
+                    def:"small_iron_stairs_part",
+                    position:v2(0,0),
+                    rotation:0,
+                    stairs_dest:{0:-1},
+                },
+                {
+                    def:"small_iron_stairs_part",
+                    position:v2(0,0),
+                    layer:-1,
+                    rotation:2,
+                    stairs_dest:{0:1},
+                }
+            ],
+            floor_image:[],
+            sub_building:[
+            ],
+            no_bullet_collision:true,
+            no_collisions:true,
+            hitbox:RectHitbox2D.centered(v2(0,0),v2(1,1)),
             spawnMode:Spawn.grass,
         },
     )

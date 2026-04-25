@@ -14,7 +14,7 @@ export class MinimapManager{
         this.ctx=this.canvas.getContext("2d")!
     }
     image: HTMLImageElement=new Image()
-    ms=0.1
+    ms=0.05
     position:Vec2=v2(0,0)
 
     private drawHitbox(color:string,hb: Hitbox2D) {
@@ -104,7 +104,7 @@ export class MinimapManager{
 
             for (const floor of this.config.terrain) {
                 const hb  = floor.final_hb
-                const hex = ColorM.number2hex(Floors[floor.type].default_color)
+                const hex = ColorM.number2hex(this.game.terrain.biome?.floors[floor.type]?.color??Floors[floor.type].default_color)
                 this.drawHitbox(hex, hb)
             }
             this.drawGrid(5,0.06)
@@ -115,7 +115,7 @@ export class MinimapManager{
             })
             for (const obj of sorted) {
                 const def = this.game.definitions.obstacles.getFromNumber(obj.def)
-                const frameName = GetObstacleBaseFrame(def, obj.variation, 0)
+                const frameName = GetObstacleBaseFrame(def, obj.variation,obj.skin)
                 const frame = this.game.resources.get_sprite(frameName)
                 if (!frame?.source) continue
 
@@ -127,8 +127,10 @@ export class MinimapManager{
                 const fw = frame.frame_size?.x ?? sw
                 const fh = frame.frame_size?.y ?? sh
 
-                const w = (fw*obj.scale)/this.ms/100
-                const h = (fh*obj.scale)/this.ms/100
+                const frame_scale=(def.assets?.frame?.transform?.scale??1)
+
+                const w = (fw*obj.scale*frame_scale)/this.ms/200
+                const h = (fh*obj.scale*frame_scale)/this.ms/200
 
                 const pos = v2.dscale(obj.position,this.ms)
 
@@ -145,7 +147,6 @@ export class MinimapManager{
 
                 this.ctx.restore()
             }
-
             resolve(this.canvas.toDataURL("image/png"))
         })
     }

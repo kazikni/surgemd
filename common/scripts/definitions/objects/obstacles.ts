@@ -52,7 +52,7 @@ export interface ObstacleDef extends Definition{
     no_collision?:boolean
     no_bullets_collision?:boolean
 
-    invisibleOnMap?:boolean
+    invisible_on_map?:boolean
     scale?:{
         min?:number
         max?:number
@@ -101,6 +101,9 @@ export interface ObstacleDef extends Definition{
     expanded_behavior?:(
         ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto
     )
+    stair_data?:{
+        hitbox:Hitbox2D
+    }[]
 }
 export interface MaterialDef{
     sounds:string
@@ -292,7 +295,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             },
             rotationMode:RotationMode.full,
-            zIndex:zIndexes.Obstacles1,
             onDestroyExplosion:"barrel_explosion",
             material:"metal",
             reflect_bullets:true,
@@ -350,22 +352,25 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             }
         },
         obstacles_factory.crate("wood_crate",0x583b08,{},"plank_particle",true),
-        obstacles_factory.crate("md_crate",0x7021d3,{},"plank_particle",true),
-        obstacles_factory.crate("tundra_crate",0x3e58c4,{},"plank_particle",true),
+        obstacles_factory.crate("md_crate",0x7021d3,{invisible_on_map:true},"plank_particle",true),
+        obstacles_factory.crate("tundra_crate",0x3e58c4,{invisible_on_map:true},"plank_particle",true),
         obstacles_factory.crate("copper_crate",0xcc742d,{
             health:160,
             material:"iron",
             reflect_bullets:true,
+            invisible_on_map:true,
         }),
         obstacles_factory.crate("iron_crate",0x656877,{
             health:170,
             material:"iron",
             reflect_bullets:true,
+            invisible_on_map:true,
         }),
         obstacles_factory.crate("gold_crate",0xffd92b,{
             health:180,
             material:"iron",
-            reflect_bullets:true
+            reflect_bullets:true,
+            invisible_on_map:true,
         }),
         obstacles_factory.crate("platinum_crate",0x468edb,{
             health:500,
@@ -376,6 +381,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             },
             hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3)),
             height:0,
+            invisible_on_map:true,
         }),
         {
             idString:"bush",
@@ -419,7 +425,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 tint:0x583b08
             },
             rotationMode:RotationMode.limited,
-            zIndex:zIndexes.Obstacles3,
             material:"wood",
             spawnMode:Spawn.grass,
             expanded_behavior:{
@@ -445,7 +450,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                     },
                 }
             },
-            zIndex:zIndexes.Obstacles1,
             rotationMode:RotationMode.null,
             material:"metal",
             spawnMode:Spawn.grass,
@@ -500,7 +504,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             },
             rotationMode:RotationMode.limited,
-            zIndex:zIndexes.Obstacles3,
+            zIndex:zIndexes.Obstacles2,
             material:"metal",
             spawnMode:Spawn.grass,
         },
@@ -585,7 +589,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             },
             rotationMode:RotationMode.null,
-            zIndex:zIndexes.Obstacles3,
             material:"metal",
             reflect_bullets:true,
             expanded_behavior:{
@@ -622,7 +625,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             reflect_bullets:true,
 
             rotationMode:RotationMode.limited,
-            zIndex:zIndexes.Obstacles3,
             spawnMode:Spawn.grass,
 
             expanded_behavior:{
@@ -659,7 +661,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             reflect_bullets:true,
 
             rotationMode:RotationMode.limited,
-            zIndex:zIndexes.Obstacles3,
             spawnMode:Spawn.grass,
 
             expanded_behavior:{
@@ -672,6 +673,38 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }],
                 floor_walk:-1,
             }
-        }
+        },
+        {
+            idString:"small_iron_stairs_part",
+            health:1,
+            imortal:true,
+            hitbox:RectHitbox2D.wall_enabled(v2(-0.71,-0.71),v2(0.71,0.71),{
+                bottom:true,
+                top:true,
+                left:false,
+                right:false
+            },0.2),
+            assets:{
+                frame:{
+                    base:"small_iron_stairs",
+                    particle:"metal_particle",
+                    transform:{
+                        hotspot:v2(0.5,0.5),
+                        scale:1.5,
+                    },
+                }
+            },
+            zIndex:zIndexes.Obstacles1,
+            rotationMode:RotationMode.limited,
+            material:"metal",
+            reflect_bullets:true,
+            particles:{
+                tint:0x656877
+            },
+            spawnMode:Spawn.grass,
+            stair_data:[{
+                hitbox:RectHitbox2D.centered(v2(0.71,0),v2(0.1,1.35)),
+            }]
+        },
     )
 }

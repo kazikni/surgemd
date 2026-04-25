@@ -4,9 +4,13 @@ import { type Game } from "../others/game.ts";
 import { Debug } from "../others/config.ts";
 import { BiomeDef } from "common/scripts/definitions/maps/base.ts";
 import { ColorM, Graphics2D, HitboxType2D, model2d, PolygonHitbox2D } from "common/engine/client.ts";
+import { Layers } from "common/scripts/others/constants.ts";
 export class TerrainM extends TerrainManager{
     map!:MapConfig
     game:Game
+    biome?:BiomeDef
+
+    last_layer?:number
     constructor(game:Game){
         super()
         this.game=game
@@ -21,10 +25,13 @@ export class TerrainM extends TerrainManager{
             resolve()
         })
     }
-    biome?:BiomeDef
-
-    draw(graphic:Graphics2D,scale:number){  
+    draw(graphic:Graphics2D,layer:number=Layers.Normal){
+        if(this.last_layer!==layer)
+        this.last_layer=layer
+        graphic.clear()
         for(const f of this.floors){
+            console.log(layer,f.layer)
+            if(layer<f.layer)continue
             const flb=this.biome?.floors[f.type]
             graphic.beginPath()
             graphic.set_hitbox(f.hb)
@@ -38,7 +45,6 @@ export class TerrainM extends TerrainManager{
             graphic.fill_color(ColorM.number(col))
             graphic.fill()
         }
-
         if(Debug.hitbox){
             for(const f of this.floors){
                 graphic.fill_color(ColorM.hex("#ff0"))
@@ -48,7 +54,5 @@ export class TerrainM extends TerrainManager{
                 }
             }
         }
-        graphic.fill_color(ColorM.hex("#0005"))
-        graphic.beginPath()
     }
 }

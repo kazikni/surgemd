@@ -2,7 +2,7 @@ import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, C
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
-import { TerrainM } from "../objects/terrain.ts";
+import { TerrainM } from "../managers/terrainManager.ts";
 import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
@@ -10,7 +10,7 @@ import { Human } from "../objects/human.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -38,8 +38,8 @@ import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
-import { MessageApp } from "../apps/message.ts";
 import { DebugApp } from "../apps/debug.ts";
+import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -64,6 +64,7 @@ export class Game extends ClientGame<GameObject>{
 
     scope_zoom:number=0.5
     dest_zoom:number=1
+    current_layer:number=-1
 
     ui:UiManager
     menu:MenuManager
@@ -113,7 +114,7 @@ export class Game extends ClientGame<GameObject>{
         this.local_server=new LocalGameServer(this)
 
         this.definitions=definitions
-        this.renderer.background=ColorM.rgba(10,10,10)
+        this.renderer.background=ColorM.number(Floors[FloorType.Void].default_color)
 
         this.sounds.volumes={
             "music":1,
@@ -631,7 +632,6 @@ export class Game extends ClientGame<GameObject>{
             v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
             v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
             this.sounds.listener_position=this.cam2d.position
-
         }else{
             if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
                 this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
@@ -642,9 +642,11 @@ export class Game extends ClientGame<GameObject>{
 
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 
+                this.current_layer=this.active_entity.layer
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
+        this.terrain.draw(this.terrain_gfx,this.current_layer)
         this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
@@ -658,6 +660,7 @@ export class Game extends ClientGame<GameObject>{
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
         this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
+        if(this.current_layer<Layers.Normal)return
         const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)
         v2m.dscale(begin,begin,gridSize)
@@ -751,9 +754,8 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("map",async(mp:MapPacket)=>{
             await this.terrain.process_map(mp.map)
-            this.terrain.draw(this.terrain_gfx,1)
             await this.start(this.terrain.biome!.assets)
-
+            this.terrain.last_layer=0
             this.minimap.init(mp.map)
             this.ambient.on_game_start()
         })

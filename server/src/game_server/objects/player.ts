@@ -52,7 +52,7 @@ export abstract class PlayerConnManager{
         }
     }
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
-        const layers=layer>=Layers.Normal?[Layers.Normal,Layers.Normal+1,Layers.Normal+2,Layers.Normal+3,Layers.Normal+4]:[layer]
+        const layers=layer>=Layers.Normal?[layer-2,layer-1,layer,layer+1,layer+2]:[layer-2,layer-1,layer]
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
         return objs
     }

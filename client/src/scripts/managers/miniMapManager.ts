@@ -3,6 +3,7 @@ import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { ColorM, Hitbox2D, HitboxType2D, v2, Vec2} from "common/engine/client.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 
 export class MinimapManager{
     game:Game
@@ -111,7 +112,7 @@ export class MinimapManager{
             const sorted = [...this.config.objects].sort((a,b)=>{
                 const ad=this.game.definitions.obstacles.getFromNumber(a.def)
                 const bd=this.game.definitions.obstacles.getFromNumber(b.def)
-                return (ad.zIndex ?? 0) - (bd.zIndex ?? 0)
+                return (ad.zIndex?.base ?? zIndexes.Obstacles1) - (bd.zIndex?.base ?? zIndexes.Obstacles1)
             })
             for (const obj of sorted) {
                 const def = this.game.definitions.obstacles.getFromNumber(obj.def)
@@ -127,7 +128,7 @@ export class MinimapManager{
                 const fw = frame.frame_size?.x ?? sw
                 const fh = frame.frame_size?.y ?? sh
 
-                const frame_scale=(def.assets?.frame?.transform?.scale??1)
+                const frame_scale=(def.assets?.frame?.transform?.scale??2)
 
                 const w = (fw*obj.scale*frame_scale)/this.ms/200
                 const h = (fh*obj.scale*frame_scale)/this.ms/200

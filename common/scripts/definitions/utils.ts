@@ -154,3 +154,51 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
         type:stream.readUint8(),
     }
 }
+
+export interface HitParticlesDef{
+    particle?:string
+    variations?:number
+    tint?:number
+}
+export interface HitSoundsDef{
+    hit?:string
+    break?:string
+    hit_variations?:number
+}
+
+export const hit_sounds:Record<string,HitSoundsDef>={
+    tree:{
+        hit:"tree_hit",
+        hit_variations:2,
+        break:"tree_break",
+    },
+    rock:{
+        hit:"rock_hit",
+        hit_variations:2,
+        break:"rock_break",
+    },
+    bush:{
+        hit:"bush_hit",
+        hit_variations:2,
+        break:"bush_break",
+    },
+    light_metal:{
+        hit:"light_metal_hit",
+        hit_variations:2,
+        break:"light_metal_break",
+    },
+    heavy_metal:{
+        hit:"heavy_metal_hit",
+        hit_variations:3,
+        break:"heavy_metal_break",
+    },
+    wood:{
+        hit:"wood_hit",
+        hit_variations:2,
+        break:"wood_break",
+    },
+    plastic:{
+        hit:"plastic",
+        hit_variations:1
+    }
+}

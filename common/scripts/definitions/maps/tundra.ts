@@ -1,7 +1,7 @@
 import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
-import { NormalMap } from "./normal.ts";
+import { map_spawns, NormalMap } from "./normal.ts";
 
 export const TundraBiome:BiomeDef={
     floors:{
@@ -137,27 +137,22 @@ export const TundraMap:MapDef={
             size:v2(480,480),
             spawn:[
                 [
-                    {id:"recorded_tape",count:1},
+                    {def:map_spawns.containers,count:20},
 
-                    {id:"watchtower",count:7},
+                    {def:"sillo",count:3},
 
-                    {id:"blue_container_1",count:10},
-                    {id:"blue_container_2",count:10},
+                    {def:"campfire_crate",count:10},
+                    {def:"tundra_crate",count:10},
+                    {def:"copper_crate",count:20},
 
-                    {id:"sillo",count:3},
+                    {def:"wood_crate",count:190},
 
-                    {id:"md_crate",count:10},
-                    {id:"tundra_crate",count:10},
-                    {id:"copper_crate",count:20},
+                    {def:"oak_tree",count:200},
+                    {def:"stone",count:150},
+                    {def:"bush",count:100},
+                    {def:"barrel",count:50},
 
-                    {id:"wood_crate",count:190},
-
-                    {id:"oak_tree",count:300},
-                    {id:"stone",count:200},
-                    {id:"bush",count:100},
-                    {id:"barrel",count:50},
-
-                    {id:"normal_loot",count:100}
+                    {def:"normal_loot",count:100}
                 ]
             ],
             terrain:{

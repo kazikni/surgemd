@@ -1,5 +1,5 @@
 import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ManipulativeSoundInstance, ParticlesEmitter2D, RainParticle2D, random, Sound, Tween, v2 } from "common/engine/client.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { BiomeDef } from "common/scripts/definitions/maps/base.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
@@ -207,7 +207,7 @@ export class AmbientManager{
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
         this.rain_value=value
-        if(value===0||!this.game.save.get_variable("sv_graphics_climate")){
+        if(value===0||!this.game.save.get_variable("sv_graphics_climate")||this.game.current_layer<Layers.Normal){
             if(this.biome.ambient.sound){
                 this.ambience.set(this.game.resources.get_audio(this.biome.ambient.sound),true)
             }else{

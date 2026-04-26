@@ -41,8 +41,8 @@ export class Building extends StaticBody{
             break?:Sound
         }
     }={
-        frame:{
-            particles:[]
+        particles:{
+            images:[]
         },
         sounds:{
             hit:[],
@@ -113,34 +113,46 @@ export class Building extends StaticBody{
         this.physical_data.no_collision=this.def.no_collisions??false
         this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
 
-        for(const f of def.floor_image??[]){
+        for(const f of def.content.floor_image??[]){
             const sprite=new Sprite2D()
+
+            sprite.hotspot=v2.half_one
+            sprite._scale.set(2,2)
+            sprite.zIndex=zIndexes.BuildingsFloor
+
             sprite.set_frame({
                 image:f.image,
-                position:f.position?v2.add(this.position,f.position):undefined,
-                hotspot:f.hotspot,
+                position:f.position?v2.add(this.position,f.position):this.position,
                 rotation:rot+(f.rotation??0),
+                layer:this.layer+(f.layer??0),
+
                 scale:f.scale,
-                zIndex:f.zIndex??zIndexes.BuildingsFloor,
+                scale2:f.scale2,
+                zIndex:f.zIndex,
                 tint:f.tint
             },this.game.resources)
 
-            sprite.layer=this.layer+(f.layer??0)
             this.game.cam2d.addObject(sprite)
             this.objects.push(sprite)
         }
-        for(const c of def.ceiling??[]){
+        for(const c of def.content.ceiling??[]){
             const sprite=new Sprite2D()
+
+            sprite.hotspot=v2.half_one
+            sprite._scale.set(2,2)
+            sprite.zIndex=zIndexes.BuildingsCeiling
+
             sprite.set_frame({
-                image:c.destroy?.frame.image??c.frame.image,
-                position:c.frame.position?v2.add(this.position,c.frame.position):undefined,
-                hotspot:c.frame.hotspot,
+                image:c.frame.image,
+                position:c.frame.position?v2.add(this.position,c.frame.position):this.position,
                 rotation:rot+(c.frame.rotation??0),
+                layer:this.layer+(c.frame.layer??0),
+
                 scale:c.frame.scale,
-                zIndex:c.frame.zIndex??zIndexes.BuildingsCeiling,
-                tint:c.frame.tint,
+                scale2:c.frame.scale2,
+                zIndex:c.frame.zIndex,
+                tint:c.frame.tint
             },this.game.resources)
-            sprite.layer=this.layer+(c.layer??0)
             this.game.cam2d.addObject(sprite)
             this.objects.push(sprite)
 
@@ -154,24 +166,9 @@ export class Building extends StaticBody{
                 sprite
             })
         }
-        
-        this.assets_data.frame={
-            particles:[]
-        }
 
-        this.assets_data.frame.particles.push((this.def.assets?.particles)??(this.def.idString+"_particle"))
-
-        if(this.def.assets?.particles_tint){
-            this.assets_data.particles_tint=ColorM.number(this.def.assets.particles_tint)
-        }
-        if(this.def.assets?.particles_variation){
-            const fn=this.assets_data.frame.particles[0]
-            this.assets_data.frame.particles.length=0
-
-            for(let i=0;i<this.def.assets.particles_variation;i++){
-                this.assets_data.frame.particles.push(`${fn}_${i+1}`)
-            }
-        }
+        if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)
+        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.def.assets.particles)
 
         if(Debug.hitbox){
             this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))

@@ -33,10 +33,11 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             if(!g.data.running){
                 g.new_game(config??{
                     mode:"normal",
+                    //mode:"debug",
                     //group_size:2,
                     mode_settings:{
                         map:{
-                            //def:"tundra"
+                            def:"normal"
                             //def:"single_building"
                             //def:"lobby"
                         }

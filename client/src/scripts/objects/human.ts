@@ -497,16 +497,16 @@ export class Human extends MovingBody{
         this.container=new AnimatedContainer2D(this.game as unknown as ClientGame)
 
         this.sprites={
-            body:this.container.add_animated_sprite("body",{scale:1.333333,zIndex:4,hotspot:CenterHotspot}),
-            eyes:this.container.add_animated_sprite("eyes",{scale:1.333333,zIndex:5,hotspot:CenterHotspot}),
-            hair:this.container.add_sprite("hair",{scale:1.333333,zIndex:6,hotspot:CenterHotspot}),
+            body:this.container.add_animated_sprite("body",{scale:1.5,zIndex:4,hotspot:CenterHotspot}),
+            eyes:this.container.add_animated_sprite("eyes",{scale:1.5,zIndex:5,hotspot:CenterHotspot}),
+            hair:this.container.add_sprite("hair",{scale:1.5,zIndex:6,hotspot:CenterHotspot}),
 
             mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.4,zIndex:5}),
 
-            helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.333333,hotspot:CenterHotspot}),
+            helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.5,hotspot:CenterHotspot}),
 
-            backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.34,zIndex:3}),
-            vest:this.container.add_sprite("vest",{zIndex:0,scale:1.333333,hotspot:CenterHotspot}),
+            backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.5,zIndex:3}),
+            vest:this.container.add_sprite("vest",{zIndex:0,scale:1.5,hotspot:CenterHotspot}),
 
             left_arm:this.container.add_container("left_arm"),
             right_arm:this.container.add_container("right_arm"),
@@ -524,9 +524,9 @@ export class Human extends MovingBody{
             right_leg_l:new Sprite2D(),
             right_leg_foot:new Sprite2D(),
 
-            chest:this.container.add_sprite("chest",{scale:1.333333,hotspot:CenterHotspot,zIndex:1}),
+            chest:this.container.add_sprite("chest",{scale:1.5,hotspot:CenterHotspot,zIndex:1}),
             muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,.5)}),
-            parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2(0.5,0.5),visible:false}),
+            parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.half_one,visible:false}),
             weapon:this.container.add_sprite("weapon"),
             weapon2:this.container.add_sprite("weapon2"),
             emote_container:new Container2D(),
@@ -537,22 +537,22 @@ export class Human extends MovingBody{
         this.sprites.left_shirt_arm.transform_frame({
             hotspot:v2(1,0.5),
             zIndex:1,
-            scale:1.1,
+            scale:1.2,
         })
         this.sprites.left_hand.transform_frame({
-            hotspot:v2(0.5,0.5),
+            hotspot:v2.half_one,
             zIndex:0,
-            scale:1.1,
+            scale:1.2,
         })
         this.sprites.right_shirt_arm.transform_frame({
             hotspot:v2(1,0.5),
             zIndex:1,
-            scale:1.1,
+            scale:1.2,
         })
         this.sprites.right_hand.transform_frame({
-            hotspot:v2(0.5,0.5),
+            hotspot:v2.half_one,
             zIndex:0,
-            scale:1.1,
+            scale:1.2,
         })
 
         this.sprites.left_arm.add_child(this.sprites.left_hand)
@@ -565,7 +565,7 @@ export class Human extends MovingBody{
             zIndex:1
         })
         this.sprites.left_leg_foot.transform_frame({
-            hotspot:v2(0.5,0.5),
+            hotspot:v2.half_one,
             zIndex:0
         })
 
@@ -574,11 +574,11 @@ export class Human extends MovingBody{
             zIndex:1
         })
         this.sprites.right_leg_foot.transform_frame({
-            hotspot:v2(0.5,0.5),
+            hotspot:v2.half_one,
             zIndex:0
         })
-        v2m.set(this.sprites.left_leg.scale,1.333333,1.333333)
-        v2m.set(this.sprites.right_leg.scale,1.333333,1.333333)
+        v2m.set(this.sprites.left_leg.scale,1.5,1.5)
+        v2m.set(this.sprites.right_leg.scale,1.5,1.5)
 
         this.sprites.left_leg.add_child(this.sprites.left_leg_l)
         this.sprites.left_leg.add_child(this.sprites.left_leg_foot)

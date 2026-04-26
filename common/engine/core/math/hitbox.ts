@@ -1,6 +1,6 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 
-import { random, SeededRandom } from "./random.ts";
+import { random } from "./random.ts";
 import { NetStream } from "../net/stream.ts";
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";

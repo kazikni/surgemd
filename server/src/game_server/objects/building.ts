@@ -1,6 +1,6 @@
 import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
 import { type Human } from "./human.ts";
-import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, RotationMode, v2, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -52,7 +52,7 @@ export class Building extends StaticBody {
         if (this.def) return
         this.def = def
 
-        if (def.hitbox) {
+        if (def.hitbox){
             this.physical_data.hitbox = def.hitbox.clone()
         }
 
@@ -68,35 +68,42 @@ export class Building extends StaticBody {
 
         this.update_hitbox()
     }
-    generate(position: Vec2, side: Orientation){        
-        this.position = position
+    init(side:Orientation=random.int(0,3) as Orientation){
         this.physical_data.side = side
-
         this.base_hitbox=this.physical_data.hitbox.transform(undefined,undefined,undefined,side)
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,side)
+
+        if(this.def.spawnHitbox){
+            this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,side)
+        }else{
+            this.physical_data.spawn_hitbox=this.physical_data.hitbox
+        }
+    }
+    generate(position: Vec2){
+        this.position = position
+        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,this.physical_data.side)
 
         /*for(const f of this.def.floors??[]){
             const hb=f.hitbox.transform(this.position)
             const l=this.layer+(f.layer??0)
             this.game.map.terrain.add_floor(f.type,hb,l)
         }*/
-        for (const l of this.def.loots ?? []) {
+        for (const l of this.def.content.loots ?? []) {
             const items = this.game.loot_tables.get_loot(l.table, { withammo: true },this.game)
-            const p = v2.add_with_orientation(this.position, l.position, side)
+            const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
                 this.game.add_loot(p, li.item, li.count, this.layer)
             }
         }
 
-        for (const o of this.def.obstacles ?? []) {
-            const def=this.game.definitions.obstacles.getFromString(o.def)
+        for (const o of this.def.content.obstacles ?? []) {
+            const def=this.game.definitions.obstacles.getFromString(typeof o.def==="string"?o.def:random.weight2(o.def)!.def)
 
-            const p = v2.add_with_orientation(this.position, o.position, side)
+            const p = v2.add_with_orientation(this.position, o.position, this.physical_data.side)
 
             const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
             obj.parent=this
             if(o.id)this.objects_ids[o.id]=obj
-            const rot=def.rotationMode===RotationMode.full?(o.rotation??0)+Angle.side_rad(side):(o.rotation??0)+side
+            const rot=def.rotation_mode===RotationMode.full?(o.rotation??0)+Angle.side_rad(this.physical_data.side):(o.rotation??0)+this.physical_data.side
             obj.initialize(rot,o.variation,o.skin)
             obj.set_position(p)
 
@@ -114,15 +121,16 @@ export class Building extends StaticBody {
                 child.obj.connections.push(this.objects_ids[conn])
             }
         }
-        for (const b of this.def.sub_building ?? []) {
-            const def=this.game.definitions.buildings.getFromString(b.def)
+        for (const b of this.def.content.sub_building ?? []) {
+            const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
 
-            const p = v2.add_with_orientation(this.position, b.position, side)
+            const p = v2.add_with_orientation(this.position, b.position, this.physical_data.side)
 
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
-            obj.generate(p,Angle.add_orientation(side,b.rotation??0))
+            obj.init(Angle.add_orientation(this.physical_data.side,b.rotation??0))
+            obj.generate(p)
         }
-       for(const c of this.def.ceiling??[]){
+       for(const c of this.def.content.ceiling??[]){
             const conns:Obstacle[]=[]
             for(const conn of c.connections??[]){
                 conns.push(this.objects_ids[conn])

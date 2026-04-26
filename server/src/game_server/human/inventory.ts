@@ -387,7 +387,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             if(!hb.collidingWith(c.hitbox))continue
             if(c instanceof StaticBody){
                 if(c.number_type===GameObjectType.Obstacle){
-                    if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior&&c.can_interact(user)){
+                    if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior&&!(c as Obstacle).health_data.dead){
                         user._can_interact=false
                         c.interact(user)
                     }

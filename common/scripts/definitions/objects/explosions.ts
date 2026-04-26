@@ -305,7 +305,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_2"
             },
-        },{
+        },
+        {
             idString:"m79_grenade_explosion",
             tint:"#355",
             size:{

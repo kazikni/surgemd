@@ -5,7 +5,7 @@ import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap } from "./normal.ts";
 import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
 import { DebugMap, SingleBuildMap } from "./debug.ts";
-import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2 } from "../../../engine/core.ts";
+import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
 export interface Aditional{
@@ -75,7 +75,7 @@ export interface IslandDef{
             floor?:FloorType
         }
     },
-    spawn?:{id:string,count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
+    spawn?:{def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
 }
 export interface MapDef{
     loot_tables:Record<string,LootTable>

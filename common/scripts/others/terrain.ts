@@ -146,8 +146,8 @@ export const rivers={
     },
     generate(hitbox: RectHitbox2D,rivers: RiversDef[],random: SeededRandom,hb_expand: number = 0): River[] {
         const ret: River[] = [];
-        const defs = random.weight(rivers.map(g => g.weight));
-        for (const r of rivers[defs].rivers) {
+        const defs = random.weight2(rivers);
+        for (const r of defs.rivers) {
             let attempts = 0
             while (attempts++ < 10) {
                 const s_orientation = random.float(0, 1) <= 0.5 ? 0 : 2;

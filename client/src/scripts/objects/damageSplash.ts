@@ -34,7 +34,7 @@ export class DamageSplashOBJ extends GameObject{
         super()
         this.sprite=new Sprite2D()
 
-        this.sprite.hotspot=v2(0.5,0.5)
+        this.sprite.hotspot=v2.half_one
         this.sprite.scale.x=0
         this.sprite.scale.y=0
 
@@ -62,6 +62,7 @@ export class DamageSplashOBJ extends GameObject{
         this.sprite.scale.x = 0
         this.sprite.scale.y = 0
         this.sprite.rotation=-0.1
+        this.sprite.layer=this.layer
 
         const s=(random.float(1,1.3)+(args.critical?0.7:0))/this.game.cam2d.zoom
         this.game.add_tween({

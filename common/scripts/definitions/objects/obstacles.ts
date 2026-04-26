@@ -1,5 +1,6 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
+import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 export interface ObstacleBehaviorDoor{
     type:0,
     open_delay?:number
@@ -42,7 +43,7 @@ export interface ObstacleBehaviorTransformInto{
 }
 export interface ObstacleDef extends Definition{
     // Life
-    health:number
+    health?:number
     imortal?:boolean
     resistence?:number
 
@@ -66,34 +67,27 @@ export interface ObstacleDef extends Definition{
         frame?:{
             base?:string
             dead?:string
-            particle?:string
-
+            transform?:FrameTransform
             variations?:number
             biome_skins?:string[]
-            transform?:FrameTransform
         }
-        sounds?:{
-            hit:string
-            break:string
-            hit_variations?:number
-        }
+        sounds?:HitSoundsDef
+        particles?:HitParticlesDef
     }
-    particles?:{
-        variations?:number
-        tint?:number
+    zIndex?:{
+        base?:number
+        dead?:number
     }
-    zIndex?:number
-    rotationMode?:number
+    rotation_mode?:number
 
     onDestroyExplosion?:string
-    material?:string
 
     lootTable?:LootTable
 
     interactDestroy?:boolean
     reflect_bullets?:boolean
 
-    spawnMode:SpawnMode
+    spawnMode?:SpawnMode
 
     height?:0|1|2 // 0 = Invisible | 1 = Mayble | 2 = All
     hover_alpha?:number
@@ -105,200 +99,191 @@ export interface ObstacleDef extends Definition{
         hitbox:Hitbox2D
     }[]
 }
-export interface MaterialDef{
-    sounds:string
-    hit_variations?:number
-}
-export const Materials:Record<string,MaterialDef>={
-    tree:{
-        sounds:"tree",
-        hit_variations:2
-    },
-    stone:{
-        sounds:"stone",
-        hit_variations:2
-    },
-    bush:{
-        sounds:"bush",
-        hit_variations:2
-    },
-    metal:{
-        sounds:"metal",
-        hit_variations:3
-    },
-    wood:{
-        sounds:"wood",
-        hit_variations:2
-    },
-    iron:{
-        sounds:"iron",
-        hit_variations:2
-    },
-}
 export const obstacles_factory={
-    stone(id:string,hitbox:Hitbox2D=new CircleHitbox2D(v2(0,0),0.82),o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+    rock(id:string,settings:{
+        tint?:number,
+        hitbox?:Hitbox2D,
+        o?:DeepPartial<ObstacleDef>
+    }={}):ObstacleDef{
         return mergeDeep({
             idString:id,
             health:170,
-            hitbox:hitbox,
+            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.82),
             scale:{
-                destroy:0.65,
+                destroy:0.7,
             },
             assets:{
+                particles:{
+                    particle:"rock_particle",
+                    tint:settings.tint,
+                    variations:2,
+                },
                 frame:{
-                    particle:"stone_particle",
                     transform:{
-                        scale:2
+                        tint:settings.tint
                     },
-                    biome_skins:[
-                        "snow"
-                    ],
-                }
+                    variations:2
+                },
+                sounds:hit_sounds.rock
             },
-            rotationMode:RotationMode.full,
-            zIndex:zIndexes.Obstacles1,
-            material:"stone",
-            particles:{
-                variations:2
-            },
+            rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
             height:1,
-            world_shadow:{
-                model:model2d.circle(0.82)
-            }
-        },o)
+        },settings.o??{})
     },
-    crate(id:string,tint:number,o:DeepPartial<ObstacleDef>={},particle:string="metal_particle",interactDestroy:boolean=false):ObstacleDef{
+    crate(id:string,settings:{
+        o?:DeepPartial<ObstacleDef>,
+    }={}):ObstacleDef{
         return mergeDeep({
             idString:id,
             health:70,
             hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
             scale:{
-                destroy:0.6,
+                destroy:0.7,
             },
-            assets:{
-                frame:{
-                    particle:particle,
-                    transform:{
-                        scale:2,
-                        hotspot:v2(0.5,0.5)
-                    },
-                }
-            },
-            rotationMode:RotationMode.null,
-            material:"wood",
-            interactDestroy:interactDestroy,
+            rotation_mode:RotationMode.null,
             lootTable:id,
-            particles:{
-                tint:tint
-            },
-            spawnMode:Spawn.grass,
             height:1,
-        },o)
+        },settings.o??{})
+    },
+    chest(id:string,settings:{
+        o?:DeepPartial<ObstacleDef>,
+    }={}):ObstacleDef{
+        return mergeDeep({
+            idString:id,
+            hitbox:new RectHitbox2D(v2(-0.71,-1),v2(0.71,1)),
+            scale:{
+                destroy:0.7,
+            },
+            rotation_mode:RotationMode.limited,
+            lootTable:id,
+            height:1,
+        },settings.o??{})
     },
     walls:{
-        wall(id:string,frame:string,tint:number,health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        door(id:string,tint:number,settings:{
+            particle?:string,
+            sounds?:string,
+            open_duration?:number
+            o?:DeepPartial<ObstacleDef>
+        }={}):ObstacleDef{
+            const sounds=settings.sounds??"wood_door"
+            return mergeDeep({
+                idString:id,
+                hitbox:new RectHitbox2D(v2(0,-0.15),v2(1.479996,0.15)),
+                assets:{
+                    particles:{
+                        particle:settings.particle??"plank_particle",
+                        tint:tint,
+                    },
+                    frame:{
+                        base:"door",
+                        transform:{
+                            hotspot:v2(0,0.5),
+                            tint:tint
+                        },
+                    }
+                },
+                rotation_mode:RotationMode.limited,
+                expanded_behavior:{
+                    type:0,
+                    open_duration:settings.open_duration??0.15,
+                    offset:0,
+                    open_sound:sounds+"_open",
+                    close_sound:sounds+"_close"
+                }
+            },settings.o??{})
+        },
+        wall(id:string,frame:string,tint:number,health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 health:health,
                 idString:id,
                 hitbox:new RectHitbox2D(v2(-width,-height),v2(width,height)),
                 assets:{
+                    particles:{
+                        particle:particle,
+                        tint:tint,
+                    },
                     frame:{
                         base:frame,
-                        particle:particle,
                         transform:{
                             hotspot:v2(0.5,0.5),
-                            scale:2,
                             tint:tint
                         },
                     }
                 },
-                particles:{
-                    tint:tint
-                },
-                rotationMode:RotationMode.limited,
-                zIndex:zIndexes.Obstacles1,
-                material:material,
+                rotation_mode:RotationMode.limited,
                 spawnMode:Spawn.grass,
             },o)
         },
-        column_1(id:string,tint:number,particle:string="metal_particle",material:string="wood",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        column_1(id:string,tint:number,particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 imortal:true,
                 health:1,
                 idString:id,
                 hitbox:new RectHitbox2D(v2(-0.21,-0.21),v2(0.21,0.21)),
                 assets:{
+                    particles:{
+                        particle:particle,
+                        tint:tint,
+                    },
                     frame:{
                         base:"column_1",
-                        particle:particle,
                         transform:{
                             hotspot:v2(0.5,0.5),
-                            scale:2,
                             tint:tint
                         },
                     }
                 },
-                particles:{
-                    tint:tint
-                },
-                rotationMode:RotationMode.limited,
-                zIndex:zIndexes.Obstacles1,
-                material:material,
+                rotation_mode:RotationMode.null,
                 spawnMode:Spawn.grass,
             },o)
         },
-        group(id:string,tint:number,health:number=15,particle?:string,material?:string,o?:DeepPartial<ObstacleDef>):ObstacleDef[]{
+        group(id:string,tint:number,settings:{
+            health?:number
+            particle?:string
+            o?:DeepPartial<ObstacleDef>
+        }={}):ObstacleDef[]{
+            const health=settings.health??15
             return [
-                this.column_1(id+"_column",tint,particle,material,o),
+                this.column_1(id+"_column",tint,settings.particle,settings.o),
 
-                this.wall(id+"_wall_2x1","wall_size_2x1",tint,health*2,undefined,undefined,particle,material,o),
-                this.wall(id+"_wall_4x1","wall_size_4x1",tint,health*4,0.4933,undefined,particle,material,o),
-                this.wall(id+"_wall_6x1","wall_size_6x1",tint,health*6,0.739998,undefined,particle,material,o),
-                this.wall(id+"_wall_8x1","wall_size_8x1",tint,health*8,0.986664,undefined,particle,material,o),
-                this.wall(id+"_wall_10x1","wall_size_10x1",tint,health*10,1.23333,undefined,particle,material,o),
-                this.wall(id+"_wall_12x1","wall_size_12x1",tint,health*12,1.47999,undefined,particle,material,o),
-                this.wall(id+"_wall_14x1","wall_size_14x1",tint,health*14,1.72666,undefined,particle,material,o),
-                this.wall(id+"_wall_16x1","wall_size_16x1",tint,health*16,1.97332,undefined,particle,material,o),
-                this.wall(id+"_wall_20x1","wall_size_20x1",tint,health*20,2.46666,undefined,particle,material,o),
-                this.wall(id+"_wall_24x1","wall_size_24x1",tint,health*24,2.95999,undefined,particle,material,o),
-                this.wall(id+"_wall_28x1","wall_size_28x1",tint,health*28,3.45332,undefined,particle,material,o),
+                this.wall(id+"_wall_2x1","wall_size_2x1",tint,health*2,undefined,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_4x1","wall_size_4x1",tint,health*4,0.4933,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_6x1","wall_size_6x1",tint,health*6,0.739998,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_8x1","wall_size_8x1",tint,health*8,0.986664,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_10x1","wall_size_10x1",tint,health*10,1.23333,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_12x1","wall_size_12x1",tint,health*12,1.47999,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_14x1","wall_size_14x1",tint,health*14,1.72666,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_16x1","wall_size_16x1",tint,health*16,1.97332,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_20x1","wall_size_20x1",tint,health*20,2.46666,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_24x1","wall_size_24x1",tint,health*24,2.95999,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_28x1","wall_size_28x1",tint,health*28,3.45332,undefined,settings.particle,settings.o),
             ]
         }
     }
 }
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
-        obstacles_factory.stone("stone",undefined,{
-            assets:{
-                frame:{
-                    variations:2
-                }
-            }
-        }),
+        obstacles_factory.rock("rock",{tint:0x4e4f50}),
         {
             idString:"barrel",
             health:140,
             height:1,
-            hitbox:new CircleHitbox2D(v2(0,0),0.69),
+            hitbox:new CircleHitbox2D(v2(0,0),0.7),
             scale:{
-                destroy:0.5
+                destroy:0.75
             },
             assets:{
-                frame:{
+                particles:{
                     particle:"metal_particle",
-                    transform:{
-                        scale:2,
-                    },
-                }
+                    tint:0x484848
+                },
+                sounds:hit_sounds.heavy_metal
             },
-            rotationMode:RotationMode.full,
+            rotation_mode:RotationMode.full,
             onDestroyExplosion:"barrel_explosion",
-            material:"metal",
             reflect_bullets:true,
-            particles:{
-                tint:0x484848
-            },
             spawnMode:Spawn.grass
         },
         {
@@ -306,22 +291,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             health:1,
             imortal:true,
             hitbox:new CircleHitbox2D(v2(0,0),3),
-            rotationMode:RotationMode.full,
-            zIndex:zIndexes.Obstacles1,
             onDestroyExplosion:"barrel_explosion",
-            material:"metal",
-            reflect_bullets:true,
             assets:{
-                frame:{
+                particles:{
                     particle:"metal_particle",
-                    transform:{
-                        scale:2,
-                    },
+                    tint:0x484848
                 },
+                sounds:hit_sounds.heavy_metal
             },
-            particles:{
-                tint:0x484848
-            },
+            rotation_mode:RotationMode.full,
+            reflect_bullets:true,
             spawnMode:Spawn.grass,
         },
         {
@@ -330,127 +309,157 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             hitbox:new CircleHitbox2D(v2(0,0),0.4),
             spawnHitbox:new CircleHitbox2D(v2(0,0),1.5),
             scale:{
-                destroy:0.9,
-            },
-            assets:{
-                frame:{
-                    particle:"oak_tree_particle",
-                    biome_skins:["snow"],
-                    transform:{
-                        scale:2
-                    },
-                }
-            },
-            rotationMode:RotationMode.full,
-            zIndex:zIndexes.Obstacles4,
-            material:"tree",
-            spawnMode:Spawn.grass,
-            world_shadow:{
-                model:model2d.circle(2,20)
-            }
-        },
-        obstacles_factory.crate("wood_crate",0x583b08,{},"plank_particle",true),
-        obstacles_factory.crate("md_crate",0x7021d3,{invisible_on_map:true},"plank_particle",true),
-        obstacles_factory.crate("tundra_crate",0x3e58c4,{invisible_on_map:true},"plank_particle",true),
-        obstacles_factory.crate("copper_crate",0xcc742d,{
-            health:160,
-            material:"iron",
-            reflect_bullets:true,
-            invisible_on_map:true,
-        }),
-        obstacles_factory.crate("iron_crate",0x656877,{
-            health:170,
-            material:"iron",
-            reflect_bullets:true,
-            invisible_on_map:true,
-        }),
-        obstacles_factory.crate("gold_crate",0xffd92b,{
-            health:180,
-            material:"iron",
-            reflect_bullets:true,
-            invisible_on_map:true,
-        }),
-        obstacles_factory.crate("platinum_crate",0x468edb,{
-            health:500,
-            material:"iron",
-            reflect_bullets:true,
-            scale:{
+                min:1,
+                max:1.2,
                 destroy:0.75,
             },
-            hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3)),
-            height:0,
-            invisible_on_map:true,
-        }),
+            assets:{
+                particles:{},
+                frame:{
+                    biome_skins:["snow"],
+                },
+                sounds:hit_sounds.tree
+            },
+            zIndex:{
+                base:zIndexes.Obstacles4
+            },
+            rotation_mode:RotationMode.full,
+            spawnMode:Spawn.grass,
+        },
         {
             idString:"bush",
             health:70,
             hitbox:new CircleHitbox2D(v2(0,0),0.8),
             no_collision:true,
             scale:{
-                destroy:0.8
+                min:1,
+                max:1.2,
+                destroy:0.75
             },
             assets:{
+                particles:{
+                    particle:"leaf_1_particle",
+                    tint:0x0e5c00,
+                    variations:1
+                },
                 frame:{
-                    particle:"leaf_01_particle_1",
                     biome_skins:["snow"],
-                    transform:{
-                        scale:2
-                    },
-                }
+                },
+                sounds:hit_sounds.bush
             },
-            rotationMode:RotationMode.full,
-            zIndex:zIndexes.Obstacles3,
-            material:"bush",
+            zIndex:{
+                base:zIndexes.Obstacles3
+            },
+            rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
             height:2
         },
-        {
-            idString:"wood_door",
-            health:80,
-            hitbox:new RectHitbox2D(v2(0,-0.15),v2(1.479996,0.15)),
-            assets:{
-                frame:{
-                    base:"door",
-                    particle:"plank_particle",
-                    transform:{
-                        hotspot:v2(0,0.5),
-                        scale:2,
+        obstacles_factory.crate("wood_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
                         tint:0x583b08
                     },
-                }
-            },
-            particles:{
-                tint:0x583b08
-            },
-            rotationMode:RotationMode.limited,
-            material:"wood",
-            spawnMode:Spawn.grass,
-            expanded_behavior:{
-                type:0,
-                open_duration:0.15,
-                offset:0,
+                    sounds:hit_sounds.wood
+                },
+                interactDestroy:true,
+            }
+        }),
+        obstacles_factory.crate("campfire_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x0a753d
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+                interactDestroy:true,
+            }
+        }),
+        obstacles_factory.crate("md_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x7021d3
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+                interactDestroy:true,
+            }
+        }),
+        obstacles_factory.crate("tundra_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x3e58c4,
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+                interactDestroy:true,
+            }
+        }),
+        obstacles_factory.crate("copper_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0xcc742d,
+                    },
+                    sounds:hit_sounds.light_metal
+                },
+                invisible_on_map:true,
+                reflect_bullets:true,
+            }
+        }),
+        obstacles_factory.crate("iron_crate",{
+            o:{
+                health:170,
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x656877,
+                    },
+                    sounds:hit_sounds.light_metal
+                },
+                invisible_on_map:true,
+                reflect_bullets:true,
+            }
+        }),
+        obstacles_factory.crate("gold_crate",{
+            o:{
+                health:170,
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0xffd92b,
+                    },
+                    sounds:hit_sounds.light_metal
+                },
+                invisible_on_map:true,
+                reflect_bullets:true,
+            }
+        }),
 
-                open_sound:"wood_door_open",
-                close_sound:"wood_door_close"
-            },
-        },
-        ...obstacles_factory.walls.group("wood",0x583b08),
         {
             idString:"airdrop_locked",
             imortal:true,
             health:1,
             hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
             assets:{
-                frame:{
-                    transform:{
-                        scale:2,
-                        hotspot:v2(0.5,0.5)
-                    },
-                }
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x656877,
+                },
+                sounds:hit_sounds.heavy_metal,
             },
-            rotationMode:RotationMode.null,
-            material:"metal",
-            spawnMode:Spawn.grass,
+            rotation_mode:RotationMode.null,
             height:1,
             reflect_bullets:true,
             expanded_behavior:{
@@ -458,22 +467,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 delay:2.8,
                 sound:"airdrop_unlocking_1",
                 obstacles:[
-                    {
-                        id:"iron_crate",
-                        weight:10
-                    },
-                    {
-                        id:"gold_crate",
-                        weight:1
-                    }
+                    {id:"iron_crate",weight:10},
+                    {id:"gold_crate",weight:1}
                 ],
                 sprites:{
-                    0:{
-                        image:"airdrop_locked_1"
-                    },
-                    1:{
-                        image:"airdrop_locked_2"
-                    }
+                    0:{image:"airdrop_locked_1"},
+                    1:{image:"airdrop_locked_2"}
                 },
                 particles:[
                     {
@@ -488,6 +487,140 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 ]
             }
         },
+
+        obstacles_factory.chest("military_chest",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x628254
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+            }
+        }),
+        obstacles_factory.chest("md_chest",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x161616
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+            }
+        }),
+        
+        obstacles_factory.walls.door("wood_door",0x583b08,{
+            o:{
+                health:80,
+                assets:{
+                    sounds:hit_sounds.wood
+                }
+            }
+        }),
+        obstacles_factory.walls.door("iron_door",0x404143,{
+            sounds:"metal_door",
+            particle:"metal_particle",
+            o:{
+                imortal:true,
+                reflect_bullets:true,
+                assets:{
+                    sounds:hit_sounds.light_metal
+                }
+            }
+        }),
+        ...obstacles_factory.walls.group("wood",0x583b08),
+
+        {
+            idString:"iron_ladder_bottom",
+            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
+            imortal:true,
+            assets:{
+                sounds:hit_sounds.heavy_metal,
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x656877,
+                },
+            },
+            reflect_bullets:true,
+            rotation_mode:RotationMode.limited,
+            expanded_behavior:{
+                type:2,
+                action_time:1,
+                interact_side:[{
+                    pos:v2(-0.7,0),
+                    rot:0,
+                    dest_pos:v2(0.7,0)
+                }],
+                floor_walk:1,
+            }
+        },
+        {
+            idString:"iron_ladder_top",
+            imortal:true,
+            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
+
+            assets:{
+                sounds:hit_sounds.heavy_metal,
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x656877,
+                },
+            },
+
+            reflect_bullets:true,
+            rotation_mode:RotationMode.limited,
+
+            expanded_behavior:{
+                type:2,
+                action_time:1,
+                interact_side:[{
+                    pos:v2(0.8,0),
+                    rot:180,
+                    dest_pos:v2(-0.7,0)
+                }],
+                floor_walk:-1,
+            }
+        },
+        {
+            idString:"small_iron_stairs_part",
+            imortal:true,
+            hitbox:RectHitbox2D.wall_enabled(v2(-0.83,-0.83),v2(0.83,0.83),{
+                bottom:true,
+                top:true,
+                left:false,
+                right:true
+            },0.14),
+            assets:{
+                frame:{
+                    base:"small_iron_stairs_floor_1",
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x656877,
+                },
+            },
+            rotation_mode:RotationMode.limited,
+            reflect_bullets:true,
+            stair_data:[{
+                hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
+            }]
+        },
+        /*
+        obstacles_factory.crate("platinum_crate",0x468edb,{
+            health:500,
+            material:"iron",
+            reflect_bullets:true,
+            scale:{
+                destroy:0.75,
+            },
+            hitbox:RectHitbox2D.centered(v2.zero(),v2(3,3)),
+            height:0,
+            invisible_on_map:true,
+        }),
         //Furnitunes
         {
             idString:"normal_tv",
@@ -504,7 +637,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             rotationMode:RotationMode.limited,
             zIndex:zIndexes.Obstacles2,
             material:"metal",
-            spawnMode:Spawn.grass,
         },
         {
             idString:"couch_3x1",
@@ -522,7 +654,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             },
             rotationMode:RotationMode.limited,
             material:"wood",
-            spawnMode:Spawn.grass,
         },
         {
             idString:"large_drawer",
@@ -543,166 +674,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             },
             rotationMode:RotationMode.limited,
             material:"wood",
-            spawnMode:Spawn.grass,
             lootTable:"loot_drawer"
-        },
-
-        //Christmas
-        {
-            idString:"christmas_tree",
-            health:300,
-            hitbox:new CircleHitbox2D(v2(0,0),0.6),
-            spawnHitbox:new CircleHitbox2D(v2(0,0),1),
-            scale:{
-                destroy:0.9,
-                max:1.2,
-                min:1
-            },
-            assets:{
-                frame:{
-                    particle:"oak_tree_particle",
-                    transform:{
-                        scale:2
-                    },
-                }
-            },
-            lootTable:"christmas_tree",
-            rotationMode:RotationMode.full,
-            zIndex:zIndexes.Obstacles4,
-            material:"tree",
-            spawnMode:Spawn.grass
-        },
-        {
-            idString:"recorded_tape",
-            health:1,
-            imortal:true,
-            hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.26,0.48)),
-            assets:{
-                frame:{
-                    particle:"metal_particle",
-                    transform:{
-                        hotspot:v2(0.5,0.5),
-                        scale:1.5,
-                    },
-                }
-            },
-            rotationMode:RotationMode.null,
-            material:"metal",
-            reflect_bullets:true,
-            expanded_behavior:{
-                type:1,
-                duration:40,
-                click_sound:"click_play",
-                delay:1.2
-            },
-            particles:{
-                tint:0x656877
-            },
-            spawnMode:Spawn.grass
-        },
-        {
-            idString:"iron_ladder_bottom",
-            health:1,
-            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
-            imortal:true,
-
-            material:"metal",
-            assets:{
-                frame:{
-                    particle:"metal_particle",
-                    transform:{
-                        hotspot:v2(0.5,0.5),
-                        scale:2,
-                    },
-                }
-            },
-            particles:{
-                tint:0x656877
-            },
-
-            reflect_bullets:true,
-
-            rotationMode:RotationMode.limited,
-            spawnMode:Spawn.grass,
-
-            expanded_behavior:{
-                type:2,
-                action_time:1,
-                interact_side:[{
-                    pos:v2(-0.7,0),
-                    rot:0,
-                    dest_pos:v2(0.7,0)
-                }],
-                floor_walk:1,
-            }
-        },
-        {
-            idString:"iron_ladder_top",
-            health:1,
-            hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),
-            imortal:true,
-
-            material:"metal",
-            assets:{
-                frame:{
-                    particle:"metal_particle",
-                    transform:{
-                        hotspot:v2(0.5,0.5),
-                        scale:2,
-                    },
-                }
-            },
-            particles:{
-                tint:0x656877
-            },
-
-            reflect_bullets:true,
-
-            rotationMode:RotationMode.limited,
-            spawnMode:Spawn.grass,
-
-            expanded_behavior:{
-                type:2,
-                action_time:1,
-                interact_side:[{
-                    pos:v2(0.8,0),
-                    rot:180,
-                    dest_pos:v2(-0.7,0)
-                }],
-                floor_walk:-1,
-            }
-        },
-        {
-            idString:"small_iron_stairs_part",
-            health:1,
-            imortal:true,
-            hitbox:RectHitbox2D.wall_enabled(v2(-0.83,-0.83),v2(0.83,0.83),{
-                bottom:true,
-                top:true,
-                left:false,
-                right:true
-            },0.14),
-            assets:{
-                frame:{
-                    base:"small_iron_stairs_floor_1",
-                    particle:"metal_particle",
-                    transform:{
-                        hotspot:v2(0.5,0.5),
-                        scale:2,
-                    },
-                }
-            },
-            zIndex:zIndexes.Obstacles1,
-            rotationMode:RotationMode.limited,
-            material:"metal",
-            reflect_bullets:true,
-            particles:{
-                tint:0x656877
-            },
-            spawnMode:Spawn.grass,
-            stair_data:[{
-                hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
-            }]
-        },
+        },*/
     )
 }

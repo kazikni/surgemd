@@ -30,7 +30,6 @@ export class TerrainM extends TerrainManager{
         this.last_layer=layer
         graphic.clear()
         for(const f of this.floors){
-            console.log(layer,f.layer)
             if(layer<f.layer)continue
             const flb=this.biome?.floors[f.type]
             graphic.beginPath()

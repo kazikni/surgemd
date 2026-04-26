@@ -162,6 +162,9 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     one:Object.assign(()=>{
         return {x:1,y:1} as Vec2
     },{x:1,y:1}),
+    half_one:Object.assign(()=>{
+        return {x:0.5,y:0.5} as Vec2
+    },{x:0.5,y:0.5}),
     infinity:Object.assign(()=>{
         return {x:Infinity,y:Infinity} as Vec2
     },{x:Infinity,y:Infinity}),

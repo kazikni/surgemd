@@ -5,7 +5,7 @@ import { FloorType } from "./terrain.ts";
 export const GameConstants={
     player:{
         defaultName:"Player",
-        radius:0.37,
+        radius:0.42,
         max_name_size:25,
     },
     loot:{

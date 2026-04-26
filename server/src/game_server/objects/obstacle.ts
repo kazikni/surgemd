@@ -191,7 +191,7 @@ export class Obstacle extends StaticBody{
                         this.game.add_timeout(()=>{
                             this.destroy()
 
-                            const obs=this.game.map.add_obstacle(def)
+                            const obs=this.game.map.add_obstacle(def,this.layer)
                             obs.initialize()
                             obs.set_position(this.position)
                         },this.def.expanded_behavior.delay)
@@ -221,8 +221,8 @@ export class Obstacle extends StaticBody{
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
 
-        this.health_data.max_health=this.def.health
-        this.health_data.health=this.def.health
+        this.health_data.max_health=this.def.health??1
+        this.health_data.health=this.def.health??1
 
         if(this.def.scale?.min&&this.def.scale.max){
             this.max_scale=random.float(this.def.scale.min,this.def.scale.max)
@@ -267,14 +267,14 @@ export class Obstacle extends StaticBody{
             this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
         }
         if(rotation===undefined){
-            if(this.def.rotationMode===RotationMode.limited){
+            if(this.def.rotation_mode===RotationMode.limited){
                 this.physical_data.side=random.int(0,3) as Orientation
                 this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
             }else{
-                this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotationMode??RotationMode.full)
+                this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotation_mode??RotationMode.full)
             }
-        }else if(this.def.rotationMode){
-            if(this.def.rotationMode===RotationMode.limited){
+        }else if(this.def.rotation_mode){
+            if(this.def.rotation_mode===RotationMode.limited){
                 this.physical_data.side=Angle.add_orientation(rotation as Orientation,parent_side)
                 this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
             }else{
@@ -316,7 +316,7 @@ export class Obstacle extends StaticBody{
     reset_scale(){
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.max_scale;
-            this.physical_data.scale=Math.max(this.health_data.health / this.def.health*(this.max_scale - destroyScale) + destroyScale,0)
+            this.physical_data.scale=Math.max(this.health_data.health/this.health_data.max_health*(this.max_scale - destroyScale) + destroyScale,0)
             this.net_sync.part=true
             this.physical_data.dirty_part=true
         }
@@ -380,7 +380,7 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
-            this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def)
+            this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
@@ -468,7 +468,7 @@ export class Obstacle extends StaticBody{
             }
         }
         if(full||this.health_data.dirty){
-            stream.writeFloat(this.health_data.health/this.def.health,0,1,1)
+            stream.writeFloat(this.health_data.health/this.health_data.max_health,0,1,1)
         }
 
         if(door_dirty){

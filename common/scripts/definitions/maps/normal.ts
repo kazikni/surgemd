@@ -9,13 +9,26 @@ export const NormalBiome:BiomeDef={
         "normal"
     ],
     ambient:{
-        particles:["leaf_01_particle_1"],
+        particles:[],
+        //particles:["leaf_01_particle_1"],
         rain:true,
     },
     musics:[
         "game_normal_music_1",
         "game_normal_music_2",
         "game_normal_music_3",
+    ]
+}
+export const map_spawns={
+    containers:[
+        {def:"blue_container_1",weight:10},
+        {def:"blue_container_2",weight:10},
+        {def:"red_container_1",weight:10},
+        {def:"red_container_2",weight:10},
+        {def:"yellow_container_1",weight:10},
+        {def:"yellow_container_2",weight:10},
+        {def:"green_container_1",weight:10},
+        {def:"green_container_2",weight:10},
     ]
 }
 export const NormalMap:MapDef={
@@ -45,8 +58,9 @@ export const NormalMap:MapDef={
         "mythic_guns":[
             {item:"sr25",weight:15},
             {item:"vector",weight:15},
-            {item:"m2_2",weight:10},
             {item:"kar98k",weight:7},
+            {item:"m2_2",weight:5},
+            {item:"m79",weight:1},
             {item:"awp",weight:1},
         ],
         "legendary_guns":[
@@ -244,13 +258,14 @@ export const NormalMap:MapDef={
             {weight:1,count:2,table:"normal_loot"},
             {weight:0.5,count:3,table:"normal_loot"},
         ],
+        //Crates
         "wood_crate":[
             {weight:2,count:1,table:"normal_loot"},
             {weight:1,count:2,table:"normal_loot"},
             {weight:0.5,count:3,table:"normal_loot"},
         ],
-        "md_crate":[
-            [{weight:1,table:"ammos",count:2}],
+        "campfire_crate":[
+            [{weight:1,table:"ammos"}],
             [{weight:1,table:"consumibles"}],
             [{weight:1,table:"scopes"}],
 
@@ -260,6 +275,18 @@ export const NormalMap:MapDef={
 
             [{weight:1,table:"special_guns",count:2}],
             [{weight:10,table:""},{weight:1,table:"melees"}],
+        ],
+        "md_crate":[
+            [{weight:1,table:"ammos",count:4}],
+            [{weight:1,table:"consumibles",count:4}],
+            [{weight:1,table:"special_scopes",count:4}],
+
+            [{weight:1,table:"helmets",count:4}],
+            [{weight:1,table:"vests",count:4}],
+            [{weight:1,table:"backpacks",count:4}],
+
+            [{weight:1,table:"special_guns",count:4}],
+            [{weight:1,table:"melees",count:4}],
         ],
         "copper_crate":[
             {weight:1,count:2,table:"special_loot"},
@@ -306,28 +333,27 @@ export const NormalMap:MapDef={
             size:v2(480,480),
             spawn:[
                 [
-                    {id:"recorded_tape",count:1},
+                    //{def:"watchtower",count:5},
 
-                    //{id:"watchtower",count:5},
+                    {def:"bunker_1",count:3},
+                    {def:"shed",count:20},
+                    {def:map_spawns.containers,count:20},
 
-                    {id:"jeep",count:5},
-                    {id:"bike",count:5},
+                    {def:"jeep",count:5},
+                    {def:"bike",count:5},
 
-                    {id:"blue_container_1",count:10},
-                    {id:"blue_container_2",count:10},
+                    {def:"sillo",count:10},
 
-                    {id:"sillo",count:10},
+                    {def:"campfire_crate",count:10},
+                    {def:"copper_crate",count:20},
+                    {def:"wood_crate",count:700},
 
-                    {id:"md_crate",count:10},
-                    {id:"copper_crate",count:20},
-                    {id:"wood_crate",count:700},
+                    {def:"oak_tree",count:1500},
+                    {def:"stone",count:900},
+                    {def:"bush",count:1000},
+                    {def:"barrel",count:200},
 
-                    {id:"oak_tree",count:2000},
-                    {id:"stone",count:1100},
-                    {id:"bush",count:1000},
-                    {id:"barrel",count:400},
-
-                    {id:"normal_loot",count:100}
+                    {def:"normal_loot",count:50}
                 ]
             ],
             terrain:{
@@ -374,27 +400,26 @@ export const NormalLobby:MapDef={
             size:v2(100,100),
             spawn:[
                 [
-                    {id:"watchtower",count:1},
-                    {id:"blue_container_1",count:1},
-                    {id:"blue_container_2",count:1},
+                    //{def:"watchtower",count:1},
+                    {def:map_spawns.containers,count:2},
 
-                    {id:"recorded_tape",count:1},
-                    {id:"sillo",count:2},
+                    //{def:"recorded_tape",count:1},
+                    {def:"sillo",count:2},
 
-                    {id:"jeep",count:1},
-                    {id:"bike",count:1},
+                    {def:"jeep",count:1},
+                    {def:"bike",count:1},
 
-                    {id:"oak_tree",count:80},
-                    {id:"stone",count:50},
-                    {id:"bush",count:30},
+                    {def:"oak_tree",count:80},
+                    {def:"stone",count:50},
+                    {def:"bush",count:30},
 
-                    {id:"wood_crate",count:30},
-                    {id:"copper_crate",count:6},
-                    {id:"barrel",count:13},
-                    {id:"normal_loot",count:20},
+                    {def:"wood_crate",count:30},
+                    {def:"copper_crate",count:6},
+                    {def:"barrel",count:13},
+                    {def:"normal_loot",count:20},
 
-                    /*{id:"pig",count:5},
-                    {id:"chicken",count:5}*/
+                    /*{def:"pig",count:5},
+                    {def:"chicken",count:5}*/
                 ]
             ],
             terrain:{
@@ -450,13 +475,13 @@ export const NormalCounterMD:CounterMapDef={
             size:v2(90,90),
             spawn:[
                 [
-                    {id:"sillo",count:2},
+                    {def:"sillo",count:2},
 
-                    {id:"oak_tree",count:80},
-                    {id:"stone",count:60},
-                    {id:"bush",count:40},
+                    {def:"oak_tree",count:80},
+                    {def:"stone",count:60},
+                    {def:"bush",count:40},
 
-                    {id:"barrel",count:10},
+                    {def:"barrel",count:10},
                 ]
             ],
             terrain:{

@@ -37,8 +37,9 @@ export const generation={
             for(const spawn of def.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
-                    if(map.game.definitions.creatures.exist(item.id)){
-                        const def=map.game.definitions.creatures.getFromString(item.id)
+                    const itd=typeof item.def==="string"?item.def:random.weight2(item.def)!.def
+                    if(map.game.definitions.creatures.exist(itd)){
+                        const def=map.game.definitions.creatures.getFromString(itd)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.game.add_creature(v2(0,0),def,item.layer)
                             const pos=map.getRandomPosition(obj.hitbox,obj.id,obj.layer,item.spawn??def.spawn??{
@@ -51,29 +52,29 @@ export const generation={
                             }
                             obj.position=pos
                         }
-                    }else if(map.game.definitions.buildings.exist(item.id)){
-                        const def=map.game.definitions.buildings.getFromString(item.id)
+                    }else if(map.game.definitions.buildings.exist(itd)){
+                        const def=map.game.definitions.buildings.getFromString(itd)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.generate_building(def,random,item.spawn,item.layer)
                             if(!obj)break
                         }
-                    }else if(map.game.definitions.obstacles.exist(item.id)){
-                        const def=map.game.definitions.obstacles.getFromString(item.id)
+                    }else if(map.game.definitions.obstacles.exist(itd)){
+                        const def=map.game.definitions.obstacles.getFromString(itd)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.generate_obstacle(def,random,item.spawn,item.layer)
                             if(!obj)break
                         }
-                    }else if(map.game.definitions.vehicles.exist(item.id)){
-                        const def=map.game.definitions.vehicles.getFromString(item.id)
+                    }else if(map.game.definitions.vehicles.exist(itd)){
+                        const def=map.game.definitions.vehicles.getFromString(itd)
                         for(let idx=0;idx<count;idx++){
                             const obj=map.generate_vehicle(def,random,item.spawn,item.layer)
                             if(!obj)break
                         }
-                    }else if(map.game.loot_tables.tables.has(item.id)){
+                    }else if(map.game.loot_tables.tables.has(itd)){
                         const count=random.irandom1(item.count)
                         const layer=item.layer??Layers.Normal
                         for(let idx=0;idx<count;idx++){
-                            const loot=map.game.loot_tables.get_loot(item.id,{withammo:true},map.game)
+                            const loot=map.game.loot_tables.get_loot(itd,{withammo:true},map.game)
                             const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer,{
                                 type:SpawnModeType.blacklist,
                                 list:[map.def.default_floor??FloorType.Water]
@@ -166,7 +167,7 @@ export class GameMap{
         const o=this.add_obstacle(def,layer)
         o.initialize()
 
-        const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode,random)
+        const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random)
         if(!p){
             o.destroy()
             return undefined
@@ -192,6 +193,7 @@ export class GameMap{
         const b=new Building()
         b.set_definition(def)
         b.layer=layer??Layers.Normal
+        b.init()
         const p=this.getRandomPosition(b.physical_data.spawn_hitbox,b.id,layer??b.layer,spawn??b.def.spawnMode??Spawn.grass,random)
         if(!p){
             b.destroy()
@@ -201,7 +203,7 @@ export class GameMap{
         this.game.scene_2d.objects.add_object(b,b.layer,undefined,{
             def:def
         })
-        b.generate(p,0)
+        b.generate(p)
         return b
     }
     def!:MapDef

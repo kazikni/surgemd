@@ -8,10 +8,10 @@ __                                                                              
 
 __                                                                                                      __
 ### Items
-
+* M79 - Explosive Misc Gun
 __                                                                                                      __
 ### Others
-
+* Campfire Crate
 __                                                                                                      __
 ## Changes
 __                                                                                                      __

@@ -65,7 +65,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 hand:"human_hand_1",
             },
             mounth:{
-                position:v2(0.3,0),
+                position:v2(0.33,0),
                 normal:"human_mounth_1_1",
                 open:"human_mounth_1_2"
             }

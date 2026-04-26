@@ -505,7 +505,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             content:[
                 //{def:"md_crate",position:v2.zero},
                 {def:"airdrop_locked",position:v2.zero},
-                {def:"barrel",position:v2(1.9,1.9)},
+                {def:"barrel",position:v2(1.7,1.7)},
             ]
         })
     )

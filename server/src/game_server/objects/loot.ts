@@ -71,7 +71,7 @@ export class Loot extends ServerGameObject{
                 case GameObjectType.Obstacle:
                     if((other as Obstacle).physical_data.stairs.length>0){
                         for(const s of (other as Obstacle).physical_data.stairs){
-                            if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                            if(s.hitbox.pointInside(this.position))this.set_layer(this.layer+s.dest_layer)
                         }
                     }
                 case GameObjectType.StaticBody:

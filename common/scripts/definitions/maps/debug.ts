@@ -118,7 +118,8 @@ export const SingleBuildMap:MapDef={
         //const def=map.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,2)}`)
 
         const b=map.game.map.add_building(def)
-        b.generate(v2.dscale(map.size,2),0)
+        b.init(0)
+        b.generate(v2.dscale(map.size,2))
 
         /*let pos=v2.dscale(map.size,2)
         for(let i=0;i<5;i++){

@@ -111,6 +111,9 @@ export class Game extends ClientGame<GameObject>{
             [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle],
         )
 
+        this.input_manager.mouse.meter_size=80
+        this.cam2d.meter_size=80
+
         this.local_server=new LocalGameServer(this)
 
         this.definitions=definitions

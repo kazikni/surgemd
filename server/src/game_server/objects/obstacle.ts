@@ -89,12 +89,10 @@ export class Obstacle extends StaticBody{
         
     }
 
-    choose_door_side(playerPos: Vec2):-1|0|1 {
-        const forward = v2.from_RadAngle(this.physical_data.rotation)
+    choose_door_side(playerPos: Vec2): -1 | 1 {
         const toPlayer = v2.sub(playerPos, this.position)
-        v2m.normalizeSafe(toPlayer)
-        const dot = v2.dot(forward, toPlayer)
-        return dot >= 0 ? -1 : 1
+        const local = v2.rotate_RadAngle(toPlayer, -this.physical_data.rotation)
+        return local.y >= 0 ? 1 : -1
     }
     override interact(user: Human): void {
         if(this.actived)return

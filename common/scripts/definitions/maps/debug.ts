@@ -113,12 +113,12 @@ export const SingleBuildMap:MapDef={
     },
     gen_callback(map) {
         //const def=map.game.definitions.buildings.getFromString("shed")
-        const def=map.game.definitions.buildings.getFromString("bunker_1")
-        //const def=map.game.definitions.buildings.getFromString("small_house_1")
+        //const def=map.game.definitions.buildings.getFromString("bunker_1")
+        const def=map.game.definitions.buildings.getFromString("small_house_1")
         //const def=map.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,2)}`)
 
         const b=map.game.map.add_building(def)
-        b.init(0)
+        b.init(1)
         b.generate(v2.dscale(map.size,2))
 
         /*let pos=v2.dscale(map.size,2)

@@ -80,7 +80,7 @@ export class Building extends StaticBody {
     }
     generate(position: Vec2){
         this.position = position
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,this.physical_data.side)
+        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
 
         /*for(const f of this.def.floors??[]){
             const hb=f.hitbox.transform(this.position)
@@ -97,14 +97,20 @@ export class Building extends StaticBody {
 
         for (const o of this.def.content.obstacles ?? []) {
             const def=this.game.definitions.obstacles.getFromString(typeof o.def==="string"?o.def:random.weight2(o.def)!.def)
-
-            const p = v2.add_with_orientation(this.position, o.position, this.physical_data.side)
-
+            const side=this.physical_data.side
+            let rotation=o.rotation??0
+            switch(def.rotation_mode){
+                case RotationMode.full:
+                    rotation+=Angle.side_rad(this.physical_data.side)
+                    break
+                case RotationMode.limited:
+                    rotation=Angle.add_orientation(rotation as Orientation,side)
+            }
+            const p = v2.add_with_orientation(this.position, o.position, side)
             const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
             obj.parent=this
             if(o.id)this.objects_ids[o.id]=obj
-            const rot=def.rotation_mode===RotationMode.full?(o.rotation??0)+Angle.side_rad(this.physical_data.side):(o.rotation??0)+this.physical_data.side
-            obj.initialize(rot,o.variation,o.skin)
+            obj.initialize(rotation,o.variation,o.skin)
             obj.set_position(p)
 
             if(o.stairs_dest){
@@ -123,11 +129,11 @@ export class Building extends StaticBody {
         }
         for (const b of this.def.content.sub_building ?? []) {
             const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
-
-            const p = v2.add_with_orientation(this.position, b.position, this.physical_data.side)
+            const side=this.physical_data.side
+            const p = v2.add_with_orientation(this.position, b.position, side)
 
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
-            obj.init(Angle.add_orientation(this.physical_data.side,b.rotation??0))
+            obj.init(Angle.add_orientation(side,b.rotation??0))
             obj.generate(p)
         }
        for(const c of this.def.content.ceiling??[]){

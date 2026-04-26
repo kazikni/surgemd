@@ -356,21 +356,17 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                         position:v2(-7.37,-6.7),
                         rotation:1
                     },
+
+                    {
+                        def:"wood_wall_8x1",
+                        position:v2(-0.54,-6.3),
+                        rotation:1,
+                    },
                     {
                         def:"wood_door",
                         position:v2(-0.54,-4.03),
                         rotation:3,
                         id:1
-                    },
-
-                    {
-                        def:"wood_column",
-                        position:v2(-0.54,-0.59),
-                    },
-                    {
-                        def:"wood_wall_8x1",
-                        position:v2(-0.54,-6.3),
-                        rotation:1,
                     },
                     {
                         def:"wood_wall_14x1",
@@ -378,7 +374,10 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                         rotation:1,
                         connections:[1]
                     },
-
+                    {
+                        def:"wood_column",
+                        position:v2(-0.54,-0.59),
+                    },
                     {
                         def:"wood_wall_28x1",
                         position:v2(-3.85,-0.59),
@@ -386,29 +385,94 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     },
 
                     {
+                        def:"wood_wall_10x1",
+                        position:v2(2.38,-6.08),
+                        rotation:1,
+                        connections:[2]
+                    },
+                    {
+                        def:"wood_door",
+                        position:v2(2.38,-4.9),
+                        rotation:1,
+                        id:2
+                    },
+                    {
+                        def:"wood_wall_16x1",
+                        position:v2(2.38,-1.52),
+                        rotation:1,
+                    },
+                    {
+                        def:"wood_column",
+                        position:v2(2.38,0.5),
+                    },
+                    {
+                        def:"wood_wall_20x1",
+                        position:v2(4.9,0.5),
+                        rotation:0,
+                    },
+
+                    //Furnitunes
+                    {
                         def:"normal_tv",
                         rotation:3,
-                        position:v2(-4,-1.1),
-                        id:2,
+                        position:v2(-4,-1.22),
+                        id:10,
                     },
                     {
                         def:"large_drawer",
                         rotation:3,
-                        position:v2(-4,-1.2),
-                        connections:[2]
+                        position:v2(-4,-1.15),
+                        connections:[10]
                     },
                     {
                         def:"couch_3x1",
                         rotation:1,
                         position:v2(-4,-5.5)
                     },
+
+                    {
+                        def:"large_drawer",
+                        rotation:1,
+                        position:v2(-6.1,-0.04),
+                    },
+                    {
+                        def:"small_stove",
+                        rotation:3,
+                        variation:2,
+                        position:v2(-5.5,6.71),
+                    },
+                    {
+                        def:"sink",
+                        rotation:3,
+                        variation:2,
+                        position:v2(-4.4,6.71),
+                    },
+                    {
+                        def:"large_kitchen_drawer",
+                        rotation:3,
+                        variation:2,
+                        position:v2(-2.75,6.71),
+                    },
+
+                    {
+                        def:"wood_chair",
+                        rotation:0,
+                        position:v2(2,3),
+                    },
+                    {
+                        def:"wood_table",
+                        rotation:1,
+                        position:v2(3,3),
+                    },
+                    {
+                        def:"wood_chair",
+                        rotation:2,
+                        position:v2(4,3),
+                    },
                 ],
                 floor_image:[
                     {
                         image:"small_house_1_floor",
-                        position:v2(0,0),
-                        hotspot:v2(.5,.5),
-                        scale:2,
                     }
                 ],
             },
@@ -433,39 +497,38 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                 obstacles:[
                     {
                         def:"wood_door",
-                        position:v2(1.76,0),
+                        position:v2(1.76,0.739998),
                         rotation:3,
                         id:1,
                     },
                     {
                         def:"wood_wall_4x1",
-                        position:v2(1.76,-1.9),
+                        position:v2(1.76,-1.21),
                         rotation:1,
-                        
                         id:10,
                     },
                     {
                         def:"wood_wall_4x1",
-                        position:v2(1.76,0.45),
+                        position:v2(1.76,1.21),
                         rotation:1,
                         connections:[1],
                         id:11,
                     },
                     {
                         def:"wood_wall_14x1",
-                        position:v2(0,-2.26),
+                        position:v2(0,-1.57),
                         rotation:0,
                         id:12,
                     },
                     {
                         def:"wood_wall_14x1",
-                        position:v2(0,0.82),
+                        position:v2(0,1.57),
                         rotation:0,
                         id:13,
                     },
                     {
                         def:"wood_wall_14x1",
-                        position:v2(-1.76,-0.72),
+                        position:v2(-1.76,0),
                         rotation:1,
                         id:14,
                     },
@@ -474,7 +537,6 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     {
                         frame:{
                             image:"shed_ceiling",
-                            position:v2(0,-0.73),
                         },
                         connections:[10,11,12,13,14],
                         destroy:{
@@ -487,13 +549,12 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                                 count:15
                             }
                         },
-                        hitbox:RectHitbox2D.centered(v2(0,-0.73),v2(3,3)),
+                        hitbox:RectHitbox2D.centered(v2(0,0),v2(2,2)),
                     }
                 ],
                 floor_image:[
                     {
                         image:"shed_floor",
-                        position:v2(0,-0.7),
                     }
                 ],
             },

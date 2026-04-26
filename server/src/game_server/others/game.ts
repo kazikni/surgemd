@@ -487,10 +487,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     /*add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
         const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner_badge:owner.loadout.badge,owner,position:v2.duplicate(owner.position)}) as PlayerBody
         return b
-    }
-    add_player_gore(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(angle,random.float(4,8)),layer,undefined,{owner_name:"",owner,position:v2.duplicate(owner.position),gore_type:1,gore_id:random.int(0,2)}) as PlayerBody
-        return b
     }*/
     add_grenade(position:Vec2,def:GrenadeDef,owner?:Human,layer:number=Layers.Normal):Grenade{
         const p=this.scene_2d.objects.add_object(new Grenade(),layer,undefined,{def:def,owner,position:position}) as Grenade

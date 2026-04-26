@@ -232,16 +232,16 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         let xOffset: number, yOffset: number;
         switch (side) {
             case 1:
-                xOffset = y.y;
-                yOffset = -y.x;
+                xOffset = -y.y;
+                yOffset = y.x;
                 break;
             case 2:
                 xOffset = -y.x;
                 yOffset = -y.y;
                 break;
             case 3:
-                xOffset = -y.y;
-                yOffset = y.x;
+                xOffset = y.y;
+                yOffset = -y.x;
                 break;
         }
         return this.add(x, v2(xOffset, yOffset));

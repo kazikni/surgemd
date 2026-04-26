@@ -256,6 +256,7 @@ export const obstacles_factory={
                 this.wall(id+"_wall_12x1","wall_size_12x1",tint,health*12,1.47999,undefined,settings.particle,settings.o),
                 this.wall(id+"_wall_14x1","wall_size_14x1",tint,health*14,1.72666,undefined,settings.particle,settings.o),
                 this.wall(id+"_wall_16x1","wall_size_16x1",tint,health*16,1.97332,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_18x1","wall_size_18x1",tint,health*18,2.21992,undefined,settings.particle,settings.o),
                 this.wall(id+"_wall_20x1","wall_size_20x1",tint,health*20,2.46666,undefined,settings.particle,settings.o),
                 this.wall(id+"_wall_24x1","wall_size_24x1",tint,health*24,2.95999,undefined,settings.particle,settings.o),
                 this.wall(id+"_wall_28x1","wall_size_28x1",tint,health*28,3.45332,undefined,settings.particle,settings.o),
@@ -266,13 +267,14 @@ export const obstacles_factory={
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
+        obstacles_factory.rock("golden_rock",{tint:0xffd900}),
         {
             idString:"barrel",
             health:140,
             height:1,
             hitbox:new CircleHitbox2D(v2(0,0),0.7),
             scale:{
-                destroy:0.75
+                destroy:0.7
             },
             assets:{
                 particles:{
@@ -468,11 +470,15 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 sound:"airdrop_unlocking_1",
                 obstacles:[
                     {id:"iron_crate",weight:10},
-                    {id:"gold_crate",weight:1}
+                    {id:"gold_crate",weight:1},
+                    {id:"campfire_crate",weight:15},
+                    {id:"md_crate",weight:1},
                 ],
                 sprites:{
                     0:{image:"airdrop_locked_1"},
-                    1:{image:"airdrop_locked_2"}
+                    1:{image:"airdrop_locked_2"},
+                    2:{image:"airdrop_locked_3"},
+                    4:{image:"airdrop_locked_4"},
                 },
                 particles:[
                     {
@@ -621,6 +627,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             height:0,
             invisible_on_map:true,
         }),
+        */
+
         //Furnitunes
         {
             idString:"normal_tv",
@@ -628,15 +636,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             hitbox:new RectHitbox2D(v2(-0.4,-0.4),v2(0.4,0.4)),
             reflect_bullets:true,
             assets:{
-                frame:{
-                    transform:{
-                        scale:2
-                    },
-                }
+                sounds:hit_sounds.light_metal
             },
-            rotationMode:RotationMode.limited,
-            zIndex:zIndexes.Obstacles2,
-            material:"metal",
+            rotation_mode:RotationMode.limited,
+            zIndex:{
+                base:zIndexes.Obstacles2
+            },
         },
         {
             idString:"couch_3x1",
@@ -646,35 +651,131 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 destroy:0.8
             },
             assets:{
-                frame:{
-                    transform:{
-                        scale:2
-                    },
-                }
+                sounds:hit_sounds.light_metal
             },
-            rotationMode:RotationMode.limited,
-            material:"wood",
+            rotation_mode:RotationMode.limited,
         },
         {
             idString:"large_drawer",
             health:130,
-            hitbox:new RectHitbox2D(v2(-0.52,-1.15),v2(0.43,1.15)),
+            hitbox:new RectHitbox2D(v2(-0.475,-1.15),v2(0.475,1.15)),
             scale:{
-                destroy:0.8
-            },
-            particles:{
-                tint:0xfff
+                destroy:0.9
             },
             assets:{
                 frame:{
                     transform:{
-                        scale:2
+                        hotspot:v2(0.445,0.5)
                     }
-                }
+                },
+                sounds:hit_sounds.wood
             },
-            rotationMode:RotationMode.limited,
-            material:"wood",
+            rotation_mode:RotationMode.limited,
             lootTable:"loot_drawer"
-        },*/
+        },
+        {
+            idString:"small_stove",
+            health:200,
+            hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
+            scale:{
+                destroy:0.9
+            },
+            assets:{
+                frame:{
+                    variations:2,
+                    transform:{
+                        hotspot:v2(0.4495,0.5)
+                    },
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x484848
+                },
+                sounds:hit_sounds.heavy_metal,
+            },
+            rotation_mode:RotationMode.limited,
+            onDestroyExplosion:"barrel_explosion",
+            reflect_bullets:true,
+        },
+        {
+            idString:"sink",
+            health:200,
+            hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
+            scale:{
+                destroy:0.9
+            },
+            assets:{
+                frame:{
+                    variations:2,
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x484848
+                },
+                sounds:hit_sounds.heavy_metal,
+            },
+            rotation_mode:RotationMode.limited,
+            reflect_bullets:true,
+        },
+        {
+            idString:"large_kitchen_drawer",
+            health:100,
+            hitbox:new RectHitbox2D(v2(-0.56,-1.12),v2(0.56,1.12)),
+            scale:{
+                destroy:0.9
+            },
+            assets:{
+                frame:{
+                    variations:2,
+                    transform:{
+                        hotspot:v2(0.4495,0.5)
+                    },
+                },
+                particles:{
+                    particle:"plank_particle",
+                    tint:0x583b08
+                },
+                sounds:hit_sounds.wood,
+            },
+            rotation_mode:RotationMode.limited,
+            lootTable:"loot_drawer"
+        },
+
+        {
+            idString:"wood_table",
+            health:110,
+            no_collision:true,
+            hitbox:new RectHitbox2D(v2(-0.75,-1.12),v2(0.75,1.12)),
+            scale:{
+                destroy:0.9
+            },
+            assets:{
+                particles:{
+                    particle:"plank_particle",
+                    tint:0x583b08
+                },
+                sounds:hit_sounds.wood,
+            },
+            zIndex:{
+                base:zIndexes.Obstacles3
+            },
+            rotation_mode:RotationMode.limited,
+        },
+        {
+            idString:"wood_chair",
+            health:70,
+            hitbox:new RectHitbox2D(v2(-0.49,-0.47),v2(0.49,0.47)),
+            scale:{
+                destroy:0.9
+            },
+            assets:{
+                particles:{
+                    particle:"plank_particle",
+                    tint:0x583b08
+                },
+                sounds:hit_sounds.wood,
+            },
+            rotation_mode:RotationMode.limited,
+        },
     )
 }

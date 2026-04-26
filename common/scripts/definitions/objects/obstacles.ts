@@ -119,8 +119,10 @@ export const obstacles_factory={
                     variations:2,
                 },
                 frame:{
+                    base:"rock",
+                    dead:"rock_dead",
                     transform:{
-                        tint:settings.tint
+                        tint:settings.tint,
                     },
                     variations:2
                 },
@@ -267,7 +269,14 @@ export const obstacles_factory={
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
-        obstacles_factory.rock("golden_rock",{tint:0xffd900}),
+        obstacles_factory.rock("golden_rock",{tint:0xffd92b,o:{
+            lootTable:"golden_rock",
+            health:200,
+        }}),
+        obstacles_factory.rock("platinum_rock",{tint:0x468edb,o:{
+            lootTable:"platinum_rock",
+            health:230,
+        }}),
         {
             idString:"barrel",
             health:140,

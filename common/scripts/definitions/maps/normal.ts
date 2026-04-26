@@ -29,6 +29,18 @@ export const map_spawns={
         {def:"yellow_container_2",weight:10},
         {def:"green_container_1",weight:10},
         {def:"green_container_2",weight:10},
+    ],
+    crates:[
+        {def:"wood_crate",weight:1000},
+        {def:"copper_crate",weight:100},
+        {def:"campfire_crate",weight:50},
+        {def:"iron_crate",weight:1},
+        {def:"gold_crate",weight:0.05},
+    ],
+    rocks:[
+        {def:"rock",weight:130},
+        {def:"golden_rock",weight:1},
+        {def:"platinum_rock",weight:0.01},
     ]
 }
 export const NormalMap:MapDef={
@@ -325,7 +337,16 @@ export const NormalMap:MapDef={
         "animal_medium":[
             [{weight:1,count:1,table:"consumibles"}],
             [{weight:10,count:1,table:""},{weight:1,count:1,table:"ammos"}],
-        ]
+        ],
+
+        "golden_rock":[
+            [{weight:1,table:"normal_loot",count:4}],
+            [{weight:1,item:"kar98k"}],
+        ],
+        "platinum_rock":[
+            [{weight:1,table:"special_loot",count:4}],
+            [{weight:1,item:"awp"}],
+        ],
     },
     biome:NormalBiome,
     generation:{
@@ -344,14 +365,11 @@ export const NormalMap:MapDef={
 
                     {def:"sillo",count:10},
 
-                    {def:"campfire_crate",count:10},
-                    {def:"copper_crate",count:20},
-                    {def:"wood_crate",count:700},
-
-                    {def:"oak_tree",count:1500},
-                    {def:"stone",count:900},
-                    {def:"bush",count:1000},
-                    {def:"barrel",count:200},
+                    {def:map_spawns.crates,count:500},
+                    {def:"oak_tree",count:1000},
+                    {def:map_spawns.rocks,count:500},
+                    {def:"bush",count:200},
+                    {def:"barrel",count:100},
 
                     {def:"normal_loot",count:50}
                 ]

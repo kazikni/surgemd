@@ -148,7 +148,7 @@ export const TundraMap:MapDef={
                     {def:"wood_crate",count:190},
 
                     {def:"oak_tree",count:200},
-                    {def:"stone",count:150},
+                    {def:"rock",count:150},
                     {def:"bush",count:100},
                     {def:"barrel",count:50},
 

@@ -37,10 +37,10 @@ export const generation={
             for(const spawn of def.spawn??[]){
                 for(const item of spawn){
                     const count=random.irandom1(item.count)
-                    const itd=typeof item.def==="string"?item.def:random.weight2(item.def)!.def
-                    if(map.game.definitions.creatures.exist(itd)){
-                        const def=map.game.definitions.creatures.getFromString(itd)
-                        for(let idx=0;idx<count;idx++){
+                    for(let idx=0;idx<count;idx++){
+                        const itd=typeof item.def==="string"?item.def:random.weight2(item.def)!.def
+                        if(map.game.definitions.creatures.exist(itd)){
+                            const def=map.game.definitions.creatures.getFromString(itd)
                             const obj=map.game.add_creature(v2(0,0),def,item.layer)
                             const pos=map.getRandomPosition(obj.hitbox,obj.id,obj.layer,item.spawn??def.spawn??{
                                 type:SpawnModeType.whitelist,
@@ -51,29 +51,21 @@ export const generation={
                                 break
                             }
                             obj.position=pos
-                        }
-                    }else if(map.game.definitions.buildings.exist(itd)){
-                        const def=map.game.definitions.buildings.getFromString(itd)
-                        for(let idx=0;idx<count;idx++){
+                        }else if(map.game.definitions.buildings.exist(itd)){
+                            const def=map.game.definitions.buildings.getFromString(itd)
                             const obj=map.generate_building(def,random,item.spawn,item.layer)
                             if(!obj)break
-                        }
-                    }else if(map.game.definitions.obstacles.exist(itd)){
-                        const def=map.game.definitions.obstacles.getFromString(itd)
-                        for(let idx=0;idx<count;idx++){
+                        }else if(map.game.definitions.obstacles.exist(itd)){
+                            const def=map.game.definitions.obstacles.getFromString(itd)
                             const obj=map.generate_obstacle(def,random,item.spawn,item.layer)
                             if(!obj)break
-                        }
-                    }else if(map.game.definitions.vehicles.exist(itd)){
-                        const def=map.game.definitions.vehicles.getFromString(itd)
-                        for(let idx=0;idx<count;idx++){
+                        }else if(map.game.definitions.vehicles.exist(itd)){
+                            const def=map.game.definitions.vehicles.getFromString(itd)
                             const obj=map.generate_vehicle(def,random,item.spawn,item.layer)
                             if(!obj)break
-                        }
-                    }else if(map.game.loot_tables.tables.has(itd)){
-                        const count=random.irandom1(item.count)
-                        const layer=item.layer??Layers.Normal
-                        for(let idx=0;idx<count;idx++){
+                        }else if(map.game.loot_tables.tables.has(itd)){
+                            const count=random.irandom1(item.count)
+                            const layer=item.layer??Layers.Normal
                             const loot=map.game.loot_tables.get_loot(itd,{withammo:true},map.game)
                             const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer,{
                                 type:SpawnModeType.blacklist,
@@ -84,7 +76,6 @@ export const generation={
                                 const l = map.game.add_loot(pos,ll.item,ll.count)
                             }
                         }
-                        
                     }
                 }
             }

@@ -555,6 +555,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                 floor_image:[
                     {
                         image:"shed_floor",
+                        position:v2(0.21,0)
                     }
                 ],
             },

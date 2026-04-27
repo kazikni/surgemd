@@ -168,7 +168,7 @@ export class Building extends StaticBody{
         }
 
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)
-        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.def.assets.particles)
+        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,0,this.def.assets.particles)
 
         if(Debug.hitbox){
             this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))

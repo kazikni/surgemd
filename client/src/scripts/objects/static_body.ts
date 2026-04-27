@@ -79,12 +79,12 @@ export abstract class StaticBody extends GameObject{
             }
         }
     }
-    set_hit_particles_def(id:string,particles:HitParticlesDef){
+    set_hit_particles_def(id:string,variation:number,particles:HitParticlesDef){
         this.assets_data.particles={
             images:[],
         }
         const particle=particles.particle??id+"_particle"
-        if(particles.tint)this.assets_data.particles.tint=ColorM.number(particles.tint)
+        if(particles.tint)this.assets_data.particles.tint=ColorM.number(typeof particles.tint==="number"?particles.tint:particles.tint[variation])
         if(particles.variations){
             for(let i=0;i<particles.variations;i++){
                 this.assets_data.particles.images.push(`${particle}_${i+1}`)

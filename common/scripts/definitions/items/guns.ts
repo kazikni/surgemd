@@ -466,6 +466,44 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
         }),
+        guns_factory.pistol("colt1873","45acp",{
+            fireDelay:0.3,
+            switchDelay:0.3,
+            fireMode:FireMode.Single,
+            rank:ItemRank.E,
+            spread:1,
+
+            ammoSpawnAmount:25,
+
+            bullet:{
+                def:{
+                    damage:16,
+                    range:110,
+                    falloff:0.8,
+                    speed:47,
+                    tracer:tracers.large
+                }
+            },
+            recoil:{
+                duration:1,
+                speed:0.8
+            },
+            reload:{
+                delay:3,
+                capacity:5,
+                extended_capacity:10,
+            },
+            dual:{
+                ammoSpawnAmount:50,
+                dual_offset:0.2,
+                fireDelay:0.2,
+                reload:{
+                    capacity:10,
+                    extended_capacity:20,
+                    delay:5
+                }
+            },
+        }),
         guns_factory.pistol("yellow_laser_pistol","9mm",{
             fireDelay:0.15,
             fireMode:FireMode.Single,

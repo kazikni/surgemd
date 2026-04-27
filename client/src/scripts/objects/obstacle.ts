@@ -148,7 +148,7 @@ export class Obstacle extends StaticBody{
         this.assets_data.frame.dead=this.def.assets?.frame?.dead??this.def.idString+"_dead"
 
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets!.sounds!)
-        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.def.assets.particles)
+        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.variation-1,this.def.assets.particles)
 
         if(this.def.onDestroyExplosion&&this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
             if(!this.emitter_1){

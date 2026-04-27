@@ -49,7 +49,8 @@ export const NormalMap:MapDef={
         "common_guns":[
             {item:"m9",weight:15},
             {item:"taurustx",weight:12},
-            {item:"micro_uzi",weight:3},
+            {item:"colt1873",weight:6},
+            {item:"micro_uzi",weight:1},
         ],
         "uncommon_guns":[
             {item:"mp5",weight:1.4},
@@ -357,6 +358,7 @@ export const NormalMap:MapDef={
                 [
                     //{def:"watchtower",count:5},
 
+                    {def:"small_house_1",count:5},
                     {def:"bunker_1",count:3},
                     {def:"shed",count:20},
                     {def:map_spawns.containers,count:20},

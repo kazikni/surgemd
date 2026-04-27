@@ -349,6 +349,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         },*/
         {
             idString:"small_house_1",
+            spawnHitbox:new RectHitbox2D(v2(-7.7,-7.7),v2(7.7,7.7)),
             content:{
                 obstacles:[
                     {
@@ -454,6 +455,11 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                         position:v2(-2.75,6.71),
                     },
 
+                    {
+                        def:"small_bed",
+                        rotation:0,
+                        position:v2(5.95,-6.2),
+                    },
                     {
                         def:"wood_chair",
                         rotation:0,

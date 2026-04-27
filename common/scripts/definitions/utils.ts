@@ -158,7 +158,7 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
 export interface HitParticlesDef{
     particle?:string
     variations?:number
-    tint?:number
+    tint?:number|(number[])
 }
 export interface HitSoundsDef{
     hit?:string
@@ -200,5 +200,10 @@ export const hit_sounds:Record<string,HitSoundsDef>={
     plastic:{
         hit:"plastic",
         hit_variations:1
+    },
+    tissue:{
+        hit:"tissue_hit",
+        hit_variations:2,
+        break:"tissue_break",
     }
 }

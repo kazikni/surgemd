@@ -8,7 +8,9 @@ __                                                                              
 
 __                                                                                                      __
 ### Items
+* Colt1873 - 45ACP pistol
 * M79 - Explosive Misc Gun
+* Shovel - A New Melee
 __                                                                                                      __
 ### Others
 * Campfire Crate

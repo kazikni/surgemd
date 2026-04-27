@@ -660,7 +660,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 destroy:0.8
             },
             assets:{
-                sounds:hit_sounds.light_metal
+                sounds:hit_sounds.tissue,
+                particles:{
+                    particle:"tissue_particle",
+                    tint:0xdfe1e4
+                },
             },
             rotation_mode:RotationMode.limited,
         },
@@ -783,6 +787,25 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                     tint:0x583b08
                 },
                 sounds:hit_sounds.wood,
+            },
+            rotation_mode:RotationMode.limited,
+        },
+        {
+            idString:"small_bed",
+            health:150,
+            hitbox:new RectHitbox2D(v2(-1.28,-0.77),v2(1.28,0.77)),
+            scale:{
+                destroy:0.8
+            },
+            assets:{
+                frame:{
+                    variations:2
+                },
+                particles:{
+                    particle:"tissue_particle",
+                    tint:[0xdfe1e4,0x3f4658]
+                },
+                sounds:hit_sounds.tissue
             },
             rotation_mode:RotationMode.limited,
         },

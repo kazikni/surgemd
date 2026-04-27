@@ -199,8 +199,9 @@ export class UiManager{
     }
     begin_emote_wheel(position:Vec2,emotes?:EmoteDef[]){
         ShowElement(this.content.emote_wheel.main)
-        this.content.emote_wheel.main.style.left=`${position.x*100}px`
-        this.content.emote_wheel.main.style.top=`${position.y*100}px`
+        const ms=this.game.cam2d.meter_size
+        this.content.emote_wheel.main.style.left=`${position.x*ms}px`
+        this.content.emote_wheel.main.style.top=`${position.y*ms}px`
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
 

@@ -57,7 +57,7 @@ export class BattleRoyaleSolo extends ModeManager{
             airdrops:settings.airdrops??{
                 obstacle:"iron_crate",
                 spawn:[
-                    20,100,180,260
+                    20,21,22,150,151,152,301,302,303
                 ]
             }
         }

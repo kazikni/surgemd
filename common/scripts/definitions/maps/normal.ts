@@ -98,6 +98,7 @@ export const NormalMap:MapDef={
             {table:"legendary_guns",weight:0.3}
         ],
         "melees":[
+            {item:"shovel",weight:15},
             {item:"axe",weight:10},
             {item:"sledgehammer",weight:1},
         ],

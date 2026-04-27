@@ -268,6 +268,41 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             }
         },
         {
+            idString:"shovel",
+            damage:20,
+            offset:0.6,
+            rank:ItemRank.D,
+            radius:0.9,
+            size:2,
+            attack_delay:0.35,
+            switchDelay:0.5,
+            damage_delays:[0.25],
+            resistence_damage:1,
+            arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.2,0.4)
+            },
+            animation:AnimationSwing(0.3),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"shovel_hit",
+            }
+        },
+        {
             idString:"pan",
             damage:20,
             offset:0.6,

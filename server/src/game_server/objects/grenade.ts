@@ -49,7 +49,25 @@ export class Grenade extends Projectile{
                 if(obj.number_type===GameObjectType.Obstacle){
                     if((obj as Obstacle).def.height===2||((obj as Obstacle).def.height===1&&this.physical_data.zpos>=0.5))break
                 }
-                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
+                const ov=this.hitbox.overlapCollision(obj.hitbox)
+                for(const c of ov){
+                    const normal = c.dir
+                    const vel = this.physical_data.velocity
+
+                    const dot = v2.dot(vel, normal)
+                    const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
+
+                    this.physical_data.velocity=v2.scale(reflected, 0.4)
+                    if(this.def.cook?.impact){
+                        this.kill()
+                        break
+                    }
+                }
+                break
+            }
+            case GameObjectType.Human:{
+                if((obj as Human).health_data.dead)break
+                const ov=this.hitbox.overlapCollision(obj.hitbox)
                 for(const c of ov){
                     const normal = c.dir
                     const vel = this.physical_data.velocity

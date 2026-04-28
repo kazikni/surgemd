@@ -33,9 +33,9 @@ import { SyncedParticle } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2
@@ -244,7 +244,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             }
         }
 
-        for(let i=0;i<99;i++){
+        /*for(let i=0;i<99;i++){
             const b = this.players.add_bot(new JoinPacket())
             if(b.human){
                 if(Math.random()<=0.1){
@@ -308,7 +308,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                     b.ai=new DumbBotAI(b.human)
                 }
             }
-        }
+        }*/
     }
     override net_update(full:boolean){
         this.players.net_update()

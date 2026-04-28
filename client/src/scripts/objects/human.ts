@@ -11,7 +11,7 @@ import { Boosts } from "common/scripts/definitions/player/boosts.ts"
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts"
-import { Decal } from "./decal.ts";
+import { ClientDecal } from "./client_decal.ts";
 import { Camera2D } from "common/engine/client/2d/camera.ts";
 import { StaticBody } from "./static_body.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
@@ -146,7 +146,7 @@ export class Human extends MovingBody{
 
     on_hitted(position:Vec2,critical:boolean=false,sound?:string){
         if(Math.random()<=0.1){
-            const d=new Decal()
+            const d=new ClientDecal()
             d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
             d.sprite.scale=v2.random(0.7,1.4)
             d.sprite.rotation=random.rad()
@@ -212,7 +212,7 @@ export class Human extends MovingBody{
                 zIndex:zIndexes.Particles
             }))
         }
-        const d=new Decal()
+        const d=new ClientDecal()
 
         d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
         d.sprite.scale=v2.random(2,3)
@@ -641,6 +641,7 @@ export class Human extends MovingBody{
         }*/
     }
     distance_since_last_footstep=0
+    footstep_alternate:boolean=false
 
     override render(camera: Camera2D, _dt: number): void {
         /*camera.ctx.fill_style=this.game.world_shadow.color
@@ -654,6 +655,7 @@ export class Human extends MovingBody{
         camera.ctx.fill()*/
     }
     override update(dt:number): void {
+        const old_pos=this.old_pos
         super.update(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
@@ -695,6 +697,7 @@ export class Human extends MovingBody{
 
             // Play Footstep Sound And Do Water Riple
             if(this.distance_since_last_footstep>=2){
+                const walk_dir:number=old_pos?v2.lookTo(this.position,old_pos):this.physical_data.rotation
                 this.distance_since_last_footstep=0
                 if(this.assets.footstep_sounds){
                     this.sound_animation.footsteps=this.game.sounds.play(this.game.resources.get_audio(random.choose(this.assets.footstep_sounds)),{
@@ -702,6 +705,18 @@ export class Human extends MovingBody{
                         max_distance: 15,
                         volume:0.3
                     },"humans")
+                }
+                if(Floors[f].footstep_decal){
+                    const d=new ClientDecal()
+                    d.sprite.frame=this.game.resources.get_sprite("player_footstep")
+                    d.sprite.rotation=walk_dir
+
+                    const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.physical_data.scale)
+                    v2m.rotate_RadAngle(pos,this.physical_data.rotation)
+                    d.sprite.position=v2.add(this.position,pos)
+                    this.game.scene_2d.objects.add_object(d,this.layer)
+
+                    this.footstep_alternate=!this.footstep_alternate
                 }
                 if(Floors[f].floor_kind===FloorKind.Liquid){
                     this.game.particles.add_particle(new ABParticle2D({

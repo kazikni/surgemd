@@ -22,6 +22,7 @@ export interface FloorDef {
     acceleration?:number
     floor_kind:FloorKind
     footstep_sounds?:string[]
+    footstep_decal?:boolean
 }
 export interface RiversDef { weight: number; rivers: RiverDef[] }[]
 
@@ -38,7 +39,8 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Snow]: {
         default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
-        footstep_sounds:["footstep_snow_1","footstep_snow_2"]
+        footstep_sounds:["footstep_snow_1","footstep_snow_2"],
+        footstep_decal:true,
     },
     [FloorType.Sand]: {
         default_color: 0xb59924,floor_kind:FloorKind.Solid,

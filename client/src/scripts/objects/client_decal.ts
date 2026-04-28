@@ -1,12 +1,12 @@
 import { Sound, Sprite2D, v2 } from "common/engine/client.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-export class Decal extends GameObject{
+export class ClientDecal extends GameObject{
     ////////////////////////////
     // Definition             //
     ////////////////////////////
-    string_type:string="decal"
-    number_type: number=7
+    string_type:string="client_decal"
+    number_type: number=20
 
     ////////////////////////////
     // Visual                 //
@@ -45,9 +45,7 @@ export class Decal extends GameObject{
     constructor(){
         super()
         this.sprite=new Sprite2D()
-
         this.sprite.hotspot=v2(0.5,0.5)
-
         this.sprite.zIndex=zIndexes.Decals
     }
 }

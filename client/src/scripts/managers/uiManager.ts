@@ -22,6 +22,7 @@ import { WeaponsModule } from "../uim/weapons.ts";
 import { HandInfoModule } from "../uim/hand_info.ts";
 import { ItemsModule } from "../uim/items.ts";
 import { ActionsModule } from "../uim/actions.ts";
+import { EquipmentModule } from "../uim/equipment.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -114,6 +115,7 @@ export class UiManager{
         this.game.ui_manager.add(new HandInfoModule())
         this.game.ui_manager.add(new ItemsModule())
         this.game.ui_manager.add(new ActionsModule())
+        this.game.ui_manager.add(new EquipmentModule())
     }
     clear(){
         this.content.killfeed.innerHTML=""
@@ -641,5 +643,7 @@ export class UiManager{
             this.game.inventory.set_backpack(player.backpack)
             this.game.ui_manager.signal("backpack_dirty",player.backpack)
         }
+        
+        this.game.ui_manager.signal("active_player_update",{dt,player})
     }
 }

@@ -213,8 +213,8 @@ export class ResourcesManager{
             ret.source.src=src
         })
     }
-    get_sprite(id:string):Frame{
-        if(!this.sources[id]){
+    get_sprite(id:string,allow_default_sprite:boolean=true):Frame{
+        if(allow_default_sprite&&!this.sources[id]){
             return this.default_sprite
         }
         return this.sources[id] as Frame

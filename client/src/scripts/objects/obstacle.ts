@@ -1,4 +1,4 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -11,7 +11,7 @@ export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:numbe
     if(skin>0&&def.assets?.frame?.biome_skins){
         spr+=`_${def.assets.frame.biome_skins[skin-1]}`
     }
-    if(def.assets?.frame?.variations){
+    if(def.assets?.frame?.variations&&(def.assets.frame.sprite_variations===undefined?true:def.assets.frame.sprite_variations)){
         spr+=`_${variation}`
     }
     return spr
@@ -116,6 +116,11 @@ export class Obstacle extends StaticBody{
         }
 
         this.container.visible=true
+
+        const tid=this.def.assets?.frame?.tint_variations
+        if(tid){
+            this.sprite.tint=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+        }
     }
     die(){
         if(this.health_data.dead)return

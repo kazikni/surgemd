@@ -14,6 +14,7 @@ __                                                                              
 __                                                                                                      __
 ### Others
 * Campfire Crate
+* Players Snow Footsteps
 __                                                                                                      __
 ## Changes
 __                                                                                                      __

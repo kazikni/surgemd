@@ -329,7 +329,7 @@ export const guns_factory={
         return mergeDeep({
             idString:id,
             fireDelay:0.1,
-            switchDelay:0.1,
+            switchDelay:0.15,
             lenght:0.9,
             speed_mod:0.95,
 
@@ -848,7 +848,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             bullet:{
                 def:{
-                    damage:99,
+                    damage:105,
                     range:140,
                     falloff:0.7,
                     speed:50,

@@ -236,6 +236,7 @@ export class GunItem extends GunItemBase implements LItem{
     }
     override unload(): void {
         this.reloading=false
+        this.burst=undefined
     }
     drop(): Loot[] {
         if(this.ammo>0){
@@ -319,6 +320,7 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
     }
     on_use(user: Human,slot?: Slot<LItem>): void {
         user.inventory.set_hand_item(this)
+        this.inventory.weapon_idx=-1
         this.slot=slot
     }
     on_fire(user: Human): void {

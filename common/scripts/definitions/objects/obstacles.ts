@@ -69,6 +69,8 @@ export interface ObstacleDef extends Definition{
             dead?:string
             transform?:FrameTransform
             variations?:number
+            tint_variations?:number[]
+            sprite_variations?:boolean
             biome_skins?:string[]
         }
         sounds?:HitSoundsDef
@@ -163,7 +165,7 @@ export const obstacles_factory={
         },settings.o??{})
     },
     walls:{
-        door(id:string,tint:number,settings:{
+        door(id:string,tint:number|(number[]),settings:{
             particle?:string,
             sounds?:string,
             open_duration?:number
@@ -182,8 +184,11 @@ export const obstacles_factory={
                         base:"door",
                         transform:{
                             hotspot:v2(0,0.5),
-                            tint:tint
+                            tint:typeof tint==="number"?tint:undefined
                         },
+                        tint_variations:typeof tint==="number"?undefined:tint,
+                        variations:typeof tint==="number"?undefined:tint.length,
+                        sprite_variations:false
                     }
                 },
                 rotation_mode:RotationMode.limited,
@@ -196,7 +201,7 @@ export const obstacles_factory={
                 }
             },settings.o??{})
         },
-        wall(id:string,frame:string,tint:number,health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        wall(id:string,frame:string,tint:number|(number[]),health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 health:health,
                 idString:id,
@@ -209,16 +214,18 @@ export const obstacles_factory={
                     frame:{
                         base:frame,
                         transform:{
-                            hotspot:v2(0.5,0.5),
-                            tint:tint
+                            tint:typeof tint==="number"?tint:undefined
                         },
+                        tint_variations:typeof tint==="number"?undefined:tint,
+                        variations:typeof tint==="number"?undefined:tint.length,
+                        sprite_variations:false
                     }
                 },
                 rotation_mode:RotationMode.limited,
                 spawnMode:Spawn.grass,
             },o)
         },
-        column_1(id:string,tint:number,particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        column_1(id:string,tint:number|(number[]),particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 imortal:true,
                 health:1,
@@ -232,16 +239,18 @@ export const obstacles_factory={
                     frame:{
                         base:"column_1",
                         transform:{
-                            hotspot:v2(0.5,0.5),
-                            tint:tint
+                            tint:typeof tint==="number"?tint:undefined
                         },
+                        tint_variations:typeof tint==="number"?undefined:tint,
+                        variations:typeof tint==="number"?undefined:tint.length,
+                        sprite_variations:false
                     }
                 },
                 rotation_mode:RotationMode.null,
                 spawnMode:Spawn.grass,
             },o)
         },
-        group(id:string,tint:number,settings:{
+        group(id:string,tint:number|(number[]),settings:{
             health?:number
             particle?:string
             o?:DeepPartial<ObstacleDef>
@@ -266,6 +275,7 @@ export const obstacles_factory={
         }
     }
 }
+export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x00ff0d,0x4e4f50]
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
     obstacles.insert(
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
@@ -528,7 +538,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             }
         }),
         
-        obstacles_factory.walls.door("wood_door",0x583b08,{
+        obstacles_factory.walls.door("wood_door",WallColors,{
             o:{
                 health:80,
                 assets:{
@@ -536,7 +546,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             }
         }),
-        obstacles_factory.walls.door("iron_door",0x404143,{
+        obstacles_factory.walls.door("iron_door",WallColors,{
             sounds:"metal_door",
             particle:"metal_particle",
             o:{
@@ -547,8 +557,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             }
         }),
-        ...obstacles_factory.walls.group("wood",0x583b08),
-
+        ...obstacles_factory.walls.group("wood",WallColors),
         {
             idString:"iron_ladder_bottom",
             hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),

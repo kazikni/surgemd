@@ -14,9 +14,9 @@ export const NormalBiome:BiomeDef={
         rain:true,
     },
     musics:[
-        "game_normal_music_1",
-        "game_normal_music_2",
-        "game_normal_music_3",
+        "/sounds/musics/online/game_normal_music_1.mp3",
+        "/sounds/musics/online/game_normal_music_2.mp3",
+        "/sounds/musics/online/game_normal_music_3.mp3",
     ]
 }
 export const map_spawns={
@@ -52,10 +52,10 @@ export const NormalMap:MapDef={
             {item:"mp5",weight:8},
             {item:"colt1873",weight:7.5},
             {item:"micro_uzi",weight:7},
-            {item:"hp18",weight:5},
-            {item:"ak47",weight:3},
-            {item:"ar15",weight:3},
-            {item:"m870",weight:3},
+            {item:"hp18",weight:5.5},
+            {item:"ak47",weight:4},
+            {item:"ar15",weight:4},
+            {item:"m870",weight:4},
         ],
         "rare_guns":[
             {item:"m1a1",weight:4},
@@ -79,7 +79,7 @@ export const NormalMap:MapDef={
         ],
         //Guns Spawn
         "guns":[
-            {table:"common_guns",weight:20},
+            {table:"common_guns",weight:25},
             {table:"rare_guns",weight:3},
             {table:"mythic_guns",weight:1},
             {table:"legendary_guns",weight:0.1}

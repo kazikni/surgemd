@@ -304,8 +304,8 @@ export class ResourcesManager{
     load_audio(id:string,def:SoundDef,group:string="",load_msg?:(msg:string)=>void):Promise<Sound|undefined>{
         if(load_msg)load_msg(def.src)
         return new Promise<Sound|undefined>((resolve, reject) => {
-            if (this.sources[id] != undefined) {
-                resolve(this.sources[id] as Sound)
+            if(this.sources[id] != undefined) {
+                this.unload(this.sources[id])
             }
     
             const xhr = new XMLHttpRequest()
@@ -357,6 +357,11 @@ export class ResourcesManager{
                 case SourceType.Frame:
                     (this.sources[id] as Frame).free();
                     break
+                case SourceType.Sound: {
+                    const snd = this.sources[id] as Sound
+                    snd.buffer = null as any
+                    break
+                }
                 default:
                     break
             }

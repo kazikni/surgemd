@@ -22,6 +22,7 @@ __                                                                              
 __                                                                                                      __
 ### Others
 * Improve Explosions Physics
+* Improve Musics Loading
 __                                                                                                      __
 ### Menu
 

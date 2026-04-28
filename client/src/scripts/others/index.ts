@@ -2,7 +2,7 @@ import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
 import { NewMDLanguageManager } from "./languages.ts";
-import { BasicSocket, BrowserFileManager, Client, FetchFileManager, FileManager, IPLocation, isMobile, OfflineClientsManager, OfflineSocket, random, ReplayWatcher } from "common/engine/client.ts";
+import { BasicSocket, FetchFileManager, FileManager, IPLocation, isMobile, OfflineClientsManager, random, ReplayWatcher } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
 import { sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";

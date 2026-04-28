@@ -47,6 +47,7 @@ export class AmbientManager{
     bullet_whiz_hitbox?:CircleHitbox2D
     last_music_pos:number=0
 
+    finding_music:boolean=true
     musics:string[]=[]
 
     thunders:number=0
@@ -299,9 +300,17 @@ export class AmbientManager{
             }
 
             if(!this.game.game_over){
-                if(!this.music.running&&this.musics.length>0){
+                if(this.finding_music&&!this.music.running&&this.musics.length>0){
                     if(Math.random()<=0.01){
-                        this.music.set(this.game.resources.get_audio(random.choose(this.musics)))
+                        const music=random.choose(this.musics)
+                        this.game.resources.load_audio("gameplay_music",{
+                            src:music,
+                            volume:1
+                        }).then((v)=>{
+                            this.music.set(v)
+                            this.finding_music=true
+                        })
+                        this.finding_music=false
                     }
                 }
             }

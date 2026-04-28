@@ -667,6 +667,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 },
             },
             rotation_mode:RotationMode.limited,
+            height:1,
         },
         {
             idString:"large_drawer",
@@ -684,7 +685,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"loot_drawer"
+            lootTable:"loot_drawer",
+            height:1,
         },
         {
             idString:"small_stove",
@@ -709,6 +711,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             rotation_mode:RotationMode.limited,
             onDestroyExplosion:"barrel_explosion",
             reflect_bullets:true,
+            height:1,
         },
         {
             idString:"sink",
@@ -729,6 +732,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             },
             rotation_mode:RotationMode.limited,
             reflect_bullets:true,
+            height:1,
         },
         {
             idString:"large_kitchen_drawer",
@@ -751,7 +755,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 sounds:hit_sounds.wood,
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"loot_drawer"
+            lootTable:"loot_drawer",
+            height:1,
         },
 
         {
@@ -789,6 +794,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 sounds:hit_sounds.wood,
             },
             rotation_mode:RotationMode.limited,
+            height:1,
         },
         {
             idString:"small_bed",
@@ -808,6 +814,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 sounds:hit_sounds.tissue
             },
             rotation_mode:RotationMode.limited,
+            height:1,
         },
     )
 }

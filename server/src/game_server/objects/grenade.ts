@@ -66,7 +66,7 @@ export class Grenade extends Projectile{
                 break
             }
             case GameObjectType.Human:{
-                if((obj as Human).health_data.dead)break
+                if((obj as Human).health_data.dead||(this.owner&&obj.id===this.owner.id))break
                 const ov=this.hitbox.overlapCollision(obj.hitbox)
                 for(const c of ov){
                     const normal = c.dir

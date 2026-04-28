@@ -15,9 +15,9 @@ export const TundraBiome:BiomeDef={
     biome_skin:"snow",
     assets:["normal"],
     musics:[
-        "game_tundra_music_1",
-        "game_tundra_music_2",
-        "game_tundra_music_3",
+        "/sounds/musics/online/game_tundra_music_1.mp3",
+        "/sounds/musics/online/game_tundra_music_2.mp3",
+        "/sounds/musics/online/game_tundra_music_3.mp3",
     ],
     ambient:{
         particles:[],

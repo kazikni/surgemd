@@ -130,7 +130,7 @@ export const NormalMap:MapDef={
         ],
         //Ammos
         "ammos":[
-            {item:"12g",count:5,weight:5},
+            {item:"12g",count:10,weight:5},
             {item:"9mm",count:40,weight:5},
             {item:"762mm",count:40,weight:5},
             {item:"556mm",count:40,weight:5},
@@ -140,18 +140,6 @@ export const NormalMap:MapDef={
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
             {item:"explosive_ammo",count:2,weight:0.05},
-        ],
-        "special_ammos":[
-            {item:"12g",count:10,weight:5},
-            {item:"9mm",count:80,weight:5},
-            {item:"762mm",count:80,weight:5},
-            {item:"556mm",count:80,weight:5},
-            {item:"45acp",count:80,weight:5},
-            {item:"22lr",count:100,weight:5},
-            {item:"50cal",count:40,weight:0.1},
-            {item:"308sub",count:10,weight:0.05},
-            {item:"gasoline",count:10,weight:0.05},
-            {item:"explosive_ammo",count:4,weight:0.05},
         ],
         //Throwables
         "throwables":[
@@ -245,7 +233,7 @@ export const NormalMap:MapDef={
             {weight:0.05,table:"melees"},
         ],
         "special_loot":[
-            {weight:1,table:"special_ammos"},
+            {weight:1,table:"ammos"},
             {weight:1,table:"consumibles"},
             {weight:0.85,table:"guns"},
             {weight:0.6,table:"special_equipments"},
@@ -277,12 +265,13 @@ export const NormalMap:MapDef={
             [{weight:1,table:"melees"}],
         ],
         "copper_crate":[
-            {weight:1,count:2,table:"special_loot"},
-            {weight:0.5,count:3,table:"special_loot"},
-            {weight:0.25,count:4,table:"special_loot"},
+            {weight:2,count:2,table:"special_loot"},
+            {weight:1,count:3,table:"special_loot"},
+            {weight:0.5,count:4,table:"special_loot"},
+            {weight:0.25,count:5,table:"special_loot"},
         ],
         "iron_crate":[
-            [{weight:1,table:"special_ammos",count:2}],
+            [{weight:1,table:"ammos",count:2}],
             [{weight:1,table:"consumibles",count:2}],
             [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
@@ -291,7 +280,7 @@ export const NormalMap:MapDef={
             [{weight:9,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
-            [{weight:1,table:"special_ammos",count:2}],
+            [{weight:1,table:"ammos",count:2}],
             [{weight:1,table:"consumibles",count:2}],
             [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
             [{weight:10,table:"legendary_guns"}],
@@ -300,7 +289,7 @@ export const NormalMap:MapDef={
             [{weight:1,table:""},{weight:4,table:"melees"}],
         ],
         "platinum_crate":[
-            [{weight:1,table:"special_ammos",count:4}],
+            [{weight:1,table:"ammos",count:4}],
             [{weight:1,table:"consumibles",count:7}],
             [{weight:1,count:6,table:"tactical_equipments"}],
             [{weight:1,count:7,table:"mythic_guns"}],

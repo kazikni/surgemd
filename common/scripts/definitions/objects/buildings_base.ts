@@ -296,6 +296,92 @@ export const buildings_factory={
         ]
     },
     house:{
+        shed(id:string,settings:{
+            walls_tint?:number
+            doors_tint?:number
+            b?:DeepPartial<BuildingDef>
+        }={}){
+            const walls_tint=settings.walls_tint??1
+            const doors_tint=settings.doors_tint??walls_tint
+            return mergeDeep({
+                idString:id,
+                no_collisions:true,
+                no_bullet_collision:true,
+                content:{
+                    obstacles:[
+                        {
+                            def:"wood_door",
+                            position:v2(1.76,0.739998),
+                            rotation:3,
+                            id:1,
+                            variation:doors_tint
+                        },
+                        {
+                            def:"wood_wall_4x1",
+                            position:v2(1.76,-1.21),
+                            rotation:1,
+                            id:10,
+                            variation:walls_tint
+                        },
+                        {
+                            def:"wood_wall_4x1",
+                            position:v2(1.76,1.21),
+                            rotation:1,
+                            connections:[1],
+                            id:11,
+                            variation:walls_tint
+                        },
+                        {
+                            def:"wood_wall_14x1",
+                            position:v2(0,-1.57),
+                            rotation:0,
+                            id:12,
+                            variation:walls_tint
+                        },
+                        {
+                            def:"wood_wall_14x1",
+                            position:v2(0,1.57),
+                            rotation:0,
+                            id:13,
+                            variation:walls_tint
+                        },
+                        {
+                            def:"wood_wall_14x1",
+                            position:v2(-1.76,0),
+                            rotation:1,
+                            id:14,
+                            variation:walls_tint
+                        },
+                    ],
+                    ceiling:[ 
+                        {
+                            frame:{
+                                image:"shed_ceiling",
+                            },
+                            connections:[10,11,12,13,14],
+                            destroy:{
+                                frame:{
+                                    image:""
+                                },
+                                sound:"ceiling_break_1",
+                                count:2,
+                                particles:{
+                                    count:15
+                                }
+                            },
+                            hitbox:RectHitbox2D.centered(v2(0,0),v2(2,2)),
+                        }
+                    ],
+                    floor_image:[
+                        {
+                            image:"shed_floor",
+                            position:v2(0.21,0)
+                        }
+                    ],
+                },
+                hitbox:RectHitbox2D.centered(v2(0,-0.73),v2(3,3)),
+            },settings.b??{})
+        },
         small_house_1(id:string,settings:{
             walls_tint?:number
             doors_tint?:number
@@ -518,78 +604,6 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             ),
             spawnMode:Spawn.grass,
         },*/
-        {
-            idString:"shed",
-            no_collisions:true,
-            no_bullet_collision:true,
-            content:{
-                obstacles:[
-                    {
-                        def:"wood_door",
-                        position:v2(1.76,0.739998),
-                        rotation:3,
-                        id:1,
-                    },
-                    {
-                        def:"wood_wall_4x1",
-                        position:v2(1.76,-1.21),
-                        rotation:1,
-                        id:10,
-                    },
-                    {
-                        def:"wood_wall_4x1",
-                        position:v2(1.76,1.21),
-                        rotation:1,
-                        connections:[1],
-                        id:11,
-                    },
-                    {
-                        def:"wood_wall_14x1",
-                        position:v2(0,-1.57),
-                        rotation:0,
-                        id:12,
-                    },
-                    {
-                        def:"wood_wall_14x1",
-                        position:v2(0,1.57),
-                        rotation:0,
-                        id:13,
-                    },
-                    {
-                        def:"wood_wall_14x1",
-                        position:v2(-1.76,0),
-                        rotation:1,
-                        id:14,
-                    },
-                ],
-                ceiling:[ 
-                    {
-                        frame:{
-                            image:"shed_ceiling",
-                        },
-                        connections:[10,11,12,13,14],
-                        destroy:{
-                            frame:{
-                                image:""
-                            },
-                            sound:"ceiling_break_1",
-                            count:2,
-                            particles:{
-                                count:15
-                            }
-                        },
-                        hitbox:RectHitbox2D.centered(v2(0,0),v2(2,2)),
-                    }
-                ],
-                floor_image:[
-                    {
-                        image:"shed_floor",
-                        position:v2(0.21,0)
-                    }
-                ],
-            },
-            hitbox:RectHitbox2D.centered(v2(0,-0.73),v2(3,3)),
-        },
 
         ...buildings_factory.stairs("small_iron_stairs"),
         ...buildings_factory.small_bunker("bunker_1",{
@@ -600,6 +614,10 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             ]
         }),
 
+        buildings_factory.house.shed("shed",{
+            walls_tint:2,
+            doors_tint:2,
+        }),
         buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,
             doors_tint:2,

@@ -33,12 +33,12 @@ export const map_spawns={
     crates:[
         {def:"wood_crate",weight:1000},
         {def:"copper_crate",weight:100},
-        {def:"campfire_crate",weight:50},
+        {def:"campfire_crate",weight:20},
         {def:"iron_crate",weight:1},
         {def:"gold_crate",weight:0.05},
     ],
     rocks:[
-        {def:"rock",weight:130},
+        {def:"rock",weight:150},
         {def:"golden_rock",weight:1},
         {def:"platinum_rock",weight:0.01},
     ]
@@ -69,7 +69,7 @@ export const NormalMap:MapDef={
             {item:"vector",weight:12},
             {item:"kar98k",weight:7},
             {item:"m2_2",weight:5},
-            {item:"m79",weight:2},
+            {item:"m79",weight:1},
             {item:"awp",weight:1},
         ],
         "legendary_guns":[
@@ -79,10 +79,10 @@ export const NormalMap:MapDef={
         ],
         //Guns Spawn
         "guns":[
-            {table:"common_guns",weight:25},
-            {table:"rare_guns",weight:3},
+            {table:"common_guns",weight:45},
+            {table:"rare_guns",weight:10},
             {table:"mythic_guns",weight:1},
-            {table:"legendary_guns",weight:0.1}
+            {table:"legendary_guns",weight:0.03}
         ],
         "melees":[
             {item:"shovel",weight:15},
@@ -100,7 +100,7 @@ export const NormalMap:MapDef={
         ],
         "health_consumibles":[
             {item:"bandage",count:5,weight:8},
-            {item:"medikit",count:5,weight:1},
+            {item:"medikit",weight:1},
         ],
         "adrenaline_consumibles":[
             {item:"yellow_soda",count:2,weight:8},

@@ -23,6 +23,7 @@ import { HandInfoModule } from "../uim/hand_info.ts";
 import { ItemsModule } from "../uim/items.ts";
 import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
+import { InformationBoxModule } from "../uim/information-box.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -49,9 +50,6 @@ export class UiManager{
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
 
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
-        
-        information_killbox:document.querySelector("#information-killbox") as HTMLDivElement,
-        information_interact:document.querySelector("#information-interaction") as HTMLDivElement,
 
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
 
@@ -99,7 +97,6 @@ export class UiManager{
         HideElement(this.content.gameOver)
 
         HideElement(this.content.emote_wheel.main)
-        HideElement(this.content.information_killbox)
 
         if(isMobile||Debug.force_mobile){
             this.mobile_init()
@@ -116,15 +113,13 @@ export class UiManager{
         this.game.ui_manager.add(new ItemsModule())
         this.game.ui_manager.add(new ActionsModule())
         this.game.ui_manager.add(new EquipmentModule())
+        this.game.ui_manager.add(new InformationBoxModule())
     }
     clear(){
         this.content.killfeed.innerHTML=""
         this.content.killeader_span.innerText=""
         this.killleader=undefined
         this.content.help_gui.innerText=""
-
-        this.information_killbox_messages=[]
-        this.information_killbox_time=0
 
         this.players_name={}
 
@@ -290,14 +285,6 @@ export class UiManager{
         for (const [key, el] of Object.entries(this.helpTexts)) {
             el.style.display = this.state[key as keyof HelpGuiState] ? "" : "none";
         }
-        if(state.information_box_message!==this.content.information_interact.innerHTML){
-            if(state.information_box_message===""){
-                HideElement(this.content.information_interact)
-            }else{
-                ShowElement(this.content.information_interact)
-                this.content.information_interact.innerHTML=state.information_box_message
-            }
-        }
         if(this.mobile_enabled){
             if(this.current_interaction){
                 ShowElement(this.mobile_content.btn_interact)
@@ -311,8 +298,6 @@ export class UiManager{
             }
         }
     }
-    information_killbox_messages:string[]=[]
-    information_killbox_time:number=0
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={
             id:msg.player.id,
@@ -348,7 +333,7 @@ export class UiManager{
                             source:this.game.language.get(dsd.idString),
                         })
                         if(this.game.active_entity&&msg.killer.id===this.game.active_entity.id){
-                            this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
+                            this.game.ui_manager.signal("info-kill",`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`)
                         }
                         if(this.killleader&&msg.killer.id===this.killleader.id){
                             this.killleader.kills=msg.killer.kills
@@ -536,18 +521,6 @@ export class UiManager{
     }
     ping_time:number=0
     update(dt:number){
-        if(this.information_killbox_messages.length>0){
-            if(this.information_killbox_time<=0){
-                ShowElement(this.content.information_killbox)
-                this.content.information_killbox.innerHTML=this.information_killbox_messages[0]
-            }
-            this.information_killbox_time+=dt
-            if(this.information_killbox_time>=3){
-                this.information_killbox_time=0
-                this.information_killbox_messages.splice(this.information_killbox_messages.length-1,1)
-                HideElement(this.content.information_killbox)
-            }
-        }
         if(this.game.client&&this.game.client.opened){
             this.ping_time-=dt
             if(this.ping_time<=0){
@@ -583,16 +556,19 @@ export class UiManager{
             }
             if(!o.can_interact(player)) continue
             this.current_interaction = o
-            const hint = o.get_interact_hint(player)
-            if(hint) {
-                this.state.information_box_message = hint
-            }
             if(this.current_interaction!==old_inter){
                 if(this.game.save.get_variable("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
                     this.game.input_manager.emit("actiondown",{action:"interact"})
                 }
+                const hint = o.get_interact_hint(player)
+                if(hint){
+                    this.game.ui_manager.signal("interaction_hint", hint)
+                }
             }
             break
+        }
+        if(!this.current_interaction&&old_inter){
+            this.game.ui_manager.signal("interaction_hint", "")
         }
         this.update_hint()
         if (this.emote_wheel.active) {

@@ -486,7 +486,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1,
-                speed:0.8
+                speed:0.75
             },
             reload:{
                 delay:3,
@@ -797,7 +797,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1.25,
-                speed:0.6
+                speed:0.5
             },
             assets:{
                 cycle_sound:true
@@ -890,7 +890,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:0.9,
-                speed:0.75
+                speed:0.6
             },
             assets:{
                 cycle_sound:true
@@ -922,7 +922,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1,
-                speed:0.75
+                speed:0.6
             },
             assets:{
                 cycle_sound:true
@@ -956,7 +956,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1.1,
-                speed:0.75
+                speed:0.6
             },
             assets:{
                 cycle_sound:true
@@ -990,7 +990,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1.1,
-                speed:0.75
+                speed:0.6
             },
             assets:{
                 cycle_sound:true

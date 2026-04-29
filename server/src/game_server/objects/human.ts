@@ -535,6 +535,7 @@ export class Human extends MovingBody{
                                     break
                                 case 4:
                                     this.inventory.drop_item(drop)
+                                    this.actions.cancel()
                                     break
                             }
                         }

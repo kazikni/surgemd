@@ -50,6 +50,12 @@ export const ConfigCasters=Object.freeze({
 
     sv_ui_primary_color:Casters.toString,
     sv_ui_secondary_color:Casters.toString,
+
+    sv_loadout_female:Casters.toBoolean,
+    sv_loadout_body_tint:Casters.toString,
+    sv_loadout_hair:Casters.toString,
+    sv_loadout_hair_tint:Casters.toString,
+    sv_loadout_shirt:Casters.toString,
 })
 export const ConfigDefaultValues={
     sv_loadout_skin:"default_skin",
@@ -77,6 +83,12 @@ export const ConfigDefaultValues={
 
     sv_ui_primary_color:"#4f6ef7",
     sv_ui_secondary_color:"#1c2447",
+
+    sv_loadout_female:false,
+    sv_loadout_body_tint:"#f0a93f",
+    sv_loadout_hair:"hair_1",
+    sv_loadout_hair_tint:"#222222",
+    sv_loadout_shirt:"blue_shirt",
 }
 export const ConfigDefaultActions={
     "move_up":{

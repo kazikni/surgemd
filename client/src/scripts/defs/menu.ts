@@ -6,6 +6,8 @@ import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client
 import { type CModsManager } from "../managers/modsManager.ts";
 import { api, API_BASE, sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -464,7 +466,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     }
 }
 
-export async function MenuInitDefault(menu:MenuManager,fs:FileManager,mods?:CModsManager){
+export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
     const txt=await fs.read_file("scripts/campaign.json")
     const campaign=JSON.parse(txt)
     menu.campaign=cloneDeep(campaign)
@@ -728,6 +730,21 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             subtab:"replays"
         },
     )
+    const hairs_types:SettingOption[]=[]
+    const shirts_types:SettingOption[]=[]
+    for(const l in definitions.loadout.value){
+        if(definitions.loadout.value[l].item===LoadoutItemKind.Hair){
+            hairs_types.push({
+                name:definitions.loadout.value[l].idString,
+                value:definitions.loadout.value[l].idString
+            })
+        }else if(definitions.loadout.value[l].item===LoadoutItemKind.Shirt){
+            shirts_types.push({
+                name:definitions.loadout.value[l].idString,
+                value:definitions.loadout.value[l].idString
+            })
+        }
+    }
     menu.reload_tabs([
         {
             id:"play",
@@ -899,6 +916,61 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     ]),
                 }
             }
+        },
+        {
+            id:"loadout",
+            name:"loadout",
+            options:[
+                {
+                    id:"hair",
+                    type:"button",
+                    name:"Hair",
+                    subtab:"hair"
+                },
+                {
+                    id:"body",
+                    type:"button",
+                    name:"Body",
+                    subtab:"body"
+                },
+            ],
+            subtabs:{
+                "hair":{
+                    generate:make_menu_settings(menu.save,[
+                        {
+                            type:"color",
+                            name:"Hair Color",
+                            var:"sv_loadout_hair_tint",
+                        },
+                        {
+                            type:"choose",
+                            name:"Hair",
+                            var:"sv_loadout_hair",
+                            options:hairs_types,
+                        },
+                    ])
+                },
+                "body":{
+                    generate:make_menu_settings(menu.save,[
+                        {
+                            type:"color",
+                            name:"Body Color",
+                            var:"sv_loadout_body_tint",
+                        },
+                        {
+                            type:"toggle",
+                            name:"Female",
+                            var:"sv_loadout_female",
+                        },
+                        {
+                            type:"choose",
+                            name:"Shirt",
+                            var:"sv_loadout_shirt",
+                            options:shirts_types,
+                        },
+                    ])
+                },
+            },
         },
         ((sandbox_version&&mods)?({
             name:"Mods",

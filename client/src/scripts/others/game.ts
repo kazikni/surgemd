@@ -40,6 +40,7 @@ import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { DebugApp } from "../apps/debug.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -726,6 +727,13 @@ export class Game extends ClientGame<GameObject>{
         const packet=new JoinPacket()
 
         packet.player_name=this.save.get_variable("sv_game_name")
+
+        packet.skin.female=this.save.get_variable("sv_loadout_female")
+        packet.skin.body_tint=ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint"))
+        packet.skin.hair=(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_hair"))).idNumber!
+        packet.skin.hair_tint=ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint"))
+
+        packet.skin.shirt=(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!
         this.client.emit(packet)
     }
     connect(url:string){

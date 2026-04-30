@@ -12,6 +12,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
+import { LoadoutEyesDef, LoadoutHairDef } from "common/scripts/definitions/loadout/skins.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -243,5 +244,13 @@ export class Player extends Human{
         this.input.reload=i.reload||this.input.reload
         this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
         this.input.actions.push(...i.actions)
+    }
+    proccess_join_packet(jp:JoinPacket){
+        this.loadout.dirty=true
+        this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
+        this.loadout.hair.tint=jp.skin.hair_tint
+        this.loadout.body.tint=jp.skin.body_tint
+
+        this.loadout.hair.def=this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
     }
 }

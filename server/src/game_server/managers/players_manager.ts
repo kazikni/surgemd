@@ -172,6 +172,8 @@ export class PlayersManager{
             p.name=`${GameConstants.player.defaultName}#${Math.random()<=0.005?456:this.living_players.length+1}`
         }
 
+        p.proccess_join_packet(packet)
+
         this.living_players.push(p)
 
         this.send_killfeed_message({

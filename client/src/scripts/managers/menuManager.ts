@@ -2,7 +2,7 @@ import { api, API_BASE, api_server } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, formatToHtml, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
+import { FileManager, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -233,13 +233,13 @@ export class MenuManager{
             ShowElement(this.content.menu_options)
         }
     }
-    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,mods?:CModsManager){
+    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,definitions:GameDefinition,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
         this.update_api()
 
-        MenuInitDefault(this,fs,mods)
+        MenuInitDefault(this,definitions,fs,mods)
 
         ShowElement(this.content.menu_options,true)
     }

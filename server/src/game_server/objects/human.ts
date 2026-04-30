@@ -221,7 +221,6 @@ export class Human extends MovingBody{
         this.loadout={
             dirty:true,
             original:{
-                //skin_id:"default_skin",
                 emotes:{
 
                 }

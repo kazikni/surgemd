@@ -3,7 +3,7 @@
 #left-joystick{
     position: absolute;
     right: 0px;
-    top: 54vh;
+    top: 50vh;
     width: 300px;
     height: 300px;
     z-index: 9999;
@@ -16,7 +16,7 @@
     @media screen and (max-width: palette.$screen_large) {
         width: 130px;
         height: 130px;
-        top: 55vh;
+        top: 50vh;
     }
     @media screen and (max-width: palette.$screen_medium) {
         top: 35vh;

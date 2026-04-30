@@ -457,10 +457,15 @@ export class UiManager{
             this.game.inventory.hand_settings=state.inventory.hand
             if(state.inventory.hand)this.game.inventory.set_weapon_index(state.inventory.hand.slot,true)
         }
-        /*if(state.dirty.inventory.items) {
-            this.game.inventory.update_items(state.inventory.items)
+        if(state.dirty.inventory.items) {
+            this.items_map = {}
+            for (let i = 0; i < state.inventory.items.length; i++) {
+                const s = state.inventory.items[i]
+                const def = this.game.definitions.game_items.valueNumber[s.idNumber]
+                this.items_map[def.idString]=(this.items_map[def.idString] ?? 0) + s.count
+            }
         }
-        */
+        
 
         this.money=state.money
         this.game.ui_manager.signal("self_state",state)
@@ -621,5 +626,13 @@ export class UiManager{
         }
         
         this.game.ui_manager.signal("active_player_update",{dt,player})
+    }
+
+    items_map: Record<string, number> = {}
+    melee_free():boolean{
+        return this.game.inventory.weapon_is_free(0)
+    }
+    gun_free():boolean{
+        return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
     }
 }

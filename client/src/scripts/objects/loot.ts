@@ -8,6 +8,8 @@ import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { Human } from "./human.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -64,61 +66,55 @@ export class Loot extends GameObject{
     }
 
     override interact(h:Human): void {
-        /*switch(this.item.item_type!){
+        switch(this.item.item_type!){
             case InventoryItemType.gun:
-                if(!(
-                    this.game.inventoryManager.gun_free()
-                    ||(player.current_weapon&&player.current_weapon.item_type===InventoryItemType.gun)
-                ))return
+                if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.gun)))return
                 break
             case InventoryItemType.ammo:
             case InventoryItemType.consumible:
                 break
             case InventoryItemType.helmet:
-                if(player.helmet&&player.helmet.level>=(this.item as HelmetDef).level)return
+                if(h.helmet&&h.helmet.level>=(this.item as HelmetDef).level)return
                 break
             case InventoryItemType.vest:
-                if(player.vest&&player.vest.level>=(this.item as VestDef).level)return
+                if(h.vest&&h.vest.level>=(this.item as VestDef).level)return
                 break
             case InventoryItemType.backpack:
-                if(player.backpack&&player.backpack.level>=(this.item as BackpackDef).level)return
+                if(h.backpack&&h.backpack.level>=(this.item as BackpackDef).level)return
                 break
-            case InventoryItemType.projectile:
+            case InventoryItemType.grenade:
             case InventoryItemType.melee:
-                if(!(
-                    (this.game.inventoryManager.melee_free())
-                    ||(player.current_weapon&&player.current_weapon.item_type===InventoryItemType.melee)
-                ))return
+                if(!((this.game.ui.melee_free())||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.melee)))return
                 break
             case InventoryItemType.scope:
-                if(player.game.inventoryManager.inventory.scopes.includes(this.item.idNumber!))return
+                if(h.game.inventory.iitems.includes(this.item))return
                 break
             case InventoryItemType.accessory:
-            case InventoryItemType.skin:
+                break
         }
-        if(this.pickup_sound)this.game.sounds.play(this.pickup_sound,undefined,"players")*/
+        if(this.pickup_sound)this.game.sounds.play(this.pickup_sound,undefined,"players")
     }
     override auto_interact(h: Human): boolean {
-        /*switch(this.item.item_type!){
+        switch(this.item.item_type!){
             case InventoryItemType.melee:
-                return this.game.inventoryManager.melee_free()
+                return this.game.ui.melee_free()
             case InventoryItemType.gun:
-                return this.game.inventoryManager.gun_free()
+                return this.game.ui.gun_free()
             case InventoryItemType.ammo:
-                return (this.game.inventoryManager.inventory.oitems[this.item.idString]??0)<(player.backpack?.max[this.item.idString]??9999)
+                return (this.game.inventory.aitems[this.item.idString]??0)<(h.backpack?.max[this.item.idString]??9999)
             case InventoryItemType.consumible:{
-                const limit_per_slot=player.backpack?.max[this.item.idString]??Backpacks.getFromNumber(0).max[this.item.idString]??15
-                return (this.game.inventoryManager.items_map![this.item.idString]??0)<limit_per_slot
+                const limit_per_slot=h.backpack?.max[this.item.idString]??this.game.definitions.backpacks.getFromNumber(0).max[this.item.idString]??15
+                return (this.game.ui.items_map![this.item.idString]??0)<limit_per_slot
             }
             case InventoryItemType.helmet:
-                return !player.helmet||player.helmet.level<(this.item as HelmetDef).level
+                return !h.helmet||h.helmet.level<(this.item as HelmetDef).level
             case InventoryItemType.vest:
-                return !player.vest||player.vest.level<(this.item as VestDef).level
+                return !h.vest||h.vest.level<(this.item as VestDef).level
             case InventoryItemType.backpack:
-                return !player.backpack||player.backpack.level<(this.item as BackpackDef).level
+                return !h.backpack||h.backpack.level<(this.item as BackpackDef).level
             case InventoryItemType.scope:
-                if(!player.game.inventoryManager.inventory.scopes.includes(this.item.idNumber!))return true
-        }*/
+                if(!h.game.inventory.iitems.includes(this.item))return true
+        }
         return false
     }
     override get_interact_hint(player: Human) {

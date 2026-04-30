@@ -62,7 +62,7 @@
     border-radius: 8px;
     box-shadow: 0 0 5px var(--ui-theme-primary);
     @media screen and (max-width: palette.$screen_large) {
-        font-size: 15px;
+        font-size: 12px;
     }
     @media screen and (max-width: palette.$screen_medium) {
         font-size: 10px;
@@ -225,7 +225,7 @@
         }
     }
     @media screen and (max-width: palette.$screen_large) {
-        width: 220px;
+        width: 190px;
         gap: 7px;
         left: 7px;
         bottom: 7px;

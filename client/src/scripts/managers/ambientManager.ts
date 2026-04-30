@@ -306,7 +306,7 @@ export class AmbientManager{
                         this.game.resources.load_audio("gameplay_music",{
                             src:music,
                             volume:1
-                        }).then((v)=>{
+                        },undefined,undefined,true).then((v)=>{
                             this.music.set(v)
                             this.finding_music=true
                         })

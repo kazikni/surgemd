@@ -196,34 +196,39 @@ export interface Language {
     values: Record<string, any>
     all_values?: string
 }
-
 export class TranslationManager {
     private _language: Language
+    default_language?: Language
 
-    constructor(language: Language) {
+    constructor(language: Language, defaultLanguage?: Language) {
         this._language = language
+        this.default_language = defaultLanguage
     }
-
     setLanguage(language: Language) {
         this._language = language
     }
-
+    setDefaultLanguage(language: Language) {
+        this.default_language = language
+    }
     getLanguage(): Language {
         return this._language
     }
     get(key: string, replace: Record<string, string> = {}): string {
-        const lang = this._language
-        if (lang.all_values !== undefined) {
-            return this._interpolate(lang.all_values, replace)
+        let value = this._getFromLang(this._language, key)
+        if ((value === undefined || typeof value !== "string") && this.default_language) {
+            value = this._getFromLang(this.default_language, key)
         }
-
-        const value = this._resolveValue(lang.values, key.split("."))
         if (value === undefined || typeof value !== "string") {
             console.warn(`[TranslationManager] Missing translation for "${key}"`)
             return key
         }
-
-        return this._interpolate(value, replace);
+        return this._interpolate(value, replace)
+    }
+    private _getFromLang(lang: Language, key: string): any {
+        if (lang.all_values !== undefined) {
+            return lang.all_values
+        }
+        return this._resolveValue(lang.values, key.split("."))
     }
     private _resolveValue(obj: Record<string, any>, path: string[]): any {
         let current: any = obj
@@ -235,15 +240,12 @@ export class TranslationManager {
     }
     private _interpolate(template: string, values: Record<string, string>): string {
         let result = template
-
         result = result.replace(/\$\{([^}]+)\}/g, (_, key) => {
-            return values[key] ?? "${" + key + "}";
+            return values[key] ?? "${" + key + "}"
         })
-
         result = result.replace(/\$\[([^\]]+)\]/g, (_, key) => {
-            return values[key] ?? "$[" + key + "]";
+            return values[key] ?? "$[" + key + "]"
         })
-
         return result
     }
 }

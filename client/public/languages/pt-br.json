@@ -1,0 +1,121 @@
+{
+    "values":{
+        "game-name":"Surgemd.io",
+
+        "barrel":"Barril",
+
+        "scope_1": "Mira 1x",
+        "scope_2": "Mira 2x",
+        "scope_3": "Mira 4x",
+        "scope_4": "Mira 6x",
+        "scope_5": "Mira 8x",
+        "scope_6": "Mira 10x",
+        "scope_7": "Mira 12x",
+
+        "bandage":"Bandagem",
+        "medikit":"Kit Medico",
+        "yellow_soda":"Refrigerante Amarelo",
+        "inhaler":"Bombinha",
+        "yellow_pills":"Comprimidos Amarelos",
+        "blue_soda":"Refrigerante Azul",
+        "blue_potion":"Poção Azul",
+        "blue_pills":"Comprimidos Azul",
+        "purple_soda":"Refrigerante Roxo",
+        "purple_potion":"Poção Roxa",
+        "purple_pills":"Comprimidos Roxo",
+        "small_red_crystal":"Pedaço De Cristal Vermelho",
+        "red_soda":"Refrigerante Vermelho",
+        "red_crystal":"Cristal Vermelho",
+        "red_pills":"Comprimidos Vermelho",
+        "green_soda":"Refrigerante Verde",
+        "black_soda":"Refrigerante Preto",
+        
+        "basic_vest":"Colete Simples",
+        "basic_helmet":"Capacete Simples",
+        "basic_pack":"Mochila Simples",
+        "regular_vest":"Colete Medio",
+        "regular_helmet":"Capacete Medio",
+        "regular_pack":"Mochila Media",
+        "tactical_vest":"Colete Militar",
+        "tactical_helmet":"Capacete Militar",
+        "tactical_pack":"Mochila Militar",
+
+        "explosive_ammo":"Munição Explosiva",
+        "gasoline":"Gasolina",
+
+        "survival_knife":"Faca De Sobrevivencia",
+        "axe":"Machado",
+        "sledgehammer":"Marreta",
+
+        "killfeed-join":"${player} Entrou",
+
+        "killfeed-kill-abstinence":"${player} morreu de abistinecia",
+        "killfeed-kill-player":"${player1} matou ${player2} Com ${source}",
+        "killfeed-kill-explosion":"${player1} explodiu ${player2} Com ${source}",
+        "killfeed-kill-deadzone":"${player} foi pego pela deadzone",
+        "killfeed-kill-side-effect":"${player} morreu para efeitos colaterais",
+        "killfeed-kill-disconnect":"${player} desistiu",
+        "killfeed-kill-bleend":"${player} sangrou ate a morte",
+
+        "killfeed-down-abstinence":"${player} caiu para abistinecia",
+        "killfeed-down-player":"${player1} nocauteou ${player2} com ${source}",
+        "killfeed-down-deadzone":"Deadzone retirou as forças de ${player}",
+        "killfeed-down-side-effect":"${player} caiu para efeitos colaterais",
+        "killfeed-down-disconnect":"${player} desistiu",
+        "killfeed-down-bleend":"essa menssagem no killfeed e um bug. report",
+        "killfeed-killleader-assigned":"${player} se tornou o killleader",
+        "killfeed-killleader-dead":"o killleader ja era",
+
+        "killleader-wait":"esperado um killleader",
+
+        "interact-loot":"Pegar ${source}${count}",
+        "interact-obstacle-break":"Quebrar",
+
+        "gameover-eliminated-by":"<span id='gameover-eliminated'>Morto Por</span> ${player}",
+        "gameover-you-win":"<span id='gameover-you-win'>Voce Ganhou!</span>",
+
+        "menu-options-play":"Jogar",
+        "menu-options-settings":"Configurações",
+        "menu-options-loadout":"Equipamento",
+        "menu-options-mods":"Mods",
+        "menu-options-about":"Sobre",
+
+        "menu-options-play-label-campaign":"Campanha",
+        "menu-options-play-level-selector":"Seletor De Niveis",
+        "menu-options-play-label-online":"Online",
+        "menu-options-play-host-game":"Hostear Jogo",
+        "menu-options-play-join-game":"Entrar Em Um Jogo",
+        "menu-options-play-play-online":"Jogar Online",
+        "menu-options-play-group":"Groupo",
+        "menu-options-play-label-files":"Arquivos",
+        "menu-options-play-replay":"Replay",
+
+        "menu-options-settings-game":"Jogo",
+        "menu-options-settings-graphics":"Graficos",
+        "menu-options-settings-sounds":"Sons",
+        "menu-options-settings-ui":"Interface",
+
+        "menu-options-about-social":"Social",
+        "menu-options-about-news":"News",
+        "menu-options-about-rules":"Rules",
+        "menu-options-about-credits":"Credits",
+
+        "settings_game_interpolation":"Interpolação",
+        "settings_game_client_rot":"Rotação do lado do cliente",
+        "settings_game_friendly_fire":"Fogo amigo",
+
+        "settings_graphics_resolution":"Qualidade das texturas",
+        "settings_graphics_particles":"Particulas",
+        "settings_graphics_lights":"Luzes",
+        "settings_graphics_post_proccess":"Pos processamento",
+        "settings_graphics_climate":"Clima",
+        "settings_graphics_fullscreen":"Tela cheia",
+
+        "settings_sounds_master_volume":"volume principal",
+        "settings_sounds_music_volume":"volume da musica",
+        "settings_sounds_ambient_volume":"volume do ambiente",
+    
+        "settings_ui_primary_color":"cor primaria",
+        "settings_ui_secondary_color":"cor secundaria"
+    }
+}

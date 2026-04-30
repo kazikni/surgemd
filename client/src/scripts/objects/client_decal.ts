@@ -45,7 +45,7 @@ export class ClientDecal extends GameObject{
     constructor(){
         super()
         this.sprite=new Sprite2D()
-        this.sprite.hotspot=v2(0.5,0.5)
+        this.sprite.hotspot=v2.half_one
         this.sprite.zIndex=zIndexes.Decals
     }
 }

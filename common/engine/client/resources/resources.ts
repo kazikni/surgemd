@@ -301,11 +301,15 @@ export class ResourcesManager{
     get_audio(id:string):Sound{
         return this.sources[id] as Sound
     }
-    load_audio(id:string,def:SoundDef,group:string="",load_msg?:(msg:string)=>void):Promise<Sound|undefined>{
+    load_audio(id:string,def:SoundDef,group:string="",load_msg?:(msg:string)=>void,unload:boolean=false):Promise<Sound|undefined>{
         if(load_msg)load_msg(def.src)
         return new Promise<Sound|undefined>((resolve, reject) => {
             if(this.sources[id] != undefined) {
-                this.unload(this.sources[id])
+                if(unload){
+                    this.unload(this.sources[id])
+                }else{
+                    resolve(this.sources[id])
+                }
             }
     
             const xhr = new XMLHttpRequest()

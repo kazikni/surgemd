@@ -41,6 +41,7 @@ import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { DebugApp } from "../apps/debug.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { NewMDLanguageManager } from "./languages.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -307,7 +308,6 @@ export class Game extends ClientGame<GameObject>{
     }
     override async bind(fs?:FileManager): Promise<void> {
         super.bind()
-
         await this.save.init(is_binary?{
             type:"file",
             path:"save/settings.json",
@@ -316,6 +316,7 @@ export class Game extends ClientGame<GameObject>{
             type:"localstorage",
             key:"surgemd-settings"
         })
+        this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/languages")
         
         this.load_resources(["main"])
         this.fs=fs

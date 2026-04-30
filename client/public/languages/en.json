@@ -24,7 +24,7 @@
         "purple_potion":"Purple Potion",
         "purple_pills":"Purple Pills",
         "small_red_crystal":"Small Red Crystal",
-        "rede_soda":"Red Soda",
+        "red_soda":"Red Soda",
         "red_crystal":"Red Crystal",
         "red_pills":"Red Pills",
         "green_soda":"Green Soda",
@@ -102,6 +102,51 @@
         "interact-obstacle-break":"Break",
 
         "gameover-eliminated-by":"<span id='gameover-eliminated'>Eliminated By</span> ${player}",
-        "gameover-you-win":"<span id='gameover-you-win'>You Win!</span>"
+        "gameover-you-win":"<span id='gameover-you-win'>You Win!</span>",
+
+        "menu-options-play":"Play",
+        "menu-options-settings":"Settings",
+        "menu-options-loadout":"Loadout",
+        "menu-options-mods":"Mods",
+        "menu-options-about":"About",
+
+        "menu-options-play-label-campaign":"Campaign",
+        "menu-options-play-level-selector":"Level Selector",
+        "menu-options-play-label-online":"Online",
+        "menu-options-play-host-game":"Host Game",
+        "menu-options-play-join-game":"Join Game",
+        "menu-options-play-play-online":"Play Online",
+        "menu-options-play-group":"Group",
+        "menu-options-play-label-files":"Files",
+        "menu-options-play-replay":"Replay",
+
+        "menu-options-settings-game":"Game",
+        "menu-options-settings-graphics":"Graphics",
+        "menu-options-settings-sounds":"Sounds",
+        "menu-options-settings-ui":"UI",
+
+        "menu-options-about-social":"Social",
+        "menu-options-about-news":"News",
+        "menu-options-about-rules":"Rules",
+        "menu-options-about-credits":"Credits",
+
+        "settings_game_interpolation":"Interpolation",
+        "settings_game_client_rot":"Client Side Rotation",
+        "settings_game_friendly_fire":"Friendly Fire",
+
+        "settings_graphics_resolution":"Textures Quality",
+        "settings_graphics_particles":"Particles",
+        "settings_graphics_lights":"Lights",
+        "settings_graphics_post_proccess":"Post Proccess",
+        "settings_graphics_climate":"Climate",
+        "settings_graphics_fullscreen":"Fullscreen",
+
+        "settings_sounds_master_volume":"Master Volume",
+        "settings_sounds_music_volume":"Music Volume",
+        "settings_sounds_ambient_volume":"Ambient Volume",
+    
+        "settings_ui_primary_color":"Primary Color",
+        "settings_ui_secondary_color":"Secondary Color",
+        "settings_ui_translation":"Translation"
     }
 }

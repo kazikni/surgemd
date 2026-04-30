@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep } from "common/engine/core.ts";
+import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client.ts";
@@ -133,10 +133,10 @@ export function game_popup_builder(def:PopupBuilderDef){
         }
     }
 }
-function build_setting_input(def: SettingDef,onChange:(val:any)=>void,initial?:any): HTMLElement {
+function build_setting_input(def: SettingDef,translation:TranslationManager,onChange:(val:any)=>void,initial?:any): HTMLElement {
     if(def.type==="h1"||def.type==="h2"||def.type==="h3"||def.type==="h4"||def.type==="h5"){
         const header=document.createElement(def.type)
-        header.textContent=def.name
+        header.textContent=translation.get(def.name)
         return header
     }
 
@@ -144,7 +144,7 @@ function build_setting_input(def: SettingDef,onChange:(val:any)=>void,initial?:a
     row.className="settings-row"
 
     const label=document.createElement("span")
-    label.textContent=def.name
+    label.textContent=translation.get(def.name)
     row.appendChild(label)
 
     let el:HTMLElement
@@ -249,7 +249,7 @@ function build_setting_input(def: SettingDef,onChange:(val:any)=>void,initial?:a
     return row
 }
 
-export function game_mode_settings_manager_popup(settings:any,def?:ModeSettingsPopupDef){
+export function game_mode_settings_manager_popup(settings:any,translation:TranslationManager,def?:ModeSettingsPopupDef){
     return (ctx:GamePopupCTX)=>{
         if(!def)def={
             title:"Invalid Mode",
@@ -260,7 +260,7 @@ export function game_mode_settings_manager_popup(settings:any,def?:ModeSettingsP
 
         if(def.title){
             const h=document.createElement("h2")
-            h.textContent=def.title
+            h.textContent=translation.get(def.title)
             parent.appendChild(h)
         }
 
@@ -270,6 +270,7 @@ export function game_mode_settings_manager_popup(settings:any,def?:ModeSettingsP
         for(const input of def.inputs){
             const row=build_setting_input(
                 input,
+                translation,
                 (val)=>{
                     if(val){
                         // deno-lint-ignore ban-ts-comment
@@ -301,7 +302,7 @@ export function game_mode_settings_manager_popup(settings:any,def?:ModeSettingsP
         parent.appendChild(buttons)
     }
 }
-export function make_menu_settings(save: GameSave, defs: SettingDef[]){
+export function make_menu_settings(save: GameSave, defs: SettingDef[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
         parent.innerHTML=""
 
@@ -309,6 +310,7 @@ export function make_menu_settings(save: GameSave, defs: SettingDef[]){
             parent.appendChild(
                 build_setting_input(
                     def,
+                    translation,
                     (val)=>{
                         // deno-lint-ignore ban-ts-comment
                         //@ts-ignore
@@ -316,7 +318,7 @@ export function make_menu_settings(save: GameSave, defs: SettingDef[]){
                     },
                     // deno-lint-ignore ban-ts-comment
                     //@ts-ignore
-                    def.var?save.get_variable(def.var):""
+                    def.var?save.get_variable(def.var):"",
                 )
             )
         }
@@ -466,7 +468,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     }
 }
 
-export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
+export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,mods?:CModsManager){
     const txt=await fs.read_file("scripts/campaign.json")
     const campaign=JSON.parse(txt)
     menu.campaign=cloneDeep(campaign)
@@ -517,17 +519,17 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
     const play_options:SubMenuOption[]=[
         {
             type:"label",
-            name:"Campaign",
+            name:"menu-options-play-label-campaign",
         },
         {
             type:"button",
             id:"campaign-level-selector",
-            name:"Level Selector",
+            name:"menu-options-play-level-selector",
             subtab:"campaign_level_selector"
         },
         {
             type:"label",
-            name:"Online",
+            name:"menu-options-play-label-online",
         },
     ]
     if(sandbox_version){
@@ -535,13 +537,13 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             {
                 type:"button",
                 id:"host_game",
-                name:"Host Game",
+                name:"menu-options-play-host-game",
                 subtab:"host_game"
             },
             {
                 type:"button",
                 id:"join_game",
-                name:"Join Game",
+                name:"menu-options-play-join-game",
                 subtab:"join_game"
             }
         )
@@ -587,7 +589,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                 }
                 btn=p.querySelector("#btn-edit-mode-settings") as HTMLButtonElement
                 btn.onclick=async()=>{
-                    game_settings_input.value=await menu.game_popup(game_mode_settings_manager_popup(JSON.parse(game_settings_input.value),DefaultModeSettingsPopup[mode_input.value]))
+                    game_settings_input.value=await menu.game_popup(game_mode_settings_manager_popup(JSON.parse(game_settings_input.value),translation,DefaultModeSettingsPopup[mode_input.value]))
                 }
             }
         }
@@ -618,13 +620,13 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             {
                 type:"button",
                 id:"play-online",
-                name:"Play",
+                name:"menu-options-play-play-online",
                 subtab:"play_online"
             },
             {
                 type:"button",
                 id:"group",
-                name:"Group",
+                name:"menu-options-play-group",
                 subtab:"group"
             }
         )
@@ -721,12 +723,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
     play_options.push(
         {
             type:"label",
-            name:"Files",
+            name:"menu-options-play-label-files",
         },
         {
             type:"button",
             id:"replays",
-            name:"Replay",
+            name:"menu-options-play-replay",
             subtab:"replays"
         },
     )
@@ -748,36 +750,36 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
     menu.reload_tabs([
         {
             id:"play",
-            name:"Play",
+            name:"menu-options-play",
             subtabs:play_subtabs,
             options:play_options
         },
         {
             id:"settings",
-            name:"Settings",
+            name:"menu-options-settings",
             options:[
                 {
                     id:"game",
                     type:"button",
-                    name:"Game",
+                    name:"menu-options-settings-game",
                     subtab:"game"
                 },
                 {
                     id:"graphics",
                     type:"button",
-                    name:"Graphics",
+                    name:"menu-options-settings-graphics",
                     subtab:"graphics"
                 },
                 {
                     id:"sounds",
                     type:"button",
-                    name:"Sounds",
+                    name:"menu-options-settings-sounds",
                     subtab:"sounds"
                 },
                 {
                     id:"ui",
                     type:"button",
-                    name:"UI",
+                    name:"menu-options-settings-ui",
                     subtab:"ui"
                 },
             ],
@@ -786,26 +788,26 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"toggle",
-                            name:"Interpolation",
+                            name:"settings_game_interpolation",
                             var:"sv_game_interpolation",
                         },
                         {
                             type:"toggle",
-                            name:"Client Side Rotation",
+                            name:"settings_game_client_rot",
                             var:"sv_game_client_rot",
                         },
                         {
                             type:"toggle",
-                            name:"Friendly Fire",
+                            name:"settings_game_friendly_fire",
                             var:"sv_game_friendly_fire",
                         },
-                    ])
+                    ],translation)
                 },
                 "graphics":{
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"choose",
-                            name:"Textures Quality",
+                            name:"settings_graphics_resolution",
                             var:"sv_graphics_resolution",
                             options:[
                                 {name:"Low",value:"low"},
@@ -815,7 +817,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"Particles",
+                            name:"settings_graphics_particles",
                             var:"sv_graphics_particles",
                             options:[
                                 {name:"No",value:"0"},
@@ -825,7 +827,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"Lights",
+                            name:"settings_graphics_lights",
                             var:"sv_graphics_lights",
                             options:[
                                 {name:"No",value:"0"},
@@ -835,7 +837,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"Post Proccess",
+                            name:"settings_graphics_post_proccess",
                             var:"sv_graphics_post_proccess",
                             options:[
                                 {name:"No",value:"0"},
@@ -845,24 +847,24 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"Climate",
+                            name:"settings_graphics_climate",
                             var:"sv_graphics_climate",
                         },
                         {
                             type:"toggle",
-                            name:"Fullscreen",
+                            name:"settings_graphics_fullscreen",
                             var:"sv_graphics_fullscreen",
                             on_set(enable:boolean){
                                 set_full_screen(enable)
                             }
                         },
-                    ]),
+                    ],translation),
                 },
                 "sounds":{
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"range",
-                            name:"Master Volume",
+                            name:"settings_sounds_master_volume",
                             var:"sv_sounds_master_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.masterVolume=Numeric.clamp(v,0,1)
@@ -873,7 +875,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"Music Volume",
+                            name:"settings_sounds_music_volume",
                             var:"sv_sounds_music_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.volumes["music"]=Numeric.clamp(v,0,1)
@@ -884,7 +886,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"Ambient Volume",
+                            name:"settings_sounds_ambient_volume",
                             var:"sv_sounds_ambient_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.volumes["ambience"]=Numeric.clamp(v,0,1)
@@ -893,13 +895,13 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             max:1,
                             step:0.05
                         },
-                    ]),
+                    ],translation),
                 },
                 "ui":{
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"color",
-                            name:"Primary Color",
+                            name:"settings_ui_primary_color",
                             var:"sv_ui_primary_color",
                             on_set(val:string){
                                 (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-primary",val)
@@ -907,19 +909,31 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"color",
-                            name:"Secundary Color",
+                            name:"settings_ui_secondary_color",
                             var:"sv_ui_secondary_color",
                             on_set(val:string){
                                 (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-secondary",val)
                             }
                         },
-                    ]),
+                        {
+                            type:"choose",
+                            name:"settings_ui_translation",
+                            var:"sv_ui_translation",
+                            options:[
+                                {name:"English",value:"en"},
+                                {name:"Brazilian Portuguese",value:"pt-br"},
+                            ],
+                        },
+                    ],translation),
                 }
+            },
+            on_close(_m){
+                //self.location.reload()
             }
         },
         {
             id:"loadout",
-            name:"loadout",
+            name:"menu-options-loadout",
             options:[
                 {
                     id:"hair",
@@ -948,7 +962,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             var:"sv_loadout_hair",
                             options:hairs_types,
                         },
-                    ])
+                    ],translation)
                 },
                 "body":{
                     generate:make_menu_settings(menu.save,[
@@ -968,12 +982,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             var:"sv_loadout_shirt",
                             options:shirts_types,
                         },
-                    ])
+                    ],translation)
                 },
             },
         },
         ((sandbox_version&&mods)?({
-            name:"Mods",
+            name:"menu-options-mods",
             id:"mods",
             options:[
                 {
@@ -997,7 +1011,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
         }):undefined),
         {
             id:"about",
-            name:"About",
+            name:"menu-options-about",
             subtabs:{
                 "social":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
@@ -1184,25 +1198,25 @@ ___
                 {
                     type:"button",
                     id:"social",
-                    name:"Social",
+                    name:"menu-options-about-social",
                     subtab:"social"
                 },
                 {
                     type:"button",
                     id:"news",
-                    name:"News",
+                    name:"menu-options-about-news",
                     subtab:"news"
                 },
                 {
                     type:"button",
                     id:"rules",
-                    name:"Rules",
+                    name:"menu-options-about-rules",
                     subtab:"rules"
                 },
                 {
                     type:"button",
                     id:"credits",
-                    name:"Credits",
+                    name:"menu-options-about-credits",
                     subtab:"credits"
                 },
             ],

@@ -5,6 +5,9 @@
 @use "./menu.scss";
 @use "./md.scss";
 @use "./accounts.scss";
+:root {
+    color-scheme: dark;
+}
 html, body {
     width: 100%;
     height: 100%;
@@ -22,6 +25,7 @@ html, body {
         -ms-user-select: none;
         user-select: none;
         -webkit-touch-callout: none;
+        translate: none !important;
     }
 }
 

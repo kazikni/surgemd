@@ -2,7 +2,7 @@ import { api, API_BASE, api_server } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
+import { FileManager, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, TranslationManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -55,6 +55,7 @@ export class MenuManager{
 
     save!:GameSave
     resources!:ResourcesManager
+    translation!:TranslationManager
     sounds!:SoundManager
     submenu_param:boolean
 
@@ -132,7 +133,7 @@ export class MenuManager{
             const btn=document.createElement("button") as HTMLButtonElement
             btn.className="btn-blue menu-options-btn"
             btn.id=`${t.id}-menu-option`
-            btn.innerText=t.name
+            btn.innerText=this.translation.get(t.name)
             this.content.menu_options.appendChild(btn)
 
             btn.addEventListener("click",this.load_tab.bind(this,t.id))
@@ -177,7 +178,7 @@ export class MenuManager{
                 switch(o.type){
                     case "button":{
                         const btn=document.createElement("button")
-                        btn.innerText=o.name
+                        btn.innerText=this.translation.get(o.name)
                         btn.id=`btn-${t.id}-${o.id}`
                         btn.className="btn-green"
                         btn.onclick=this.opt_click_callback(o,tab)
@@ -189,7 +190,7 @@ export class MenuManager{
                     case "label":{
                         const p=document.createElement("p")
                         p.className="span"
-                        p.innerText=o.name
+                        p.innerText=this.translation.get(o.name)
                         options.appendChild(p)
                         break
                     }
@@ -233,13 +234,14 @@ export class MenuManager{
             ShowElement(this.content.menu_options)
         }
     }
-    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,definitions:GameDefinition,mods?:CModsManager){
+    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
+        this.translation=transition
         this.update_api()
 
-        MenuInitDefault(this,definitions,fs,mods)
+        MenuInitDefault(this,definitions,fs,transition,mods)
 
         ShowElement(this.content.menu_options,true)
     }

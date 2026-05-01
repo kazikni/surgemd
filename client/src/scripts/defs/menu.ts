@@ -519,17 +519,17 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
     const play_options:SubMenuOption[]=[
         {
             type:"label",
-            name:"menu-options-play-label-campaign",
+            name:"menu.play.label-campaign",
         },
         {
             type:"button",
             id:"campaign-level-selector",
-            name:"menu-options-play-level-selector",
+            name:"menu.play.level-selector",
             subtab:"campaign_level_selector"
         },
         {
             type:"label",
-            name:"menu-options-play-label-online",
+            name:"menu.play.label-online",
         },
     ]
     if(sandbox_version){
@@ -537,13 +537,13 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             {
                 type:"button",
                 id:"host_game",
-                name:"menu-options-play-host-game",
+                name:"menu.play.host-game",
                 subtab:"host_game"
             },
             {
                 type:"button",
                 id:"join_game",
-                name:"menu-options-play-join-game",
+                name:"menu.play.join-game",
                 subtab:"join_game"
             }
         )
@@ -620,13 +620,13 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             {
                 type:"button",
                 id:"play-online",
-                name:"menu-options-play-play-online",
+                name:"menu.play.play-online",
                 subtab:"play_online"
             },
             {
                 type:"button",
                 id:"group",
-                name:"menu-options-play-group",
+                name:"menu.play.group",
                 subtab:"group"
             }
         )
@@ -723,12 +723,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
     play_options.push(
         {
             type:"label",
-            name:"menu-options-play-label-files",
+            name:"menu.play.label-files",
         },
         {
             type:"button",
             id:"replays",
-            name:"menu-options-play-replay",
+            name:"menu.play.replay",
             subtab:"replays"
         },
     )
@@ -750,36 +750,36 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
     menu.reload_tabs([
         {
             id:"play",
-            name:"menu-options-play",
+            name:"menu.options.play",
             subtabs:play_subtabs,
             options:play_options
         },
         {
             id:"settings",
-            name:"menu-options-settings",
+            name:"menu.options.settings",
             options:[
                 {
                     id:"game",
                     type:"button",
-                    name:"menu-options-settings-game",
+                    name:"menu.settings.game",
                     subtab:"game"
                 },
                 {
                     id:"graphics",
                     type:"button",
-                    name:"menu-options-settings-graphics",
+                    name:"menu.settings.graphics",
                     subtab:"graphics"
                 },
                 {
                     id:"sounds",
                     type:"button",
-                    name:"menu-options-settings-sounds",
+                    name:"menu.settings.sounds",
                     subtab:"sounds"
                 },
                 {
                     id:"ui",
                     type:"button",
-                    name:"menu-options-settings-ui",
+                    name:"menu.settings.ui",
                     subtab:"ui"
                 },
             ],
@@ -788,17 +788,17 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"toggle",
-                            name:"settings_game_interpolation",
+                            name:"settings.game.interpolation",
                             var:"sv_game_interpolation",
                         },
                         {
                             type:"toggle",
-                            name:"settings_game_client_rot",
+                            name:"settings.game.client_rot",
                             var:"sv_game_client_rot",
                         },
                         {
                             type:"toggle",
-                            name:"settings_game_friendly_fire",
+                            name:"settings.game.friendly_fire",
                             var:"sv_game_friendly_fire",
                         },
                     ],translation)
@@ -807,7 +807,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"choose",
-                            name:"settings_graphics_resolution",
+                            name:"settings.graphics.resolution",
                             var:"sv_graphics_resolution",
                             options:[
                                 {name:"Low",value:"low"},
@@ -817,7 +817,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"settings_graphics_particles",
+                            name:"settings.graphics.particles",
                             var:"sv_graphics_particles",
                             options:[
                                 {name:"No",value:"0"},
@@ -827,7 +827,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"settings_graphics_lights",
+                            name:"settings.graphics.lights",
                             var:"sv_graphics_lights",
                             options:[
                                 {name:"No",value:"0"},
@@ -837,7 +837,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"settings_graphics_post_proccess",
+                            name:"settings.graphics.post_proccess",
                             var:"sv_graphics_post_proccess",
                             options:[
                                 {name:"No",value:"0"},
@@ -847,12 +847,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings_graphics_climate",
+                            name:"settings.graphics.climate",
                             var:"sv_graphics_climate",
                         },
                         {
                             type:"toggle",
-                            name:"settings_graphics_fullscreen",
+                            name:"settings.graphics.fullscreen",
                             var:"sv_graphics_fullscreen",
                             on_set(enable:boolean){
                                 set_full_screen(enable)
@@ -864,7 +864,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"range",
-                            name:"settings_sounds_master_volume",
+                            name:"settings.sounds.master_volume",
                             var:"sv_sounds_master_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.masterVolume=Numeric.clamp(v,0,1)
@@ -875,7 +875,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"settings_sounds_music_volume",
+                            name:"settings.sounds.music_volume",
                             var:"sv_sounds_music_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.volumes["music"]=Numeric.clamp(v,0,1)
@@ -886,7 +886,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"settings_sounds_ambient_volume",
+                            name:"settings.sounds.ambient_volume",
                             var:"sv_sounds_ambient_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.volumes["ambience"]=Numeric.clamp(v,0,1)
@@ -901,7 +901,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"color",
-                            name:"settings_ui_primary_color",
+                            name:"settings.ui.primary_color",
                             var:"sv_ui_primary_color",
                             on_set(val:string){
                                 (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-primary",val)
@@ -909,7 +909,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"color",
-                            name:"settings_ui_secondary_color",
+                            name:"settings.ui.secondary_color",
                             var:"sv_ui_secondary_color",
                             on_set(val:string){
                                 (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-secondary",val)
@@ -917,11 +917,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"choose",
-                            name:"settings_ui_translation",
+                            name:"settings.ui.translation",
                             var:"sv_ui_translation",
                             options:[
                                 {name:"English",value:"en"},
                                 {name:"Brazilian Portuguese",value:"pt-br"},
+                                {name:"Turkish",value:"tr"},
                             ],
                         },
                     ],translation),
@@ -933,18 +934,18 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
         },
         {
             id:"loadout",
-            name:"menu-options-loadout",
+            name:"menu.options.loadout",
             options:[
                 {
                     id:"hair",
                     type:"button",
-                    name:"Hair",
+                    name:"menu.loadout.hair",
                     subtab:"hair"
                 },
                 {
                     id:"body",
                     type:"button",
-                    name:"Body",
+                    name:"menu.loadout.body",
                     subtab:"body"
                 },
             ],
@@ -953,12 +954,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"color",
-                            name:"Hair Color",
+                            name:"loadout.hair.tint",
                             var:"sv_loadout_hair_tint",
                         },
                         {
                             type:"choose",
-                            name:"Hair",
+                            name:"loadout.hair.type",
                             var:"sv_loadout_hair",
                             options:hairs_types,
                         },
@@ -968,17 +969,17 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"color",
-                            name:"Body Color",
+                            name:"loadout.body.tint",
                             var:"sv_loadout_body_tint",
                         },
                         {
                             type:"toggle",
-                            name:"Female",
+                            name:"loadout.body.female",
                             var:"sv_loadout_female",
                         },
                         {
                             type:"choose",
-                            name:"Shirt",
+                            name:"loadout.body.shirt",
                             var:"sv_loadout_shirt",
                             options:shirts_types,
                         },
@@ -987,12 +988,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             },
         },
         ((sandbox_version&&mods)?({
-            name:"menu-options-mods",
+            name:"menu.options.mods",
             id:"mods",
             options:[
                 {
                     id:"mods_list",
-                    name:"Mods List",
+                    name:"menu.mods.mods-list",
                     type:"button",
                     subtab:"mods_list"
                 }
@@ -1011,7 +1012,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
         }):undefined),
         {
             id:"about",
-            name:"menu-options-about",
+            name:"menu.options.about",
             subtabs:{
                 "social":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
@@ -1032,8 +1033,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
 <a href="/files/surgemd-linux-lasted.zip" target="_blank" class="social-link">
     <i class="social-icon linux"></i>
 </a>
-</div>
-                        `
+</div>`
                     }
                 },
                 "news":{
@@ -1198,25 +1198,25 @@ ___
                 {
                     type:"button",
                     id:"social",
-                    name:"menu-options-about-social",
+                    name:"menu.about.social",
                     subtab:"social"
                 },
                 {
                     type:"button",
                     id:"news",
-                    name:"menu-options-about-news",
+                    name:"menu.about.news",
                     subtab:"news"
                 },
                 {
                     type:"button",
                     id:"rules",
-                    name:"menu-options-about-rules",
+                    name:"menu.about.rules",
                     subtab:"rules"
                 },
                 {
                     type:"button",
                     id:"credits",
-                    name:"menu-options-about-credits",
+                    name:"menu.about.credits",
                     subtab:"credits"
                 },
             ],

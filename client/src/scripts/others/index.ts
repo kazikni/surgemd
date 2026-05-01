@@ -75,6 +75,7 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
             }
             await this.game.bind(fs)
             this.menu_manager.init(this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
+            this.game.load_resources(["main"])
         }
         join_on_game(url:string,password:string,attempts=0,delay=500){
             console.log("Joining In: ",url)

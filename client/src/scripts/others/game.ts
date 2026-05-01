@@ -317,8 +317,6 @@ export class Game extends ClientGame<GameObject>{
             key:"surgemd-settings"
         })
         this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/languages")
-        
-        this.load_resources(["main"])
         this.fs=fs
     }
     set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
@@ -476,92 +474,64 @@ export class Game extends ClientGame<GameObject>{
             }
         }
     }
+    make_green_light_death_message(p:GameOverPacket):string[]{
+        const messages: string[] = []
+        // INTRO
+        messages.push(this.language.get(`gameover.messages.introductions.${random.int(0, 2)}`))
+        // DEATH
+        messages.push(this.language.get(`gameover.messages.death.${random.int(0, 10)}`))
+        // STATUS
+        if (p.Kills >= 1) {
+            messages.push(this.language.get("gameover.messages.status.kills", {
+                kills: p.Kills.toString()
+            }))
+        } else {
+            messages.push(
+                this.language.get("gameover.messages.status.no-kills"),
+                this.language.get("gameover.messages.status.no-kills-dead")
+            )
+        }
+        // HINTS
+        const hintGroups:[string,number][] = [
+            ["quickswitch", 4],
+            ["movement", 2],
+            ["cover", 3],
+            ["healing", 3],
+            ["grenade", 2]
+        ]
+        const chosenHint = random.choose(hintGroups)
+        for (let i = 0; i < chosenHint[1]; i++) {
+            messages.push(
+                this.language.get(`gameover.messages.hints.${chosenHint[0]}.${i}`)
+            )
+        }
+        // MOTIVATIONAL
+        const motivational:number[]=[
+            1,
+            1,
+            1,
+            1,
+            2,
+            1,
+            2,
+            2
+        ]
+        const msg=random.int(0,motivational.length)
+        for(let i=0;i<motivational[i];i++){
+            messages.push(this.language.get(`gameover.messages.motivational.${msg}.${i}`))
+        }
+        // FINAL
+        messages.push(this.language.get(`gameover.messages.final.${random.int(0, 3)}`))
+        // END
+        messages.push(this.language.get("gameover.messages.death-end"))
+        return messages
+    }
     async on_die_level(p:GameOverPacket){
         if(!this.level)return
         this.add_timeout(()=>{
             this.local_server.reset_level()
         },2)
-        await this.game_over_messages([
-            random.choose(["Hi.", "Hello.","Hey."]),
-            random.choose([
-                "You died again.",
-                "You've become a pile of meat.",
-                "You died.",
-                "You are dead.",
-                "You lose.",
-                "Your Hearth Stop.",
-                "You were turned inside out",
-                "You were taken apart.",
-                "You suffered brain death.",
-                "You Dont Exist More",
-                "You’re sleeping with the fishes."
-            ]),
-            ...(p.Kills >= 1 ? [`You got ${p.Kills} kills.`] : ["You didn't eliminate anyone.","Unfortunately, this is not the way to get out of here alive."]),
-            ...(random.choose([
-                [
-                    "Have you heard about quickswitch?",
-                    "Quickswitch removes your recoil.",
-                    "Just switch to another weapon after shooting.",
-                    "Quickswitch only works with single-shot weapons...",
-                    "Weapons like snipers or shotguns."
-                ],
-                [
-                    "Movement is a weapon too.",
-                    "Use it wisely."
-                ],  
-                [
-                    "Cover can save your life.",
-                    "Fight near rocks or trees.",
-                    "Never stay in the open."
-                ],
-                [
-                    "Do not fight while weak.",
-                    "Heal first.",
-                    "Then fight."
-                ],
-                [
-                    "A well placed grenade",
-                    "can win a fight instantly."
-                ],
-                [
-                    "Intelligence is the key",
-                    "Know exactly what you are doing.",
-                    "Investing without a plan usually goes wrong."
-                ],
-                [
-                    "Melees is good too.",
-                    "The enemy can't aim properly if they're too close to you.",
-                ],
-                [],
-            ])),
-            ...random.choose([
-                ["Failure teaches more than victory."],
-                ["You can do it."],
-                ["Every attempt teaches something."],
-                ["I trust you"],
-                ["Never give up.","trust your instincts."],
-                ["Fritz never gave up.","Look where he is now."],
-                ["You are strong.","You are capable of anything."],
-                ["Hope is always the last to die."],
-                ["No Pain","No Gain"]
-            ]),
-            random.choose([
-                "Death is not the end.",
-                "There are things worse than death.",
-                "I need you alive.",
-                "I dont will allow you die.",
-                "You Are Too Important To Die.",
-                "There's still a lot of work ahead.",
-                "Evil never rests.",
-                "Some questions remain unanswered.",
-                "She is still alive, waiting for you.",
-                "You still have many unfinished matters.",
-                "You are too young to die.",
-                "Its Not Your Time",
-                "Your time hasn’t come yet."
-            ]),
-            "Get up!"
-        ], this.resources.get_audio("gameover_music"))
+        await this.game_over_messages(this.make_green_light_death_message(p),this.resources.get_audio("gameover_music"))
         this.soft_reset()
         this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
         this.local_server.start()

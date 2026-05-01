@@ -11,7 +11,7 @@ export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 //export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 export const api_server=new IPLocation("localhost",8000,false,true,"")
 export const API_BASE=api_server.toString("http")
-export const api=false
+export const api=true
 export const forum=false
 export const sandbox_version=false
 export enum GraphicsDConfig {

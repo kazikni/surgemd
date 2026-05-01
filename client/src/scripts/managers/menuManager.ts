@@ -344,7 +344,7 @@ export class MenuManager{
     }
     
     set_loading_current(text="",unloading:boolean=false){
-        this.content.loading_screen_current.innerHTML=`<p class="span-medium">${unloading?"Unloading":"Loading"}: ${text}</p>`
+        this.content.loading_screen_current.innerHTML=`<p class="span-medium">${this.translation.get("menu.loading-screen."+(unloading?"unload":"load"),{text:text})}</p>`
     }
 
     show_gameover_text(){

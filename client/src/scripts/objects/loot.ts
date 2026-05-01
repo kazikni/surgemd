@@ -121,8 +121,8 @@ export class Loot extends GameObject{
         return false
     }
     override get_interact_hint(player: Human) {
-        return player.game.language.get("interact-loot", {
-            source: player.game.language.get(this.item.idString),
+        return player.game.language.get("interact.loot", {
+            source: player.game.language.get("items."+this.item.idString),
             count: this.count > 1 ? `(${this.count})` : ""
         })
     }

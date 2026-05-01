@@ -300,12 +300,27 @@ export class Obstacle extends StaticBody{
     }
     override get_interact_hint(h:Human){
         if (this.def.interactDestroy) {
-            return h.game.language.get("interact-obstacle-break", {})
+            return h.game.language.get("interact.obstacles.break", {})
         }
-        return h.game.language.get(
-            "interact-obstacle-playaudio-" + this.id,
-            {}
-        )
+        if(this.def.expanded_behavior){
+            switch(this.def.expanded_behavior.type){
+                case 0:
+                    return h.game.language.get("interact.obstacles.door."+(this.door_data?.open?"open":"close"),{
+                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                    })
+                case 1:
+                    return h.game.language.get("interact.obstacles.playaudio",{
+                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                    })
+                case 2:
+                    return h.game.language.get("interact.obstacles.scalable",{})
+                case 3:
+                    return h.game.language.get("interact.obstacles.transform-into."+this.def.idString,{
+                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                    })
+            }
+        }
+        return ""
     }
     override can_interact(h:Human): boolean {
         return !this.health_data.dead&&this.hitbox.collidingWith(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)

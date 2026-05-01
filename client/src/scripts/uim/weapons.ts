@@ -78,7 +78,7 @@ export class WeaponsModule extends UIModule<Game> {
             const img_el=this.elements[i].querySelector(".weapon-slot-image") as HTMLImageElement
             if (item) {
                 const assets = item.assets(this.game.resources)
-                name_el.innerText = this.game.language.get(item.def.idString)
+                name_el.innerText = this.game.language.get("items."+item.def.idString)
                 img_el.src = assets["item"].src
                 img_el.style.display = "block"
             } else {

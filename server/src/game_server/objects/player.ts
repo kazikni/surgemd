@@ -247,10 +247,11 @@ export class Player extends Human{
     }
     proccess_join_packet(jp:JoinPacket){
         this.loadout.dirty=true
-        this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
-        this.loadout.hair.tint=jp.skin.hair_tint
-        this.loadout.body.tint=jp.skin.body_tint
-
-        this.loadout.hair.def=this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
+        if(jp.skin){
+            this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
+            this.loadout.hair.tint=jp.skin.hair_tint
+            this.loadout.body.tint=jp.skin.body_tint
+            this.loadout.hair.def=this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
+        }
     }
 }

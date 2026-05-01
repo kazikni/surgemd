@@ -1,5 +1,5 @@
 
-import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, Container2D, ease, NetStream, Sound, Sprite2D, v2, v2m, Vec2, τ } from "common/engine/client.ts";
+import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, Container2D, ease, NetStream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -71,7 +71,11 @@ export class Loot extends GameObject{
                 if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.gun)))return
                 break
             case InventoryItemType.ammo:
+                if(this.game.inventory.aitems[this.item.idString]>=this.game.inventory.item_limit(this.item))return
+                break
             case InventoryItemType.consumible:
+            case InventoryItemType.grenade:
+                if(!this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item)))return
                 break
             case InventoryItemType.helmet:
                 if(h.helmet&&h.helmet.level>=(this.item as HelmetDef).level)return
@@ -82,7 +86,7 @@ export class Loot extends GameObject{
             case InventoryItemType.backpack:
                 if(h.backpack&&h.backpack.level>=(this.item as BackpackDef).level)return
                 break
-            case InventoryItemType.grenade:
+
             case InventoryItemType.melee:
                 if(!((this.game.ui.melee_free())||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.melee)))return
                 break
@@ -103,8 +107,7 @@ export class Loot extends GameObject{
             case InventoryItemType.ammo:
                 return (this.game.inventory.aitems[this.item.idString]??0)<(h.backpack?.max[this.item.idString]??9999)
             case InventoryItemType.consumible:{
-                const limit_per_slot=h.backpack?.max[this.item.idString]??this.game.definitions.backpacks.getFromNumber(0).max[this.item.idString]??15
-                return (this.game.ui.items_map![this.item.idString]??0)<limit_per_slot
+                return this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item))
             }
             case InventoryItemType.helmet:
                 return !h.helmet||h.helmet.level<(this.item as HelmetDef).level

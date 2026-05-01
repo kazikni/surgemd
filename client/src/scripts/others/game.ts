@@ -431,7 +431,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.ambient.music.set(undefined)
 
-        /*if(this.level){
+        if(this.level){
             await this.menu.show_phase_intro({
                 location:this.level.meta.location,
                 name:this.level.meta.name,
@@ -445,7 +445,7 @@ export class Game extends ClientGame<GameObject>{
             if(this.level?.begin?.history){
                 await this.menu.show_history(this.level.begin.history,this.sounds,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
-        }*/
+        }
 
         this.ui.start()
         this.join()
@@ -570,6 +570,7 @@ export class Game extends ClientGame<GameObject>{
         this.soft_close_game()
         this.menu.game_end()
         this.ambient.on_game_close()
+        this.client=undefined
     }
     soft_close_game(){
         if(this.running)this.stop()
@@ -729,12 +730,13 @@ export class Game extends ClientGame<GameObject>{
 
         packet.player_name=this.save.get_variable("sv_game_name")
 
-        packet.skin.female=this.save.get_variable("sv_loadout_female")
-        packet.skin.body_tint=ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint"))
-        packet.skin.hair=(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_hair"))).idNumber!
-        packet.skin.hair_tint=ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint"))
-
-        packet.skin.shirt=(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!
+        packet.skin={
+            female:this.save.get_variable("sv_loadout_female"),
+            body_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint")),
+            hair:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_hair"))).idNumber!,
+            hair_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint")),
+            shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
+        }
         this.client.emit(packet)
     }
     connect(url:string){

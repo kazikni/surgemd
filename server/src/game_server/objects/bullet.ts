@@ -68,7 +68,7 @@ export class Bullet extends ServerGameObject{
                     if(!(obj as Human).health_data.dead&&(!this.owner||((obj as Human).id===this.owner.id&&this.reflectionCount>0)||(obj as Human).id!==this.owner.id)&&!(obj as Human).parachute){
                         const human = obj as Human
 
-                        const colBody = human.hitbox.overlapLine(this.old_position, this.position)
+                        const colBody = human.hitbox.overlap_line(this.old_position, this.position)
 
                         const reflectSeg = null//human.get_reflect_segment()
                         let colReflect = null
@@ -160,7 +160,7 @@ export class Bullet extends ServerGameObject{
                 case GameObjectType.Obstacle:
                     if((obj as Obstacle).physical_data.stairs.length>0){
                         for(const s of (obj as Obstacle).physical_data.stairs){
-                            if(s.hitbox.collidingWith(this.hitbox)){
+                            if(s.hitbox.colliding_with(this.hitbox)){
                                 this.destroy()
                                 break
                             }
@@ -169,7 +169,7 @@ export class Bullet extends ServerGameObject{
                 case GameObjectType.Building:
                     if((obj as StaticBody).physical_data.no_bullets_collision)break
                     if(obj.hitbox){
-                        const col1=obj.hitbox.overlapLine(this.old_position,this.position)
+                        const col1=obj.hitbox.overlap_line(this.old_position,this.position)
                         if(!col1)continue
                         if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&!this.def.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)

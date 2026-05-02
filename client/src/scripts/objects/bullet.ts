@@ -108,7 +108,7 @@ export class Bullet extends GameObject{
 
             // Bullet Whiz Sound
             if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){
-                if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.collidingWith(this.hitbox)){
+                if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.colliding_with(this.hitbox)){
                     this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
                         max_distance: 60,
@@ -125,7 +125,7 @@ export class Bullet extends GameObject{
                 switch((obj as BaseGameObject2D).number_type){
                     case GameObjectType.Human:
                         if(!(obj as Human).dead&&!(obj as Human).parachute){
-                            const col=obj.hitbox.overlapLine(this.old_position,this.position)
+                            const col=obj.hitbox.overlap_line(this.old_position,this.position)
                             if(col){
                                 (obj as Human).on_hitted(this.position,this._critical)
                                 this.dying=true
@@ -135,7 +135,7 @@ export class Bullet extends GameObject{
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
                         if(!(obj as StaticBody).physical_data.no_bullets_collision){
-                            const col=obj.hitbox.overlapLine(this.old_position,this.position)
+                            const col=obj.hitbox.overlap_line(this.old_position,this.position)
                             if(col){
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
                                 this.dying=true

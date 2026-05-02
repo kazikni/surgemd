@@ -31,34 +31,33 @@ export class SyncedParticle extends MovingBody {
             case GameObjectType.Obstacle:
                 if((obj as Obstacle).physical_data.stairs.length>0){
                     for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(this.layer+s.dest_layer)
                     }
                 }
             case GameObjectType.Building:{
-                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
-                if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
+                const collisions=this.hitbox.overlap_collisions((obj as StaticBody).hitbox)
+                if(collisions.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
                     for(const s of this.def.side_effect){
                         (obj as StaticBody).side_effect(s,this.owner)
                     }
                 }
                 if(this.def.movement?.type==="direction"){
                     if((obj as StaticBody).physical_data.no_collision)break
-                    for(const c of ov){
-                        v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
+                    for(const col of collisions){
+                        v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
                     }
                 }
                 break
             }
             case GameObjectType.Human:{
-                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
-                
+                const ov=this.hitbox.overlap_collision((obj as StaticBody).hitbox)
                 if(this.def.movement?.type==="direction"){
-                    for(const c of ov){
-                        v2m.sub(this.physical_data.velocity,this.physical_data.velocity,v2.scale((c.dir.x===1&&c.dir.y===0)?v2.random(-1,1):c.dir,4*dt))
+                    if(ov){
+                        v2m.sub(this.physical_data.velocity,this.physical_data.velocity,v2.scale((ov.dir.x===1&&ov.dir.y===0)?v2.random(-1,1):ov.dir,4*dt))
                     }
                 }
 
-                if(ov.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
+                if(ov&&this.def.side_effect&&this.action_tick>=this.action_time){
                     if(this.def.no_hit_owner&&obj.id===this.owner?.id)break
                     for(const s of this.def.side_effect){
                         (obj as Human).side_effect(s,this.owner)

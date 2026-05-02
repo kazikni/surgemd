@@ -27,6 +27,7 @@ import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutS
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type Obstacle } from "./obstacle.ts";
+import { type Building } from "./building.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -60,6 +61,7 @@ export class Human extends MovingBody{
         velocity:v2.zero(),
 
         current_floor:0,
+        substeps:2,
     }
 
     health_data:HumanHealthData&{boost_time:number,imortal:boolean,using_healing_speed:number}={
@@ -94,13 +96,15 @@ export class Human extends MovingBody{
         vest?:VestDef
         vest_health?:number
         scope:ScopeDef
+        default_scope:ScopeDef
+        force_default_scope:boolean
 
         dirty:boolean
         dirty_part:boolean
     }
 
     get scope_zoom():number{
-        return 20/this.equipment_data.scope.scope_view
+        return 20/(this.equipment_data.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
     loadout!:HumanLoadoutData&{
         dirty:boolean
@@ -240,10 +244,13 @@ export class Human extends MovingBody{
 
             }
         }
+        const default_scope=this.game.definitions.scopes.getFromNumber(0)
         this.equipment_data={
             dirty:true,
             dirty_part:true,
-            scope:this.game.definitions.scopes.getFromNumber(0)
+            scope:default_scope,
+            default_scope,
+            force_default_scope:false
         }
         this.inventory.initialize(this.game.definitions,{
             0:MeleeItem as (new(item:GameItem)=>LItem),
@@ -462,7 +469,7 @@ export class Human extends MovingBody{
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
             if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle)&&!(obj as StaticBody).physical_data.no_collision){
-                if(hb.collidingWith(obj.hitbox))return true
+                if(hb.colliding_with(obj.hitbox))return true
             }
         }
         return false
@@ -590,26 +597,40 @@ export class Human extends MovingBody{
     _can_interact=true
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
-            // deno-lint-ignore no-fallthrough
-            case GameObjectType.Obstacle:
-                if((obj as Obstacle).physical_data.stairs.length>0){
-                    for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
-                    }
-                }
-            case GameObjectType.Building:{
+            case GameObjectType.Obstacle:{
                 if((obj as StaticBody).physical_data.no_collision)break
-
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
                     (obj as Loot).interact(this)
                 }
-
-                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
-                for(const c of ov){
-                    v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
+                const collision=this.hitbox.overlap_collisions(obj.hitbox)
+                for(const col of collision){
+                    v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
                 }
-
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                    }
+                }
+                break
+            }
+            case GameObjectType.Building:{
+                if((obj as StaticBody).physical_data.no_collision)break
+                if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
+                    this._can_interact=false;
+                    (obj as Loot).interact(this)
+                }
+                const collision=this.hitbox.overlap_collisions(obj.hitbox)
+                for(const col of collision){
+                    v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
+                }
+                if(!this.equipment_data.force_default_scope){
+                    for(const c of (obj as Building).ceilings){
+                        if(!c.no_scope_block&&this.hitbox.overlap_collision(c.hitbox)){
+                            this.equipment_data.force_default_scope=true
+                        }
+                    }
+                }
                 break
             }
             case GameObjectType.Vehicle:{
@@ -762,6 +783,7 @@ export class Human extends MovingBody{
                 this.physical_data.velocity=v2.zero()
             }
 
+            this.equipment_data.force_default_scope=false
             super.update(dt)
 
             if(!this.parachute){
@@ -883,6 +905,7 @@ export class Human extends MovingBody{
             }:undefined,
 
             current_scope:this.equipment_data.scope.idNumber!,
+            force_default_scope:this.equipment_data.force_default_scope,
 
             dirty:full?{
                 action:true,

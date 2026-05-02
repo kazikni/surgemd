@@ -32,6 +32,7 @@ export class Building extends StaticBody {
     }
     children:(BuildingObstacleChild|BuildingCeilingChild)[]=[]
     objects_ids:Record<number,Obstacle>={}
+    ceilings:{hitbox:Hitbox2D,no_scope_block:boolean}[]=[]
 
     constructor() {
         super()
@@ -146,6 +147,10 @@ export class Building extends StaticBody {
                 def:c,
                 alive:true,
                 connections:conns,
+            })
+            this.ceilings.push({
+                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
+                no_scope_block:!!c.no_scope_block
             })
         }
     }

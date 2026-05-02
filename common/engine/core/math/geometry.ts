@@ -147,40 +147,38 @@ export const Collision=Object.freeze({
         return distSq <= (circle_radius * circle_radius);
     },
     circle_with_rect_ov(circle_pos: Vec2, radius: number, rect_min: Vec2, rect_max: Vec2) {
-        const closest = v2.clamp2(circle_pos, rect_min, rect_max);
+        if (circle_pos.x >= rect_min.x && circle_pos.x <= rect_max.x&&circle_pos.y >= rect_min.y && circle_pos.y <= rect_max.y) {
+            const left = circle_pos.x - rect_min.x
+            const right = rect_max.x - circle_pos.x
+            const top = circle_pos.y - rect_min.y
+            const bottom = rect_max.y - circle_pos.y
 
-        const diff = v2.sub(circle_pos, closest);
-        const distSq = v2.squared(diff);
-        const radiusSq = radius * radius;
+            const minDist = Math.min(left, right, top, bottom)
 
-        if (distSq <= radiusSq) {
-            const dist = Math.sqrt(distSq) || 0.000001;
-            const penetration = radius - dist;
+            if(minDist === left) {
+                return { dir: v2(1, 0), pen: left + radius }
+            }
+            if(minDist === right) {
+                return { dir: v2(-1, 0), pen: right + radius }
+            }
+            if (minDist === top) {
+                return { dir: v2(0, 1), pen: top + radius }
+            }
+            return { dir: v2(0, -1), pen: bottom + radius }
+        }
 
-            const normal = v2.scale(diff, -(1 / dist));
+        const closest = v2.clamp2(circle_pos, rect_min, rect_max)
+        const diff = v2.sub(closest, circle_pos)
+        const distSq = v2.squared(diff)
 
+        if (distSq <= radius * radius) {
+            const dist = Math.sqrt(distSq)
             return {
-                dir: normal,
-                pen: penetration
-            };
+                dir: dist > 0.0001 ? v2.scale(diff, 1 / dist) : v2(1, 0),
+                pen: radius - dist
+            }
         }
-        if (circle_pos.x >= rect_min.x && circle_pos.x <= rect_max.x &&
-            circle_pos.y >= rect_min.y && circle_pos.y <= rect_max.y) {
-
-            const left = circle_pos.x - rect_min.x;
-            const right = rect_max.x - circle_pos.x;
-            const top = circle_pos.y - rect_min.y;
-            const bottom = rect_max.y - circle_pos.y;
-
-            const minDist = Math.min(left, right, top, bottom);
-
-            if (minDist === left) return { dir: v2(1, 0), pen: radius - left };
-            if (minDist === right) return { dir: v2(-1, 0), pen: radius - right };
-            if (minDist === top) return { dir: v2(0, 1), pen: radius - top };
-            return { dir: v2(0, -1), pen: radius - bottom };
-        }
-
-        return undefined;
+        return undefined
     },
     distToSegmentSq(p: Vec2, a: Vec2, b: Vec2) {
         const ab = v2.sub(b, a);

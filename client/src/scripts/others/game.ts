@@ -64,6 +64,8 @@ export class Game extends ClientGame<GameObject>{
 
     terrain:TerrainM=new TerrainM(this)
 
+    force_default_scope:boolean=false
+    default_scope?:ScopeDef
     scope_zoom:number=0.5
     dest_zoom:number=1
     current_layer:number=-1
@@ -349,8 +351,14 @@ export class Game extends ClientGame<GameObject>{
             this.ui.current_interaction.interact(this.active_entity)
         }
     }
-    set_scope(scope:ScopeDef){
-        this.scope_zoom=scope.scope_view
+    set_scope(scope:ScopeDef,force_default:boolean=false){
+        if(this.inventory.scope&&this.inventory.scope===scope&&this.force_default_scope==force_default){
+            return
+        }
+        if(!this.default_scope)this.default_scope=this.definitions.scopes.getFromNumber(0)
+        this.force_default_scope=force_default
+        this.inventory.scope=scope
+        this.scope_zoom=force_default?this.default_scope.scope_view:scope.scope_view
         this.ui_manager.signal("current_scope_dirty",scope)
     }
     async load_resources(textures:string[]=["main"]){

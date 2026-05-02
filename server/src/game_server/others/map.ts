@@ -100,7 +100,7 @@ export class GameMap{
         const objs=map.game.scene_2d.objects.cells.get_objects(hitbox,layer)
         for(const o of objs){
             if(!(o.id===id&&o.layer===layer)){
-                if((o.string_type==="obstacle"||o.string_type==="building")&&hitbox.collidingWith((o as StaticBody).spawn_hitbox??o.hitbox)){
+                if((o.string_type==="obstacle"||o.string_type==="building")&&hitbox.colliding_with((o as StaticBody).spawn_hitbox??o.hitbox)){
                     return false
                 }
             }

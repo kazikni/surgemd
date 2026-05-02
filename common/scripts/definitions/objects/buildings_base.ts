@@ -10,6 +10,7 @@ export type BuildingCeilingDef={
     visible_opacity?:number,
     layer?:number,
     connections?:number[],
+    no_scope_block?:boolean
     destroy?:{
         frame:FrameDef
         sound?:string
@@ -160,7 +161,15 @@ export const buildings_factory={
             }
             return [
                 this.type_1(id+"_1",tint,{b}),
-                this.type_2(id+"_2",tint,{b})
+                this.type_2(id+"_2",tint,{b}),
+                this.type_1(id+"_3",tint,{
+                    b,
+                    ceiling:"container_ceiling_3"
+                }),
+                this.type_2(id+"_4",tint,{
+                    b,
+                    ceiling:"container_ceiling_4"
+                }),
             ]
         }
     },

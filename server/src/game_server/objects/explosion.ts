@@ -25,7 +25,7 @@ export class Explosion extends ServerGameObject{
     }
 
     explode(){
-        const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.collidingWith(v.hitbox))
+        const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.colliding_with(v.hitbox))
         objs.sort((a, b) =>v2.distanceSquared(this.position, a.position)-v2.distanceSquared(this.position, b.position))
         const blocks:ServerGameObject[] = []
         for (const obj of objs) {
@@ -41,7 +41,7 @@ export class Explosion extends ServerGameObject{
             }
             let blockFactor = 1
             for (const b in blocks) {
-                if(blocks[b].hitbox.overlapLine(this.position,obj.position)){
+                if(blocks[b].hitbox.overlap_line(this.position,obj.position)){
                     blockFactor=0
                     break
                 }

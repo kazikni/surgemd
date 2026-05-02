@@ -107,7 +107,7 @@ export class GunItem extends GunItemBase implements LItem{
             if(obj.number_type!==GameObjectType.Obstacle||obj.number_type!==GameObjectType.Building)continue
 
             const body = obj as StaticBody
-            const hit = body.hitbox.overlapLine(
+            const hit = body.hitbox.overlap_line(
                 start,
                 muzzle
             )
@@ -386,7 +386,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
         user.animation_data.current_animation=undefined
 
         for(const c of collidibles){
-            if(!hb.collidingWith(c.hitbox))continue
+            if(!hb.colliding_with(c.hitbox))continue
             if(c instanceof StaticBody){
                 if(c.number_type===GameObjectType.Obstacle){
                     if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior&&!(c as Obstacle).health_data.dead){

@@ -112,7 +112,7 @@ export class TerrainManager {
         const floorsInCell = this.grid.get(hash.hash_3d_big(pos.x,pos.y,layer))??[]
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
-            if (floor.final_hb.pointInside(position)) {
+            if (floor.final_hb.point_inside(position)) {
                 return floor
             }
         }
@@ -125,7 +125,7 @@ export class TerrainManager {
         const floorsInCell = this.grid.get(hash.hash_3d_big(pos.x,pos.y,layer))??[]
         for (let i = floorsInCell.length - 1; i >= 0; i--) {
             const floor = floorsInCell[i];
-            if (floor.final_hb.pointInside(position)) {
+            if (floor.final_hb.point_inside(position)) {
                 return floor.type
             }
         }

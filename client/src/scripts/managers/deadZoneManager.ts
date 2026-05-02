@@ -32,7 +32,7 @@ export class DeadZoneManager{
             delay:0.3,
             particle:()=>{
                 const pos=v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height)))
-                if(this.hitbox.pointInside(pos))return undefined
+                if(this.hitbox.point_inside(pos))return undefined
                 return new ABParticle2D({
                     frame:{
                         image:"deadzone_particle"
@@ -57,7 +57,7 @@ export class DeadZoneManager{
     color:Color=ColorM.hex("#21f2")
     tick(dt:number){
         if(this.game.active_entity){
-            if(this.hitbox.pointInside(this.game.active_entity.position)){
+            if(this.hitbox.point_inside(this.game.active_entity.position)){
                 this.game.ambient.deadzone_ambience.set(null)
             }else{
                 this.game.ambient.deadzone_ambience.set(this.game.ambient.deadzone_ambience_sound,true)

@@ -62,7 +62,7 @@ export class Loot extends GameObject{
         
     }
     override can_interact(h:Human): boolean {
-        return this.item&&this.count>0&&h.hitbox.collidingWith(this.hitbox)
+        return this.item&&this.count>0&&h.hitbox.colliding_with(this.hitbox)
     }
 
     override interact(h:Human): void {

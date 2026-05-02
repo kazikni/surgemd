@@ -943,7 +943,7 @@ export class Human extends MovingBody{
                     const hb=new CircleHitbox2D(position,def.radius)
                     const collidibles:GameObject[]=this.manager.cells.get_objects(hb,this.layer)
                     for(const c of collidibles){
-                        if(!hb.collidingWith(c.hitbox))continue
+                        if(!hb.colliding_with(c.hitbox))continue
                         switch(c.number_type){
                             case GameObjectType.Obstacle:
                             case GameObjectType.Building:{

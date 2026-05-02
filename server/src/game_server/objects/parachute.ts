@@ -33,7 +33,7 @@ export class Parachute extends ServerGameObject{
 
             const objects:ServerGameObject[]=this.manager.cells.get_objects(obs.hitbox,obs.layer)
             for(const o of objects){
-                if(!o.hitbox.collidingWith(obs.hitbox))continue
+                if(!o.hitbox.colliding_with(obs.hitbox))continue
                 if(o.number_type===GameObjectType.Human){
                     (o as Human).damage({
                         amount:1000,

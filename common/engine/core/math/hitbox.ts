@@ -26,11 +26,26 @@ export interface Hitbox2DMapping {
 export type Hitbox2D = Hitbox2DMapping[HitboxType2D]
 export abstract class BaseHitbox2D{
     abstract type: HitboxType2D
-    abstract collidingWith(other: Hitbox2D):boolean
-    abstract overlapCollision(other:Hitbox2D):OverlapCollision2D[]
+
+    abstract colliding_with(other: Hitbox2D):boolean
     abstract colliding_with_line(a:Vec2,b:Vec2):boolean
-    abstract overlapLine(a:Vec2,b:Vec2):IntersectionRes
-    abstract pointInside(point:Vec2):boolean
+    abstract overlap_collision(other:Hitbox2D):OverlapCollision2D|undefined
+    overlap_collisions(other: Hitbox2D): OverlapCollision2D[] {
+        if(other.type===HitboxType2D.group){
+            const ret:OverlapCollision2D[]=[]
+            for(const hb of other.hitboxes){
+                const col=this.overlap_collision(hb)
+                if(col)ret.push(col)
+            }
+            return ret
+        }else{
+            const col=this.overlap_collision(other)
+            return col?[col]:[]
+        }
+    }
+    abstract overlap_line(a:Vec2,b:Vec2):IntersectionRes
+    abstract point_inside(point:Vec2):boolean
+
     abstract center():Vec2
     abstract scale(scale:number):void
     abstract randomPoint():Vec2
@@ -55,19 +70,19 @@ export class NullHitbox2D extends BaseHitbox2D{
         this.position=v2.clone(position)
     }
     override readonly type = HitboxType2D.null
-    override collidingWith(_other:Hitbox2D):boolean{
+    override colliding_with(_other:Hitbox2D):boolean{
         return false
     }
-    override pointInside(_point:Vec2):boolean{
+    override point_inside(_point:Vec2):boolean{
         return false
     }
-    override overlapCollision(_other: Hitbox2D): OverlapCollision2D[] {
-        return []
+    override overlap_collision(_other: Hitbox2D): OverlapCollision2D|undefined {
+        return undefined
     }
     override colliding_with_line(_a:Vec2,_b:Vec2):boolean{
         return false
     }
-    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+    override overlap_line(_a:Vec2,_b:Vec2): IntersectionRes {
         return undefined
     }
     override center(): Vec2 {
@@ -87,7 +102,6 @@ export class NullHitbox2D extends BaseHitbox2D{
     override is_null():boolean{
         return true
     }
-
     override transform(position:Vec2=v2(0,0),_scale:number=1,_position_angle?:number,_side?:number):Hitbox2D{
         return new NullHitbox2D(position?v2.add(this.position,position):this.position)
     }
@@ -116,49 +130,43 @@ export class CircleHitbox2D extends BaseHitbox2D{
         this.position=v2.clone(position)
         this.radius=radius
     }
-    override collidingWith(other: Hitbox2D): boolean {
+    override colliding_with(other: Hitbox2D): boolean {
         switch(other.type){
             case HitboxType2D.circle:
                 return v2.distance(this.position,other.position)<this.radius+other.radius
             case HitboxType2D.rect:
                 return Collision.circle_with_rect(this.position,this.radius,other.min,other.max)
             case HitboxType2D.group:
-                return other.hitboxes.some(hitbox => hitbox.collidingWith(this));
+                return other.hitboxes.some(hitbox => hitbox.colliding_with(this));
         }
         return false
     }
-    override overlapCollision(other: Hitbox2D): OverlapCollision2D[] {
-        if(other){
-            switch(other.type){
-                case HitboxType2D.circle:{
-                    const r = this.radius + other.radius
-                    const toP1 = v2.sub(other.position, this.position)
-                    const distSqr = v2.squared(toP1)
+    override overlap_collision(other: Hitbox2D): OverlapCollision2D|undefined {
+        switch(other.type){
+            case HitboxType2D.circle:{
+                const r = this.radius + other.radius
+                const toP1 = v2.sub(other.position, this.position)
+                const distSqr = v2.squared(toP1)
 
-                    v2m.normalizeSafe(toP1)
+                v2m.normalizeSafe(toP1)
 
-                    return distSqr < r * r
-                        ? [{
-                            dir: toP1,
-                            pen: r - Math.sqrt(distSqr)
-                        }]
-                        : []
-                }case HitboxType2D.rect: {
-                    const col=Collision.circle_with_rect_ov(this.position, this.radius, other.min, other.max)
-                    return col?[col]:[];
-                }case HitboxType2D.group:{
-                    const ret:OverlapCollision2D[]=[]
-                    for(const hb of other.hitboxes){
-                        const col=hb.overlapCollision(this)
-                        ret.push(...col)
-                    }
-                    return ret
+                return distSqr < r * r?{
+                        dir: toP1,
+                        pen: r - Math.sqrt(distSqr)
+                    }:undefined
+            }case HitboxType2D.rect:{
+                return Collision.circle_with_rect_ov(this.position, this.radius, other.min, other.max)
+            }case HitboxType2D.group:{
+                let col:OverlapCollision2D|undefined
+                for(const hb of other.hitboxes){
+                    col=hb.overlap_collision(this)
+                    if(col)return col
                 }
             }
         }
-        return []
+        return
     }
-    override pointInside(point: Vec2): boolean {
+    override point_inside(point: Vec2): boolean {
       return v2.distance(this.position,point)<this.radius
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
@@ -181,7 +189,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
         const distSq = v2.distanceSquared(closest, this.position)
         return distSq <= this.radius * this.radius
     }
-    override overlapLine(a_p:Vec2,b_p:Vec2): IntersectionRes {
+    override overlap_line(a_p:Vec2,b_p:Vec2): IntersectionRes {
         let d = v2.sub(b_p, a_p)
         const len = Math.max(v2.len(d), 0.000001)
         d = v2.normalizeSafe(d)
@@ -305,7 +313,7 @@ export class RectHitbox2D extends BaseHitbox2D{
     get position():Vec2{
         return this.min
     }
-    override collidingWith(other: Hitbox2D): boolean {
+    override colliding_with(other: Hitbox2D): boolean {
         if(other){
             switch(other.type){
                 case HitboxType2D.rect:
@@ -313,12 +321,12 @@ export class RectHitbox2D extends BaseHitbox2D{
                 case HitboxType2D.circle:
                     return Collision.circle_with_rect(other.position,other.radius,this.min,this.max)
                 case HitboxType2D.group:
-                    return other.hitboxes.some(hitbox => hitbox.collidingWith(this));
+                    return other.hitboxes.some(hitbox => hitbox.colliding_with(this));
             }
         }
         return false
     }
-    override overlapCollision(other: Hitbox2D): OverlapCollision2D[] {
+    override overlap_collision(other: Hitbox2D):OverlapCollision2D|undefined{
         if(other){
             switch(other.type){
                 case HitboxType2D.rect:{
@@ -337,25 +345,23 @@ export class RectHitbox2D extends BaseHitbox2D{
                         }else{
                             ov2.y=dist.y>0?-ov2.y:ov2.y
                         }
-                        return []
+                        return
                     }
                     break
                 }case HitboxType2D.circle: {
-                    const col=Collision.circle_with_rect_ov(other.position,other.radius,this.min,this.max)
-                    return col?[col]:[]
+                    return Collision.circle_with_rect_ov(other.position,other.radius,this.min,this.max)
                 }case HitboxType2D.group:{
-                    const ret:OverlapCollision2D[]=[]
+                    let col:OverlapCollision2D|undefined
                     for(const hb of other.hitboxes){
-                        const col=hb.overlapCollision(this)
-                        ret.push(...col)
+                        col=hb.overlap_collision(this)
+                        if(col)return col
                     }
-                    return ret
                 }
             }
         }
-        return []
+        return
     }
-    override pointInside(point: Vec2): boolean {
+    override point_inside(point: Vec2): boolean {
         return (point.x>=this.max.x&&point.x<=this.min.x)&&(point.y>=this.max.y&&point.y<=this.min.y)
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
@@ -402,7 +408,7 @@ export class RectHitbox2D extends BaseHitbox2D{
 
         return tmax >= 0 && tmin <= dist
     }
-    override overlapLine(a: Vec2, b: Vec2): IntersectionRes | null {
+    override overlap_line(a: Vec2, b: Vec2): IntersectionRes | null {
         let tmin = 0
         let tmax = Number.MAX_VALUE
 
@@ -577,29 +583,37 @@ export class HitboxGroup2D extends BaseHitbox2D{
         this.hitboxes = hitboxes;
     }
     override readonly type = HitboxType2D.group
-    override collidingWith(that: Hitbox2D): boolean {
-        return this.hitboxes.some(hitbox => hitbox.collidingWith(that));
+    override colliding_with(that: Hitbox2D): boolean {
+        return this.hitboxes.some(hitbox => hitbox.colliding_with(that));
     }
-    override pointInside(point:Vec2):boolean{
+    override point_inside(point:Vec2):boolean{
         for (const hitbox of this.hitboxes) {
-            if(hitbox.pointInside(point)) return true;
+            if(hitbox.point_inside(point)) return true;
         }
         return false;
     }
-    override overlapCollision(other: Hitbox2D): OverlapCollision2D[] {
+    override overlap_collision(other: Hitbox2D): OverlapCollision2D|undefined {
+        let col:OverlapCollision2D|undefined
+        for(const hb of this.hitboxes){
+            col=hb.overlap_collision(other)
+            if(col)return col
+        }
+        return
+    }
+    override overlap_collisions(other: Hitbox2D): OverlapCollision2D[] {
         const ret:OverlapCollision2D[]=[]
         for(const hb of this.hitboxes){
-            const col=hb.overlapCollision(other)
-            ret.push(...col)
+            const col=hb.overlap_collision(other)
+            if(col)ret.push(col)
         }
         return ret
     }
     override colliding_with_line(a:Vec2,b:Vec2):boolean{
         return this.hitboxes.some(hitbox => hitbox.colliding_with_line(a,b));
     }
-    override overlapLine(a:Vec2,b:Vec2): IntersectionRes {
+    override overlap_line(a:Vec2,b:Vec2): IntersectionRes {
         for(const hb of this.hitboxes){
-            const col=hb.overlapLine(a,b)
+            const col=hb.overlap_line(a,b)
             if(col)return col
         }
         return null
@@ -683,7 +697,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         this.position = v2.clone(center);
     }
 
-    override collidingWith(other: Hitbox2D): boolean {
+    override colliding_with(other: Hitbox2D): boolean {
         switch (other.type) {
             case HitboxType2D.rect: {
                 if (this.points.some(p => 
@@ -697,7 +711,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
                     other.max,
                     v2(other.min.x, other.max.y)
                 ];
-                if (rectPoints.some(p => this.pointInside(p))) return true;
+                if (rectPoints.some(p => this.point_inside(p))) return true;
 
                 const polyEdges = this.getEdges();
                 const rectEdges = [
@@ -718,7 +732,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             case HitboxType2D.circle: {
                 if (this.points.some(p => v2.distance(p, other.position) <= other.radius))
                     return true;
-                if (this.pointInside(other.position)) return true;
+                if (this.point_inside(other.position)) return true;
 
                 for (const [a, b] of this.getEdges()) {
                     /*if (Collision.circle_with_line(other.position, other.radius, a, b))
@@ -728,8 +742,8 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             }
             case HitboxType2D.polygon: {
                 // Teste ponto-ponto
-                if (this.points.some(p => other.pointInside(p))) return true;
-                if (other.points.some(p => this.pointInside(p))) return true;
+                if (this.points.some(p => other.point_inside(p))) return true;
+                if (other.points.some(p => this.point_inside(p))) return true;
 
                 // Teste aresta-aresta
                 for (const [a1, a2] of this.getEdges()) {
@@ -743,11 +757,11 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         return false;
     }
 
-    override overlapCollision(_other: Hitbox2D): OverlapCollision2D[] {
-        return [];
+    override overlap_collision(_other: Hitbox2D): OverlapCollision2D|undefined {
+        return
     }
 
-    override pointInside(point: Vec2): boolean {
+    override point_inside(point: Vec2): boolean {
         const { x, y } = point;
         let inside = false;
         const count = this.points.length;
@@ -770,7 +784,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         }
         return false;
     }
-    override overlapLine(_a:Vec2,_b:Vec2): IntersectionRes {
+    override overlap_line(_a:Vec2,_b:Vec2): IntersectionRes {
         return undefined
     }
 
@@ -790,7 +804,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         let p: Vec2;
         do {
             p = v2.random2(rect.min,rect.max)
-        } while (!this.pointInside(p))
+        } while (!this.point_inside(p))
         return p;
     }
 

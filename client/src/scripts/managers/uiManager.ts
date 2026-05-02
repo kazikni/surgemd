@@ -442,11 +442,7 @@ export class UiManager{
             this.game.inventory.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
         }
 
-        const scope_def=this.game.definitions.scopes.getFromNumber(state.current_scope)
-        if(!this.game.inventory.scope||this.game.inventory.scope!==scope_def){
-            this.game.inventory.scope=scope_def
-            this.game.set_scope(scope_def)
-        }
+        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope),state.force_default_scope)
 
         if(state.dirty.inventory.weapons){
             for(const idx in state.inventory.weapons){
@@ -549,7 +545,7 @@ export class UiManager{
             switch(o.number_type){
                 case GameObjectType.Building:{
                     for(const ceiling of (o as Building).ceilings){
-                        if(ceiling.hitbox.collidingWith(player.hitbox)){
+                        if(ceiling.hitbox.colliding_with(player.hitbox)){
                             ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,Numeric.dt_expo_inter(5,dt))
                             ceiling.collided=true
                         }

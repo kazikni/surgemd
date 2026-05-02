@@ -323,7 +323,7 @@ export class Obstacle extends StaticBody{
         return ""
     }
     override can_interact(h:Human): boolean {
-        return !this.health_data.dead&&this.hitbox.collidingWith(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
+        return !this.health_data.dead&&this.hitbox.colliding_with(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
     }
     override auto_interact(h:Human): boolean {
         return (this.def.interactDestroy===true)

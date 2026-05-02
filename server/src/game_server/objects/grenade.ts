@@ -41,7 +41,7 @@ export class Grenade extends Projectile{
             case GameObjectType.Obstacle:
                 if((obj as Obstacle).physical_data.stairs.length>0){
                     for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.collidingWith(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(this.layer+s.dest_layer)
                     }
                 }
             case GameObjectType.Building:{
@@ -49,9 +49,9 @@ export class Grenade extends Projectile{
                 if(obj.number_type===GameObjectType.Obstacle){
                     if((obj as Obstacle).def.height===2||((obj as Obstacle).def.height===1&&this.physical_data.zpos>=0.5))break
                 }
-                const ov=this.hitbox.overlapCollision(obj.hitbox)
-                for(const c of ov){
-                    const normal = c.dir
+                const collisions=this.hitbox.overlap_collisions(obj.hitbox)
+                for(const col of collisions){
+                    const normal = col.dir
                     const vel = this.physical_data.velocity
 
                     const dot = v2.dot(vel, normal)
@@ -67,9 +67,9 @@ export class Grenade extends Projectile{
             }
             case GameObjectType.Human:{
                 if((obj as Human).health_data.dead||(this.owner&&obj.id===this.owner.id))break
-                const ov=this.hitbox.overlapCollision(obj.hitbox)
-                for(const c of ov){
-                    const normal = c.dir
+                const collisions=this.hitbox.overlap_collisions(obj.hitbox)
+                for(const col of collisions){
+                    const normal = col.dir
                     const vel = this.physical_data.velocity
 
                     const dot = v2.dot(vel, normal)

@@ -5,7 +5,9 @@ __                                                                              
 * Shed
 __                                                                                                      __
 ### Menu
-
+* Translations!!
+* Brazilian Portuguese Translation
+* Turkish Translation
 __                                                                                                      __
 ### Items
 * Colt1873 - 45ACP pistol

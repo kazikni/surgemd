@@ -1,7 +1,5 @@
 {
     "values":{
-        "game-name":"Surgemd.io",
-
         "barrel":"Varil",
         "items":{
             "scope_1": "1x Dürbün",
@@ -40,52 +38,18 @@
             "tactical_helmet":"Taktiksel Kask",
             "tactical_pack":"Askeri Sırt Çantası",
 
-            "12g":"12G",
-            "762mm":"7.62MM",
-            "556mm":"5.56MM",
-            "9mm":"9MM",
-            "45acp":"9MM",
-            "22lr":"22LR",
-            "50cal":"50Cal",
-            "308sub":".308 Sub-Sonic",
             "explosive_ammo":"Patlayıcı Mermi",
             "gasoline":"Gasoline",
-            "mana_mm":"Mana-MM LOL",
 
             "survival_knife":"Hayatta Kalma Bıçağı",
             "axe":"Balta",
             "sledgehammer":"Balyoz",
 
-            "m9":"M9",
             "m9_dual":"Çift M9",
-            "colt1873":"Colt 1873",
             "colt1873_dual":"Çift Colt 1873",
-            "taurustx":"Taurus TX 22",
             "taurustx_dual":"Çift Taurus TX 22",
-            "yellow_laser_pistol":"Yellow Laser Pistol",
             "yellow_laser_pistol_dual":"Çift Sarı Lazer Tabancası",
-            "pfeifer_zeliska":"Pfeifer Zeliska 600 Nitro Express",
-            "pfeifer_zeliska_dual":"Çift Pfeifer Zeliska",
-            "ak47":"AK47",
-            "ar15":"AR15",
-            "mp5":"MP5",
-            "m1a1":"M1A1",
-            "famas":"Famas",
-            "micro_uzi":"Micro-Uzi",
-            "vector":"Vector",
-            "kar98k":"Kar98k",
-            "awp":"AWP",
-            "awms":"AWM-S",
-            "blr81":"BLR-81",
-            "model94":"Model 94",
-            "m870":"M870",
-            "spas12":"Spas-12",
-            "hp18":"HP18",
-            "sr25":"SR-25",
-            "pkp":"PKP Pecheneg",
-            "rpg7":"RPG-7",
-            "m79":"M79",
-            "m2_2":"M2-2"
+            "pfeifer_zeliska_dual":"Çift Pfeifer Zeliska"
         },
         "killfeed":{
             "join":"${player} Katıldı",

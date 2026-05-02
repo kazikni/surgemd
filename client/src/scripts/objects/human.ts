@@ -1075,7 +1075,9 @@ export class Human extends MovingBody{
                         ),
                         frame:{
                             image:"gas_smoke_particle",
-                            hotspot:CenterHotspot
+                            hotspot:CenterHotspot,
+                            layer:this.layer,
+                            zIndex:zIndexes.Particles
                         },
                         speed:random.float(d.gasParticles.speed.min,d.gasParticles.speed.max),
                         scale:0.03,

@@ -300,6 +300,7 @@ export const buildings_factory={
             walls_tint?:number
             doors_tint?:number
             b?:DeepPartial<BuildingDef>
+            content?:BuildingObstacles[]
         }={}){
             const walls_tint=settings.walls_tint??1
             const doors_tint=settings.doors_tint??walls_tint
@@ -307,6 +308,12 @@ export const buildings_factory={
                 idString:id,
                 no_collisions:true,
                 no_bullet_collision:true,
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x656877,
+                    }
+                },
                 content:{
                     obstacles:[
                         {
@@ -352,6 +359,7 @@ export const buildings_factory={
                             id:14,
                             variation:walls_tint
                         },
+                        ...(settings.content??[])
                     ],
                     ceiling:[ 
                         {
@@ -366,10 +374,10 @@ export const buildings_factory={
                                 sound:"ceiling_break_1",
                                 count:2,
                                 particles:{
-                                    count:15
+                                    count:30
                                 }
                             },
-                            hitbox:RectHitbox2D.centered(v2(0,0),v2(2,2)),
+                            hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
                         }
                     ],
                     floor_image:[
@@ -379,7 +387,7 @@ export const buildings_factory={
                         }
                     ],
                 },
-                hitbox:RectHitbox2D.centered(v2(0,-0.73),v2(3,3)),
+                hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
             },settings.b??{})
         },
         small_house_1(id:string,settings:{
@@ -617,6 +625,19 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         buildings_factory.house.shed("shed",{
             walls_tint:2,
             doors_tint:2,
+            content:[
+                {
+                    def:"large_drawer",
+                    position:v2(-1.21,0)
+                }
+            ],
+            b:{
+                content:{
+                    loots:[
+                        {table:"special_loot",position:v2.new(0.5,0)},
+                    ]
+                }
+            }
         }),
         buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,

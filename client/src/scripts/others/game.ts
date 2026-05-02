@@ -316,7 +316,7 @@ export class Game extends ClientGame<GameObject>{
             type:"localstorage",
             key:"surgemd-settings"
         })
-        this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/languages")
+        this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/scripts/languages")
         this.fs=fs
     }
     set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
@@ -493,7 +493,7 @@ export class Game extends ClientGame<GameObject>{
         }
         // HINTS
         const hintGroups:[string,number][] = [
-            ["quickswitch", 4],
+            ["quickswitch", 5],
             ["movement", 2],
             ["cover", 3],
             ["healing", 3],
@@ -516,7 +516,7 @@ export class Game extends ClientGame<GameObject>{
             2,
             2
         ]
-        const msg=random.int(0,motivational.length)
+        const msg=random.int(0,motivational.length-1)
         for(let i=0;i<motivational[i];i++){
             messages.push(this.language.get(`gameover.messages.motivational.${msg}.${i}`))
         }

@@ -247,7 +247,7 @@ export class GunItem extends GunItemBase implements LItem{
             for(let i=0;i<2;i++)ret.push(this.inventory.owner.game.add_loot(this.inventory.owner.position,this.inventory.owner.game.definitions.guns.getFromString(this.def.dual_from),1,this.inventory.owner.layer))
             return ret
         }else{
-            return [this.inventory.owner.game.add_loot(this.inventory.owner.position,this.def,1)]
+            return [this.inventory.owner.game.add_loot(this.inventory.owner.position,this.def,1,this.inventory.owner.layer)]
         }
     }
 }

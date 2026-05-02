@@ -86,7 +86,19 @@
             "pkp":"PKP Pecheneg",
             "rpg7":"RPG-7",
             "m79":"M79",
-            "m2_2":"M2-2"
+            "m2_2":"M2-2",
+
+            "bullet_breaker_barrel":"Bullet Breaker Barrel",
+            "high_quality_projectiles":"High Quality Projectiles",
+            "rare_projectile":"Rare Projectile",
+            "liquid_insanity":"Liquid Insanity",
+            "pygmy_necklace":"Pygmy Necklace",
+            "lucky_coin":"Lucky Coin",
+            "nature_leaf":"Nature Leaf",
+            "ghost_ammo":"Ghost Ammo",
+            "biggest_magazine":"Biggest Magazine",
+            "self_revive":"Self Revive",
+            "omni_necklance":"Omni Necklance"
         },
         "killfeed":{
             "join":"${player} Joined",

@@ -70,7 +70,7 @@ export const TundraMap:MapDef={
         "guns":[
             {item:"sr25",weight:21},
             {item:"model94",weight:21},
-            {item:"m1a1",weight:16.5},
+            {item:"m1921",weight:16.5},
             {item:"blr81",weight:16.5},
             {item:"colt1873",weight:15},
             {item:"ar15",weight:15},

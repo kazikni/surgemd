@@ -40,7 +40,9 @@ export type LevelMode={
     group_size:number
     teams?:number
     enemies:LevelEnemys[]
-})
+})|{
+    type:"debug"
+}
 export interface LevelDefinition{
     meta:{
         name: string

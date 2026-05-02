@@ -55,7 +55,7 @@ export const NormalMap:MapDef={
             {item:"hp18",weight:5},
             {item:"ak47",weight:3.5},
             {item:"ar15",weight:3.5},
-            {item:"m1a1",weight:3.5},
+            {item:"m1921",weight:3.5},
             {item:"m870",weight:3.5},
         ],
         "rare_guns":[

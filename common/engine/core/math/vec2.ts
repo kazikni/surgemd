@@ -499,7 +499,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         return x.x * y.x + x.y * y.y;
     },
     /**
-     * @param Vec2 The `Vec2` used in lenght
+     * @param Vec2 The `Vec2` used in length
      * @returns 
      */
     len(Vec2: Vec2): number {

@@ -224,7 +224,7 @@ export const v3 = Object.assign((x:number, y:number,z:number)=>{
         return x.x * y.x + x.y * y.y + x.z * y.z;
     },
     /**
-     * @param v The `Vec3` used in lenght
+     * @param v The `Vec3` used in length
      * @returns 
      */
     len(v: Vec3): number {

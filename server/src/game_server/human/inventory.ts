@@ -1,14 +1,13 @@
 import { FireMode, GunDef } from "common/scripts/definitions/items/guns.ts";
 import { AmmoItemBase, ConsumibleItemBase, GInventoryBase, GrenadeItemBase, GunItemBase, MDItem, MeleeItemBase } from "common/scripts/others/inventory.ts";
 import { DamageReason, InventoryDroppable, InventoryItemType, InventoryPreset } from "common/scripts/definitions/utils.ts";
-import { ConsumingAction, ReloadAction } from "./actions.ts";
+import { ConsumingActionA, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
-import { ConsumibleCondition, ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
+import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
-import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameObjectType, PlayerAnimationType } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -24,6 +23,7 @@ export abstract class LItem extends MDItem{
     declare inventory:GInventory
     abstract on_use(user:Human,slot?:Slot<LItem>):void
     abstract on_fire(user:Human):void
+    abstract on_fire_alt(user:Human):void
     abstract attacking():boolean
     abstract update(user:Human,dt:number):void
     abstract drop():Loot[]
@@ -69,6 +69,7 @@ export class GunItem extends GunItemBase implements LItem{
             this.burst=undefined
         }
     }
+    on_fire_alt(user:Human):void{}
     has_ammo(user:Human):boolean{
         return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
     }
@@ -145,7 +146,7 @@ export class GunItem extends GunItemBase implements LItem{
         }
 
         const barrel_position=v2(
-            this.def.lenght,
+            this.def.length,
             (this.def.barrel_offset??0)+(this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0)
         )
         const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
@@ -174,7 +175,7 @@ export class GunItem extends GunItemBase implements LItem{
         }
         if(this.def.synsed_particle){
             const scc=this.def.synsed_particle.count??1
-            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??1)
+            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??0)
             const pdef=user.game.definitions.synced_particle.getFromString(this.def.synsed_particle.def)
 
             for(let i=0;i<scc;i++){
@@ -207,8 +208,8 @@ export class GunItem extends GunItemBase implements LItem{
             user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
         }
     }
-    update(user:Human){
-        if(this.use_delay>0)this.use_delay-=user.game.delta_time
+    update(user:Human,dt:number){
+        if(this.use_delay>0)this.use_delay-=dt
         if(user.inventory.hand_item===this&&!user.actions.current_action){
             if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
                 this.reloading=true
@@ -261,7 +262,8 @@ export class AmmoItem extends AmmoItemBase implements LItem{
     }
     on_fire(_user: Human):void{
     }
-    update(_user: Human): void {
+    on_fire_alt(user:Human):void{}
+    update(_user: Human,dt:number): void {
     }
     drop(): Loot[] {
         return []
@@ -272,41 +274,86 @@ export class AmmoItem extends AmmoItemBase implements LItem{
 }
 export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     declare inventory:GInventory
+    slot?:Slot<LItem>
+    use_delay:number=0
     constructor(def:ConsumibleDef){
         super(def)
     }
     on_use(user: Human,slot?:Slot<LItem>): void {
-        if(this.def.side_effects[0].type!==SideEffectType.Heal)return
-        if(this.def.condition){
-            for(const c of this.def.condition){
-            switch(c){
-                case ConsumibleCondition.UnfullHealth:
-                    
-                    if(user.health_data.health>=user.health_data.max_health*(this.def.side_effects[0].health?.max??1))return
-                    break
-                case ConsumibleCondition.UnfullExtra:
-                    if(!(user.health_data.boost<user.health_data.max_boost*(this.def.side_effects[0].boost?.max??1)||user.health_data.boost_def.type!==this.def.boost_type))return
-                    break
-            }
-            }
-        }
+        this.slot=slot
+        switch(this.def.consuming.type){
+            case 0:
+                if(user.consuming_condition(this.def.condition!,this.def.consuming.side_effects)){
+                    user.net_sync.part=true
+                    user.animation_data.dirty=true
+                    user.inventory.net_sync.hand=true
 
-        user.net_sync.part=true
-        user.animation_data.dirty=true
-        user.inventory.net_sync.hand=true
-
-        user.animation_data.current_animation={
-            type:PlayerAnimationType.Consuming,
-            item:this.def.idNumber!
+                    user.animation_data.current_animation={
+                        type:PlayerAnimationType.Consuming,
+                        item:this.def.idNumber!
+                    }
+                    user.actions.play(new ConsumingActionA(this,slot!))
+                }
+                break
+            case 1:
+                user.inventory.set_hand_item(this)
+                this.inventory.weapon_idx=-1
+                this.use_delay=this.def.consuming.delay
+                break
         }
-        user.actions.play(new ConsumingAction(this,slot!))
     }
-    on_fire(_user:Human):void{
+    on_fire(user:Human):void{
+        if(this.use_delay<=0){
+            this.fire(user,true)
+        }
+    }
+    on_fire_alt(user:Human):void{
+        if(this.use_delay<=0){
+            this.fire(user)
+        }
+    }
+    fire(user:Human,self=false){
+        switch(this.def.consuming.type){
+            case 1:{
+                const barrel_position=v2(this.def.consuming.length,0)
+                const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
+                const position=v2.add(user.position,barrel_point)
+                if(this.def.consuming.synsed_particle){
+                    const scc=this.def.consuming.synsed_particle.count??1
+                    const patternPoint = getPatterningShape(scc, this.def.consuming.jitterRadius??1)
+                    if(this.def.consuming.synsed_particle){
+                        const pdef=user.game.definitions.synced_particle.getFromString(this.def.consuming.synsed_particle.def)
+                        for(let i=0;i<scc;i++){
+                            const pos=this.def.consuming.jitterRadius?v2.add(position,patternPoint[i]):position
+                            const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
+                            if(self){
+                                const rot=user.physical_data.rotation+3.141592
+                                part.no_hit_owner=false
+                                part.just_owner=false
+                                if(this.def.consuming.synsed_particle.self_speed){
+                                    part.push(random.random1(this.def.consuming.synsed_particle.self_speed??0),rot)
+                                }
+                            }else{
+                                if(this.def.consuming.synsed_particle.speed){
+                                    let ang=user.physical_data.rotation
+                                    if(this.def.consuming.spread){
+                                        ang+=Angle.deg2rad(random.float(-this.def.consuming.spread,this.def.consuming.spread))
+                                    }
+                                    part.push(random.random1(this.def.consuming.synsed_particle.speed),ang)
+                                }
+                            }
+                        }
+                    }
+                }
+                this.use_delay=this.def.consuming.delay
+            }
+        }
     }
     attacking():boolean{
         return false
     }
-    update(_user: Human): void {
+    update(_user: Human,dt:number): void {
+        if(this.use_delay>0)this.use_delay-=dt
     }
     drop(): Loot[] {
         return []
@@ -331,10 +378,11 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
             slot:this.slot
         }
     }
+    on_fire_alt(user:Human):void{}
     attacking():boolean{
         return this.inventory.owner.grenade_holding!==undefined
     }
-    update(_user: Human): void {
+    update(_user: Human,dt:number): void {
 
     }
     drop(): Loot[] {
@@ -375,6 +423,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             this.firing=true
         }
     }
+    on_fire_alt(user:Human):void{}
     attack(user:Human):void{
         const position=v2.add(
             user.position,
@@ -418,9 +467,9 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             }
         }
     }
-    update(user: Human): void {
+    update(_user: Human,dt:number): void {
         if(this.use_delay>0){
-            this.use_delay-=user.game.delta_time
+            this.use_delay-=dt
         }else{
             this.firing=false
         }
@@ -872,6 +921,9 @@ export class GInventory extends GInventoryBase<LItem>{
         for(const s of this.slots){
             if(!s.item)continue
             s.item.update(this.owner,dt)
+        }
+        if(this.hand_item&&this.hand_item.item_type!==InventoryItemType.gun&&this.hand_item.item_type!==InventoryItemType.melee){
+            this.hand_item.update(this.owner,dt)
         }
     }
 }

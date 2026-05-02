@@ -18,6 +18,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -869,8 +870,9 @@ export class Human extends MovingBody{
             case PlayerAnimationType.Consuming:{
                 const def=this.game.definitions.consumibles.getFromNumber(this.current_animation.item)
                 const sound=this.game.resources.get_audio((def.assets?.using_sound)??`using_${def.idString}`)
+                const consuming=def.consuming as (ConsumingAction&{type:0})
                 if(sound){
-                    if(def.drink){
+                    if(consuming.drink){
                         this.sprites.mounth.frames=undefined
                         this.sprites.mounth.frame=this.game.resources.get_sprite(this.anims.mount_open)
                     }
@@ -878,7 +880,7 @@ export class Human extends MovingBody{
                         position:this.position,
                         max_distance:10,
                         on_complete:()=>{
-                            if(def.drop){
+                            if(consuming.drop){
                                 const angle=this.physical_data.rotation+(3.141592/2)
                                 const p=new ABParticle2D({
                                     direction:angle,
@@ -907,14 +909,14 @@ export class Human extends MovingBody{
                 }
                 if(def.assets?.using_particle){
                     this.anims.consumible_particle=def.assets.using_particle
-                }if(def.boost_type){
-                    this.anims.consumible_particle=`boost_${Boosts[def.boost_type].name}_particle`
+                }if(consuming.boost_type){
+                    this.anims.consumible_particle=`boost_${Boosts[consuming.boost_type].name}_particle`
                 }else{
                     this.anims.consumible_particle="healing_particle"
                 }
                 this.anims.consumible_particles!.enabled=true
-                if(def.animation){
-                    this.container.play_animation(def.animation,()=>{
+                if(consuming.animation){
+                    this.container.play_animation(consuming.animation,()=>{
                         this.current_animation=undefined
                     })
                 }
@@ -1007,7 +1009,7 @@ export class Human extends MovingBody{
             if(this.anims.muzzle_flash_light)this.anims.muzzle_flash_light.destroyed=true
 
             //this.anims.muzzle_flash_light=this.game.light_map.addLight(this.sprites.muzzle_flash._real_position,model2d.circle(1),ColorM.hex("#ff0"))
-            this.sprites.muzzle_flash.position=v2(d.lenght,0)
+            this.sprites.muzzle_flash.position=v2(d.length,0)
             this.sprites.muzzle_flash.visible=true
 
             this.game.add_timeout(()=>{
@@ -1071,7 +1073,7 @@ export class Human extends MovingBody{
                         life_time:d.gasParticles.life_time,
                         position:v2.add(
                             this.position,
-                            v2.from_RadAngle(this.physical_data.rotation,d.lenght)
+                            v2.from_RadAngle(this.physical_data.rotation,d.length)
                         ),
                         frame:{
                             image:"gas_smoke_particle",

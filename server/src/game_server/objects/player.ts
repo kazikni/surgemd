@@ -238,6 +238,7 @@ export class Player extends Human{
 
         this.input.rotation=i.angle
         this.input.using_item=i.use_weapon
+        this.input.using_item_alt=i.alt_use_weapon
         this.input.dist_to_pointer=i.distance_to_aim
 
         this.input.interaction=i.interact||this.input.interaction

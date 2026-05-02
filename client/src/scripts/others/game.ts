@@ -385,8 +385,7 @@ export class Game extends ClientGame<GameObject>{
         //Load Sfx
         await this.resources.load_group("/sounds/game/main.json","main",this.menu.set_loading_current)
 
-        /*
-        await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        /*await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("keyboard-2",{src:"/sounds/ui/keyboard-2.mp3",volume:1},"essentials",this.menu.set_loading_current)*/
         
         await this.resources.load_audio("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)

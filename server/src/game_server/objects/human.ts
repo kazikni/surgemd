@@ -28,6 +28,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { type Building } from "./building.ts";
+import { ConsumibleCondition } from "common/scripts/definitions/items/consumibles.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -161,6 +162,7 @@ export class Human extends MovingBody{
 
         auto_click:boolean
         using_item:boolean
+        using_item_alt:boolean
         using_item_down:boolean
 
         actions:InputAction[]
@@ -177,6 +179,7 @@ export class Human extends MovingBody{
 
         auto_click:false,
         using_item:false,
+        using_item_alt:false,
         using_item_down:false,
 
         actions:[],
@@ -439,6 +442,26 @@ export class Human extends MovingBody{
                 break
         }
     }
+    consuming_condition(conditions:ConsumibleCondition[],side_effects:SideEffect[]):boolean{
+        for(const c of conditions){
+            for(const se of side_effects){
+                if(se.type!==SideEffectType.Heal)continue
+                switch(c){
+                    case ConsumibleCondition.UnfullHealth:
+                        if(
+                            this.health_data.health>=this.health_data.max_health*(se.health?.max??1)
+                        )return false
+                        break
+                    case ConsumibleCondition.UnfullExtra:
+                        if(
+                            (this.health_data.boost_def.type===se.boost?.def.type&&this.health_data.boost>=this.health_data.max_boost*(se.boost?.max??1))
+                        )return false
+                        break
+                }
+            }
+        }
+        return true
+    }
     throw_using_projectile(){
         if(!this.grenade_holding||(this.grenade_holding.slot&&this.grenade_holding.slot.quantity<=0)){
             this.grenade_holding=undefined
@@ -661,12 +684,12 @@ export class Human extends MovingBody{
         const current_floor=Floors[this.physical_data.current_floor]
         const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
-                  * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
-                  * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
-                  * this.modifiers.speed
-                  * (this.health_data.downed?0.25:1)
-                  * (this.parachute?1:((current_floor.speed_mult??1)))
-                  * (this.grenade_holding?0.7:1)
+                * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
+                * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
+                * this.modifiers.speed
+                * (this.health_data.downed?0.25:1)
+                * (this.parachute?1:((current_floor.speed_mult??1)))
+                * (this.grenade_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
             this.animation_data.current_animation=undefined
@@ -789,12 +812,15 @@ export class Human extends MovingBody{
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false
-                if(this.input.using_item&&this.inventory.hand_item&&!this.grenade_holding&&this.human_data.combat_enabled&&!this.health_data.downed){
-                    this.inventory.hand_item.on_fire(this)
-                    this.animation_data.attacking=this.inventory.hand_item.attacking()
-                    this.input.using_item_down=false
+                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.health_data.downed){
+                    if(this.input.using_item){
+                        this.inventory.hand_item.on_fire(this)
+                        this.animation_data.attacking=this.inventory.hand_item.attacking()
+                        this.input.using_item_down=false
+                    }else if(this.input.using_item_alt){
+                        this.inventory.hand_item.on_fire_alt(this)
+                    }
                 }
-
                 if(this.grenade_holding){
                     this.grenade_holding.time-=dt
                     if(this.grenade_holding.time<=0){
@@ -821,14 +847,6 @@ export class Human extends MovingBody{
                     }
                 }
             }
-            /*if(this.parachute){
-                speed*=1.7+(0.5+this.parachute.value)
-                this.parachute.value-=dt*0.05
-                if(this.parachute.value<=0){
-                    this.parachute=undefined
-                    this.net_sync.full=true
-                }
-            }*/
         }
         this.physical_data.dirty_part=true
         this.net_sync.part=true

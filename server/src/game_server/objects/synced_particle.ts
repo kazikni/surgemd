@@ -25,6 +25,9 @@ export class SyncedParticle extends MovingBody {
     time=0
     spiral_origin=v2.zero()
 
+    no_hit_owner:boolean=false
+    just_owner:boolean=false
+
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
             // deno-lint-ignore no-fallthrough
@@ -58,7 +61,8 @@ export class SyncedParticle extends MovingBody {
                 }
 
                 if(ov&&this.def.side_effect&&this.action_tick>=this.action_time){
-                    if(this.def.no_hit_owner&&obj.id===this.owner?.id)break
+                    if(this.no_hit_owner&&obj.id===this.owner?.id)break
+                    if(this.just_owner&&obj.id!==this.owner?.id)break
                     for(const s of this.def.side_effect){
                         (obj as Human).side_effect(s,this.owner)
                     }
@@ -76,6 +80,7 @@ export class SyncedParticle extends MovingBody {
         this.base_hitbox=this.def.hitbox??(new CircleHitbox2D(v2(0,0),1.5))
         this.physical_data.rotation=random.rad()
         this.action_time=this.def.action_time??0.1
+        this.no_hit_owner=this.def.no_hit_owner??false
 
         if(this.def.movement){
             if(this.def.movement.angular){

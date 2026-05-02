@@ -24,7 +24,7 @@ export type GunDef={
     fireDelay:number
     switchDelay?:number
     spread?:number
-    lenght:number
+    length:number
     barrel_offset?:number
     jitterRadius?:number
     fireMode?:FireMode
@@ -211,7 +211,7 @@ export const guns_factory={
             class:GunClasses.Pistol,
             rank:ItemRank.E,
             fireDelay:1,
-            lenght:0.8,
+            length:0.8,
         },extend)
     },
     pistol(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -220,7 +220,7 @@ export const guns_factory={
 
             fireDelay:1,
             switchDelay:0.7,
-            lenght:0.8,
+            length:0.8,
             speed_mod:0.98,
 
             ammoType:ammo,
@@ -245,7 +245,7 @@ export const guns_factory={
             idString:id,
             fireDelay:0.1,
             switchDelay:0.7,
-            lenght:0.9,
+            length:0.9,
             speed_mod:0.97,
 
             ammoType:ammo,
@@ -273,7 +273,7 @@ export const guns_factory={
             idString:id,
             fireDelay:0.1,
             switchDelay:0.5,
-            lenght:0.9,
+            length:0.9,
             speed_mod:0.98,
 
             ammoType:ammo,
@@ -301,7 +301,7 @@ export const guns_factory={
             idString:id,
             fireDelay:0.1,
             switchDelay:0.3,
-            lenght:0.9,
+            length:0.9,
             speed_mod:0.95,
 
             ammoType:ammo,
@@ -330,7 +330,7 @@ export const guns_factory={
             idString:id,
             fireDelay:0.1,
             switchDelay:0.15,
-            lenght:0.9,
+            length:0.9,
             speed_mod:0.95,
 
             ammoType:ammo,
@@ -359,7 +359,7 @@ export const guns_factory={
             idString:id,
             fireDelay:0.1,
             switchDelay:0.2,
-            lenght:0.9,
+            length:0.9,
             speed_mod:0.95,
 
             ammoType:ammo,
@@ -657,7 +657,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.8
             },
         }),
-        guns_factory.assault("m1a1","45acp",{
+        guns_factory.assault("m1921","45acp",{
             fireDelay:0.1,
             spread:6,
 
@@ -1057,7 +1057,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:0.1,
             switchDelay:1,
             spread:5,
-            lenght:0.9,
+            length:0.9,
             ammoType:"762mm",
             ammoSpawnAmount:200,
             class:GunClasses.LMG,
@@ -1097,7 +1097,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:1,
             switchDelay:0.3,
             spread:0.2,
-            lenght:1,
+            length:1,
             ammoType:"explosive_ammo",
             fireMode:FireMode.Single,
             class:GunClasses.Miscellaneous,
@@ -1154,7 +1154,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:1,
             switchDelay:0.1,
             spread:0.2,
-            lenght:1,
+            length:1,
             barrel_offset:0.45,
             ammoType:"explosive_ammo",
             ammoSpawnAmount:11,
@@ -1201,7 +1201,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fireDelay:0.1,
             switchDelay:1,
             spread:10,
-            lenght:1,
+            length:1,
             ammoType:"gasoline",
             fireMode:FireMode.Auto,
             class:GunClasses.Miscellaneous,

@@ -44,6 +44,7 @@ export class InputPacket extends Packet{
     angle:number=0
     distance_to_aim:number=0
 
+    auto_fire:boolean=false
     use_weapon:boolean=false
     alt_use_weapon:boolean=false
     interact:boolean=false
@@ -59,7 +60,7 @@ export class InputPacket extends Packet{
         stream.writePolarMov2(this.movement)
         .writeRad(this.angle)
         .writeFloat(this.distance_to_aim,0,1,1)
-        .writeBooleanGroup(this.use_weapon,this.alt_use_weapon,this.interact,this.reload,this.swamp_guns)
+        .writeBooleanGroup(this.auto_fire,this.use_weapon,this.alt_use_weapon,this.interact,this.reload,this.swamp_guns)
         .writeArray(this.actions,(i,_s)=>{
             stream.writeUint8(i.type)
             switch(i.type){
@@ -95,11 +96,12 @@ export class InputPacket extends Packet{
         this.angle=stream.readRad()
         this.distance_to_aim=stream.readFloat(0,1,1)
         const bg=stream.readBooleanGroup()
-        this.use_weapon=bg[0]
-        this.alt_use_weapon=bg[1]
-        this.interact=bg[2]
-        this.reload=bg[3]
-        this.swamp_guns=bg[4]
+        this.auto_fire=bg[0]
+        this.use_weapon=bg[1]
+        this.alt_use_weapon=bg[2]
+        this.interact=bg[3]
+        this.reload=bg[4]
+        this.swamp_guns=bg[5]
         this.actions=stream.readArray((_s)=>{
           const ret={
               type:stream.readUint8()

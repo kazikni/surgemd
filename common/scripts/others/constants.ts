@@ -76,7 +76,7 @@ export enum zIndexes{
     DeadZone,
     Lights,
     DamageSplashs,
-    Minimap
+    UI
 }
 export enum ActionsType{
     Reload,

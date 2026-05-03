@@ -230,6 +230,7 @@ export class Player extends Human{
     proccess_input(i:InputPacket){
         this.input.movement=i.movement
 
+        this.input.auto_click=i.auto_fire
         if(this.input.auto_click){
             this.input.using_item_down=i.use_weapon
         }else if(!this.input.using_item&&i.use_weapon){

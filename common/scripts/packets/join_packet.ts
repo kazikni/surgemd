@@ -5,7 +5,6 @@ export class JoinPacket extends Packet{
     Name="join"
 
     player_name:string=""
-    is_mobile:boolean=false
 
     skin?:{
         female:boolean
@@ -21,7 +20,7 @@ export class JoinPacket extends Packet{
     }
     encode(stream: NetStream): void {
         stream.writeStringSized(30,this.player_name)
-        stream.writeBooleanGroup(this.is_mobile,this.skin!==undefined,this.skin?.female)
+        stream.writeBooleanGroup(this.skin!==undefined,this.skin?.female)
         if(this.skin!==undefined){
             stream.writeUint16(this.skin.shirt)
             stream.writeUint16(this.skin.hair)
@@ -46,6 +45,5 @@ export class JoinPacket extends Packet{
             this.skin.hair_tint=stream.readUint32()
             this.skin.female=bg[1]
         }
-        this.is_mobile=bg[0]
     }
 }

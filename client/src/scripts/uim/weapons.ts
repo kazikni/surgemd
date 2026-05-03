@@ -24,52 +24,7 @@ export class WeaponsModule extends UIModule<Game> {
         for(const idx in this.game.inventory.weapons){
             const i=parseInt(idx)
             if(!this.elements[i]){
-                const el = document.createElement("div")
-                el.className = "weapon-slot"
-                el.id = "weapon-slot-" + i
-
-                const number = document.createElement("span")
-                number.className = "weapon-slot-number"
-                number.innerText = (i + 1).toString()
-                el.appendChild(number)
-
-                const name = document.createElement("span")
-                name.className = "weapon-slot-name"
-                el.appendChild(name)
-
-                const img = document.createElement("img")
-                img.className = "weapon-slot-image"
-                el.appendChild(img)
-                
-                el.dataset.drop_kind = "1"
-                el.dataset.drop = i.toString()
-
-                el.addEventListener("mousedown", (e: MouseEvent) => {
-                    if (e.button === 2) {
-                        this.game.input.actions.push({
-                            type:InputActionType.drop,
-                            drop:i,
-                            drop_kind:1
-                        })
-                    } else if (e.button === 0) {
-                        this.game.input.actions.push({
-                            type:InputActionType.set_hand,
-                            hand:i
-                        })
-                    }
-                })
-
-                el.addEventListener("touchstart", () => {
-                    this.game.input.actions.push({
-                        type: InputActionType.set_hand,
-                        hand: i
-                    })
-                })
-                if (this.currentWeapon === i) {
-                    el.classList.add("weapon-slot-selected")
-                }
-                this.elements[i] = el
-                this.container.appendChild(el)
+                this.create_element(i)
             }
 
             const item=this.game.inventory.weapons[i]
@@ -86,6 +41,55 @@ export class WeaponsModule extends UIModule<Game> {
                 img_el.style.display = "none"
             }
         }
+    }
+    create_element(i:number):HTMLDivElement{
+        const el = document.createElement("div")
+        el.className = "weapon-slot"
+        el.id = "weapon-slot-" + i
+
+        const number = document.createElement("span")
+        number.className = "weapon-slot-number"
+        number.innerText = (i + 1).toString()
+        el.appendChild(number)
+
+        const name = document.createElement("span")
+        name.className = "weapon-slot-name"
+        el.appendChild(name)
+
+        const img = document.createElement("img")
+        img.className = "weapon-slot-image"
+        el.appendChild(img)
+        
+        el.dataset.drop_kind = "1"
+        el.dataset.drop = i.toString()
+
+        el.addEventListener("mousedown", (e: MouseEvent) => {
+            if (e.button === 2) {
+                this.game.input.actions.push({
+                    type:InputActionType.drop,
+                    drop:i,
+                    drop_kind:1
+                })
+            } else if (e.button === 0) {
+                this.game.input.actions.push({
+                    type:InputActionType.set_hand,
+                    hand:i
+                })
+            }
+        })
+
+        el.addEventListener("touchstart", () => {
+            this.game.input.actions.push({
+                type: InputActionType.set_hand,
+                hand: i
+            })
+        })
+        if (this.currentWeapon === i) {
+            el.classList.add("weapon-slot-selected")
+        }
+        this.elements[i] = el
+        this.container.appendChild(el)
+        return el
     }
 
     private update_current_weapon() {

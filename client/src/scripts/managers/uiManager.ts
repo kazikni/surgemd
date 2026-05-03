@@ -1,5 +1,5 @@
 import { Game } from "../others/game.ts";
-import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -167,7 +167,7 @@ export class UiManager{
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             rotating=true
-            //this.game.fake_crosshair.visible=true
+            this.game.aim_line=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
             if(dist>0.9){
                 this.game.input.use_weapon=true
@@ -179,6 +179,7 @@ export class UiManager{
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
             this.game.input.use_weapon=false
             rotating=false
+            this.game.aim_line=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
             this.game.input_manager.emit("actiondown",{action:"interact"})
@@ -229,7 +230,7 @@ export class UiManager{
             })
         }
     }
-    mobile_enabled:boolean=false
+    mobile_enabled:boolean=isMobile||Debug.force_mobile
     mobile_close(){
         HideElement(this.mobile_content.gui)
         ShowElement(this.content.help_gui)
@@ -281,7 +282,6 @@ export class UiManager{
         information_box_message:""
     }
     update_hint(){
-        const state=this.state
         for (const [key, el] of Object.entries(this.helpTexts)) {
             el.style.display = this.state[key as keyof HelpGuiState] ? "" : "none";
         }
@@ -291,11 +291,14 @@ export class UiManager{
             }else{
                 HideElement(this.mobile_content.btn_interact)
             }
-            if(state.gun){
+            if(this.state.gun){
                 ShowElement(this.mobile_content.btn_reload)
             }else{
                 HideElement(this.mobile_content.btn_reload)
             }
+        }else{
+            HideElement(this.mobile_content.btn_reload)
+            HideElement(this.mobile_content.btn_interact)
         }
     }
     assign_killleader(msg:KillFeedMessageKillleader){
@@ -568,6 +571,7 @@ export class UiManager{
         if(!this.current_interaction&&old_inter){
             this.game.ui_manager.signal("interaction_hint", "")
         }
+        this.state.gun=player.current_weapon?.item_type===InventoryItemType.gun
         this.update_hint()
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(

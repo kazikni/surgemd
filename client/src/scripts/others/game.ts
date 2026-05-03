@@ -107,6 +107,8 @@ export class Game extends ClientGame<GameObject>{
     planes:Record<number,Plane>={}
 
     hitboxes_gfx:Graphics2D=new Graphics2D()
+    ui_gfx:Graphics2D=new Graphics2D()
+    aim_line:boolean=false
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
@@ -147,11 +149,13 @@ export class Game extends ClientGame<GameObject>{
 
         this.cam2d.addObject(this.terrain_gfx)
         this.cam2d.addObject(this.grid_gfx)
+        this.cam2d.addObject(this.ui_gfx)
 
         this.dead_zone.append()
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid_gfx.zIndex=zIndexes.Grid
+        this.ui_gfx.zIndex=zIndexes.UI
 
         this.world_shadow={
             color:ColorM.rgba(0,0,0,50),
@@ -296,8 +300,7 @@ export class Game extends ClientGame<GameObject>{
             }
         })
         this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
-            if(isMobile){
-            }else{
+            if(!isMobile){
                 const cam_c=v2(this.cam2d.width/2,this.cam2d.height/2)
                 const mouse_p=v2.dscale(this.input_manager.mouse.position,this.cam2d.zoom)
                 const angle=v2.lookTo(cam_c,mouse_p)
@@ -626,6 +629,12 @@ export class Game extends ClientGame<GameObject>{
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 
                 this.current_layer=this.active_entity.layer
+
+                this.ui_gfx.clear()
+                if(this.aim_line){
+                    this.ui_gfx.fill_color({r:1,g:1,b:1,a:0.1})
+                    this.ui_gfx.drawLine(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,1000)),0.05/this.cam2d.zoom)
+                }
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
@@ -633,6 +642,8 @@ export class Game extends ClientGame<GameObject>{
         this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
+
+            this.input.auto_fire=this.ui.mobile_enabled
             this.client.emit(this.input)
             this.reset_input()
         }

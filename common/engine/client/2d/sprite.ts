@@ -67,11 +67,8 @@ export class Sprite2D extends Container2DObject{
         this._rect={
             min:v2(0,0),
             max:v2(1,1),
-        }
-        this.model=new Float32Array([
-            0,0,0,0,0,0,
-            0,0,0,0,0,0,
-        ])
+        }   
+        this.model=new Float32Array(2*3*2)
     }
     
     set_frame(frame:FrameDef,resources:ResourcesManager){

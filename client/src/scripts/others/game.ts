@@ -738,8 +738,10 @@ export class Game extends ClientGame<GameObject>{
             this.process_general_update(p.content)
         })
         client.on("update",(p:UpdatePacket)=>{
+            this.clock.profiler.start(100)
             this.scene_2d.objects.proccess(p.objects!,true)
             this.process_private(p.priv)
+            this.clock.profiler.end(100)
         })
         client.on("connect",(_p:ConnectPacket)=>{
         })

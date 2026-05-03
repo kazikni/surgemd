@@ -94,7 +94,6 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.renderer.clear()
 
         this.on_before_render(dt)
-
         this.cam2d.draw(dt,this.resources)
         for(const l of this.scene_2d.objects.layers){
             for(const o of this.scene_2d.objects.objects[l].renderizables){
@@ -103,7 +102,6 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
             }
         }
         super.draw(dt)
-    
         this.on_render(dt)
         this.clock.profiler.end(3)
     }
@@ -113,7 +111,6 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         for(const t of this.tweens){
             t.update(dt)
         }
-
         this.particles.update(dt)
         this.sounds.update(dt)
         this.input_manager.tick()

@@ -5,9 +5,11 @@ __                                                                              
 * Shed
 __                                                                                                      __
 ### Menu
+* Intro Video
 * Translations!!
 * Brazilian Portuguese Translation
 * Turkish Translation
+* Mobile Aim Line
 __                                                                                                      __
 ### Items
 * Colt1873 - 45ACP pistol

@@ -107,7 +107,7 @@ export class Loot extends GameObject{
             case InventoryItemType.ammo:
                 return (this.game.inventory.aitems[this.item.idString]??0)<(h.backpack?.max[this.item.idString]??9999)
             case InventoryItemType.consumible:{
-                return this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item))
+                return false//return this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item))
             }
             case InventoryItemType.helmet:
                 return !h.helmet||h.helmet.level<(this.item as HelmetDef).level

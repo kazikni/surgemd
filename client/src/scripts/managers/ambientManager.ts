@@ -154,12 +154,19 @@ export class AmbientManager{
         this.ambience=game.sounds.add_manipulative_si("ambience")
         this.ambience.volume=0.25
         this.deadzone_ambience=game.sounds.add_manipulative_si("ambience")
-        this.game.sounds.signals.on("load",async()=>{
-            await this.game.resources.load_audio("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
-            await this.game.resources.load_audio("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
+
+        this.game.resources.load_audio("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
+        this.game.resources.load_audio("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
+        this.game.sounds.signals.on("load",()=>{
+            const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_audio(`menu_music`)
-            await this.game.menu.start_intro()
-            this.music.set(menu_music)
+            if(this.game.menu.intro_fineshed){
+                this.music.set(menu_music)
+            }else{
+                video.addEventListener("ended",()=>{
+                    this.music.set(menu_music)
+                })
+            }
         })
 
         /*this.light_map.zIndex=zIndexes.Lights

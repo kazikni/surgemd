@@ -28,6 +28,7 @@ export type GunDef={
     barrel_offset?:number
     jitterRadius?:number
     fireMode?:FireMode
+    fireOnRelease?:boolean
     burst?:{
         delay:number
         sequence:number
@@ -336,6 +337,7 @@ export const guns_factory={
             ammoType:ammo,
             fireMode:FireMode.Single,
             class:GunClasses.Sniper,
+            fireOnRelease:true,
             rank:ItemRank.C,
 
             gasParticles:GasParticles.sniper,

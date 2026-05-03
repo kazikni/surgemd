@@ -107,9 +107,15 @@ export class MenuManager{
         HideElement(this.content.loading_screen)
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
+        this.start_intro()
     }
+    intro_fineshed:boolean=false
     start_intro(): Promise<void> {
         return new Promise<void>((resolve) => {
+            if(this.intro_fineshed){
+                resolve()
+                return
+            }
             const screen = this.content.initial_screen
             const video = document.getElementById("intro-video") as HTMLVideoElement
 
@@ -120,9 +126,9 @@ export class MenuManager{
             screen.style.opacity = "1"
 
             const start = () => {
-                video.muted = false
                 video.currentTime = 0
                 video.play().catch(() => {
+                    this.intro_fineshed=true
                     console.warn("Video play blocked")
                     resolve()
                 })
@@ -134,9 +140,10 @@ export class MenuManager{
                 video.addEventListener("canplaythrough", start, { once: true })
             }
 
-            video.onended = () => {
+            video.addEventListener("ended",() => {
                 screen.style.opacity = "0"
                 setTimeout(() => {
+                    this.intro_fineshed=true
                     HideElement(screen, true)
                     const invite = this.params.get("group-id")
                     if (invite) {
@@ -153,8 +160,8 @@ export class MenuManager{
                         }
                     }
                     resolve()
-                }, 1000)
-            }
+                },1000)
+            })
         })
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
@@ -268,7 +275,7 @@ export class MenuManager{
             ShowElement(this.content.menu_options)
         }
     }
-    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds

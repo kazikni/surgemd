@@ -24,6 +24,7 @@ import { ItemsModule } from "../uim/items.ts";
 import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
+import { GunClasses } from "common/scripts/definitions/items/guns.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -169,10 +170,20 @@ export class UiManager{
             rotating=true
             this.game.aim_line=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-            if(dist>0.9){
-                this.game.input.use_weapon=true
-            }else{
-                this.game.input.use_weapon=false
+            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==InventoryItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
+                
+            }*/
+
+            if(this.game.active_entity?.current_weapon){
+                if(this.game.active_entity.current_weapon.item_type===InventoryItemType.gun){
+                    if(dist>0.9){
+                        this.game.input.use_weapon=true
+                    }else{
+                        this.game.input.use_weapon=false
+                    }
+                }else{
+                    this.game.input.use_weapon=true
+                }
             }
             this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),dist)
         })

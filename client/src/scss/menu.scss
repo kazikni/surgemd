@@ -73,17 +73,21 @@
     top: 0px;
     bottom: 0px;
     position: absolute;
-    background-image: url("/img/menu/logos/initial_screen_1.png");
-    background-size: cover;
     width: 100%;
     height: 100%;
     z-index: 102;
-    display: flex;
-    flex-direction: row;
-    padding: 10px;
     pointer-events: all;
     opacity: 1;
     transition: ease 1s opacity;
+    background-color: #000;
+    video{
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        margin: auto;
+    }
 }
 #loading-screen {
     position: fixed;

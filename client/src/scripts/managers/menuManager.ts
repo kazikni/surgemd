@@ -65,13 +65,15 @@ export class MenuManager{
 
     campaign:Record<string,any>={}
 
+    params:URLSearchParams
+
     constructor(definitions:GameDefinition){
-        const params = new URLSearchParams(self.location.search)
+        this.params = new URLSearchParams(self.location.search)
 
         this.account=new AccountManager(definitions)
         this.definitions=definitions
 
-        this.submenu_param=!!params
+        this.submenu_param=!!this.params
 
         this.api_settings={
             modes:[
@@ -105,23 +107,55 @@ export class MenuManager{
         HideElement(this.content.loading_screen)
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
+    }
+    start_intro(): Promise<void> {
+        return new Promise<void>((resolve) => {
+            const screen = this.content.initial_screen
+            const video = document.getElementById("intro-video") as HTMLVideoElement
 
-        setTimeout(()=>{
-            HideElement(this.content.initial_screen,true)
+            ShowElement(screen)
 
-            const invite=params.get("group-id")
-            if(invite){
-                this.join_group(invite)
-                this.load_tab("play")
-                const playTab=this.tabs["play"]
-                if(playTab){
-                    const groupOption=playTab.def.options.find(o=>o.type==="button"&&o.subtab==="group")
-                    if(groupOption){
-                        this.opt_click_callback(groupOption,playTab)(new MouseEvent("click"))
-                    }
-                }
+            screen.style.opacity = "0"
+            screen.offsetHeight
+            screen.style.opacity = "1"
+
+            const start = () => {
+                video.muted = false
+                video.currentTime = 0
+                video.play().catch(() => {
+                    console.warn("Video play blocked")
+                    resolve()
+                })
             }
-        },1000)
+
+            if (video.readyState >= 4) {
+                start()
+            } else {
+                video.addEventListener("canplaythrough", start, { once: true })
+            }
+
+            video.onended = () => {
+                screen.style.opacity = "0"
+                setTimeout(() => {
+                    HideElement(screen, true)
+                    const invite = this.params.get("group-id")
+                    if (invite) {
+                        this.join_group(invite)
+                        this.load_tab("play")
+                        const playTab = this.tabs["play"]
+                        if (playTab) {
+                            const groupOption = playTab.def.options.find(
+                                o => o.type === "button" && o.subtab === "group"
+                            )
+                            if (groupOption) {
+                                this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
+                            }
+                        }
+                    }
+                    resolve()
+                }, 1000)
+            }
+        })
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
         this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.png" draggable="false"></img>'

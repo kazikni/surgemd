@@ -579,6 +579,9 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     clone(Vec2:Vec2):Vec2{
         return this.new(Vec2.x,Vec2.y)
     },
+    is_vec2(val:any):boolean{
+        return typeof val==="object"&&val.x!==undefined&&val.y!==undefined
+    },
     /**
      * 
      * @param Vec2 The `Vec2` To hash

@@ -33,9 +33,6 @@ import { SyncedParticle } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
-import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 export interface PlaneDataServer extends PlaneData{
     velocity:Vec2
     target_pos:Vec2

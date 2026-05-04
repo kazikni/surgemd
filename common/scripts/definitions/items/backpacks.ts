@@ -16,13 +16,13 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             idString:"null_pack",
             level:0,
             max:{
-                "12g":15,
+                "12g":20,
                 "9mm":100,
                 "762mm":80,
                 "556mm":80,
 
                 "45acp":80,
-                "22lr":110,
+                "22lr":120,
 
                 "50cal":50,
                 "308sub":10,
@@ -66,13 +66,13 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             idString:"basic_pack",
             level:1,
             max:{
-                "12g":30,
+                "12g":40,
                 "9mm":200,
                 "762mm":140,
                 "556mm":140,
 
                 "45acp":140,
-                "22lr":220,
+                "22lr":240,
 
                 "50cal":80,
                 "308sub":20,
@@ -86,13 +86,13 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             idString:"regular_pack",
             level:2,
             max:{
-                "12g":45,
+                "12g":60,
                 "9mm":300,
                 "762mm":220,
                 "556mm":220,
 
                 "45acp":220,
-                "22lr":330,
+                "22lr":380,
 
                 "308sub":40,
                 "50cal":130,
@@ -106,13 +106,13 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             idString:"tactical_pack",
             level:3,
             max:{
-                "12g":60,
+                "12g":80,
                 "9mm":400,
                 "762mm":300,
                 "556mm":300,
     
                 "45acp":300,
-                "22lr":440,
+                "22lr":500,
 
                 "308sub":80,
                 "50cal":160,

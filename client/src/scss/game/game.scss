@@ -49,9 +49,9 @@
 
 }
 #ui-weapons,
+#ui-iitems,
 #ui-items,
 #ui-aitems,
-#ui-equipment,
 #left-joystick,
 #right-joystick,
 #game-device-view,
@@ -181,6 +181,7 @@
 }
 
 #bottom-left-container{
+    pointer-events: none;
     position: absolute;
     left: 10px;
     bottom: 10px;
@@ -277,6 +278,7 @@
     }
 }
 #killfeed-container{
+    pointer-events: none;
     position: absolute;
     right: 300px;
     top: 5px;
@@ -327,6 +329,7 @@
 }
 #information-killbox,
 #information-interaction{
+    pointer-events: none;
     background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
     box-shadow: 0 0 3px var(--ui-theme-primary);
 
@@ -345,6 +348,7 @@
     }
 }
 #killeader-container{
+    pointer-events: none;
     position: absolute;
     display: flex;
     flex-direction: row;

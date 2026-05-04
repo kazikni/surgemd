@@ -38,6 +38,11 @@ export class DefinitionsSimple<Type,Base=null>{
     extends(extend:string,val:Partial<Type>,id:string){
         this.set(mergeDeep<Type>(this.getFromString(extend)!,val),id)
     }
+    clear(){
+        this.value={}
+        this.valueNumber={}
+        this.did=0
+    }
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
     insert(...val:Type[]):void{
@@ -84,6 +89,12 @@ export class DefinitionsMerge<TP extends Definition>{
             this.keysNumber[idn]=dv.idString
             this.keysString[dv.idString]=idn
         }
+    }
+    clear(){
+        this.keysNumber={}
+        this.keysString={}
+        this.valueNumber={}
+        this.valueString={}
     }
 }
 export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{

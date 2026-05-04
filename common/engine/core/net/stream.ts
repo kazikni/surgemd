@@ -2,7 +2,8 @@ import { KDate } from "../definition/definitions.ts";
 import { PolarMovement } from "../math/geometry.ts";
 import { CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts";
 import { ID } from "../math/utils.ts";
-import { Vec2 } from "../math/vec2.ts";
+import { Vec2,v2 } from "../math/vec2.ts";
+import { v3 } from "../math/vec3.ts";
 //Thanks Suroi.io
 
 export class NetStream {
@@ -788,6 +789,126 @@ export class NetStream {
         }
 
         throw new Error("Invalid type in readObject")
+    }
+    writeObjectAdvanced(obj: any, settings:{arr_len?:1|2|3|4,str_len?:1|2|3|4,keys_len?:1|2|3|4} = {}): this {
+        const t = typeof obj
+
+        if (obj === null) {
+            this.writeUint8(0)
+            return this
+        }
+
+        switch (t) {
+            case "undefined":
+                this.writeUint8(1)
+                break
+            case "number":
+                if (Number.isInteger(obj)) {
+                    this.writeUint8(2)
+                    this.writeInt32(obj)
+                } else {
+                    this.writeUint8(3)
+                    this.writeFloat32(obj)
+                }
+                break
+            case "bigint":
+                this.writeUint8(4)
+                this.writeInt64(obj)
+                break
+            case "string":
+                this.writeUint8(5)
+                this.writeString(obj, settings.str_len ?? 2)
+                break
+            case "boolean":
+                this.writeUint8(6)
+                this.writeUint8(obj ? 1 : 0)
+                break
+            case "object":
+                if (v3.is_vec3(obj)) {
+                    this.writeUint8(7)
+                    this.writeFloat32(obj.x)
+                    this.writeFloat32(obj.y)
+                    this.writeFloat32(obj.z)
+                }else if (v2.is_vec2(obj)) {
+                    this.writeUint8(8)
+                    this.writeFloat32(obj.x)
+                    this.writeFloat32(obj.y)
+                }else if (Array.isArray(obj)) {
+                    this.writeUint8(254)
+                    this.writeArray(obj, (v) => this.writeObjectAdvanced(v, settings), settings.arr_len ?? 2)
+                }else{
+                    this.writeUint8(255)
+                    const keys = Object.keys(obj)
+                    const lenBytes = settings.keys_len??2
+                    switch (lenBytes) {
+                        case 1: this.writeUint8(keys.length); break
+                        case 2: this.writeUint16(keys.length); break
+                        case 3: this.writeUint24(keys.length); break
+                        case 4: this.writeUint32(keys.length); break
+                    }
+
+                    for (const k of keys) {
+                        this.writeString(k, settings.str_len ?? 1)
+                        this.writeObjectAdvanced(obj[k], settings)
+                    }
+                }
+                break
+        }
+        return this
+    }
+    readObjectAdvanced(settings:{arr_len?:1|2|3|4,str_len?:1|2|3|4,keys_len?:1|2|3|4} = {}): any {
+        const type = this.readUint8()
+        switch (type) {
+            case 0: // null
+                return null
+            case 1:// undefined
+                return undefined
+            case 2:// int32
+                return this.readInt32()
+            case 3:// float32
+                return this.readFloat32()
+            case 4:// bigint
+                return this.readInt64()
+            case 5:// string
+                return this.readString(settings.str_len ?? 2)
+            case 6:// boolean
+                return this.readUint8() === 1
+            case 7:// vec3
+                return v3(
+                    this.readFloat32(),
+                    this.readFloat32(),
+                    this.readFloat32()
+                )
+            case 8:// vec2
+                return v2(
+                    this.readFloat32(),
+                    this.readFloat32()
+                )
+            case 254:{// array
+                return this.readArray(
+                    (s) => s.readObjectAdvanced(settings),
+                    settings.arr_len ?? 2
+                )
+            }
+            case 255:{// object
+                let len = 0
+                const lenBytes = settings.keys_len ?? 2
+                switch (lenBytes) {
+                    case 1: len = this.readUint8(); break
+                    case 2: len = this.readUint16(); break
+                    case 3: len = this.readUint24(); break
+                    case 4: len = this.readUint32(); break
+                }
+                const obj: Record<string, any> = {}
+                for (let i = 0; i < len; i++) {
+                    const key = this.readString(settings.str_len ?? 1)
+                    obj[key] = this.readObjectAdvanced(settings)
+                }
+                return obj
+            }
+        }
+
+        throw new Error("Invalid type in readObjectAdvanced: " + type)
     }
     /**
      * Copies a section of a stream into this one. By default, the entire source stream is read and copied

@@ -42,6 +42,7 @@ import { DebugApp } from "../apps/debug.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { NewMDLanguageManager } from "./languages.ts";
+import {building_from_json} from "common/scripts/definitions/objects/buildings_base.ts"
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -757,8 +758,12 @@ export class Game extends ClientGame<GameObject>{
         client.on("connect",(_p:ConnectPacket)=>{
         })
         client.on("map",async(mp:MapPacket)=>{
+            if(mp.map.buildings){
+                this.definitions.reset()
+                this.definitions.buildings.insert(...((mp.map.buildings??[]).map(v=>building_from_json(v))))
+            }
             await this.terrain.process_map(mp.map)
-            await this.start(this.terrain.biome!.assets)
+            await this.start([...mp.map.assets,...this.terrain.biome!.assets])
             this.terrain.last_layer=0
             this.minimap.init(mp.map)
             this.ambient.on_game_start()

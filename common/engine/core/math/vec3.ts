@@ -306,6 +306,9 @@ export const v3 = Object.assign((x:number, y:number,z:number)=>{
     clone(v:Vec3):Vec3{
         return this.new(v.x,v.y,v.z)
     },
+    is_vec3(val:any):boolean{ 
+        return typeof val==="object"&&val.x!==undefined&&val.y!==undefined&&val.z!==undefined
+    },
     hash(v: Vec3): number {
         const x = v.x | 0
         const y = v.y | 0

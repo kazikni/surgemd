@@ -7,7 +7,7 @@ import { FloorType, rivers, TerrainManager } from "common/scripts/others/terrain
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
-import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
+import { building_from_json, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { Building } from "../objects/building.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Vehicle } from "../objects/vehicle.ts";
@@ -206,10 +206,7 @@ export class GameMap{
         this.game.loot_tables.clear()
         this.game.loot_tables.add_tables(definition.loot_tables)
 
-        if(definition.generation.island)generation.island(definition.generation.island)(this,random)
-
-        if(definition.gen_callback)definition.gen_callback(this)
-
+        this.game.definitions.buildings.insert(...((definition.buildings??[]).map(v=>building_from_json(v))))
         if(this.game.mods){
             for(const k of this.game.mods.getLoadOrder()){
                 const mod=this.game.mods.loaded.get(k)
@@ -218,6 +215,8 @@ export class GameMap{
                 }
             }
         }
+        if(definition.generation.island)generation.island(definition.generation.island)(this,random)
+        if(definition.gen_callback)definition.gen_callback(this)
 
         this.game.deadzone.reset()
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
@@ -265,7 +264,9 @@ export class GameMap{
             size:this.size,
             seed:seed,
             objects,
-            biome:this.def.biome
+            biome:this.def.biome,
+            buildings:this.def.buildings,
+            assets:this.def.assets??[]
         }
         return p
     }

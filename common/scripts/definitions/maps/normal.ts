@@ -1,5 +1,6 @@
 import { RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
+import { building_to_json, buildings_factory } from "../objects/buildings_base.ts";
 import { BiomeDef, CounterMapDef, type MapDef } from "./base.ts";
 export const NormalBiome:BiomeDef={
     floors:{
@@ -131,7 +132,7 @@ export const NormalMap:MapDef={
         //Ammos
         "ammos":[
             {item:"12g",count:10,weight:5},
-            {item:"9mm",count:40,weight:5},
+            {item:"9mm",count:50,weight:5},
             {item:"762mm",count:40,weight:5},
             {item:"556mm",count:40,weight:5},
             {item:"45acp",count:40,weight:5},
@@ -314,6 +315,12 @@ export const NormalMap:MapDef={
         ],
     },
     biome:NormalBiome,
+    buildings:[
+        building_to_json(buildings_factory.house.small_house_1("small_house_1",{
+            walls_tint:7,
+            doors_tint:2,
+        }))
+    ],
     generation:{
         island:{
             size:v2(480,480),

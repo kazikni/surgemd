@@ -16,6 +16,29 @@ export type IntersectionRes = {
     readonly point: Vec2
     readonly dir: Vec2
 } | null|undefined;
+
+export type JsonNullHitbox2D={
+    type:HitboxType2D.null
+}
+export type JsonCircleHitbox2D={
+    type:HitboxType2D.circle
+    radius:number
+    position:Vec2
+}
+export type JsonRectHitbox2D={
+    type:HitboxType2D.rect
+    min:Vec2
+    max:Vec2
+}
+export type JsonGroupHitbox2D={
+    type:HitboxType2D.group
+    hitboxes:JsonHitbox2D[]
+}
+export type JsonPolygonHitbox2D={
+    type:HitboxType2D.polygon
+    center:Vec2
+    points:Vec2[]
+}
 export interface Hitbox2DMapping {
     [HitboxType2D.null]:NullHitbox2D
     [HitboxType2D.circle]:CircleHitbox2D
@@ -23,7 +46,15 @@ export interface Hitbox2DMapping {
     [HitboxType2D.group]:HitboxGroup2D
     [HitboxType2D.polygon]:PolygonHitbox2D
 }
+export interface JsonHitbox2DMapping {
+    [HitboxType2D.null]:JsonNullHitbox2D
+    [HitboxType2D.circle]:JsonCircleHitbox2D
+    [HitboxType2D.rect]:JsonRectHitbox2D
+    [HitboxType2D.group]:JsonGroupHitbox2D
+    [HitboxType2D.polygon]:JsonPolygonHitbox2D
+}
 export type Hitbox2D = Hitbox2DMapping[HitboxType2D]
+export type JsonHitbox2D = JsonHitbox2DMapping[HitboxType2D]
 export abstract class BaseHitbox2D{
     abstract type: HitboxType2D
 
@@ -56,6 +87,7 @@ export abstract class BaseHitbox2D{
     abstract translate(position:Vec2,angle?:number):void
     abstract clamp(position:Vec2,min:Vec2,max:Vec2):Vec2 // returns clamped position
     abstract encode(stream:NetStream):void
+    abstract to_json():JsonHitbox2D
 
     constructor(){
     }
@@ -116,6 +148,11 @@ export class NullHitbox2D extends BaseHitbox2D{
     }
     override encode(stream:NetStream){
         stream.writePos2(this.position)
+    }
+    override to_json():JsonNullHitbox2D{
+        return {
+            type:HitboxType2D.null,
+        }
     }
     static decode(stream:NetStream):NullHitbox2D{
         return new NullHitbox2D(stream.readPos2())
@@ -267,6 +304,13 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override encode(stream:NetStream){
         stream.writePos2(this.position)
         stream.writeFloat(this.radius,0,500,2)
+    }
+    override to_json():JsonCircleHitbox2D{
+        return {
+            type:HitboxType2D.circle,
+            position:this.position,
+            radius:this.radius
+        }
     }
     static decode(stream:NetStream):CircleHitbox2D{
         return new CircleHitbox2D(stream.readPos2(),stream.readFloat(0,500,2))
@@ -554,6 +598,13 @@ export class RectHitbox2D extends BaseHitbox2D{
     override clone():RectHitbox2D{
         return new RectHitbox2D(this.min,this.max)
     }
+    override to_json():JsonRectHitbox2D{
+        return {
+            type:HitboxType2D.rect,
+            min:this.min,
+            max:this.max
+        }
+    }
     override encode(stream:NetStream){
         stream.writePos2(this.min)
         stream.writePos2(this.max)
@@ -684,6 +735,12 @@ export class HitboxGroup2D extends BaseHitbox2D{
     }
     static decode(stream:NetStream):NullHitbox2D{
         return new NullHitbox2D(stream.readPos2())
+    }
+    override to_json():JsonGroupHitbox2D{
+        return {
+            type:HitboxType2D.group,
+            hitboxes:this.hitboxes.map((v)=>v.to_json()),
+        }
     }
 }
 export class PolygonHitbox2D extends BaseHitbox2D {
@@ -870,6 +927,13 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         const center = stream.readPos2()
         return new PolygonHitbox2D(pts, center);
     }
+    override to_json():JsonPolygonHitbox2D{
+        return {
+            type:HitboxType2D.polygon,
+            points:this.points,
+            center:this.position
+        }
+    }
 
     private getEdges(): [Vec2, Vec2][] {
         const edges: [Vec2, Vec2][] = [];
@@ -877,5 +941,20 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             edges.push([this.points[i], this.points[(i + 1) % this.points.length]]);
         }
         return edges;
+    }
+}
+
+export function hitbox_from_json(hitbox:JsonHitbox2D):Hitbox2D{
+    switch(hitbox.type){
+        case HitboxType2D.null:
+            return new NullHitbox2D(v2.zero)
+        case HitboxType2D.circle:
+            return new CircleHitbox2D(hitbox.position,hitbox.radius)
+        case HitboxType2D.rect:
+            return new RectHitbox2D(hitbox.min,hitbox.max)
+        case HitboxType2D.group:
+            return new HitboxGroup2D(...hitbox.hitboxes.map((v)=>hitbox_from_json(v)))
+        case HitboxType2D.polygon:
+            return new PolygonHitbox2D(hitbox.points,hitbox.center)
     }
 }

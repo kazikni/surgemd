@@ -8,6 +8,7 @@ import { DebugMap, SingleBuildMap } from "./debug.ts";
 import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
+import { JSONBuildingDef } from "../objects/buildings_base.ts";
 export interface Aditional{
     withammo:boolean
 }
@@ -84,6 +85,8 @@ export interface MapDef{
     generation:{
         island?:IslandDef
     }
+    assets?:string[]
+    buildings?:JSONBuildingDef[]
     seed?:number
     gen_callback?:(map:GameMap)=>void
 }

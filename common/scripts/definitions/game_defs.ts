@@ -1,5 +1,4 @@
 import { Definitions, DefinitionsMerge, mergeDeep } from "../../engine/core.ts";
-import { GameADefinitions } from "../others/mods.ts";
 import { AccessoryDef, Accessorys_Default_Init } from "./items/accessorys.ts";
 import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
 import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
@@ -26,6 +25,23 @@ export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|Bu
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
 export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
 
+export interface GameADefinitions{
+    items?:{
+        ammos?:AmmoDef[]
+        backpacks?:BackpackDef[]
+        consumibles?:ConsumibleDef[]
+        helmet?:HelmetDef[]
+        vest?:VestDef[]
+        grenades?:GrenadeDef[]
+        guns?:GunDef[]
+        melees?:MeleeDef[]
+        scopes?:ScopeDef[]
+    }
+    objects?:{
+        obstacles?:ObstacleDef[]
+        buildings?:BuildingDef[]
+    }
+}
 export class GameDefinition{
     //Items
     ammos=new Definitions<AmmoDef,{}>((i)=>{
@@ -90,6 +106,33 @@ export class GameDefinition{
         
     }
 
+    clear(){
+        this.ammos.clear()
+        this.backpacks.clear()
+        this.consumibles.clear()
+        this.helmets.clear()
+        this.vests.clear()
+        this.accessorys.clear()
+        this.grenades.clear()
+        this.guns.clear()
+        this.melees.clear()
+        this.scopes.clear()
+
+        this.loadout.clear()
+        this.badges.clear()
+        this.emotes.clear()
+        this.ping.clear()
+
+        this.buildings.clear()
+        this.creatures.clear()
+        this.explosions.clear()
+        this.obstacles.clear()
+        this.vehicles.clear()
+        this.synced_particle.clear()
+
+        this.game_items.clear()
+        this.game_objects.clear()
+    }
     init_default(){
         Ammos_Default_Init(this.ammos)
         Backpacks_Default_Init(this.backpacks)
@@ -137,6 +180,10 @@ export class GameDefinition{
         this.game_objects.insert_def(this.vehicles.value)
         this.game_objects.insert_def(this.synced_particle.value)
     }
+    reset(){
+        this.clear()
+        this.init_default()
+    }
     add_definitions(mm:GameADefinitions){
         if(mm.items){
             for(const def of mm.items.ammos??[]){
@@ -183,6 +230,20 @@ export class GameDefinition{
                 this.scopes.insert(def)
                 this.game_items.insert(def)
                 this.game_objects.insert(def)
+            }
+        }
+        if(mm.objects){
+            if(mm.objects.buildings){
+                for(const def of mm.objects.buildings??[]){
+                    this.buildings.insert(def)
+                    this.game_objects.insert(def)
+                }
+            }
+            if(mm.objects.obstacles){
+                for(const def of mm.objects.obstacles??[]){
+                    this.obstacles.insert(def)
+                    this.game_objects.insert(def)
+                }
             }
         }
     }

@@ -16,12 +16,12 @@
                 "mkdir dist/mods",
                 "mkdir dist/files",
                 "robocopy mods dist/mods /E",
-                "cd ../client && npx vite build && robocopy dist ../desktop/dist/files /E",
+                "cd ../../client && npx vite build && robocopy dist ../desktop/computer/dist/files /E",
                 "rsrc -ico dist/files/favicon.ico -o rsrc.syso",
                 "go build -ldflags=-H=windowsgui -o dist/surgemd.exe",
                 "del rsrc.syso",
                 "rmdir /S /Q build",
-                "cd ../server && smde task build && robocopy dist ../desktop/dist /E"
+                "cd ../../server && smde task build && robocopy dist ../desktop/computer/dist /E"
             ]
         }
     }

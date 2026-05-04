@@ -3,7 +3,6 @@
 @use "./gameOver.scss";
 @use "./inventory.scss";
 @use "./mobile.scss";
-@use "./map.scss";
 @use "./game-device.scss";
 #game {
     user-select: none;
@@ -42,14 +41,22 @@
     overflow: visible;
     z-index: 2000;
     pointer-events: none;
-    *{
-        pointer-events: auto;
-    }
     /*--ui-theme-primary: #661166;
     --ui-theme-secondary: #110911;*/
 
     --ui-theme-primary: #4f6ef7;
     --ui-theme-secondary: #1c2447;
+
+}
+#ui-weapons,
+#ui-items,
+#ui-aitems,
+#ui-equipment,
+#left-joystick,
+#right-joystick,
+#game-device-view,
+#mobile-action-buttons {
+    pointer-events: auto;
 }
 #boost-bar-container,
 #health-bar-container{

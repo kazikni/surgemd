@@ -16,24 +16,10 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    signingConfigs {
-        release {
-            storeFile file("../keystore/surgemd-release.keystore")
-            storePassword "KEYSTORE_PASSWORD"
-            keyAlias "surgemd"
-            keyPassword "KEYSTORE_PASSWORD"
-        }
-    }
-
     buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
-
         release {
-            signingConfig signingConfigs.release
             minifyEnabled false
-            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }

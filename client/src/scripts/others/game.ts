@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, NetStream, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -43,6 +43,7 @@ import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { NewMDLanguageManager } from "./languages.ts";
 import {building_from_json} from "common/scripts/definitions/objects/buildings_base.ts"
+import { load_kspr } from "common/engine/core/lang/kspx.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -378,16 +379,23 @@ export class Game extends ClientGame<GameObject>{
             ...textures
         ])
 
-        for(const tt of textures){
-            const at=`atlases/atlas-${tt}-data.json`
-            const spg=await(await fetch(at)).json()
-            for(const s of spg[this.save.get_variable("sv_graphics_resolution")]){
-                await this.resources.load_spritesheet("",s,undefined,tt,this.menu.set_loading_current)
-            }
+        for (const tt of textures) {
+            this.menu.set_loading_current(`Loading ${tt}.kspr`, true)
+            const res = await fetch(`assets/${tt}.kspr`)
+            const buffer = await res.arrayBuffer()
+            const kspr = load_kspr(buffer)
+            const resolution = this.save.get_variable("sv_graphics_resolution")
+            await this.resources.load_kspr_into_rm(
+                kspr,
+                resolution,
+                tt,
+                "",
+                this.menu.set_loading_current
+            )
         }
 
         //Load Sfx
-        await this.resources.load_group("/sounds/game/main.json","main",this.menu.set_loading_current)
+        await this.resources.load_group("/assets/main-sounds.json","main",this.menu.set_loading_current)
 
         /*await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("keyboard-2",{src:"/sounds/ui/keyboard-2.mp3",volume:1},"essentials",this.menu.set_loading_current)*/
@@ -395,6 +403,7 @@ export class Game extends ClientGame<GameObject>{
         await this.resources.load_audio("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
+        await this.resources.load_audio("deadzone_ambience",{src:"/sounds/ambience/deadzone_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)

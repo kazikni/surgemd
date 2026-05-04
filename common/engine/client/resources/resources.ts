@@ -1,15 +1,9 @@
+import { FrameData, KSPR } from "../../core/lang/kspx.ts";
 import { ease, EaseFunction } from "../../core/math/utils.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts";
 import { Material, WebglRenderer } from "../rendering/renderer.ts";
 import { SoundManager } from "./sounds.ts";
 
-interface FrameData {
-    x: number
-    y: number
-    w: number
-    h: number
-    file?:string
-}
 export const DefaultTexCoords = [
     0.0, 1.0,
     1.0, 1.0,
@@ -224,7 +218,7 @@ export class ResourcesManager{
         const tex = loadTexture(this.gl, image);
 
         for (const [id, frame] of Object.entries(json.frames)) {
-            if(load_msg)load_msg(frame.file??id)
+            if(load_msg)load_msg(frame.src??id)
             const iw = image.width;
             const ih = image.height;
             const rect = {
@@ -233,7 +227,7 @@ export class ResourcesManager{
                 x2: (frame.x + frame.w) / iw,
                 y2: 1.0 - frame.y / ih
             };
-            const s = new Frame(image, this.gl, frame.file??"",
+            const s = new Frame(image, this.gl, frame.src??"",
                 [
                     rect.x1,rect.y2,
                     rect.x2,rect.y2,
@@ -262,7 +256,67 @@ export class ResourcesManager{
             })
         }
     }
+    async load_kspr_into_rm(kspr: KSPR,resolution: string,group: string = "",idPrefix: string = "",load_msg?: (msg: string) => void) {
+        const res = kspr.resolutions[resolution]
+        if (!res)throw `Resolution '${resolution}' not found`
+        for (let ai = 0; ai < res.atlases.length; ai++) {
+            const atlas = res.atlases[ai]
 
+            if (load_msg) load_msg(`atlas ${ai}`)
+
+            const blob = new Blob([atlas.image])
+            const url = URL.createObjectURL(blob)
+
+            const image = await this.load_image(url)
+            URL.revokeObjectURL(url)
+
+            const tex = loadTexture(this.gl, image)
+
+            const iw = image.width
+            const ih = image.height
+
+            for (const [id, f] of Object.entries(atlas.frames)) {
+                if(load_msg)load_msg(id)
+                const rect = {
+                    x1: f.x / iw,
+                    y1: 1 - (f.y + f.h) / ih,
+                    x2: (f.x + f.w) / iw,
+                    y2: 1 - f.y / ih
+                }
+                const frame = new Frame(
+                    image,
+                    this.gl,
+                    id,
+                    [
+                        rect.x1, rect.y2,
+                        rect.x2, rect.y2,
+                        rect.x1, rect.y1,
+                        rect.x1, rect.y1,
+                        rect.x2, rect.y2,
+                        rect.x2, rect.y1
+                    ]
+                )
+                frame.id = idPrefix + id
+                frame.src=f.src
+                frame.texture = tex
+                frame.group = group
+                frame.frame_rect = {
+                    x1: f.x,
+                    y1: f.y,
+                    x2: f.x + f.w,
+                    y2: f.y + f.h
+                }
+                frame.frame_size = v2(
+                    f.w / res.scale,
+                    f.h / res.scale
+                )
+                frame.batch_mat = this.renderer.factorys2D.texture_batch.create({
+                    texture: tex
+                })
+                this.sources[frame.id] = frame
+            }
+        }
+    }
     private load_image(src: string): Promise<HTMLImageElement> {
         return new Promise((resolve, reject) => {
             const img = new Image();

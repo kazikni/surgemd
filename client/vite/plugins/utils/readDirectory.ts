@@ -1,23 +1,16 @@
 import * as fs from "node:fs";
-import * as path from "node:path";
 
-/**
- * Recursively read a directory.
- * @param dir The absolute path to the directory.
- * @returns An array representation of the directory's contents.
- */
-export default function readDirectory(dir: string): string[] {
-    let results: string[] = [];
-    const files = fs.readdirSync(dir);
-
+export default function readDirectory(root: string,current:string=""): [string,string][] {
+    let results: [string,string][] = [];
+    const files = fs.readdirSync(root+"/"+current);
     for (const file of files) {
-        const filePath = path.resolve(dir, file);
+        const filePath = root+"/"+current+"/"+file
         const stat = fs.statSync(filePath);
 
         if (stat?.isDirectory()) {
-            const res = readDirectory(filePath);
+            const res = readDirectory(root,current+"/"+file);
             results = results.concat(res);
-        } else results.push(filePath);
+        } else results.push([filePath,current+"/"+file]);
     }
 
     return results;

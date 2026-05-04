@@ -1,238 +1,64 @@
-import { watch } from "chokidar";
-import { Minimatch } from "minimatch";
-import path, { resolve } from "node:path";
-import { type FSWatcher, type Plugin, type ResolvedConfig } from "vite";
-import readDirectory from "./utils/readDirectory.ts";
-import { CacheData, cacheDir, type CompilerOptions, createSpritesheets, type MultiResAtlasList, Resolution } from "./utils/spritesheet.ts";
-import { mkdir, readFile, stat } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
-import { SpritesheetJSON } from "../../src/scripts/engine/resources.ts";
+import { type Plugin } from "vite";
+import { buildKSPRGroup, CompilerOptions, Resolution } from "./utils/spritesheet.ts";
 
 const PLUGIN_NAME = "vite-spritesheet-plugin";
 
-const defaultGlob = "**/*.{png,gif,jpg,bmp,tiff,svg}";
-const imagesMatcher = new Minimatch(defaultGlob);
-
-const compilerOpts = {
-    outputFormat: "png",
-    outDir: "atlases",
-    margin: 8,
-    removeExtensions: true,
-    maximumSize: 4096,
-    name: "atlas",
-    packerOptions: {}
-} satisfies CompilerOptions as CompilerOptions;
-
-const getImageDirs = (atlases:Record<string,string>,imageDirs: string[] = []): string[] => {
-    for(const a in atlases){
-        const value = atlases[a as keyof typeof atlases];
-        imageDirs.push(`public/img/game/${value}`);
-    }
-    return imageDirs
-};
-interface buildSpritesheetRet{atlas:MultiResAtlasList,dirs:string[]}
-
-async function buildSpritesheets(imageDirs:string[],resolutions:Resolution[]): Promise<buildSpritesheetRet> {
-    const fileMap: Record<string,Map<string, { lastModified: number, path: string }>>={};
-    const ff=new Map<string, { lastModified: number, path: string }>()
-    
-    // Maps have unique keys.
-    // Since the filename is used as the key, and mode sprites are added to the map after the common sprites,
-    // this method allows mode sprites to override common sprites with the same filename.
-    for(const id of imageDirs){
-        const m=new Map<string, { lastModified: number, path: string }>()
-        for (const imagePath of readDirectory(id).filter(x => imagesMatcher.match(x))) {
-            const imageFileInfo = await stat(imagePath);
-            const { mtime, ctime } = imageFileInfo;
-            
-            const n=imagePath.slice(imagePath.lastIndexOf(path.sep))
-            const s={
-                path: imagePath,
-                lastModified: Math.max(mtime.getTime(), ctime.getTime())
-            }
-            m.set(n,s)
-            ff.set(n,s)
+export function spritesheet(base:string,atlas_list: Record<string, string>,dest_dir: string = "assets",resolutions: Resolution[] = [{ name: "low", scale: 0.5 }],options?:CompilerOptions): Plugin[] {
+    async function buildAll() {
+        const outputs: Record<string, Uint8Array> = {}
+        for (const [name, folder] of Object.entries(atlas_list)) {
+            outputs[name] = await buildKSPRGroup(base,folder, resolutions,options)
         }
-        fileMap[path.basename(id)]=m
+
+        return outputs
     }
-
-    let isCached = true;
-    if (!existsSync(cacheDir)) {
-        await mkdir(cacheDir);
-        isCached = false;
-    }
-    if (!existsSync(path.join(cacheDir, "data.json"))) isCached = false;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const cacheData: CacheData = existsSync(path.join(cacheDir, "data.json"))
-        ? JSON.parse(await readFile(path.join(cacheDir, "data.json"), "utf8"))
-        : {
-            lastModified: Date.now(),
-            fileMap: {},
-            atlasFiles: {
-            }
-        };
-
-    if (Array.from(ff.values()).find(f => f.lastModified > cacheData.lastModified)) isCached = false;
-
-    if (Object.entries(cacheData.fileMap).find(([name, path]) => ff.get(name)?.path === path)) isCached = false;
-    if (Array.from(ff.entries()).find(([name, data]) => data.path === cacheData.fileMap[name])) isCached = false;
-
-    if (isCached) {
-        console.log("Spritesheets are cached! Skipping build.");
-        const ret:MultiResAtlasList={
-        }
-        for(const kk of Object.keys(cacheData.atlasFiles[resolutions[0].name])){
-            for(const r of resolutions){
-                ret[r.name][kk]=[]
-                for(const ii in cacheData.atlasFiles[r.name][kk]){
-                    ret[r.name][kk].push({
-                        json: JSON.parse(await readFile(path.join(cacheDir, `${cacheData.atlasFiles[r.name][kk][ii]}.json`), "utf8")) as SpritesheetJSON,
-                        image: await readFile(path.join(cacheDir, `${cacheData.atlasFiles[r.name][kk][ii]}.png`)),
-                    })
-                }
-            }
-        }
-        return {atlas:ret,dirs:imageDirs}
-    }
-
-    console.log("Building spritesheets...");
-
-    return {atlas:await createSpritesheets(fileMap,resolutions, compilerOpts),dirs:imageDirs};
-}
-
-const SpriteSheetDirId = "virtual:spritesheets-dir";
-const SpriteSheetDirIdVirtualMod = `\0${SpriteSheetDirId}`;
-
-const resolveId = (id: string): string | undefined => {
-    switch (id) {
-        case SpriteSheetDirIdVirtualMod: return SpriteSheetDirId;
-    }
-};
-
-export function spritesheet(atlas_list:Record<string,string>,dest_dir:string="atlases",resolutions:Resolution[]=[{name:"low",scale:0.5}]): Plugin[] {
-    let watcher: FSWatcher;
-    let config: ResolvedConfig;
-
-    let atlases: buildSpritesheetRet;
-    let spriteSheetDir=cacheDir
-
-    const load = (id: string): string | undefined => {
-        switch (id) {
-            case SpriteSheetDirId: return `export const atlases = ${spriteSheetDir}`;
-        }
-    };
-
-    const imageDirs = getImageDirs(atlas_list).reverse();
-
-    let buildTimeout: NodeJS.Timeout | undefined;
 
     return [
+        // ======================
+        // BUILD
+        // ======================
         {
             name: `${PLUGIN_NAME}:build`,
             apply: "build",
-            async buildStart() {
-                atlases = await buildSpritesheets(imageDirs,resolutions);
-                spriteSheetDir="atlas/"
-            },
-            generateBundle() {
-                for(const k of Object.keys(atlases.atlas[resolutions[0].name])){
-                    const nn:Record<string,SpritesheetJSON[]>={
-                    }
-                    for(const r of resolutions){
-                        nn[r.name]=[]
-                        for (const sheet of atlases.atlas[r.name][k]) {
-                            this.emitFile({
-                                type: "asset",
-                                fileName: sheet.json.meta.image,
-                                source: sheet.image
-                            });
-                            this.info("Built spritesheets");
-                            nn[r.name].push(sheet.json)
-                        }
-                    }
+            async generateBundle() {
+                const outputs = await buildAll()
+                for (const [name, buffer] of Object.entries(outputs)) {
                     this.emitFile({
                         type: "asset",
-                        fileName: `${dest_dir}/atlas-${k}-data.json`,
-                        source: JSON.stringify(nn)
-                    });
+                        fileName: `${dest_dir}/${name}.kspr`,
+                        source: buffer
+                    })
                 }
-            },
-            resolveId,
-            load
+            }
         },
         {
             name: `${PLUGIN_NAME}:serve`,
             apply: "serve",
-            configResolved(cfg) {
-                config = cfg;
-            },
             async configureServer(server) {
-                function reloadPage(): void {
-                    clearTimeout(buildTimeout);
+                let files: Record<string, Uint8Array> = {}
 
-                    buildTimeout = setTimeout(() => {
-                        buildSheets().then(() => {
-                            const module = server.moduleGraph.getModuleById(SpriteSheetDirIdVirtualMod);
-                            if (module !== undefined) void server.reloadModule(module);
-                        }).catch(e => console.error(e));
-                    }, 500);
+                async function rebuild() {
+                    console.log("Rebuilding atlases...")
+                    files = await buildAll()
+                    server.ws.send({ type: "full-reload" })
                 }
 
-                watcher = watch((imageDirs).map(pattern => resolve(pattern, defaultGlob)), {
-                    cwd: config.root,
-                    ignoreInitial: true
-                })
-                    .on("add", reloadPage)
-                    .on("change", reloadPage)
-                    .on("unlink", reloadPage);
-
-                const files = new Map<string, Buffer | string>();
-
-                async function buildSheets(): Promise<void> {
-                    atlases = await buildSpritesheets(imageDirs,resolutions);
-
-                    files.clear();
-                    for(const k of Object.keys(atlases.atlas[resolutions[0].name])){
-                        const nn:Record<string,SpritesheetJSON[]>={
+                await rebuild()
+                server.middlewares.use((req, res, next) => {
+                    if (!req.url) return next()
+                    for (const name of Object.keys(files)) {
+                        if (req.url === `/${dest_dir}/${name}.kspr`) {
+                            res.writeHead(200, {
+                                "Content-Type": "application/octet-stream"
+                            })
+                            res.end(files[name])
+                            return
                         }
-                        for(const r of resolutions){
-                            nn[r.name]=[]
-                            for (const sheet of atlases.atlas[r.name][k]) {
-                                files.set(sheet.json.meta.image!, sheet.image);
-                                nn[r.name].push(sheet.json)
-                            }
-                        }
-                        files.set(`${dest_dir}/atlas-${k}-data.json`,JSON.stringify(nn))
                     }
-                }
-                await buildSheets();
 
-                return () => {
-                    server.middlewares.use((req, res, next) => {
-                        if (req.originalUrl === undefined) return next();
-
-                        const file = files.get(req.originalUrl.slice(1));
-                        if (file === undefined) return next();
-                        if(req.originalUrl.lastIndexOf(".json")!==-1){
-                            res.writeHead(200, {
-                                "Content-Type": `text/json`
-                            });
-                        }else{
-                            res.writeHead(200, {
-                                "Content-Type": `image/${compilerOpts.outputFormat}`
-                            });
-                        }
-
-                        res.end(file);
-                    });
-                };
+                    next()
+                })
             },
-            closeBundle: async() => {
-                await watcher.close();
-            },
-            resolveId,
-            load
         }
-    ];
+    ]
 }

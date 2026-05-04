@@ -1,129 +1,105 @@
-// vite-plugin-audios-list.ts
 import path from "node:path";
-import process from "node:process";
-import { type FSWatcher, type Plugin, type ResolvedConfig } from "vite";
-import { watch } from "chokidar";
+import { type Plugin } from "vite";
 import * as fs from "node:fs";
 import readDirectory from "./utils/readDirectory.ts";
 
 const PLUGIN_NAME = "vite-audios-list";
 
 export interface AudioListConfig {
-    input: string;
-    output: string;
-}
-export interface AudioList {
-    files: Record<string, string>;
+    input: string
+    output: string
 }
 
-function generateAudioList(absInput: string): string[] {
-    const files = readDirectory(absInput);
+export interface AudioList {
+    files: Record<string, string>
+}
+
+function generateAudioList(base: string, current: string): string[] {
+    const files = readDirectory(base, current);
     return files
-        .filter(f => /\.(mp3|ogg|wav|flac)$/i.test(f))
+        .filter(f => /\.(mp3|ogg|wav|flac)$/i.test(f[0]))
         .map(f => {
-            // Remove o "public/" do início do caminho absoluto
-            const rel = path.relative(path.resolve(process.cwd(), "public"), f);
-            return rel.replace(/\\/g, "/"); // Garantir que use /
+            return f[1].replace(/\\/g, "/")
         });
 }
 
-
-export function AudiosLists(configs: AudioListConfig[]): Plugin[] {
-    let watcher: FSWatcher;
-    let buildTimeout: NodeJS.Timeout | undefined;
-    let viteConfig: ResolvedConfig;
-
+export function AudiosLists(
+    configs: AudioListConfig[],
+    base: string = "public"
+): Plugin[] {
     async function buildAll(): Promise<Record<string, AudioList>> {
         const ret: Record<string, AudioList> = {};
         for (const { input, output } of configs) {
-            const absInput = path.resolve(process.cwd(), input);
-            const absOutput = path.resolve(process.cwd(), output);
-
-            if (!fs.existsSync(absInput)) {
-                console.warn(`[${PLUGIN_NAME}] Input path not found: ${absInput}`);
-                continue;
+            if (!fs.existsSync(base+"/"+input)) {
+                console.warn(`[${PLUGIN_NAME}] Input path not found: ${input}`)
+                continue
             }
 
-            const audios = generateAudioList(absInput);
+            const audios = generateAudioList(base, input)
+            const files: Record<string, string> = {}
 
-            const files: Record<string, string> = {};
             for (const a of audios) {
-                const name = path.basename(a).split(".")[0];
-                files[name] = a;
+                const name = path.basename(a).split(".")[0]
+                files[name] = "/" + a
             }
 
-            ret[output] = { files };
-            console.log(`[${PLUGIN_NAME}] Generated ${absOutput} (${Object.keys(files).length} files)`);
+            ret[output] = {files}
         }
+
         return ret;
     }
 
     return [
+        // ======================
+        // BUILD
+        // ======================
         {
             name: `${PLUGIN_NAME}:build`,
             apply: "build",
+
             async buildStart() {
-                const ff = await buildAll();
-                for (const e of Object.keys(ff)) {
+                const data = await buildAll();
+
+                for (const fileName of Object.keys(data)) {
                     this.emitFile({
                         type: "asset",
-                        fileName: e,
-                        source: JSON.stringify(ff[e], null, 2)
+                        fileName,
+                        source: JSON.stringify(data[fileName], null, 2)
                     });
                 }
             }
         },
+
+        // ======================
+        // DEV SERVER
+        // ======================
         {
             name: `${PLUGIN_NAME}:serve`,
             apply: "serve",
-            configResolved(cfg) {
-                viteConfig = cfg;
-            },
+
             async configureServer(server) {
-                const files = new Map<string, string>();
+                const files = new Map<string, string>()
+                async function rebuild() {
+                    const data = await buildAll()
+                    files.clear()
+                    for (const fileName of Object.keys(data)) {
+                        const key = "/" + fileName.replace(/\\/g, "/")
 
-                async function rebuild(): Promise<void> {
-                    clearTimeout(buildTimeout!);
-                    buildTimeout = setTimeout(async () => {
-                        const bb = await buildAll();
-                        files.clear();
-                        for (const file of Object.keys(bb)) {
-                            files.set(file, JSON.stringify(bb[file], null, 2));
-                        }
-                        console.log(`[${PLUGIN_NAME}] Audio list updated`);
-                    }, 300);
+                        files.set(key, JSON.stringify(data[fileName], null, 2))
+                    }
+
+                    console.log(`[${PLUGIN_NAME}] dev cache rebuilt`)
                 }
-
-                watcher = watch(
-                    configs.map(c => path.resolve(process.cwd(), c.input)),
-                    { ignoreInitial: true }
-                )
-                    .on("add", rebuild)
-                    .on("unlink", rebuild)
-                    .on("change", rebuild);
-
-                // Build inicial no modo serve
-                const initial = await buildAll();
-                for (const file of Object.keys(initial)) {
-                    files.set(file, JSON.stringify(initial[file], null, 2));
-                }
-
-                return () => {
-                    server.middlewares.use((req, res, next) => {
-                        if (!req.originalUrl) return next();
-
-                        const file = files.get(req.originalUrl.slice(1));
-                        if (file === undefined) return next();
-
-                        res.writeHead(200, {
-                            "Content-Type": "application/json"
-                        });
-                        res.end(file);
-                    });
-                };
-            },
-            closeBundle: async () => {
-                await watcher.close();
+                await rebuild()
+                server.middlewares.use(async (req, res, next) => {
+                    if (!req.url) return next()
+                    const url = req.url.split("?")[0]
+                    const file = files.get(url)
+                    if (!file) return next()
+                    res.setHeader("Content-Type", "application/json")
+                    res.setHeader("Cache-Control", "no-cache")
+                    res.end(file)
+                })
             }
         }
     ];

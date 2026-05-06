@@ -135,11 +135,11 @@ export interface HumanLoadoutData {
         def:LoadoutBodyDef
         tint:number
     }
-    hair:{
+    hair?:{
         def:LoadoutHairDef
         tint:number
     }
-    eyes:LoadoutEyesDef
+    eyes?:LoadoutEyesDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
 }

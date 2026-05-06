@@ -9,7 +9,6 @@
                 "fdir",
                 "sass",
                 "canvas",
-                "maxrects-packer",
                 "minimatch",
                 "types",
                 "semver"

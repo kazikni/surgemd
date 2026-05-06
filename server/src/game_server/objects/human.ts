@@ -109,6 +109,7 @@ export class Human extends MovingBody{
     }
     loadout!:HumanLoadoutData&{
         dirty:boolean
+
         emote?:GameObjectDef
         emotes:{
             die?:EmoteDef
@@ -340,9 +341,7 @@ export class Human extends MovingBody{
                 this.modifiers.damage_reduction-=(this.health_data.boost/this.health_data.max_boost)*rules.boosts.death.damage_reduction
                 break
         }
-
         this.inventory.accessorys.apply_modifiers(this)
-
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
                 if(sf.type===SideEffectType.Modify){
@@ -350,12 +349,9 @@ export class Human extends MovingBody{
                 }
             }
         }
-
         this.health_data.max_health=100*this.modifiers.health
         this.health_data.max_boost=100*this.modifiers.boost
-
         this.health_data.health=Math.min(this.health_data.health,this.health_data.max_health)
-
         if(this.physical_data.scale!==this.modifiers.size){
             this.physical_data.dirty=true
             this.physical_data.scale=this.modifiers.size
@@ -1233,8 +1229,7 @@ export class Human extends MovingBody{
             this.health_data.dead,
             this.health_data.downed,
             this.health_data.invensibility_time>0,
-        )
-        stream.writeBooleanGroup(
+
             this.input.path===undefined
         )
         // Physical
@@ -1256,13 +1251,21 @@ export class Human extends MovingBody{
         }
         // Loadout  
         if(full||this.loadout.dirty){
+            stream.writeBooleanGroup(
+                this.loadout.hair!==undefined,
+                this.loadout.eyes!==undefined,
+            )
             stream.writeUint16(this.loadout.body.def.idNumber!)
-            .writeUint16(this.loadout.hair.def.idNumber!)
-            .writeUint16(this.loadout.eyes.idNumber!)
-            .writeUint16(this.loadout.shirt.idNumber!)
+            if(this.loadout.hair){
+                stream.writeUint16(this.loadout.hair.def.idNumber!)
+                .writeUint32(this.loadout.hair.tint)
+            }
+            if(this.loadout.eyes){
+                stream.writeUint16(this.loadout.eyes.idNumber!)
+            }
+            stream.writeUint16(this.loadout.shirt.idNumber!)
             .writeUint16(this.loadout.legs.idNumber!)
             .writeUint32(this.loadout.body.tint)
-            .writeUint32(this.loadout.hair.tint)
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])

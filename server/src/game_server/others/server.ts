@@ -39,7 +39,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                         map:{
                             //def:"tundra"
                             //def:"single_building"
-                            //def:"lobby"
+                            def:"lobby"
                         }
                     }
                 })

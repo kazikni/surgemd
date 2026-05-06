@@ -35,7 +35,6 @@ export class WeaponsModule extends UIModule<Game> {
                 const assets = item.assets(this.game.resources)
                 name_el.innerText = this.game.language.get("items."+item.def.idString)
                 img_el.src = assets.item.src
-                console.log(assets.item.src)
                 img_el.style.display = "block"
             } else {
                 name_el.innerText = ""

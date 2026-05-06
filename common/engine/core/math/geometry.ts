@@ -414,3 +414,85 @@ export const polygon2={
         return out.length ? out : tmp
     }
 }
+export interface PackedRect<T> {
+    x: number
+    y: number
+    w: number
+    h: number
+    data: T
+}
+
+export interface Bin<T> {
+    width: number
+    height: number
+    rects: PackedRect<T>[]
+}
+
+export class RectPacker<T> {
+    bins: Bin<T>[] = []
+
+    constructor(public maxWidth: number,public maxHeight: number,public margin: number = 0) {}
+
+    add(w: number, h: number, data: T) {
+        const paddedW = w + this.margin * 2
+        const paddedH = h + this.margin * 2
+
+        for (const bin of this.bins) {
+            const pos = this.tryPlace(bin, paddedW, paddedH)
+            if (pos) {
+                bin.rects.push({
+                    x: pos.x + this.margin,
+                    y: pos.y + this.margin,
+                    w,
+                    h,
+                    data
+                })
+                return
+            }
+        }
+
+        const bin: Bin<T> = {
+            width: this.maxWidth,
+            height: this.maxHeight,
+            rects: []
+        }
+
+        const pos = this.tryPlace(bin, paddedW, paddedH)
+        if (!pos) throw new Error("Rect too big for bin")
+
+        bin.rects.push({
+            x: pos.x + this.margin,
+            y: pos.y + this.margin,
+            w,
+            h,
+            data
+        })
+
+        this.bins.push(bin)
+    }
+
+    private tryPlace(bin: Bin<T>, w: number, h: number) {
+        for (let y = 0; y + h <= bin.height; y++) {
+            for (let x = 0; x + w <= bin.width; x++) {
+                if (!this.collides(bin, x, y, w, h)) {
+                    return { x, y }
+                }
+            }
+        }
+        return null
+    }
+
+    private collides(bin: Bin<T>, x: number, y: number, w: number, h: number) {
+        for (const r of bin.rects) {
+            const rx = r.x - this.margin
+            const ry = r.y - this.margin
+            const rw = r.w + this.margin * 2
+            const rh = r.h + this.margin * 2
+
+            if (x < rx + rw && x + w > rx &&y < ry + rh &&y + h > ry) {
+                return true
+            }
+        }
+        return false
+    }
+}

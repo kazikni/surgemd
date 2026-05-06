@@ -14,7 +14,7 @@ export interface LoadoutBodyDef extends Definition{
         base?:string
         hand?:string
     }
-    mounth:{
+    mounth?:{
         position:Vec2
         normal:string
         open:string
@@ -166,6 +166,19 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                     tint:0xf01041
                 },
                 arm_tint:0xf01041
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"black_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x26262b
+                },
+                arm_tint:0x26262b
             }
         },
 

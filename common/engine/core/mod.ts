@@ -13,6 +13,7 @@ export * from "./game/game.ts"
 export * from "./game/gameObject.ts"
 export * from "./game/particles.ts"
 
+export * from "./lang/kspx.ts"
 export * from "./lang/xml.ts"
 
 export * from "./math/color.ts"

@@ -138,7 +138,7 @@ export class Loot extends GameObject{
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammoType}_outline`)
+                    this.sprite_outline.frame=this.game.resources.get_sprite(`${(this.item as unknown as GunDef).ammo_type}_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2(2,2);
                     this.pickup_sound=this.game.resources.get_audio("gun_pickup")

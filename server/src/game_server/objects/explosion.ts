@@ -72,7 +72,7 @@ export class Explosion extends ServerGameObject{
                         break
                     }
                     case GameObjectType.Grenade: {
-                        const pf=(obj as Grenade).def.resistance?.push_force!==undefined?(obj as Grenade).def.resistance!.push_force!:1
+                        const pf=(obj as Grenade).def.push_force_resistence!==undefined?(obj as Grenade).def.push_force_resistence!:1
                         if(pf){
                             const dir = v2.lookTo(this.position,obj.position)
                             const force = Math.max(0, (this.def.size.end - dist) / this.def.size.end)*(this.def.push_force===undefined?8:this.def.push_force)
@@ -80,7 +80,7 @@ export class Explosion extends ServerGameObject{
                             obj.physical_data.angular_velocity=random.float(2,10)
                             if(Math.random()<=0.5)obj.physical_data.angular_velocity*=-1
                         }
-                        if(!(obj as Grenade).def.resistance?.zindex_set){
+                        if(!(obj as Grenade).def.zindex_set_resistence){
                             obj.physical_data.zpos = random.float(0.3,1)
                             obj.physical_data.zpos_speed = 0
                         }

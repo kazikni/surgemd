@@ -1,4 +1,4 @@
-import { FireMode, GunDef } from "common/scripts/definitions/items/guns.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { AmmoItemBase, ConsumibleItemBase, GInventoryBase, GrenadeItemBase, GunItemBase, MDItem, MeleeItemBase } from "common/scripts/others/inventory.ts";
 import { DamageReason, InventoryDroppable, InventoryItemType, InventoryPreset } from "common/scripts/definitions/utils.ts";
 import { ConsumingActionA, ReloadAction } from "./actions.ts";
@@ -7,7 +7,7 @@ import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
-import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
+import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameObjectType, PlayerAnimationType } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -19,6 +19,7 @@ import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { AccessorysManager } from "./accessorys.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
+import { FireMode } from "common/scripts/others/item.ts";
 export abstract class LItem extends MDItem{
     declare inventory:GInventory
     abstract on_use(user:Human,slot?:Slot<LItem>):void
@@ -38,10 +39,13 @@ export class GunItem extends GunItemBase implements LItem{
         t:number
         c:number
     }
+
+    switching:boolean=false
     firing:boolean=false
-    ammo:number=0
     reloading=false
-    dd:boolean=false
+    dual_d:boolean=false
+
+    ammo:number=0
     get_capacity():number{
         return (this.inventory.extended_capacity?(this.def.reload?.extended_capacity??this.def.reload?.capacity):this.def.reload?.capacity)??0
     }
@@ -49,12 +53,12 @@ export class GunItem extends GunItemBase implements LItem{
         
     }
     on_fire(user:Human){
-        if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
+        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
         if(this.has_ammo(user)){
             if(this.use_delay<=0){
                 this.switching=false
                 this.firing=true
-                if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
+                if(this.def.fire_mode===FireMode.Burst&&this.def.burst&&!this.burst){
                     this.burst={
                         c:this.def.burst.sequence,
                         t:this.def.burst.delay
@@ -62,7 +66,7 @@ export class GunItem extends GunItemBase implements LItem{
                     this.use_delay=0
                 }else{
                     this.shot(user)
-                    this.use_delay=this.def.fireDelay
+                    this.use_delay=this.def.fire_delay
                 }
             }
         }else{
@@ -71,18 +75,17 @@ export class GunItem extends GunItemBase implements LItem{
     }
     on_fire_alt(user:Human):void{}
     has_ammo(user:Human):boolean{
-        return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
+        return (this.ammo>0||!this.def.reload)//&&(!this.def.man||this.has_mana(user))
     }
-    has_mana(user:Human){
+    /*has_mana(user:Human){
         return user.health_data.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.health_data.boost
-    }
-    switching:boolean=false
+    }*/
     attacking():boolean{
         return this.use_delay>0&&this.firing&&!this.reloading&&!this.switching
     }
     reload(user:Human){
         if(!this.def.reload||user.health_data.downed)return
-        if(this.ammo>=this.get_capacity()||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammoType])||this.use_delay>0){
+        if(this.ammo>=this.get_capacity()||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
             this.reloading=false
             return
         }
@@ -142,29 +145,28 @@ export class GunItem extends GunItemBase implements LItem{
         this.reloading=false
         if(consume){
             if(this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload!.ammo_consume??1))
-            if(this.def.mana_consume)user.health_data.boost=Math.max(user.health_data.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+            //if(this.def.mana_consume)user.health_data.boost=Math.max(user.health_data.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
         }
 
         const barrel_position=v2(
-            this.def.length,
-            (this.def.barrel_offset??0)+(this.def.dual_from?(this.dd?-this.def.dual_offset:this.def.dual_offset):0)
+            this.def.barrel_length,
+            (this.def.barrel_offset??0)+(this.def.dual_from?(this.dual_d?-this.def.dual_offset:this.def.dual_offset):0)
         )
         const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
         const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
 
-        if(this.def.dual_from){
-            this.dd=!this.dd
-        }
+        if(this.def.dual_from)this.dual_d=!this.dual_d
+
         if(this.def.bullet){
-            const bc=this.def.bullet.count??1
-            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1)
-            for(let i=0;i<bc;i++){
+            const bullets_count=this.def.bullet.count??1
+            const patternPoint = getPatterningShape(bullets_count, this.def.jitter_radius??1)
+            for(let i=0;i<bullets_count;i++){
                 let ang=user.physical_data.rotation
                 if(this.def.spread){
                     ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
                 }
-                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
-                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
+                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammo_type,this.def,user.layer)
                 b.modifiers={
                     speed:user.modifiers.bullet_speed,
                     size:user.modifiers.bullet_size,
@@ -175,11 +177,11 @@ export class GunItem extends GunItemBase implements LItem{
         }
         if(this.def.synsed_particle){
             const scc=this.def.synsed_particle.count??1
-            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??0)
+            const patternPoint = getPatterningShape(scc, this.def.jitter_radius??0)
             const pdef=user.game.definitions.synced_particle.getFromString(this.def.synsed_particle.def)
 
             for(let i=0;i<scc;i++){
-                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
+                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
                 const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
                 if(this.def.synsed_particle.speed){
                     let ang=user.physical_data.rotation
@@ -192,11 +194,11 @@ export class GunItem extends GunItemBase implements LItem{
         }
         if(this.def.projectile){
             const scc=this.def.projectile.count??1
-            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??1)
+            const patternPoint = getPatterningShape(scc, this.def.jitter_radius??1)
             const gdef=user.game.definitions.grenades.getFromString(this.def.projectile.def)
 
             for(let i=0;i<scc;i++){
-                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
+                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
                 const proj=user.game.add_grenade(pos,gdef,user,user.layer)
                 proj.physical_data.zpos=0.01
                 proj.physical_data.zpos_speed=1.8
@@ -220,7 +222,7 @@ export class GunItem extends GunItemBase implements LItem{
                 if(this.burst){
                     if(this.burst.c<=0||this.ammo<=0){
                         this.burst=undefined
-                        this.use_delay=this.def.fireDelay
+                        this.use_delay=this.def.fire_delay
                     }else{
                         this.burst.c--
                         this.use_delay=this.burst.t
@@ -231,8 +233,8 @@ export class GunItem extends GunItemBase implements LItem{
         }
     }
     override load(): void {
-        if(this.def.switchDelay&&this.use_delay<=this.def.switchDelay){
-            this.use_delay=this.def.switchDelay
+        if(this.def.switch_delay&&this.use_delay<=this.def.switch_delay){
+            this.use_delay=this.def.switch_delay
         }
     }
     override unload(): void {
@@ -241,7 +243,7 @@ export class GunItem extends GunItemBase implements LItem{
     }
     drop(): Loot[] {
         if(this.ammo>0){
-            this.inventory.give_item(this.inventory.owner.game.definitions.ammos.getFromString((this.def as GunDef).ammoType),this.ammo)
+            this.inventory.give_item(this.inventory.owner.game.definitions.ammos.getFromString((this.def as GunDef).ammo_type),this.ammo)
         }
         if(this.def.dual_from){
             const ret:Loot[]=[]
@@ -425,11 +427,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     }
     on_fire_alt(user:Human):void{}
     attack(user:Human):void{
-        const position=v2.add(
-            user.position,
-            v2.from_RadAngle(user.physical_data.rotation,this.def.offset)
-        )
-        const hb=new CircleHitbox2D(position,this.def.radius)
+        const base_hb=this.def.hitbox.transform(this.def.hitbox.position,undefined,user.physical_data.rotation)
+        const hb=base_hb.transform(user.position)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
 
         user.animation_data.current_animation=undefined

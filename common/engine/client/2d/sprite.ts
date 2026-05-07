@@ -72,24 +72,27 @@ export class Sprite2D extends Container2DObject{
     }
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
-        if(frame.image=="")this.frame=undefined
-        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2)this.scale=frame.scale2
-        if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
-        if(frame.rotation)this.rotation=frame.rotation
-        if(frame.visible)this.visible=frame.visible
-        if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.layer)this.layer=frame.layer
-        if(frame.position)this.position=v2.clone(frame.position)
-        if(frame.image)this.frame=resources.get_sprite(frame.image)
-        if(frame.tint)this.tint=ColorM.number(frame.tint)
-        if(frame.alpha)this.tint.a=frame.alpha
+        if(frame.image){
+            this.frame=resources.get_sprite(frame.image)
+        }else{
+            this.frame=undefined
+        }
+        if(frame.scale!==undefined)this.scale=v2(frame.scale,frame.scale)
+        if(frame.scale2!==undefined)this.scale=frame.scale2
+        if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
+        if(frame.rotation!==undefined)this.rotation=frame.rotation
+        if(frame.visible!==undefined)this.visible=frame.visible
+        if(frame.zIndex!==undefined)this.zIndex=frame.zIndex
+        if(frame.layer!==undefined)this.layer=frame.layer
+        if(frame.position!==undefined)this.position=frame.position
+        if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
+        if(frame.alpha!==undefined)this.tint.a=frame.alpha
         this.dirty_reals=true
     }
     override transform_frame(frame:FrameTransform){
         super.transform_frame(frame)
-        if(frame.tint)this.tint=ColorM.number(frame.tint)
-        if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
+        if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
+        if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
     }
     override get_rect():Rect{
         return this._rect

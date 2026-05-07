@@ -600,7 +600,7 @@ export class Human extends MovingBody{
                             if(!l)break
                             this.game.add_loot(this.position,l,a.count,this.layer)
                             if(l.item_type===InventoryItemType.gun){
-                                this.game.add_loot(this.position,this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammoType),((l as unknown as GunDef).ammoSpawnAmount??0)*a.count,this.layer)
+                                this.game.add_loot(this.position,this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count,this.layer)
                             }
                         }
                         break

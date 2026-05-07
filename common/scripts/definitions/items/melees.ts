@@ -1,21 +1,23 @@
-import { AKeyFrame, Angle, Definition, Definitions, ease, v2, Vec2 } from "../../../engine/core.ts";
-import { DefaultFistRig, FistRig, ItemRank, WeaponAssets, WeaponRig } from "../../others/item.ts";
+import { AKeyFrame, Angle, CircleHitbox2D, Definition, Definitions, ease, FrameTransform, Hitbox2D, v2, } from "../../../engine/core.ts";
+import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
     rank:ItemRank
     item_type?:InventoryItemType.melee
+
+    hitbox:Hitbox2D
     damage:number
-    radius:number
-    offset:number
-    automatic?:boolean
-    size:number
+    resistence_damage?:number
+    fire_mode?:FireMode
+
     attack_delay:number
+    switch_delay?:number
     damage_delays:number[]
 
-    switchDelay?:number
     speed_mod?:number
-    arms?:FistRig
-    image?:WeaponRig
+
+    rig_arms?:FistRig
+    rig_image?:FrameTransform
     animation?:AKeyFrame[]
     assets?:WeaponAssets&{
         hit_sound?:string
@@ -25,8 +27,6 @@ export interface MeleeDef extends Definition{
         frame?:string
         offset:number
     }
-
-    resistence_damage?:number
 }
 export function AnimationSwing(time:number):AKeyFrame[]{
     const r=Angle.deg2rad(90)
@@ -136,15 +136,15 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
     melees.insert(
         {
             idString:"survival_knife",
-            damage:15,
-            offset:0.5,
             rank:ItemRank.E,
-            radius:0.5,
-            size:0,
+
+            hitbox:new CircleHitbox2D(v2.new(0.5,0),0.5),
+            damage:15,
             attack_delay:0.25,
-            switchDelay:0.5,
+            switch_delay:0.5,
             damage_delays:[0.11],
-            arms:{
+
+            rig_arms:{
                 right:{
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
@@ -156,7 +156,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     zIndex:2,
                 }
             },
-            image:{
+            rig_image:{
                 position:DefaultFistRig.right!.position,
                 rotation:-0.5,
                 zIndex:1,
@@ -199,16 +199,16 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         },
         {
             idString:"axe",
-            damage:33,
-            offset:0.6,
             rank:ItemRank.D,
-            radius:0.9,
-            size:2,
-            attack_delay:0.4,
-            switchDelay:0.5,
-            damage_delays:[0.3],
+
+            hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
+            damage:33,
             resistence_damage:1,
-            arms:{
+            attack_delay:0.4,
+            switch_delay:0.5,
+            damage_delays:[0.3],
+
+            rig_arms:{
                 right:{
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
@@ -220,7 +220,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     zIndex:2,
                 }
             },
-            image:{
+            rig_image:{
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
@@ -234,16 +234,16 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         },
         {
             idString:"sledgehammer",
-            damage:49.5,
-            offset:0.6,
             rank:ItemRank.A,
-            radius:0.9,
-            size:3,
-            attack_delay:0.6,
-            switchDelay:0.1,
-            damage_delays:[0.4],
+
+            hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
+            damage:49.5,
             resistence_damage:2,
-            arms:{
+            attack_delay:0.6,
+            switch_delay:0.1,
+            damage_delays:[0.4],
+
+            rig_arms:{
                 right:{ 
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
@@ -255,7 +255,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     zIndex:2,
                 }
             },
-            image:{
+            rig_image:{
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
@@ -269,16 +269,15 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         },
         {
             idString:"shovel",
-            damage:20,
-            offset:0.6,
             rank:ItemRank.D,
-            radius:0.9,
-            size:2,
+
+            hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
+            damage:20,
             attack_delay:0.35,
-            switchDelay:0.5,
+            switch_delay:0.5,
             damage_delays:[0.25],
-            resistence_damage:1,
-            arms:{
+
+            rig_arms:{
                 right:{
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
@@ -290,7 +289,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     zIndex:2,
                 }
             },
-            image:{
+            rig_image:{
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
@@ -302,79 +301,5 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 hit_sound:"shovel_hit",
             }
         },
-        {
-            idString:"pan",
-            damage:20,
-            offset:0.6,
-            rank:ItemRank.D,
-            radius:0.9,
-            size:2,
-            attack_delay:0.4,
-            switchDelay:0.5,
-            damage_delays:[0.3],
-            arms:{
-                right:{
-                    position:DefaultFistRig.right!.position,
-                    rotation:DefaultFistRig.right!.rotation,
-                    zIndex:2,
-                },
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                }
-            },
-            image:{
-                position:DefaultFistRig.left!.position,
-                rotation:Angle.deg2rad(90),
-                zIndex:1,
-                hotspot:v2(0.2,0.4)
-            },
-            reflective:{
-                frame:"pan_world",
-                offset:0.6
-            },
-            animation:AnimationSwing(0.45),
-            assets:{
-                use_sound:"heavy_swing",
-                hit_sound:"axe_hit",
-            }
-        },
-        /*{
-            idString:"bonesaw",
-            damage:49.5,
-            offset:0.6,
-            rank:ItemRank.S,
-            radius:0.9,
-            size:3,
-            attack_delay:0.8,
-            switchDelay:0.5,
-            damage_delays:[0.6],
-            resistence_damage:2,
-            arms:{
-                right:{ 
-                    position:DefaultFistRig.right!.position,
-                    rotation:DefaultFistRig.right!.rotation,
-                    zIndex:2,
-                },
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                }
-            },
-            image:{
-                position:DefaultFistRig.right!.position,
-                rotation:0,
-                zIndex:1,
-                scale:1.5,
-                hotspot:v2(0,0.3)
-            },
-            //animation:AnimationSwing(0.9),
-            assets:{
-                use_sound:"medium_swing",
-                hit_sound:"bonesaw_hit",
-            }
-        },*/
     )
 }

@@ -1,4 +1,4 @@
-import { ClientGameObject2D, type Sound, type SoundInstance, type SoundOptions } from "common/engine/client.ts";
+import { ClientGameObject2D } from "common/engine/client.ts";
 import { type Game } from "./game.ts";
 import { type Human } from "../objects/human.ts";
 

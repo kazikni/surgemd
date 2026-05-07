@@ -168,13 +168,13 @@ export abstract class Container2DObject {
         return {min:v2.zero,max:v2.zero}
     }
     transform_frame(frame:FrameTransform){
-        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2)this.scale=frame.scale2
-        if(frame.rotation)this.rotation=frame.rotation
-        if(frame.visible)this.visible=frame.visible
-        if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.position)this.position=v2.clone(frame.position)
-        if(frame.layer)this.layer=frame.layer
+        if(frame.scale!==undefined)this.scale=v2(frame.scale,frame.scale)
+        if(frame.scale2!==undefined)this.scale=frame.scale2
+        if(frame.rotation!==undefined)this.rotation=frame.rotation
+        if(frame.visible!==undefined)this.visible=frame.visible
+        if(frame.zIndex!==undefined)this.zIndex=frame.zIndex
+        if(frame.position!==undefined)this.position=v2.clone(frame.position)
+        if(frame.layer!==undefined)this.layer=frame.layer
         this.dirty_reals=true
     }
     abstract draw(cam:CamA): void;

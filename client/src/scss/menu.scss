@@ -709,7 +709,7 @@
 
     cursor: none;
     #text-gameover{
-        color:#47b984;
+        color:#47b984cc;
 
         font-size:clamp(10px, 10vw, 120px);
 
@@ -724,9 +724,9 @@
         z-index:3;
 
         animation:
-            text-gameover-rotate alternate 9s ease-in-out infinite,
-            text-gameover-scale 10s alternate ease-in-out infinite,
-            text-gameover-translate 13s alternate ease-in-out infinite;
+            text-gameover-rotate alternate 3s ease-in-out infinite,
+            text-gameover-scale 5s alternate ease-in-out infinite,
+            text-gameover-translate 30s alternate ease-in-out infinite;
     }
     pointer-events: all;
     @media screen and (max-width: palette.$screen_large) {
@@ -783,19 +783,19 @@
     100%{transform:translate(0,0) rotate(-20deg) scale(1)}
 }
 @keyframes text-gameover-translate{
-    0%    { transform:translate(-7%,-7%) }
-    25%   { transform:translate(-7%,7%) }
-    50%   { transform:translate(7%,7%) }
-    75%   { transform:translate(7%,-7%) }
-    100%    { transform:translate(-7%,7%) }
+    0%    { transform:translate(-10%,-10%) }
+    25%   { transform:translate(-10%,10%) }
+    50%   { transform:translate(10%,10%) }
+    75%   { transform:translate(10%,-10%) }
+    100%    { transform:translate(-10%,10%) }
 }
 @keyframes text-gameover-rotate{
-    0%   { rotate:4deg }
-    100% { rotate:-4deg }
+    0%   { rotate:1deg }
+    100% { rotate:-1deg }
 }
 @keyframes text-gameover-scale{
-    0%   { scale:0.8 }
-    100%  { scale:1.1 }
+    0%   { scale:0.95 }
+    100%  { scale:1 }
 }
 .game-popup-overlay{
     position:fixed;

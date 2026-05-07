@@ -449,7 +449,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.ambient.music.set(undefined)
 
-        if(this.level){
+        /*if(this.level){
             await this.menu.show_phase_intro({
                 location:this.level.meta.location,
                 name:this.level.meta.name,
@@ -463,7 +463,7 @@ export class Game extends ClientGame<GameObject>{
             if(this.level?.begin?.history){
                 await this.menu.show_history(this.level.begin.history,this.sounds,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
-        }
+        }*/
 
         this.ui.start()
         this.join()

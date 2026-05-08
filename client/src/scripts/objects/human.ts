@@ -184,7 +184,6 @@ export class Human extends MovingBody{
             max_distance:10,
         },"humans")
     }
-
     on_die(){
         if(this.dead&&this.container.destroyed)return
         this.dead=true
@@ -260,7 +259,6 @@ export class Human extends MovingBody{
         this.happy=true
         this.reset_anim()
     }
-
     set_arms_rig(rig?:FistRig){
         if(rig){
             if(rig.left){
@@ -292,6 +290,7 @@ export class Human extends MovingBody{
 
             if(def.rig_image){
                 this.sprites.weapon.visible=true
+                this.sprites.weapon.rotation=0
                 this.sprites.weapon.transform_frame(def.rig_image)
                 this.sprites.weapon.tint=tint
             }
@@ -301,14 +300,21 @@ export class Human extends MovingBody{
 
                 this.sprites.weapon2.visible=true
                 if(def.rig_image){
+                    this.sprites.weapon2.rotation=0
                     this.sprites.weapon2.visible=true
                     this.sprites.weapon2.transform_frame(def.rig_image)
                     this.sprites.weapon2.tint=tint
                 }
 
-                this.sprites.weapon.position.y-=(def as GunDef&DualAdditional).dual_offset!
-                this.sprites.weapon2.position.y+=(def as GunDef&DualAdditional).dual_offset!
-                
+                this.sprites.weapon.position.y=(def as GunDef&DualAdditional).dual_offset!
+                this.sprites.weapon2.position.y =(def as GunDef&DualAdditional).dual_offset!
+
+                this.sprites.left_arm.visible=true
+                this.sprites.left_arm.rotation=0
+                this.sprites.left_arm.position.y=-(def as GunDef&DualAdditional).dual_offset!
+                this.sprites.right_arm.visible=true
+                this.sprites.right_arm.rotation=0
+                this.sprites.right_arm.position.y=(def as GunDef&DualAdditional).dual_offset!
             }
         }
     }
@@ -322,6 +328,12 @@ export class Human extends MovingBody{
                 if(weapon.dual_from){
                     const original=this.game.definitions.guns.getFromString(weapon.dual_from!)
                     frame=original.assets?.world??original.idString+"_world"
+                    this.sprites.weapon2.set_frame({
+                        image:frame,
+                        rotation:0,
+                        hotspot:v2.half_one,
+                        zIndex:2,
+                    },this.game.resources)
                 }else{
                     frame=weapon.assets?.world??weapon.idString+"_world"
                 }
@@ -329,9 +341,9 @@ export class Human extends MovingBody{
                 frame=weapon.assets?.world??weapon.idString
             }
 
-            this.sprites.weapon.rotation=0
             this.sprites.weapon.set_frame({
                 image:frame,
+                rotation:0,
                 hotspot:v2.half_one,
                 zIndex:2,
             },this.game.resources)
@@ -339,33 +351,6 @@ export class Human extends MovingBody{
             this.set_arms_rig(undefined)
         }
         this.update_weapon(weapon,is_new)
-        /*if(is_new){
-            const sound=this.game.resources.get_audio(`${weapon.idString}_switch`)
-            if(this.sound_animation.weapon.switch)this.sound_animation.weapon.switch.stop()
-            if(sound){
-                this.sound_animation.weapon.switch=this.game.sounds.play(sound,{
-                    on_complete:()=>{
-                        this.sound_animation.weapon.switch=undefined
-                    },
-                    position:this.position,
-                    max_distance:17,
-                })
-            }
-            // deno-lint-ignore ban-ts-comment
-            //@ts-ignore
-            const sdd=def.dual_from??def.idString
-            this.assets.weapon_fire_sound=def.assets?.use_sound?this.game.resources.get_audio(def.assets.use_sound):this.game.resources.get_audio(`${sdd}_fire`)
-            this.assets.weapon_cycle_sound=this.game.resources.get_audio(
-                (def.assets?.cycle_sound===true)?
-                (`${sdd}_switch`):
-                (def.assets?.cycle_sound as string)
-            )
-
-            if(def.item_type===InventoryItemType.gun){
-                this.assets.weapon_reload_sound=this.game.resources.get_audio(def.assets?.reload_sound??`${def.idString}_reload`)
-                this.assets.weapon_reload_sound_alt=this.game.resources.get_audio(def.assets?.reload_sound_alt??`${def.idString}_reload_alt`)
-            }
-        }*/
     }
     set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number){
         if(
@@ -798,6 +783,93 @@ export class Human extends MovingBody{
             this.sprites.weapon.visible=false
         }
     }
+    update_animations(animations:PlayerAnimation[]){
+        for(const a of animations){
+            switch(a.type){
+                case PlayerAnimationType.Reloading:
+                case PlayerAnimationType.Consuming:
+                case PlayerAnimationType.Melee:
+                case PlayerAnimationType.Fire:
+                    break
+                case PlayerAnimationType.Cook:
+                    this.container.play_animation([
+                        {
+                            time:0.1,
+                            actions:[
+                                {
+                                    type:"tween",
+                                    fuser:"left_arm",
+                                    to:{
+                                        position:v2(DefaultFistRig.left!.position.x,0.2),
+                                        rotation:0.3
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            time:0.23,
+                            actions:[
+                                {
+                                    type:"tween",
+                                    fuser:"left_arm",
+                                    to:{
+                                        position:DefaultFistRig.left!.position,
+                                        rotation:DefaultFistRig.left!.rotation
+                                    }
+                                },
+                                {
+                                    type:"tween",
+                                    fuser:"right_arm",
+                                    to:{
+                                        position:v2(0.15,0.6),
+                                        rotation:1.2
+                                    }
+                                },
+                                {
+                                    type:"tween",
+                                    fuser:"weapon",
+                                    to:{
+                                        position:v2(0.15,0.6),
+                                        rotation:0.3
+                                    }
+                                }
+                            ]
+                        },
+                    ])
+                    break
+                case PlayerAnimationType.Throw:
+                    this.container.play_animation([
+                        {
+                            time:0.1,
+                            actions:[
+                                {
+                                    type:"tween",
+                                    fuser:"right_arm",
+                                    to:{
+                                        position:DefaultFistRig.right!.position,
+                                        rotation:DefaultFistRig.right!.rotation
+                                    }
+                                },
+                                {
+                                    type:"tween",
+                                    fuser:"weapon",
+                                    to:{
+                                        position:DefaultFistRig.right!.position,
+                                        rotation:DefaultFistRig.right!.rotation
+                                    }
+                                }
+                            ]
+                        },
+                    ],()=>{
+                        this.update_weapon(this.current_weapon)
+                    })
+                    console.log(animations)
+                    break
+                case PlayerAnimationType.Reset:
+                    break
+            }
+        }
+    }
     emote_time:number=0
     add_emote(emote:GameObjectDef){
         this.game.sounds.play(this.game.resources.get_audio("emote_play"),{
@@ -980,7 +1052,6 @@ export class Human extends MovingBody{
             hand_dirty,
 
             has_emote,
-            has_animation,
 
             attacking,
             swithced,
@@ -1039,9 +1110,9 @@ export class Human extends MovingBody{
             //if(!this.attacking)this.attack()
         }
         if(full||animation_dirty){
-            if(has_animation){
-                const tp=stream.readUint8() as PlayerAnimationType
+            const animations:PlayerAnimation[]=stream.readArray(()=>{
                 let animation:PlayerAnimation
+                const tp=stream.readUint8() as PlayerAnimationType
                 switch(tp){
                     case PlayerAnimationType.Reloading:
                         animation={
@@ -1056,14 +1127,17 @@ export class Human extends MovingBody{
                         }
                         break
                     default:{
+                        // deno-lint-ignore ban-ts-comment
+                        //@ts-ignore
                         animation={
-                            type:tp
+                            type:tp,
                         }
                         break
                     }
                 }
-                //this.play_animation(animation)
-            }
+                return animation
+            },1)
+            this.update_animations(animations)
         }
         if(full||effects_dirty){
             const effects=stream.readArray(()=>{

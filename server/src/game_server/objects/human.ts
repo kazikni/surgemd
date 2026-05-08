@@ -122,10 +122,11 @@ export class Human extends MovingBody{
             }
         }
     }
-    animation_data:HumanAnimationData&{switching:boolean,current_animation?:PlayerAnimation}={
+    animation_data:HumanAnimationData&{switching:boolean,current_animation:PlayerAnimation[]}={
         dirty:true,
         switching:false,
         attacking:false,
+        current_animation:[]
     }
 
     inventory:GInventory
@@ -484,6 +485,11 @@ export class Human extends MovingBody{
         }
         this.grenade_holding=undefined
         this.inventory.net_sync.items=true
+
+        this.animation_data.dirty=true
+        this.animation_data.current_animation.push({
+            type:PlayerAnimationType.Throw
+        })
     }
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
@@ -688,7 +694,6 @@ export class Human extends MovingBody{
                 * (this.grenade_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
-            this.animation_data.current_animation=undefined
             if(this.recoil.delay<=0)this.recoil=undefined
         }
         const rules=this.game.modeManager.rules.humans
@@ -978,6 +983,7 @@ export class Human extends MovingBody{
         this.physical_data.dirty_part=false
 
         this.animation_data.dirty=false
+        this.animation_data.current_animation.length=0
 
         this.loadout.dirty=false
         this.loadout.emote=undefined
@@ -1221,7 +1227,6 @@ export class Human extends MovingBody{
 
             // State
             this.loadout.emote!==undefined, // 1
-            this.animation_data.current_animation!==undefined, // 1
 
             this.animation_data.attacking,
             this.animation_data.switching,
@@ -1276,19 +1281,19 @@ export class Human extends MovingBody{
             },1)
         }
         if(full||this.animation_data.dirty){
-            if(this.animation_data.current_animation!==undefined){
-                stream.writeUint8(this.animation_data.current_animation.type)
-                switch(this.animation_data.current_animation.type){
+            stream.writeArray(this.animation_data.current_animation,(v)=>{
+                stream.writeUint8(v.type)
+                switch(v.type){
                     case PlayerAnimationType.Reloading:
-                        stream.writeUint8(this.animation_data.current_animation.alt_reload?1:0)
+                        stream.writeUint8(v.alt_reload?1:0)
                         break
                     case PlayerAnimationType.Consuming:
-                        stream.writeUint16(this.animation_data.current_animation.item)
+                        stream.writeUint16(v.item)
                         break
                     default:
                         break
                 }
-            }
+            },1)
         }
         if(full||this.inventory.net_sync.hand){
             stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)

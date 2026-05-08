@@ -42,7 +42,6 @@ export class ReloadAction extends Action<Human>{
         user.inventory.net_sync.hand=true
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
-        user.animation_data.current_animation=undefined
     }
     type: number=ActionsType.Reload
 }
@@ -68,7 +67,6 @@ export class ConsumingActionA extends Action<Human>{
         user.net_sync.part=true
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
-        user.animation_data.current_animation=undefined
 
         this.slot.remove(1)
     }

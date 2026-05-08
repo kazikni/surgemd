@@ -91,10 +91,14 @@ export class GunItem extends GunItemBase implements LItem{
         }
         user.net_sync.part=true
         user.animation_data.dirty=true
-        user.animation_data.current_animation={
-            type:PlayerAnimationType.Reloading,
-            alt_reload:this.ammo===0,
-        }
+        user.animation_data.current_animation.push(
+            {
+                type:PlayerAnimationType.Reset,
+            },
+            {
+                type:PlayerAnimationType.Reloading,
+                alt_reload:this.ammo===0,
+            })
 
         user.actions.play(new ReloadAction(this))
     }
@@ -287,13 +291,17 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
             case 0:
                 if(user.consuming_condition(this.def.condition!,this.def.consuming.side_effects)){
                     user.net_sync.part=true
-                    user.animation_data.dirty=true
                     user.inventory.net_sync.hand=true
-
-                    user.animation_data.current_animation={
-                        type:PlayerAnimationType.Consuming,
-                        item:this.def.idNumber!
-                    }
+                    user.animation_data.dirty=true
+                    user.animation_data.current_animation.push(
+                        {
+                            type:PlayerAnimationType.Reset,
+                        },
+                        {
+                            type:PlayerAnimationType.Consuming,
+                            item:this.def.idNumber!
+                        }
+                    )
                     user.actions.play(new ConsumingActionA(this,slot!))
                 }
                 break
@@ -379,6 +387,17 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
             time:this.def.cook?.fuse_time??10,
             slot:this.slot
         }
+
+        user.animation_data.dirty=true
+        user.animation_data.current_animation.push(
+            {
+                type:PlayerAnimationType.Reset,
+            },
+            {
+                type:PlayerAnimationType.Cook,
+                item:this.def.idNumber!
+            }
+        )
     }
     on_fire_alt(user:Human):void{}
     attacking():boolean{
@@ -409,12 +428,10 @@ export class MeleeItem extends MeleeItemBase implements LItem{
         if(this.use_delay<=0){
             user.actions.cancel()
 
-            user.net_sync.part=true
             user.animation_data.dirty=true
-
-            user.animation_data.current_animation={
+            user.animation_data.current_animation.push({
                 type:PlayerAnimationType.Melee
-            }
+            })
 
             for(const t of this.def.damage_delays){
                 user.game.add_timeout(()=>{
@@ -430,8 +447,6 @@ export class MeleeItem extends MeleeItemBase implements LItem{
         const base_hb=this.def.hitbox.transform(this.def.hitbox.position,undefined,user.physical_data.rotation)
         const hb=base_hb.transform(user.position)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
-
-        user.animation_data.current_animation=undefined
 
         for(const c of collidibles){
             if(!hb.colliding_with(c.hitbox))continue

@@ -27,7 +27,11 @@ export const GameConstants={
 export enum PlayerAnimationType{
     Reloading,
     Consuming,
-    Melee
+    Melee,
+    Fire,
+    Cook,
+    Throw,
+    Reset
 }
 export type PlayerAnimation={
 }&({
@@ -38,6 +42,16 @@ export type PlayerAnimation={
     item:number
 }|{
     type:PlayerAnimationType.Melee
+}|{
+    type:PlayerAnimationType.Fire
+    last:boolean
+    alt:boolean
+}|{
+    type:PlayerAnimationType.Cook
+}|{
+    type:PlayerAnimationType.Throw
+}|{
+    type:PlayerAnimationType.Reset
 })
 export enum Layers{
     Normal=10

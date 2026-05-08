@@ -118,7 +118,7 @@ export const ConfigDefaultActions={
         keys:[Key.Mouse_Right]
     },
     "emote_wheel":{
-        buttons:[GamepadButtonID.DPAD_Up],
+        buttons:[GamepadButtonID.Y],
         keys:[Key.V]
     },
     "reload":{
@@ -190,11 +190,11 @@ export const ConfigDefaultActions={
         keys:[]
     },
     "previous_scope":{
-        buttons:[],
+        buttons:[GamepadButtonID.DPAD_Down],
         keys:[Key.Mouse_Wheel_Up]
     },
     "next_scope":{
-        buttons:[],
+        buttons:[GamepadButtonID.DPAD_Up],
         keys:[Key.Mouse_Wheel_Down]
     },
     "next":{

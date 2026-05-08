@@ -14,6 +14,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -84,6 +85,8 @@ export class Human extends MovingBody{
         emote_container:Container2D
         emote_bg:Sprite2D
         emote_sprite:Sprite2D
+
+        melee_world:Sprite2D
     }
     anims:{
         fire?:{
@@ -108,6 +111,7 @@ export class Human extends MovingBody{
         }
     }={weapon:{}}
 
+    melee?:MeleeDef
     current_weapon?:WeaponDef
     dead:boolean=true
     _happy:boolean=true
@@ -352,6 +356,15 @@ export class Human extends MovingBody{
         }
         this.update_weapon(weapon,is_new)
     }
+    update_melee(def?:MeleeDef){
+        if(def?.character_frame){
+            this.sprites.melee_world.visible=true
+            this.sprites.melee_world.set_frame(def.character_frame.equipped_frame,this.game.resources)
+            //this.sprites.melee_world.set_frame(def.character_frame.unequipped_frame,this.game.resources)
+        }else{
+            this.sprites.melee_world.visible=false
+        }
+    }
     set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number){
         if(
             this.loadout&&
@@ -496,7 +509,8 @@ export class Human extends MovingBody{
             weapon2:this.container.add_sprite("weapon2"),
             emote_container:new Container2D(),
             emote_bg:new Sprite2D(),
-            emote_sprite:new Sprite2D()
+            emote_sprite:new Sprite2D(),
+            melee_world:this.container.add_sprite("melee_world",{zIndex:2,hotspot:v2.half_one}),
         }
 
         this.sprites.left_shirt_arm.transform_frame({
@@ -1050,6 +1064,7 @@ export class Human extends MovingBody{
             effects_dirty,
 
             hand_dirty,
+            melee_wold_dirty,
 
             has_emote,
 
@@ -1150,6 +1165,12 @@ export class Human extends MovingBody{
             const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
             if(current_weapon!==this.current_weapon){
                 this.set_current_weapon(current_weapon)
+            }
+        }
+        if(full||melee_wold_dirty){
+            const id=stream.readUint16()
+            if(this.melee?.idNumber!==id){
+                this.update_melee(this.game.definitions.melees.getFromNumber(id))
             }
         }
         if(downed){

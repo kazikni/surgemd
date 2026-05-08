@@ -147,9 +147,7 @@ export class GameSave{
         this.current_save=save
         if(this.input_manager){
             this.input_manager.actions.clear()
-            for(const a of Object.keys(this.default_actions)){
-                this.input_manager.registerAction(a,this.default_actions[a])
-            }
+            this.input_manager.default_actions=this.default_actions
         }
         switch(save.type){
             case "file":

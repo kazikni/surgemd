@@ -24,7 +24,6 @@ import { ItemsModule } from "../uim/items.ts";
 import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
-import { GunClasses } from "common/scripts/definitions/items/guns.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean

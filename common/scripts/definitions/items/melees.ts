@@ -1,4 +1,4 @@
-import { AKeyFrame, Angle, CircleHitbox2D, Definition, Definitions, ease, FrameTransform, Hitbox2D, v2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, CircleHitbox2D, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -21,6 +21,10 @@ export interface MeleeDef extends Definition{
     animation?:AKeyFrame[]
     assets?:WeaponAssets&{
         hit_sound?:string
+    }
+    character_frame?:{
+        equipped_frame:FrameDef
+        unequipped_frame:FrameDef
     }
 
     reflective?:{
@@ -301,5 +305,93 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 hit_sound:"shovel_hit",
             }
         },
+        /*{
+            idString:"katana",
+            rank:ItemRank.D,
+
+            hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
+            damage:30,
+            resistence_damage:1,
+            attack_delay:0.4,
+            switch_delay:0.5,
+            damage_delays:[0.3],
+
+            rig_arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            rig_image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.2,0.4)
+            },
+            animation:AnimationSwing(0.45),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"axe_hit",
+                world:"katana_world"
+            },
+            character_frame:{
+                equipped_frame:{
+                    image:"katana",
+                    position:v2.new(-1.1,0),
+                    hotspot:v2(1,0.5),
+                    rotation:3.5
+                },
+                unequipped_frame:{
+                    image:"katana_bag",
+                    position:v2.new(-1.1,0),
+                    hotspot:v2(1,0.5),
+                    rotation:3.5
+                }
+            }
+        },*/
+        /*{
+            idString:"pan",
+            damage:20,
+            offset:0.6,
+            rank:ItemRank.D,
+            radius:0.9,
+            size:2,
+            attack_delay:0.4,
+            switchDelay:0.5,
+            damage_delays:[0.3],
+            arms:{
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                }
+            },
+            image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.2,0.4)
+            },
+            reflective:{
+                frame:"pan_world",
+                offset:0.6
+            },
+            animation:AnimationSwing(0.45),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"axe_hit",
+            }
+        },*/
     )
 }

@@ -6,7 +6,6 @@ import { ConsumibleDef } from "../definitions/items/consumibles.ts";
 import { GrenadeDef } from "../definitions/items/grenades.ts";
 import { GunDef } from "../definitions/items/guns.ts";
 import { MeleeDef } from "../definitions/items/melees.ts";
-import { ScopeDef } from "../definitions/items/scopes.ts";
 import { InventoryItemType } from "../definitions/utils.ts";
 
 export abstract class MDItem extends Item{
@@ -101,6 +100,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     net_sync:{
         hand:boolean
         weapons:boolean
+        melee_world:boolean
 
         items:boolean
         aitems:boolean
@@ -108,6 +108,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     }={
         hand:false,
         weapons:false,
+        melee_world:false,
 
         items:false,
         aitems:false,

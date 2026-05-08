@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, NetStream, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -182,7 +182,8 @@ export class Game extends ClientGame<GameObject>{
         this.scene_2d.objects.add_object(dd,d.taker_layer,undefined,d)
     }
     override listeners_init(): void {
-        this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right")
+        this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right","left")
+        this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.on("axis",(a:AxisActionEvent)=>{
             if(a.action==="movement"){
                 if(a.value.x==0&&a.value.y==0){
@@ -190,6 +191,8 @@ export class Game extends ClientGame<GameObject>{
                 }else{
                     this.input.movement={dir:Math.atan2(a.value.y,a.value.x),scale:1}
                 }
+            }else if(a.action==="aim"){
+                if(a.value.x!==0||a.value.y!==0)this.set_lookTo_angle(Math.atan2(a.value.y,a.value.x),1)
             }
         })
         this.input_manager.on("actiondown",(a:ActionEvent)=>{
@@ -250,10 +253,10 @@ export class Game extends ClientGame<GameObject>{
                     this.input.actions.push({type:InputActionType.use_item,slot:6})
                     break
                 case "previous_weapon":
-                    //this.input.actions.push({type:InputActionType.set_hand,hand:this.inventory.current_weapon-1})
+                    this.input.actions.push({type:InputActionType.set_hand,hand:Math.max(this.inventory.weapon_idx-1,0)})
                     break
                 case "next_weapon":
-                    //this.input.actions.push({type:InputActionType.set_hand,hand:Numeric.loop(this.inventory.current_weapon+1,-1,3)})
+                    this.input.actions.push({type:InputActionType.set_hand,hand:Math.max(this.inventory.weapon_idx+1,0)})
                     break
                 case "previous_scope":{
                     const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
@@ -315,6 +318,8 @@ export class Game extends ClientGame<GameObject>{
     }
     override async bind(fs?:FileManager): Promise<void> {
         super.bind()
+        this.save.compatible_version=2
+
         await this.save.init(is_binary?{
             type:"file",
             path:"save/settings.json",
@@ -323,6 +328,7 @@ export class Game extends ClientGame<GameObject>{
             type:"localstorage",
             key:"surgemd-settings"
         })
+        this.save.version=2
         this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/scripts/languages")
         this.fs=fs
     }

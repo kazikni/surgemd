@@ -533,6 +533,7 @@ export class GInventory extends GInventoryBase<LItem>{
     }
     override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
         if(wep?.idString===this.weapons[slot]?.def.idString)return false
+        if(wep?.item_type===InventoryItemType.melee)this.net_sync.melee_world=true
         if(drop){
             if(this.weapons[slot]&&this.weapons[slot].def!=this.weapons_defaults[slot]){
                 this.weapons[slot].drop()
@@ -924,6 +925,7 @@ export class GInventory extends GInventoryBase<LItem>{
     net_update(){
         this.net_sync.aitems=false
         this.net_sync.hand=false
+        this.net_sync.melee_world=false
         this.net_sync.iitems=false
         this.net_sync.items=false
         this.net_sync.weapons=false

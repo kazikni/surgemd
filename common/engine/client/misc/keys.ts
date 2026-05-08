@@ -409,103 +409,169 @@ export enum GamepadButtonID {
 
     Home = 16
 }
-export enum GamepadManagerEvent{
-    close="close",
-    buttondown="buttondown",
-    buttonup="buttonup",
-    analogicmove="analogicmove"
+export type GamepadSnapshot = {
+    buttons: boolean[]
+    axes: number[]
 }
+
+export type GamepadButtonEvent = {
+    index: number
+    button: number
+}
+
+export type GamepadAnalogEvent = {
+    index: number
+    stick: "left" | "right"
+    axis: Vec2
+}
+
+export enum GamepadManagerEvent {
+    close = "close",
+    buttondown = "buttondown",
+    buttonup = "buttonup",
+    analogicmove = "analogicmove"
+}
+
 export class GamepadManager {
-    listener: SignalManager = new SignalManager();
-    private previousStates: Map<number, Gamepad> = new Map();
-    private deadZone: Vec2;
-    private animationFrameId: number | null = null;
-
-    constructor(deadZone: Vec2 = v2(0.1, 0.1)) {
-        this.deadZone = deadZone;
-
+    listener: SignalManager = new SignalManager()
+    private previousStates: Map<number, GamepadSnapshot> = new Map()
+    private deadZone: Vec2
+    private animationFrameId: number | null = null
+    left_axis: Vec2 = v2(0, 0)
+    right_axis: Vec2 = v2(0, 0)
+    constructor(deadZone: Vec2 = v2(0.15, 0.15)) {
+        this.deadZone = deadZone
         addEventListener("gamepadconnected", (e: GamepadEvent) => {
-            this.previousStates.set(e.gamepad.index, e.gamepad);
-            this.listener.emit(GamepadManagerEvent.analogicmove, { index: e.gamepad.index, gamepad: e.gamepad });
-            this.startLoop();
-        });
-
+            const pad = e.gamepad
+            this.previousStates.set(pad.index, {
+                buttons: pad.buttons.map(b => b.pressed),
+                axes: [...pad.axes]
+            })
+            this.startLoop()
+        })
         addEventListener("gamepaddisconnected", (e: GamepadEvent) => {
-            this.previousStates.delete(e.gamepad.index);
-            this.listener.emit(GamepadManagerEvent.close, { index: e.gamepad.index });
-        });
-    }
-
-    private startLoop() {
-        const loop = () => {
-            const pads = navigator.getGamepads();
-            for (const pad of pads) {
-                if (!pad) continue;
-
-                const prev = this.previousStates.get(pad.index);
-                if (!prev) {
-                    this.previousStates.set(pad.index, pad);
-                    continue;
+            this.previousStates.delete(e.gamepad.index)
+            this.listener.emit(
+                GamepadManagerEvent.close,
+                {
+                    index: e.gamepad.index
                 }
-
-                // Check button changes
-                for (let i = 0; i < pad.buttons.length; i++) {
-                    const current = pad.buttons[i].pressed;
-                    const previous = prev.buttons[i]?.pressed ?? false;
-
-                    if (current && !previous) {
-                        this.listener.emit(GamepadManagerEvent.buttondown, { index: pad.index, button: i });
-                    } else if (!current && previous) {
-                        this.listener.emit(GamepadManagerEvent.buttonup, { index: pad.index, button: i });
-                    }
-                }
-
-                if (pad.axes.length >= 2) {
-                    const x = pad.axes[0];
-                    const y = pad.axes[1];
-                    const dx = Math.abs(x) < this.deadZone.x ? 0 : x;
-                    const dy = Math.abs(y) < this.deadZone.y ? 0 : y;
-                    this.listener.emit(GamepadManagerEvent.analogicmove, {
-                        index: pad.index,
-                        stick: "left",
-                        axis: v2(dx, dy)
-                    });
-                }
-                if (pad.axes.length >= 4) {
-                    const x = pad.axes[2];
-                    const y = pad.axes[3];
-                    const dx = Math.abs(x) < this.deadZone.x ? 0 : x;
-                    const dy = Math.abs(y) < this.deadZone.y ? 0 : y;
-                    this.listener.emit(GamepadManagerEvent.analogicmove, {
-                        index: pad.index,
-                        stick: "right",
-                        axis: v2(dx, dy)
-                    });
-                }
-
-                this.previousStates.set(pad.index, {
-                    buttons: pad.buttons.map(b => ({ pressed: b.pressed })),
-                    axes: [...pad.axes],
-                // deno-lint-ignore no-explicit-any
-                } as any);
+            )
+            if (this.previousStates.size <= 0) {
+                this.stop()
             }
-
-            this.animationFrameId = requestAnimationFrame(loop);
-        };
-
-        if (!this.animationFrameId) {
-            this.animationFrameId = requestAnimationFrame(loop);
+        })
+    }
+    private applyDeadZone(x: number, y: number): Vec2 {
+        return v2(
+            Math.abs(x) < this.deadZone.x ? 0 : x,
+            Math.abs(y) < this.deadZone.y ? 0 : y
+        )
+    }
+    private emitAnalog(pad: Gamepad,prev: GamepadSnapshot,stick: "left" | "right",axisIndex: number){
+        const x = pad.axes[axisIndex] ?? 0
+        const y = pad.axes[axisIndex + 1] ?? 0
+        const oldX = prev.axes[axisIndex] ?? 0
+        const oldY = prev.axes[axisIndex + 1] ?? 0
+        const current = this.applyDeadZone(x, y)
+        const old = this.applyDeadZone(oldX, oldY)
+        if (!v2.is(current, old)) {
+            if (stick === "left") {
+                this.left_axis = current
+            } else {
+                this.right_axis = current
+            }
+            this.listener.emit(
+                GamepadManagerEvent.analogicmove,
+                {
+                    index: pad.index,
+                    stick,
+                    axis: current
+                } satisfies GamepadAnalogEvent
+            )
         }
     }
+    private loop = () => {
+        const pads = navigator.getGamepads()
+        for (const pad of pads) {
+            if (!pad) continue
+            let prev = this.previousStates.get(pad.index)
+            if (!prev) {
+                prev = {
+                    buttons: pad.buttons.map(b => b.pressed),
+                    axes: [...pad.axes]
+                }
+                this.previousStates.set(pad.index, prev)
+                continue
+            }
+            for (let i = 0; i < pad.buttons.length; i++) {
+                const current = pad.buttons[i].pressed
+                const previous = prev.buttons[i] ?? false
 
+                if (current && !previous) {
+                    this.listener.emit(
+                        GamepadManagerEvent.buttondown,
+                        {
+                            index: pad.index,
+                            button: i
+                        } satisfies GamepadButtonEvent
+                    )
+                } else if (!current && previous) {
+                    this.listener.emit(
+                        GamepadManagerEvent.buttonup,
+                        {
+                            index: pad.index,
+                            button: i
+                        } satisfies GamepadButtonEvent
+                    )
+                }
+            }
+            if (pad.axes.length >= 2) {
+                this.emitAnalog(
+                    pad,
+                    prev,
+                    "left",
+                    0
+                )
+            }
+            if (pad.axes.length >= 4) {
+                this.emitAnalog(
+                    pad,
+                    prev,
+                    "right",
+                    2
+                )
+            }
+            this.previousStates.set(pad.index, {
+                buttons: pad.buttons.map(b => b.pressed),
+                axes: [...pad.axes]
+            })
+        }
+        this.animationFrameId = requestAnimationFrame(this.loop)
+    }
+    private startLoop() {
+        if (this.animationFrameId !== null) return
+        this.animationFrameId = requestAnimationFrame(this.loop)
+    }
     stop() {
         if (this.animationFrameId !== null) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
+            cancelAnimationFrame(this.animationFrameId)
+            this.animationFrameId = null
         }
     }
-    clear(){
-        
+    button_pressed(button: number): boolean {
+        const pads = navigator.getGamepads()
+        for (const pad of pads) {
+            if (!pad) continue
+            if (pad.buttons[button]?.pressed) {
+                return true
+            }
+        }
+        return false
+    }
+    clear() {
+        this.left_axis = v2(0, 0)
+        this.right_axis = v2(0, 0)
     }
 }
 export interface InputAction {
@@ -518,25 +584,36 @@ export interface ActionEvent {
 }
 export interface AxisActionEvent extends ActionEvent{
     value:Vec2
+    controller:boolean
 }
 export class InputManager {
     gamepad: GamepadManager
     mouse: MousePosListener
     keys: KeyListener
 
+    default_actions:Record<string, InputAction>={}
     actions: Map<string, InputAction> = new Map();
     private activeActions: Set<string> = new Set();
     private pressedButtons: Set<number> = new Set();
     private axis:Map<string,{up:string,down:string,left:string,right:string,old_mov:Vec2,name:string}>=new Map()
-
+    private gamepad_axis: Map<"left" | "right", Vec2> = new Map()
+    private axis_gamepad_map: Map<string, "left" | "right"> = new Map()
     private callbacks = {
         actiondown: [] as ((event: ActionEvent) => void)[],
         actionup: [] as ((event: ActionEvent) => void)[],
         axis:[] as ((event: AxisActionEvent) => void)[]
     };
 
-    add_axis(id:string,up:string,down:string,left:string,right:string){
-        this.axis.set(id,{up,down,left,right,old_mov:v2(0,0),name:id})
+    add_axis(id:string,up:string,down:string,left:string,right:string,gamepad_stick:"left"|"right"="left"){
+        this.axis.set(id,{
+            up,
+            down,
+            left,
+            right,
+            old_mov:v2(0,0),
+            name:id
+        })
+        this.axis_gamepad_map.set(id, gamepad_stick)
     }
 
     get focus():boolean{
@@ -559,23 +636,40 @@ export class InputManager {
         this.gamepad.listener.on(GamepadManagerEvent.buttonup, (e: { button: number }) => {
             this.pressedButtons.delete(e.button);
         });
+        this.gamepad.listener.on(
+            GamepadManagerEvent.analogicmove,
+            (e: GamepadAnalogEvent) => {
+                this.gamepad_axis.set(e.stick, e.axis)
+            }
+        )
     }
-
     bind(canvas: HTMLCanvasElement) {
         this.keys.bind(document as unknown as HTMLElement);
         this.mouse.bind(document as unknown as HTMLElement, canvas);
     }
-
     on(event: "actiondown" | "actionup" | "axis", callback: ((event: ActionEvent) => void)|((event:AxisActionEvent)=>void)) {
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         this.callbacks[event].push(callback);
     }
-
-    registerAction(name: string, input: InputAction) {
-        this.actions.set(name, input);
+    private actionEquals(a: InputAction, b: InputAction): boolean {
+        if (a.keys.length !== b.keys.length) return false;
+        if (a.buttons.length !== b.buttons.length) return false;
+        for (let i = 0; i < a.keys.length; i++) {
+            if (a.keys[i] !== b.keys[i]) return false;
+        }
+        for (let i = 0; i < a.buttons.length; i++) {
+            if (a.buttons[i] !== b.buttons[i]) return false;
+        }
+        return true;
     }
+    registerAction(name: string, input: InputAction) {
+        this.actions.set(name, structuredClone(input));
 
+        if (!this.default_actions[name]) {
+            this.default_actions[name] = structuredClone(input);
+        }
+    }
     unregisterAction(name: string) {
         this.actions.delete(name);
         this.activeActions.delete(name);
@@ -602,14 +696,29 @@ export class InputManager {
     }
 
     tick() {
-        for(const axis of this.axis.values()){
-            const mov=v2(
-                this.action_id_pressed(axis.left)?-1:(this.action_id_pressed(axis.right)?1:0),
-                this.action_id_pressed(axis.up)?-1:(this.action_id_pressed(axis.down)?1:0)
+        for (const axis of this.axis.values()) {
+            let mov = v2(
+                this.action_id_pressed(axis.left)
+                    ? -1
+                    : (this.action_id_pressed(axis.right) ? 1 : 0),
+
+                this.action_id_pressed(axis.up)
+                    ? -1
+                    : (this.action_id_pressed(axis.down) ? 1 : 0)
             )
-            if(!v2.is(axis.old_mov,mov)){
-                this.emit("axis",{action:axis.name,value:mov})
-                axis.old_mov=mov
+            const stick = this.axis_gamepad_map.get(axis.name)
+            const analog = stick
+                ? this.gamepad_axis.get(stick)
+                : undefined
+            if (analog) {
+                mov = analog
+            }
+            if (!v2.is(axis.old_mov, mov)) {
+                this.emit("axis", {
+                    action: axis.name,
+                    value: mov
+                })
+                axis.old_mov = mov
             }
         }
         for (const [action, { keys, buttons }] of this.actions.entries()) {
@@ -641,12 +750,32 @@ export class InputManager {
         this.gamepad.clear()
     }
     saveConfig(): Record<string, InputAction> {
-        return Object.fromEntries(this.actions);
+        const out: Record<string, InputAction> = {};
+        for (const [name, action] of this.actions) {
+            const def = this.default_actions[name];
+            if (!def) {
+                out[name] = structuredClone(action);
+                continue;
+            }
+            if (!this.actionEquals(action, def)) {
+                out[name] = structuredClone(action);
+            }
+        }
+        return out;
     }
-
     loadConfig(ac: Record<string, InputAction>) {
+        this.actions.clear()
+        for (const k of Object.keys(this.default_actions)) {
+            this.actions.set(
+                k,
+                structuredClone(this.default_actions[k])
+            );
+        }
         for (const a of Object.keys(ac)) {
-            this.registerAction(a, ac[a]);
+            this.actions.set(
+                a,
+                structuredClone(ac[a])
+            )
         }
     }
 }

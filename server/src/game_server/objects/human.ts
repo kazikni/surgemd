@@ -1223,7 +1223,7 @@ export class Human extends MovingBody{
             this.effects_dirty,
 
             // Inventory
-            this.inventory.net_sync.hand, // 1
+            this.inventory.net_sync.hand,this.inventory.net_sync.melee_world, // 2
 
             // State
             this.loadout.emote!==undefined, // 1
@@ -1297,6 +1297,9 @@ export class Human extends MovingBody{
         }
         if(full||this.inventory.net_sync.hand){
             stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
+        }
+        if(full||this.inventory.net_sync.melee_world){
+            stream.writeUint16(this.inventory.weapons[0]?.def.idNumber??0)
         }
     }
 }

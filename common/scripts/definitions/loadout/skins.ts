@@ -87,7 +87,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 base:{
-                    position:v2(-0.2,0)
+                    position:v2(-0.22,0)
                 }
             }
         },

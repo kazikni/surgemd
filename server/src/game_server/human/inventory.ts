@@ -395,7 +395,6 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
             },
             {
                 type:PlayerAnimationType.Cook,
-                item:this.def.idNumber!
             }
         )
     }
@@ -533,7 +532,7 @@ export class GInventory extends GInventoryBase<LItem>{
     }
     override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
         if(wep?.idString===this.weapons[slot]?.def.idString)return false
-        if(wep?.item_type===InventoryItemType.melee)this.net_sync.melee_world=true
+        if(slot===0)this.net_sync.melee_world=true
         if(drop){
             if(this.weapons[slot]&&this.weapons[slot].def!=this.weapons_defaults[slot]){
                 this.weapons[slot].drop()
@@ -577,6 +576,7 @@ export class GInventory extends GInventoryBase<LItem>{
     }
     drop_weapon(slot=0):Loot[]{
         if(this.weapon_is_free(slot))return []
+        this.net_sync.melee_world=true
         const loots:Loot[]=this.weapons[slot]!.drop()
         for(const l of loots){
             l.velocity.x-=1.5

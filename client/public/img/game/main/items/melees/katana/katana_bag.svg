@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="297.95386"
-   height="32.846733"
-   viewBox="0 0 78.834077 8.690732"
+   width="223.46539"
+   height="24.63505"
+   viewBox="0 0 59.125558 6.518049"
    version="1.1"
    id="svg10"
    sodipodi:docname="katana_bag.svg"
@@ -22,8 +22,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="3.0902644"
-     inkscape:cx="49.024931"
-     inkscape:cy="62.939598"
+     inkscape:cx="11.973086"
+     inkscape:cy="58.732839"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -119,7 +119,7 @@
   <g
      id="path9"
      style="opacity:1"
-     transform="translate(-7.4834529,-3.9263445)">
+     transform="matrix(0.75,0,0,0.75,-5.6125897,-2.9447568)">
     <g
        id="g1"
        transform="matrix(0.86768378,0,0,0.86768378,5.293803,9.5765752)">

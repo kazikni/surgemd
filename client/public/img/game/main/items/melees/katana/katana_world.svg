@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="399.46036"
-   height="51.0009"
-   viewBox="0 0 105.69116 13.49404"
+   width="299.59528"
+   height="38.250679"
+   viewBox="0 0 79.268372 10.120531"
    version="1.1"
    id="svg10"
-   sodipodi:docname="katana.svg"
+   sodipodi:docname="katana_world.svg"
    inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -22,8 +22,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.5451322"
-     inkscape:cx="184.77383"
-     inkscape:cy="105.16899"
+     inkscape:cx="134.29272"
+     inkscape:cy="98.697056"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -108,7 +108,7 @@
   <g
      id="path9"
      style="opacity:1"
-     transform="translate(19.277343,-1.5246857)">
+     transform="matrix(0.75,0,0,0.75,14.458007,-1.1435128)">
     <g
        id="g1"
        transform="matrix(0.86768378,0,0,0.86768378,5.293803,9.5765752)">

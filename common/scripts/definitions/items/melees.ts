@@ -305,7 +305,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 hit_sound:"shovel_hit",
             }
         },
-        /*{
+        {
             idString:"katana",
             rank:ItemRank.D,
 
@@ -317,22 +317,22 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             damage_delays:[0.3],
 
             rig_arms:{
+                left:{
+                    position:v2(DefaultFistRig.right!.position.x,DefaultFistRig.right!.position.y-0.15),
+                    rotation:DefaultFistRig.left!.rotation+0.5,
+                    zIndex:2,
+                },
                 right:{
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
                     zIndex:2,
                 },
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                }
             },
             rig_image:{
-                position:DefaultFistRig.left!.position,
-                rotation:Angle.deg2rad(90),
+                position:DefaultFistRig.right!.position,
+                rotation:1.6,
                 zIndex:1,
-                hotspot:v2(0.2,0.4)
+                hotspot:v2(0.15,0.5)
             },
             animation:AnimationSwing(0.45),
             assets:{
@@ -342,19 +342,19 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             },
             character_frame:{
                 equipped_frame:{
-                    image:"katana",
-                    position:v2.new(-1.1,0),
+                    image:"katana_bag",
+                    position:v2.new(-0.95,0.25),
                     hotspot:v2(1,0.5),
-                    rotation:3.5
+                    rotation:3.3
                 },
                 unequipped_frame:{
-                    image:"katana_bag",
-                    position:v2.new(-1.1,0),
+                    image:"katana",
+                    position:v2.new(-0.95,0.25),
                     hotspot:v2(1,0.5),
-                    rotation:3.5
+                    rotation:3.3
                 }
             }
-        },*/
+        },
         /*{
             idString:"pan",
             damage:20,

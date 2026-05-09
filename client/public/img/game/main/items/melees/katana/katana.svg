@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="404.01596"
-   height="51.000904"
-   viewBox="0 0 106.8965 13.494041"
+   width="303.01196"
+   height="38.250679"
+   viewBox="0 0 80.172373 10.120531"
    version="1.1"
    id="svg10"
    sodipodi:docname="katana.svg"
@@ -21,9 +21,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="0.7725661"
-     inkscape:cx="254.34717"
-     inkscape:cy="383.78593"
+     inkscape:zoom="1.0925735"
+     inkscape:cx="64.526554"
+     inkscape:cy="154.22304"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -93,7 +93,7 @@
        gradientTransform="translate(-10.236049,-17.475233)" /></defs><g
      id="path9"
      style="opacity:1"
-     transform="translate(19.277343,-1.5246795)"><g
+     transform="matrix(0.75,0,0,0.75,14.458007,-1.1435126)"><g
        id="g1"
        transform="matrix(0.86768378,0,0,0.86768378,5.293803,9.5765752)"><path
          style="opacity:1;fill:url(#e);stroke:#430f00;stroke-width:2;stroke-dasharray:none;stroke-opacity:1"
@@ -111,6 +111,4 @@
        width="2.456392"
        height="10.761726"
        x="7.3793335"
-       y="3.2570019" /></g><g
-     id="g1-5"
-     transform="matrix(0.86768378,0,0,0.86768378,25.872777,8.923617)" /></svg>
+       y="3.2570019" /></g></svg>

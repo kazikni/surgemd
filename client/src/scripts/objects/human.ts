@@ -324,7 +324,7 @@ export class Human extends MovingBody{
     }
     set_current_weapon(weapon?:WeaponDef,is_new:boolean=false){
         if(this.current_weapon===weapon)return
-
+        this.current_weapon=weapon
         if(weapon){
             this.set_arms_rig(weapon.rig_arms)
             let frame:string=""
@@ -355,12 +355,17 @@ export class Human extends MovingBody{
             this.set_arms_rig(undefined)
         }
         this.update_weapon(weapon,is_new)
+        if(this.melee)this.update_melee(this.melee)
     }
     update_melee(def?:MeleeDef){
+        this.melee=def
         if(def?.character_frame){
             this.sprites.melee_world.visible=true
-            this.sprites.melee_world.set_frame(def.character_frame.equipped_frame,this.game.resources)
-            //this.sprites.melee_world.set_frame(def.character_frame.unequipped_frame,this.game.resources)
+            if(this.current_weapon?.item_type===def.item_type){
+                this.sprites.melee_world.set_frame(def.character_frame.equipped_frame,this.game.resources)
+            }else{
+                this.sprites.melee_world.set_frame(def.character_frame.unequipped_frame,this.game.resources)
+            }
         }else{
             this.sprites.melee_world.visible=false
         }

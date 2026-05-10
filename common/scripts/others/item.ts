@@ -33,6 +33,7 @@ export interface WeaponAssets{
     item_tint?:number
     world?:string
     world_tint?:number
+    switch_sound?:string
     cycle_sound?:string|boolean
     use_sound?:string
 }

@@ -111,7 +111,7 @@ export class Bullet extends GameObject{
                 if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.colliding_with(this.hitbox)){
                     this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
-                        max_distance: 60,
+                        max_distance: 7,
                         volume:0.5
                     })
                     this._play_bullet_whiz=false

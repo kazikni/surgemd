@@ -25,6 +25,7 @@ export const GameConstants={
     }
 }
 export enum PlayerAnimationType{
+    Switch,
     Reloading,
     Consuming,
     Melee,
@@ -35,6 +36,8 @@ export enum PlayerAnimationType{
 }
 export type PlayerAnimation={
 }&({
+    type:PlayerAnimationType.Switch   
+}|{
     type:PlayerAnimationType.Reloading
     alt_reload:boolean
 }|{

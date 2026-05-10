@@ -122,9 +122,8 @@ export class Human extends MovingBody{
             }
         }
     }
-    animation_data:HumanAnimationData&{switching:boolean,current_animation:PlayerAnimation[]}={
+    animation_data:HumanAnimationData&{current_animation:PlayerAnimation[]}={
         dirty:true,
-        switching:false,
         attacking:false,
         current_animation:[]
     }
@@ -534,7 +533,6 @@ export class Human extends MovingBody{
         this.input.path_move=undefined
     }
     update_input(){
-        this.animation_data.switching=false
         if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===InventoryItemType.gun){
             (this.inventory.hand_item as GunItem).reloading=true
         }
@@ -1228,12 +1226,8 @@ export class Human extends MovingBody{
             // State
             this.loadout.emote!==undefined, // 1
 
-            this.animation_data.attacking,
-            this.animation_data.switching,
-
             this.health_data.dead,
             this.health_data.downed,
-            this.health_data.invensibility_time>0,
 
             this.input.path===undefined
         )
@@ -1280,6 +1274,12 @@ export class Human extends MovingBody{
                 stream.writeUint16(e.effect.idNumber!)
             },1)
         }
+        if(full||this.inventory.net_sync.hand){
+            stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
+        }
+        if(full||this.inventory.net_sync.melee_world){
+            stream.writeUint16(this.inventory.weapons[0]?.def.idNumber??0)
+        }
         if(full||this.animation_data.dirty){
             stream.writeArray(this.animation_data.current_animation,(v)=>{
                 stream.writeUint8(v.type)
@@ -1294,12 +1294,6 @@ export class Human extends MovingBody{
                         break
                 }
             },1)
-        }
-        if(full||this.inventory.net_sync.hand){
-            stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
-        }
-        if(full||this.inventory.net_sync.melee_world){
-            stream.writeUint16(this.inventory.weapons[0]?.def.idNumber??0)
         }
     }
 }

@@ -283,10 +283,8 @@ export class AmbientManager{
     }
     update_camera(){
         if(!this.game.active_entity)return
-        this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*6)
-
+        this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*7)
         if(this.rain_value>0)this.rain_particles_emitter.limit=(this.rain_value*150)/this.game.cam2d.zoom
-
         this.ambient_particles_emitter.limit=5/this.game.cam2d.zoom
     }
     render(){

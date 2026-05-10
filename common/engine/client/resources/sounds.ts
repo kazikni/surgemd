@@ -165,20 +165,39 @@ export class SoundInstance {
         }
     }
 
-    stop() {
-        if (this.stopping) return;
-        this.setGain(0.0);
-        const scheduledStop = this.ctx.currentTime + 0.08;
-        this.stopTime = scheduledStop;
-        this.stopping = true;
-        this.playState = SoundPlayState.playInterrupted;
-
-        if (this.sourceNode) {
-            try {
-                this.sourceNode.stop(scheduledStop);
-            } catch {
-                try { this.sourceNode.stop(); } catch {/**/}
-            }
+    stop(immediate=false){
+        if(this.playState===SoundPlayState.playFinished||!this.sourceNode)return
+        this.playState=SoundPlayState.playInterrupted
+        if(immediate){
+            try{
+                this.sourceNode.stop()
+            }catch{}
+            this._finish()
+            return
+        }
+        if(this.stopping)return
+        this.stopping=true
+        const now=this.ctx.currentTime
+        const end=now+0.08
+        if(this.gainNode){
+            try{
+                this.gainNode.gain.cancelScheduledValues(now)
+                this.gainNode.gain.setValueAtTime(
+                    this.gainNode.gain.value,
+                    now
+                )
+                this.gainNode.gain.linearRampToValueAtTime(
+                    0,
+                    end
+                )
+            }catch{}
+        }
+        try{
+            this.sourceNode.stop(end)
+        }catch{
+            try{
+                this.sourceNode.stop()
+            }catch{}
         }
     }
 

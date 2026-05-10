@@ -525,14 +525,16 @@ export class GInventory extends GInventoryBase<LItem>{
             this.owner.actions.cancel()
 
             this.owner.throw_using_projectile()
-            this.owner.animation_data.switching=true
             this.owner.animation_data.dirty=true
         }
         super.set_weapon_index(idx,force)
+        this.owner.animation_data.current_animation.push({
+            type:PlayerAnimationType.Switch,
+        })
+        this.net_sync.melee_world=true
     }
     override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
         if(wep?.idString===this.weapons[slot]?.def.idString)return false
-        if(slot===0)this.net_sync.melee_world=true
         if(drop){
             if(this.weapons[slot]&&this.weapons[slot].def!=this.weapons_defaults[slot]){
                 this.weapons[slot].drop()

@@ -88,6 +88,7 @@ export const NormalMap:MapDef={
         "melees":[
             {item:"shovel",weight:15},
             {item:"axe",weight:10},
+            {item:"katana",weight:4},
             {item:"sledgehammer",weight:1},
         ],
         //Consumibles
@@ -96,15 +97,15 @@ export const NormalMap:MapDef={
             {table:"adrenaline_consumibles",count:1,weight:7},
             {table:"shield_consumibles",count:1,weight:6},
             {table:"addiction_consumibles",count:1,weight:1},
-            {table:"green_bless_consumibles",count:1,weight:0.1},
-            {table:"death_consumibles",count:1,weight:0.1},
+            {table:"green_bless_consumibles",count:1,weight:0.04},
+            {table:"death_consumibles",count:1,weight:0.04},
         ],
         "health_consumibles":[
             {item:"bandage",count:5,weight:8},
             {item:"medikit",weight:1},
         ],
         "adrenaline_consumibles":[
-            {item:"yellow_soda",count:2,weight:8},
+            {item:"yellow_soda",count:1,weight:8},
             {item:"inhaler",count:1,weight:1},
             {item:"yellow_pills",count:1,weight:0.1},
         ],

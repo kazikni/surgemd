@@ -25,7 +25,6 @@ export abstract class LItem extends MDItem{
     abstract on_use(user:Human,slot?:Slot<LItem>):void
     abstract on_fire(user:Human):void
     abstract on_fire_alt(user:Human):void
-    abstract attacking():boolean
     abstract update(user:Human,dt:number):void
     abstract drop():Loot[]
 }
@@ -40,8 +39,6 @@ export class GunItem extends GunItemBase implements LItem{
         c:number
     }
 
-    switching:boolean=false
-    firing:boolean=false
     reloading=false
     dual_d:boolean=false
 
@@ -56,8 +53,6 @@ export class GunItem extends GunItemBase implements LItem{
         if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
         if(this.has_ammo(user)){
             if(this.use_delay<=0){
-                this.switching=false
-                this.firing=true
                 if(this.def.fire_mode===FireMode.Burst&&this.def.burst&&!this.burst){
                     this.burst={
                         c:this.def.burst.sequence,
@@ -80,9 +75,6 @@ export class GunItem extends GunItemBase implements LItem{
     /*has_mana(user:Human){
         return user.health_data.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.health_data.boost
     }*/
-    attacking():boolean{
-        return this.use_delay>0&&this.firing&&!this.reloading&&!this.switching
-    }
     reload(user:Human){
         if(!this.def.reload||user.health_data.downed)return
         if(this.ammo>=this.get_capacity()||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
@@ -92,9 +84,6 @@ export class GunItem extends GunItemBase implements LItem{
         user.net_sync.part=true
         user.animation_data.dirty=true
         user.animation_data.current_animation.push(
-            {
-                type:PlayerAnimationType.Reset,
-            },
             {
                 type:PlayerAnimationType.Reloading,
                 alt_reload:this.ammo===0,
@@ -213,16 +202,21 @@ export class GunItem extends GunItemBase implements LItem{
         if(this.def.recoil){
             user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
         }
+
+        user.animation_data.current_animation.push({
+            type:PlayerAnimationType.Fire,
+            alt:this.dual_d,
+            last:this.ammo===0
+        })
     }
     update(user:Human,dt:number){
         if(this.use_delay>0)this.use_delay-=dt
         if(user.inventory.hand_item===this&&!user.actions.current_action){
-            if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
+            if((this.ammo<=0||this.reloading)&&this.def.reload&&this.use_delay<=0){
                 this.reloading=true
                 this.reload(user)
             }
             if(this.use_delay<=0){
-                this.firing=false
                 if(this.burst){
                     if(this.burst.c<=0||this.ammo<=0){
                         this.burst=undefined
@@ -294,9 +288,6 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
                     user.inventory.net_sync.hand=true
                     user.animation_data.dirty=true
                     user.animation_data.current_animation.push(
-                        {
-                            type:PlayerAnimationType.Reset,
-                        },
                         {
                             type:PlayerAnimationType.Consuming,
                             item:this.def.idNumber!
@@ -390,9 +381,6 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
 
         user.animation_data.dirty=true
         user.animation_data.current_animation.push(
-            {
-                type:PlayerAnimationType.Reset,
-            },
             {
                 type:PlayerAnimationType.Cook,
             }

@@ -307,11 +307,15 @@ export const NormalMap:MapDef={
         ],
 
         "golden_rock":[
-            [{weight:1,table:"normal_loot",count:4}],
+            [{weight:1,table:"consumibles"}],
+            [{weight:1,table:"equipments"}],
+            [{weight:1,table:"special_scopes"}],
             [{weight:1,item:"kar98k"}],
         ],
         "platinum_rock":[
-            [{weight:1,table:"special_loot",count:4}],
+            [{weight:1,table:"consumibles"}],
+            [{weight:1,table:"equipments"}],
+            [{weight:1,table:"special_scopes"}],
             [{weight:1,item:"awp"}],
         ],
     },

@@ -814,7 +814,6 @@ export class Human extends MovingBody{
                 if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.health_data.downed){
                     if(this.input.using_item){
                         this.inventory.hand_item.on_fire(this)
-                        this.animation_data.attacking=this.inventory.hand_item.attacking()
                         this.input.using_item_down=false
                     }else if(this.input.using_item_alt){
                         this.inventory.hand_item.on_fire_alt(this)

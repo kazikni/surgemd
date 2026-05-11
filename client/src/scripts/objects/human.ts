@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AnimationInstance, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, KeyFrameSpriteDef, Light2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, SoundInstance, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, CenterHotspot, CircleHitbox2D, type ClientGame, ColorM, Container2D, ease, NetStream, Numeric, random, Sound, SoundInstance, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -94,7 +94,17 @@ export class Human extends MovingBody{
 
         //animation?:SoundInstance
         footsteps:undefined as SoundInstance|undefined,
+
+        recoil_time:0,
+        recoil_state:-1,
+
         switch_and_cycle:undefined as SoundInstance|undefined,
+        switch_and_cycle_sound_time:0,
+        switch_and_cycle_state:0,
+
+        base_weapon_position:v2.zero(),
+        base_left_arm_position:v2.zero(),
+        base_right_arm_position:v2.zero(),
     }
     melee?:MeleeDef
     current_weapon?:WeaponDef
@@ -111,6 +121,9 @@ export class Human extends MovingBody{
     effects:{def:EffectDef,lifetime:number}[]=[]
     current_floor?:FloorType
 
+    constructor(){
+        super()
+    }
     on_hitted(position:Vec2,critical:boolean=false,sound?:string){
         if(Math.random()<=0.1){
             const d=new ClientDecal()
@@ -315,10 +328,17 @@ export class Human extends MovingBody{
                 zIndex:2,
             },this.game.resources)
 
-            this.assets.weapon_fire_sound=undefined
+            this.assets.weapon_fire_sound=this.game.resources.get_audio(weapon.assets?.use_sound??`${weapon.idString}_fire`)
             this.assets.weapon_reload_sound=undefined
             this.assets.weapon_reload_sound_alt=undefined
             this.assets.weapon_switch_sound=this.game.resources.get_audio(weapon.assets?.switch_sound??`${weapon.idString}_switch`)
+            if(typeof weapon.assets?.cycle_sound==="string"){
+                this.assets.weapon_switch_sound=this.game.resources.get_audio(weapon.assets.cycle_sound)
+            }else if(weapon.assets?.cycle_sound){
+                this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
+            }else{
+                this.assets.weapon_cycle_sound=undefined
+            }
         }else{
             this.set_arms_rig(undefined)
 
@@ -329,6 +349,9 @@ export class Human extends MovingBody{
             this.assets.weapon_cycle_sound=undefined
         }
         this.update_weapon(weapon,is_new)
+        this.animation.base_weapon_position=v2.clone(this.sprites.weapon.position)
+        this.animation.base_left_arm_position=v2.clone(this.sprites.left_arm.position)
+        this.animation.base_right_arm_position=v2.clone(this.sprites.right_arm.position)
         if(this.melee)this.update_melee(this.melee)
     }
     update_melee(def?:MeleeDef){
@@ -600,32 +623,6 @@ export class Human extends MovingBody{
         super.update(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
-        /*if(!this.anims.walk_anim||this.anims.walk_anim.destroyed)this.anims.walk_anim=this.container.play_animation([
-            {
-                actions:[
-                    {
-                        type:"sprite",
-                        fuser:"left_leg",
-                        rotation:-0.1,
-                        position:v2(-0.2,-0.2),
-                    },
-                ],
-                time:0
-            },
-            {
-                actions:[
-                    {
-                        type:"tween",
-                        fuser:"left_leg",
-                        to:{
-                            position:v2(-0.56,-0.2),
-                        },
-                        yoyo:true
-                    }
-                ],
-                time:0.1
-            }
-        ],undefined,true)*/
         if(this.distance_walked>0){
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
 
@@ -686,9 +683,7 @@ export class Human extends MovingBody{
                 }
             }
         }
-
         this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
-
         if(this.sprites.emote_container.visible){
             this.sprites.emote_container.position=this.position
             v2m.add_component(this.sprites.emote_container.position,0,-1.5)
@@ -733,13 +728,46 @@ export class Human extends MovingBody{
                 }
             }
         }
+
+        if(this.animation.recoil_state!==-1){
+            this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
+            this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_left_arm_position.x,this.animation.base_left_arm_position.x-0.05,this.animation.recoil_time)
+            this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
+            if(this.animation.recoil_state===0){
+                this.animation.recoil_time+=dt*10
+                if(this.animation.recoil_time>=1){
+                    this.animation.recoil_state=1
+                    this.animation.recoil_time=1
+                }
+            }else{ 
+                this.animation.recoil_time-=dt*10
+                if(this.animation.recoil_time<=0){
+                    this.animation.recoil_state=-1
+                    this.animation.recoil_time=0
+                }
+            }
+        }
+        if(this.animation.switch_and_cycle_state!==0){
+            this.animation.switch_and_cycle_sound_time-=dt
+            if(this.animation.switch_and_cycle_sound_time<=0){
+                if(this.animation.switch_and_cycle_state===1){
+                    if(this.assets.weapon_switch_sound)this.animation.switch_and_cycle=this.game.sounds.play(this.assets.weapon_switch_sound,{
+                        position:this.position,
+                        max_distance:9,
+                    })
+                }else{
+                    if(this.assets.weapon_cycle_sound)this.animation.switch_and_cycle=this.game.sounds.play(this.assets.weapon_cycle_sound,{
+                        position:this.position,
+                        max_distance:9,
+                    })
+                }
+                this.animation.switch_and_cycle_state=0
+            }
+        }
     }
     override on_destroy(): void {
         this.container.destroy()
         this.sprites.emote_container.destroy()
-    }
-    constructor(){
-        super()
     }
     reset_anim(){
         this.sprites.muzzle_flash.visible=false
@@ -754,19 +782,98 @@ export class Human extends MovingBody{
         for(const a of animations){
             switch(a.type){
                 case PlayerAnimationType.Switch:{
+                    if(this.animation.switch_and_cycle)this.animation.switch_and_cycle.stop()
                     if(this.assets.weapon_switch_sound){
-                        if(this.animation.switch_and_cycle)this.animation.switch_and_cycle.stop()
-                        this.animation.switch_and_cycle=this.game.sounds.play(this.assets.weapon_switch_sound,{
-                            position:this.position,
-                            max_distance:17,
-                        })
+                        // deno-lint-ignore ban-ts-comment
+                        //@ts-ignore
+                        this.animation.switch_and_cycle_sound_time=this.current_weapon?.switch_delay??0.1
+                        this.animation.switch_and_cycle_state=1
+                    }
+                    break
+                }
+                case PlayerAnimationType.Fire:{
+                    const def=this.current_weapon
+                    if(this.animation.recoil_state===-1){
+                        this.animation.recoil_state=0
+                        this.animation.recoil_time=0
+                    }else{
+                        this.animation.recoil_time+=0.1
+                    }
+                    if(def&&def.item_type===InventoryItemType.gun){
+                        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
+                            if(def.gas_particles){
+                                for(let i=0;i<def.gas_particles.count;i++){
+                                    const p=new ABParticle2D({
+                                        direction:this.physical_data.rotation+random.float(-def.gas_particles.direction_variation,def.gas_particles.direction_variation),
+                                        life_time:def.gas_particles.life_time,
+                                        position:v2.add(
+                                            this.position,
+                                            v2.from_RadAngle(this.physical_data.rotation,def.barrel_length)
+                                        ),
+                                        frame:{
+                                            image:"gas_smoke_particle",
+                                            hotspot:CenterHotspot
+                                        },
+                                        speed:random.float(def.gas_particles.speed.min,def.gas_particles.speed.max),
+                                        scale:0.03,
+                                        tint:ColorM.hex("#fff5"),
+                                        to:{
+                                            tint:ColorM.hex("#fff0"),
+                                            scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)
+                                        }
+                                    })
+                                    this.game.particles.add_particle(p)
+                                }
+                            }
+                            if(def.case_particle&&!def.case_particle.at_begin){
+                                const p=new ABParticle2D({
+                                    direction:this.physical_data.rotation+(3.141592/2)+random.float(0,0.6),
+                                    life_time:1,
+                                    position:v2.add(
+                                        this.position,
+                                        v2.rotate_RadAngle(def.case_particle.position,this.physical_data.rotation)
+                                    ),
+                                    frame:{
+                                        image:def.case_particle.frame??"casing_"+def.ammo_type,
+                                        hotspot:CenterHotspot,
+                                        layer:this.layer,
+                                        zIndex:zIndexes.Particles
+                                    },
+                                    speed:random.float(1,2),
+                                    angle:this.physical_data.rotation,
+                                    scale:1.5,
+                                    to:{
+                                        angle:this.physical_data.rotation+random.float(10,15),
+                                        scale:0.5
+                                    }
+                                })
+                                const audio=this.game.resources.get_audio(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
+                                if(audio)this.game.add_timeout(()=>{
+                                    this.game.sounds.play(audio,{
+                                        position:this.position,
+                                        max_distance:10,
+                                    },"players")
+                                },0.75)
+                                this.game.particles.add_particle(p)
+                            }
+                        }
+                        if(this.assets.weapon_fire_sound){
+                            this.game.sounds.play(this.assets.weapon_fire_sound,{
+                                position:this.position,
+                                max_distance: 15,
+                                volume:0.7
+                            },"humans")
+                        }
+                        if(this.assets.weapon_cycle_sound){
+                            this.animation.switch_and_cycle_sound_time=def.fire_delay*0.3
+                            this.animation.switch_and_cycle_state=2
+                        }
                     }
                     break
                 }
                 case PlayerAnimationType.Reloading:
                 case PlayerAnimationType.Consuming:
                 case PlayerAnimationType.Melee:
-                case PlayerAnimationType.Fire:
                     break
                 case PlayerAnimationType.Cook:
                     this.container.play_animation([

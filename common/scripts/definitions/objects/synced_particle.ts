@@ -111,7 +111,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 velocity:{
                     min:0,
                     max:1.7,
-                    decay:0.66
+                    decay:0.5
                 },
                 angular:{
                     min:0.6,
@@ -122,7 +122,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.92,
+                        to:0.9,
                         duration:2,
                     },
                     scale:{
@@ -282,7 +282,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             {
                 type:SideEffectType.Heal,
                 health:{
-                    amount:0.5,
+                    amount:0.25,
                 }
             }
         ])

@@ -30,21 +30,23 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
+                    const spread=0.016
+
                     let b=e.bullet.clone()
-                    b.damage*=0.1
+                    b.damage*=0.2
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
-                    b.set_direction(e.angle-0.025)
+                    b.set_direction(e.angle-spread)
 
                     b=e.bullet.clone()
-                    b.damage*=0.1
+                    b.damage*=0.2
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
-                    b.set_direction(e.angle+0.025)
+                    b.set_direction(e.angle+spread)
                 }
             },
         },

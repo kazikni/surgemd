@@ -118,12 +118,12 @@ export class MinimapManager{
                 const def = this.game.definitions.obstacles.getFromNumber(obj.def)
                 const frameName = GetObstacleBaseFrame(def, obj.variation,obj.skin)
                 const frame = this.game.resources.get_frame(frameName)
-                if (!frame?.source) continue
+                if (!frame?.image) continue
 
-                const sx = frame.frame_rect?.x1 ?? 0
-                const sy = frame.frame_rect?.y1 ?? 0
-                const sw = (frame.frame_rect?.x2 ?? frame.source.width) - sx
-                const sh = (frame.frame_rect?.y2 ?? frame.source.height) - sy
+                const sx = frame.frame_rect?.min.x ?? 0
+                const sy = frame.frame_rect?.min.y ?? 0
+                const sw = (frame.frame_rect?.max.x ?? frame.image.width) - sx
+                const sh = (frame.frame_rect?.max.x ?? frame.image.height) - sy
 
                 const fw = frame.frame_size?.x ?? sw
                 const fh = frame.frame_size?.y ?? sh
@@ -140,7 +140,7 @@ export class MinimapManager{
                 this.ctx.rotate(obj.rotation ?? 0)
 
                 this.ctx.drawImage(
-                    frame.source,
+                    frame.image,
                     sx, sy, sw, sh,
                     -w/2, -h/2,
                     w, h

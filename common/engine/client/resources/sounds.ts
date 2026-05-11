@@ -72,6 +72,7 @@ export class AudioVoice {
     gain:GainNode
     pan:StereoPannerNode
     started_at=0
+    offset=0
     loop=false
     position?:Vec2
     priority=0
@@ -109,11 +110,8 @@ export class AudioVoice {
             }
         }
         const delay=(options.delay??0)*0.001
-        const offset=options.offset??0
-        this.source.start(
-            this.ctx.currentTime+delay,
-            offset
-        )
+        this.offset=options.offset??0
+        this.source.start(this.ctx.currentTime+delay,this.offset)
         this.started_at=this.ctx.currentTime
         this.state=VoiceState.playing
         this.stopping=false
@@ -172,12 +170,25 @@ export class AudioVoice {
         }
 
         this.source=undefined
-
         this.sound=undefined
-
         this.position=undefined
-
         this.stopping=false
+    }
+    get_offset():number{
+        if(this.state===VoiceState.free)return 0
+        const elapsed=this.ctx.currentTime-this.started_at
+        let pos=this.offset+elapsed
+        if(this.sound?.buffer){
+            const duration=this.sound.buffer.duration
+
+            if(this.loop&&duration>0){
+                pos%=duration
+            }else{
+                pos=Math.min(pos,duration)
+            }
+        }
+
+        return pos
     }
 }
 export class VoicePool {
@@ -212,6 +223,9 @@ export class SoundController {
     voice?:AudioVoice
     get running():boolean{
         return this.voice?.state===VoiceState.playing
+    }
+    get offset():number{
+        return this.voice?.get_offset()??0
     }
     constructor(public engine:AudioEngine,bus?:string){
         this.bus=bus

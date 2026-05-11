@@ -317,8 +317,8 @@ export class Game extends ClientGame<GameObject>{
     }
     override async bind(fs?:FileManager): Promise<void> {
         super.bind()
-        this.save.compatible_version=2
-
+        this.save.compatible_version=1
+        this.save.version=1
         await this.save.init(is_binary?{
             type:"file",
             path:"save/settings.json",
@@ -327,7 +327,6 @@ export class Game extends ClientGame<GameObject>{
             type:"localstorage",
             key:"surgemd-settings"
         })
-        this.save.version=2
         this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/scripts/languages")
         this.fs=fs
     }

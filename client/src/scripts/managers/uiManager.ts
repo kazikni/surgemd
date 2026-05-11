@@ -406,8 +406,9 @@ export class UiManager{
                 elem.innerHTML=this.game.language.get("killfeed.killleader.assigned",{"player":this.players_name[msg.player.id].full})
                 this.assign_killleader(msg)
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
-                    volume:0.4
-                },"player")
+                    volume:0.4,
+                    bus:"ui"
+                })
                 break
             }
             case KillFeedMessageType.killleader_dead:{
@@ -415,8 +416,9 @@ export class UiManager{
                 elem.innerHTML=this.game.language.get("killfeed.killleader.dead",{})
                 this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
-                    volume:0.6
-                },"player")
+                    volume:0.6,
+                    bus:"ui"
+                })
                 break
             }
         }
@@ -508,7 +510,7 @@ export class UiManager{
         if(g.Win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
         }else{
-            this.game.ambient.last_music_pos=this.game.ambient.music.get_position()
+            this.game.ambient.last_music_pos=this.game.ambient.music.offset
             this.game.ambient.music.set(null)
             if(!this.players_name[g.Eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{

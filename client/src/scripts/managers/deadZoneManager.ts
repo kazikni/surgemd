@@ -12,6 +12,8 @@ export class DeadZoneManager{
 
     dest_position:Vec2=v2.zero
     dest_radius:number=0
+
+    deadzone_sound_offset:number=0
     constructor(game:Game){
         this.game=game
         this.sprite.zIndex=zIndexes.DeadZone
@@ -58,9 +60,17 @@ export class DeadZoneManager{
     tick(dt:number){
         if(this.game.active_entity){
             if(this.hitbox.point_inside(this.game.active_entity.position)){
+                if(this.game.ambient.deadzone_ambience.running){
+                    this.deadzone_sound_offset=this.game.ambient.deadzone_ambience.offset
+                }
                 this.game.ambient.deadzone_ambience.set(null)
             }else{
-                this.game.ambient.deadzone_ambience.set(this.game.ambient.deadzone_ambience_sound,true)
+                if(!this.game.ambient.deadzone_ambience.running){
+                        this.game.ambient.deadzone_ambience.set(this.game.ambient.deadzone_ambience_sound,{
+                        loop:true,
+                        offset:this.deadzone_sound_offset
+                    })
+                }
             }
         }
     }

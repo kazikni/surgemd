@@ -317,45 +317,25 @@ export class ResourcesManager {
     async render_text(text:string,size=32,color="white",font="Arial"){
         const canvas=this.canvas
         const ctx=this.ctx
-
         ctx.font=`${size}px ${font}`
-
         const metrics=ctx.measureText(text)
-
-        canvas.width=Math.ceil(metrics.width)
-        canvas.height=Math.ceil(size*1.5)
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        )
-
+        canvas.width=Math.max(1,Math.ceil(metrics.width))
+        canvas.height=Math.max(1,Math.ceil(size*1.5))
+        ctx.clearRect(0,0,canvas.width,canvas.height)
         ctx.font=`${size}px ${font}`
-
         ctx.fillStyle=color
-
-        ctx.fillText(
-            text,
-            0,
-            size
-        )
-
-        return await this.load_frame_from_canvas(
-            canvas
-        )
+        ctx.textBaseline="top"
+        ctx.fillText(text,0,0)
+        return await this.load_frame_from_canvas(canvas)
     }
     load_frame_from_canvas(canvas:HTMLCanvasElement){
         const image=new Image()
         const src=canvas.toDataURL()
         return new Promise<Frame>((resolve)=>{
             image.onload=()=>{
-                const texture=TextureUtils.create(
-                    this.gl,
-                    image
-                )
+                const texture=TextureUtils.create(this.gl,image)
                 const frame=this.create_frame(image,texture,{min:v2.zero(),max:v2.one()})
+                frame.batch_mat=this.renderer.factorys2D.texture_batch.create({texture})
                 frame.frame_size=v2(image.width,image.height)
                 resolve(frame)
             }

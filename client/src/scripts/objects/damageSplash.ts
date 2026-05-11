@@ -55,7 +55,7 @@ export class DamageSplashOBJ extends GameObject{
         }
 
         this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color)
-        this.position = v2.clone(args.position)
+        this.position = args.position
         this.lifetime += Math.random()
 
         this.sprite.position = this.position

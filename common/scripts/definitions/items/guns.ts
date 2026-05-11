@@ -783,7 +783,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("micro_uzi","9mm",{
             rank:ItemRank.D,
             fire_delay:0.03,
-            spread:9,
+            spread:7,
 
             ammo_spawn:{
                 amount:96
@@ -791,10 +791,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:5,
+                    damage:4.5,
                     range:45,
                     speed:30,
-                    falloff:0.7,
+                    falloff:0.5,
                     criticalMult:1.2,
                     tracer:tracers.small
                 }
@@ -812,7 +812,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("vector","9mm",{
             rank:ItemRank.A,
             fire_delay:0.03,
-            spread:1.5,
+            spread:2,
 
             ammo_spawn:{
                 amount:96
@@ -820,10 +820,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:5,
+                    damage:4.5,
                     range:45,
                     speed:30,
-                    falloff:0.7,
+                    falloff:0.5,
                     criticalMult:1.2,
                     tracer:tracers.small
                 }
@@ -1042,7 +1042,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:5.5,
+                    damage:5.6,
                     speed:30,
                     range:50,
                     falloff:0.7,

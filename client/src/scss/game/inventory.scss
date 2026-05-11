@@ -1,7 +1,7 @@
 @use "../palette.scss";
 @use "../fonts.scss";
 .item-maximized{
-    color:#fe0 
+    color:var(--ui-theme-primary)
 }
 #ui-items{
     position: absolute;

@@ -20,8 +20,6 @@ export interface SoundPlaybackOptions {
 
     bus?: string
 
-    priority?: number
-
     on_complete?: ()=>void
 }
 export enum VoiceState {
@@ -75,7 +73,6 @@ export class AudioVoice {
     offset=0
     loop=false
     position?:Vec2
-    priority=0
     spatial=true
     base_volume=1
     max_distance=20
@@ -92,25 +89,24 @@ export class AudioVoice {
         this.sound=sound
         this.loop=!!options.loop
         this.position=options.position
-        this.priority=options.priority??0
         this.spatial=options.spatial??true
         this.base_volume=(options.volume??1)*(sound.volume??1)
         this.max_distance=options.max_distance??20
         this.on_complete=options.on_complete
+        this.offset=options.offset??0
         this.source=this.ctx.createBufferSource()
+        this.gain=this.ctx.createGain()
+        this.pan=this.ctx.createStereoPanner()
+        this.gain.connect(this.pan)
+        this.pan.connect(bus.gain)
         this.source.buffer=sound.buffer
         this.source.loop=this.loop
-        this.pan.disconnect()
-        this.pan.connect(bus.gain)
         this.source.connect(this.gain)
         this.gain.gain.value=this.base_volume
         this.source.onended=()=>{
-            if(this.state!==VoiceState.free){
-                this.finish()
-            }
+            this.finish()
         }
         const delay=(options.delay??0)*0.001
-        this.offset=options.offset??0
         this.source.start(this.ctx.currentTime+delay,this.offset)
         this.started_at=this.ctx.currentTime
         this.state=VoiceState.playing
@@ -138,40 +134,57 @@ export class AudioVoice {
             this.finish()
             return
         }
-        if(immediate){
-            try{this.source.stop()}catch{}
-            this.finish()
-            return
-        }
         if(this.stopping)return
         this.stopping=true
         this.state=VoiceState.stopping
+        if(immediate){
+            try{
+                this.source.stop()
+            }catch{
+                this.finish()
+            }
+            return
+        }
         const now=this.ctx.currentTime
         const end=now+0.08
         this.gain.gain.cancelScheduledValues(now)
-        this.gain.gain.setValueAtTime(
-            this.gain.gain.value,
-            now
-        )
+        this.gain.gain.setValueAtTime(this.gain.gain.value,now)
         this.gain.gain.linearRampToValueAtTime(0,end)
         try{
             this.source.stop(end)
-        }catch{}
+        }catch{
+            this.finish()
+        }
     }
     finish(){
+        if(this.state===VoiceState.free)return
         this.state=VoiceState.free
         if(this.on_complete){
-            try{this.on_complete()}catch{}
+            try{
+                this.on_complete()
+            }catch{}
             this.on_complete=undefined
         }
         if(this.source){
-            try{this.source.disconnect()}catch{}
-            try{this.source.onended=null}catch{}
+            try{
+                this.source.onended=null
+            }catch{}
+            try{
+                this.source.disconnect()
+            }catch{}
         }
-
+        try{
+            this.gain.disconnect()
+        }catch{}
+        try{
+            this.pan.disconnect()
+        }catch{}
         this.source=undefined
         this.sound=undefined
         this.position=undefined
+        this.priority=0
+        this.started_at=0
+        this.offset=0
         this.stopping=false
     }
     get_offset():number{
@@ -194,9 +207,11 @@ export class AudioVoice {
 export class VoicePool {
     voices:AudioVoice[]=[]
     constructor(public engine:AudioEngine,public ctx:AudioContext,public maxVoices:number=256){}
-    allocate(priority:number=0):AudioVoice{
+    allocate():AudioVoice{
         for(const v of this.voices){
-            if(v.state===VoiceState.free)return v
+            if(v.state===VoiceState.free){
+                return v
+            }
         }
         if(this.voices.length<this.maxVoices){
             const v=new AudioVoice(this.engine,this.ctx)
@@ -210,6 +225,7 @@ export class VoicePool {
             }
         }
         worst.stop(true)
+        worst.finish()
         return worst
     }
     update(){
@@ -288,8 +304,7 @@ export class AudioEngine {
     }
     play(sound?:Sound,options:SoundPlaybackOptions={}){
         if(!sound)return
-        const priority=options.priority??0
-        const voice=this.voice_pool.allocate(priority)
+        const voice=this.voice_pool.allocate()
         const bus=this.get_bus(
             options.bus??"master"
         )

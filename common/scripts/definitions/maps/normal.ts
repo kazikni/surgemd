@@ -74,6 +74,7 @@ export const NormalMap:MapDef={
             {item:"awp",weight:1},
         ],
         "legendary_guns":[
+            {item:"m1_garand",weight:15},
             {item:"pfeifer_zeliska",weight:10},
             {item:"awms",weight:6},
             {item:"rpg7",weight:1},

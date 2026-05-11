@@ -35,7 +35,6 @@ export class Human extends MovingBody{
         rotation:0,
         scale:1
     };
-
     ////////////////////////////
     // Equipment              //
     ////////////////////////////
@@ -102,6 +101,8 @@ export class Human extends MovingBody{
         switch_and_cycle_sound_time:0,
         switch_and_cycle_state:0,
 
+        muzzle_flash_time:-1,
+
         base_weapon_position:v2.zero(),
         base_left_arm_position:v2.zero(),
         base_right_arm_position:v2.zero(),
@@ -114,6 +115,7 @@ export class Human extends MovingBody{
         weapon_switch_sound?:Sound
         weapon_cycle_sound?:Sound
         weapon_fire_sound?:Sound
+        weapon_fire_last_sound?:Sound
         weapon_reload_sound?:Sound
         weapon_reload_sound_alt?:Sound
         footstep_sounds?:string[]
@@ -302,6 +304,14 @@ export class Human extends MovingBody{
     set_current_weapon(weapon?:WeaponDef,is_new:boolean=false){
         if(this.current_weapon===weapon)return
         this.current_weapon=weapon
+
+        this.assets.weapon_fire_sound=undefined
+        this.assets.weapon_fire_last_sound=undefined
+        this.assets.weapon_reload_sound=undefined
+        this.assets.weapon_reload_sound_alt=undefined
+        this.assets.weapon_switch_sound=undefined
+        this.assets.weapon_cycle_sound=undefined
+
         if(weapon){
             this.set_arms_rig(weapon.rig_arms)
             let frame:string=""
@@ -318,9 +328,15 @@ export class Human extends MovingBody{
                 }else{
                     frame=weapon.assets?.world??weapon.idString+"_world"
                 }
+
+                if(weapon.assets?.use_last)this.assets.weapon_fire_last_sound=this.game.resources.get_sound(typeof weapon.assets?.use_last==="string"?weapon.assets.use_last:weapon.idString+"_fire_last")
             }else{
                 frame=weapon.assets?.world??weapon.idString
             }
+            this.assets.weapon_fire_sound=this.game.resources.get_sound(weapon.assets?.use_sound??`${weapon.idString}_fire`)
+            this.assets.weapon_reload_sound=undefined
+            this.assets.weapon_reload_sound_alt=undefined
+            this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets?.switch_sound??`${weapon.idString}_switch`)
 
             this.sprites.weapon.set_frame({
                 image:frame,
@@ -329,25 +345,14 @@ export class Human extends MovingBody{
                 zIndex:2,
             },this.game.resources)
 
-            this.assets.weapon_fire_sound=this.game.resources.get_sound(weapon.assets?.use_sound??`${weapon.idString}_fire`)
-            this.assets.weapon_reload_sound=undefined
-            this.assets.weapon_reload_sound_alt=undefined
-            this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets?.switch_sound??`${weapon.idString}_switch`)
+
             if(typeof weapon.assets?.cycle_sound==="string"){
-                this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets.cycle_sound)
+                this.assets.weapon_cycle_sound=this.game.resources.get_sound(weapon.assets.cycle_sound)
             }else if(weapon.assets?.cycle_sound){
                 this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
-            }else{
-                this.assets.weapon_cycle_sound=undefined
             }
         }else{
             this.set_arms_rig(undefined)
-
-            this.assets.weapon_fire_sound=undefined
-            this.assets.weapon_reload_sound=undefined
-            this.assets.weapon_reload_sound_alt=undefined
-            this.assets.weapon_switch_sound=undefined
-            this.assets.weapon_cycle_sound=undefined
         }
         this.update_weapon(weapon,is_new)
         this.animation.base_weapon_position=v2.clone(this.sprites.weapon.position)
@@ -766,6 +771,13 @@ export class Human extends MovingBody{
                 this.animation.switch_and_cycle_state=0
             }
         }
+        if(this.animation.muzzle_flash_time!==-1){
+            this.animation.muzzle_flash_time-=dt
+            if(this.animation.muzzle_flash_time<=0){
+                this.sprites.muzzle_flash.visible=false
+                this.animation.muzzle_flash_time=-1
+            }
+        }
     }
     override on_destroy(): void {
         this.container.destroy()
@@ -860,8 +872,16 @@ export class Human extends MovingBody{
                                 this.game.particles.add_particle(p)
                             }
                         }
-                        if(this.assets.weapon_fire_sound){
-                            this.game.sounds.play(this.assets.weapon_fire_sound,{
+
+                        let sound:Sound|undefined
+                        if(a.last){
+                            if(this.assets.weapon_fire_last_sound)sound=this.assets.weapon_fire_last_sound
+                            else sound=this.assets.weapon_fire_sound
+                        }else{
+                            sound=this.assets.weapon_fire_sound
+                        }
+                        if(sound){
+                            this.game.sounds.play(sound,{
                                 position:this.position,
                                 max_distance: 15,
                                 volume:0.7,
@@ -871,6 +891,12 @@ export class Human extends MovingBody{
                         if(this.assets.weapon_cycle_sound){
                             this.animation.switch_and_cycle_sound_time=def.fire_delay*0.3
                             this.animation.switch_and_cycle_state=2
+                        }
+                        if(def.muzzle_flash&&!this.sprites.muzzle_flash.visible){
+                            this.sprites.muzzle_flash.frame=this.game.resources.get_frame(def.muzzle_flash.sprite)
+                            this.sprites.muzzle_flash.position=v2(def.barrel_length,0)
+                            this.sprites.muzzle_flash.visible=true
+                            this.animation.muzzle_flash_time=Math.min(def.fire_delay*0.9,0.1)
                         }
                     }
                     break
@@ -1216,6 +1242,15 @@ export class Human extends MovingBody{
                 let animation:PlayerAnimation
                 const tp=stream.readUint8() as PlayerAnimationType
                 switch(tp){
+                    case PlayerAnimationType.Fire:{
+                        const bg=stream.readBooleanGroup()
+                        animation={
+                            type:tp,
+                            alt:bg[0],
+                            last:bg[1]
+                        }
+                        break
+                    }
                     case PlayerAnimationType.Reloading:
                         animation={
                             type:tp,

@@ -76,6 +76,7 @@ export type GunDef={
     assets?:WeaponAssets&{
         reload_sound?:string
         reload_sound_alt?:string
+        use_last?:boolean|string
     }
     dual?:DeepPartial<GunDef>&DualAdditional
 }&({
@@ -1099,7 +1100,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 cycle_sound:false
             }
         }),
-        guns_factory.sniper("sr25","762mm",{
+        guns_factory.dmr("sr25","762mm",{
             fire_delay:0.3,
             spread:1,
 
@@ -1126,6 +1127,37 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:0.4,
                 speed:0.75
             },
+        }),
+        guns_factory.dmr("m1_garand","762mm",{
+            fire_delay:0.3,
+            spread:1.5,
+
+            ammo_spawn:{
+                amount:40
+            },
+
+            bullet:{
+                def:{
+                    damage:33,
+                    falloff:0.7,
+                    range:110,
+                    speed:55,
+                    tracer:tracers.large
+                }
+            },
+
+            reload:{
+                delay:2.5,
+                capacity:8,
+                extended_capacity:12,
+            },
+            recoil:{
+                duration:0.4,
+                speed:0.75
+            },
+            assets:{
+                use_last:true,
+            }
         }),
         {
             idString:"pkp",

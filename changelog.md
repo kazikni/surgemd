@@ -13,6 +13,7 @@ __                                                                              
 * Mobile Aim Line
 __                                                                                                      __
 ### Items
+* M1 Garand - 762MM DMR
 * Colt1873 - 45ACP pistol
 * M79 - Explosive Misc Gun
 * Shovel - A New Melee

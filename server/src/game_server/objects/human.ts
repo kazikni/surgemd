@@ -1283,6 +1283,9 @@ export class Human extends MovingBody{
             stream.writeArray(this.animation_data.current_animation,(v)=>{
                 stream.writeUint8(v.type)
                 switch(v.type){
+                    case PlayerAnimationType.Fire:
+                        stream.writeBooleanGroup(v.alt,v.last)
+                        break
                     case PlayerAnimationType.Reloading:
                         stream.writeUint8(v.alt_reload?1:0)
                         break

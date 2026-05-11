@@ -52,7 +52,7 @@ export class EquipmentModule extends UIModule<Game> {
             HideElement(el)
             return
         }
-        const sprite = this.game.resources.get_sprite(id, false)
+        const sprite = this.game.resources.get_frame(id, false)
         if (!sprite?.src) {
             HideElement(el)
             return

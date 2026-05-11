@@ -127,15 +127,14 @@ export class Game extends ClientGame<GameObject>{
         this.definitions=definitions
         this.renderer.background=ColorM.number(Floors[FloorType.Void].default_color)
 
-        this.sounds.volumes={
-            "music":1,
-            "humans":1,
-            "loot":1,
-            "obstacles":1,
-            "explosions":1,
-            "ambience":1,
-            "ui":1
-        }
+        this.sounds.create_bus("music")
+        this.sounds.create_bus("ambience")
+        this.sounds.create_bus("ui")
+        this.sounds.create_bus("humans")
+        this.sounds.create_bus("loots")
+        this.sounds.create_bus("obstacles")
+        this.sounds.create_bus("explosions")
+
         this.save.casters=ConfigCasters
         this.save.default_values=ConfigDefaultValues
         this.save.default_actions=ConfigDefaultActions
@@ -347,7 +346,7 @@ export class Game extends ClientGame<GameObject>{
         }*/
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.downed&&!this.active_entity.driving&&!this.game_over){
+        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.downed&&!this.game_over){
             this.active_entity.enable_auto_rot=false
             this.active_entity.physical_data.rotation=this.input.angle
         }else{
@@ -391,13 +390,7 @@ export class Game extends ClientGame<GameObject>{
             const buffer = await res.arrayBuffer()
             const kspr = load_kspr(buffer)
             const resolution = this.save.get_variable("sv_graphics_resolution")
-            await this.resources.load_kspr_into_rm(
-                kspr,
-                resolution,
-                tt,
-                "",
-                this.menu.set_loading_current
-            )
+            await this.resources.load_kspr(kspr,resolution,tt,"",this.menu.set_loading_current)
         }
 
         //Load Sfx
@@ -406,24 +399,24 @@ export class Game extends ClientGame<GameObject>{
         /*await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_audio("keyboard-2",{src:"/sounds/ui/keyboard-2.mp3",volume:1},"essentials",this.menu.set_loading_current)*/
         
-        await this.resources.load_audio("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
-        await this.resources.load_audio("deadzone_ambience",{src:"/sounds/ambience/deadzone_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("thunder_1",{src:"/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("thunder_2",{src:"/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("deadzone_ambience",{src:"/sounds/ambience/deadzone_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("thunder_1",{src:"/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("thunder_2",{src:"/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
         if(this.level){
             if(this.level?.assets?.background_music){
-                await this.resources.load_audio("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
+                await this.resources.load_sound("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
             }
             if(this.level?.assets?.load?.sounds){
                 for(const s of Object.keys(this.level.assets.load.sounds)){
-                    await this.resources.load_audio(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
+                    await this.resources.load_sound(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
                 }
             }
             if(this.menu.campaign?.history){
@@ -447,10 +440,9 @@ export class Game extends ClientGame<GameObject>{
 
         this.happening=true
 
-        this.sounds.listener_position.x=-10000
-        this.sounds.listener_position.y=-10000
         this.cam2d.position.x=-10000
         this.cam2d.position.y=-10000
+        this.sounds.set_listener_position(this.cam2d.position)
         this.cam2d.zoom=6
 
         this.ambient.music.set(undefined)
@@ -463,11 +455,11 @@ export class Game extends ClientGame<GameObject>{
                 date:this.level.meta.date,
                 style:"clean",
             },[
-                this.resources.get_audio("typewriter-1"),
-                this.resources.get_audio("typewriter-2"),
-            ],this.sounds)
+                this.resources.get_sound("typewriter-1"),
+                this.resources.get_sound("typewriter-2"),
+            ])
             if(this.level?.begin?.history){
-                await this.menu.show_history(this.level.begin.history,this.sounds,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+                await this.menu.show_history(this.level.begin.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
         }
 
@@ -488,10 +480,10 @@ export class Game extends ClientGame<GameObject>{
             "You can leave the island...",
             "But the island will never leave you.",
             "Goodbye. See you later!"
-        ], this.resources.get_audio("gameover_music"))*/
+        ], this.resources.get_sound("gameover_music"))*/
         if(this.level?.end&&this.fs){
             if(this.level?.end?.history){
-                await this.menu.show_history(this.level.end.history,this.sounds,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+                await this.menu.show_history(this.level.end.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
             if(this.level.end.next?.type==="level"){
                 this.soft_close_game()
@@ -557,9 +549,12 @@ export class Game extends ClientGame<GameObject>{
         this.add_timeout(()=>{
             this.local_server.reset_level()
         },2)
-        await this.game_over_messages(this.make_green_light_death_message(p),this.resources.get_audio("gameover_music"))
+        await this.game_over_messages(this.make_green_light_death_message(p),this.resources.get_sound("gameover_music")!)
         this.soft_reset()
-        this.ambient.music.set(this.resources.get_audio("level_music"),true,this.ambient.last_music_pos)
+        this.ambient.music.set(this.resources.get_sound("level_music"),{
+            loop:true,
+            offset:this.ambient.last_music_pos
+        })
         this.local_server.start()
     }
     close_game(){
@@ -633,14 +628,14 @@ export class Game extends ClientGame<GameObject>{
 
             v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
             v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
-            this.sounds.listener_position=this.cam2d.position
+            this.sounds.set_listener_position(this.cam2d.position)
         }else{
             if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
                 this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
             }
             if(this.active_entity){
                 this.cam2d.position=this.active_entity.position
-                this.sounds.listener_position=this.active_entity.position
+                this.sounds.set_listener_position(this.active_entity.position)
 
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 

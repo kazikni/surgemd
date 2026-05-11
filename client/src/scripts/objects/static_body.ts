@@ -63,7 +63,8 @@ export abstract class StaticBody extends GameObject{
             this.game.sounds.play(random.choose(this.assets_data.sounds.hit),{
                 position:this.position,
                 max_distance:12,
-            },"obstacles")
+                bus:"obstacles"
+            })
         }
     }
 
@@ -72,10 +73,10 @@ export abstract class StaticBody extends GameObject{
         if(sounds.hit){
             if(sounds.hit_variations){
                 for(let i=1;i<=sounds.hit_variations;i++){
-                    this.assets_data.sounds.hit.push(this.game.resources.get_audio(sounds.hit+`_${i}`))
+                    this.assets_data.sounds.hit.push(this.game.resources.get_sound(sounds.hit+`_${i}`))
                 }
             }else{
-                this.assets_data.sounds.hit.push(this.game.resources.get_audio(sounds.hit))
+                this.assets_data.sounds.hit.push(this.game.resources.get_sound(sounds.hit))
             }
         }
     }

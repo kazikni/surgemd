@@ -867,7 +867,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.sounds.master_volume",
                             var:"sv_sounds_master_volume",
                             on_set:(v:number)=>{
-                                menu.sounds.masterVolume=Numeric.clamp(v,0,1)
+                                menu.sounds.master_bus.set_volume(Numeric.clamp(v,0,1))
                             },
                             min:0,
                             max:1,
@@ -878,7 +878,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.sounds.music_volume",
                             var:"sv_sounds_music_volume",
                             on_set:(v:number)=>{
-                                menu.sounds.volumes["music"]=Numeric.clamp(v,0,1)
+                                menu.sounds.get_bus("music").set_volume(Numeric.clamp(v,0,1))
                             },
                             min:0,
                             max:1,
@@ -889,7 +889,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.sounds.ambient_volume",
                             var:"sv_sounds_ambient_volume",
                             on_set:(v:number)=>{
-                                menu.sounds.volumes["ambience"]=Numeric.clamp(v,0,1)
+                                menu.sounds.get_bus("ambience").set_volume(Numeric.clamp(v,0,1))
                             },
                             min:0,
                             max:1,

@@ -117,7 +117,7 @@ export class MinimapManager{
             for (const obj of sorted) {
                 const def = this.game.definitions.obstacles.getFromNumber(obj.def)
                 const frameName = GetObstacleBaseFrame(def, obj.variation,obj.skin)
-                const frame = this.game.resources.get_sprite(frameName)
+                const frame = this.game.resources.get_frame(frameName)
                 if (!frame?.source) continue
 
                 const sx = frame.frame_rect?.x1 ?? 0

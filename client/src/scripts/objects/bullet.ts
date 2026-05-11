@@ -79,7 +79,7 @@ export class Bullet extends GameObject{
         this.container.layer=layer
     }
     override create(_args: Record<string, void>) {
-        this.sprite_trail.frame=this.game.resources.get_sprite("base_trail")
+        this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
         this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,55) // Metter Size * 2
         this.game.cam2d.addObject(this.container)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
@@ -109,7 +109,7 @@ export class Bullet extends GameObject{
             // Bullet Whiz Sound
             if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){
                 if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.colliding_with(this.hitbox)){
-                    this.game.sounds.play(this.game.resources.get_audio("bullet_whiz_"+random.int(1,3).toString()),{
+                    this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
                         max_distance: 7,
                         volume:0.5
@@ -214,7 +214,7 @@ export class Bullet extends GameObject{
                 this.sprite_projectile.scale.y=stream.readFloat(0,6,2)
 
                 this.sprite_projectile.tint=ColorM.number(stream.readUint32())
-                this.sprite_projectile.frame=this.game.resources.get_sprite(images[proj-1])
+                this.sprite_projectile.frame=this.game.resources.get_frame(images[proj-1])
 
                 this.container.add_child(this.sprite_projectile)
             }

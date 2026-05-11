@@ -210,8 +210,6 @@ export class Bullet extends ServerGameObject{
 
         this.damage=this.def.damage
         this.set_color(args.satured)
-
-        console.log(this.tracerColor.toString(16),args.satured,this.ammo?.defaultTrail)
     }
     set_color(satured:boolean=false){
         this.tracerColor=this.def.tracer.color??(satured?(this.ammo?.strongTrail??0xffffff):(this.ammo?.defaultTrail??0xffffff))

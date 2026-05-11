@@ -1,14 +1,14 @@
 import { type Game } from "./game.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { PlaneData } from "common/scripts/packets/general_update.ts";
-import { CenterHotspot, Container2D, SoundInstance, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { AudioVoice, CenterHotspot, Container2D, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 
 export class Plane{
     container:Container2D=new Container2D()
     sprite:Sprite2D=new Sprite2D()
     destroyed:boolean=false
 
-    sound?:SoundInstance
+    sound?:AudioVoice
     free(){
         this.container.destroy()
         this.sprite.destroy()
@@ -44,7 +44,7 @@ export class Plane{
         if(!this.sound){
             switch(data.type){
                 case 0:
-                    this.sound=this.game.sounds.play(this.game.resources.get_audio("airdrop_plane_sfx"),{
+                    this.sound=this.game.sounds.play(this.game.resources.get_sound("airdrop_plane_sfx"),{
                         max_distance:40,
                         position:v2.clone(this.container.position),
                         loop:true,
@@ -52,7 +52,7 @@ export class Plane{
                     })
                     break
                 case 1:
-                    this.sound=this.game.sounds.play(this.game.resources.get_audio("airstrike_plane_sfx"),{
+                    this.sound=this.game.sounds.play(this.game.resources.get_sound("airstrike_plane_sfx"),{
                         max_distance:40,
                         position:v2.clone(this.container.position),
                         loop:false,

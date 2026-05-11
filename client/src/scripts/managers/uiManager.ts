@@ -222,7 +222,7 @@ export class UiManager{
     }
     emote_wheel_set_emotes(emote:EmoteDef[]){
         for(const ev in this.content.emote_wheel.emotes){
-            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_sprite(emote[ev].idString).src
+            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote[ev].idString).src
         }
         this.emote_wheel.emote=emote
     }
@@ -405,7 +405,7 @@ export class UiManager{
                 if(!this.players_name[msg.player.id])break
                 elem.innerHTML=this.game.language.get("killfeed.killleader.assigned",{"player":this.players_name[msg.player.id].full})
                 this.assign_killleader(msg)
-                this.game.sounds.play(this.game.resources.get_audio("kill_leader_assigned"),{
+                this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
                     volume:0.4
                 },"player")
                 break
@@ -414,7 +414,7 @@ export class UiManager{
                 this.killleader=undefined
                 elem.innerHTML=this.game.language.get("killfeed.killleader.dead",{})
                 this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
-                this.game.sounds.play(this.game.resources.get_audio("kill_leader_dead"),{
+                this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
                     volume:0.6
                 },"player")
                 break

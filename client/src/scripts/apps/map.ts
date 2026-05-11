@@ -183,7 +183,7 @@ export class MapApp extends GameApp {
 
         this.pingsLayer.appendChild(el)
         this.updatePingVisual(ping)
-        this.device.game.sounds.play(this.device.game.resources.get_audio(def.idString+"_audio"))
+        this.device.game.sounds.play(this.device.game.resources.get_sound(def.idString+"_audio"))
     }
     updatePingVisual(p:MapPing){
         if(!p.el)return

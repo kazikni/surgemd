@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, CenterHotspot, CircleHitbox2D, type ClientGame, ColorM, Container2D, ease, NetStream, Numeric, random, Sound, SoundInstance, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ColorM, Container2D, ease, NetStream, Numeric, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -93,12 +93,12 @@ export class Human extends MovingBody{
         emote_time:0,
 
         //animation?:SoundInstance
-        footsteps:undefined as SoundInstance|undefined,
+        footsteps:undefined as AudioVoice|undefined,
 
         recoil_time:0,
         recoil_state:-1,
 
-        switch_and_cycle:undefined as SoundInstance|undefined,
+        switch_and_cycle:undefined as AudioVoice|undefined,
         switch_and_cycle_sound_time:0,
         switch_and_cycle_state:0,
 
@@ -127,7 +127,7 @@ export class Human extends MovingBody{
     on_hitted(position:Vec2,critical:boolean=false,sound?:string){
         if(Math.random()<=0.1){
             const d=new ClientDecal()
-            d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
+            d.sprite.frame=this.game.resources.get_frame(`blood_decal_${random.int(1,2)}`)
             d.sprite.scale=v2.random(0.7,1.4)
             d.sprite.rotation=random.rad()
             d.sprite.position=v2.clone(position)
@@ -153,7 +153,7 @@ export class Human extends MovingBody{
             }))
         }
 
-        this.game.sounds.play(this.game.resources.get_audio(sound??(
+        this.game.sounds.play(this.game.resources.get_sound(sound??(
             (this.vest&&this.vest.reflect_bullets)?
                 (
                     "player_metal_hit"
@@ -166,7 +166,8 @@ export class Human extends MovingBody{
         ),{
             position:this.position,
             max_distance:10,
-        },"humans")
+            bus:"humans"
+        })
     }
     on_die(){
         if(this.dead&&this.container.destroyed)return
@@ -193,7 +194,7 @@ export class Human extends MovingBody{
         }
         const d=new ClientDecal()
 
-        d.sprite.frame=this.game.resources.get_sprite(`blood_decal_${random.int(1,2)}`)
+        d.sprite.frame=this.game.resources.get_frame(`blood_decal_${random.int(1,2)}`)
         d.sprite.scale=v2.random(2,3)
         d.sprite.rotation=random.rad()
         d.sprite.position=v2.clone(this.position)
@@ -328,12 +329,12 @@ export class Human extends MovingBody{
                 zIndex:2,
             },this.game.resources)
 
-            this.assets.weapon_fire_sound=this.game.resources.get_audio(weapon.assets?.use_sound??`${weapon.idString}_fire`)
+            this.assets.weapon_fire_sound=this.game.resources.get_sound(weapon.assets?.use_sound??`${weapon.idString}_fire`)
             this.assets.weapon_reload_sound=undefined
             this.assets.weapon_reload_sound_alt=undefined
-            this.assets.weapon_switch_sound=this.game.resources.get_audio(weapon.assets?.switch_sound??`${weapon.idString}_switch`)
+            this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets?.switch_sound??`${weapon.idString}_switch`)
             if(typeof weapon.assets?.cycle_sound==="string"){
-                this.assets.weapon_switch_sound=this.game.resources.get_audio(weapon.assets.cycle_sound)
+                this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets.cycle_sound)
             }else if(weapon.assets?.cycle_sound){
                 this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
             }else{
@@ -396,7 +397,7 @@ export class Human extends MovingBody{
         }
         if(eyes_def){
             const eyes_f=[eyes_def.frame?.base??"human_"+eyes_def.idString+"_1",eyes_def.frame?.blink??"human_"+eyes_def.idString+"_2"]
-            this.sprites.eyes.frame=this.game.resources.get_sprite(eyes_f[0])
+            this.sprites.eyes.frame=this.game.resources.get_frame(eyes_f[0])
             this.sprites.eyes.position=eyes_def.position
             this.sprites.eyes.frames=[{delay:random.float(3.4,3.6),image:eyes_f[0]},{delay:0.3,image:eyes_f[1]}]
             this.sprites.eyes.visible=true
@@ -407,15 +408,15 @@ export class Human extends MovingBody{
 
         const arm_f=shirt_def.frame?.arm??("human_"+shirt_def.idString+"_arm")
 
-        this.sprites.body.frame=this.game.resources.get_sprite(body_f)
+        this.sprites.body.frame=this.game.resources.get_frame(body_f)
 
         this.sprites.body.tint=body_t
 
-        this.sprites.left_shirt_arm.frame=this.game.resources.get_sprite(arm_f)
-        this.sprites.right_shirt_arm.frame=this.game.resources.get_sprite(arm_f)
+        this.sprites.left_shirt_arm.frame=this.game.resources.get_frame(arm_f)
+        this.sprites.right_shirt_arm.frame=this.game.resources.get_frame(arm_f)
 
-        this.sprites.left_hand.frame=this.game.resources.get_sprite(hand_f)
-        this.sprites.right_hand.frame=this.game.resources.get_sprite(hand_f)
+        this.sprites.left_hand.frame=this.game.resources.get_frame(hand_f)
+        this.sprites.right_hand.frame=this.game.resources.get_frame(hand_f)
         this.sprites.left_hand.tint=body_t
         this.sprites.right_hand.tint=body_t
 
@@ -451,7 +452,7 @@ export class Human extends MovingBody{
             this.sprites.mounth.tint=body_t
             this.sprites.mounth.scale.x=1.4
             this.sprites.mounth.position=body_def.mounth.position
-            this.sprites.mounth.frame=this.game.resources.get_sprite(body_def.mounth.normal)
+            this.sprites.mounth.frame=this.game.resources.get_frame(body_def.mounth.normal)
         }else{
             this.sprites.mounth.visible=false
         }
@@ -569,8 +570,8 @@ export class Human extends MovingBody{
         this.container.zIndex=zIndexes.Players
 
         this.game.cam2d.addObject(this.container)
-        this.sprites.parachute.frame=this.game.resources.get_sprite("parachute")
-        this.sprites.vest._frame=this.game.resources.get_sprite("player_vest")
+        this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
+        this.sprites.vest._frame=this.game.resources.get_frame("player_vest")
         this.sprites.vest.sync_rotation=false
         this.sprites.emote_bg.set_frame({
             image:"emote_background",
@@ -639,15 +640,16 @@ export class Human extends MovingBody{
                 this.distance_since_last_footstep=0
                 if(this.assets.footstep_sounds){
                     if(this.animation.footsteps)this.animation.footsteps.stop()
-                    this.animation.footsteps=this.game.sounds.play(this.game.resources.get_audio(random.choose(this.assets.footstep_sounds)),{
+                    this.animation.footsteps=this.game.sounds.play(this.game.resources.get_sound(random.choose(this.assets.footstep_sounds)),{
                         position:this.position,
                         max_distance: 15,
-                        volume:0.3
-                    },"humans")
+                        volume:0.3,
+                        bus:"humans"
+                    })
                 }
                 if(Floors[f].footstep_decal){
                     const d=new ClientDecal()
-                    d.sprite.frame=this.game.resources.get_sprite("player_footstep")
+                    d.sprite.frame=this.game.resources.get_frame("player_footstep")
                     d.sprite.rotation=walk_dir
 
                     const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.physical_data.scale)
@@ -847,12 +849,13 @@ export class Human extends MovingBody{
                                         scale:0.5
                                     }
                                 })
-                                const audio=this.game.resources.get_audio(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
+                                const audio=this.game.resources.get_sound(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
                                 if(audio)this.game.add_timeout(()=>{
                                     this.game.sounds.play(audio,{
                                         position:this.position,
                                         max_distance:10,
-                                    },"players")
+                                        bus:"players"
+                                    })
                                 },0.75)
                                 this.game.particles.add_particle(p)
                             }
@@ -861,8 +864,9 @@ export class Human extends MovingBody{
                             this.game.sounds.play(this.assets.weapon_fire_sound,{
                                 position:this.position,
                                 max_distance: 15,
-                                volume:0.7
-                            },"humans")
+                                volume:0.7,
+                                bus:"humans"
+                            })
                         }
                         if(this.assets.weapon_cycle_sound){
                             this.animation.switch_and_cycle_sound_time=def.fire_delay*0.3
@@ -955,14 +959,15 @@ export class Human extends MovingBody{
         }
     }
     add_emote(emote:GameObjectDef){
-        this.game.sounds.play(this.game.resources.get_audio("emote_play"),{
+        this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
             position:this.position,
             max_distance: 50,
             volume: 0.7,
-        },"humans")
+            bus:"humans"
+        })
         this.animation.emote_time=0
         this.sprites.emote_container.visible=true
-        this.sprites.emote_sprite.frame=this.game.resources.get_sprite(emote.idString)
+        this.sprites.emote_sprite.frame=this.game.resources.get_frame(emote.idString)
         this.sprites.emote_container.scale=v2(0,0)
         this.game.add_tween({
             target:this.sprites.emote_container.scale,
@@ -985,7 +990,7 @@ export class Human extends MovingBody{
             }else{
                 this.sprites.helmet.position=v2(0,0)
             }
-            this.sprites!.helmet.frame=this.game.resources.get_sprite(h.idString+"_world")
+            this.sprites!.helmet.frame=this.game.resources.get_frame(h.idString+"_world")
         }else{
             this.sprites.helmet.frame=undefined
         }
@@ -1016,7 +1021,7 @@ export class Human extends MovingBody{
             }
         }
 
-        this.sprites.helmet.frame = this.game.resources.get_sprite(frame)
+        this.sprites.helmet.frame = this.game.resources.get_frame(frame)
     }
     set_backpack(backpack:number){
         if(this.backpack&&backpack===this.backpack.idNumber!)return
@@ -1024,25 +1029,27 @@ export class Human extends MovingBody{
         if(this.backpack.no_world_image){
             this.sprites.backpack.frame=undefined
         }else{
-            this.sprites!.backpack.frame=this.game.resources.get_sprite(this.backpack.idString+"_world")
+            this.sprites!.backpack.frame=this.game.resources.get_frame(this.backpack.idString+"_world")
         }
     }
     on_effect_added(effect:EffectDef){
         if(effect.assets?.sounds?.when_take){
-            this.game.sounds.play(this.game.resources.get_audio(effect.assets.sounds.when_take),{
+            this.game.sounds.play(this.game.resources.get_sound(effect.assets.sounds.when_take),{
                 position:this.position,
                 max_distance: 7,
                 volume: 0.7,
-            },"humans")
+                bus:"humans"
+            })
         }
     }
     on_effect_removed(effect:EffectDef){
         if(effect.assets?.sounds?.when_remove){
-            this.game.sounds.play(this.game.resources.get_audio(effect.assets.sounds.when_remove),{
+            this.game.sounds.play(this.game.resources.get_sound(effect.assets.sounds.when_remove),{
                 position:this.position,
                 max_distance: 7,
                 volume: 0.7,
-            },"humans")
+                bus:"humans"
+            })
         }
     }
     update_effects(effects: EffectDef[]){
@@ -1114,7 +1121,7 @@ export class Human extends MovingBody{
                 }
             }))
         }
-        const sound=this.game.resources.get_audio(`shield_break`)
+        const sound=this.game.resources.get_sound(`shield_break`)
         if(sound){
             this.game.sounds.play(sound,{
                 position:this.position,

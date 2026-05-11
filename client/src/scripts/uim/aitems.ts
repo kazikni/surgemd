@@ -45,7 +45,7 @@ export class AItemsModule extends UIModule<Game> {
         const el = document.createElement("div")
         el.className = "aitem-slot"
         el.innerHTML = `
-            <img class="icon" src="${this.game.resources.get_sprite(def.idString).src}">
+            <img class="icon" src="${this.game.resources.get_frame(def.idString).src}">
             <span class="count"></span>
         `
 

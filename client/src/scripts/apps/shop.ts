@@ -110,7 +110,7 @@ export class ShopTabApp extends TabApp {
 
             if(node.type===ShopItemType.item){
                 const def=this.tab.game.definitions.game_items.valueString[node.id]
-                icon=this.game.resources.get_sprite(def.idString).src
+                icon=this.game.resources.get_frame(def.idString).src
                 name=this.game.language.get(def.idString)
             }
             const div = document.createElement("div")
@@ -148,7 +148,7 @@ export class ShopTabApp extends TabApp {
         let name:string|undefined
         if(node.type===ShopItemType.item){
             const def=this.tab.game.definitions.game_items.valueString[node.id]
-            icon=this.game.resources.get_sprite(def.idString).src
+            icon=this.game.resources.get_frame(def.idString).src
             name=this.game.language.get(def.idString)
         }
         if(node.icon)icon=node.icon

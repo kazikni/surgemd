@@ -55,8 +55,8 @@ export class Sprite2D extends Container2DObject{
     }
 
     update_model(){
-        if(!this.frame||!this.frame.source)return
-        this._real_size=this.size??this.frame.frame_size??v2(this.frame.source.width,this.frame.source.height)
+        if(!this.frame)return
+        this._real_size=this.size??this.frame.frame_size
         ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100,this._real_position,this._rect,this.model)
     }
 
@@ -73,7 +73,7 @@ export class Sprite2D extends Container2DObject{
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
         if(frame.image){
-            this.frame=resources.get_sprite(frame.image)
+            this.frame=resources.get_frame(frame.image)
         }else{
             this.frame=undefined
         }

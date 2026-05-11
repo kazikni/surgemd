@@ -1,444 +1,423 @@
-import { FrameData, KSPR } from "../../core/lang/kspx.ts";
-import { ease, EaseFunction } from "../../core/math/utils.ts";
-import { v2, Vec2 } from "../../core/math/vec2.ts";
-import { Material, WebglRenderer } from "../rendering/renderer.ts";
-import { SoundManager } from "./sounds.ts";
-
-export const DefaultTexCoords = [
-    0.0, 1.0,
-    1.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0
-];
-
-export interface SpritesheetJSON {
-    meta: { image: string,scale:number,size:{w:number,h:number} }
-    frames: Record<string, FrameData>
+import { FrameData, KSPR } from "../../core/lang/kspx.ts"
+import { Rect } from "../../core/math/geometry.ts";
+import { v2, Vec2 } from "../../core/math/vec2.ts"
+import { Material, WebglRenderer } from "../rendering/renderer.ts"
+import { AudioEngine } from "./sounds.ts";
+export interface SpritesheetJSON{
+    meta:{
+        image:string
+        scale:number
+        size:{
+            w:number
+            h:number
+        }
+    }
+    frames:Record<string,FrameData>
 }
-export interface SoundDef{
-    volume:number
+export interface SoundDef {
     src:string
+    volume?:number
 }
-
-export class Frame{
-    id:string=""
-    source:HTMLImageElement
-    texture!:WebGLTexture
+export interface Sound {
+    id:string
     src:string
-    group:string
-    frame_rect?:{
-        x1:number
-        y1:number
-        x2:number
-        y2:number
-    }
-    texture_coordinates:Float32Array
-    frame_size?:Vec2
-    living_texture:boolean=true
-    readonly resourceType:SourceType.Frame=SourceType.Frame
-    gl:WebGLRenderingContext
-
-    batch_mat?:Material
-    constructor(source:HTMLImageElement,gl:WebGLRenderingContext,src:string,tc:number[]){
-        this.source=source
-        this.src=src
-        this.gl=gl
-        this.texture_coordinates=new Float32Array(tc)
-        this.group=""
-    }
-    free(){
-        if(!this.living_texture)return
-        this.living_texture=false
-        this.gl.deleteTexture(this.texture)
-    }
-}
-export interface KeyFrame{
-    ease:EaseFunction
-    // deno-lint-ignore no-explicit-any
-    value:any
-    dest:string
-    delay:number
-}
-export type Animation={
-    resourceType:SourceType.Animation
-    group:string
-    keys:Record<string,KeyFrame[]>
-}
-export interface Sound extends SoundDef{
     volume:number
     buffer:AudioBuffer
     group:string
-    resourceType:SourceType.Sound
 }
-export enum SourceType{
-    Frame,
-    Animation,
-    Sound,
-    Material
-}
-export type Source=Frame|Animation|Sound|Material
-function loadTexture(gl:WebGLRenderingContext, source:HTMLImageElement, smooth: boolean = true) {
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+export class Frame {
+    id:string=""
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    src:string=""
+    group:string=""
 
-    if (smooth) {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    } else {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    image!:HTMLImageElement
+    texture!:WebGLTexture
+    batch_mat:Material
+
+    frame_rect?:Rect
+    frame_size:Vec2=v2(1,1)
+
+    texcoords:Float32Array
+
+    constructor(public gl:WebGLRenderingContext,texcoords:number[]){
+        this.texcoords=new Float32Array(texcoords)
     }
-
-    gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        source
-    );
-
-    return texture;
+    free(){
+        if(this.texture){
+            this.gl.deleteTexture(this.texture)
+        }
+    }
 }
-const default_sprite_src=
-`data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAFACAYAAADNkKWqAAAACXBIWXMAAD5/AAA+fwFuH9ocAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAABEZJREFUeJzt1jERhFAUBMEPdSnSSBBKctIQADJeMN0KNpraba31LhhyHvf0BML26QEAUwQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIOt3Hvf0BsL+zzU9gTAPEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIEsAQSyBBDIEkAgSwCBLAEEsgQQyBJAIEsAgSwBBLIEEMgSQCBLAIGsD29rB4lxkNocAAAAAElFTkSuQmCC`
-export class ResourcesManager{
-    sources:Record<string,Source>
+
+export type Source=Frame|Sound
+export class TextureUtils {
+    static create(gl:WebGLRenderingContext,image:HTMLImageElement,smooth=true){
+        const texture=gl.createTexture()!
+        gl.bindTexture(gl.TEXTURE_2D,texture)
+        gl.texParameteri(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_S,
+            gl.CLAMP_TO_EDGE
+        )
+        gl.texParameteri(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_WRAP_T,
+            gl.CLAMP_TO_EDGE
+        )
+        gl.texParameteri(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_MIN_FILTER,
+            smooth?gl.LINEAR:gl.NEAREST
+        )
+        gl.texParameteri(
+            gl.TEXTURE_2D,
+            gl.TEXTURE_MAG_FILTER,
+            smooth?gl.LINEAR:gl.NEAREST
+        )
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            image
+        )
+        return texture
+    }
+}
+export class ResourcesManager {
+    frames:Record<string,Frame>={}
+    sounds:Record<string,Sound>={}
+    materials:Record<string,Material>={}
+
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
-    domp=new DOMParser()
-    dome=new XMLSerializer()
+
     gl:WebGLRenderingContext
-    audioCtx:AudioContext
-    soundsManager:SoundManager
-    default_sprite:Frame
     renderer:WebglRenderer
-    constructor(renderer:WebglRenderer,soundsManager:SoundManager){ 
-        this.sources={}
-        this.canvas=document.createElement("canvas")
-        this.ctx=this.canvas.getContext("2d")!
+
+    default_frame!:Frame
+
+    constructor(renderer:WebglRenderer,public audio:AudioEngine){
         this.renderer=renderer
         this.gl=renderer.gl
-        this.audioCtx=soundsManager.ctx
-        this.soundsManager=soundsManager
 
-        const img=new Image()
-        img.src=default_sprite_src
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
-        this.default_sprite=new Frame(img,null,default_sprite_src,default_sprite_src);
-        this.default_sprite.source.addEventListener("load",()=>{
-            this.default_sprite.texture=loadTexture(this.gl,this.default_sprite.source)!
-        })
+        this.canvas=document.createElement("canvas")
+        this.ctx=this.canvas.getContext("2d")!
+
+        this.init_default_frame()
     }
-    async load_source(id:string,src:string,volume:number=1,group:string=""):Promise<Source|undefined>{
+    private init_default_frame(){
+        const canvas=document.createElement("canvas")
+
+        canvas.width=64
+        canvas.height=64
+
+        const ctx=canvas.getContext("2d")!
+
+        ctx.fillStyle="magenta"
+        ctx.fillRect(0,0,64,64)
+
+        ctx.fillStyle="black"
+        ctx.fillRect(0,0,32,32)
+
+        ctx.fillRect(32,32,32,32)
+
+        const image=new Image()
+
+        image.onload=()=>{
+            const frame=new Frame(this.gl,[
+                0,1,
+                1,1,
+                0,0,
+
+                0,0,
+                1,1,
+                1,0
+            ])
+
+            frame.id="default"
+            frame.src="default"
+            frame.group="internal"
+
+            frame.image=image
+            frame.texture=TextureUtils.create(
+                this.gl,
+                image
+            )
+
+            frame.frame_size=v2(
+                image.width,
+                image.height
+            )
+
+            this.default_frame=frame
+        }
+
+        image.src=canvas.toDataURL()
+    }
+
+    async load_source(id:string,src:string,volume:number=1,group:string="",callback?:(msg:string)=>void):Promise<Source|undefined>{
         if(src.endsWith(".svg")||src.endsWith(".png")){
-            return await this.load_sprite(id,src,group)
-        }else if(src.endsWith(".mp3")){
-            return await this.load_audio(id,{src:src,volume:volume},group)
+            return await this.load_frame(id,src,group,callback)
+        }else if(src.endsWith(".mp3")||src.endsWith(".wav")){
+            return await this.load_sound(id,{src:src,volume:volume},group,callback)
         }
         return undefined
     }
-    clear(blacklist:string[]=[]){
-        for(const r of Object.keys(this.sources)){
-            if(blacklist.includes(r)||blacklist.includes(this.sources[r].group))continue
-            console.log("Unloading: ",r)
-            this.unload(r)
-        }
-    }
-    render_text(text:string, fontSize = 32,color="white",font:string="Arial"):Promise<Frame>{
-        return new Promise<Frame>((resolve, _reject) => {
-            this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
-            this.ctx.save()
-            this.ctx.font = `${fontSize}px ${font}`
-            const textMetrics = this.ctx.measureText(text)
-            this.canvas.width = textMetrics.width
-            this.canvas.height = fontSize * 1.5
-
-
-            this.ctx.font=`${fontSize}px ${font}`
-            this.ctx.font = `${fontSize}px ${font}`
-            this.ctx.fillStyle = color
-            this.ctx.fillText(text, 0, fontSize)
-
-            const src=this.canvas.toDataURL()
-
-            this.ctx.restore()
-            const ret=new Frame(new Image(),this.gl,src,[
-                0.0, 1.0,
-                1.0, 1.0,
-                0.0, 0.0,
-                0.0, 0.0,
-                1.0, 1.0,
-                1.0, 0.0
-            ]);
-            ret.source.addEventListener("load",()=>{
-                const sp=ret as Frame
-                sp.texture=loadTexture(this.gl,sp.source)!
-                ret.frame_size=v2(sp.source.width,sp.source.height)
-                ret.batch_mat=this.renderer.factorys2D.texture_batch.create({
-                    texture:sp.texture
-                })
-                ret.batch_mat_free=false
-                resolve(ret)
-            });
-            ret.source.src=src
-        })
-    }
-    get_frame_from_canvas(canvas:HTMLCanvasElement,gl?:WebGLRenderingContext):Promise<Frame>{
-        return new Promise<Frame>((resolve) => {  
-            const src=canvas.toDataURL()
-            const ret=new Frame(new Image(),gl??this.gl,src,[
-                0.0, 1.0,
-                1.0, 1.0,
-                0.0, 0.0,
-                0.0, 0.0,
-                1.0, 1.0,
-                1.0, 0.0
-            ])
-            ret.source.addEventListener("load",()=>{
-                const sp=ret as Frame
-                sp.texture=loadTexture(this.gl,sp.source)!
-                resolve(ret)
-            });
-            ret.source.src=src
-        })
-    }
-    get_sprite(id:string,allow_default_sprite:boolean=true):Frame{
-        if(allow_default_sprite&&!this.sources[id]){
-            return this.default_sprite
-        }
-        return this.sources[id] as Frame
-    }
-    async load_spritesheet(idPrefix: string, json: SpritesheetJSON, imagePathOverride?: string, group:string="",load_msg?:(msg:string)=>void) {
-        const image = await this.load_image(imagePathOverride ?? json.meta.image);
-        const tex = loadTexture(this.gl, image);
-
-        for (const [id, frame] of Object.entries(json.frames)) {
-            if(load_msg)load_msg(frame.src??id)
-            const iw = image.width;
-            const ih = image.height;
-            const rect = {
-                x1: frame.x / iw,
-                y1: 1.0 - (frame.y + frame.h) / ih,
-                x2: (frame.x + frame.w) / iw,
-                y2: 1.0 - frame.y / ih
-            };
-            const s = new Frame(image, this.gl, frame.src??"",
-                [
-                    rect.x1,rect.y2,
-                    rect.x2,rect.y2,
-                    rect.x1,rect.y1,
-                    rect.x1,rect.y1,
-                    rect.x2,rect.y2,
-                    rect.x2,rect.y1
-                ]
-            );
-            s.id=`${idPrefix}${id}`
-            s.frame_rect={
-                x1:frame.x,
-                y1:frame.y,
-                x2:frame.x+frame.w,
-                y2:frame.y+frame.h
-            }
-            
-            s.texture = tex;
-            s.group=group
-
-            s.frame_size=v2(frame.w/json.meta.scale,frame.h/json.meta.scale)
-            this.sources[s.id] = s
-
-            s.batch_mat=this.renderer.factorys2D.texture_batch.create({
-                texture:tex
-            })
-        }
-    }
-    async load_kspr_into_rm(kspr: KSPR,resolution: string,group: string = "",idPrefix: string = "",load_msg?: (msg: string) => void) {
-        const res = kspr.resolutions[resolution]
-        if (!res)throw `Resolution '${resolution}' not found`
-        for (let ai = 0; ai < res.atlases.length; ai++) {
-            const atlas = res.atlases[ai]
-
-            if (load_msg) load_msg(`atlas ${ai}`)
-
-            const blob = new Blob([atlas.image])
-            const url = URL.createObjectURL(blob)
-
-            const image = await this.load_image(url)
-            URL.revokeObjectURL(url)
-
-            const tex = loadTexture(this.gl, image)
-
-            const iw = image.width
-            const ih = image.height
-
-            for (const [id, f] of Object.entries(atlas.frames)) {
-                if(load_msg)load_msg(id)
-                const rect = {
-                    x1: f.x / iw,
-                    y1: 1 - (f.y + f.h) / ih,
-                    x2: (f.x + f.w) / iw,
-                    y2: 1 - f.y / ih
-                }
-                const frame = new Frame(
-                    image,
-                    this.gl,
-                    id,
-                    [
-                        rect.x1, rect.y2,
-                        rect.x2, rect.y2,
-                        rect.x1, rect.y1,
-                        rect.x1, rect.y1,
-                        rect.x2, rect.y2,
-                        rect.x2, rect.y1
-                    ]
-                )
-                frame.id = idPrefix + id
-                frame.src=f.src
-                frame.texture = tex
-                frame.group = group
-                frame.frame_rect = {
-                    x1: f.x,
-                    y1: f.y,
-                    x2: f.x + f.w,
-                    y2: f.y + f.h
-                }
-                frame.frame_size = v2(
-                    f.w / res.scale,
-                    f.h / res.scale
-                )
-                frame.batch_mat = this.renderer.factorys2D.texture_batch.create({
-                    texture: tex
-                })
-                this.sources[frame.id] = frame
-            }
-        }
-    }
-    private load_image(src: string): Promise<HTMLImageElement> {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = src;
-        });
-    }
-    load_sprite(id:string,src:string,group:string=""):Promise<Frame>{
-        return new Promise<Frame>((resolve, _reject) => {
-            if(this.sources[id])resolve(this.sources[id] as Frame)
-            this.sources[id]=new Frame(new Image(),this.gl,src,[
-                0.0, 1.0,
-                1.0, 1.0,
-                0.0, 0.0,
-                0.0, 0.0,
-                1.0, 1.0,
-                1.0, 0.0
-            ]);
-            (this.sources[id] as Frame).group=group;
-            (this.sources[id] as Frame).source.addEventListener("load",()=>{
-                const sp=this.sources[id] as Frame
-                sp.texture=loadTexture(this.gl,sp.source)!
-                resolve(sp)
-            });
-            (this.sources[id] as Frame).source.src=src;
-            
-        })
-    }
-    load_material(id:string,mat:Material){
-        this.sources[id]=mat
-    }
-    get_material(id:string):Material{
-        return this.sources[id] as Material
-    }
-    get_audio(id:string):Sound{
-        return this.sources[id] as Sound
-    }
-    load_audio(id:string,def:SoundDef,group:string="",load_msg?:(msg:string)=>void,unload:boolean=false):Promise<Sound|undefined>{
-        if(load_msg)load_msg(def.src)
-        return new Promise<Sound|undefined>((resolve, reject) => {
-            if(this.sources[id] != undefined) {
-                if(unload){
-                    this.unload(this.sources[id])
-                }else{
-                    resolve(this.sources[id])
-                }
-            }
-    
-            const xhr = new XMLHttpRequest()
-            xhr.open("GET", def.src);
-            xhr.responseType = "arraybuffer";
-            const onfailure = function onfailure(_event:ProgressEvent<XMLHttpRequestEventTarget>) {
-                reject(`Failed loading sound file: ${id}`)
-            };
-            xhr.addEventListener("load", (event) => {
-                const arrayBuffer = xhr.response;
-                if (!arrayBuffer) {
-                    onfailure(event);
-                    return;
-                }
-                this.audioCtx.decodeAudioData(arrayBuffer, (audioBuffer) => {
-                    (this.sources[id] as Sound)={buffer:audioBuffer,src:def.src,volume:def.volume??1,resourceType:SourceType.Sound,group:group}
-                    resolve(this.sources[id] as Sound)
-                    
-                }, () => {
-                    reject(`Failed decoding sound: ${id}`);
-                    resolve(undefined)
-                });
-            });
-            xhr.addEventListener("abort", onfailure);
-            xhr.addEventListener("error", onfailure);
-            xhr.addEventListener("timeout", onfailure);
-            xhr.send();
-        })
-    }
-    get_animation(id:string):Animation{
-        return this.sources[id] as Animation
-    }
-    async load_animation(id:string,path:string,group:string=""):Promise<Animation>{
-        const json=await(await fetch(path)).json()
-        let anim!:Animation
-        for(const k of Object.keys(json["keys"])){
-            anim={resourceType:SourceType.Animation,keys:{},group:group}
-            anim.keys[k]=[]
-            for(const f of json.keys){
-                anim.keys[k].push({ease:ease[f.ease as (keyof typeof ease)],delay:f.delay,value:f.value,dest:f.dest})
-            }
-        }
-        this.sources[id]=anim
-        return this.sources[id] as Animation
-    }
-    unload(id:string){
-        if(this.sources[id]){
-            switch(this.sources[id].resourceType){
-                case SourceType.Frame:
-                    (this.sources[id] as Frame).free();
-                    break
-                case SourceType.Sound: {
-                    const snd = this.sources[id] as Sound
-                    snd.buffer = null as any
-                    break
-                }
-                default:
-                    break
-            }
-            delete this.sources[id]
-        }
-    }
-    async load_group(path:string,name:string="",load_msg?:(msg:string)=>void){
+    async load_group(path:string,name:string="",callback?:(msg:string)=>void){
         const files=await(await fetch(path)).json()
         for(const f of Object.keys(files.files)){
-            if(load_msg)load_msg(files.files[f])
-            await this.load_source(f,files.files[f],undefined,name)
+            await this.load_source(f,files.files[f],undefined,name,callback)
         }
     }
-}
-export enum AudioState{
-    finished,
-    playing,
-    succeeded,
-    failed,
-    inited,
-    interrupt
+    load_image(src:string){
+        return new Promise<HTMLImageElement>((resolve,reject)=>{
+            const img=new Image()
+            img.onload=()=>resolve(img)
+            img.onerror=reject
+            img.src=src
+        })
+    }
+    create_frame(image:HTMLImageElement,texture:WebGLTexture,rect:Rect,src:string=""){
+        const frame=new Frame(this.gl,[
+            rect.min.x,rect.max.y,
+            rect.max.x,rect.max.y,
+            rect.min.x,rect.min.y,
+
+            rect.min.x,rect.min.y,
+            rect.max.x,rect.max.y,
+            rect.max.x,rect.min.y
+        ])
+
+        frame.image=image
+        frame.texture=texture
+        frame.src=src
+
+        return frame
+    }
+    async load_frame(id:string,src:string,group:string="",callback?:(msg:string)=>void){
+        if(callback)callback(src)
+        if(this.frames[id]){
+            return this.frames[id]
+        }
+        const image=await this.load_image(src)
+        const texture=TextureUtils.create(
+            this.gl,
+            image
+        )
+        const frame=this.create_frame(image,texture,{min:v2.zero(),max:v2.one()},src)
+        frame.id=id
+        frame.group=group
+        frame.frame_size=v2(
+            image.width,
+            image.height
+        )
+        this.frames[id]=frame
+        return frame
+    }
+    async load_spritesheet(prefix:string,json:SpritesheetJSON,image_override?:string,group:string="",callback?:(item:string)=>void){
+        const image=await this.load_image(image_override??json.meta.image)
+
+        const texture=TextureUtils.create(this.gl,image)
+
+        const iw=image.width
+        const ih=image.height
+
+        for(const [id,data] of Object.entries(json.frames)){
+            if(callback)callback(data.src)
+            const rect={
+                min:v2(data.x/iw,1-((data.y+data.h)/ih)),
+                max:v2((data.x+data.w)/iw,1-(data.y/ih)),
+            }
+            const frame=this.create_frame(image,texture,rect,data.src??id)
+            frame.id=prefix+id
+            frame.group=group
+            frame.frame_rect={
+                min:v2(data.x,data.y),
+                max:v2(data.x+data.w,data.y+data.h)
+            }
+            frame.frame_size=v2(
+                data.w/json.meta.scale,
+                data.h/json.meta.scale
+            )
+            this.frames[frame.id]=frame
+        }
+    }
+    async load_kspr(kspr:KSPR,resolution:string,group:string="",prefix:string="",callback?:(item:string)=>void){
+        const res=kspr.resolutions[resolution]
+        for(const atlas of res.atlases){
+            const blob=new Blob([atlas.image])
+            const url=URL.createObjectURL(blob)
+            const image=await this.load_image(url)
+            URL.revokeObjectURL(url)
+            const texture=TextureUtils.create(
+                this.gl,
+                image
+            )
+            const iw=image.width
+            const ih=image.height
+            for(const [id,data] of Object.entries(atlas.frames)){
+                if(callback)callback(data.src)
+                const rect={
+                    min:v2(data.x/iw,1-((data.y+data.h)/ih)),
+                    max:v2((data.x+data.w)/iw,1-(data.y/ih)),
+                }
+
+                const frame=this.create_frame(image,texture,rect,data.src??id)
+                frame.batch_mat=this.renderer.factorys2D.texture_batch.create({
+                    texture
+                })
+
+                frame.id=prefix+id
+                frame.group=group
+
+                frame.frame_rect={
+                    min:v2(data.x,data.y),
+                    max:v2(data.x+data.w,data.y+data.h)
+                }
+                frame.frame_size=v2(
+                    data.w/res.scale,
+                    data.h/res.scale
+                )
+                this.frames[frame.id]=frame
+            }
+        }
+    }
+    async load_sound(id:string,def:SoundDef,group:string="",callback?:(msg:string)=>void){
+        if(callback)callback(def.src)
+        if(this.sounds[id]){
+            return this.sounds[id]
+        }
+
+        const response=await fetch(def.src)
+
+        const arrayBuffer=await response.arrayBuffer()
+
+        const buffer=await this.audio.ctx.decodeAudioData(
+            arrayBuffer
+        )
+
+        const sound:Sound={
+            id,
+            src:def.src,
+            volume:def.volume??1,
+            buffer,
+            group
+        }
+
+        this.sounds[id]=sound
+
+        return sound
+    }
+    load_material(id:string,material:Material){
+        this.materials[id]=material
+    }
+    async render_text(text:string,size=32,color="white",font="Arial"){
+        const canvas=this.canvas
+        const ctx=this.ctx
+
+        ctx.font=`${size}px ${font}`
+
+        const metrics=ctx.measureText(text)
+
+        canvas.width=Math.ceil(metrics.width)
+        canvas.height=Math.ceil(size*1.5)
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        )
+
+        ctx.font=`${size}px ${font}`
+
+        ctx.fillStyle=color
+
+        ctx.fillText(
+            text,
+            0,
+            size
+        )
+
+        return await this.load_frame_from_canvas(
+            canvas
+        )
+    }
+    load_frame_from_canvas(canvas:HTMLCanvasElement){
+        const image=new Image()
+        const src=canvas.toDataURL()
+        return new Promise<Frame>((resolve)=>{
+            image.onload=()=>{
+                const texture=TextureUtils.create(
+                    this.gl,
+                    image
+                )
+                const frame=this.create_frame(image,texture,{min:v2.zero(),max:v2.one()})
+                frame.frame_size=v2(image.width,image.height)
+                resolve(frame)
+            }
+            image.src=src
+        })
+    }
+    get_frame(id:string,allow_default=true):Frame{
+        if(!this.frames[id]){
+            if(allow_default){
+                return this.default_frame
+            }
+        }
+        return this.frames[id]
+    }
+    get_sound(id:string):Sound{
+        const sound=this.sounds[id]
+        return sound
+    }
+    get_material(id:string):Material{
+        const material=this.materials[id]
+        return material
+    }
+
+    unload_frame(id:string){
+        const frame=this.frames[id]
+        if(!frame)return
+        frame.free()
+        delete this.frames[id]
+    }
+    unload_sound(id:string){
+        delete this.sounds[id]
+    }
+    unload_material(id:string){
+        delete this.materials[id]
+    }
+    unload_group(group:string){
+        for(const id in this.frames){
+            if(this.frames[id].group===group){
+                this.unload_frame(id)
+            }
+        }
+        for(const id in this.sounds){
+            if(this.sounds[id].group===group){
+                this.unload_sound(id)
+            }
+        }
+        for(const id in this.materials){
+            if(this.materials[id].group===group){
+                this.unload_material(id)
+            }
+        }
+    }
+    clear(blacklist:string[]=[]){
+        for(const r of Object.keys(this.frames)){
+            if(blacklist.includes(r)||blacklist.includes(this.frames[r].group))continue
+            console.log("Unloading: ",r)
+            this.unload_frame(r)
+        }
+        for(const r of Object.keys(this.sounds)){
+            if(blacklist.includes(r)||blacklist.includes(this.sounds[r].group))continue
+            console.log("Unloading: ",r)
+            this.unload_sound(r)
+        }
+    }
 }

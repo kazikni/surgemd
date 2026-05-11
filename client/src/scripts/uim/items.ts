@@ -62,7 +62,7 @@ export class ItemsModule extends UIModule<Game> {
             const def = this.game.definitions.game_items.valueNumber[slot.idNumber]
 
             count.textContent = `${slot.count}`
-            img.src = this.game.resources.get_sprite(def.idString).src
+            img.src = this.game.resources.get_frame(def.idString).src
             img.style.display = "block"
 
             el.classList.remove("slot-empty")

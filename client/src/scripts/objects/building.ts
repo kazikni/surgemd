@@ -1,4 +1,4 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, Graphics2D, model2d } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -83,11 +83,12 @@ export class Building extends StaticBody{
                     this.ceilings[i].alive=false
                     this.ceilings[i].sprite.set_frame(this.ceilings[i].def.destroy!.frame,this.game.resources)
                     if(this.ceilings[i].def.destroy!.sound){
-                        this.game.sounds.play(this.game.resources.get_audio(this.ceilings[i].def.destroy!.sound!),{
+                        this.game.sounds.play(this.game.resources.get_sound(this.ceilings[i].def.destroy!.sound!),{
                             position:this.position,
                             max_distance:40,
-                            delay:0.25
-                        },"obstacles")
+                            delay:0.25,
+                            bus:"obstacles"
+                        })
                     }
                     if(this.ceilings[i].def.destroy!.particles?.count){
                         for(let j=0;j<this.ceilings[i].def.destroy!.particles!.count;j++){

@@ -9,7 +9,7 @@ export class GunItem extends GunItemBase implements LItem{
     declare inventory:GInventory
     assets(resources:ResourcesManager):Record<string,Sound|Frame>{
         return {
-            "item":resources.get_sprite(this.def.assets?.item??this.def.idString)
+            "item":resources.get_frame(this.def.assets?.item??this.def.idString)
         }
     }
 }
@@ -17,7 +17,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     declare inventory:GInventory
     assets(resources:ResourcesManager):Record<string,Sound|Frame>{
         return {
-            "item":resources.get_sprite(this.def.assets?.item??this.def.idString)
+            "item":resources.get_frame(this.def.assets?.item??this.def.idString)
         }
     }
 }

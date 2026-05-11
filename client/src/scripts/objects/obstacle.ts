@@ -101,14 +101,14 @@ export class Obstacle extends StaticBody{
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
 
         if(this.health_data.dead){
-            if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_sprite(this.assets_data.frame.dead)
+            if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
 
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
 
             if(this.emitter_1)this.emitter_1.destroyed=true
             this.physical_data.no_bullets_collision=true
         }else{
-            this.sprite.frame=this.game.resources.get_sprite(this.assets_data.frame.base)
+            this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
             this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
 
             this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
@@ -137,7 +137,8 @@ export class Obstacle extends StaticBody{
             this.game.sounds.play(this.assets_data.sounds.break,{
                 position:this.position,
                 max_distance:15,
-            },"obstacles")
+                bus:"obstacles"
+            })
         }
         this.update_frame()
     }
@@ -191,7 +192,7 @@ export class Obstacle extends StaticBody{
 
     override set_hit_sounds_def(sounds: HitSoundsDef): void {
         this.assets_data.sounds={
-            break:sounds.break?this.game.resources.get_audio(sounds.break):undefined,
+            break:sounds.break?this.game.resources.get_sound(sounds.break):undefined,
             hit:[]
         }
         super.set_hit_sounds_def(sounds)
@@ -216,9 +217,10 @@ export class Obstacle extends StaticBody{
         if(this.transform_into_data?.activated)return
         this.transform_into_data!.activated=true
 
-        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound)this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound!),{
+        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound)this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound!),{
             max_distance:30,
-        },"obstacles")
+            bus:"obstacles"
+        })
         for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).particles??[]){
             this.game.add_timeout(()=>{
                 for(let c=0;c<p.count;c++){
@@ -261,13 +263,15 @@ export class Obstacle extends StaticBody{
                 this.container.rotation=new_rot
             }else{
                 if(ne===0&&(this.def.expanded_behavior as ObstacleBehaviorDoor).close_sound){
-                    this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorDoor).close_sound!),{
+                    this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorDoor).close_sound!),{
                         max_distance:30,
-                    },"obstacles")
+                        bus:"obstacles"
+                    })
                 }else if((this.def.expanded_behavior as ObstacleBehaviorDoor).open_sound){
-                    this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorDoor).open_sound!),{
+                    this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorDoor).open_sound!),{
                         max_distance:30,
-                    },"obstacles")
+                        bus:"obstacles"
+                    })
                 }
 
                 this.door_data!.tween=this.game.add_tween({
@@ -287,11 +291,11 @@ export class Obstacle extends StaticBody{
             if(this.def.expanded_behavior.type==1){
                 if(this.interacted)return
                 this.interacted=true
-                this.game.sounds.play(this.game.resources.get_audio(this.def.expanded_behavior.click_sound),{
+                this.game.sounds.play(this.game.resources.get_sound(this.def.expanded_behavior.click_sound),{
                     position:this.position,
                 })
                 this.game.add_timeout(()=>{
-                    this.game.sounds.play(this.game.resources.get_audio("menu_music"),{
+                    this.game.sounds.play(this.game.resources.get_sound("menu_music"),{
                         position:this.position,
                     })
                 },this.def.expanded_behavior.delay)

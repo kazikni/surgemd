@@ -2,7 +2,7 @@ import { api, API_BASE, api_server } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, TranslationManager, typewriter } from "common/engine/client.ts";
+import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -56,7 +56,7 @@ export class MenuManager{
     save!:GameSave
     resources!:ResourcesManager
     translation!:TranslationManager
-    sounds!:SoundManager
+    sounds!:AudioEngine
     submenu_param:boolean
 
     definitions:GameDefinition
@@ -275,7 +275,7 @@ export class MenuManager{
             ShowElement(this.content.menu_options)
         }
     }
-    async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
@@ -394,7 +394,7 @@ export class MenuManager{
     hide_gameover_text(){
         HideElement(this.content.gameover_text_screen,true)
     }
-    game_over_messages(text:string[],music:Sound,music_player:ManipulativeSoundInstance,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
+    game_over_messages(text:string[],music:Sound,music_player:SoundController,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
         return new Promise<void>((resolve) => {
             this.show_gameover_text()
             music_player.set(music)
@@ -499,7 +499,7 @@ export class MenuManager{
             }
         }
     }
-    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,ambient_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
+    async show_history(commands: HistoryCommand[],resources: ResourcesManager,music_player: SoundController,ambient_player: SoundController,input:InputManager,time_scale: number = 1): Promise<void> {
         ShowElement(this.content.history_overlay,true)
         music_player.set(undefined)
         ambient_player.set(undefined)
@@ -533,7 +533,6 @@ export class MenuManager{
                     await sleep(0.4)
 
                     const img = await this.history_buffer.load(cmd.frame)
-
                     this.content.history_frame.src = img.src
 
                     requestAnimationFrame(() => {
@@ -565,24 +564,30 @@ export class MenuManager{
                 }
                 case HistoryCommandType.SetMusic: {
                     if (music_player && resources) {
-                        const s = resources.get_audio(cmd.music)
-                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                        const s = resources.get_sound(cmd.music)
+                        music_player.set(s,{
+                            loop:cmd.loop!==undefined?cmd.loop:true,
+                            offset:cmd.start_at
+                        })
                     }
                     break
                 }
                 case HistoryCommandType.SetAmbient: {
-                    if (music_player && resources) {
-                        const s = resources.get_audio(cmd.ambient)
-                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                    if (ambient_player&&resources) {
+                        const s = resources.get_sound(cmd.ambient)
+                        ambient_player.set(s,{
+                            loop:cmd.loop!==undefined?cmd.loop:true,
+                            offset:cmd.start_at
+                        })
                     }
                     break
                 }
                 case HistoryCommandType.PlaySoundEffect: {
                     if (resources) {
-                        const s = resources.get_audio(cmd.sfx)
-                        const inst = sounds_manager.play(s,{
-                            
-                        },cmd.category??"players")
+                        const s = resources.get_sound(cmd.sfx)
+                        const inst = this.sounds.play(s,{
+                          bus:cmd.category??"ui"  
+                        },)
                     }
                     break
                 }
@@ -591,7 +596,7 @@ export class MenuManager{
                     if(!resources||!music_player)break
                     await this.game_over_messages(
                         cmd.text,
-                        resources.get_audio("gameover_music"),
+                        resources.get_sound("gameover_music"),
                         music_player,
                         cmd.time_per_message,
                         cmd.opacity_anim
@@ -611,11 +616,12 @@ export class MenuManager{
         this.content.phase_intro_description.innerText = ""
         ShowElement(this.content.phase_intro_overlay)
     }
-    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[],sounds:SoundManager): Promise<void> {
-        function play_type_sound(_a:string){
-            sounds.play(random.choose(type_sounds),{
-                volume:0.15
-            },"ui")
+    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[]): Promise<void> {
+        const play_type_sound=(_a:string)=>{
+            this.sounds.play(random.choose(type_sounds),{
+                volume:0.15,
+                bus:"ui"
+            })
         }
         const text_speed=config.text_speed??1
         const wait_time=(config.wait_time??2)*1000
@@ -638,43 +644,6 @@ export class MenuManager{
             HideElement(this.content.phase_intro_overlay)
         },wait_time+1000)
         await new Promise(r => setTimeout(r, wait_time))
-    }
-    your_skins:string[]=["default_skin"]
-    show_your_skins(){
-        this.content.submenus.extras.loadout_c.innerHTML=""
-        let sel=this.save.get_variable("sv_loadout_skin")
-        if(!this.definitions.skins.exist(sel))sel="default_skin"
-        for(const s of this.your_skins){
-            const skin=document.createElement("div")
-            skin.id="skin-sel-"+s
-            skin.innerHTML=`
-<div class="name text">${s}</div>
-<img src="${this.resources.get_sprite(s+"_body").src}" class="simage"></div>
-            `
-            skin.classList.add("skin-view-menu")
-            if(s===sel){
-                skin.classList.add("skin-view-menu-selected")
-            }
-            skin.addEventListener("click",this.update_sel_skin.bind(this,s))
-            this.content.submenus.extras.loadout_c.appendChild(skin)
-        }
-        this.update_ss_view(sel)
-    }
-    update_sel_skin(sel=""){
-        if(!this.definitions.skins.exist(sel))sel="default_skin"
-        this.save.set_variable("sv_loadout_skin",sel)
-        const ss=this.content.submenus.extras.loadout_c.querySelectorAll(".skin-view-menu-selected")
-        ss.forEach((v,_)=>{
-            v.classList.remove("skin-view-menu-selected")
-        })
-        const skin=this.content.submenus.extras.loadout_c.querySelector("#skin-sel-"+sel) as HTMLDivElement
-        skin.classList.add("skin-view-menu-selected")
-        this.update_ss_view(sel)
-    }
-    update_ss_view(sel:string){
-        this.content.submenus.extras.loadout_v.innerHTML=`
-            <img src="${this.resources.get_sprite(sel+"_body").src}" class="simage"></div>
-        `
     }
     game_start(){
         ShowElement(this.content.gameD)

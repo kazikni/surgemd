@@ -22,7 +22,7 @@ export class PlayerBody extends GameObject{
     create(_args: any) {
         this.base_hitbox=new NullHitbox2D(v2(0,0))
         this.game.cam2d.addObject(this.container)
-        this.sprite.frame=this.game.resources.get_sprite("player_body")
+        this.sprite.frame=this.game.resources.get_frame("player_body")
         this.updatable=false
     }
     override on_destroy(): void {
@@ -52,7 +52,7 @@ export class PlayerBody extends GameObject{
             this.sprite_text.frame=await this.game.resources.render_text(`${name}`,50,"#ccc")
             if(badge){
                 this.sprite_badge.visible=true
-                this.sprite_badge.frame=this.game.resources.get_sprite(`${Badges.getFromNumber(badge-1).idString}`)
+                this.sprite_badge.frame=this.game.resources.get_frame(`${Badges.getFromNumber(badge-1).idString}`)
                 this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/400)-0.1
             }else{
                 this.sprite_badge.visible=false

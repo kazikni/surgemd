@@ -41,7 +41,7 @@ export class IItemsModule extends UIModule<Game> {
                 img.draggable = false
                 img.width = 30
                 img.height = 30
-                img.src = this.game.resources.get_sprite(s.idString).src
+                img.src = this.game.resources.get_frame(s.idString).src
 
                 el.dataset.drop_kind = "3"
                 el.dataset.slot = s.idNumber!.toString()

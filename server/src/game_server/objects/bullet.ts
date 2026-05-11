@@ -194,8 +194,8 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
-        this.def=args.defs
+    create(args: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
+        this.def=args.def
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
         this.position=args.position
         this.initial_position=v2.clone(this.position)
@@ -208,8 +208,10 @@ export class Bullet extends ServerGameObject{
         this.source=args.source
         this.ammo=ad
 
-        this.damage=args.defs.damage
+        this.damage=this.def.damage
         this.set_color(args.satured)
+
+        console.log(this.tracerColor.toString(16),args.satured,this.ammo?.defaultTrail)
     }
     set_color(satured:boolean=false){
         this.tracerColor=this.def.tracer.color??(satured?(this.ammo?.strongTrail??0xffffff):(this.ammo?.defaultTrail??0xffffff))
@@ -252,6 +254,9 @@ export class Bullet extends ServerGameObject{
         b.reflectionCount = this.reflectionCount + 1
 
         b.set_direction(Math.atan2(newDir.y, newDir.x))
+    }
+    clone(){
+        return this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)

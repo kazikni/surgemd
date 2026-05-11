@@ -20,6 +20,8 @@ export interface HelmetDef extends Definition{
     position?:Vec2
     rank:ItemRank
     item_type?:InventoryItemType.helmet
+
+    accessorys?:string[]
 }
 export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
     helmets.insert(
@@ -60,13 +62,15 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             position:v2(0,0),
             rank:ItemRank.C
         },
+
         {
             idString:"lastman_helmet",
             defence:0,
             level:5,
             reduction:0.3,
             position:v2(0,0),
-            rank:ItemRank.S
+            rank:ItemRank.S,
+            accessorys:["omni_necklance"]
         },
     )
 }

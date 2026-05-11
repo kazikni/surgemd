@@ -45,7 +45,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:3,
                 end:6
             },
-            damage:105,
+            damage:115,
             bullet:{
                 def:{
                     damage:7,
@@ -112,7 +112,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:3,
                 end:5
             },
-            damage:105,
+            damage:115,
             bullet:{
                 def:{
                     damage:7,
@@ -183,7 +183,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:3,
                 end:5
             },
-            damage:105,
+            damage:120,
             bullet:{
                 def:{
                     damage:7,

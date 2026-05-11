@@ -471,7 +471,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured:boolean=false):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
-            defs:def,
+            def,
             position:v2.clone(position),
             owner:owner,
             ammo:ammo,

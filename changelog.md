@@ -3,6 +3,7 @@
 __                                                                                                      __
 ### Mains
 * Shed
+* Remake Animation System
 __                                                                                                      __
 ### Menu
 * Intro Video
@@ -30,7 +31,7 @@ __                                                                              
 * Improve Musics Loading
 __                                                                                                      __
 ### Menu
-
+* New Game Over Music
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)

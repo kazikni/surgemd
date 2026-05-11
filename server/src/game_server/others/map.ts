@@ -62,9 +62,9 @@ export const generation={
                         }else if(map.game.definitions.vehicles.exist(itd)){
                             const def=map.game.definitions.vehicles.getFromString(itd)
                             const obj=map.generate_vehicle(def,random,item.spawn,item.layer)
+                            if(obj)obj.physical_data.rotation=random.rad()
                             if(!obj)break
                         }else if(map.game.loot_tables.tables.has(itd)){
-                            const count=random.irandom1(item.count)
                             const layer=item.layer??Layers.Normal
                             const loot=map.game.loot_tables.get_loot(itd,{withammo:true},map.game)
                             const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer,{

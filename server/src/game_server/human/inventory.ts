@@ -510,7 +510,7 @@ export class GInventory extends GInventoryBase<LItem>{
     constructor(owner:Human){
         super()
         this.owner=owner
-        this.accessorys=new AccessorysManager(owner,3)
+        this.accessorys=new AccessorysManager(owner,4)
     }
     override set_backpack(backpack?: BackpackDef,drop=false): void {
         if(drop&&this.backpack.level>=1){
@@ -609,6 +609,19 @@ export class GInventory extends GInventoryBase<LItem>{
             this.owner.game.add_loot(this.owner.position,a,res,this.owner.layer)
         }
     }
+    drop_helmet():Loot|undefined{
+        if(this.owner.equipment_data.helmet){
+            const loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
+            if(this.owner.equipment_data.helmet.accessorys){
+                for(const a of this.owner.equipment_data.helmet.accessorys){
+                    this.accessorys.remove_accessory(this.owner.game.definitions.accessorys.getFromString(a))
+                }
+            }
+            this.owner.equipment_data.helmet=undefined
+            return loot
+        }
+        return
+    }
     give_item(def:GameItem,count:number,drop_overflow:boolean=true,full_ammo:boolean=false):number{
         switch(def.item_type){
             case InventoryItemType.ammo:{
@@ -692,12 +705,18 @@ export class GInventory extends GInventoryBase<LItem>{
             case InventoryItemType.helmet:{
                 const d=def as unknown as HelmetDef
                 if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level){
-                    if(this.owner.equipment_data.helmet)this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
+                    this.drop_helmet()
 
                     this.owner.equipment_data.dirty=true
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.helmet=d
                     this.owner.equipment_data.helmet_health=d.health
+
+                    if(def.accessorys){
+                        for(const a of def.accessorys){
+                            this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(a),false,false)
+                        }
+                    }
 
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(this.owner.position,def,count-1,this.owner.layer)

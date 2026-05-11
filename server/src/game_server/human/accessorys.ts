@@ -69,6 +69,13 @@ export class AccessorysManager{
         }
         return [undefined,false]
     }
+    remove_accessory(def:AccessoryDef){
+        for(const slot of this.slots){
+            if(slot.item&&slot.item.idString===def.idString){
+                slot.item=undefined
+            }
+        }
+    }
     clear(){
         for(const s of this.slots){
             s.item=undefined

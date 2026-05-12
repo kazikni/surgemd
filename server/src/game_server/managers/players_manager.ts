@@ -67,7 +67,7 @@ export class PlayerClient extends PlayerConnManager{
                 }
             }
             const scope_view:number=(this.human.equipment_data.force_default_scope?this.human.equipment_data.default_scope.scope_view:this.human.equipment_data.scope.scope_view)
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(25/scope_view,20/scope_view))
+            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(26/scope_view,21/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list(objs,this.view_objects,undefined,undefined,undefined,this.first_tick)

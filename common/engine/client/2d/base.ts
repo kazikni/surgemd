@@ -13,6 +13,7 @@ export interface CamA{
 
     position:Vec2
     size:Vec2
+    layer:number
 
     meter_size:number
     center_pos:boolean
@@ -33,6 +34,7 @@ export abstract class Container2DObject {
         return this._layer
     }
     set layer(val:number){
+        if(val===this._layer)return
         this._layer=val
         if(this.parent){
             this.parent.dirty_zindex=true
@@ -42,6 +44,7 @@ export abstract class Container2DObject {
         return this._zIndex
     }
     set zIndex(val:number){
+        if(val===this._zIndex)return
         this._zIndex=val
         if(this.parent){
             this.parent.dirty_zindex=true

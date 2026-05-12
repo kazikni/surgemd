@@ -331,7 +331,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
 
             explosion:"m79_grenade_explosion",
 
-            gravity:1.7,
+            gravity:1.6,
             radius:0.25,
             zBaseScale:0.4,
             zScaleAdd:0.7,

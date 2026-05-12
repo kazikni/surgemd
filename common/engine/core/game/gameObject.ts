@@ -195,9 +195,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         const rect = hitbox.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
-
         const results:GameObject[] = []
-
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const objects=this.cells.get(hash.hash_3d_big(x,y,layer))

@@ -9,7 +9,6 @@ import { type Game } from "../others/game.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
-import { Layers } from "common/scripts/others/constants.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutEyesDef, LoadoutHairDef } from "common/scripts/definitions/loadout/skins.ts";
@@ -53,7 +52,7 @@ export abstract class PlayerConnManager{
         }
     }
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
-        const layers=layer>=Layers.Normal?[/*layer-2,layer-1,*/layer,layer+1,layer+2]:[layer-2,layer-1,layer]
+        const layers=[layer]//[layer-2,layer-1,layer,layer+1,layer+2]
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
         return objs
     }
@@ -251,9 +250,11 @@ export class Player extends Human{
         this.loadout.dirty=true
         if(jp.skin){
             this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
-            this.loadout.hair.tint=jp.skin.hair_tint
+            this.loadout.hair={
+                tint:jp.skin.hair_tint,
+                def:this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
+            }
             this.loadout.body.tint=jp.skin.body_tint
-            this.loadout.hair.def=this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
         }
     }
 }

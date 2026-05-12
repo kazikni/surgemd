@@ -155,36 +155,5 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 }
             }
         },
-
-        {
-            idString:"omni_necklance",
-            rank:ItemRank.S,
-            property:["extended_capacity","infinity_ammo"],
-            modifiers:{
-                health:2,
-            },
-            events:{
-                "kill":(e)=>{
-                    e.owner.health_data.health+=20
-                    e.owner.side_effect({
-                        type:SideEffectType.AddEffect,
-                        duration:4,
-                        effect:"kill_haste"
-                    })
-                },
-                "pickup":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
-                },
-                "drop":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
-                },
-                /*"gun_shoot":(e)=>{
-                    e.bullet.damage*=1.1
-                    e.bullet.set_color(true)
-                }*/
-            }
-        },
     )
 }

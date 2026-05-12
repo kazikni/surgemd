@@ -635,7 +635,6 @@ export class Game extends ClientGame<GameObject>{
             if(this.active_entity){
                 this.cam2d.position=this.active_entity.position
                 this.sounds.set_listener_position(this.active_entity.position)
-
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
 
                 this.current_layer=this.active_entity.layer
@@ -648,6 +647,7 @@ export class Game extends ClientGame<GameObject>{
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
+        this.cam2d.layer=this.current_layer
         this.terrain.draw(this.terrain_gfx,this.current_layer)
         this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
         this.ambient.update_camera()
@@ -664,6 +664,7 @@ export class Game extends ClientGame<GameObject>{
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
         this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
+        grid_gfx.layer=this.cam2d.layer
         if(this.current_layer<Layers.Normal)return
         const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)

@@ -193,8 +193,8 @@ export class GunItem extends GunItemBase implements LItem{
             for(let i=0;i<scc;i++){
                 const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
                 const proj=user.game.add_grenade(pos,gdef,user,user.layer)
-                proj.physical_data.zpos=0.01
-                proj.physical_data.zpos_speed=1.8
+                proj.physical_data.zpos=0.5
+                proj.physical_data.zpos_speed=1
                 const limit=(gdef.throw_max_speed??0)
                 proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
             }
@@ -600,11 +600,7 @@ export class GInventory extends GInventoryBase<LItem>{
     drop_helmet():Loot|undefined{
         if(this.owner.equipment_data.helmet){
             const loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
-            if(this.owner.equipment_data.helmet.accessorys){
-                for(const a of this.owner.equipment_data.helmet.accessorys){
-                    this.accessorys.remove_accessory(this.owner.game.definitions.accessorys.getFromString(a))
-                }
-            }
+            this.owner.equipment_data.helmet?.events?.["drop"]?.({user:this.owner})
             this.owner.equipment_data.helmet=undefined
             return loot
         }
@@ -682,6 +678,7 @@ export class GInventory extends GInventoryBase<LItem>{
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.vest=d
                     this.owner.equipment_data.vest_health=d.health
+                    this.owner.equipment_data.vest.events?.[name]?.({user:this})
 
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(this.owner.position,def,count-1,this.owner.layer)
@@ -694,21 +691,14 @@ export class GInventory extends GInventoryBase<LItem>{
                 const d=def as unknown as HelmetDef
                 if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level){
                     this.drop_helmet()
-
                     this.owner.equipment_data.dirty=true
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.helmet=d
                     this.owner.equipment_data.helmet_health=d.health
-
-                    if(def.accessorys){
-                        for(const a of def.accessorys){
-                            this.accessorys.add_accessory(this.owner.game.definitions.accessorys.getFromString(a),false,false)
-                        }
-                    }
-
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(this.owner.position,def,count-1,this.owner.layer)
                     }
+                    this.owner.equipment_data.helmet.events?.["pickup"]?.({user:this.owner})
                     return count-1
                 }
                 break

@@ -28,6 +28,7 @@ export class Camera2D{
 
     position = v2(0, 0)
     visual_position=v2(0,0)
+    layer:number=0
 
     center_pos:boolean=true
 
@@ -106,6 +107,7 @@ export class Camera2D{
 
             meter_size:this.meter_size,
             center_pos:this.center_pos,
+            layer:this.layer,
 
             ctx:this.ctx,
             renderer:this.renderer,

@@ -26,30 +26,32 @@ export class TerrainM extends TerrainManager{
         })
     }
     draw(graphic:Graphics2D,layer:number=Layers.Normal){
-        if(this.last_layer!==layer)
-        this.last_layer=layer
-        graphic.clear()
-        for(const f of this.floors){
-            if(layer<f.layer)continue
-            const flb=this.biome?.floors[f.type]
-            graphic.beginPath()
-            graphic.set_hitbox(f.hb)
-            //if(f.smooth)graphic.smooth_shape()
-            graphic.repeat_size=3
-            graphic.endPath()
-            const col=
-            (flb?.color!==undefined)?
-            flb?.color:
-            Floors[f.type].default_color
-            graphic.fill_color(ColorM.number(col))
-            graphic.fill()
-        }
-        if(Debug.hitbox){
+        if(this.last_layer!==layer){
+            this.last_layer=layer
+            graphic.layer=layer
+            graphic.clear()
             for(const f of this.floors){
-                graphic.fill_color(ColorM.hex("#ff0"))
-                if(f.hb.type===HitboxType2D.polygon)
-                for(const p of (f.hb as PolygonHitbox2D).points){
-                    graphic.drawModel(model2d.circle(0.1,8,p))
+                if(layer<f.layer)continue
+                const flb=this.biome?.floors[f.type]
+                graphic.beginPath()
+                graphic.set_hitbox(f.hb)
+                //if(f.smooth)graphic.smooth_shape()
+                graphic.repeat_size=3
+                graphic.endPath()
+                const col=
+                (flb?.color!==undefined)?
+                flb?.color:
+                Floors[f.type].default_color
+                graphic.fill_color(ColorM.number(col))
+                graphic.fill()
+            }
+            if(Debug.hitbox){
+                for(const f of this.floors){
+                    graphic.fill_color(ColorM.hex("#ff0"))
+                    if(f.hb.type===HitboxType2D.polygon)
+                    for(const p of (f.hb as PolygonHitbox2D).points){
+                        graphic.drawModel(model2d.circle(0.1,8,p))
+                    }
                 }
             }
         }

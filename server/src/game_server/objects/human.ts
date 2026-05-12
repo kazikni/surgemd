@@ -320,6 +320,8 @@ export class Human extends MovingBody{
     update_modifiers(){
         this.modifiers.size=this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
         this.apply_modifiers(this.temp_modifiers)
+        if(this.equipment_data.helmet?.modifiers)this.apply_modifiers(this.equipment_data.helmet.modifiers)
+        if(this.equipment_data.vest?.modifiers)this.apply_modifiers(this.equipment_data.vest.modifiers)
         const rules=this.game.modeManager.rules.humans
 
         switch(this.health_data.boost_def.type){

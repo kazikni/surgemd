@@ -1,6 +1,8 @@
 import { InventoryItemType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
+import { SideEffectType } from "../player/effects.ts";
+import { HumanModifiers } from "../../others/constants.ts";
 export interface VestDef extends Definition{
     defence:number
     reduction:number
@@ -10,6 +12,10 @@ export interface VestDef extends Definition{
     rank:ItemRank
     reflect_bullets?:boolean
     item_type?:InventoryItemType.vest
+
+    property?:string[]
+    events?:Record<string,(e:any)=>void>
+    modifiers?:Partial<HumanModifiers>
 }
 export interface HelmetDef extends Definition{
     defence:number
@@ -21,7 +27,9 @@ export interface HelmetDef extends Definition{
     rank:ItemRank
     item_type?:InventoryItemType.helmet
 
-    accessorys?:string[]
+    property?:string[]
+    events?:Record<string,(e:any)=>void>
+    modifiers?:Partial<HumanModifiers>
 }
 export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
     helmets.insert(
@@ -70,7 +78,29 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             reduction:0.3,
             position:v2(0,0),
             rank:ItemRank.S,
-            accessorys:["omni_necklance"]
+
+            modifiers:{
+                health:2
+            },
+            property:["extended_capacity","infinity_ammo"],
+            events:{
+                "kill":(e)=>{
+                    e.owner.health_data.health+=20
+                    e.owner.side_effect({
+                        type:SideEffectType.AddEffect,
+                        duration:4,
+                        effect:"kill_haste"
+                    })
+                },
+                "pickup":(e)=>{
+                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                },
+                "drop":(e)=>{
+                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
+                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
+                },
+            }
         },
     )
 }

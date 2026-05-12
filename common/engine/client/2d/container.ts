@@ -33,9 +33,9 @@ export class Container2D extends Container2DObject{
             }
         }
     }
-    update_zindex(){
+    update_zindex(cam_layer:number){
         this.children.sort((a,b)=>
-            a.layer - b.layer ||
+            (a.layer-cam_layer) - (b.layer-cam_layer) ||
             a.zIndex - b.zIndex ||
             a.id_on_parent - b.id_on_parent
         )
@@ -64,7 +64,7 @@ export class Container2D extends Container2DObject{
     draw(cam:CamA):void{
         this.draw_super()
         if(this.dirty_zindex){
-            this.update_zindex()
+            this.update_zindex(cam.layer)
             this.dirty_zindex=false
         }
         if(this.dirty_children){

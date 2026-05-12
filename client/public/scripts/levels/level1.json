@@ -300,11 +300,6 @@
                 "scope_4"
             ],
             "accessorys":[
-                [{
-                    "item":"omni_necklance",
-                    "weight":1,
-                    "droppable":false
-                }],
                 [
                     {
                         "item":"bullet_breaker_barrel",

@@ -61,7 +61,6 @@ export class Vehicle extends MovingBody {
 
         this.container.zIndex = def.frame.zindex ?? zIndexes.Vehicles
         this.container.layer=this.layer
-        this.container.update_zindex()
     }
 
     override update(dt: number) {

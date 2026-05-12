@@ -22,14 +22,17 @@ export interface CamA{
     renderer:Renderer
 
     rect:Rect
+
+    visible_function?:(obj:Container2DObject)=>boolean
+    sort_function:(a:Container2DObject,b:Container2DObject)=>number
 }
 export abstract class Container2DObject {
-    abstract object_type: string;
+    abstract object_type: string
 
-    parent?: Container2D;
-    _zIndex: number = 0;
-    _layer: number = 0;
+    parent?: Container2D
+    id_on_parent:number=0
 
+    _layer: number = 0
     get layer():number{
         return this._layer
     }
@@ -40,6 +43,7 @@ export abstract class Container2DObject {
             this.parent.dirty_zindex=true
         }
     }
+    _zIndex: number = 0
     get zIndex():number{
         return this._zIndex
     }
@@ -50,8 +54,6 @@ export abstract class Container2DObject {
             this.parent.dirty_zindex=true
         }
     }
-
-    id_on_parent:number=0
 
     _position: Vec2M
     get position(): Vec2 {

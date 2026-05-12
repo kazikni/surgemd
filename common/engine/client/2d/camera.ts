@@ -1,11 +1,10 @@
 import { fullCanvas, Renderer, WebglRenderer } from "../rendering/renderer.ts"
 import { CamA, Container2DObject } from "./base.ts"
-import { v2 } from "../../core/math/vec2.ts"
+import { v2, v2m } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Context2D, GLContext2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
-import { v2m } from "../mod.ts";
 import { Rect } from "../../core/math/geometry.ts";
 
 export class Camera2D{
@@ -29,12 +28,16 @@ export class Camera2D{
     position = v2(0, 0)
     visual_position=v2(0,0)
     layer:number=0
+    old_layer?:number=0
 
     center_pos:boolean=true
 
     after_draw:((cam:CamA)=>void)[]=[]
 
     ctx:Context2D
+
+    visible_callback?:(obj:Container2DObject)=>boolean
+    sort_callback?:(a:Container2DObject,b:Container2DObject)=>number
     constructor(renderer:Renderer){
         this.renderer=renderer
         this.zoom=1
@@ -62,7 +65,6 @@ export class Camera2D{
         for(const o of objects){
             this.container.add_child(o);
         }
-        this.container.update_zindex()
         this.container.update_real()
     }
 
@@ -99,6 +101,13 @@ export class Camera2D{
 
     draw(dt:number,resources:ResourcesManager){
         this.update(dt,resources)
+
+        if(!this.sort_callback){
+            this.sort_callback=(a,b)=>
+                (a._layer-b._layer)||
+                (a._zIndex-b._zIndex)||
+                (a.id_on_parent-b.id_on_parent)
+        }
         const cam={
             matrix:this.projectionMatrix,
 
@@ -112,9 +121,16 @@ export class Camera2D{
             ctx:this.ctx,
             renderer:this.renderer,
 
-            rect:this.get_rect()
+            rect:this.get_rect(),
+
+            sort_function:this.sort_callback,
+            visible_function:this.visible_callback
         }
 
+        if(this.old_layer!==this.layer){
+            this.old_layer=this.layer
+            this.container.dirty_zindex=true
+        }
         this.container.draw(cam)
         this.ctx.base_matrix=this.projectionMatrix
         this.ctx.render()

@@ -89,6 +89,7 @@ export abstract class BaseObject2D{
         if (!this.manager) return
         this.manager.set_layer(this as any, layer)
     }
+    
     encodeObject(full:boolean,stream:NetStream,options:any){
         const bools=[
             (full||this.net_sync.part)&&this.net_sync.enabled.dirty, //Dirty Part
@@ -143,7 +144,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     }
 
     unregistry(obj: GameObject) {
-        this.removeObjectFromCells(obj);
+        this.remove_object_from_cells(obj);
     }
 
     clear() {
@@ -151,18 +152,15 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         this.object_cells.clear()
         this.dirty_objects.clear()
     }
-    private removeObjectFromCells(obj: GameObject) {
+    private remove_object_from_cells(obj: GameObject) {
         this.dirty_objects.delete(obj)
-
-        const keys = this.object_cells.get(obj.id)
-        if (!keys) return
+        const keys=this.object_cells.get(obj.id)
+        if (!keys)return
         for (const key of keys) {
             const arr = this.cells.get(key)
             if (!arr) continue
-
             const idx = arr.indexOf(obj)
             if (idx !== -1) arr.splice(idx, 1)
-
             if (arr.length === 0) {
                 this.cells.delete(key)
             }
@@ -171,7 +169,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     }
 
     update_object(obj: GameObject) {
-        this.removeObjectFromCells(obj)
+        this.remove_object_from_cells(obj)
 
         const rect = obj.hitbox.to_rect()
         this.cell_pos(rect.min)
@@ -181,7 +179,6 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
             this.object_cells.set(obj.id, [])
         }
         this.object_cells.get(obj.id)!.length=0
-
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const key=hash.hash_3d_big(x,y,obj.layer)

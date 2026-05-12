@@ -28,11 +28,13 @@ export class ClientDecal extends GameObject{
         hit?:Sound[]
     }
 
-    // deno-lint-ignore no-explicit-any
     create(_args: any) {
         this.game.cam2d.addObject(this.sprite)
     }
 
+    override on_layer_set(layer: number): void {
+        this.sprite.layer=layer
+    }
     override on_destroy(): void {
         this.sprite.destroy()
     }

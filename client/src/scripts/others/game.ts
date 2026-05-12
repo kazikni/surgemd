@@ -70,7 +70,6 @@ export class Game extends ClientGame<GameObject>{
     default_scope?:ScopeDef
     scope_zoom:number=0.5
     dest_zoom:number=1
-    current_layer:number=-1
 
     ui:UiManager
     menu:MenuManager
@@ -121,6 +120,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.input_manager.mouse.meter_size=80
         this.cam2d.meter_size=80
+        this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
 
         this.local_server=new LocalGameServer(this)
 
@@ -332,17 +332,6 @@ export class Game extends ClientGame<GameObject>{
     }
     set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
         if(!this.active_entity)return
-        /*if(aim_assist){
-            for(const o of this.scene_2d.objects.objects[this.activePlayer.layer].orden){
-                const obj=this.scene.objects.objects[this.activePlayer.layer].objects[o]
-                if(obj.id===this.activePlayerId||obj.stringType!=="player")continue
-                const ang=v2.lookTo(this.activePlayer.position,obj.position)
-                if(Math.abs(angle-ang)<=aim_assist_help){
-                    angle=ang
-                    break
-                }
-            }
-        }*/
         this.input.angle=angle
         this.input.distance_to_aim=dist
         if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.downed&&!this.game_over){
@@ -636,9 +625,7 @@ export class Game extends ClientGame<GameObject>{
                 this.cam2d.position=this.active_entity.position
                 this.sounds.set_listener_position(this.active_entity.position)
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
-
-                this.current_layer=this.active_entity.layer
-
+                this.cam2d.layer=this.active_entity.layer
                 this.ui_gfx.clear()
                 if(this.aim_line){
                     this.ui_gfx.fill_color({r:1,g:1,b:1,a:0.1})
@@ -647,8 +634,7 @@ export class Game extends ClientGame<GameObject>{
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
-        this.cam2d.layer=this.current_layer
-        this.terrain.draw(this.terrain_gfx,this.current_layer)
+        this.terrain.draw(this.terrain_gfx,this.cam2d.layer)
         this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
@@ -665,7 +651,8 @@ export class Game extends ClientGame<GameObject>{
         this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
         grid_gfx.layer=this.cam2d.layer
-        if(this.current_layer<Layers.Normal)return
+        if(this.cam2d.layer<Layers.Normal)return
+
         const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)
         v2m.dscale(begin,begin,gridSize)

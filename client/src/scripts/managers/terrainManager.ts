@@ -35,13 +35,9 @@ export class TerrainM extends TerrainManager{
                 const flb=this.biome?.floors[f.type]
                 graphic.beginPath()
                 graphic.set_hitbox(f.hb)
-                //if(f.smooth)graphic.smooth_shape()
                 graphic.repeat_size=3
                 graphic.endPath()
-                const col=
-                (flb?.color!==undefined)?
-                flb?.color:
-                Floors[f.type].default_color
+                const col=(flb?.color!==undefined)?flb?.color:Floors[f.type].default_color
                 graphic.fill_color(ColorM.number(col))
                 graphic.fill()
             }

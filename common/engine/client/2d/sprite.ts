@@ -13,14 +13,6 @@ export class Sprite2D extends Container2DObject{
     hotspot:Vec2=v2(0,0)
     _size?:Vec2M
 
-    override get visible(): boolean {
-        return this._visible&&this.frame!==undefined   
-    }
-    override set visible(val:boolean){
-        this._visible=val
-        if(this.parent)this.parent.update_visibility()
-    }
-
     get size():Vec2|undefined{
         return this._size as Vec2|undefined
     }
@@ -77,14 +69,7 @@ export class Sprite2D extends Container2DObject{
         }else{
             this.frame=undefined
         }
-        if(frame.scale!==undefined)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2!==undefined)this.scale=frame.scale2
-        if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
-        if(frame.rotation!==undefined)this.rotation=frame.rotation
-        if(frame.visible!==undefined)this.visible=frame.visible
-        if(frame.zIndex!==undefined)this.zIndex=frame.zIndex
-        if(frame.layer!==undefined)this.layer=frame.layer
-        if(frame.position!==undefined)this.position=frame.position
+        this.transform_frame(frame)
         if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
         if(frame.alpha!==undefined)this.tint.a=frame.alpha
         this.dirty_reals=true

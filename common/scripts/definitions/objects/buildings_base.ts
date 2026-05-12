@@ -375,6 +375,7 @@ export const buildings_factory={
                     floor_image:[
                         {
                             image:"small_bunker_floor_1",
+                            position:v2(-0.84,0)
                         }
                     ],
                     obstacles:[
@@ -680,6 +681,8 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                 //{def:"md_crate",position:v2.zero},
                 {def:"airdrop_locked",position:v2.zero},
                 {def:"barrel",position:v2(1.7,1.7)},
+
+                //{def:"metal_door",position:v2(-2.5,-0.7),rotation:1,variation:7}
             ]
         }),
 

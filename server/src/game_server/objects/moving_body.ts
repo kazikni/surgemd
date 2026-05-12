@@ -26,7 +26,7 @@ export abstract class MovingBody extends ServerGameObject{
             case GameObjectType.Obstacle:
                 if((obj as Obstacle).physical_data.stairs.length>0){
                     for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(this.layer+s.dest_layer)
+                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(obj.layer+s.dest_layer)
                     }
                 }
             case GameObjectType.Building:{

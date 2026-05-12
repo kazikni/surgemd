@@ -464,7 +464,6 @@ export class Human extends MovingBody{
 
         this.sprites.weapon.zIndex=2
 
-        this.container.update_zindex()
         this.reset_anim()
     }
     override on_layer_set(layer: number): void {
@@ -656,6 +655,7 @@ export class Human extends MovingBody{
                     const d=new ClientDecal()
                     d.sprite.frame=this.game.resources.get_frame("player_footstep")
                     d.sprite.rotation=walk_dir
+                    d.lifetime=30
 
                     const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.physical_data.scale)
                     v2m.rotate_RadAngle(pos,this.physical_data.rotation)

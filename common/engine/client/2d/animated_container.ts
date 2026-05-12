@@ -88,13 +88,11 @@ export class AnimatedContainer2D extends Container2D{
                         }else{
                             spr.transform_frame(action)
                         }
-                        this.update_zindex()
                         break
                     }
                     case "transform":{
                         const spr=this.get_object(action.fuser)
                         spr.transform_frame(action)
-                        this.update_zindex()
                         break
                     }
                     case "tween":{

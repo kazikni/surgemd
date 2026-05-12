@@ -30,13 +30,7 @@ export class SyncedParticle extends MovingBody {
 
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
-            // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
-                if((obj as Obstacle).physical_data.stairs.length>0){
-                    for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(this.layer+s.dest_layer)
-                    }
-                }
             case GameObjectType.Building:{
                 const collisions=this.hitbox.overlap_collisions((obj as StaticBody).hitbox)
                 if(collisions.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){

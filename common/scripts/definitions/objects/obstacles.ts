@@ -546,7 +546,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             }
         }),
-        obstacles_factory.walls.door("iron_door",WallColors,{
+        obstacles_factory.walls.door("metal_door",WallColors,{
             sounds:"metal_door",
             particle:"metal_particle",
             o:{

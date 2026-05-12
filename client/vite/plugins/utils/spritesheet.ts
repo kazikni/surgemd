@@ -1,6 +1,7 @@
 import { type Image, createCanvas, loadImage } from "canvas";
 import path from "node:path";
-import { KSPR, RectPacker, write_kspr } from "../../../../common/engine/core/mod.ts";
+import { KSPR, write_kspr } from "../../../../common/engine/core/lang/kspx.ts";
+import { RectPacker } from "../../../../common/engine/core/math/geometry.ts";
 import readDirectory from "./readDirectory.ts";
 import { Minimatch } from "minimatch";
 export const cacheDir = ".spritesheet-cache";

@@ -21,24 +21,20 @@ export class Container2D extends Container2DObject{
 
     object_group:boolean=false
 
-    update_visibility(){
+    update_visibility(cama:CamA){
         this.visible_children.length = 0;
         this.update_children.length = 0;
         for (let i = 0; i < this.children.length; i++) {
-            if (this.children[i].visible) {
+            if(this.children[i].visible&&(!cama.visible_function||cama.visible_function(this.children[i]))) {
                 this.visible_children.push(this.children[i]);
             }
-            if (this.children[i].has_update) {
+            if(this.children[i].has_update) {
                 this.update_children.push(this.children[i]);
             }
         }
     }
-    update_zindex(cam_layer:number){
-        this.children.sort((a,b)=>
-            (a.layer-cam_layer) - (b.layer-cam_layer) ||
-            a.zIndex - b.zIndex ||
-            a.id_on_parent - b.id_on_parent
-        )
+    update_zindex(cama:CamA){
+        this.children.sort(cama.sort_function)
         this.dirty_children=true
     }
     override update(dt:number,resources:ResourcesManager){
@@ -47,7 +43,7 @@ export class Container2D extends Container2DObject{
     }
     override update_real(): void {
         super.update_real()
-    
+
         for (let i = 0; i < this.children.length; i++) {
             const c = this.children[i]
             c.update_real()
@@ -64,11 +60,11 @@ export class Container2D extends Container2DObject{
     draw(cam:CamA):void{
         this.draw_super()
         if(this.dirty_zindex){
-            this.update_zindex(cam.layer)
+            this.update_zindex(cam)
             this.dirty_zindex=false
         }
         if(this.dirty_children){
-            this.update_visibility()
+            this.update_visibility(cam)
             this.dirty_children=false
         }
 
@@ -80,6 +76,13 @@ export class Container2D extends Container2DObject{
     }
     add_child(c:Container2DObject){
         if(c.parent)return
+
+        if(c instanceof Container2D){
+            c.dirty_zindex=true
+            c.dirty_children=true
+            c.dirty_reals=true
+        }
+
         c.id_on_parent=this.children.length+1
         c.parent=this
         this.children.push(c)

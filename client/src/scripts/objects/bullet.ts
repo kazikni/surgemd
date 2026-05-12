@@ -72,7 +72,6 @@ export class Bullet extends GameObject{
         this.container.visible=false
 
         this.container.add_child(this.sprite_trail)
-        this.container.update_zindex()
         this.container.zIndex=zIndexes.Bullets
     }
     override on_layer_set(layer: number): void {

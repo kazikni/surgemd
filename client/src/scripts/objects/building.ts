@@ -123,14 +123,14 @@ export class Building extends StaticBody{
 
             sprite.set_frame({
                 image:f.image,
-                position:f.position?v2.add(this.position,f.position):this.position,
+                position:f.position?v2.add_with_orientation(this.position,f.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(f.rotation??0),
                 layer:this.layer+(f.layer??0),
 
                 scale:f.scale,
                 scale2:f.scale2,
                 zIndex:f.zIndex,
-                tint:f.tint
+                tint:f.tint,
             },this.game.resources)
 
             this.game.cam2d.addObject(sprite)
@@ -145,7 +145,7 @@ export class Building extends StaticBody{
 
             sprite.set_frame({
                 image:c.frame.image,
-                position:c.frame.position?v2.add(this.position,c.frame.position):this.position,
+                position:c.frame.position?v2.add_with_orientation(this.position,c.frame.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(c.frame.rotation??0),
                 layer:this.layer+(c.frame.layer??0),
 

@@ -156,16 +156,7 @@ export class Bullet extends ServerGameObject{
                     }
                     break
                 }*/
-                // deno-lint-ignore no-fallthrough
                 case GameObjectType.Obstacle:
-                    if((obj as Obstacle).physical_data.stairs.length>0){
-                        for(const s of (obj as Obstacle).physical_data.stairs){
-                            if(s.hitbox.colliding_with(this.hitbox)){
-                                this.destroy()
-                                break
-                            }
-                        }
-                    }
                 case GameObjectType.Building:
                     if((obj as StaticBody).physical_data.no_bullets_collision)break
                     if(obj.hitbox){

@@ -147,6 +147,10 @@ export class BattleRoyaleSolo extends ModeManager{
         //this.game.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
+        if(h.team_data.group){
+            const c=h.team_data.group.choose_human(h)
+            if(c?.position)return c.position
+        }
         return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)
     }
 }
@@ -214,10 +218,6 @@ export class BattleRoyaleGroup extends BattleRoyaleSolo{
         return this.groupsManager.groups[group]
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
-        if(h.team_data.group){
-            const c=h.team_data.group.choose_human(h)
-            return c?.position??super.get_human_spawn_position(h)
-        }
         return super.get_human_spawn_position(h)
     }
 }

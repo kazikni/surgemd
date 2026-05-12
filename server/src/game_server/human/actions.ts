@@ -2,10 +2,13 @@ import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type LItem, type ConsumibleItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 import { type Human } from "../objects/human.ts";
-import { Action, type Slot } from "common/engine/core.ts";
+import { BaseAction, v2, type Slot } from "common/engine/core.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 
-export class ReloadAction extends Action<Human>{
+export abstract class Action<User=Human> extends BaseAction<User>{
+    action_speed:number=1
+}
+export class ReloadAction extends Action{
     delay:number
     item:GunItem
     alt_reload:boolean=false
@@ -45,7 +48,7 @@ export class ReloadAction extends Action<Human>{
     }
     type: number=ActionsType.Reload
 }
-export class ConsumingActionA extends Action<Human>{
+export class ConsumingActionA extends Action{
     delay:number
     item:ConsumibleItem
     type: number=ActionsType.Consuming
@@ -56,6 +59,7 @@ export class ConsumingActionA extends Action<Human>{
         this.item=item
         this.delay=consuming.use_delay
         this.slot=slot
+        this.action_speed=0.35
     }
     on_execute(user:Human){
         const consuming=this.item.def.consuming as (ConsumingAction&{type:0})
@@ -69,5 +73,24 @@ export class ConsumingActionA extends Action<Human>{
         user.animation_data.dirty=true
 
         this.slot.remove(1)
+    }
+}
+export class HelpupAction extends Action<Human>{
+    override type: number=ActionsType.Helpup;
+    delay:number
+    human:Human
+    constructor(human:Human){
+        super()
+        this.human=human
+        this.delay=human.game.modeManager.rules.humans.help_up.time
+        this.action_speed=0.35
+    }
+    on_execute(user:Human){
+        this.human.help_up()
+    }
+    override update(user: Human, dt: number): void {
+        if(v2.distance(user.position,this.human.position)>user.game.modeManager.rules.humans.help_up.distance){
+            user.actions.cancel()
+        }
     }
 }

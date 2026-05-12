@@ -29,6 +29,7 @@ import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { type Building } from "./building.ts";
 import { ConsumibleCondition } from "common/scripts/definitions/items/consumibles.ts";
+import { type Action, HelpupAction } from "../human/actions.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -65,7 +66,7 @@ export class Human extends MovingBody{
         substeps:2,
     }
 
-    health_data:HumanHealthData&{boost_time:number,imortal:boolean,using_healing_speed:number}={
+    health_data:HumanHealthData&{boost_time:number,imortal:boolean}={
         imortal:false,
         invensibility_time:0,
 
@@ -77,8 +78,6 @@ export class Human extends MovingBody{
         boost:0,
         max_boost:100,
         boost_def:Boosts[BoostType.Null],
-
-        using_healing_speed:0.35,
         boost_time:0,
     }
     team_data:{
@@ -129,7 +128,7 @@ export class Human extends MovingBody{
     }
 
     inventory:GInventory
-    actions:ActionsManager<this>
+    actions:ActionsManager<this,Action>
 
     parachute?:{
         value:number
@@ -194,6 +193,34 @@ export class Human extends MovingBody{
         time:number
         slot?:Slot<LItem>
     }
+
+    killed_by?:Human
+
+    downed_time:number=0
+    downed_by?:Human
+    downed_by_source?:DamageSourceDef
+
+    modifiers:HumanModifiers={
+        size:1,
+        boost:1,
+        health:1,
+        damage_reduction:1,
+
+        damage:1,
+        bullet_size:1,
+        bullet_speed:1,
+        critical_mult:1,
+
+        speed:1,
+
+        luck:1,
+        mana_consume:1,
+    }
+
+    temp_modifiers:Partial<HumanModifiers>={}
+
+    effects:Map<number,EffectInstance>=new Map()
+    effects_dirty:boolean=true
 
     constructor(){
         super()
@@ -262,38 +289,12 @@ export class Human extends MovingBody{
             2:GunItem as (new(item:GameItem)=>LItem),
         })
     }
+    override can_interact(user: Human): boolean {
+        return this.health_data.downed&&this.game.modeManager.is_ally(this,user)
+    }
     interact(user: Human): void {
-        if(!this.health_data.downed||!this.game.modeManager.is_ally(user,this))return
-        this.help_up()
+        user.actions.play(new HelpupAction(this))
     }
-
-    killed_by?:Human
-
-    downed_time:number=0
-    downed_by?:Human
-    downed_by_source?:DamageSourceDef
-
-    modifiers:HumanModifiers={
-        size:1,
-        boost:1,
-        health:1,
-        damage_reduction:1,
-
-        damage:1,
-        bullet_size:1,
-        bullet_speed:1,
-        critical_mult:1,
-
-        speed:1,
-
-        luck:1,
-        mana_consume:1,
-    }
-
-    temp_modifiers:Partial<HumanModifiers>={}
-
-    effects:Map<number,EffectInstance>=new Map()
-    effects_dirty:boolean=true
 
     set_preset(preset:HumanDefinition|undefined){
         if(!preset)return
@@ -669,10 +670,11 @@ export class Human extends MovingBody{
                 }*/
                 break
             }
+            case GameObjectType.Human:
             case GameObjectType.Loot:
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
-                    (obj as Loot).interact(this)
+                    obj.interact(this)
                 }
                 break
         }
@@ -686,7 +688,7 @@ export class Human extends MovingBody{
         const current_floor=Floors[this.physical_data.current_floor]
         const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
-                * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
+                * (this.actions.current_action?.action_speed??1)
                 * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
                 * this.modifiers.speed
                 * (this.health_data.downed?0.25:1)
@@ -770,7 +772,6 @@ export class Human extends MovingBody{
             if(this.input.path&&this.input.path.length > 0){
                 const target = this.input.path[0]
                 const dist=v2.distance(this.position,target)
-
                 if (dist < 0.1) {
                     this.input.path.shift()
                     this.input.path_move=undefined
@@ -781,11 +782,8 @@ export class Human extends MovingBody{
                         return
                     }
                 }
-
                 const dest_rot = v2.lookTo(this.position,target)
-
                 this.physical_data.rotation = Numeric.lerp_rad(this.physical_data.rotation,dest_rot,Numeric.dt_expo_inter(15,dt))
-
                 this.input.path_move = v2.from_PolarMovement({
                     dir:dest_rot,
                     scale:1
@@ -796,7 +794,6 @@ export class Human extends MovingBody{
                 const move=v2.from_PolarMovement(this.input.movement)
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
-
                 if(this.health_data.downed){
                     this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
                 }else{
@@ -806,10 +803,8 @@ export class Human extends MovingBody{
                 this.physical_data.rotation=this.input.rotation
                 this.physical_data.velocity=v2.zero()
             }
-
             this.equipment_data.force_default_scope=false
             super.update(dt)
-
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false

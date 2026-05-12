@@ -39,6 +39,10 @@ export interface GameRules{
             }
         },
         keep_inventory:boolean
+        help_up:{
+            time:number
+            distance:number
+        }
     }
     ambient:{
         day_night_cycle:number
@@ -90,7 +94,11 @@ export abstract class ModeManager{
                     speed:0.5
                 },
             },
-            keep_inventory:false
+            keep_inventory:false,
+            help_up:{
+                time:7,
+                distance:1
+            }
         },
         ambient:{
             day_night_cycle:1,

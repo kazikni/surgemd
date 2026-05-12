@@ -418,7 +418,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.pistol("m9","9mm",{
             fire_delay:0.15,
             fire_mode:FireMode.Single,
-            spread:1,
+            spread:2,
 
             ammo_spawn:{
                 amount:45,
@@ -431,7 +431,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     falloff:0.8,
                     speed:45,
                     obstacleMult:1.2,
-                    tracer:tracers.small
+                    tracer:tracers.small,
                 }
             },
             recoil:{
@@ -447,7 +447,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 dual_offset:0.2,
 
                 fire_delay:0.1,
-                spread:2,
+                spread:3,
                 ammo_spawn:{
                     amount:90,
                 },
@@ -516,7 +516,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:0.7,
 
             ammo_spawn:{
-                amount:25
+                amount:30
             },
 
             bullet:{
@@ -534,7 +534,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:3,
-                capacity:5,
+                capacity:6,
                 extended_capacity:10,
             },
             dual:{
@@ -542,55 +542,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
                 fire_delay:0.2,
                 ammo_spawn:{
-                    amount:50
+                    amount:60
                 },
                 reload:{
-                    capacity:10,
-                    extended_capacity:20,
+                    capacity:12,
+                    extended_capacity:24,
                     delay:5
-                }
-            },
-        }),
-        guns_factory.pistol("m9","9mm",{
-            fire_delay:0.15,
-            fire_mode:FireMode.Single,
-            spread:1,
-
-            ammo_spawn:{
-                amount:45,
-            },
-
-            bullet:{
-                def:{
-                    damage:11,
-                    range:110,
-                    falloff:0.8,
-                    speed:45,
-                    obstacleMult:1.2,
-                    reflection:BulletReflection.All,
-                    tracer:tracers.small
-                }
-            },
-            recoil:{
-                duration:0.2,
-                speed:0.8
-            },
-            reload:{
-                delay:2,
-                capacity:15,
-                extended_capacity:20,
-            },
-            dual:{
-                dual_offset:0.2,
-
-                fire_delay:0.1,
-                spread:2,
-                ammo_spawn:{
-                    amount:90,
-                },
-                reload:{
-                    capacity:30,
-                    delay:3
                 }
             },
         }),

@@ -1,9 +1,9 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { BasicSocket, FetchFileManager, FileManager, IPLocation, isMobile, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/client.ts";
+import { BasicSocket, FetchFileManager, FileManager, IPLocation, isMobile, NetStream, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
-import { sandbox_version } from "./config.ts";
+import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
 import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
@@ -95,10 +95,13 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
             this.menu_manager.show_loading_screen()
             switch(play.type){
                 case "online":{
-                    const reg=this.menu_manager.api_settings.regions[this.game.save.get_variable("sv_game_region")]
-                    const ser=new IPLocation(reg.host,reg.port)
-                    const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).json())
-
+                    const ghost=await(await fetch(API_BASE+"/find-game",{
+                        method:"post",
+                        body:JSON.stringify({
+                            ...play,
+                            region:this.game.save.get_variable("sv_game_region"),
+                        })
+                    })).json()
                     if(ghost.status===0){
                         this.game.connect(ghost.address)
                     }

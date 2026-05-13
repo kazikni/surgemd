@@ -25,6 +25,7 @@ export * from "./math/utils.ts"
 export * from "./math/vec2.ts"
 export * from "./math/vec3.ts"
 
+export * from "./net/client.ts"
 export * from "./net/packets.ts"
 export * from "./net/server_base.ts"
 export * from "./net/stream.ts"

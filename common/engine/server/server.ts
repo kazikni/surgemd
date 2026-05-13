@@ -6,217 +6,303 @@ import { splitPath } from "../core/math/utils.ts";
 export type HandlerFunc = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Response | null;
 export type HandlerFuncAsync = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Promise<Response | null>;
 
-export function Cors(res: Response): Response {
-  
-  res.headers.append("Access-Control-Allow-Origin", "*");
-  res.headers.append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.headers.append("Access-Control-Allow-Headers", "origin, content-type, accept, x-requested-with");
-  res.headers.append("Access-Control-Max-Age", "3600");
+export interface RequestLimitConfig {
+    enabled: boolean
 
-  return res;
+    windowMs: number
+    maxRequests: number
+
+    burst?: number
+
+    status?: number
+    message?: string
+
+    cleanupInterval?: number
 }
 
+export class RequestLimiter {
+    private map = new Map<string, {
+        count: number
+        resetAt: number
+    }>()
+    constructor(public config: RequestLimitConfig) {}
+    allow(ip: string): boolean {
+        if (!this.config.enabled) return true
+        const now = Date.now()
+        let entry = this.map.get(ip)
+        if (!entry || now >= entry.resetAt) {
+            entry = {
+                count: 0,
+                resetAt: now + this.config.windowMs
+            }
+            this.map.set(ip, entry)
+        }
+        const limit =this.config.maxRequests+(this.config.burst ?? 0)
+        if (entry.count >= limit) {
+            return false
+        }
+        entry.count++
+        return true
+    }
+    getRemaining(ip: string): number {
+        const entry = this.map.get(ip)
+        if (!entry) {
+            return this.config.maxRequests
+        }
+        const limit=this.config.maxRequests+(this.config.burst ?? 0)
+        return Math.max(0, limit - entry.count)
+    }
+    clear(ip: string) {
+        this.map.delete(ip)
+    }
+    cleanup() {
+        const now = Date.now()
+        for (const [ip, entry] of this.map) {
+            if (now >= entry.resetAt) {
+                this.map.delete(ip)
+            }
+        }
+    }
+    start() {
+        setInterval(() => {
+            this.cleanup()
+        }, this.config.cleanupInterval ?? 60_000)
+    }
+}
+
+export const default_handlers={
+    websocket(req:Request):{response:Response,socket?:WebSocket}{
+        const upgrade = req.headers.get("upgrade") || "";
+        if (upgrade.toLowerCase() != "websocket") {
+            return {response:new Response("Request isn't trying to upgrade to WebSocket.", { status: 406 })}
+        }
+
+        const result = Deno.upgradeWebSocket(req)
+        return result
+    },
+    cors(res: Response): Response {
+        res.headers.append("Access-Control-Allow-Origin", "*");
+        res.headers.append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.headers.append("Access-Control-Allow-Headers", "origin, content-type, accept, x-requested-with");
+        res.headers.append("Access-Control-Max-Age", "3600");
+        return res;
+    },
+    async json_request(req:Request,method:string="POST"):Promise<{response?:Response,content:any}>{
+        if(req.method!==method){
+            return {
+                response:new Response("Invalid Method",{status:401}),
+                content:undefined
+            }
+        }
+        try{
+            return {
+                content:await req.json()
+            }
+        }catch(_e){
+            return {
+                response:new Response("Internal Server Error",{status:401}),
+                content:undefined
+            }
+        }
+    }
+}
 const FilesResponse: Record<string, (name: string) => Promise<Response | null>> = {
-  ".html": async (name) => {
-    try {
-      const content = await Deno.readTextFile(name);
-      return new Response(content, { status: 200, headers: { "Content-Type": "text/html" } });
-    } catch {
-      return null;
-    }
-  },
-  "": async (name) => {
-    try {
-      const content = await Deno.readTextFile(join(name, "index.html"));
-      return new Response(content, { status: 200, headers: { "Content-Type": "text/html" } });
-    } catch {
-      return null;
-    }
-  },
-  ".js": async (name) => {
-    try {
-      const content = await Deno.readTextFile(name);
-      return new Response(content, { status: 200, headers: { "Content-Type": "application/javascript" } });
-    } catch {
-      return null;
-    }
-  },
-  ".ts": async (name) => {
-    try {
-      const content = await Deno.readTextFile(name.replace(".ts", ".ts"));
-      return new Response(content, { status: 200, headers: { "Content-Type": "application/javascript" } });
-    } catch {
-      return null;
-    }
-  },
-  ".png": async (name) => {
-    try {
-      const content = await Deno.readFile(name);
-      return new Response(content, { status: 200, headers: { "Content-Type": "image/png" } });
-    } catch {
-      return null;
-    }
-  },
+    ".html": async (name) => {
+        try {
+            const content = await Deno.readTextFile(name);
+            return new Response(content, { status: 200, headers: { "Content-Type": "text/html" } });
+        } catch {
+            return null;
+        }
+    },
+    "": async (name) => {
+        try {
+            const content = await Deno.readTextFile(join(name, "index.html"));
+            return new Response(content, { status: 200, headers: { "Content-Type": "text/html" } });
+        } catch {
+            return null;
+        }
+    },
+    ".js": async (name) => {
+        try {
+            const content = await Deno.readTextFile(name);
+            return new Response(content, { status: 200, headers: { "Content-Type": "application/javascript" } });
+        } catch {
+            return null;
+        }
+    },
+    ".ts": async (name) => {
+        try {
+            const content = await Deno.readTextFile(name.replace(".ts", ".ts"));
+            return new Response(content, { status: 200, headers: { "Content-Type": "application/javascript" } });
+        } catch {
+            return null;
+        }
+    },
+    ".png": async (name) => {
+        try {
+            const content = await Deno.readFile(name);
+            return new Response(content, { status: 200, headers: { "Content-Type": "image/png" } });
+        } catch {
+            return null;
+        }
+    },
 };
 
 export class Router {
-  private routes: Map<string, (HandlerFunc | HandlerFuncAsync)[]> = new Map();
-  private sub_routers: Map<string, Router> = new Map();
-  failCallback: HandlerFunc | HandlerFuncAsync;
+    private routes: Map<string, (HandlerFunc | HandlerFuncAsync)[]> = new Map();
+    private sub_routers: Map<string, Router> = new Map();
+    failCallback: HandlerFunc | HandlerFuncAsync;
 
-  constructor(failCallback: HandlerFunc | HandlerFuncAsync = (_req) => new Response("Not Found :(", { status: 404 })) {
-    this.failCallback = failCallback;
-  }
-
-  protected add_route(url: string, handler: HandlerFunc | HandlerFuncAsync): void {
-
-
-    const middleware: HandlerFuncAsync = async (req, path, info) => {
-      return await handler(req, path, info);
-    };
-
-    if (!this.routes.has(url)) {
-      this.routes.set(url, []);
+    constructor(failCallback: HandlerFunc | HandlerFuncAsync = (_req) => new Response("Not Found :(", { status: 404 })) {
+        this.failCallback = failCallback;
     }
-    this.routes.get(url)!.push(middleware);
-  }
 
-  private _route(url: string[], handler: HandlerFunc | HandlerFuncAsync | Router) {
-    if (url.length == 1) {
-      if (handler instanceof Router) {
-        this.sub_routers.set(url[0], handler);
-        this.add_route(url[0], handler._handler());
-      } else {
-        this.add_route(url[0], handler);
-      }
-    } else if (url.length > 1) {
-      const name = url[0];
-      url.shift();
-      if (this.sub_routers.has(name)) {
-        this.sub_routers.get(name)!._route(url, handler);
-      } else {
-        this.sub_routers.set(name, new Router(this.failCallback));
-        this.sub_routers.get(name)!._route(url, handler);
-        this.add_route(name, this.sub_routers.get(name)!._handler());
-      }
-    }
-  }
-
-  private _remove_route(url: string[]) {
-    if (url.length == 1) {
-      this.routes.delete(url[0]);
-    } else if (url.length > 1) {
-      const name = url[0];
-      url.shift();
-      if (this.sub_routers.has(name)) {
-        this.sub_routers.get(name)!._remove_route(url);
-      }
-    }
-  }
-
-  remove_route(url: string) {
-    this._remove_route(splitPath(url));
-  }
-
-  route(url: string, ...handlers: (HandlerFunc | HandlerFuncAsync | Router)[]) {
-    handlers.forEach(handler => {
-      this._route(splitPath(url), handler);
-    });
-  }
-
-  folder(url: string, path: string) {
-    this.route(url, async (req, url_path, info: Deno.ServeHandlerInfo) => {
-      const filePath = join(path, ...url_path);
-      if (!existsSync(filePath)) {
-        if (!filePath.endsWith("index.html")) {
-          return await this._handler()(req, [...url_path, "index.html"], info);
+    protected add_route(url: string,handler: HandlerFunc | HandlerFuncAsync): void {
+        if(!this.routes.has(url)) {
+            this.routes.set(url, []);
         }
-        return null;
-      }
-      const ext = extname(filePath);
-      if (FilesResponse[ext]) {
-        return await FilesResponse[ext](filePath);
-      }
-      return await serveFile(req, filePath);
-    });
-  }
-
-  protected _handler(): (req: Request, path: string[], info: Deno.ServeHandlerInfo) => Promise<Response | null> {
-    return async (req, path, info) => {
-      path.shift();
-      const handlers = (this.routes.get(path[0]) ?? []);
-      handlers.push(...(this.routes.get("") ?? []));
-      for (const handler of handlers) {
-        const ret = handler(req, [...path], info);
-        if (ret instanceof Promise) {
-          const response = await ret;
-          if (response) {
-            return response;
-          }
-        } else if (ret) {
-          return ret;
+        this.routes.get(url)!.push(handler);
+    }
+    private _route(url: string[], handler: HandlerFunc | HandlerFuncAsync | Router) {
+        if (url.length == 1) {
+            if (handler instanceof Router) {
+                this.sub_routers.set(url[0], handler);
+                this.add_route(url[0], handler._handler());
+            } else {
+                this.add_route(url[0], handler);
+            }
+        } else if (url.length > 1) {
+            const name = url[0];
+            url.shift();
+            if (this.sub_routers.has(name)) {
+                this.sub_routers.get(name)!._route(url, handler);
+            } else {
+                this.sub_routers.set(name, new Router(this.failCallback));
+                this.sub_routers.get(name)!._route(url, handler);
+                this.add_route(name, this.sub_routers.get(name)!._handler());
+            }
         }
-      }
-      return null;
-    };
-  }
+    }
+
+    private _remove_route(url: string[]) {
+        if (url.length == 1) {
+            this.routes.delete(url[0]);
+        } else if (url.length > 1) {
+            const name = url[0];
+            url.shift();
+            if (this.sub_routers.has(name)) {
+                this.sub_routers.get(name)!._remove_route(url);
+            }
+        }
+    }
+
+    remove_route(url: string) {
+        this._remove_route(splitPath(url));
+    }
+
+    route(url: string, ...handlers: (HandlerFunc | HandlerFuncAsync | Router)[]) {
+        handlers.forEach(handler => {
+            this._route(splitPath(url), handler);
+        });
+    }
+
+    folder(url: string, path: string) {
+        this.route(url, async (req, url_path, info: Deno.ServeHandlerInfo) => {
+            const filePath = join(path, ...url_path);
+            if(!existsSync(filePath)) {
+                if (!filePath.endsWith("index.html")) {
+                  return await this._handler()(req, [...url_path, "index.html"], info);
+                }
+                return null;
+            }
+            const ext = extname(filePath);
+            if (FilesResponse[ext]) {
+                return await FilesResponse[ext](filePath);
+            }
+            return await serveFile(req, filePath);
+        });
+    }
+
+    protected _handler():HandlerFuncAsync{
+        return async (req, path, info) => {
+            path.shift()
+            const handlers = [
+                ...(this.routes.get(path[0]) ?? []),
+                ...(this.routes.get("") ?? [])
+            ]
+            for (const handler of handlers) {
+                const ret = handler(req, [...path], info)
+                if (ret && typeof (ret as Promise<any>).then === "function") {
+                    const response = await ret
+                    if (response) {
+                        return response
+                    }
+                } else if (ret) {
+                    return ret
+                }
+            }
+
+            return null
+        }
+    }
 }
 
 export class Server extends Router {
-  port: number;
-  https: boolean = false;
-  certFile: string;
-  keyFile: string;
-  server: Deno.HttpServer | null;
+    port: number;
+    https: boolean = false;
+    certFile: string;
+    keyFile: string;
+    server: Deno.HttpServer | null;
 
-  constructor(port: number = 5000, https: boolean = false, certFile: string = "", keyFile: string = "") {
-    super();
-    this.port = port;
-    this.https = https;
-    this.certFile = certFile;
-    this.keyFile = keyFile;
-    this.server = null;
-  }
-
-  run() {
-    if (this.https) {
-      this.server = Deno.serve({
-        port: this.port,
-        hostname:"0.0.0.0",
-        cert: Deno.readTextFileSync(this.certFile),
-        key: Deno.readTextFileSync(this.keyFile),
-      }, async (req: Request, info: Deno.ServeHandlerInfo) => {
-        const url = new URL(req.url);
-        const path = [""];
-        path.push(...splitPath(url.pathname));
-        let val = (await this._handler()(req, path, info));
-        if (!val) {
-          const re = this.failCallback(req, path, info);
-          val = (await re) ?? new Response("fail");
-        }
-        return val as Response;
-      });
-    } else {
-      this.server = Deno.serve({
-        port: this.port,
-        hostname:"0.0.0.0"
-      }, async (req: Request, info: Deno.ServeHandlerInfo) => {
-        const url = new URL(req.url);
-        const path = [url.host];
-        path.push(...splitPath(url.pathname));
-        let val = (await this._handler()(req, path, info));
-        if (!val) {
-          const re = this.failCallback(req, path, info);
-          val = (await re) ?? new Response("fail");
-        }
-        return val as Response;
-      });
+    default_handlers:typeof default_handlers
+    constructor(port: number = 5000, https: boolean = false, certFile: string = "", keyFile: string = "") {
+        super();
+        this.port = port;
+        this.https = https;
+        this.certFile = certFile;
+        this.keyFile = keyFile;
+        this.server = null;
+        this.default_handlers=default_handlers
     }
-  }
-
-  async stop() {
-    if (this.server) {
-      await this.server.shutdown();
+    run() {
+        if (this.https) {
+            this.server = Deno.serve({
+                port: this.port,
+                hostname:"0.0.0.0",
+                cert: Deno.readTextFileSync(this.certFile),
+                key: Deno.readTextFileSync(this.keyFile),
+            }, async (req: Request, info: Deno.ServeHandlerInfo) => {
+                const url = new URL(req.url);
+                const path = [""];
+                path.push(...splitPath(url.pathname));
+                let val = (await this._handler()(req, path, info));
+                if (!val) {
+                    const re = this.failCallback(req, path, info);
+                    val = (await re) ?? new Response("fail");
+                }
+                return val as Response;
+            });
+        } else {
+            this.server = Deno.serve({
+                port: this.port,
+                hostname:"0.0.0.0"
+            }, async (req: Request, info: Deno.ServeHandlerInfo) => {
+                const url = new URL(req.url);
+                const path = [url.host];
+                path.push(...splitPath(url.pathname));
+                let val = (await this._handler()(req, path, info));
+                if (!val) {
+                    const re = this.failCallback(req, path, info);
+                    val = (await re) ?? new Response("fail");
+                }
+                return val as Response;
+            });
+        }
     }
-  }
+    async stop() {
+        if (this.server) {
+            await this.server.shutdown();
+        }
+    }
 }

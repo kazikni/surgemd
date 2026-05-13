@@ -999,7 +999,6 @@ export class Human extends MovingBody{
                     ],()=>{
                         this.update_weapon(this.current_weapon)
                     })
-                    console.log(animations)
                     break
                 case PlayerAnimationType.Reset:
                     break
@@ -1138,6 +1137,8 @@ export class Human extends MovingBody{
                     speed:7,
                     scale:random.float(2,3),
                     frame:{
+                        layer:this.layer,
+                        zIndex:zIndexes.Particles,
                         image:"shield_part"
                     },
                     angle:a,
@@ -1160,7 +1161,9 @@ export class Human extends MovingBody{
                 scale:0.1,
                 frame:{
                     image:"shockwave",
-                    hotspot:v2(.5,.5)
+                    layer:this.layer,
+                    zIndex:zIndexes.Particles,
+                    hotspot:v2.half_one
                 },
                 tint:ColorM.rgba(255,255,255,255),
                 to:{

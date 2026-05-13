@@ -13,7 +13,7 @@
                     "task":"cd server & deno run --watch -A ./src/game_server/main.ts"
                 },
                 "api":{
-                    "task":"cd server & go run src/api/main.go"
+                    "task":"cd server & deno run --watch -A ./src/api/main.ts"
                 },
                 "client":{
                     "task":"cd client & smde run vite"
@@ -27,7 +27,7 @@
                     "task":"cd server & deno run --watch -A ./src/game_server/main.ts"
                 },
                 "api":{
-                    "task":"cd server & go run src/api/main.go"
+                    "task":"cd server & deno run --watch -A ./src/api/main.ts"
                 },
                 "client":{
                     "task":"cd client & smde run vite"

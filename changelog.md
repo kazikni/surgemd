@@ -18,6 +18,7 @@ __                                                                              
 * M79 - Explosive Misc Gun
 * Shovel - A New Melee
 * Katana - A New Melee
+* Famas Sprite And Sounds
 __                                                                                                      __
 ### Others
 * Campfire Crate

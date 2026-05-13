@@ -1,5 +1,5 @@
 import { type DegAngle, type RadAngle } from "./geometry.ts";
-import { Numeric, type ID } from "./utils.ts";
+import { type ID } from "./utils.ts";
 import { type Vec2 } from "./vec2.ts";
 
 export interface WeightDefinition{
@@ -63,6 +63,13 @@ export const random=Object.freeze({
     },
     irandom1(val:Random1):number{
         return typeof val==="number"?val:this.int(val.min,val.max)
+    },
+    code(n:number,chars:string="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"){
+        let out=""
+        for(let i=0;i<n;i++){
+            out+=chars[random.int(0,chars.length)]
+        }
+        return out
     }
 })
 export class SeededRandom {
@@ -138,6 +145,15 @@ export class SeededRandom {
     irandom1(val: Random1): number {
         return typeof val === "number" ? val : this.int(val.min, val.max);
     }
+
+    code(n:number,chars:string="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"){
+        let out=""
+        for(let i=0;i<n;i++){
+            out+=chars[this.int(0,chars.length)]
+        }
+        return out
+    }
+
     set_seed(seed: number) {
         this.seed = seed;
         this._rng = seed;

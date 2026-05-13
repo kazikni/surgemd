@@ -43,7 +43,7 @@ export class ReplayRecorder {
         const header = new Uint8Array(32)
         const view = new DataView(header.buffer)
 
-        header.set(new TextEncoder().encode(".REPL"), 0)
+        header.set(NetStream.encoder.encode(".REPL"), 0)
 
         view.setUint16(5, this.version, true)
         view.setUint8(7, this.tickRate)

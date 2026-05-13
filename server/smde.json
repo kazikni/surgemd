@@ -11,7 +11,7 @@
                     "task":"deno run --watch -A ./src/game_server/others/main.ts"
                 },
                 "api":{
-                    "task":"go run src/api/main.go"
+                    "task":"deno run --watch -A ./src/api/main.ts"
                 }
             }
         },
@@ -19,7 +19,7 @@
             "task": "smde task run",
             "childs": {
                 "api": {
-                    "task": "go run src/api/main.go"
+                    "task":"deno run --watch -A ./src/api/main.ts"
                 },
                 "game": {
                     "task": "deno run --watch -A ./src/game_server/main.ts"

@@ -352,7 +352,7 @@ export class MenuManager{
     }
     join_group(code:string){
         if(!api)return
-        const ws=new WebSocket(`${api_server.toString("ws")}/group/join/${code}`)
+        const ws=new WebSocket(`${api_server.toString("ws")}/group/join/?code=${code}`)
         ws.addEventListener("message",this.manage_team_message.bind(this))
         ws.addEventListener("close",this.leave_group.bind(this))
         this.team_ws=ws

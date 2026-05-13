@@ -7,8 +7,8 @@ import { v3 } from "../math/vec3.ts";
 //Thanks Suroi.io
 
 export class NetStream {
-    protected static readonly decoder = new TextDecoder();
-    protected static readonly encoder = new TextEncoder();
+    static readonly decoder = new TextDecoder();
+    static readonly encoder = new TextEncoder();
 
     readonly _view: DataView;
     readonly _u8Array: Uint8Array;

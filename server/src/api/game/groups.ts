@@ -1,6 +1,6 @@
 import { Server } from "common/engine/server.ts";
 import { random } from "common/engine/core.ts";
-import { ApiServer } from "../server.ts";
+import { type ApiServer } from "../server.ts";
 
 export class GroupPlayer {
     group:Group

@@ -65,6 +65,7 @@ export class Grenade extends MovingBody{
                         tint:col,
                         angle:ang,
                         scale:0.01,
+                        layer:this.layer,
                         to:{
                             scale:1,
                             tint:col2

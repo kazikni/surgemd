@@ -621,7 +621,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.assault("ar15","556mm",{
-            fire_delay:0.05,
+            fire_delay:0.07,
             spread:5,
 
             ammo_spawn:{
@@ -730,7 +730,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:2.5,
-                capacity:25,
+                capacity:24,
                 extended_capacity:30,
             },
             recoil:{

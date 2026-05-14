@@ -255,7 +255,7 @@ export const obstacles_factory={
             particle?:string
             o?:DeepPartial<ObstacleDef>
         }={}):ObstacleDef[]{
-            const health=settings.health??15
+            const health=settings.health??10
             return [
                 this.column_1(id+"_column",tint,settings.particle,settings.o),
 
@@ -699,7 +699,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         },
         {
             idString:"small_stove",
-            health:200,
+            health:90,
             hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
             scale:{
                 destroy:0.9
@@ -724,7 +724,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         },
         {
             idString:"sink",
-            health:200,
+            health:90,
             hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
             scale:{
                 destroy:0.9

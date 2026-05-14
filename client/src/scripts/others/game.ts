@@ -635,7 +635,7 @@ export class Game extends ClientGame<GameObject>{
             }
         }
         this.terrain.draw(this.terrain_gfx,this.cam2d.layer)
-        this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.06)
+        this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.05)
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
 
@@ -661,7 +661,7 @@ export class Game extends ClientGame<GameObject>{
 
         const size=v2(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
         v2m.ceil(size)
-        grid_gfx.fill_color({r:0,g:0,b:0,a:0.2})
+        grid_gfx.fill_color({r:0,g:0,b:0,a:0.1})
         grid_gfx.drawGrid(begin,size,gridSize,line_size)
     }
     override on_render(_dt: number): void {

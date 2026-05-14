@@ -13,12 +13,14 @@ __                                                                              
 * Mobile Aim Line
 __                                                                                                      __
 ### Items
+* Fist - New Default Melee
 * M1 Garand - 762MM DMR
 * Colt1873 - 45ACP pistol
 * M79 - Explosive Misc Gun
 * Shovel - A New Melee
 * Katana - A New Melee
 * Famas Sprite And Sounds
+* Survival Knife Alt Animation
 __                                                                                                      __
 ### Others
 * Campfire Crate
@@ -29,12 +31,13 @@ __                                                                              
 ### Items
 * Improve Grenades Physics
 __                                                                                                      __
+### Menu
+* New Game Over Music
+__                                                                                                      __
 ### Others
 * Improve Explosions Physics
 * Improve Musics Loading
-__                                                                                                      __
-### Menu
-* New Game Over Music
+* Deno API
 __                                                                                                      __
 # Play The Game
 [Web Version](https://surgemd.io)

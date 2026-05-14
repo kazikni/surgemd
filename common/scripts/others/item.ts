@@ -39,12 +39,12 @@ export interface WeaponAssets{
 }
 export const DefaultFistRig:FistRig={
     left:{
-        position:v2(0.5,-0.25),
-        rotation:0.1,
+        position:v2(0.37,-0.25),
+        rotation:0,
     },
     right:{
-        position:v2(0.5,0.25),
-        rotation:-0.1,
+        position:v2(0.37,0.25),
+        rotation:0,
     }
 }
 export const WeaponsArmRig={

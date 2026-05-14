@@ -59,14 +59,6 @@ export const TundraMap:MapDef={
             {item:"scope_6",count:1,weight:0.01},
             {item:"scope_7",count:1,weight:0.001},
         ],
-        "special_scopes":[
-            {item:"scope_3",count:1,weight:10},
-            {item:"scope_4",count:1,weight:1.7},
-            {item:"scope_2",count:1,weight:0.4},
-            {item:"scope_5",count:1,weight:0.1},
-            {item:"scope_6",count:1,weight:0.01},
-            {item:"scope_7",count:1,weight:0.001},
-        ],
         "guns":[
             {item:"sr25",weight:21},
             {item:"model94",weight:21},
@@ -104,24 +96,19 @@ export const TundraMap:MapDef={
                 {weight:2,count:2,table:"accessorys"},
                 {weight:0.5,count:3,table:"accessorys"},
             ],
-            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:"normal_scopes"}],
         ],
         "wood_crate":[
             {weight:2,count:3,table:"normal_loot"},
             {weight:1,count:4,table:"normal_loot"},
             {weight:0.5,count:5,table:"normal_loot"},
         ],
-        "copper_crate":[
-            {weight:1,count:4,table:"special_loot"},
-            {weight:0.5,count:5,table:"special_loot"},
-            {weight:0.25,count:6,table:"special_loot"},
-        ],
     },
     default_floor:FloorType.Water,
     biome:TundraBiome,
     generation:{
         island:{
-            size:v2(480,480),
+            size:v2(500,500),
             spawn:[
                 [
                     {def:map_spawns.containers,count:20},
@@ -142,11 +129,12 @@ export const TundraMap:MapDef={
                 ]
             ],
             terrain:{
-                base:FloorType.Water,
+                base:FloorType.Ice,
                 rivers:{
                     divisions:100,
                     spawn_floor:1,
                     expansion:32,
+                    floor:FloorType.Ice,
                     defs:[
                         {
                             rivers:[

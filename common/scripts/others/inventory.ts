@@ -123,7 +123,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         this.set_backpack()
         this.weapons_kind=weapons_kind
         this.weapons_defaults=weapons_defaults??{
-            0:definitions.melees.getFromString("survival_knife")
+            0:definitions.melees.getFromString("fist")
         }
         this.clear_weapons()
         this.iitems.push(definitions.scopes.getFromNumber(0))

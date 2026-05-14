@@ -54,7 +54,7 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Ice]: {
         default_color: 0x4681a3,
-        acceleration:0.1,
+        acceleration:0.05,
         floor_kind:FloorKind.Ice,
         footstep_sounds:["footstep_ice_1","footstep_ice_2"]
     },

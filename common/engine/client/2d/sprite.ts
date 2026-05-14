@@ -31,6 +31,7 @@ export class Sprite2D extends Container2DObject{
         return this._frame
     }
     set frame(f:Frame|undefined){
+        if(f?.id&&f.id===this.frame?.id)return
         this._frame=f
         this.dirty_reals=true
     }

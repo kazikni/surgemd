@@ -87,6 +87,7 @@ export const NormalMap:MapDef={
             {table:"legendary_guns",weight:0.03}
         ],
         "melees":[
+            {item:"survival_knife",weight:15},
             {item:"shovel",weight:15},
             {item:"axe",weight:10},
             {item:"katana",weight:4},
@@ -162,14 +163,6 @@ export const NormalMap:MapDef={
             {item:"scope_6",count:1,weight:0.01},
             {item:"scope_7",count:1,weight:0.001},
         ],
-        "special_scopes":[
-            {item:"scope_2",count:1,weight:23},
-            {item:"scope_3",count:1,weight:10},
-            {item:"scope_4",count:1,weight:1.5},
-            {item:"scope_5",count:1,weight:0.1},
-            {item:"scope_6",count:1,weight:0.01},
-            {item:"scope_7",count:1,weight:0.001},
-        ],
         //Armors And Backpacks
         "helmets":[
             {item:"basic_helmet",weight:8},
@@ -195,19 +188,6 @@ export const NormalMap:MapDef={
             {table:"vests",weight:1},
             {table:"backpacks",weight:1},
         ],
-        "special_equipments":[
-            {item:"basic_vest",weight:8},
-            {item:"regular_vest",weight:3},
-            {item:"tactical_vest",weight:0.15},
-
-            {item:"basic_helmet",weight:8},
-            {item:"regular_helmet",weight:1},
-            {item:"tactical_helmet",weight:0.15},
-
-            {item:"basic_pack",weight:8},
-            {item:"regular_pack",weight:1},
-            {item:"tactical_pack",weight:0.15},
-        ],
         "tactical_equipments":[
             {item:"tactical_vest",weight:1},
             {item:"tactical_helmet",weight:1},
@@ -226,6 +206,15 @@ export const NormalMap:MapDef={
             {weight:4,item:"high_quality_projectiles"},
         ],
         //Loot Tables
+        "civil_loot":[
+            {weight:1,table:"ammos"},
+            {weight:1,table:"consumibles"},
+            {weight:0.7,table:"equipments"},
+            {weight:0.7,table:"scopes"},
+            {weight:0.2,table:"throwables"},
+            {weight:0.1,table:"guns"},
+            {weight:0.01,table:"melees"},
+        ],
         "normal_loot":[
             {weight:1,table:"ammos"},
             {weight:1,table:"consumibles"},
@@ -234,15 +223,6 @@ export const NormalMap:MapDef={
             {weight:0.6,table:"scopes"},
             {weight:0.55,table:"throwables"},
             {weight:0.05,table:"melees"},
-        ],
-        "special_loot":[
-            {weight:1,table:"ammos"},
-            {weight:1,table:"consumibles"},
-            {weight:0.85,table:"guns"},
-            {weight:0.6,table:"special_equipments"},
-            {weight:0.6,table:"special_scopes"},
-            {weight:0.55,table:"throwables"},
-            {weight:0.1,table:"melees"},
         ],
         "loot_drawer":[
             {weight:2,count:2,table:"normal_loot"},
@@ -268,10 +248,9 @@ export const NormalMap:MapDef={
             [{weight:1,table:"melees"}],
         ],
         "copper_crate":[
-            {weight:2,count:2,table:"special_loot"},
-            {weight:1,count:3,table:"special_loot"},
-            {weight:0.5,count:4,table:"special_loot"},
-            {weight:0.25,count:5,table:"special_loot"},
+            [{weight:1,table:"civil_loot",count:3}],
+            [{weight:1,table:"normal_loot",count:2}],
+            [{weight:1,table:"guns"}],
         ],
         "iron_crate":[
             [{weight:1,table:"ammos",count:2}],
@@ -279,7 +258,7 @@ export const NormalMap:MapDef={
             [{weight:1,table:"tactical_equipments"}],
             [{weight:1,table:"mythic_guns"}],
             [{weight:1,table:"throwables"}],
-            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:"scopes"}],
             [{weight:9,table:""},{weight:1,table:"melees"}],
         ],
         "gold_crate":[
@@ -288,7 +267,7 @@ export const NormalMap:MapDef={
             [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
             [{weight:10,table:"legendary_guns"}],
             [{weight:1,table:"throwables"}],
-            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:"scopes"}],
             [{weight:1,table:""},{weight:4,table:"melees"}],
         ],
         "platinum_crate":[
@@ -299,7 +278,7 @@ export const NormalMap:MapDef={
             [{weight:1,count:2,table:"legendary_guns"}],
             [{weight:1,count:2,table:"melees"}],
             [{weight:1,count:5,table:"throwables"}],
-            [{weight:1,count:4,table:"special_scopes"}],
+            [{weight:1,count:4,table:"scopes"}],
         ],
         //Animals
         "animal_medium":[
@@ -310,13 +289,13 @@ export const NormalMap:MapDef={
         "golden_rock":[
             [{weight:1,table:"consumibles"}],
             [{weight:1,table:"equipments"}],
-            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:"scopes"}],
             [{weight:1,item:"kar98k"}],
         ],
         "platinum_rock":[
             [{weight:1,table:"consumibles"}],
             [{weight:1,table:"equipments"}],
-            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:"scopes"}],
             [{weight:1,item:"awp"}],
         ],
     },
@@ -329,7 +308,7 @@ export const NormalMap:MapDef={
     ],
     generation:{
         island:{
-            size:v2(480,480),
+            size:v2(500,500),
             spawn:[
                 [
                     //{def:"watchtower",count:5},

@@ -412,6 +412,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
       
     }
     on_fire(user: Human,_slot?: Slot<LItem>): void {
+        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
         if(this.use_delay<=0){
             user.actions.cancel()
 

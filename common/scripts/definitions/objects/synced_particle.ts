@@ -144,7 +144,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             lifetime:1,
             frame:{
                 image:"smoke_particle",
-                scale:1.25,
+                scale:2,
                 alpha:0.92
             },
             movement:{

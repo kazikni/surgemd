@@ -542,9 +542,13 @@ export class Human extends MovingBody{
         if(this.input.swamp_guns){
             this.inventory.swamp_guns()
         }
-        if(this.input.interaction&&this.seat){
-            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
-            this.seat.clear_human()
+        if(this.input.interaction){
+            if(this.seat){
+                this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
+                this.seat.clear_human()
+            }else if(this.health_data.downed&&this.human_data.self_revive){
+                this.interact(this)
+            }
         }
         if(!this.health_data.downed&&!this.parachute){
             const executed:InputActionType[]=[]
@@ -686,14 +690,16 @@ export class Human extends MovingBody{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
+        let acceleration=40*(current_floor.acceleration??1)
+            * (this.health_data.downed?0.4:1)
+        acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
-                * (this.actions.current_action?.action_speed??1)
-                * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
-                * this.modifiers.speed
-                * (this.health_data.downed?0.25:1)
-                * (this.parachute?1:((current_floor.speed_mult??1)))
-                * (this.grenade_holding?0.7:1)
+            * (this.actions.current_action?.action_speed??1)
+            * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
+            * this.modifiers.speed
+            * (this.health_data.downed?0.25:1)
+            * (this.parachute?1:((current_floor.speed_mult??1)))
+            * (this.grenade_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
             if(this.recoil.delay<=0)this.recoil=undefined
@@ -1160,7 +1166,7 @@ export class Human extends MovingBody{
 
         this.inventory.set_weapon_index(0)
 
-        this.push(-40,params.direction)
+        this.push(-20,params.direction)
     }
     help_up(){
         if(!this.health_data.downed)return

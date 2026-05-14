@@ -7,7 +7,6 @@ import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
-import { type Obstacle } from "./obstacle.ts";
 
 export class Bullet extends ServerGameObject{
     string_type:string="bullet"
@@ -121,7 +120,7 @@ export class Bullet extends ServerGameObject{
                                 position:v2.clone(chosen.point),
                                 critical:this.critical,
                                 source:this.source as unknown as DamageSourceDef,
-                                direction:Math.atan2(chosen.dir.y,chosen.dir.x)
+                                direction:this.angle+3.1415
                             })
 
                             if(this.def.effect){
@@ -144,18 +143,6 @@ export class Bullet extends ServerGameObject{
                     }
                     break
                 }
-                /*case GameObjectType.Creature:{
-                    if((obj as Creature).hitbox&&!(obj as Creature).dead&&(this.hitbox.collidingWith(obj.hitbox)||obj.hitbox.colliding_with_line(this.old_position,this.position))){
-                        const dmg:number=this.damage
-                        *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
-                        *(this.critical?(this.defs.criticalMult??1.25):1);
-                        (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.clone(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                        this.on_hit()
-                        s=SubSteps
-                        break
-                    }
-                    break
-                }*/
                 case GameObjectType.Obstacle:
                 case GameObjectType.Building:
                     if((obj as StaticBody).physical_data.no_bullets_collision)break

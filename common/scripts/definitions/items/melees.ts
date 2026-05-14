@@ -19,6 +19,7 @@ export interface MeleeDef extends Definition{
     rig_arms?:FistRig
     rig_image?:FrameTransform
     animation?:AKeyFrame[]
+    alt_animation?:AKeyFrame[]
     assets?:WeaponAssets&{
         hit_sound?:string
     }
@@ -137,13 +138,64 @@ export function AnimationSwing(time:number):AKeyFrame[]{
     ]
 }
 export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
-    melees.insert(
-        {
-            idString:"survival_knife",
+    melees.insert({
+            idString:"fist",
             rank:ItemRank.E,
 
             hitbox:new CircleHitbox2D(v2.new(0.5,0),0.5),
-            damage:15,
+            damage:10,
+            attack_delay:0.25,
+            switch_delay:0.1,
+            damage_delays:[0.11],
+            fire_mode:FireMode.Single,
+
+            rig_arms:DefaultFistRig,
+            assets:{
+                use_sound:"fist_swing",
+                hit_sound:"fist_hit",
+            },
+
+            animation:[
+                {
+                    time:0.1,
+                    actions:[
+                        {
+                            fuser:"left_arm",
+                            type:"tween",
+                            to:{
+                                position:v2.add(DefaultFistRig.left!.position,v2(0.3,0.2)),
+                                rotation:DefaultFistRig.left!.rotation+0.4,
+                            },
+                            ease:ease.quadraticInOut,
+                            yoyo:true
+                        },
+                    ]
+                }
+            ],
+            alt_animation:[
+                {
+                    time:0.1,
+                    actions:[
+                        {
+                            fuser:"right_arm",
+                            type:"tween",
+                            to:{
+                                position:v2.add(DefaultFistRig.right!.position,v2(0.3,-0.2)),
+                                rotation:DefaultFistRig.right!.rotation-0.4,
+                            },
+                            ease:ease.quadraticInOut,
+                            yoyo:true
+                        },
+                    ]
+                }
+            ]
+        },
+        {
+            idString:"survival_knife",
+            rank:ItemRank.D,
+
+            hitbox:new CircleHitbox2D(v2.new(0.5,0),0.5),
+            damage:25,
             attack_delay:0.25,
             switch_delay:0.5,
             damage_delays:[0.11],
@@ -164,14 +216,9 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.right!.position,
                 rotation:-0.5,
                 zIndex:1,
-                hotspot:v2(0.33,0.5)
+                hotspot:v2(0.2,0.5)
             },
             animation:[
-                {
-                    time:0,
-                    actions:[
-                    ]
-                },
                 {
                     time:0.06,
                     actions:[
@@ -196,6 +243,31 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     ]
                 }
             ],
+            alt_animation:[
+                {
+                    time:0.06,
+                    actions:[
+                        {
+                            fuser:"weapon",
+                            type:"tween",
+                            yoyo:true,
+                            to:{
+                                rotation:DefaultFistRig.right!.rotation+0.2,
+                                position:v2.add(DefaultFistRig.right!.position,v2(0.3,0.05))
+                            }
+                        },
+                        {
+                            fuser:"right_arm",
+                            type:"tween",
+                            yoyo:true,
+                            to:{
+                                rotation:DefaultFistRig.right!.rotation+0.2,
+                                position:v2.add(DefaultFistRig.right!.position,v2(0.3,0.05))
+                            }
+                        }
+                    ]
+                }
+            ],
             assets:{
                 use_sound:"light_swing",
                 hit_sound:"knife_hit",
@@ -203,7 +275,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         },
         {
             idString:"axe",
-            rank:ItemRank.D,
+            rank:ItemRank.C,
 
             hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
             damage:33,
@@ -307,7 +379,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         },
         {
             idString:"katana",
-            rank:ItemRank.D,
+            rank:ItemRank.B,
 
             hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
             damage:30,

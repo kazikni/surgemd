@@ -74,7 +74,7 @@ export class AmbientManager{
 
                     return new RainParticle2D({
                         frame:{
-                            main:{ image:"raindrop_1", layer:100,scale:random.float(0.4,0.7), },
+                            main:{ image:"raindrop_1",layer:this.game.cam2d.layer,scale:random.float(0.4,0.7), },
                             wave:{ image:"raindrop_2" },
                         },
                         zindex:{
@@ -153,11 +153,13 @@ export class AmbientManager{
         this.ambience=this.game.sounds.create_controller("ambience")
         this.deadzone_ambience=this.game.sounds.create_controller("ambience")
 
-        this.game.resources.load_sound("menu_music",{src:`/sounds/musics/menu_music_${random.int(1,2)}.mp3`,volume:1},"essentials")
-        this.game.resources.load_sound("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
-        this.game.sounds.signals.on("unlock",()=>{
+        this.game.sounds.signals.on("unlock",async()=>{
+            await this.game.resources.load_sound("menu_music",{src:`/sounds/musics/menu_music.mp3`,volume:1},"essentials")
+            this.game.resources.load_sound("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
+
             const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)
+            this.music.set(menu_music)
             if(this.game.menu.intro_fineshed){
                 this.music.set(menu_music)
             }else{
@@ -218,7 +220,7 @@ export class AmbientManager{
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
         this.rain_value=value
-        if(value===0||!this.game.save.get_variable("sv_graphics_climate")||this.game.current_layer<Layers.Normal){
+        if(value===0||this.game.cam2d.layer<Layers.Normal){
             if(this.biome.ambient.sound){
                 this.ambience.set(this.game.resources.get_sound(this.biome.ambient.sound),{
                     loop:true,

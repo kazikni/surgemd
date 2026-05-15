@@ -1,4 +1,4 @@
-import { ActionEvent, AxisActionEvent, BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, isMobile, MouseEvents, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, isMobile, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -118,7 +118,7 @@ export class Game extends ClientGame<GameObject>{
             [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle],
         )
 
-        this.input_manager.mouse.meter_size=80
+        this.input_manager.meter_size=80
         this.cam2d.meter_size=80
         this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
 
@@ -183,7 +183,7 @@ export class Game extends ClientGame<GameObject>{
     override listeners_init(): void {
         this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right","left")
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
-        this.input_manager.on("axis",(a:AxisActionEvent)=>{
+        this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
             if(a.action==="movement"){
                 if(a.value.x==0&&a.value.y==0){
                     this.input.movement={dir:0,scale:0}
@@ -194,7 +194,7 @@ export class Game extends ClientGame<GameObject>{
                 if(a.value.x!==0||a.value.y!==0)this.set_lookTo_angle(Math.atan2(a.value.y,a.value.x),1)
             }
         })
-        this.input_manager.on("actiondown",(a:ActionEvent)=>{
+        this.input_manager.listener.on(InputEventType.ActionDown,(a:InputActionEvent)=>{
             if(!this.can_act)return
             switch(a.action){
                 case "fire":
@@ -204,7 +204,7 @@ export class Game extends ClientGame<GameObject>{
                     this.input.alt_use_weapon=true
                     break
                 case "emote_wheel":
-                    this.ui.begin_emote_wheel(this.input_manager.mouse.position)
+                    this.ui.begin_emote_wheel(this.input_manager.position)
                     break
                 case "reload":
                     this.input.reload=true
@@ -290,7 +290,7 @@ export class Game extends ClientGame<GameObject>{
                     break
             }
         })
-        this.input_manager.on("actionup",(a:ActionEvent)=>{
+        this.input_manager.listener.on(InputEventType.ActionUp,(a:InputActionEvent)=>{
             switch(a.action){
                 case "fire":
                     this.input.use_weapon=false
@@ -303,10 +303,10 @@ export class Game extends ClientGame<GameObject>{
                     break
             }
         })
-        this.input_manager.mouse.listener.on(MouseEvents.MouseMove,()=>{
+        this.input_manager.listener.on(InputEventType.MouseMove,()=>{
             if(!isMobile){
                 const cam_c=v2(this.cam2d.width/2,this.cam2d.height/2)
-                const mouse_p=v2.dscale(this.input_manager.mouse.position,this.cam2d.zoom)
+                const mouse_p=v2.dscale(this.input_manager.position,this.cam2d.zoom)
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
                 this.set_lookTo_angle(angle,dist)

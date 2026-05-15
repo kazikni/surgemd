@@ -103,7 +103,7 @@ export class GameSave{
 
     set_action(name:string,action:InputAction){
         if(!this.input_manager)return
-        this.input_manager.actions.set(name,action)
+        this.input_manager.actions[name]=action
         if(this.current_save){
             this.save(this.current_save)
         }
@@ -146,7 +146,7 @@ export class GameSave{
     async load(save:SaveKind){
         this.current_save=save
         if(this.input_manager){
-            this.input_manager.actions.clear()
+            this.input_manager.actions={}
             this.input_manager.default_actions=this.default_actions
         }
         switch(save.type){

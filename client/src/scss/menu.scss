@@ -1,5 +1,6 @@
-@use "palette.scss";
+@use "common/engine/main.scss";
 @use "./md.scss";
+@use "./components/text.scss" as text;
 #menu {
     width: 100%;
     height: 100%;
@@ -90,6 +91,7 @@
     }
 }
 #loading-screen {
+    @extend .span-text-base;
     position: fixed;
     inset: 0;
     background-image: url("/img/menu/background/loading_background.png");
@@ -136,14 +138,14 @@
         border-top-left-radius: 10px;
     }
 
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         #loading-screen-logo {
             width: 80px;
             height: 80px;
         }
     }
 
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         #loading-screen-logo {
             width: 60px;
             height: 60px;
@@ -158,52 +160,6 @@
     to {
         transform: rotateY(90deg);
     }
-}
-#top-left-section{
-    position: absolute;
-    display: block;
-    top: 10px;
-    left: 10px;
-    #btn-settings{
-        transition: none;
-    }
-}
-#character-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 25px;
-    width: 100%;
-}
-
-#insert-name {
-    width: 100%;
-    max-width: 300px;
-}
-
-#gamemode-info {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 15px;
-}
-#sections-tabs{
-    position: absolute; /* ou absolute */
-    z-index: 9000;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
-    margin: auto;
-    height: fit-content;
-}
-.entry-tab{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-    font-family: "Russo-One";
-    font-size: 30px;
 }
 #account-status{
     position: relative;
@@ -229,11 +185,11 @@
     user-select: none;
     margin-bottom: 100px;
     animation: TitleAnimation 23s infinite ease-in-out alternate;
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         width: 300px;
         margin-bottom: 30px;
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         width: 200px;
         margin-bottom: 15px;
     }
@@ -256,20 +212,20 @@
     height: fit-content;
     align-items: center;
     opacity: 0;
-    transition: opacity 1s linear;
+    transition: opacity 0.5s linear;
     button{
         padding-left: 40px;
         padding-right: 40px;
         width: 300px;
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         gap:6px;
         button{
             font-size: 20px;
             width: 250px;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         gap:3px;
         button{
             font-size: 15px;
@@ -284,15 +240,12 @@
     bottom: 0px;
     top: 0px;
     margin: auto;
-    transition: opacity 1s linear;
+    transition: opacity 0.5s linear;
     .close-btn{
-        width: 40px;
-        height: 40px;
-        align-self: top;
-        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        border-radius: 4px;
         font-size: 15px;
-        text-align: center;
-        padding: 0;
     }
     kl-md-submenu-content{
         gap:100px;
@@ -306,7 +259,7 @@
             text-align: left;
         }
     }
-    @media screen and (max-width: palette.$screen_large) { 
+    @include main.medium_screen { 
         kl-md-submenu-content{
             gap:75px;
         }
@@ -322,7 +275,7 @@
             font-size: 10px;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) { 
+    @include main.small_screen { 
         kl-md-submenu-content{
             gap:50px;
         }
@@ -339,115 +292,6 @@
         }
     }
 }
-#loadout-sm-extra{
-    display: flex;
-    flex-direction: column;
-    border: 2px solid #053;
-    background-color: #cfc3;
-    width: fit-content;
-    height: fit-content;
-    margin: none;
-    padding: 0px;
-}
-#loadout-sm-extra-content{
-    width: 430px;
-    height: 400px;
-    padding: 10px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    overflow-y: scroll;
-    @media screen and (max-width: palette.$screen_large) {
-        padding: 5px;
-        width: 250px;
-        height: 225px;
-        gap: 7px;
-    }
-    @media screen and (max-width: palette.$screen_medium) {
-        padding: 5px;
-        width: 215px;
-        height: 150px;
-        gap: 5px;
-    }
-}
-#loadout-sm-extra-view{
-    width: 450px;
-    height: 200px;
-    border-top: 2px solid #053;
-    .simage{
-        position: absolute;
-        left: 50%;
-        bottom:5%;
-        transform: translate(-50%,-50%);
-        width: 80px;
-        height: 80px;
-    }
-    @media screen and (max-width: palette.$screen_large) {
-        width: 300px;
-        height: 100px;
-        .simage{
-            width:20px;
-            height:20px;
-            bottom:1%;
-        }
-    }
-    @media screen and (max-width: palette.$screen_medium) {
-        width: 225px;
-        height: 50px;
-        .simage{
-            width:20px;
-            height:20px;
-            bottom:1%;
-        }
-    }
-}
-.skin-view-menu{
-    display: flex;
-    flex-direction: column;
-    width: 130px;
-    height: fit-content;
-    border: 2px solid #034;
-    align-items: center;
-    background:linear-gradient(135deg, #0343, #0364);
-    cursor: pointer;
-    .name{
-        width: 100%;
-        text-align: center;
-        border-bottom: 2px solid #034;
-    }
-    .simage{
-        margin-top: 10px;
-        margin-bottom: 10px;
-        width: 50px;
-        height: 50px;
-    }
-    @media screen and (max-width: palette.$screen_large) {
-        width: 85px;
-        font-size: 10px;
-        border-width: 2px;
-        .simage{
-            width: 25px;
-            height: 25px;
-        }
-    }
-    @media screen and (max-width: palette.$screen_medium) {
-        width: 40px;
-        font-size: 5px;
-        border-width: 1px;
-        .simage{
-            width: 25px;
-            height: 25px;
-        }
-    }
-}
-.skin-view-menu-selected{
-    border: 4px solid #034; 
-    box-shadow: 0 0 20px rgba(7, 170, 238, 0.9);
-    @media screen and (max-width: palette.$screen_medium) {
-        border-width: 2px;
-    }
-}
-
 #social-links {
     display: flex;
     justify-content: center;
@@ -511,7 +355,7 @@
             background-image: url("/img/menu/socials/linux.svg");
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         gap: 10px;
         padding: 7px;
         .social-link {
@@ -529,27 +373,25 @@
     align-content: center;
 }
 .background-menu-md{
-    width: 400px;
-    height: 400px;
-    overflow-y: scroll;
-    padding: 10px;
-    @media screen and (max-width: palette.$screen_large) {
-        width: 300px;
-        height: 300px;
-        padding: 7px;
-        font-size: 15px;
-    }
-    @media screen and (max-width: palette.$screen_medium) {
-        width: 200px;
-        height: 200px;
-        padding: 5px;
-        font-size: 10px;
-    }
-}
-.background-menu-ss{
     display: flex;
     flex-direction: column;
     gap:10px;
+    width: 400px;
+    height: 400px;
+    overflow-y: scroll;
+    padding: 30px;
+    @include main.medium_screen {
+        width: 300px;
+        height: 300px;
+        padding: 20px;
+        font-size: 15px;
+    }
+    @include main.small_screen {
+        width: 200px;
+        height: 200px;
+        padding: 15px;
+        font-size: 10px;
+    }
 }
 .updates-section {
     overflow-y: scroll;
@@ -582,7 +424,7 @@
             margin: 5px 0;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         padding: 12px;
         h2 {
             font-size: 12px;
@@ -606,10 +448,16 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 10px;
+    padding: 20px;
     text-align: center;
     align-content: center;
     font-family: "Russo-One";
+    @include main.medium_screen {
+        padding: 10px;
+    }
+    @include main.small_screen {
+        padding: 15px;
+    }
 }
 .gamemode-image{
     width: 300px;
@@ -617,7 +465,7 @@
     border-radius: 10px;
     background-size: 300px 300px;
     align-self: center;
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         background-size: 180px 180px;
         width: 180px;
         height: 180px;
@@ -709,6 +557,7 @@
 
     cursor: none;
     #text-gameover{
+        @extend .span-text-base;
         color:#47b984cc;
 
         font-size:clamp(10px, 10vw, 120px);
@@ -729,12 +578,12 @@
             text-gameover-translate 30s alternate ease-in-out infinite;
     }
     pointer-events: all;
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         #text-gameover{
             font-size:clamp(7px, 7vw, 100px);
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         #text-gameover{
             font-size:clamp(5px, 5vw, 50px);
         }
@@ -762,10 +611,10 @@
 
         animation:tvNoise 0.25s steps(6) infinite;
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         background-size:6000px 600px;
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         background-size:5000px 500px;
     }
 }
@@ -983,7 +832,7 @@
         opacity: 0.8;
         letter-spacing: 1px;
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         #phase-intro-name {
             font-size: 80px;
         }
@@ -997,7 +846,7 @@
             font-size: 12px;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         #phase-intro-name {
             font-size: 60px;
         }

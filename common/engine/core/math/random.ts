@@ -67,7 +67,7 @@ export const random=Object.freeze({
     code(n:number,chars:string="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"){
         let out=""
         for(let i=0;i<n;i++){
-            out+=chars[random.int(0,chars.length)]
+            out+=chars[random.int(0,chars.length-1)]
         }
         return out
     }

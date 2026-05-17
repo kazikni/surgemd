@@ -1,5 +1,5 @@
-@use "../palette.scss";
-@use "../fonts.scss";
+@use "common/engine/main.scss" as main;
+@use "../components/text.scss";
 @use "./gameOver.scss";
 @use "./inventory.scss";
 @use "./mobile.scss";
@@ -41,22 +41,6 @@
     overflow: visible;
     z-index: 2000;
     pointer-events: none;
-    /*--ui-theme-primary: #661166;
-    --ui-theme-secondary: #110911;*/
-
-    --ui-theme-primary: #4f6ef7;
-    --ui-theme-secondary: #1c2447;
-
-}
-#ui-weapons,
-#ui-iitems,
-#ui-items,
-#ui-aitems,
-#left-joystick,
-#right-joystick,
-#game-device-view,
-#mobile-action-buttons {
-    pointer-events: auto;
 }
 #boost-bar-container,
 #health-bar-container{
@@ -66,12 +50,12 @@
     transform: translateY(-100%),translateX(-100%);
     font-size: 20px;
     font-family: "Russo-One", serif;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: 0 0 5px var(--ui-theme-primary);
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         font-size: 12px;
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         font-size: 10px;
     }
 }
@@ -86,7 +70,7 @@
         left: 0;
         height: 100%;
         width: 100%;
-        border-radius: 8px;
+        border-radius: 4px;
     }
     #health-bar-basic-heal{
         width: 75%;
@@ -124,31 +108,20 @@
         left: 103%;
         transform: translateY(-50%);
     }
-    @media screen and (max-width: palette.$screen_large) {
-        height: 30px;
-        #health-bar,
-        #health-bar-basic-heal,
-        #health-bar-animation{
-            border-radius: 6px;
-        }
+    @include main.medium_screen{
+        height: 35px;
     }
-    @media screen and (max-width: palette.$screen_medium) {
-        height: 20px;
-        #health-bar,
-        #health-bar-basic-heal,
-        #health-bar-animation{
-            border-radius: 4px;
-        }
+    @include main.small_screen{
+        height: 25px;
     }
 }
 #boost-bar-container {
     height: 20px;
-
     #boost-bar {
         position: absolute;
         top: 0;
         left: 0;
-        border-radius: 8px;
+        border-radius: 4px;
         height: 100%;
         width: 0%;
         transition: width ease-in-out 0.2s;
@@ -163,20 +136,12 @@
         left: 103%;
         transform: translateY(-50%);
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         height: 10px;
-        border-radius: 6px;
-        #boost-bar{
-            border-radius: 6px;
-        }
     }
 
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         height: 5px;
-        border-radius: 4px;
-        #boost-bar{
-            border-radius: 4px;
-        }
     }
 }
 
@@ -202,7 +167,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
+        border-radius: 4px;
         box-shadow: 0 0 5px var(--ui-theme-primary);
         span{
             position: static;
@@ -217,7 +182,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-radius: 8px;
+        border-radius: 4px;
         box-shadow: 0 0 5px var(--ui-theme-primary);
         span{
             position: static;
@@ -232,13 +197,12 @@
             height: auto;
         }
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         width: 190px;
         gap: 7px;
         left: 7px;
         bottom: 7px;
         #hand-info{
-            border-radius: 6px;
             span{
                 font-size: 15px;
             }
@@ -247,20 +211,18 @@
             }
         }
         #action-info{
-            border-radius: 6px;
             span{
                 font-size: 15px;
             }
         }
     }
 
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         width: 150px;
         gap: 5px;
         left: 5px;
         bottom: 5px;
         #hand-info{
-            border-radius: 4px;
             span{
                 font-size: 10px;
             }
@@ -269,7 +231,6 @@
             }
         }
         #action-info{
-            border-radius: 4px;
             span{
                 font-size: 10px;
             }
@@ -278,38 +239,40 @@
     }
 }
 #killfeed-container{
+    @extend .span-text;
     pointer-events: none;
     position: absolute;
-    right: 300px;
+    right: 320px;
     top: 5px;
     display: flex;
     flex-direction: column;
     gap: 5px;
+    width: 400px;
     .killfeed-message{
         background-color: color-mix(in srgb,var(--ui-theme-primary) 30%, #0000);
-        border-radius: 20px;
-        font-family: "Russo-One";
-        font-size: 18px;
-        img{align-self: center;
-        }
+        border-radius: 4px;
+        padding: 3px;
+        img{align-self: center}
     }
     .badge-icon {
         width: 18px;
         margin-bottom: -3px;
         margin-left: 3px;
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
+        width: 220px;
         right: 200px;
         gap: 3px;
         .killfeed-message{
-            font-size: 12px;
+            font-size: 10px;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
+        width: 150px;
         right: 150px;
         gap: 1px;
         .killfeed-message{
-            font-size: 9px;
+            font-size: 8px;
         }
     }
 }
@@ -338,7 +301,7 @@
     height: fit-content;
 
     padding: 12px 16px;
-    border-radius: 6px;
+    border-radius: 4px;
 
     text-align: center;
 }
@@ -373,7 +336,7 @@
         width: fit-content;
         height: fit-content;
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         font-size: 15px;
         top: 5px;
         right: 5px;
@@ -382,7 +345,7 @@
             height: 30px;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         font-size: 10px;
         top: 5px;
         right: 5px;
@@ -402,7 +365,7 @@
     transform: translateY(-50%);
     font-family: "Russo-One";
     font-size: 20px;
-    @media screen and (max-width: palette.$screen_medium){
+    @include main.small_screen{
         font-size: 10px;
     }
 }

@@ -33,7 +33,6 @@ import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
 import { Creature } from "../objects/creature.ts";
-import { Plane } from "./planes.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
@@ -44,6 +43,7 @@ import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { NewMDLanguageManager } from "./languages.ts";
 import {building_from_json} from "common/scripts/definitions/objects/buildings_base.ts"
 import { load_kspr } from "common/engine/core/lang/kspx.ts";
+import { Plane } from "../objects/plane.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -105,8 +105,6 @@ export class Game extends ClientGame<GameObject>{
     free_cam_speed = 2
     free_cam_zoom=0.5
 
-    planes:Record<number,Plane>={}
-
     hitboxes_gfx:Graphics2D=new Graphics2D()
     ui_gfx:Graphics2D=new Graphics2D()
     aim_line:boolean=false
@@ -115,11 +113,10 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane],
         )
 
-        this.input_manager.meter_size=80
-        this.cam2d.meter_size=80
+        this.set_meter_size(80)
         this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
 
         this.local_server=new LocalGameServer(this)
@@ -174,7 +171,6 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.device.add_app(new MapApp)
-        //this.device.add_app(new MessageApp)
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()
@@ -330,11 +326,11 @@ export class Game extends ClientGame<GameObject>{
         this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/scripts/languages")
         this.fs=fs
     }
-    set_lookTo_angle(angle:number,dist:number,aim_assist:boolean=false,aim_assist_help:number=0.2){
+    set_lookTo_angle(angle:number,dist:number){
         if(!this.active_entity)return
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        if(this.save.get_variable("sv_game_client_rot")&&!this.active_entity.downed&&!this.game_over){
+        if(!this.active_entity.downed&&this.active_entity.controlling&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")&&!this.game_over){
             this.active_entity.enable_auto_rot=false
             this.active_entity.physical_data.rotation=this.input.angle
         }else{
@@ -381,11 +377,7 @@ export class Game extends ClientGame<GameObject>{
             await this.resources.load_kspr(kspr,resolution,tt,"",this.menu.set_loading_current)
         }
 
-        //Load Sfx
         await this.resources.load_group("/assets/main-sounds.json","main",this.menu.set_loading_current)
-
-        /*await this.resources.load_audio("keyboard-1",{src:"/sounds/ui/keyboard-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_audio("keyboard-2",{src:"/sounds/ui/keyboard-2.mp3",volume:1},"essentials",this.menu.set_loading_current)*/
         
         await this.resources.load_sound("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_sound("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
@@ -436,16 +428,6 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.music.set(undefined)
 
         if(this.level){
-            await this.menu.show_phase_intro({
-                location:this.level.meta.location,
-                name:this.level.meta.name,
-                description:this.level.meta.description,
-                date:this.level.meta.date,
-                style:"clean",
-            },[
-                this.resources.get_sound("typewriter-1"),
-                this.resources.get_sound("typewriter-2"),
-            ])
             if(this.level?.begin?.history){
                 await this.menu.show_history(this.level.begin.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
@@ -454,21 +436,9 @@ export class Game extends ClientGame<GameObject>{
         this.ui.start()
         this.join()
 
-        this.mainloop(true)
         this.watcher?.play?.()
     }
     async end_level(kills:number=0){
-        this.stop()
-        /*await this.game_over_messages([
-            random.choose(["Hi.", "Hello.","Hey."]),
-            "You did it.",
-            ...(kills >= 1 ? [`You got ${kills} kills.`] : ["You didn't kill anyone.","Congratulations you are a good soul."]),
-            "But are you really happy?",
-            "Was it worth it?",
-            "You can leave the island...",
-            "But the island will never leave you.",
-            "Goodbye. See you later!"
-        ], this.resources.get_sound("gameover_music"))*/
         if(this.level?.end&&this.fs){
             if(this.level?.end?.history){
                 await this.menu.show_history(this.level.end.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
@@ -538,7 +508,6 @@ export class Game extends ClientGame<GameObject>{
             this.local_server.reset_level()
         },2)
         await this.game_over_messages(this.make_green_light_death_message(p),this.resources.get_sound("gameover_music")!)
-        this.soft_reset()
         this.ambient.music.set(this.resources.get_sound("level_music"),{
             loop:true,
             offset:this.ambient.last_music_pos
@@ -546,48 +515,25 @@ export class Game extends ClientGame<GameObject>{
         this.local_server.start()
     }
     close_game(){
+        if(this.client&&this.client.opened)this.client.disconnect()
         this.soft_close_game()
         this.menu.game_end()
         this.ambient.on_game_close()
         this.client=undefined
+        this.cam_type=0
     }
     soft_close_game(){
-        if(this.running)this.stop()
-        this.local_server.stop()
+        this.clear()
         this.ui.clear()
+        this.local_server.stop()
+        this.ui.hide_game_over()
+
+        this.cam2d.zoom=6
         this.happening=false
         this.started=false
-        this.soft_reset()
-    }
-    soft_reset(){
-        this.clear()
-        //this.device.clear()
         this.game_over=false
-        this.ui.hide_game_over()
-        this.cam2d.zoom=6
         this.active_entity=undefined
         this.active_entity_id=undefined
-    }
-    override clear(): void {
-        super.clear()
-        for(const p of Object.values(this.planes)){
-            p.free()
-        }
-        this.planes={}
-    }
-    override on_stop(): void {
-        super.on_stop()
-        this.cam_type=0
-        this.happening=false
-        if(!this.game_over){
-            this.close_game()
-        }
-    }
-    reset_input(){
-        this.input.reload=false
-        this.input.interact=false
-        this.input.swamp_guns=false
-        this.input.actions.length=0
     }
     override on_update(dt:number){
         super.on_update(dt)
@@ -638,19 +584,22 @@ export class Game extends ClientGame<GameObject>{
         this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.05)
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
-
             this.input.auto_fire=this.ui.mobile_enabled
             this.client.emit(this.input)
             this.reset_input()
         }
-        for(const p of Object.values(this.planes)){
-            p.update(dt)
-        }
+    }
+    reset_input(){
+        this.input.reload=false
+        this.input.interact=false
+        this.input.swamp_guns=false
+        this.input.actions.length=0
     }
     update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
         this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
-        grid_gfx.layer=this.cam2d.layer
+        grid_gfx.layer=this.terrain_gfx.layer
+        this.dead_zone.sprite.layer=grid_gfx.layer
         if(this.cam2d.layer<Layers.Normal)return
 
         const begin=v2(camera_size.x/2,camera_size.y/2)
@@ -674,12 +623,6 @@ export class Game extends ClientGame<GameObject>{
     }
     process_general_update(up:GeneralUpdate){
         if(up.deadzone)this.dead_zone.update_from_data(up.deadzone)
-        for(const p of up.planes){
-            let plane=this.planes[p.id]
-            if(!plane)plane=new Plane(this)
-            this.planes[p.id]=plane
-            plane.update_data(p)
-        }
         if(up.ambient){
             this.ambient.update_from_data(up.ambient)
             if(!this.started)this.ambient.date=up.ambient.date
@@ -713,9 +656,7 @@ export class Game extends ClientGame<GameObject>{
     join(){
         if(!this.client)return
         const packet=new JoinPacket()
-
         packet.player_name=this.save.get_variable("sv_game_name")
-
         packet.skin={
             female:this.save.get_variable("sv_loadout_female"),
             body_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint")),
@@ -767,21 +708,20 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
-            this.reset_input()
         })
         client.on("gameover",(p:GameOverPacket)=>{
             this.game_over = true
             this.ui.show_game_over(p)
             if(this.level){
-                if(p.Win){
-                    this.end_level(p.Kills)
+                if(p.status.win){
+                    this.end_level(p.status.status.kills)
                 }else{
                     this.on_die_level(p)
                 }
             }
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
-            this.stop()
+            if(!this.game_over)this.close_game()
         })
         client.on("killfeed",(p:KillFeedPacket)=>{
             this.ui.add_killfeed_message(p.message)

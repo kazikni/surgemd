@@ -279,6 +279,7 @@
         },
         "settings":{
             "game":{
+                "region":"Region",
                 "interpolation":"Interpolation",
                 "client_rot":"Client Side Rotation",
                 "friendly_fire":"Friendly Fire"
@@ -312,6 +313,13 @@
                 "female":"Is Female",
                 "shirt":"Shirt"
             }
+        },
+        "region":{
+            "local":"Local",
+            "na":"North America",
+            "sa":"South America",
+            "eu":"Europe",
+            "as":"Asia"
         }
     }
 }

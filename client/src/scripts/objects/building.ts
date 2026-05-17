@@ -81,7 +81,10 @@ export class Building extends StaticBody{
             if(this.ceilings[i].alive&&!ceilings[i].alive){
                 if(this.ceilings[i].def.destroy){
                     this.ceilings[i].alive=false
-                    this.ceilings[i].sprite.set_frame(this.ceilings[i].def.destroy!.frame,this.game.resources)
+                    this.ceilings[i].sprite.set_frame({
+                        image:this.ceilings[i].def.destroy!.frame,
+                        zIndex:zIndexes.DeadCeilings,
+                    },this.game.resources)
                     if(this.ceilings[i].def.destroy!.sound){
                         this.game.sounds.play(this.game.resources.get_sound(this.ceilings[i].def.destroy!.sound!),{
                             position:this.position,
@@ -100,6 +103,7 @@ export class Building extends StaticBody{
                 this.ceilings[i].alive=true
                 this.ceilings[i].sprite.set_frame({
                     image:this.ceilings[i].def.frame.image,
+                    zIndex:this.ceilings[i].def.frame.zIndex??zIndexes.BuildingsCeiling
                 },this.game.resources)
             }
         }
@@ -144,14 +148,14 @@ export class Building extends StaticBody{
             sprite.zIndex=zIndexes.BuildingsCeiling
 
             sprite.set_frame({
-                image:c.frame.image,
+                image:c.destroy?.frame??c.frame.image,
                 position:c.frame.position?v2.add_with_orientation(this.position,c.frame.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(c.frame.rotation??0),
                 layer:this.layer+(c.frame.layer??0),
 
                 scale:c.frame.scale,
                 scale2:c.frame.scale2,
-                zIndex:c.frame.zIndex,
+                zIndex:zIndexes.DeadCeilings,
                 tint:c.frame.tint
             },this.game.resources)
             this.game.cam2d.addObject(sprite)

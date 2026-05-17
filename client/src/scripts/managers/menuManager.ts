@@ -195,7 +195,7 @@ export class MenuManager{
             const content=document.createElement("kl-md-submenu-content") as HTMLDivElement
 
             const close_btn=document.createElement("button") as HTMLButtonElement
-            close_btn.className="btn-red close-btn submenu-close-btn"
+            close_btn.className="close-btn submenu-close-btn btn-red"
             close_btn.textContent="X"
             close_btn.onclick=this.load_tab.bind(this,"")
 
@@ -206,7 +206,7 @@ export class MenuManager{
 
             for(const st of Object.keys(t.subtabs)){
                 const extra=document.createElement("kl-md-extra") as HTMLDivElement
-                extra.className="background-menu-md background-menu-ss background-menu"
+                extra.className="background-menu-md background-menu-blue"
                 extra.id=`${t.id}-${st}-sm-extra`
 
                 t.subtabs[st].generate(extra,this)
@@ -221,7 +221,7 @@ export class MenuManager{
                         const btn=document.createElement("button")
                         btn.innerText=this.translation.get(o.name)
                         btn.id=`btn-${t.id}-${o.id}`
-                        btn.className="btn-green"
+                        btn.className="btn-blue"
                         btn.onclick=this.opt_click_callback(o,tab)
 
                         options.appendChild(btn)
@@ -230,7 +230,7 @@ export class MenuManager{
                     }
                     case "label":{
                         const p=document.createElement("p")
-                        p.className="span"
+                        p.className="span-text-base"
                         p.innerText=this.translation.get(o.name)
                         options.appendChild(p)
                         break
@@ -243,7 +243,7 @@ export class MenuManager{
             if(t.subtabs[dk].on_open)t.subtabs[dk].on_open(tab.tabs[dk] as HTMLDivElement,this)
             this.tabs[t.id]=tab
             this.tabs_html[t.id]=tab_main
-        }   
+        }
     }
     opt_click_callback(o:SubMenuOption,tab:MenuTab):(e:MouseEvent)=>void{
         return (e)=>{
@@ -265,14 +265,14 @@ export class MenuManager{
             if(this.tabs[this.current_tab].def.on_close)this.tabs[this.current_tab].def.on_close!(this)
         }
         this.current_tab=tab
-        ShowTab(tab,this.tabs_html)
+        ShowTab(tab,this.tabs_html,true)
         if(this.current_tab){
             if(this.tabs[this.current_tab].def.on_open)this.tabs[this.current_tab].def.on_open!(this)
         }
         if(tab){
-            HideElement(this.content.menu_options)
+            this.content.menu_options.style.opacity="0"
         }else{
-            ShowElement(this.content.menu_options)
+            this.content.menu_options.style.opacity="1"
         }
     }
     async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
@@ -455,7 +455,7 @@ export class MenuManager{
             overlay.className="game-popup-overlay"
 
             const popup=document.createElement("div")
-            popup.className="game-popup background-menu"
+            popup.className="game-popup background-menu-blue"
 
             overlay.appendChild(popup)
             document.body.appendChild(overlay)

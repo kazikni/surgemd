@@ -46,6 +46,7 @@ export class UiManager{
 
         gameOver:document.querySelector("#gameover-container") as HTMLDivElement,
         
+        gameover_status_container:document.querySelector("#gameover-status-container") as HTMLDivElement,
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
 
@@ -95,7 +96,6 @@ export class UiManager{
         this.game=game
 
         HideElement(this.content.gameOver)
-
         HideElement(this.content.emote_wheel.main)
 
         if(isMobile||Debug.force_mobile){
@@ -130,12 +130,13 @@ export class UiManager{
 
         this.game.inventory.clear()
         this.game.ui_manager.clear()
-        disableContextMenuPrevent() 
+        disableContextMenuPrevent()
     }
     _makeHint(texts: string[]) {
         const div = document.createElement("div")
         for (const t of texts) {
             const span = document.createElement("span")
+            span.classList="span-text"
             span.textContent = t
             div.appendChild(span)
         }
@@ -157,7 +158,7 @@ export class UiManager{
             this.game.input.movement.dir=Math.atan2(e.detail.y,e.detail.x)
             this.game.input.movement.scale=v2.len(e.detail)
             if(!rotating){
-                this.game.set_lookTo_angle(this.game.input.movement.dir,2,true,0.3)
+                this.game.set_lookTo_angle(this.game.input.movement.dir,2)
             }
         })
         this.mobile_content.left_joystick.addEventListener("joystickend",()=>{
@@ -192,18 +193,17 @@ export class UiManager{
             this.game.aim_line=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
-            this.game.input_manager.emit("actiondown",{action:"interact"})
+            this.game.input_manager.listener.emit("actiondown",{action:"interact"})
         })
         this.mobile_content.btn_reload.addEventListener("click",()=>{
-            this.game.input_manager.emit("actiondown",{action:"reload"})
+            this.game.input_manager.listener.emit("actiondown",{action:"reload"})
         })
     }
     emote_wheel={
         positon:v2(0,0),
         active:false,
         current_side:-1,
-        emote:[
-        ] as EmoteDef[]
+        emote:[] as EmoteDef[]
     }
     begin_emote_wheel(position:Vec2,emotes?:EmoteDef[]){
         ShowElement(this.content.emote_wheel.main)
@@ -436,13 +436,13 @@ export class UiManager{
         //this.crosshair_manager.set(new AnimatedCrosshair(document.body,DefaultCrosshair))
         this.crosshair=true
     }
-    update_crosshair(dt:number){
-        if(!this.crosshair)return
-        this.crosshair_manager.tick(dt)
-    }
     disableCrosshair() {
         document.body.style.cursor = this.game.cursors.default
         this.crosshair=false
+    }
+    update_crosshair(dt:number){
+        if(!this.crosshair)return
+        this.crosshair_manager.tick(dt)
     }
     update_self_state(state:SelfStateUpdate){
         if (state.dirty.inventory.aitems) {
@@ -502,35 +502,32 @@ export class UiManager{
         HideElement(this.content.gameOver)
         ShowElement(this.content.game_gui)
         this.enableCrosshair()
+        enableContextMenuPrevent()
     }
     show_game_over(g:GameOverPacket){
         ShowElement(this.content.gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
-        if(g.Win){
+        disableContextMenuPrevent()
+
+        this.game.game_over=true
+        if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
         }else{
             this.game.ambient.last_music_pos=this.game.ambient.music.offset
             this.game.ambient.music.set(null)
-            if(!this.players_name[g.Eliminator])return
+            if(!this.players_name[g.status.eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
-                player:`<span id="gameover-eliminator">${this.players_name[g.Eliminator].full}</span>`
+                player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
-            /*this.content.gameOver_status.innerText=`You Die!`
-            this.content.gameOver_status.style.color=""
-            if(Math.random()<=0.01){
-                const ge=document.createElement("span")
-                ge.id="gameover-you-dead"
-                ge.innerText="You Die!"
-                document.body.appendChild(ge)
-                setTimeout(()=>{
-                    ge.remove()
-                },2900)
-            }*/
         }
-        /*this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
-        this.content.gameOver_damaged.innerText=`Damage Dealth: ${g.DamageDealth}`
-        this.content.gameOver_score.innerText=`Score: 0`*/
+        this.content.gameover_status_container.innerHTML=`
+<h1>Status</h1>
+<span>Kills: ${g.status.status.kills}</span>
+<span>Damage: ${g.status.status.damage}</span>
+<span>Damage Taken: ${g.status.status.damage_taken}</span>
+<span>Final Score: ${g.status.status.score}</span>
+`
     }
     ping_time:number=0
     update(dt:number){
@@ -560,7 +557,7 @@ export class UiManager{
             switch(o.number_type){
                 case GameObjectType.Building:{
                     for(const ceiling of (o as Building).ceilings){
-                        if(ceiling.hitbox.colliding_with(player.hitbox)){
+                        if(ceiling.alive&&ceiling.hitbox.colliding_with(player.hitbox)){
                             ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,Numeric.dt_expo_inter(5,dt))
                             ceiling.collided=true
                         }
@@ -571,7 +568,7 @@ export class UiManager{
             this.current_interaction = o
             if(this.current_interaction!==old_inter){
                 if(this.game.save.get_variable("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
-                    this.game.input_manager.emit("actiondown",{action:"interact"})
+                    this.game.input_manager.listener.emit("actiondown",{action:"interact"})
                 }
                 const hint = o.get_interact_hint(player)
                 if(hint){
@@ -587,9 +584,9 @@ export class UiManager{
         this.update_hint()
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse.position)
+                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
             )
-            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse.position)
+            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
 
             const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
             const shsrc = "/img/menu/gui/emote_wheel_hover.svg"

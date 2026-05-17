@@ -13,6 +13,7 @@ export class Bullet extends ServerGameObject{
     number_type:number=GameObjectType.Bullet
 
     owner?:Human
+    hit_owner:boolean=false
     def!:BulletDef
     angle!:number
     old_position!:Vec2
@@ -64,7 +65,7 @@ export class Bullet extends ServerGameObject{
             if(this.destroyed)break
             switch(obj.number_type){
                 case GameObjectType.Human:{
-                    if(!(obj as Human).health_data.dead&&(!this.owner||((obj as Human).id===this.owner.id&&this.reflectionCount>0)||(obj as Human).id!==this.owner.id)&&!(obj as Human).parachute){
+                    if(!(obj as Human).health_data.dead&&(!this.owner||(obj.id===this.owner.id&&this.hit_owner)||obj.id!==this.owner.id)&&!(obj as Human).parachute){
                         const human = obj as Human
 
                         const colBody = human.hitbox.overlap_line(this.old_position, this.position)
@@ -223,6 +224,7 @@ export class Bullet extends ServerGameObject{
             this.layer,
             this.satured
         )
+        b.hit_owner=true
         b.modifiers.size=this.modifiers.size
         b.modifiers.speed=this.modifiers.speed
         b.tracerAlpha=this.tracerAlpha/2

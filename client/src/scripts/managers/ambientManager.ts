@@ -219,6 +219,7 @@ export class AmbientManager{
         this.global_ilumination = Math.max(light * (1 - rainDark),0.4)
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
+        if(!this.biome)return
         this.rain_value=value
         if(value===0||this.game.cam2d.layer<Layers.Normal){
             if(this.biome.ambient.sound){
@@ -248,12 +249,6 @@ export class AmbientManager{
     }
     reload(){
         this.biome=this.game.terrain.biome!
-        /*if(){
-            this.ambient_particles_emitter.enabled=(this.biome?.ambient.particles!=undefined&&this.biome.ambient.particles.length>0)
-            this.rain_particles_emitter.enabled=(this.biome?.ambient.rain!)
-            this.snow_particles_emitter.enabled=(this.biome?.ambient.snow!)
-        }else{
-        }*/
         this.musics=this.biome.musics??[]
 
         if(this.biome.ambient.snow){
@@ -291,7 +286,7 @@ export class AmbientManager{
                 this.date.hour+=1
             }
             
-            if(this.biome.ambient.rain&&this.thunders){
+            if(this.biome?.ambient?.rain&&this.thunders){
                 if(Math.random()<=0.05){
                     this.bolt()
                 }

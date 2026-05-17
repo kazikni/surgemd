@@ -69,15 +69,15 @@ export class GunItem extends GunItemBase implements LItem{
         }
     }
     on_fire_alt(user:Human):void{}
+    infinity_ammo(){
+        return this.inventory.infinity_ammo||this.inventory.infinity_ammos.has(this.def.ammo_type)
+    }
     has_ammo(user:Human):boolean{
         return (this.ammo>0||!this.def.reload)//&&(!this.def.man||this.has_mana(user))
     }
-    /*has_mana(user:Human){
-        return user.health_data.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.health_data.boost
-    }*/
     reload(user:Human){
         if(!this.def.reload||user.health_data.downed)return
-        if(this.ammo>=this.get_capacity()||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
+        if(this.ammo>=this.get_capacity()||(!this.infinity_ammo()&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
             this.reloading=false
             return
         }
@@ -240,7 +240,7 @@ export class GunItem extends GunItemBase implements LItem{
         this.burst=undefined
     }
     drop(): Loot[] {
-        if(this.ammo>0){
+        if(this.ammo>0&&!this.infinity_ammo()){
             this.inventory.give_item(this.inventory.owner.game.definitions.ammos.getFromString((this.def as GunDef).ammo_type),this.ammo)
         }
         if(this.def.dual_from){
@@ -280,6 +280,7 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
         super(def)
     }
     on_use(user: Human,slot?:Slot<LItem>): void {
+        if(user.actions.current_action)return
         this.slot=slot
         switch(this.def.consuming.type){
             case 0:
@@ -488,6 +489,8 @@ export class GInventory extends GInventoryBase<LItem>{
 
     infinity_ammo:boolean=false
     extended_capacity:boolean=false
+
+    infinity_ammos:Set<string>=new Set()
 
     droppable:InventoryDroppable={
         backpack:true,
@@ -880,6 +883,12 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             delete this.aitems[s]
         }
+        for(const s of this.slots){
+            if(s.item&&s.quantity>0){
+                l.push(this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity,layer))
+                s.remove(s.quantity)
+            }
+        }
         if(this.owner.equipment_data.helmet&&this.droppable.helmet){
             l.push(this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,layer))
             this.owner.equipment_data.helmet=undefined
@@ -891,12 +900,6 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.backpack&&this.backpack.level&&this.droppable.backpack){
             l.push(this.owner.game.add_loot(this.owner.position,this.backpack,1,layer))
             this.set_backpack()
-        }
-        for(const s of this.slots){
-            if(s.item&&s.quantity>0){
-                l.push(this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity,layer))
-                s.remove(s.quantity)
-            }
         }
         for(const i of this.iitems){
             if((i as ScopeDef).droppable)l.push(this.owner.game.add_loot(this.owner.position,i,1,layer))

@@ -293,7 +293,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             height:1,
             hitbox:new CircleHitbox2D(v2(0,0),0.7),
             scale:{
-                destroy:0.7
+                destroy:0.6
             },
             assets:{
                 particles:{
@@ -680,10 +680,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         },
         {
             idString:"large_drawer",
-            health:130,
+            health:60,
             hitbox:new RectHitbox2D(v2(-0.475,-1.15),v2(0.475,1.15)),
             scale:{
-                destroy:0.9
+                destroy:0.75
             },
             assets:{
                 frame:{

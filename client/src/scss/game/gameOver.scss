@@ -1,4 +1,5 @@
-@use "../palette.scss";
+@use "common/engine/main.scss";
+@use "../components/text.scss";
 #gameover-container{
     position: absolute;
     top: 0px;
@@ -7,6 +8,19 @@
     height: 100%;
     transform-origin: 0 0;
     z-index: 100;
+    #gameover-status-container{
+        @extend .span-text-base;
+        font-size: 20px;
+        align-content: center;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+    }
     #gameover-main-message{
         font-family: "Russo-One";
         font-size: 70px;
@@ -48,7 +62,7 @@
         }
     }
     
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         #gameover-main-message{
             font-size: 40px;
             margin-top: 40px;

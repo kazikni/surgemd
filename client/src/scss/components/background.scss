@@ -1,0 +1,24 @@
+.background-menu-base{
+    border-radius: 4px;
+    border: 2px solid var(--item-border);
+    background: var(--item-bg);
+    backdrop-filter: blur(10px);
+    &:hover {
+        box-shadow: 0 0 20px var(--item-border-hover);
+    }
+}
+.background-menu-blue {
+    @extend .background-menu-base;
+
+    --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
+
+    --item-border: #07aaeeaa;
+    --item-border-hover: #07aaeeaa;
+}
+.background-menu-green {
+    @extend .background-menu-base;
+    --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
+
+    --item-border: #00aa77aa;
+    --item-border-hover: #00aa77aa;
+}

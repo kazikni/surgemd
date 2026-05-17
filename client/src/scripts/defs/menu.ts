@@ -136,6 +136,7 @@ export function game_popup_builder(def:PopupBuilderDef){
 function build_setting_input(def: SettingDef,translation:TranslationManager,onChange:(val:any)=>void,initial?:any): HTMLElement {
     if(def.type==="h1"||def.type==="h2"||def.type==="h3"||def.type==="h4"||def.type==="h5"){
         const header=document.createElement(def.type)
+        header.className="span-text-base"
         header.textContent=translation.get(def.name)
         return header
     }
@@ -144,6 +145,7 @@ function build_setting_input(def: SettingDef,translation:TranslationManager,onCh
     row.className="settings-row"
 
     const label=document.createElement("span")
+    label.className="span-text"
     label.textContent=translation.get(def.name)
     row.appendChild(label)
 
@@ -152,7 +154,7 @@ function build_setting_input(def: SettingDef,translation:TranslationManager,onCh
     switch(def.type){
         case "input":{
             const i=document.createElement("input")
-            i.className="input-green"
+            i.className="text-input-green"
             if(def.placeholder)i.placeholder=def.placeholder
             if(initial!==undefined)i.value=initial
             i.onchange=()=>onChange(i.value)
@@ -210,6 +212,7 @@ function build_setting_input(def: SettingDef,translation:TranslationManager,onCh
             }
 
             const valueLabel=document.createElement("span")
+            valueLabel.className="span-text"
             valueLabel.textContent=slider.value
 
             slider.oninput=()=>{
@@ -329,13 +332,13 @@ export function make_menu_campaign(campaign:Record<string,any>){
         for(const c in campaign.charpters){
             const charpter=campaign.charpters[c]
             const h2=document.createElement("h2")
-            h2.className="span"
+            h2.className="span-text"
             h2.textContent=charpter.name
             parent.appendChild(h2)
             for(const l in charpter.levels){
                 const level=charpter.levels[l]
                 const level_div = document.createElement("div")
-                level_div.className="play-select-item background-menu"
+                level_div.className="play-select-item background-menu-blue"
                 level_div.innerHTML = `
 <h1>${level.meta.name}</h1>
 <p>${level.meta.description}</p>
@@ -354,13 +357,12 @@ export function make_menu_modes(modes:GamemodeConfig[]){
         for(const mode of modes){
             const mb=document.createElement("div")
             mb.innerHTML=`
-<div class="play-select-item background-menu">
+<div class="play-select-item background-menu-blue">
 <h1>${mode.gamemode}</h1>
 <button id="btn-join-${mode.gamemode}" class="btn-green">Play</button>
 </div>`
             const join_btn=mb.querySelector(`#btn-join-${mode.gamemode}`) as HTMLButtonElement
             join_btn.onclick=()=>{
-                console.log(`${mode.gamemode}...`)
                 if(manager.play_callback)manager.play_callback({type:"online",mode:mode.gamemode,team_size:1})
             }
             parent.appendChild(mb)
@@ -486,8 +488,8 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                 parent.innerHTML = `
                     <h2>Play Replay</h2>
 
-                    <div class="replay-upload background-menu">
-                        <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="input-green"/>
+                    <div class="replay-upload background-menu-blue">
+                        <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
                         <button class="btn-green" id="btn-load-replay">Load Replay</button>
                     </div>
                 `
@@ -551,11 +553,11 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             generate:(p,_m)=>{
                 p.innerHTML=`
 <h3>Server</h3>
-<div>Server Port<br><input class="input-green" placeholder="Server Port" id="insert-server-port" value="8080"></input></div>
-<div>Server Password<br><input class="input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
+<div>Server Port<br><input class="text-input-green" placeholder="Server Port" id="insert-server-port" value="8080"></input></div>
+<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
 <h3>Game</h3>
-<div>Mode ID<br><input class="input-green" placeholder="Mode ID" id="insert-mode-id" value="normal"></input></div>
-<div>Mode Settings<br><input class="input-green" placeholder="Mode Settings" id="insert-game-settings" value="{}"></input></div>
+<div>Mode ID<br><input class="text-input-green" placeholder="Mode ID" id="insert-mode-id" value="normal"></input></div>
+<div>Mode Settings<br><input class="text-input-green" placeholder="Mode Settings" id="insert-game-settings" value="{}"></input></div>
 <button class="btn-green" id="btn-edit-mode-settings">Edit Mode Settings</input>
 <button class="btn-green" id="btn-host-join-game">Host And Join</input>
 `
@@ -596,8 +598,8 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
         play_subtabs["join_game"]={
             generate:(p,_m)=>{
                 p.innerHTML=`
-<div>Server IP<br><input class="input-green" placeholder="Server IP" id="insert-server-ip" value="localhost:8080"></input></div>
-<div>Server Password<br><input class="input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
+<div>Server IP<br><input class="text-input-green" placeholder="Server IP" id="insert-server-ip" value="localhost:8080"></input></div>
+<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
 <button class="btn-green" id="btn-join-game" value="{}">Play</input>
 `
                 const ip_input=p.querySelector("#insert-server-ip") as HTMLInputElement
@@ -637,7 +639,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             generate:(p,m)=>{
                 if(!m.group_state){
                     p.innerHTML=`
-<div><input class="input-green" placeholder="Group ID" id="insert-group-id"></input></div>
+<div><input class="text-input-green" placeholder="Group ID" id="insert-group-id"></input></div>
 <button class="btn-green" id="btn-create-group" value="{}">Create</input>
 <button class="btn-green" id="btn-join-game" value="{}">Join</input>
 `
@@ -664,7 +666,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
 </div>
 <p>Leader:${isLeader?"You":"Player "+g.leader}</p>
 <div class="settings-row">
-    <span>Locked</span>
+    <span class="span-text">Locked</span>
     ${
         isLeader
         ? `<input
@@ -673,12 +675,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             class="checkbox-blue"
             ${g.locked?"checked":""}
         >`
-        : `<span>${g.locked?"Yes":"No"}</span>`
+        : `<span class="span-text">${g.locked?"Yes":"No"}</span>`
     }
 </div>
 
 <div class="settings-row">
-    <span>Autofill</span>
+    <span class="span-text">Autofill</span>
     ${
         isLeader
         ? `<input
@@ -687,7 +689,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             class="checkbox-blue"
             ${g.autofill?"checked":""}
         >`
-        : `<span>${g.autofill?"On":"Off"}</span>`
+        : `<span class="span-text">${g.autofill?"On":"Off"}</span>`
     }
 </div>
 <button id="btn-leave" class="btn-red">Leave</button>`;
@@ -786,6 +788,17 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             subtabs:{
                 "game":{
                     generate:make_menu_settings(menu.save,[
+                        {
+                            type:"choose",
+                            name:"settings.game.region",
+                            var:"sv_game_region",
+                            options:Object.keys(menu.api_settings.regions).map((v)=>{
+                                return {
+                                    name:menu.translation.get("region."+v),
+                                    value:v
+                                }
+                            }),
+                        },
                         {
                             type:"toggle",
                             name:"settings.game.interpolation",

@@ -143,6 +143,8 @@ export class Human extends MovingBody{
 
     melee_alt:boolean=false
 
+    seat:boolean=false
+
     constructor(){
         super()
     }
@@ -292,11 +294,6 @@ export class Human extends MovingBody{
             this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
             0xffffff
         )
-
-        /*if(Debug.hitbox){
-            this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
-            this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.base_hitbox))
-        }*/
     }
     override on_destroy(): void {
         this.consumible_particles.destroyed=true
@@ -1364,9 +1361,11 @@ export class Human extends MovingBody{
 
             dead,downed,
 
+            seat,
             controlling
         ]=stream.readBooleanGroup2()
         this.controlling=controlling
+        this.seat=seat
         if(!dead&&this.dead){
             this.dead=false
         }else if(dead){

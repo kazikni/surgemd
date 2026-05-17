@@ -80,9 +80,6 @@ export class AnimatedContainer2D extends Container2D{
                 switch(action.type){
                     case "sprite":{
                         const spr=this.get_object(action.fuser)
-                        if(!spr){
-                            console.log(action.fuser)
-                        }
                         if(spr instanceof Sprite2D){
                             spr.set_frame(action,this.game.resources)
                         }else{

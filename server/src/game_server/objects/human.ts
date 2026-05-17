@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { ActionsType, GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
 import { DamageSplash, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
@@ -221,6 +221,13 @@ export class Human extends MovingBody{
 
     effects:Map<number,EffectInstance>=new Map()
     effects_dirty:boolean=true
+    
+    status:HumanStatus={
+        damage:0,
+        damage_taken:0,
+        kills:0,
+        score:0,
+    }
 
     constructor(){
         super()
@@ -1006,26 +1013,6 @@ export class Human extends MovingBody{
     }
     damage(params:DamageParams){
         if(this.health_data.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
-
-        /*if(this.equipment_data.helmet_health!==undefined){
-            this.equipment_data.helmet_health-=params.amount*0.5
-            this.equipment_data.dirty_part=true
-            if(this.equipment_data.helmet_health<=0){
-                this.equipment_data.helmet_health=0
-                this.equipment_data.helmet=undefined
-                this.equipment_data.dirty=true
-            }
-        }
-        if(this.equipment_data.vest_health!==undefined){
-            this.equipment_data.vest_health-=params.amount*0.5
-            this.equipment_data.dirty_part=true
-            if(this.equipment_data.vest_health<=0){
-                this.equipment_data.vest_health=0
-                this.equipment_data.vest=undefined
-                this.equipment_data.dirty=true
-            }
-        }*/
-
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Human){
@@ -1050,7 +1037,6 @@ export class Human extends MovingBody{
         damage*=this.modifiers.damage_reduction
         damage*=mod
         params.amount=damage
-
         this.piercing_damage(params)
     }
     piercing_damage(params: DamageParams): [number, number] {
@@ -1079,9 +1065,10 @@ export class Human extends MovingBody{
                 this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
-            healthDamage = Math.min(this.health_data.health, params.amount)
+            healthDamage = params.amount
         }
         if (healthDamage > 0) {
+            const damage=Math.min(healthDamage,this.health_data.health)
             this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
             this.add_damage_splash(
                 params.owner,
@@ -1091,6 +1078,14 @@ export class Human extends MovingBody{
                 pos,
                 false
             )
+            if(params.owner&&params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
+                params.owner.status.damage+=damage
+                params.owner.status.score+=damage*this.game.modeManager.rules.score.damage_reward
+            }
+            if(!this.health_data.downed){
+                this.status.damage_taken+=damage
+                this.status.score-=damage*this.game.modeManager.rules.score.damage_taken_penalty
+            }
         }
         if (this.health_data.health === 0) {
             if (!this.health_data.downed && (this.game.modeManager.can_down(this)||this.human_data.self_revive)) {
@@ -1152,6 +1147,12 @@ export class Human extends MovingBody{
 
         this.splashes = merged
     }
+    reset_status(){
+        this.status.damage=0
+        this.status.damage_taken=0
+        this.status.kills=0
+        this.status.score=0
+    }
     down(params:DamageParams){
         if(this.health_data.downed)return
         this.health_data.downed=true
@@ -1195,7 +1196,8 @@ export class Human extends MovingBody{
         if(params.owner instanceof Human){
             if(params.owner.is_player){
                 if(params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
-                    (params.owner as Player).status.kills++
+                    params.owner.status.kills++
+                    params.owner.status.score+=this.game.modeManager.rules.score.kill_reward
                 }
             }
             params.owner.inventory.accessorys.call_event("kill",params)
@@ -1231,7 +1233,8 @@ export class Human extends MovingBody{
             this.health_data.dead,
             this.health_data.downed,
 
-            this.input.path===undefined
+            this.input.path===undefined,
+            this.seat!==undefined
         )
         // Physical
         if(full||this.physical_data.dirty_part||this.physical_data.dirty){

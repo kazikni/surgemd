@@ -12,7 +12,7 @@ export type BuildingCeilingDef={
     connections?:number[],
     no_scope_block?:boolean
     destroy?:{
-        frame:FrameDef
+        frame:string
         sound?:string
         count:number
         particles?:{
@@ -70,7 +70,7 @@ export type JSONBuildingCeilingDef={
     connections?:number[],
     no_scope_block?:boolean
     destroy?:{
-        frame:FrameDef
+        frame:string
         sound?:string
         count:number
         particles?:{
@@ -294,8 +294,6 @@ export const buildings_factory={
                         frame:{
                             image:ceiling,
                             position:v2(0,0),
-                            hotspot:v2(.5,.5),
-                            scale:2,
                         },
                         hitbox:hb,
                     }],
@@ -316,8 +314,6 @@ export const buildings_factory={
                         frame:{
                             image:ceiling,
                             position:v2(0,0),
-                            hotspot:v2(.5,.5),
-                            scale:2,
                             rotation:Math.PI
                         },
                         hitbox:hb,
@@ -376,6 +372,16 @@ export const buildings_factory={
                         {
                             image:"small_bunker_floor_1",
                             position:v2(-0.84,0)
+                        }
+                    ],
+                    ceiling:[
+                        {
+                            frame:{
+                                image:"small_bunker_ceiling_1",
+                                position:v2(0,0),
+                                rotation:Math.PI
+                            },
+                            hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
                         }
                     ],
                     obstacles:[
@@ -472,19 +478,19 @@ export const buildings_factory={
                         {
                             frame:{
                                 image:"shed_ceiling",
+                                position:v2.zero(),
+                                rotation:0
                             },
                             connections:[10,11,12,13,14],
                             destroy:{
-                                frame:{
-                                    image:""
-                                },
+                                frame:"shed_ceiling_break",
                                 sound:"ceiling_break_1",
                                 count:2,
                                 particles:{
                                     count:30
                                 }
                             },
-                            hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
+                            hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
                         }
                     ],
                     floor_image:[

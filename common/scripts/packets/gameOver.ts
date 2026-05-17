@@ -1,35 +1,48 @@
 import { NetStream, Packet } from "../../engine/core.ts";
-
+import { HumanStatus } from "../others/constants.ts";
+export type GameOverStatus={
+    status:HumanStatus
+}&({
+    win:true
+}|{
+    win:false
+    eliminator:number
+})
 export class GameOverPacket extends Packet{
     ID=3
     Name="gameover"
-    Win:boolean=false
-    Message:string=""
-    Score:number=0
-    Kills:number=0
-    DamageDealth:number=0
-    Eliminator:number=0
+    status:GameOverStatus={
+        status:{
+            damage:0,
+            damage_taken:0,
+            kills:0,
+            score:0,
+        },
+        win:false,
+        eliminator:0
+    }
     constructor(){
         super()
     }
     encode(stream: NetStream): void {
-        stream.writeBooleanGroup(this.Win)
-        .writeUint16(this.Score)
-        .writeUint8(this.Kills)
-        .writeUint24(this.DamageDealth)
-        .writeStringSized(15,this.Message)
-        if(!this.Win){
-            stream.writeID(this.Eliminator)
+        stream.writeBooleanGroup(this.status.win)
+        .writeInt16(Math.ceil(this.status.status.score))
+        .writeUint16(Math.ceil(this.status.status.damage))
+        .writeUint16(Math.ceil(this.status.status.damage_taken))
+        .writeUint8(this.status.status.kills)
+        if(!this.status.win){
+            stream.writeID(this.status.eliminator)
         }
     }
     decode(stream: NetStream): void {
-        this.Win=stream.readBooleanGroup()[0]
-        this.Score=stream.readUint16()
-        this.Kills=stream.readUint8()
-        this.DamageDealth=stream.readUint24()
-        this.Message=stream.readStringSized(15)
-        if(!this.Win){
-            this.Eliminator=stream.readID()
+        const bg=stream.readBooleanGroup()
+        this.status.win=bg[0]
+        this.status.status.score=stream.readInt16()
+        this.status.status.damage=stream.readUint16()
+        this.status.status.damage_taken=stream.readUint16()
+        this.status.status.kills=stream.readUint8()
+        if(!this.status.win){
+            this.status.eliminator=stream.readID()
         }
     }
 }

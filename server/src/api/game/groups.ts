@@ -26,7 +26,7 @@ export class GroupPlayer {
 }
 
 export class Group {
-    code = random.code(6)
+    code = random.code(5)
     players: GroupPlayer[]=[]
     players_ids: string[]=[]
     locked = false
@@ -92,7 +92,7 @@ export class Group {
 }
 export class GroupManager {
     groups = new Map<string,Group>()
-    constructor( public api:ApiServer){}
+    constructor(public api:ApiServer){}
     create(){
         const g = new Group(this)
         this.groups.set(g.code,g)

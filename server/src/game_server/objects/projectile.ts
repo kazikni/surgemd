@@ -27,7 +27,10 @@ export abstract class Projectile extends MovingBody{
     }
     kill(){
         this.destroy()
-        if(this.projectile_data.explosion)this.game.add_explosion(this.position,this.projectile_data.explosion,this.owner,this.source,this.layer)
+        if(this.projectile_data.explosion){
+            const explosion=this.game.add_explosion(this.position,this.projectile_data.explosion,this.owner,this.source,this.layer)
+            explosion.parent=this
+        }
     }
     override push(speed:number=3,dir:number,angular_velocity:number=10){
         super.push(speed,dir)

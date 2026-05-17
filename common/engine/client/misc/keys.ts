@@ -213,6 +213,7 @@ export class InputManager {
     up = new Set<number>()
 
     gamepad_pressed = new Set<number>()
+    private wheel_pressed = new Set<number>()
 
     actions: Record<string, InputAction> = {}
 
@@ -230,10 +231,7 @@ export class InputManager {
 
     dead_zone = v2(0.15, 0.15)
 
-    private previous_gamepads = new Map<number,{
-            buttons: boolean[]
-            axes: number[]
-        }>()
+    private previous_gamepads = new Map<number,{buttons: boolean[],axes: number[]}>()
 
     constructor(meter_size: number) {
         this.meter_size = meter_size
@@ -242,9 +240,9 @@ export class InputManager {
         elem.tabIndex = 1
         elem.addEventListener("keydown",this.on_key_down)
         elem.addEventListener("keyup",this.on_key_up)
-        elem.addEventListener("mousedown",this.on_mouse_down)
+        canvas.addEventListener("mousedown",this.on_mouse_down)
         elem.addEventListener("mouseup",this.on_mouse_up)
-        elem.addEventListener("wheel",this.on_wheel,{ passive: false })
+        elem.addEventListener("wheel",this.on_wheel,{passive: false})
         elem.addEventListener("pointermove",e => this.on_pointer_move(e, canvas))
     }
     private emit(event: InputEvent) {
@@ -284,14 +282,25 @@ export class InputManager {
         this.up.add(key)
         this.emit({type: InputEventType.KeyUp,key})
     }
-
     private on_wheel = (e: WheelEvent) => {
-        if (!this.focus) return
+        if (!this.focus) {
+            return
+        }
         const key=e.deltaY<0?Key.Mouse_Wheel_Up:Key.Mouse_Wheel_Down
+        this.wheel_pressed.add(key)
+
+        this.pressed.add(key)
         this.down.add(key)
         this.up.add(key)
-        this.emit({type: InputEventType.KeyDown,key})
-        this.emit({type: InputEventType.KeyUp,key})
+
+        this.emit({
+            type: InputEventType.KeyDown,
+            key
+        })
+        this.emit({
+            type: InputEventType.KeyUp,
+            key
+        })
     }
     private on_pointer_move(e: PointerEvent,canvas: HTMLCanvasElement) {
         if (!this.focus) return
@@ -412,7 +421,7 @@ export class InputManager {
         return this.action_pressed(action)
     }
     wait_for_action(action: string): Promise<void> {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const fn = (e: InputActionEvent) => {
                 if(e.type!==InputEventType.ActionDown) {
                     return
@@ -481,17 +490,17 @@ export class InputManager {
                     value: mov
                 })
             }
-        }
+        }   
         for (const action in this.actions) {
             const pressed=this.action_pressed(this.actions[action])
             const active=this.active_actions.has(action)
-            if (pressed && !active) {
+            if (pressed&&!active){
                 this.active_actions.add(action)
                 this.emit({
                     type: InputEventType.ActionDown,
                     action
                 })
-            }else if(!pressed&&active) {
+            }else if(!pressed&&active){
                 this.active_actions.delete(action)
                 this.emit({
                     type: InputEventType.ActionUp,
@@ -499,6 +508,11 @@ export class InputManager {
                 })
             }
         }
+
+        for (const key of this.wheel_pressed) {
+            this.pressed.delete(key)
+        }
+        this.wheel_pressed.clear()
         this.down.clear()
         this.up.clear()
     }
@@ -510,6 +524,7 @@ export class InputManager {
         this.up.clear()
 
         this.gamepad_pressed.clear()
+        this.wheel_pressed.clear()
 
         this.active_actions.clear()
 

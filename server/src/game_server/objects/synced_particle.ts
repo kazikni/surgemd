@@ -5,7 +5,6 @@ import { MovingBody } from "./moving_body.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { type StaticBody } from "./static_body.ts";
-import { type Obstacle } from "./obstacle.ts";
 export class SyncedParticle extends MovingBody {
     string_type="synced"
     number_type=GameObjectType.SyncedParticle

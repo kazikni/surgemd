@@ -1,0 +1,59 @@
+@use "common/engine/main.scss" as main;
+.btn-base {
+    border-radius: 5px;
+    font-family: "Russo-One";
+    transition: 0.25s ease;
+    cursor: pointer;
+
+    padding: 8px 18px;
+    font-size: 28px;
+
+    border: 2px solid var(--item-border);
+    background: var(--item-bg);
+    color: white;
+
+    &:hover {
+        background: var(--item-bg-hover);
+        border-color: var(--item-border-hover);
+        box-shadow: 0 0 20px var(--item-border-hover);
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+    @include main.medium_screen{
+        font-size: 20px;
+        padding: 6px 10px;
+    }
+    @include main.small_screen{
+        font-size: 15px;
+        padding: 4px 7px;
+    }
+}
+.btn-blue {
+    @extend .btn-base;
+
+    --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
+    --item-bg-hover: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
+
+    --item-border: #07aaeeaa;
+    --item-border-hover: #07aaeeaa;
+}
+.btn-green {
+    @extend .btn-base;
+
+    --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
+    --item-bg-hover: linear-gradient(135deg, #00aa7733 0%, #00aa774d 100%);
+
+    --item-border: #00aa77aa;
+    --item-border-hover: #00aa77aa;
+}
+.btn-red {
+    @extend .btn-base;
+
+    --item-bg: linear-gradient(135deg, #b01c4166 0%, #75042b66 100%);
+    --item-bg-hover: linear-gradient(135deg, #bd2a4e66 0%, #a3124466 100%);
+
+    --item-border: #40041eaa;
+    --item-border-hover: #40041eaa;
+}

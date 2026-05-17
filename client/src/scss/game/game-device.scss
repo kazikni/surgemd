@@ -1,5 +1,4 @@
-@use "../palette.scss";
-
+@use "common/engine/main.scss";
 @use "./apps/message.scss";
 @use "./apps/shop.scss";
 @use "./apps/debug.scss";
@@ -8,7 +7,7 @@
 #game-device-view {
     background-repeat: no-repeat;
     background-size: cover;
-    
+    pointer-events: fill;
 
     transition:
         left 0.5s ease-out,
@@ -173,11 +172,11 @@
     left: 50%;
     top: 50%;
 
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         transform:translate(-50%, -50%) scale(50%);
     }
 
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         transform:translate(-50%, -50%) scale(30%);
     }
 }
@@ -187,13 +186,13 @@
     left: -510px;
     top: -280px;
 
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         left: -570px;
         top: -320px;
         transform:scale(17%);
     }
 
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         left: -610px;
         top: -335px;
         transform:scale(12%);

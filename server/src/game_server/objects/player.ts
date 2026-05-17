@@ -65,14 +65,6 @@ export class Player extends Human{
 
     conn?:PlayerConnManager
 
-    status={
-        damage:0,
-        kills:0,
-        rank:0,
-        money:0,
-        score:0,
-        time_alive:0
-    }
     account_status={
         coins:0,
         xp:0,
@@ -107,14 +99,9 @@ export class Player extends Human{
     }
     override update(dt: number): void {
         super.update(dt)
-        this.status.time_alive+=dt
     }
     override piercing_damage(params: DamageParams){
         const rr=super.piercing_damage(params)
-        if (params.owner && params.owner instanceof Player && params.owner.id !== this.id && params.reason !== DamageReason.Bleend) {
-            params.owner.status.damage += (rr[1] + rr[0])
-        }
-
         if(this.team_data.group)this.team_data.group.dirty=true
         return rr
     }
@@ -160,7 +147,6 @@ export class Player extends Human{
             if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
                 params.owner.earned.coins+=3
                 params.owner.earned.xp+=1
-                params.owner.earned.score+=5
             }
             this.player_manager.send_killfeed_message({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
@@ -209,7 +195,7 @@ export class Player extends Human{
     }
     override self_state(full: boolean): SelfStateUpdate {
         const ret=super.self_state(full)
-        ret.money=this.status.money
+        ret.money=0
         if(this.team_data.group){
             if(this.team_data.group.dirty||full){
                 ret.dirty.group=true
@@ -217,14 +203,6 @@ export class Player extends Human{
             }
         }
         return ret
-    }
-    reset_status(){
-        this.status.damage=0
-        this.status.kills=0
-        this.status.money=0
-        this.status.rank=0
-        this.status.score=0
-        this.status.time_alive=0
     }
     proccess_input(i:InputPacket){
         this.input.movement=i.movement

@@ -108,11 +108,11 @@ export class PlayerClient extends PlayerConnManager{
         if(!this.human||!(this.human instanceof Player))return
 
         const p=new GameOverPacket()
-        p.Kills=this.human.status.kills
-        p.DamageDealth=this.human.status.damage
-        p.Win=win
-        p.Score=this.human.status.score
-        p.Eliminator=eliminated_by
+        p.status.status=this.human.status
+        p.status.win=win
+        if(!p.status.win){
+            p.status.eliminator=eliminated_by
+        }
 
         this.client!.emit(p)
     }
@@ -133,9 +133,16 @@ export class PlayersManager{
     connected_players:Record<number,PlayerClient>={}
     connected_bots:BotClient[]=[]
     living_players:Player[]=[]
+    global_buffer_1?:NetStream
+    global_buffer_2?:NetStream
 
     constructor(game:Game){
         this.game=game
+    }
+    give_score(score:number){
+        for(const p of this.living_players){
+            p.status.score+=score
+        }
     }
     clear_bots(){
         for(const b of this.connected_bots){
@@ -222,8 +229,6 @@ export class PlayersManager{
 
         return client.human as Player
     }
-    global_buffer_1?:NetStream
-    global_buffer_2?:NetStream
     get_global_update_packet(full:boolean):UpdatePacket{
         if(!this.global_buffer_1)this.global_buffer_1=new NetStream(new ArrayBuffer(1024*1024*2))
         this.global_buffer_1.clear()
@@ -252,7 +257,6 @@ export class PlayersManager{
         const s=new NetStream(new ArrayBuffer(5*1024))
 
         this.general_update.content.started=this.game.started
-        this.general_update.content.planes=this.game.planes
         this.general_update.content.deadzone=undefined
         this.general_update.content.ambient=this.game.ambient
         this.general_update.content.living_count=this.game.modeManager.get_living_count()

@@ -118,6 +118,7 @@ export class BattleRoyaleSolo extends ModeManager{
         }
     }
     override on_player_die(p:Player){
+        this.game.players.give_score(this.rules.score.rank_reward)
         if(p.conn){
             p.conn.send_game_over(false,p.killed_by?.id)
         }
@@ -130,9 +131,10 @@ export class BattleRoyaleSolo extends ModeManager{
             },3)
         }
     }
-
     override on_finish(): void {
+        this.game.players.give_score(this.rules.score.win_reward)
         for(const p of this.game.players.living_players){
+            this.game.players.give_score(this.rules.score.rank_reward)
             if(p.conn)p.conn.send_game_over(true)
         }
     }

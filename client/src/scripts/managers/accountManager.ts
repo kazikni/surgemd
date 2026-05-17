@@ -143,13 +143,13 @@ export class AccountManager{
         <button class="btn-green" id="btn-account-register">Register</button>
     </kl-md-menu-options>
     <kl-md-extra id="account-sm-extra">
-        <div class="background-menu-md background-menu-ss background-menu" id="account-sm-login">
+        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-login">
         <span class="span">Login</span>
         <input class="text-input" id="input-login-name" placeholder="Username">
         <input class="text-input" id="input-login-password" type="password" placeholder="Password">
         <button class="btn-green" id="btn-login">Login</button>
         </div>
-        <div class="background-menu-md background-menu-ss background-menu" id="account-sm-register">
+        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-register">
         <span class="span">Registry</span>
         <input class="text-input" id="input-register-name" placeholder="Username">
         <input class="text-input" id="input-register-password" type="password" placeholder="Password">
@@ -196,9 +196,9 @@ export class AccountManager{
         <button class="btn-green" id="btn-account-others">Others</button>
     </kl-md-menu-options>
     <kl-md-extra id="account-sm-extra">
-        <div class="background-menu-md background-menu-ss background-menu" id="account-sm-status">
+        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-status">
         </div>
-        <div class="background-menu-md background-menu-ss background-menu" id="account-sm-others">
+        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-others">
             <button class="btn-green" id="btn-logout">Logout</button>
         </div>
     </kl-md-extra>

@@ -1,12 +1,5 @@
 import { KDate, NetStream, Packet, Vec2 } from "../../engine/core.ts";
 
-export interface PlaneData{
-    direction:number
-    pos:Vec2
-    complete:boolean
-    type:number
-    id:number
-}
 export enum DeadZoneState{
     Deenabled,
     Advancing,
@@ -28,7 +21,6 @@ export interface AmbientData{
 }
 export interface GeneralUpdate{
     started:boolean
-    planes:PlaneData[]
     living_count:number[]
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
@@ -51,13 +43,6 @@ function encode_general_update(stream:NetStream,up:GeneralUpdate){
         stream.writeFloat(up.ambient.rain,0,1,1)
         stream.writeFloat(up.ambient.thunder_storm,0,1,1)
     }
-    stream.writeArray(up.planes,(e)=>{
-        stream.writeID(e.id)
-        stream.writePos2(e.pos)
-        stream.writeRad(e.direction)
-        stream.writeBooleanGroup(e.complete)
-        stream.writeUint8(e.type)
-    },1)
     stream.writeArray(up.living_count,(i,_s)=>{
         stream.writeUint8(i)
     },1)
@@ -91,15 +76,6 @@ function decode_general_update(stream:NetStream,up:GeneralUpdate){
         up.ambient.rain=stream.readFloat(0,1,1)
         up.ambient.thunder_storm=stream.readFloat(0,1,1)
     }
-    up.planes=stream.readArray(()=>{
-        return {
-            id:stream.readID(),
-            pos:stream.readPos2(),
-            direction:stream.readRad(),
-            complete:stream.readBooleanGroup()[0],
-            type:stream.readUint8()
-        }
-    },1)
     up.living_count=stream.readArray((_s)=>{
         return stream.readUint8()
     },1)
@@ -111,7 +87,6 @@ export class GeneralUpdatePacket extends Packet{
     content:GeneralUpdate={
         started:false,
         living_count:[],
-        planes:[],
         deadzone:undefined
     }
     decode(stream: NetStream): void {

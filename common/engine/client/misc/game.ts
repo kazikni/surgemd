@@ -66,7 +66,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
     }
     set_meter_size(size:number){
         this.cam2d.meter_size=size
-        this.input_manager.mouse.meter_size=size
+        this.input_manager.meter_size=size
         this.cam2d.resize()
     }
     bind(){

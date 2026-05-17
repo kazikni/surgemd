@@ -182,7 +182,6 @@ export class AudioVoice {
         this.source=undefined
         this.sound=undefined
         this.position=undefined
-        this.priority=0
         this.started_at=0
         this.offset=0
         this.stopping=false
@@ -206,7 +205,7 @@ export class AudioVoice {
 }
 export class VoicePool {
     voices:AudioVoice[]=[]
-    constructor(public engine:AudioEngine,public ctx:AudioContext,public maxVoices:number=256){}
+    constructor(public engine:AudioEngine,public ctx:AudioContext,public maxVoices:number=1000){}
     allocate():AudioVoice{
         for(const v of this.voices){
             if(v.state===VoiceState.free){
@@ -218,12 +217,7 @@ export class VoicePool {
             this.voices.push(v)
             return v
         }
-        let worst=this.voices[0]
-        for(const v of this.voices){
-            if(v.priority<worst.priority){
-                worst=v
-            }
-        }
+        const worst=this.voices[0]
         worst.stop(true)
         worst.finish()
         return worst

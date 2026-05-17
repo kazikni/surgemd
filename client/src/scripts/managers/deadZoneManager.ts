@@ -18,7 +18,6 @@ export class DeadZoneManager{
         this.game=game
         this.sprite.zIndex=zIndexes.DeadZone
         this.sprite.scale=v2(1,1)
-        this.sprite.layer=100
         this.game.cam2d.addObject(this.sprite)
     }
     hitbox:CircleHitbox2D=new CircleHitbox2D(v2(0,0),1)

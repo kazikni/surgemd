@@ -1,6 +1,6 @@
 import { DeepPartial, Definition, Definitions, FrameTransform, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
-import { BulletDef, BulletReflection, InventoryItemType } from "../utils.ts";
+import { BulletDef, InventoryItemType } from "../utils.ts";
 export type GunDef={
     item_type?:InventoryItemType.gun
     class:GunClasses
@@ -198,16 +198,26 @@ export const GasParticles={
 }
 
 export const bullets_factory={
-    /*pistol_9mm(extend:DeepPartial<BulletDef>={}):BulletDef{
-        return mergeDeep({
-            damage:11,
-            range:100,
-            falloff:0.8,
-            speed:40,
-            obstacleMult:1.2,
-            tracer:tracers.small
-        },extend)
-    },*/
+    ar(power:number):BulletDef{
+        return {
+            damage:8*power,
+            range: 130*(1+(power-1)*0.2),
+            speed: 45*(1+(power-1) * 0.2),
+            falloff:0.75,
+            tracer:tracers.medium
+        }
+    },
+    sniper(power:number,tracer=tracers.large):BulletDef{
+        return {
+            damage: 47 * power,
+            range: 140 * (1 + (power - 1) * 0.5),
+            speed: 55 * (1 + (power - 1) * 0.15),
+            criticalMult: 1.1,
+            obstacleMult: 1.25,
+            falloff: 0.75,
+            tracer: tracer
+        }
+    }
 }
 export const guns_factory={
     simple(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -602,13 +612,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:8,
-                    range:130,
-                    speed:45,
-                    falloff:0.75,
-                    tracer:tracers.medium
-                }
+                def:bullets_factory.ar(1)
             },
             reload:{
                 delay:2.5,
@@ -629,13 +633,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:8,
-                    range:130,
-                    speed:45,
-                    falloff:0.75,
-                    tracer:tracers.medium
-                }
+                def:bullets_factory.ar(1)
             },
             reload:{
                 delay:2.5,
@@ -657,13 +655,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:7,
-                    range:120,
-                    falloff:0.75,
-                    speed:42,
-                    tracer:tracers.medium
-                }
+                def:bullets_factory.ar(0.8)
             },
             reload:{
                 delay:2,
@@ -694,13 +686,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
             bullet:{
-                def:{
-                    damage:7.5,
-                    range:130,
-                    speed:45,
-                    falloff:0.75,
-                    tracer:tracers.medium
-                }
+                def:bullets_factory.ar(0.95)
             },
         }),
         guns_factory.assault("famas","556mm",{
@@ -720,13 +706,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:9,
-                    range:135,
-                    speed:45,
-                    falloff:0.75,
-                    tracer:tracers.medium
-                }
+                def:bullets_factory.ar(1.15)
             },
             reload:{
                 delay:2.5,
@@ -751,7 +731,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:4.5,
                     range:45,
-                    speed:30,
+                    speed:35,
                     falloff:0.5,
                     criticalMult:1.2,
                     tracer:tracers.small
@@ -780,7 +760,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:4.5,
                     range:45,
-                    speed:30,
+                    speed:35,
                     falloff:0.5,
                     criticalMult:1.2,
                     tracer:tracers.small
@@ -805,15 +785,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:47,
-                    range:140,
-                    falloff:0.75,
-                    criticalMult:1.1,
-                    obstacleMult:1.25,
-                    speed:55,
-                    tracer:tracers.large
-                }
+                def:bullets_factory.sniper(1)
             },
             reload:{
                 delay:0.9,
@@ -842,15 +814,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:53,
-                    range:150,
-                    falloff:0.75,
-                    criticalMult:1.1,
-                    obstacleMult:1.25,
-                    speed:60,
-                    tracer:tracers.xl
-                }
+                def:bullets_factory.sniper(1.13,tracers.xl)
             },
             reload:{
                 delay:2.7,
@@ -904,15 +868,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:44,
-                    range:135,
-                    falloff:0.75,
-                    obstacleMult:1.25,
-                    criticalMult:1.1,
-                    speed:50,
-                    tracer:tracers.large
-                }
+                def:bullets_factory.sniper(0.85)
             },
             reload:{
                 delay:2.5,
@@ -935,15 +891,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:37,
-                    range:120,
-                    falloff:0.75,
-                    criticalMult:1.1,
-                    obstacleMult:1.25,
-                    speed:50,
-                    tracer:tracers.large
-                }
+                def:bullets_factory.sniper(0.8)
             },
             reload:{
                 delay:0.6,

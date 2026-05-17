@@ -31,7 +31,7 @@ export class ReloadAction extends Action{
             capacity - this.item.ammo
         )
 
-        if(this.item.inventory.infinity_ammo){
+        if(this.item.infinity_ammo()){
             this.item.ammo+=request
         }else{
             this.item.ammo+=user.inventory.consume_aitems(def.ammo_type,request)

@@ -1,30 +1,50 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts"
 import { DamageReason } from "common/scripts/definitions/utils.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
-import { CircleHitbox2D, NetStream, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { type Grenade } from "./grenade.ts";
+import { type Projectile } from "./projectile.ts";
 
 export class Explosion extends ServerGameObject{
     string_type:string="explosion"
     number_type: number=GameObjectType.Explosion
     def!:ExplosionDef
 
+    parent?:Projectile
     owner?:Human
     source?:DamageSourceDef
     constructor(){
         super()
         this.net_sync.enabled.deletion=false
     }
-    delay:number=1
+    exploded_base:boolean=false
+    delay:number=0.1
     interact(_user: Human): void {
         return
     }
 
-    explode(){
+    explode_base(){
+        if(this.exploded_base)return
+        this.exploded_base=true
+        if(this.def.bullet){
+            for(let i=0;i<this.def.bullet.count;i++){
+                const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.def,this.layer)
+                b.hit_owner=true
+                b.set_direction(random.rad())
+            }
+        }
+        if(this.def.synced_particles){
+            const def=this.game.definitions.synced_particle.getFromString(this.def.synced_particles.def)
+            for(let i=0;i<this.def.synced_particles.count;i++){
+                this.game.add_synced_particle(this.position,def,this.owner,this.layer)
+            }
+        }
+    }
+    explode_damage(){
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.colliding_with(v.hitbox))
         objs.sort((a, b) =>v2.distanceSquared(this.position, a.position)-v2.distanceSquared(this.position, b.position))
         const blocks:ServerGameObject[] = []
@@ -32,11 +52,9 @@ export class Explosion extends ServerGameObject{
             const dist=v2.distance(this.position,obj.position)
             let damage = 0
             if(dist<=this.def.size.end){
-                if (dist <= this.def.size.begin) {
-                    damage = this.def.damage
-                } else {
-                    const t = (dist - this.def.size.begin) / (this.def.size.end - this.def.size.begin)
-                    damage = Numeric.lerp(this.def.damage, 0, t)
+                damage=this.def.damage
+                if (dist>this.def.size.begin){
+                    damage*=1-((dist-this.def.size.begin)/(this.def.size.end-this.def.size.begin))
                 }
             }
             let blockFactor = 1
@@ -92,13 +110,6 @@ export class Explosion extends ServerGameObject{
                 blocks.push(obj)
             }
         }
-
-        if(this.def.bullet){
-            for(let i=0;i<this.def.bullet.count;i++){
-                const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.def,this.layer)
-                b.set_direction(random.rad())
-            }
-        }
         if(this.def.projectiles){
             for(let i=0;i<this.def.projectiles.count;i++){
                 const p=this.game.add_grenade(this.position,this.game.definitions.grenades.getFromString(this.def.projectiles.def),this.owner,this.layer)
@@ -106,22 +117,18 @@ export class Explosion extends ServerGameObject{
                 p.physical_data.zpos_speed=1.5
                 p.physical_data.velocity=v2.random(-this.def.projectiles.speed,this.def.projectiles.speed)
                 p.physical_data.angular_velocity=this.def.projectiles.angSpeed+(Math.random()*this.def.projectiles.randomAng)
+                if(this.parent)v2m.add(p.physical_data.velocity,p.physical_data.velocity,this.parent.physical_data.velocity)
                 if(Math.random()<=0.5)p.physical_data.angular_velocity*=-1
             }
         }
-        if(this.def.synced_particles){
-            const def=this.game.definitions.synced_particle.getFromString(this.def.synced_particles.def)
-            for(let i=0;i<this.def.synced_particles.count;i++){
-                this.game.add_synced_particle(this.position,def,this.owner,this.layer)
-            }
-        }
+        this.destroy()
     }
-    update(_dt:number): void {
-        if(this.delay==0){
-            this.explode()
-            this.destroy()
+    update(dt:number): void {
+        this.explode_base()
+        if(this.delay<=0){
+            this.explode_damage()
         }else{
-            this.delay--
+            this.delay-=dt
         }
     }
     create(args: {def:ExplosionDef,source?:DamageSourceDef,position:Vec2,owner?:Human}): void {

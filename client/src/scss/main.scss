@@ -1,4 +1,11 @@
-@use "palette.scss";
+@use "common/engine/main.scss";
+@use "./components/button.scss";
+@use "./components/input.scss";
+@use "./components/background.scss";
+@use "./components/slider.scss";
+@use "./components/text.scss";
+@use "./core/variables.scss";
+
 @use "./fonts.scss";
 @use "./game/game.scss";
 @use "./utils/others.scss";
@@ -7,33 +14,6 @@
 @use "./accounts.scss";
 :root {
     color-scheme: dark;
-}
-html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    scroll-behavior: none;
-    overflow: hidden;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-    *{
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        -webkit-touch-callout: none;
-        translate: none !important;
-    }
-}
-
-body, p, input, button, select {
-    font-family: "Russo-One","Inter", sans-serif;
-    font-size: 16px;
-    color: #ffffff;
 }
 body {
     overscroll-behavior: none;

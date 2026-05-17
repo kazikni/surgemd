@@ -42,48 +42,19 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             idString:"barrel_explosion",
             tint:"#445",
             size:{
-                begin:3,
-                end:6
+                begin:2,
+                end:5
             },
             damage:115,
             bullet:{
                 def:{
                     damage:7,
                     speed:20,
-                    range:25,
+                    range:20,
                     tracer:tracers.black_projectile
                 },
-                count:6
+                count:10
             },
-            assets:{
-                sound:"explosion_1"
-            },
-            particles:[
-                {
-                    count:10,
-                    lifetime:{
-                        min:1,
-                        max:1.5
-                    },
-                    speed:{
-                        min:1,
-                        max:3
-                    },
-                    frame:{
-                        image:"gas_smoke_particle",
-                        scale:0.01
-                    }
-                }
-            ]
-        },
-        {
-            idString:"rocket_explosion",
-            tint:"#445",
-            size:{
-                begin:2,
-                end:4
-            },
-            damage:80,
             assets:{
                 sound:"explosion_1"
             },
@@ -109,7 +80,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             idString:"frag_grenade_explosion",
             tint:"#355",
             size:{
-                begin:3,
+                begin:2,
                 end:5
             },
             damage:115,
@@ -117,10 +88,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 def:{
                     damage:7,
                     speed:20,
-                    range:25,
+                    range:20,
                     tracer:tracers.black_projectile
                 },
-                count:6
+                count:10
             },
             assets:{
                 sound:"explosion_1"
@@ -180,14 +151,14 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             idString:"mirv_grenade_explosion",
             tint:"#09e",
             size:{
-                begin:3,
+                begin:2,
                 end:5
             },
             damage:120,
             bullet:{
                 def:{
                     damage:7,
-                    speed:18,
+                    speed:12,
                     range:8,
                     tracer:tracers.mirv
                 },
@@ -226,7 +197,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#09e",
             size:{
                 begin:1,
-                end:3
+                end:4
             },
             damage:30,
             bullet:{
@@ -290,21 +261,50 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#445",
             size:{
                 begin:5,
-                end:20
+                end:25
             },
-            damage:1000,
+            damage:500,
             bullet:{
                 def:{
                     damage:30,
                     speed:20,
-                    range:50,
+                    range:25,
                     tracer:tracers.black_projectile
                 },
-                count:100
+                count:40
             },
             assets:{
                 sound:"explosion_2"
             },
+        },
+        {
+            idString:"rocket_explosion",
+            tint:"#445",
+            size:{
+                begin:2,
+                end:4
+            },
+            damage:80,
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ]
         },
         {
             idString:"m79_grenade_explosion",

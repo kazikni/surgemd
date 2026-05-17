@@ -142,7 +142,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         }
         if(this.slots.length>backpack.slots){
             while(this.slots.length>backpack.slots){
-              this.slots.pop()
+                this.slots.pop()
             }
         }
         while(this.slots.length<backpack.slots){

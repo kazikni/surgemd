@@ -1,0 +1,30 @@
+{
+    "meta":{
+        "name": "No Hope",
+        "location": "South America - Southeast - MD Island",
+        "description": "The 50vs50 Last Man",
+        "size":"small",
+        "date":"03/10/2000 12:23AM",
+        "dificulty":"normal"
+    },
+    "assets":{
+        "background_music":"/sounds/musics/single-player/music_1.mp3",
+        "load":{
+            "sounds":{
+                "history_music_1":"/sounds/musics/history_music_1.mp3"
+            }
+        }
+    },
+    "deadzone":{
+        "stage":0
+    },
+    "definition":{
+
+    },
+    "mode":{
+        "type":"kill_all_enemies",
+        "map":{
+            
+        }
+    }
+}

@@ -68,6 +68,7 @@ export enum zIndexes{
     Grid,
     BuildingsFloor,
     DeadObstacles,
+    DeadCeilings,
     Decals,
     DeadCreatures,
     PlayersBody,
@@ -183,4 +184,11 @@ export enum GameObjectType{
     Creature,
     Parachute,
     SyncedParticle,
+    Plane
+}
+export interface HumanStatus{
+    damage:number
+    damage_taken:number
+    kills:number
+    score:number
 }

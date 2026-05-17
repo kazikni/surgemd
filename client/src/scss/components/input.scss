@@ -1,0 +1,64 @@
+@use "common/engine/main.scss" as main;
+.text-input-base {
+    border-radius: 5px;
+    font-family: "Russo-One";
+    transition: 0.25s ease;
+    cursor: pointer;
+
+    padding: 8px 18px;
+    font-size: 25px;
+
+    border: 2px solid var(--item-border);
+    background: var(--item-bg);
+    color: white;
+    outline: none;
+
+    &:active {
+        transform: translateY(1px);
+    }
+    &:focus {
+        border-color: var(--item-bg-hover);
+        box-shadow: 0 0 15px var(--item-border-hover);
+    }
+    &::placeholder {
+        text-align: left;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+
+    @include main.medium_screen{
+        font-size: 18px;
+        padding: 6px 10px;
+    }
+    @include main.small_screen{
+        font-size: 10px;
+        padding: 4px 7px;
+    }
+}
+.text-input-blue {
+    @extend .text-input-base;
+
+    --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
+    --item-bg-hover: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
+
+    --item-border: #07aaeeaa;
+    --item-border-hover: #07aaeeaa;
+}
+.text-input-green {
+    @extend .text-input-base;
+
+    --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
+    --item-bg-hover: linear-gradient(135deg, #00aa7733 0%, #00aa774d 100%);
+
+    --item-border: #00aa77aa;
+    --item-border-hover: #00aa77aa;
+}
+.text-input-red {
+    @extend .text-input-base;
+
+    --item-bg: linear-gradient(135deg, #b01c4166 0%, #75042b66 100%);
+    --item-bg-hover: linear-gradient(135deg, #bd2a4e66 0%, #a3124466 100%);
+
+    --item-border: #40041eaa;
+    --item-border-hover: #40041eaa;
+}

@@ -714,7 +714,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui.show_game_over(p)
             if(this.level){
                 if(p.status.win){
-                    this.end_level(p.status.status.kills)
+                    this.end_level(p.status.status[0]?.kills??0)
                 }else{
                     this.on_die_level(p)
                 }

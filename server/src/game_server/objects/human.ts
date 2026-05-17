@@ -1203,6 +1203,8 @@ export class Human extends MovingBody{
             params.owner.inventory.accessorys.call_event("kill",params)
         }
 
+        this.team_data.team?.on_human_die?.(this)
+        this.team_data.group?.on_human_die?.(this)
         this.game.modeManager.on_human_die(this)
         this.game.signals.emit("human_die",{human:this})
 

@@ -216,7 +216,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.right!.position,
                 rotation:-0.5,
                 zIndex:1,
-                hotspot:v2(0.2,0.5)
+                hotspot:v2(0,0.7)
             },
             animation:[
                 {
@@ -300,7 +300,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
-                hotspot:v2(0.3,0.4)
+                hotspot:v2(0.1,0.6)
             },
             animation:AnimationSwing(0.45),
             assets:{

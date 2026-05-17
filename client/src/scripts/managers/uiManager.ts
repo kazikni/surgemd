@@ -521,13 +521,19 @@ export class UiManager{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
         }
-        this.content.gameover_status_container.innerHTML=`
-<h1>Status</h1>
-<span>Kills: ${g.status.status.kills}</span>
-<span>Damage: ${g.status.status.damage}</span>
-<span>Damage Taken: ${g.status.status.damage_taken}</span>
-<span>Final Score: ${g.status.status.score}</span>
+        let content=""
+        for(const status of g.status.status){
+            content+=`
+<div class="background-menu-blue">
+    <h1>${this.players_name[status.id].full}</h1>
+    <span>Kills: ${status.kills}</span>
+    <span>Damage: ${status.damage}</span>
+    <span>Damage Taken: ${status.damage_taken}</span>
+    <span>Final Score: ${status.score}</span>
+</div>
 `
+        }
+        this.content.gameover_status_container.innerHTML=content
     }
     ping_time:number=0
     update(dt:number){
@@ -584,9 +590,9 @@ export class UiManager{
         this.update_hint()
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
+                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.position)
             )
-            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
+            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.position)
 
             const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
             const shsrc = "/img/menu/gui/emote_wheel_hover.svg"

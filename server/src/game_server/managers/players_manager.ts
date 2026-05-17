@@ -6,7 +6,7 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameConstants } from "common/scripts/others/constants.ts";
+import { GameConstants, HumanStatus } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -22,7 +22,7 @@ export class BotClient extends PlayerConnManager{
             this.ai.net_update(general_update)
         }
     }
-    override send_game_over(win?: boolean, eliminated_by?: number): void {
+    override send_game_over(status:(HumanStatus&{id:number})[],win?: boolean, eliminated_by?: number): void {
         //
     }
 }
@@ -104,11 +104,11 @@ export class PlayerClient extends PlayerConnManager{
         }
         return up
     }
-    send_game_over(win:boolean=false,eliminated_by:number=0){
+    send_game_over(status:(HumanStatus&{id:number})[]=[],win:boolean=false,eliminated_by:number=0){
         if(!this.human||!(this.human instanceof Player))return
 
         const p=new GameOverPacket()
-        p.status.status=this.human.status
+        p.status.status=status
         p.status.win=win
         if(!p.status.win){
             p.status.eliminator=eliminated_by

@@ -12,6 +12,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutEyesDef, LoadoutHairDef } from "common/scripts/definitions/loadout/skins.ts";
+import { HumanStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -22,7 +23,7 @@ export abstract class PlayerConnManager{
     constructor(game:Game){
         this.game=game
     }
-    abstract send_game_over(win?:boolean,eliminated_by?:number):void;
+    abstract send_game_over(status:(HumanStatus&{id:number})[],win?:boolean,eliminated_by?:number):void;
     set_spectator(p:Player) {
         this.spectating=true
         this.human=p
@@ -83,6 +84,12 @@ export class Player extends Human{
     player_manager!:PlayersManager
     constructor(){
         super()
+    }
+    get_status():HumanStatus&{id:number}{
+        return {
+            id:this.id,
+            ...this.status
+        }
     }
     override set_preset(preset: HumanDefinition|undefined): void {
         if(!preset)return

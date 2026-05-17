@@ -1361,8 +1361,8 @@ export class Human extends MovingBody{
 
             dead,downed,
 
+            controlling,
             seat,
-            controlling
         ]=stream.readBooleanGroup2()
         this.controlling=controlling
         this.seat=seat

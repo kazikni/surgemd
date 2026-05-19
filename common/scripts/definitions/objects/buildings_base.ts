@@ -680,6 +680,16 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         ...buildings_factory.container.simple("yellow_container",0xffd900),
         ...buildings_factory.container.simple("red_container",0xb6071e),
         ...buildings_factory.container.simple("green_container",0x00ff0d),
+        
+        buildings_factory.container.type_1("black_container",0x111620,{
+            b:{
+                content:{
+                    loots:[
+                        {table:"black_container",position:v2.new(-2,0)}
+                    ]
+                }
+            }
+        }),
 
         ...buildings_factory.stairs("small_iron_stairs"),
         ...buildings_factory.small_bunker("bunker_1",{

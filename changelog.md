@@ -1,48 +1,80 @@
 # Surgemd Pre-Beta-7
 ## News
-__                                                                                                      __
+__                                                                                                                 __
 ### Mains
 * Bunkers
 * Shed
 * Remake Animation System
-__                                                                                                      __
+* Rework Sounds Engine
+__                                                                                                                 __
 ### Menu
+* Equipment UI
+* Status UI
 * Menu Rework
 * Intro Video
+* Region Settings
 * Translations
 * Brazilian Portuguese Translation
 * Turkish Translation
 * Espanish Translation
 * Interactie UI Setting
 * Mobile Aim Line
-__                                                                                                      __
+* Battle Royale Level Dialogs Part
+__                                                                                                                 __
 ### Items
 * Fist - New Default Melee
+* Shovel - A New Melee
+* Katana - A New Melee
 * M1 Garand - 762MM DMR
 * Colt1873 - 45ACP pistol
 * M79 - Explosive Misc Gun
-* Shovel - A New Melee
-* Katana - A New Melee
 * Famas Sprite And Sounds
 * Survival Knife Alt Animation
-__                                                                                                      __
+* Healing Sprays Test
+__                                                                                                                 __
 ### Others
-* Campfire Crate
+* Black Container
+* Colored Containers
 * Players Snow Footsteps
-__                                                                                                      __
+* Snow Footsteps Sound
+* Ice Footsteps Sound
+* Campfire Crate
+* Gold Rock
+* Platinum Rock
+* Debug Level
+* Stove
+* Sink
+* Bed
+__                                                                                                                 __
 ## Changes
-__                                                                                                      __
+__                                                                                                                 __
 ### Items
+* Some Balance Changes
+* Some Loot Table Changes
+* Some Optimisations
 * Improve Grenades Physics
-__                                                                                                      __
+* Liquid Insanity And Lastman Helmet now heal boost too
+__                                                                                                                 __
 ### Menu
-* New Game Over Music
-__                                                                                                      __
+* New Game Over Music By Showusmusic
+* New Menu Music By Showusmusic
+* Client Side News
+* Improved Loading Screen
+* Loadout Menu Rework
+__                                                                                                                 __
 ### Others
+* Change Atlas To KSPR(Kazikni sprite sheet with resolution)
 * Improve Explosions Physics
 * Improve Musics Loading
 * Deno API
-__                                                                                                      __
+* Tundra Now Have Ice Lakes
+* Change Levels Order
+* Containers Redesign
+* Gold And Iron Crate Redesign
+* Airdrop Redesign
+* Airdrop Plane Redesign
+* Rivers Fix
+__                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)
 [Windows Version](https://surgemd.io/files/surgemd-windows-lasted.zip)

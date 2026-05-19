@@ -41,11 +41,11 @@ export class EquipmentModule extends UIModule<Game> {
         const hasAny=player.helmet||player.vest||player.backpack
         this.container.style.display = hasAny ? "" : "none"
 
-        this.render_slot(this.helmet, player.helmet?.idString)
-        this.render_slot(this.vest, player.vest?.idString)
-        this.render_slot(this.backpack, player.backpack?.idString)
+        this.render_slot(this.helmet, player.helmet?.idString,player.helmet!==undefined?`<span class="span-text">Level ${player.helmet.level}</span>`:"")
+        this.render_slot(this.vest, player.vest?.idString,player.vest!==undefined?`<span class="span-text">Level ${player.vest.level}</span>`:"")
+        this.render_slot(this.backpack, player.backpack?.idString,player.backpack!==undefined?`<span class="span-text">Level ${player.backpack.level}</span>`:"")
     }
-    private render_slot(el: HTMLDivElement, id?: string) {
+    private render_slot(el: HTMLDivElement, id?: string,span="") {
         if (!id) {
             HideElement(el)
             return
@@ -58,7 +58,7 @@ export class EquipmentModule extends UIModule<Game> {
         ShowElement(el)
 
         el.style.display = ""
-        el.innerHTML = `<img class="slot-image" src="${sprite.src}">`
+        el.innerHTML = `${span}<img class="slot-image" src="${sprite.src}">`
     }
 
     override on_update(_dt: number): void {}

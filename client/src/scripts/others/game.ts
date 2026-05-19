@@ -506,7 +506,12 @@ export class Game extends ClientGame<GameObject>{
             loop:true,
             offset:this.ambient.last_music_pos
         })
+        this.ui.hide_game_over()
         this.local_server.start()
+    }
+    override clear(): void {
+        super.clear()
+        this.ui.clear()
     }
     close_game(){
         if(this.client&&this.client.opened)this.client.disconnect()
@@ -518,7 +523,6 @@ export class Game extends ClientGame<GameObject>{
     }
     soft_close_game(){
         this.clear()
-        this.ui.clear()
         this.local_server.stop()
         this.ui.hide_game_over()
 

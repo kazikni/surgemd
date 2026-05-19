@@ -252,4 +252,13 @@ export const LootTables={
         [{weight:1,table:"scopes"}],
         [{weight:1,item:"awp"}],
     ],
+    black_container:[
+        [{weight:1,item:"tactical_helmet"}],
+        [{weight:1,table:"mythic_guns"}],
+        [
+            {item:"scope_5",weight:10},
+            {item:"scope_6",weight:5},
+            {item:"scope_7",weight:2},
+        ]
+    ]
 } satisfies Record<string,LootTable>

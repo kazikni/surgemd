@@ -183,7 +183,7 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(0.8,0.8);
+                    this.sprite_main.scale=v2(1,1);
                     this.sprite_outline.scale=v2(1.4,1.4);
                     this.pickup_sound=this.game.resources.get_sound(`vest_pickup`)
                     radius=GameConstants.loot.radius.equipament
@@ -194,7 +194,7 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(0.8,0.8);
+                    this.sprite_main.scale=v2(1,1);
                     this.sprite_outline.scale=v2(1.4,1.4);
                     this.pickup_sound=this.game.resources.get_sound(`backpack_pickup`)
                     radius=GameConstants.loot.radius.equipament
@@ -205,7 +205,7 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(0.8,0.8);
+                    this.sprite_main.scale=v2(1.5,1.5);
                     this.sprite_outline.scale=v2(1.4,1.4);
                     (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.scopes
                     this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)

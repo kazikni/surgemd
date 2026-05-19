@@ -31,6 +31,7 @@ export const map_spawns={
         {def:"yellow_container_2",weight:10},
         {def:"green_container_1",weight:10},
         {def:"green_container_2",weight:10},
+        {def:"black_container",weight:0.1},
     ],
     crates:[
         {def:"wood_crate",weight:1000},

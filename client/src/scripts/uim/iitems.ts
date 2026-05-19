@@ -2,7 +2,6 @@ import { UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
-import { InputActionType } from "common/scripts/packets/input_packet.ts";
 
 export class IItemsModule extends UIModule<Game> {
     container!: HTMLDivElement
@@ -43,18 +42,13 @@ export class IItemsModule extends UIModule<Game> {
                 img.height = 30
                 img.src = this.game.resources.get_frame(s.idString).src
 
-                el.dataset.drop_kind = "3"
-                el.dataset.slot = s.idNumber!.toString()
+                el.dataset.item_kind = "5"
+                el.dataset.item_value = s.idNumber!.toString()
 
                 el.appendChild(img)
 
-                el.addEventListener("mousedown", this.game.ui.handle_slot_click)
-                el.addEventListener("touchstart", ()=>{
-                    this.game.input.actions.push({
-                        type:InputActionType.set_scope,
-                        scope_id:s.idNumber!
-                    })
-                })
+                el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
+                el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
                 this.elements[s.idString]=el
                 this.container.appendChild(el)

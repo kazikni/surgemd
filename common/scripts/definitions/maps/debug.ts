@@ -36,7 +36,7 @@ export const DebugMap:MapDef={
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
             map.game.add_loot(v2(x,y),item,Infinity)
             i++
-            if(i>=15){
+            if(i>=20){
                 i=0
                 x=map.size.x/2
                 y+=2
@@ -52,7 +52,7 @@ export const DebugMap:MapDef={
             o.initialize(0)
             o.set_position(v2(x,y))
             i++
-            if(i>=15){
+            if(i>=20){
                 i=0
                 x=map.size.x/2
                 y-=5
@@ -63,7 +63,7 @@ export const DebugMap:MapDef={
         for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
             const v=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
             i++
-            if(i>=15){
+            if(i>=20){
                 i=0
                 x=map.size.x/2
                 y-=5

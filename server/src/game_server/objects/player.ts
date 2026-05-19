@@ -11,7 +11,7 @@ import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutEyesDef, LoadoutHairDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { HumanStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
@@ -240,6 +240,7 @@ export class Player extends Human{
                 def:this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
             }
             this.loadout.body.tint=jp.skin.body_tint
+            this.loadout.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
         }
     }
 }

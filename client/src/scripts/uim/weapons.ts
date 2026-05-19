@@ -1,7 +1,6 @@
 import { UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
-import { InputActionType } from "common/scripts/packets/input_packet.ts";
 
 export class WeaponsModule extends UIModule<Game> {
     container!: HTMLDivElement
@@ -60,30 +59,12 @@ export class WeaponsModule extends UIModule<Game> {
         img.className = "weapon-slot-image"
         el.appendChild(img)
         
-        el.dataset.drop_kind = "1"
-        el.dataset.drop = i.toString()
+        el.dataset.item_kind = "1"
+        el.dataset.item_value = i.toString()
 
-        el.addEventListener("mousedown", (e: MouseEvent) => {
-            if (e.button === 2) {
-                this.game.input.actions.push({
-                    type:InputActionType.drop,
-                    drop:i,
-                    drop_kind:1
-                })
-            } else if (e.button === 0) {
-                this.game.input.actions.push({
-                    type:InputActionType.set_hand,
-                    hand:i
-                })
-            }
-        })
+        el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
+        el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
-        el.addEventListener("touchstart", () => {
-            this.game.input.actions.push({
-                type: InputActionType.set_hand,
-                hand: i
-            })
-        })
         if (this.currentWeapon === i) {
             el.classList.add("weapon-slot-selected")
         }

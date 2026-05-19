@@ -601,6 +601,22 @@ export class GInventory extends GInventoryBase<LItem>{
             this.owner.game.add_loot(this.owner.position,a,res,this.owner.layer)
         }
     }
+    drop_iitem(item:number):Loot|undefined{
+        if(this.owner.equipment_data.default_scope.idNumber===item)return
+        for(let idx=0;idx<this.iitems.length;idx++){
+            if(this.iitems[idx].idNumber===item){
+                const def=this.iitems[idx]
+                const ret=this.owner.game.add_loot(this.owner.position,def,1,this.owner.layer)
+                this.iitems.splice(idx,1)
+                if(this.owner.equipment_data.scope===def)this.owner.equipment_data.scope=this.iitems[this.iitems.length-1] as ScopeDef
+                this.owner.equipment_data.dirty=true
+                this.net_sync.iitems=true
+                idx--
+                return ret
+            }
+        }
+        return undefined
+    }
     drop_helmet():Loot|undefined{
         if(this.owner.equipment_data.helmet){
             const loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
@@ -749,7 +765,7 @@ export class GInventory extends GInventoryBase<LItem>{
             case InventoryItemType.scope:{
                 if(!this.iitems.includes(def)){
                     this.iitems.push(def)
-
+                    this.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
                     if(def.idNumber!>this.owner.equipment_data.scope.idNumber!){
                         this.owner.equipment_data.scope=def
                     }

@@ -21,7 +21,6 @@ import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
-import { type Player } from "./player.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
@@ -77,7 +76,7 @@ export class Human extends MovingBody{
 
         boost:0,
         max_boost:100,
-        boost_def:Boosts[BoostType.Null],
+        boost_def:Boosts[BoostType.Adrenaline],
         boost_time:0,
     }
     team_data:{
@@ -333,9 +332,8 @@ export class Human extends MovingBody{
         const rules=this.game.modeManager.rules.humans
 
         switch(this.health_data.boost_def.type){
-            case BoostType.Null:
-            case BoostType.Shield:
             case BoostType.Adrenaline:
+            case BoostType.Shield:
             case BoostType.Mana:
                 break
             case BoostType.Addiction:
@@ -580,6 +578,9 @@ export class Human extends MovingBody{
                                 case 4:
                                     this.inventory.drop_item(drop)
                                     this.actions.cancel()
+                                    break
+                                case 5:
+                                    this.inventory.drop_iitem(drop)
                                     break
                             }
                         }
@@ -1002,10 +1003,17 @@ export class Human extends MovingBody{
 
         this.inventory.net_update()
     }
+    give_boost(amount:number){
+        if(this.health_data.boost_def.type===BoostType.Death){
+            this.health_data.boost=Math.max(this.health_data.boost-(amount/5),0)
+        }else{
+            this.health_data.boost=Math.min(this.health_data.boost+amount,this.health_data.max_boost)
+        }
+    }
     clear_boost(){
         this.health_data.boost=0
         this.health_data.boost_time=0
-        this.health_data.boost_def=Boosts[BoostType.Null]
+        this.health_data.boost_def=Boosts[0]
     }
     clear(){
         this.inventory.clear()
@@ -1063,7 +1071,6 @@ export class Human extends MovingBody{
             )
             if (this.health_data.boost === 0) {
                 this.health_data.invensibility_time = 0.35
-                this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
             healthDamage = params.amount
@@ -1161,8 +1168,7 @@ export class Human extends MovingBody{
         this.downed_by_source=params.source
 
         this.health_data.health=this.health_data.max_health
-        this.health_data.boost=0
-        this.health_data.boost_def=Boosts[BoostType.Null]
+        this.clear_boost()
 
         this.health_data.invensibility_time=1
 

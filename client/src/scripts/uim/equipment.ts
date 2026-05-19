@@ -2,8 +2,6 @@ import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { type Human } from "../objects/human.ts";
 
-type EquipSlotType = "helmet" | "vest" | "backpack" | "accessory"
-
 export class EquipmentModule extends UIModule<Game> {
     container!: HTMLDivElement
 

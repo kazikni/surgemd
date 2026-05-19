@@ -31,7 +31,7 @@ export class JoinPacket extends Packet{
     decode(stream: NetStream): void {
         this.player_name=stream.readStringSized(30)
         const bg=stream.readBooleanGroup()
-        if(bg[1]){
+        if(bg[0]){
             this.skin={
                 body_tint:0,
                 female:bg[2],

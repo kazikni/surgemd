@@ -3,6 +3,7 @@ import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { HumanModifiers } from "../../others/constants.ts";
+import { BoostType } from "../player/boosts.ts";
 export interface VestDef extends Definition{
     defence:number
     reduction:number
@@ -85,7 +86,8 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             property:["extended_capacity","infinity_ammo"],
             events:{
                 "kill":(e)=>{
-                    e.owner.health_data.health+=20
+                    e.owner.give_boost(25)
+                    e.owner.health_data.health+=25
                     e.owner.side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,

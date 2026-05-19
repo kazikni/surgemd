@@ -61,7 +61,6 @@ export class UiManager{
         post_proccess:{
             vignetting:document.querySelector("#vignetting-gfx") as HTMLDivElement,
             tiltshift:document.querySelector("#tiltshift-gfx") as HTMLDivElement,
-            recolor:document.querySelector("#recolor-gfx") as HTMLDivElement,
         },
         emote_wheel:{
             main:document.querySelector("#emote-wheel") as HTMLDivElement,
@@ -253,14 +252,12 @@ export class UiManager{
     }
     start(){
         HideElement(this.content.post_proccess.tiltshift)
-        HideElement(this.content.post_proccess.recolor)
         HideElement(this.content.post_proccess.vignetting)
         if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
             ShowElement(this.content.post_proccess.tiltshift)
         }
         if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Normal){
             ShowElement(this.content.post_proccess.vignetting)
-            ShowElement(this.content.post_proccess.recolor)
         }
         this.game.renderer.canvas.focus()
 
@@ -454,11 +451,8 @@ export class UiManager{
         }
         if(state.dirty.inventory.iitems) {
             this.game.inventory.iitems = state.inventory.iitems
-            this.game.inventory.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
         }
-
         this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope),state.force_default_scope)
-
         if(state.dirty.inventory.weapons){
             for(const idx in state.inventory.weapons){
                 this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
@@ -480,22 +474,52 @@ export class UiManager{
     }
     handle_slot_click(e:MouseEvent){
         const t=e.currentTarget as HTMLDivElement
+        const item_kind=parseInt(t.dataset.item_kind!)
+        const item_value=parseInt(t.dataset.item_value!)
         if(e.button==2){
-            if(t.dataset.drop_kind==="2"){
-                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.drop!),drop_kind:2})
-            }else if(t.dataset.drop_kind==="3"){
-                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.slot!),drop_kind:3})
+            switch(item_kind){
+                case 1:
+                case 2:
+                case 3:
+                case 5:
+                    this.game.input.actions.push({type:InputActionType.drop,drop:item_value,drop_kind:item_kind})
+                    break
             }
         }else if(e.button===0){
-            if(t.dataset.drop_kind==="3"){
-                this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+            if(!this.game.save.get_variable("sv_ui_interactive"))return
+            switch(item_kind){
+                case 1:
+                    this.game.input.actions.push({
+                        type:InputActionType.set_hand,
+                        hand:item_value
+                    })
+                    break
+                case 3:
+                    this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.item_value!)})
+                    break
+                case 5:
+                    this.game.input.actions.push({type:InputActionType.set_scope,scope_id:parseInt(t.dataset.item_value!)})
+                    break
             }
         }
     }
     handle_slot_touch(e:TouchEvent){
         const t=e.currentTarget as HTMLDivElement
-        if(t.dataset.drop_kind==="3"){
-            this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+        const item_kind=parseInt(t.dataset.item_kind!)
+        const item_value=parseInt(t.dataset.item_value!)
+        switch(item_kind){
+            case 1:
+                this.game.input.actions.push({
+                    type:InputActionType.set_hand,
+                    hand:item_value
+                })
+                break
+            case 3:
+                this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.item_value!)})
+                break
+            case 5:
+                this.game.input.actions.push({type:InputActionType.set_scope,scope_id:parseInt(t.dataset.item_value!)})
+                break
         }
     }
     hide_game_over(){

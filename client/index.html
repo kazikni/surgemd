@@ -21,6 +21,8 @@
   <body>
     <script type="module" src="./src/scripts/others/index.ts" async></script>
     <div id="game" style="display: none;">
+      <canvas id="game-canvas" class="game-canvas"></canvas>
+      <div id="tiltshift-gfx"></div>
       <div>
         <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
           <div id="game-mobile-gui" style="display: none; pointer-events: none;">
@@ -96,11 +98,7 @@
             <button id="gameover-report-btn" class="btn-blue">Report Player</button>
           </div>
         </div>
-      </div>  
-      <canvas id="game-canvas" class="game-canvas"></canvas>
-      <div id="bloom-gfx"></div>
-      <div id="tiltshift-gfx"></div>
-      <div id="recolor-gfx"></div>
+      </div>
     </div>
     <div id="menu">
       <div id="menu-background-effects">
@@ -133,7 +131,6 @@
         <div class="tv-static"></div>
         <p id="text-gameover"></p>
       </div>
-      <div id="vignetting-gfx"></div>
       <div id="history-overlay" style="opacity:0;pointer-events:none;visibility:hidden;">
         <div class="tv-static"></div>
         <div id="history-container">
@@ -155,7 +152,8 @@
           <div id="phase-intro-date"></div>
           <div id="phase-intro-description"></div>
         </div>
-    </div>
+      </div>
+      <div id="vignetting-gfx"></div>
     </div>
   </body>
 </html>

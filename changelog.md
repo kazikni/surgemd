@@ -12,6 +12,8 @@ __                                                                              
 * Translations
 * Brazilian Portuguese Translation
 * Turkish Translation
+* Espanish Translation
+* Interactie UI Setting
 * Mobile Aim Line
 __                                                                                                      __
 ### Items

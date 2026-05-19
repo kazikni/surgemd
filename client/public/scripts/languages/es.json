@@ -1,97 +1,97 @@
 {
     "values":{
-        "barrel":"Barrel",
-        "items":{
-            "scope_1": "Mira 1x",
-            "scope_2": "Mira 2x",
-            "scope_3": "Mira 4x",
-            "scope_4": "Mira 6x",
-            "scope_5": "Mira 8x",
-            "scope_6": "Mira 10x",
-            "scope_7": "Mira 12x",
+        "barrel":"Barril",
+        "Objetos":{
+            "mira_1": "Mira 1x",
+            "mira_2": "Mira 2x",
+            "mira_3": "Mira 4x",
+            "mira_4": "Mira 6x",
+            "mira_5": "Mira 8x",
+            "mira_6": "Mira 10x",
+            "mira_7": "Mira 12x",
 
-            "bandage":"Bandagem",
-            "medikit":"Kit Medico",
-            "yellow_soda":"Refrigerante Amarelo",
-            "inhaler":"Bombinha",
-            "yellow_pills":"Comprimidos Amarelos",
-            "blue_soda":"Refrigerante Azul",
-            "blue_potion":"Poção Azul",
-            "blue_pills":"Comprimidos Azul",
-            "purple_soda":"Refrigerante Roxo",
-            "purple_potion":"Poção Roxa",
-            "purple_pills":"Comprimidos Roxo",
-            "small_red_crystal":"Pedaço De Cristal Vermelho",
-            "red_soda":"Refrigerante Vermelho",
-            "red_crystal":"Cristal Vermelho",
-            "red_pills":"Comprimidos Vermelho",
-            "green_soda":"Refrigerante Verde",
-            "black_soda":"Refrigerante Preto",
+            "Vendas":"Vendaje",
+            "medikit":"Kit Botiquin",
+            "yellow_soda":"Refresco Amarillo",
+            "inhaler":"Inhalador",
+            "yellow_pills":"Pildoras Amarillas",
+            "blue_soda":"Refresco Azul",
+            "blue_potion":"Pocion Azul",
+            "blue_pills":"Pildoras Azul",
+            "purple_soda":"Refresco Purpura",
+            "purple_potion":"Pocion Purpura",
+            "purple_pills":"¨Pildora Purpura",
+            "small_red_crystal":"Pequeño Cristal Rojo",
+            "red_soda":"Refresco Rojo",
+            "red_crystal":"Cristal Rojo",
+            "red_pills":"Pildoras Roja",
+            "green_soda":"Refresco Verde",
+            "black_soda":"Refresco negro",
 
-            "basic_vest":"Colete Simples",
-            "basic_helmet":"Capacete Simples",
-            "basic_pack":"Mochila Simples",
-            "regular_vest":"Colete Medio",
-            "regular_helmet":"Capacete Medio",
-            "regular_pack":"Mochila Media",
-            "tactical_vest":"Colete Militar",
-            "tactical_helmet":"Capacete Militar",
-            "tactical_pack":"Mochila Militar",
+            "basic_vest":"Armadura Simple",
+            "basic_helmet":"Casco Simple",
+            "basic_pack":"Mochila Simple",
+            "regular_vest":"Armadura Medio",
+            "regular_helmet":"Casco Medio",
+            "regular_pack":"Mochila Medio",
+            "tactical_vest":"Armadura Tactica",
+            "tactical_helmet":"Casco Tactico",
+            "tactical_pack":"Mochila Tactica",
 
-            "explosive_ammo":"Munição Explosiva",
+            "explosive_ammo":"Municion Explosiva",
             "gasoline":"Gasolina",
 
-            "fist":"Punhos",
-            "survival_knife":"Faca De Sobrevivencia",
-            "axe":"Machado",
-            "sledgehammer":"Marreta",
-            "shovel":"Pá",
+            "fist":"Puños",
+            "survival_knife":"Cuchillo De Supervivencia",
+            "axe":"Hacha",
+            "sledgehammer":"Mazo",
+            "shovel":"Pala",
 
-            "m9_dual":"M9 Dupla",
-            "colt1873_dual":"Colt 1873 Dupla",
-            "taurustx_dual":"Taurus TX 22 Dupla",
-            "yellow_laser_pistol_dual":"Yellow Laser Pistol Dupla",
+            "m9_dual":"M9 Doble",
+            "colt1873_dual":"Colt 1873 Duble",
+            "taurustx_dual":"Taurus TX 22 Doble",
+            "yellow_laser_pistol_dual":"Pistola Laser Amarilla Doble",
             "pfeifer_zeliska_dual":"Pfeifer Zeliska 600 Nitro Express Dupla",
 
-            "frag_grenade":"Granada Frag",
-            "smoke_grenade":"Grenade de fumaça",
-            "molotov":"Coquetel molotov",
+            "frag_grenade":"Granada Explosiva",
+            "smoke_grenade":"Grenada De Humo",
+            "molotov":"Molotov",
             "mirv_grenade":"Granada mirv",
-            "blue_flare":"Sinalizador azul",
-            "red_flare":"Sinalizador vermelho"
+            "blue_flare":"Llamarada azul",
+            "red_flare":"Llamarada roja"
         },
         "killfeed":{
-            "join":"${player} Entrou",
-            "kill":{
-                "abstinence":"${player} morreu de abistinecia",
-                "player":"${player1} matou ${player2} com ${source}",
-                "explosion":"${player1} explodiu ${player2} com ${source}",
-                "deadzone":"${player} foi pego pela zona morta",
-                "side-effect":"${player} morreu para efeitos colaterais",
-                "disconnect":"${player} desistiu",
-                "bleend":"${player} sangrou ate a morte"
+            "unirse":"${player} Entro",
+            "muertes":{
+                "abstinence":"${player} murio de abstinencia",
+                "player":"${player1} mato ${player2} con ${source}",
+                "explosion":"${player1} mato a ${player2} con ${source}",
+                "deadzone":"${player} murio por la zona",
+                "side-effect":"${player} murio por efectos secundarios",
+                "disconnect":"${player} Salio De La Partida",
+                "bleend":"${player} El jugador se desangro"
             },
             "down":{
-                "abstinence":"${player} caiu para abistinecia",
-                "player":"${player1} nocauteou ${player2} com ${source}",
-                "deadzone":"A zona morta retirou as forças de ${player}",
-                "side-effect":"${player} caiu para efeitos colaterais",
-                "disconnect":"${player} desistiu",
+                "abstinence":"${player} cayó en la abstinecia",
+                "player":"${player1} derribo ${player2} con ${source}",
+                "deadzone":" La zona ha derribado a ${player}",
+                "side-effect":"${player} Fue Derribado por Efectos Secundarios",
+                "disconnect":"${player} Se Desconecto",
                 "bleend":"essa menssagem no killfeed e um bug. report."
             },
             "killleader":{
-                "assigned":"${player} se tornou o killleader",
-                "dead":"o killleader ja era"
+                "assigned":"${player} Se Convirtio en el Lider De Asesinatos",
+                "dead":" El Lider De Asesinatos Ha Muerto"
             }
         },
-        "killleader-wait":"Esperando um kill leader",
+        "killleader-wait":"Esperando Nuevo Lider",
         "interact":{
             "loot":"Pegar ${source}${count}",
             "obstacles":{
                 "break":"Quebrar ${obstacle}",
                 "door":{
-                    "open":"Abrir Porta",
-                    "close":"Fechar Porta"
+                    "open":"Abrir Puerta",
+                    "close":"cerrar Puerta"
                 },
                 "scalable":"Escalar",
                 "transform-into":{
@@ -192,80 +192,80 @@
             }
         },
         "menu":{
-            "options":{
-                "play":"Jogar",
-                "settings":"Configurações",
-                "loadout":"Equipamento",
-                "mods":"Mods",
+            "Opciones":{
+                "play":"Jugar",
+                "settings":"Configuraciones",
+                "loadout":"Equipamiento",
+                "mods":"Modos",
                 "about":"Sobre"
             },
             "play":{
-                "label-campaign":"Campanha",
-                "level-selector":"Seletor De Niveis",
-                "label-online":"Online",
-                "host-game":"Hostear Jogo",
-                "join-game":"Entrar Em Um Jogo",
-                "play-online":"Jogar Online",
-                "group":"Groupo",
-                "label-files":"Arquivos",
-                "replay":"Replay"
+                "label-campaign":"Campaña",
+                "level-selector":"Seleccionar Nivel",
+                "label-online":"Enlinea",
+                "host-game":"Crear Juego",
+                "join-game":"Entrar A un Juego",
+                "play-online":"Jugar Enlinea",
+                "group":"Grupo",
+                "label-files":"Archivos",
+                "replay":"Repeticiones"
             },
             "settings":{
-                "game":"Jogo",
+                "game":"Juego",
                 "graphics":"Graficos",
-                "sounds":"Sons",
-                "ui":"Interface"
+                "sounds":"Sonidos",
+                "ui":"Interfaz"
             },
             "loadout":{
-                "hair":"Cabelo",
-                "body":"Corpo"
+                "hair":"Cabello",
+                "body":"Cuerpo"
             },
             "mods":{
-                "mods-list":"Lista de Mods"
+                "mods-list":"Lista de Modos"
             },
             "about":{
                 "social":"Social",
-                "news":"Novidades",
-                "rules":"Regras",
+                "news":"Novedades",
+                "rules":"Reglas",
                 "credits":"Creditos"
             },
             "loading-screen":{
-                "load":"Carregando: ${text}",
-                "unload":"Descarregando: ${text}"
+                "load":"Cargando: ${text}",
+                "unload":"Descargando: ${text}"
             }
         },
         "settings":{
             "game":{
-                "interpolation":"Interpolação",
-                "client_rot":"Rotação do lado do cliente",
-                "friendly_fire":"Fogo amigo"
+                "interpolation":"Interpolacion",
+                "client_rot":"Rotacion de cliente",
+                "friendly_fire":"Fuego Amigo"
             },
             "graphics":{
-                "resolution":"Qualidade das texturas",
+                "resolution":"Calidad De Texturas",
                 "particles":"Particulas",
-                "lights":"Luzes",
-                "post_proccess":"Pos processamento",
+                "lights":"Luces",
+                "post_proccess":"Pre Proceso",
                 "climate":"Clima",
-                "fullscreen":"Tela cheia"
+                "fullscreen":"Päntalla Completa"
             },
             "sounds":{
-                "master_volume":"Volume principal",
-                "music_volume":"Volume da musica",
-                "ambient_volume":"Volume do ambiente"
+                "master_volume":"Volumen principal",
+                "music_volume":"Volumen De La Musica",
+                "ambient_volume":"Volumen de ambiente"
             },
             "ui":{
-                "primary_color":"Cor primaria",
-                "secondary_color":"Cor secundaria",
-                "translation":"Tradução",
-                "interactive":"Interface interativa"
+                "primary_color":"Color Primario",
+                "secondary_color":"Color Secundario",
+                "translation":"Traduccion",
+                "interactive":"Interactuar"
             }
         },
         "loadout":{
-            "character":{
-                "hair_tint":"Cor do cabelo",
-                "type":"Tipo do cabelo",
-                "body_tint":"Cor de pele",
-                "female":"Mulher",
+            "Personaje":{
+                "hair_tint":"Color de Cabello",
+                "type":"Tipo do cabello",
+                "body_tint":"Color de tinte",
+                "female":"Mujer",
                 "shirt":"Camisa"
             }
         }

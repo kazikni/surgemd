@@ -1,6 +1,7 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
+import { BoostType } from "../player/boosts.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { InventoryItemType } from "../utils.ts";
 
@@ -78,7 +79,8 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "kill":(e)=>{
-                    e.owner.health_data.health+=20
+                    e.owner.give_boost(25)
+                    e.owner.health_data.health+=25
                     e.owner.side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,

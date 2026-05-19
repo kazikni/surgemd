@@ -381,15 +381,16 @@
     overflow-y: scroll;
     padding: 30px;
     @include main.medium_screen {
-        width: 300px;
-        height: 300px;
+        width: 280px;
+        height: 280px;
         padding: 20px;
         font-size: 15px;
+        padding: 15px;
     }
     @include main.small_screen {
         width: 200px;
         height: 200px;
-        padding: 15px;
+        padding: 10px;
         font-size: 10px;
     }
 }
@@ -461,7 +462,6 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 1001;
 }
 
 #tiltshift-gfx::after {
@@ -487,21 +487,6 @@
     -webkit-mask-position: top left, top right, bottom left, bottom right;
     -webkit-mask-size: 50% 50%;
 }
-#recolor {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    filter:blur(0.5px) saturate(1.1) contrast(1.1);
-}
-#bloom-gfx {
-    position: absolute;
-    pointer-events: none;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1002;
-}
 #vignetting-gfx {
     position: absolute;
     inset: 0;
@@ -511,7 +496,6 @@
     background-image: url("/img/menu/background/vignetting.png");
     background-repeat: no-repeat;
     background-size: cover;
-    z-index: 1002;
 }
 .mod-root{
     h1{

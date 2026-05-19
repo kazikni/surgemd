@@ -2,9 +2,9 @@
 import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
-import { BrowserFileManager, formatToHtml, GameSave } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
-import { api, API_BASE, sandbox_version } from "../others/config.ts";
+import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
@@ -305,11 +305,11 @@ export function game_mode_settings_manager_popup(settings:any,translation:Transl
         parent.appendChild(buttons)
     }
 }
-export function make_menu_settings(save: GameSave, defs: SettingDef[],translation:TranslationManager){
+export function make_menu_settings(save: GameSave, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
         parent.innerHTML=""
-
         for(const def of defs){
+            if(!def)continue
             parent.appendChild(
                 build_setting_input(
                     def,
@@ -934,9 +934,15 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             var:"sv_ui_translation",
                             options:[
                                 {name:"English",value:"en"},
+                                {name:"Espanhol",value:"es"},
                                 {name:"Brazilian Portuguese",value:"pt-br"},
                                 {name:"Turkish",value:"tr"},
                             ],
+                        },
+                        isMobile?undefined:{
+                            type:"toggle",
+                            name:"settings.ui.interactive",
+                            var:"sv_ui_interactive",
                         },
                     ],translation),
                 }

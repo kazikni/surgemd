@@ -27,7 +27,7 @@ export async function buildKSPRGroup(base: string = "",dir: string,resolutions: 
         outputFormat: "png",
         margin: 8,
         removeExtensions: true,
-        maximumSize: 5000,
+        maximumSize: 2048,
 }): Promise<Uint8Array> {
     const images: { image: Image, path: [string, string] }[] = []
     const files = readDirectory(base, dir).filter(x => imagesMatcher.match(x[1]))

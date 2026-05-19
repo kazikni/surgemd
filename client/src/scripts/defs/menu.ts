@@ -338,7 +338,7 @@ export function make_menu_campaign(campaign:Record<string,any>){
             for(const l in charpter.levels){
                 const level=charpter.levels[l]
                 const level_div = document.createElement("div")
-                level_div.className="play-select-item background-menu-blue"
+                level_div.className="background-menu-ss background-menu-blue"
                 level_div.innerHTML = `
 <h1>${level.meta.name}</h1>
 <p>${level.meta.description}</p>
@@ -357,7 +357,7 @@ export function make_menu_modes(modes:GamemodeConfig[]){
         for(const mode of modes){
             const mb=document.createElement("div")
             mb.innerHTML=`
-<div class="play-select-item background-menu-blue">
+<div class="background-menu-ss background-menu-blue">
 <h1>${mode.gamemode}</h1>
 <button id="btn-join-${mode.gamemode}" class="btn-green">Play</button>
 </div>`
@@ -950,52 +950,46 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             name:"menu.options.loadout",
             options:[
                 {
-                    id:"hair",
+                    id:"character",
                     type:"button",
-                    name:"menu.loadout.hair",
-                    subtab:"hair"
-                },
-                {
-                    id:"body",
-                    type:"button",
-                    name:"menu.loadout.body",
-                    subtab:"body"
+                    name:"menu.loadout.character",
+                    subtab:"character"
                 },
             ],
             subtabs:{
-                "hair":{
+                "character":{
                     generate:make_menu_settings(menu.save,[
                         {
                             type:"color",
-                            name:"loadout.hair.tint",
+                            name:"loadout.character.hair_tint",
                             var:"sv_loadout_hair_tint",
                         },
                         {
                             type:"choose",
-                            name:"loadout.hair.type",
+                            name:"loadout.character.hair_type",
                             var:"sv_loadout_hair",
                             options:hairs_types,
+                        },
+                        {
+                            type:"color",
+                            name:"loadout.character.body_tint",
+                            var:"sv_loadout_body_tint",
+                        },
+                        {
+                            type:"toggle",
+                            name:"loadout.character.female",
+                            var:"sv_loadout_female",
+                        },
+                        {
+                            type:"choose",
+                            name:"loadout.character.shirt",
+                            var:"sv_loadout_shirt",
+                            options:shirts_types,
                         },
                     ],translation)
                 },
                 "body":{
                     generate:make_menu_settings(menu.save,[
-                        {
-                            type:"color",
-                            name:"loadout.body.tint",
-                            var:"sv_loadout_body_tint",
-                        },
-                        {
-                            type:"toggle",
-                            name:"loadout.body.female",
-                            var:"sv_loadout_female",
-                        },
-                        {
-                            type:"choose",
-                            name:"loadout.body.shirt",
-                            var:"sv_loadout_shirt",
-                            options:shirts_types,
-                        },
                     ],translation)
                 },
             },
@@ -1051,17 +1045,16 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 },
                 "news":{
                     generate:async(parent:HTMLDivElement,_m:MenuManager)=>{
+                        const news_path="/scripts/news/"
                         parent.innerHTML=""
-                        if(api){
-                            const news=await(await fetch(`${API_BASE}/news/get`)).json() as {title:string,id:string,content:string}[]
-                            for(const n of news){
-                                parent.innerHTML+=`<h2>${n.title}</h2>`
-                                const d=document.createElement("div")
-                                d.classList.add("update-item")
-                                d.innerHTML=formatToHtml(n.content)
-                                d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3>See More</h3></a>`
-                                parent.appendChild(d)
-                            }
+                        const news=await(await fetch(news_path+"main.json")).json() as {order:{title:string,id:string}[]}
+                        for(const n of news.order){
+                            parent.innerHTML+=`<h2 class="span-text">${n.title}</h2>`
+                            const d=document.createElement("div")
+                            d.classList.add("update-item")
+                            d.innerHTML=`<div class="background-menu-blue background-menu-tt">${formatToHtml(await (await fetch(news_path+"content/"+n.id+".md")).text())}</div>`
+                            //d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3 class="span-text">See More</h3></a>`
+                            parent.appendChild(d)
                         }
                     }
                 },

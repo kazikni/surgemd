@@ -51,7 +51,14 @@
             "colt1873_dual":"Colt 1873 Dupla",
             "taurustx_dual":"Taurus TX 22 Dupla",
             "yellow_laser_pistol_dual":"Yellow Laser Pistol Dupla",
-            "pfeifer_zeliska_dual":"Pfeifer Zeliska 600 Nitro Express Dupla"
+            "pfeifer_zeliska_dual":"Pfeifer Zeliska 600 Nitro Express Dupla",
+
+            "frag_grenade":"Granada Frag",
+            "smoke_grenade":"Grenade de fumaça",
+            "molotov":"Coquetel molotov",
+            "mirv_grenade":"Granada mirv",
+            "blue_flare":"Sinalizador azul",
+            "red_flare":"Sinalizador vermelho"
         },
         "killfeed":{
             "join":"${player} Entrou",

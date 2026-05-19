@@ -22,6 +22,7 @@ export class TerrainM extends TerrainManager{
                 this.add_floor(f.type,f.hb,f.layer,f.smooth)
             }
             this.biome=mp.biome
+            this.game.ambient.biome=this.biome
             resolve()
         })
     }

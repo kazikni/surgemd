@@ -55,6 +55,7 @@ export interface BiomeDef{
         snow?:boolean
         rain?:boolean
         particles:string[]
+        particles_tint?:number
         sound?:string
     }
     musics?:string[]

@@ -130,12 +130,20 @@ export class GameSave{
         if(!this.variable_set_callbacks[key])this.variable_set_callbacks[key]=[]
         this.variable_set_callbacks[key]!.push(callback)
     }
-    load_save(js?:Record<string,any>){
-        if(!js)return
+    load_save(file:GameConsoleFile){
+        if(!file.actions)return
+        if(this.input_manager){
+            this.input_manager.default_actions=this.default_actions
+            this.input_manager.loadConfig(file.actions??{})
+        }
+        if(file.version===undefined||file.version<this.compatible_version){
+            this.reset()
+            return 
+        }
         this.content={}
-        for(const o of Object.keys(js)){
+        for(const o of Object.keys(file.settings)){
             if(this.default_values[o]===undefined)continue
-            const res=this.casters[o](js[o])
+            const res=this.casters[o](file.settings[o])
             if("err" in res) {
                 this.content[o] = this.default_values[o]
             } else {
@@ -143,25 +151,19 @@ export class GameSave{
             }
         }
     }
+    reset(){
+        this.content={}
+        this.input_manager?.resetAllActions?.()
+    }
     async load(save:SaveKind){
         this.current_save=save
-        if(this.input_manager){
-            this.input_manager.actions={}
-            this.input_manager.default_actions=this.default_actions
-        }
         switch(save.type){
             case "file":
                 try{
                     const s=await save.fs.read_file(save.path)
                     if(s){
                         const f=JSON.parse(s) as GameConsoleFile
-                        if(f.version===undefined||f.version<this.compatible_version){
-                            this.content={}
-                            await this.save(save)
-                            break
-                        }
-                        this.load_save(f.settings)
-                        if(f.actions)this.input_manager?.loadConfig(f.actions)
+                        this.load_save(f)
                     }else{
                         await this.save(save)
                     }
@@ -173,15 +175,11 @@ export class GameSave{
                 const s=self.localStorage.getItem(save.key)
                 if(s){
                     const f=JSON.parse(s) as GameConsoleFile
-                    if(f.version===undefined||f.version<this.compatible_version){
-                        this.content={}
-                        await this.save(save)
-                        break
-                    }
-                    this.load_save(f.settings)
-                    if(f.actions)this.input_manager?.loadConfig(f.actions)
+                    this.load_save(f)
                 }else{
-                    this.save(save)
+                    await this.save(save)
+                    const f=JSON.parse(self.localStorage.getItem(save.key)??"{}") as GameConsoleFile
+                    this.load_save(f)
                 }
                 break
             }

@@ -17,6 +17,17 @@ export const random=Object.freeze({
     float(min:number,max:number):number{
         return Math.random()*(max-min)+min
     },
+    neg_value(value:number){
+        return Math.random()<=0.5?-value:value
+    },
+    neg_int(min:number,max:number){
+        const val=Math.floor(Math.random()*(max-min+1)+min)
+        return Math.random()<=0.5?-val:val
+    },
+    neg_float(min:number,max:number){
+        const val=Math.random()*(max-min)+min
+        return Math.random()<=0.5?-val:val
+    },
     choose<Val>(val:Val[]):Val{
         return val[Math.floor(Math.random()*val.length)]
     },
@@ -70,7 +81,7 @@ export const random=Object.freeze({
             out+=chars[random.int(0,chars.length-1)]
         }
         return out
-    }
+    },
 })
 export class SeededRandom {
     private _rng: number;

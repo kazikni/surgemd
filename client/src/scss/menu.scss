@@ -444,21 +444,6 @@
         }
     }
 }
-.play-select-item{
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    text-align: center;
-    align-content: center;
-    font-family: "Russo-One";
-    @include main.medium_screen {
-        padding: 10px;
-    }
-    @include main.small_screen {
-        padding: 15px;
-    }
-}
 .gamemode-image{
     width: 300px;
     height: 300px;
@@ -755,6 +740,7 @@
             text-align: center;
 
             .name {
+                font-family: "Russo-One";
                 font-weight: bold;
                 font-size: 20px;
                 opacity: 0.8;
@@ -868,4 +854,14 @@
     60% { transform: translate(-1px, 2px); }
     80% { transform: translate(1px, -2px); }
     100% { transform: translate(0px, 0px); }
+}
+.background-menu-tt{
+    padding: 20px;
+    font-family: "Russo-One";
+    @include main.medium_screen {
+        padding: 10px;
+    }
+    @include main.small_screen {
+        padding: 15px;
+    }
 }

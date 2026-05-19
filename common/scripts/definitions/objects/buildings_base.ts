@@ -183,7 +183,7 @@ export const buildings_factory={
                         particle:"metal_particle",
                         tint:tint
                     },
-                    sounds:hit_sounds,
+                    sounds:hit_sounds.heavy_metal,
                 },
                 content:{
                     floor_image:[
@@ -226,7 +226,7 @@ export const buildings_factory={
                         particle:"metal_particle",
                         tint:tint
                     },
-                    sounds:hit_sounds,
+                    sounds:hit_sounds.heavy_metal,
                 },
                 content:{
                     floor_image:[

@@ -2,12 +2,14 @@
 ## News
 __                                                                                                      __
 ### Mains
+* Bunkers
 * Shed
 * Remake Animation System
 __                                                                                                      __
 ### Menu
+* Menu Rework
 * Intro Video
-* Translations!!
+* Translations
 * Brazilian Portuguese Translation
 * Turkish Translation
 * Mobile Aim Line

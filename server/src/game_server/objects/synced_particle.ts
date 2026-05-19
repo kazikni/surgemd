@@ -77,8 +77,7 @@ export class SyncedParticle extends MovingBody {
 
         if(this.def.movement){
             if(this.def.movement.angular){
-                this.angular_speed=random.float(this.def.movement.angular.min,this.def.movement.angular.max)
-                if(Math.random()<=0.5)this.angular_speed*=-1
+                this.angular_speed=random.neg_float(this.def.movement.angular.min,this.def.movement.angular.max)
             }
             switch(this.def.movement.type){
                 case "walk":

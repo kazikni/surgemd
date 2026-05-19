@@ -1,5 +1,6 @@
 import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
+import { LootTables } from "../loot_tables.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
 import { map_spawns, NormalMap } from "./normal.ts";
 
@@ -28,8 +29,9 @@ export const TundraBiome:BiomeDef={
 }
 // No Shotguns And Pistols
 export const TundraMap:MapDef={
-    loot_tables:{...NormalMap.loot_tables,
-        "ammos":[
+    loot_tables:{
+        ...LootTables,
+        ammos:[
             {item:"9mm",count:40,weight:6},
             {item:"762mm",count:40,weight:6},
             {item:"556mm",count:40,weight:6},
@@ -40,7 +42,7 @@ export const TundraMap:MapDef={
             {item:"gasoline",count:5,weight:0.05},
             {item:"explosive_ammo",count:2,weight:0.05},
         ],
-        "special_ammos":[
+        special_ammos:[
             {item:"9mm",count:80,weight:5},
             {item:"762mm",count:80,weight:5},
             {item:"556mm",count:80,weight:5},
@@ -51,7 +53,7 @@ export const TundraMap:MapDef={
             {item:"gasoline",count:10,weight:0.2},
             {item:"explosive_ammo",count:4,weight:0.2},
         ],
-        "scopes":[
+        scopes:[
             {item:"scope_3",count:1,weight:10},
             {item:"scope_4",count:1,weight:1.7},
             {item:"scope_2",count:1,weight:0.4},
@@ -59,34 +61,35 @@ export const TundraMap:MapDef={
             {item:"scope_6",count:1,weight:0.01},
             {item:"scope_7",count:1,weight:0.001},
         ],
-        "guns":[
-            {item:"sr25",weight:21},
-            {item:"model94",weight:21},
-            {item:"m1921",weight:16.5},
-            {item:"blr81",weight:16.5},
-            {item:"colt1873",weight:15},
-            {item:"ar15",weight:15},
-            {item:"m9",weight:15},
-            {item:"mp5",weight:15},
-            {item:"ak47",weight:15},
-            {item:"famas",weight:15},
-            {item:"kar98k",weight:9},
-            {item:"m79",weight:5},
+        guns:[
+            {item:"model94",weight:15},
+            {item:"sr25",weight:15},
+            {item:"blr81",weight:13},
+            {item:"taurustx",weight:10},
+            {item:"m9",weight:10},
+            {item:"mp5",weight:10},
+            {item:"colt1873",weight:10},
+            {item:"micro_uzi",weight:10},
+            {item:"ak47",weight:10},
+            {item:"ar15",weight:10},
+            {item:"m1921",weight:10},
+            {item:"kar98k",weight:10},
+            {item:"vector",weight:7},
+            {item:"m2_2",weight:5},
+            {item:"m1_garand",weight:1},
+            {item:"m79",weight:1},
             {item:"awp",weight:1},
-            {item:"pfeifer_zeliska",weight:0.05},
-            {item:"awms",weight:0.04},
-            {item:"rpg7",weight:0.01},
+            {item:"pfeifer_zeliska",weight:0.1},
+            {item:"awms",weight:0.1},
         ],
-        "tundra_crate":[
-            [
-                {item:"model94",weight:20},
-                {item:"sr25",weight:20},
-                {item:"blr81",weight:15},
-                {item:"kar98k",weight:10},
-                {item:"awp",weight:1},
-                {item:"pfeifer_zeliska",weight:0.05},
-                {item:"awms",weight:0.04},
-            ],
+        legendary_guns:[
+            {item:"m1_garand",weight:15},
+            {item:"pfeifer_zeliska",weight:10},
+            {item:"awms",weight:6},
+            {item:"rpg7",weight:1},
+        ],
+        tundra_crate:[
+            [{weight:1,count:3,table:"guns"}],
             [
                 {weight:1,count:2,table:"normal_loot"},
                 {weight:0.5,count:3,table:"normal_loot"},
@@ -98,10 +101,26 @@ export const TundraMap:MapDef={
             ],
             [{weight:1,table:"normal_scopes"}],
         ],
-        "wood_crate":[
+        wood_crate:[
             {weight:2,count:3,table:"normal_loot"},
             {weight:1,count:4,table:"normal_loot"},
             {weight:0.5,count:5,table:"normal_loot"},
+        ],
+        iron_crate:[
+            ...LootTables.iron_crate,
+            [
+                {weight:10,table:"accessorys"},
+                {weight:1,count:2,table:"accessorys"},
+                {weight:0.1,count:3,table:"accessorys"},
+            ],
+        ],
+        gold_crate:[
+            ...LootTables.gold_crate,
+            [
+                {weight:3,table:"accessorys"},
+                {weight:1,count:2,table:"accessorys"},
+                {weight:0.1,count:3,table:"accessorys"},
+            ],
         ],
     },
     default_floor:FloorType.Water,

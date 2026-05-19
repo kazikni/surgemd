@@ -10,7 +10,7 @@ import { Human } from "../objects/human.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Layers, zIndexes } from "common/scripts/others/constants.ts";
+import { HumanStatus, Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -154,14 +154,13 @@ export class Game extends ClientGame<GameObject>{
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid_gfx.zIndex=zIndexes.Grid
         this.ui_gfx.zIndex=zIndexes.UI
+        this.hitboxes_gfx.zIndex=zIndexes.UI
 
         this.world_shadow={
             color:ColorM.rgba(0,0,0,50),
             radius:1,
             offset:v2(0.1,0.1)
         }
-
-        this.hitboxes_gfx.layer=9999
         this.cam2d.addObject(this.hitboxes_gfx)
 
         this.inventory.initialize(this.definitions,{
@@ -410,7 +409,6 @@ export class Game extends ClientGame<GameObject>{
     }
     start_campaign_level(level:LevelDefinition){
         this.local_server.begin_campaign_level(level)
-        this.local_server.start()
         this.local_server.connect()
         this.level=level
     }
@@ -431,6 +429,7 @@ export class Game extends ClientGame<GameObject>{
             if(this.level?.begin?.history){
                 await this.menu.show_history(this.level.begin.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
+            this.local_server.start()
         }
 
         this.ui.start()
@@ -443,23 +442,18 @@ export class Game extends ClientGame<GameObject>{
             if(this.level?.end?.history){
                 await this.menu.show_history(this.level.end.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
-            if(this.level.end.next?.type==="level"){
-                this.soft_close_game()
-                const l=JSON.parse(await this.fs.read_file(this.menu.campaign.charpters[this.level.end.next.charpter].levels[this.level.end.next.level]))
-                this.start_campaign_level(l)
-            }
         }
     }
-    make_green_light_death_message(p:GameOverPacket):string[]{
+    make_green_light_death_message(status:HumanStatus):string[]{
         const messages: string[] = []
         // INTRO
         messages.push(this.language.get(`gameover.messages.introductions.${random.int(0, 2)}`))
         // DEATH
         messages.push(this.language.get(`gameover.messages.death.${random.int(0, 10)}`))
         // STATUS
-        if (p.Kills >= 1) {
+        if (status.kills >= 1) {
             messages.push(this.language.get("gameover.messages.status.kills", {
-                kills: p.Kills.toString()
+                kills: status.kills.toString()
             }))
         } else {
             messages.push(
@@ -507,7 +501,7 @@ export class Game extends ClientGame<GameObject>{
         this.add_timeout(()=>{
             this.local_server.reset_level()
         },2)
-        await this.game_over_messages(this.make_green_light_death_message(p),this.resources.get_sound("gameover_music")!)
+        await this.game_over_messages(this.make_green_light_death_message(p.status.status[0]),this.resources.get_sound("gameover_music")!)
         this.ambient.music.set(this.resources.get_sound("level_music"),{
             loop:true,
             offset:this.ambient.last_music_pos
@@ -539,7 +533,7 @@ export class Game extends ClientGame<GameObject>{
         super.on_update(dt)
 
         if(this.save.get_variable("sv_game_interpolation")){
-            this.global_interpolation=Numeric.dt_expo_inter(25,dt)
+            this.global_interpolation=Numeric.dt_expo_inter(30,dt)
         }else{
             this.global_interpolation=1
         }
@@ -600,6 +594,8 @@ export class Game extends ClientGame<GameObject>{
         grid_gfx.clear()
         grid_gfx.layer=this.terrain_gfx.layer
         this.dead_zone.sprite.layer=grid_gfx.layer
+        this.ui_gfx.layer=grid_gfx.layer
+        this.hitboxes_gfx.layer=grid_gfx.layer
         if(this.cam2d.layer<Layers.Normal)return
 
         const begin=v2(camera_size.x/2,camera_size.y/2)

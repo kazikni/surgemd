@@ -1,12 +1,10 @@
 import { ApiSettingsS, ConfigType, GameConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
 import { Server } from "common/engine/server.ts";
-import { NewsManager } from "./data/news.ts";
 
 export class ApiServer {
     server: Server
     groups = new GroupManager(this)
-    news = new NewsManager(this,"./files/news")
     constructor(public config: ConfigType){
         this.server = new Server(
             config.api.host.port,
@@ -44,7 +42,6 @@ export class ApiServer {
                 )
             )
         })
-        this.news.route(this.server)
         this.groups.routes(this.server)
     }
     async find_game(body:{region:string,mode:string,group?:string[],config?:GameConfig}){
@@ -80,8 +77,6 @@ export class ApiServer {
         }
     }
     run(){
-        this.news.load().then(()=>{
-            this.server.run()
-        })
+        this.server.run()
     }
 }

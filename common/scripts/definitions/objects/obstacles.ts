@@ -140,7 +140,7 @@ export const obstacles_factory={
     }={}):ObstacleDef{
         return mergeDeep({
             idString:id,
-            health:70,
+            health:65,
             hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
             scale:{
                 destroy:0.7,
@@ -155,9 +155,10 @@ export const obstacles_factory={
     }={}):ObstacleDef{
         return mergeDeep({
             idString:id,
+            health:65,
             hitbox:new RectHitbox2D(v2(-0.71,-1),v2(0.71,1)),
             scale:{
-                destroy:0.7,
+                destroy:0.75,
             },
             rotation_mode:RotationMode.limited,
             lootTable:id,
@@ -189,7 +190,7 @@ export const obstacles_factory={
                         tint_variations:typeof tint==="number"?undefined:tint,
                         variations:typeof tint==="number"?undefined:tint.length,
                         sprite_variations:false
-                    }
+                    },
                 },
                 rotation_mode:RotationMode.limited,
                 expanded_behavior:{
@@ -305,7 +306,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             rotation_mode:RotationMode.full,
             onDestroyExplosion:"barrel_explosion",
             reflect_bullets:true,
-            spawnMode:Spawn.grass
+            spawnMode:Spawn.grass,
         },
         {
             idString:"sillo",
@@ -350,7 +351,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"bush",
             health:70,
-            hitbox:new CircleHitbox2D(v2(0,0),0.8),
+            hitbox:new CircleHitbox2D(v2(0,0),0.9),
             no_collision:true,
             scale:{
                 min:1,
@@ -428,6 +429,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         }),
         obstacles_factory.crate("copper_crate",{
             o:{
+                health:130,
                 assets:{
                     particles:{
                         particle:"metal_particle",
@@ -451,6 +453,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 },
                 invisible_on_map:true,
                 reflect_bullets:true,
+                hitbox:new RectHitbox2D(v2(-0.8,-0.8),v2(0.8,0.8)),
             }
         }),
         obstacles_factory.crate("gold_crate",{
@@ -465,6 +468,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 },
                 invisible_on_map:true,
                 reflect_bullets:true,
+                hitbox:new RectHitbox2D(v2(-0.8,-0.8),v2(0.8,0.8)),
             }
         }),
 
@@ -472,7 +476,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             idString:"airdrop_locked",
             imortal:true,
             health:1,
-            hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
+            hitbox:new RectHitbox2D(v2(-0.88,-0.88),v2(0.88,0.88)),
             assets:{
                 particles:{
                     particle:"metal_particle",
@@ -490,14 +494,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 obstacles:[
                     {id:"iron_crate",weight:10},
                     {id:"gold_crate",weight:1},
-                    {id:"campfire_crate",weight:15},
-                    {id:"md_crate",weight:1},
                 ],
                 sprites:{
                     0:{image:"airdrop_locked_1"},
                     1:{image:"airdrop_locked_2"},
-                    2:{image:"airdrop_locked_3"},
-                    4:{image:"airdrop_locked_4"},
                 },
                 particles:[
                     {
@@ -557,7 +557,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
                 }
             }
         }),
-        ...obstacles_factory.walls.group("wood",WallColors),
+        ...obstacles_factory.walls.group("wood",WallColors,{
+            o:{
+                assets:{
+                    sounds:hit_sounds.wood
+                }
+            }
+        }),
         {
             idString:"iron_ladder_bottom",
             hitbox:new RectHitbox2D(v2(-0.15,-0.5),v2(0.15,0.5)),

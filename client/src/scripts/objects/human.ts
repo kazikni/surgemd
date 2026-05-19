@@ -264,11 +264,11 @@ export class Human extends MovingBody{
                 direction:-3.141592/2,
                 frame:{
                     image:this.assets.consumible_particles,
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles
                 },
-                life_time:random.float(1,2),
                 position:this.hitbox.randomPoint(),
+                life_time:random.float(1,2),
+                layer:this.layer,
+                zIndex:zIndexes.Particles,
                 speed:1,
                 scale:2,
                 to:{
@@ -357,22 +357,26 @@ export class Human extends MovingBody{
         this.dead=true
 
         for(let i=0;i<5;i++){
+            const angle=random.rad()
             this.game.particles.add_particle(new ABParticle2D({
-                scale:0.1,
                 frame:{
                     image:`blood_splash_${random.int(1,3)}`,
                     layer:this.layer,
-                    zIndex:zIndexes.Particles,
                 },
-                direction:random.rad(),
-                life_time:random.float(1,2),
+
+                scale:0.1,
+                direction:angle,
+                angle:angle,
                 position:this.position,
+                zIndex:zIndexes.Particles,
+
+                life_time:random.float(1,2),
                 speed:random.float(1,2),
-                angle:random.rad(),
                 tint:ColorM.rgba(170,10,40),
                 to:{
                     scale:random.float(2,5),
-                    tint:ColorM.rgba(170,10,40,0)
+                    tint:ColorM.rgba(170,10,40,0),
+                    angle:angle+random.neg_float(0.5,3)
                 },
             }))
         }
@@ -385,24 +389,27 @@ export class Human extends MovingBody{
         this.game.scene_2d.objects.add_object(d,this.layer)
 
         for(let i=0;i<4;i++){
+            const angle=random.rad()
             this.game.particles.add_particle(new ABParticle2D({
-                scale:0.1,
                 frame:{
                     image:`player_gore_${random.int(1,2)}`,
                     layer:this.layer,
-                    zIndex:zIndexes.Particles,
                 },
-                direction:random.rad(),
-                life_time:random.float(1,2),
+
+                scale:0.1,
+                direction:angle,
+                angle:angle,
                 position:this.position,
-                speed:random.float(5,6),
-                angle:random.rad(),
+                zIndex:zIndexes.Particles,
+
+                life_time:random.float(1,2),
+                speed:random.float(1,3),
                 tint:ColorM.default.white,
                 to:{
                     scale:random.float(1.7,3),
-                    tint:ColorM.rgba(255,255,255,0)
+                    tint:ColorM.rgba(255,255,255,0),
+                    angle:angle+random.neg_float(0.5,3)
                 },
-                zIndex:zIndexes.Particles
             }))
         }
 
@@ -756,14 +763,18 @@ export class Human extends MovingBody{
                     const angle=random.rad()
                     this.game.particles.add_particle(new ABParticle2D({
                         frame:f.def.particles.frame,
+
+                        zIndex:zIndexes.Particles,
+                        position:this.hitbox.randomPoint(),
                         direction:-Math.PI/2,
                         angle:angle,
-                        life_time:random.float(1,3),
-                        position:this.position,
                         speed:random.float(1,3),
-                        tint:ColorM.hex("#ffff"),
+                        layer:this.layer,
+    
+                        life_time:random.float(1,3),
+                        tint:ColorM.hex("#fff"),
                         to:{
-                            angle:angle+(Math.random()>=0.5?-6:6),
+                            angle:angle+random.neg_value(6),
                             tint:ColorM.hex("#fff0"),
                         }
                     }))

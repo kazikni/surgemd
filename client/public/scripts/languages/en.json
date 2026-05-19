@@ -101,7 +101,13 @@
             "ghost_ammo":"Ghost Ammo",
             "biggest_magazine":"Biggest Magazine",
             "self_revive":"Self Revive",
-            "omni_necklance":"Omni Necklance"
+
+            "frag_grenade":"Frag Grenade",
+            "smoke_grenade":"Smoke Grenade",
+            "molotov":"Molotov Cocktail",
+            "mirv_grenade":"Mirv Grenade",
+            "blue_flare":"Blue flare",
+            "red_flare":"red_flare"
         },
         "killfeed":{
             "join":"${player} Joined",
@@ -260,8 +266,7 @@
                 "ui":"UI"
             },
             "loadout":{
-                "hair":"Hair",
-                "body":"Body"
+                "character":"Character"
             },
             "mods":{
                 "mods-list":"Mods List"
@@ -304,12 +309,10 @@
             }
         },
         "loadout":{
-            "hair":{
-                "tint":"Hair Color",
-                "type":"Hair Type"
-            },
-            "body":{
-                "tint":"Body Color",
+            "character":{
+                "hair_tint":"Hair Color",
+                "hair_type":"Hair Type",
+                "body_tint":"Body Color",
                 "female":"Is Female",
                 "shirt":"Shirt"
             }

@@ -95,8 +95,7 @@ export class Explosion extends ServerGameObject{
                             const dir = v2.lookTo(this.position,obj.position)
                             const force = Math.max(0, (this.def.size.end - dist) / this.def.size.end)*(this.def.push_force===undefined?8:this.def.push_force)
                             obj.push(force*blockFactor*pf, dir)
-                            obj.physical_data.angular_velocity=random.float(2,10)
-                            if(Math.random()<=0.5)obj.physical_data.angular_velocity*=-1
+                            obj.physical_data.angular_velocity=random.neg_float(2,10)
                         }
                         if(!(obj as Grenade).def.zindex_set_resistence){
                             obj.physical_data.zpos = random.float(0.3,1)
@@ -116,9 +115,8 @@ export class Explosion extends ServerGameObject{
                 p.physical_data.zpos=0.5
                 p.physical_data.zpos_speed=1.5
                 p.physical_data.velocity=v2.random(-this.def.projectiles.speed,this.def.projectiles.speed)
-                p.physical_data.angular_velocity=this.def.projectiles.angSpeed+(Math.random()*this.def.projectiles.randomAng)
+                p.physical_data.angular_velocity=random.neg_value(this.def.projectiles.angSpeed+(Math.random()*this.def.projectiles.randomAng))
                 if(this.parent)v2m.add(p.physical_data.velocity,p.physical_data.velocity,this.parent.physical_data.velocity)
-                if(Math.random()<=0.5)p.physical_data.angular_velocity*=-1
             }
         }
         this.destroy()

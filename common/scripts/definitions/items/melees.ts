@@ -143,7 +143,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             rank:ItemRank.E,
 
             hitbox:new CircleHitbox2D(v2.new(0.5,0),0.5),
-            damage:10,
+            damage:15,
             attack_delay:0.25,
             switch_delay:0.1,
             damage_delays:[0.11],
@@ -278,7 +278,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             rank:ItemRank.C,
 
             hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
-            damage:33,
+            damage:40,
             resistence_damage:1,
             attack_delay:0.4,
             switch_delay:0.5,
@@ -313,7 +313,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             rank:ItemRank.A,
 
             hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
-            damage:49.5,
+            damage:55,
             resistence_damage:2,
             attack_delay:0.6,
             switch_delay:0.1,
@@ -381,8 +381,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             idString:"katana",
             rank:ItemRank.B,
 
-            hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
-            damage:30,
+            hitbox:new CircleHitbox2D(v2.new(0.6,0),1),
+            damage:45,
             resistence_damage:1,
             attack_delay:0.4,
             switch_delay:0.5,

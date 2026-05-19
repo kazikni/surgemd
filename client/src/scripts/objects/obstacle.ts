@@ -156,23 +156,24 @@ export class Obstacle extends StaticBody{
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets!.sounds!)
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.variation-1,this.def.assets.particles)
 
-        if(this.def.onDestroyExplosion&&this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
+        if(this.def.onDestroyExplosion){
             if(!this.emitter_1){
                 this.emitter_1=this.game.particles.add_emiter({
                     delay:0.5,
                     particle:()=>new ABParticle2D({
                         frame:{
-                            image:"gas_smoke_particle"
+                            image:"gas_smoke_particle",
                         },
+                        zIndex:zIndexes.Particles,
+                        layer:this.layer,
                         position:this.position,
-                        speed:random.float(0.5,0.7),
                         angle:0,
+                        scale:0,
+                        speed:random.float(0.5,0.7),
                         direction:random.float(-1.45,-1.65),
                         life_time:random.float(4,6),
-                        zIndex:zIndexes.Particles,
-                        scale:0,
-                        tint:ColorM.hex("#fff5"),
-                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#fff0")}
+                        tint:ColorM.rgba(255,255,255,150),
+                        to:{scale:random.float(0.7,1.2),tint:ColorM.rgba(255,255,255,0)}
                     }),
                     enabled:this.health_data.health<=0.4,
                 })

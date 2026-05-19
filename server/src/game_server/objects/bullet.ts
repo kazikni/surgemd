@@ -154,7 +154,7 @@ export class Bullet extends ServerGameObject{
                             this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()
-                        const dmg:number=this.damage;
+                        const dmg:number=this.damage*(this.def.obstacleMult??1);
                         (obj as StaticBody).damage({
                             amount:dmg,
                             resistence:0,

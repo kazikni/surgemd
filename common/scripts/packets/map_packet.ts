@@ -30,6 +30,7 @@ function write_biome(biome:BiomeDef,stream:NetStream){
     .writeArray(biome.musics??[],(i,_s)=>{
         stream.writeString(i,1)
     })
+    .writeUint32(biome.ambient.particles_tint??0)
     .writeArray(biome.ambient.particles,(i,_s)=>{
         stream.writeString(i,1)
     })
@@ -55,6 +56,7 @@ function decode_biome(stream:NetStream):BiomeDef{
     biome.musics=stream.readArray(()=>{
         return stream.readString(1)
     },1)
+    biome.ambient.particles_tint=stream.readUint32()
     biome.ambient.particles=stream.readArray(()=>stream.readString(1),1)
     const bg1=stream.readBooleanGroup()
     biome.ambient.rain=bg1[0]

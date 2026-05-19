@@ -1,5 +1,6 @@
 import { RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
+import { LootTables } from "../loot_tables.ts";
 import { building_to_json, buildings_factory } from "../objects/buildings_base.ts";
 import { BiomeDef, CounterMapDef, type MapDef } from "./base.ts";
 export const NormalBiome:BiomeDef={
@@ -10,8 +11,8 @@ export const NormalBiome:BiomeDef={
         "normal"
     ],
     ambient:{
-        particles:[],
-        //particles:["leaf_01_particle_1"],
+        particles:["leaf_1_particle_1"],
+        particles_tint:0x2b7317,
         rain:true,
     },
     musics:[
@@ -45,260 +46,7 @@ export const map_spawns={
     ]
 }
 export const NormalMap:MapDef={
-    loot_tables:{
-        //Guns Quality
-        "common_guns":[
-            {item:"taurustx",weight:9},
-            {item:"m9",weight:9},
-            {item:"mp5",weight:8},
-            {item:"colt1873",weight:7},
-            {item:"micro_uzi",weight:7},
-            {item:"hp18",weight:5},
-            {item:"ak47",weight:3.5},
-            {item:"ar15",weight:3.5},
-            {item:"m1921",weight:3.5},
-            {item:"m870",weight:3.5},
-        ],
-        "rare_guns":[
-            {item:"famas",weight:4},
-            {item:"model94",weight:1.5},
-            {item:"spas12",weight:1},
-            {item:"blr81",weight:1},
-        ],
-        "mythic_guns":[
-            {item:"sr25",weight:12},
-            {item:"vector",weight:12},
-            {item:"kar98k",weight:7},
-            {item:"m2_2",weight:5},
-            {item:"m79",weight:1},
-            {item:"awp",weight:1},
-        ],
-        "legendary_guns":[
-            {item:"m1_garand",weight:15},
-            {item:"pfeifer_zeliska",weight:10},
-            {item:"awms",weight:6},
-            {item:"rpg7",weight:1},
-        ],
-        //Guns Spawn
-        "guns":[
-            {table:"common_guns",weight:45},
-            {table:"rare_guns",weight:10},
-            {table:"mythic_guns",weight:1},
-            {table:"legendary_guns",weight:0.03}
-        ],
-        "melees":[
-            {item:"survival_knife",weight:15},
-            {item:"shovel",weight:15},
-            {item:"axe",weight:10},
-            {item:"katana",weight:4},
-            {item:"sledgehammer",weight:1},
-        ],
-        //Consumibles
-        "consumibles":[
-            {table:"health_consumibles",count:1,weight:10},
-            {table:"adrenaline_consumibles",count:1,weight:7},
-            {table:"shield_consumibles",count:1,weight:6},
-            {table:"addiction_consumibles",count:1,weight:1},
-            {table:"green_bless_consumibles",count:1,weight:0.04},
-            {table:"death_consumibles",count:1,weight:0.04},
-        ],
-        "health_consumibles":[
-            {item:"bandage",count:5,weight:8},
-            {item:"medikit",weight:1},
-        ],
-        "adrenaline_consumibles":[
-            {item:"yellow_soda",count:1,weight:8},
-            {item:"inhaler",count:1,weight:1},
-            {item:"yellow_pills",count:1,weight:0.1},
-        ],
-        "shield_consumibles":[
-            {item:"blue_soda",count:2,weight:8},
-            {item:"blue_potion",count:1,weight:1},
-            {item:"blue_pills",count:1,weight:0.1},
-        ],
-        "addiction_consumibles":[
-            {item:"red_soda",count:2,weight:5},
-            {item:"small_red_crystal",count:4,weight:1},
-            {item:"red_crystal",count:2,weight:0.1},
-        ],
-        "mana_consumibles":[
-            {item:"purple_soda",count:2,weight:8},
-            {item:"purple_potion",count:1,weight:1},
-            {item:"purple_pills",count:1,weight:0.1},
-        ],
-        "green_bless_consumibles":[
-            {item:"green_soda",count:1,weight:1},
-        ],
-        "death_consumibles":[
-            {item:"black_soda",count:1,weight:1},
-        ],
-        //Ammos
-        "ammos":[
-            {item:"12g",count:10,weight:5},
-            {item:"9mm",count:50,weight:5},
-            {item:"762mm",count:40,weight:5},
-            {item:"556mm",count:40,weight:5},
-            {item:"45acp",count:40,weight:5},
-            {item:"22lr",count:60,weight:4},
-            {item:"50cal",count:20,weight:0.1},
-            {item:"308sub",count:5,weight:0.05},
-            {item:"gasoline",count:5,weight:0.05},
-            {item:"explosive_ammo",count:2,weight:0.05},
-        ],
-        //Throwables
-        "throwables":[
-            {item:"frag_grenade",count:2,weight:70},
-            {item:"smoke_grenade",count:2,weight:70},
-            {item:"molotov",count:1,weight:30},
-            {item:"mirv_grenade",count:1,weight:20},
-            {item:"blue_flare",count:1,weight:1},
-            {item:"red_flare",count:1,weight:1},
-        ],
-        //Scopes
-        "scopes":[
-            {item:"scope_2",count:1,weight:27},
-            {item:"scope_3",count:1,weight:10},
-            {item:"scope_4",count:1,weight:1.5},
-            {item:"scope_5",count:1,weight:0.1},
-            {item:"scope_6",count:1,weight:0.01},
-            {item:"scope_7",count:1,weight:0.001},
-        ],
-        //Armors And Backpacks
-        "helmets":[
-            {item:"basic_helmet",weight:8},
-            {item:"regular_helmet",weight:1},
-            {item:"tactical_helmet",weight:0.2},
-        ],
-        "vests":[
-            {item:"basic_vest",weight:8},
-            {item:"regular_vest",weight:1},
-            {item:"tactical_vest",weight:0.2},
-        ],
-        "backpacks":[
-            {item:"basic_pack",weight:8},
-            {item:"regular_pack",weight:1},
-            {item:"tactical_pack",weight:0.2},
-        ],
-        "armors":[
-            {table:"helmets",weight:1},
-            {table:"vests",weight:1},
-        ],
-        "equipments":[
-            {table:"helmets",weight:1},
-            {table:"vests",weight:1},
-            {table:"backpacks",weight:1},
-        ],
-        "tactical_equipments":[
-            {item:"tactical_vest",weight:1},
-            {item:"tactical_helmet",weight:1},
-            {item:"tactical_pack",weight:0.8},
-        ],
-        "accessorys":[
-            {weight:5,item:"lucky_coin"},
-            {weight:5,item:"pygmy_necklace"},
-            {weight:5,item:"liquid_insanity"},
-            {weight:5,item:"ghost_ammo"},
-            {weight:5,item:"biggest_magazine"},
-            {weight:5,item:"self_revive"},
-            {weight:4,item:"nature_leaf"},
-            {weight:4,item:"bullet_breaker_barrel"},
-            {weight:4,item:"rare_projectile"},
-            {weight:4,item:"high_quality_projectiles"},
-        ],
-        //Loot Tables
-        "civil_loot":[
-            {weight:1,table:"ammos"},
-            {weight:1,table:"consumibles"},
-            {weight:0.7,table:"equipments"},
-            {weight:0.7,table:"scopes"},
-            {weight:0.2,table:"throwables"},
-            {weight:0.1,table:"guns"},
-            {weight:0.01,table:"melees"},
-        ],
-        "normal_loot":[
-            {weight:1,table:"ammos"},
-            {weight:1,table:"consumibles"},
-            {weight:0.85,table:"guns"},
-            {weight:0.6,table:"equipments"},
-            {weight:0.6,table:"scopes"},
-            {weight:0.55,table:"throwables"},
-            {weight:0.05,table:"melees"},
-        ],
-        "loot_drawer":[
-            {weight:2,count:2,table:"normal_loot"},
-            {weight:1,count:3,table:"normal_loot"},
-            {weight:0.5,count:4,table:"normal_loot"},
-        ],
-        //Crates
-        "wood_crate":[
-            {weight:2,count:1,table:"normal_loot"},
-            {weight:1,count:2,table:"normal_loot"},
-            {weight:0.5,count:3,table:"normal_loot"},
-        ],
-        "campfire_crate":[
-            [{weight:1,table:"ammos"}],
-            [{weight:1,table:"consumibles"}],
-            [{weight:1,table:"scopes"}],
-
-            [{weight:1,table:"helmets"}],
-            [{weight:1,table:"vests"}],
-            [{weight:1,table:"backpacks"}],
-
-            [{weight:1,table:"guns",count:2}],
-            [{weight:1,table:"melees"}],
-        ],
-        "copper_crate":[
-            [{weight:1,table:"civil_loot",count:3}],
-            [{weight:1,table:"normal_loot",count:2}],
-            [{weight:1,table:"guns"}],
-        ],
-        "iron_crate":[
-            [{weight:1,table:"ammos",count:2}],
-            [{weight:1,table:"consumibles",count:2}],
-            [{weight:1,table:"tactical_equipments"}],
-            [{weight:1,table:"mythic_guns"}],
-            [{weight:1,table:"throwables"}],
-            [{weight:1,table:"scopes"}],
-            [{weight:9,table:""},{weight:1,table:"melees"}],
-        ],
-        "gold_crate":[
-            [{weight:1,table:"ammos",count:2}],
-            [{weight:1,table:"consumibles",count:2}],
-            [{weight:10,table:"tactical_equipments"},{weight:1,count:2,table:"tactical_equipments"}],
-            [{weight:10,table:"legendary_guns"}],
-            [{weight:1,table:"throwables"}],
-            [{weight:1,table:"scopes"}],
-            [{weight:1,table:""},{weight:4,table:"melees"}],
-        ],
-        "platinum_crate":[
-            [{weight:1,table:"ammos",count:4}],
-            [{weight:1,table:"consumibles",count:7}],
-            [{weight:1,count:6,table:"tactical_equipments"}],
-            [{weight:1,count:7,table:"mythic_guns"}],
-            [{weight:1,count:2,table:"legendary_guns"}],
-            [{weight:1,count:2,table:"melees"}],
-            [{weight:1,count:5,table:"throwables"}],
-            [{weight:1,count:4,table:"scopes"}],
-        ],
-        //Animals
-        "animal_medium":[
-            [{weight:1,count:1,table:"consumibles"}],
-            [{weight:10,count:1,table:""},{weight:1,count:1,table:"ammos"}],
-        ],
-
-        "golden_rock":[
-            [{weight:1,table:"consumibles"}],
-            [{weight:1,table:"equipments"}],
-            [{weight:1,table:"scopes"}],
-            [{weight:1,item:"kar98k"}],
-        ],
-        "platinum_rock":[
-            [{weight:1,table:"consumibles"}],
-            [{weight:1,table:"equipments"}],
-            [{weight:1,table:"scopes"}],
-            [{weight:1,item:"awp"}],
-        ],
-    },
+    loot_tables:LootTables,
     biome:NormalBiome,
     buildings:[
         building_to_json(buildings_factory.house.small_house_1("small_house_1",{
@@ -311,9 +59,7 @@ export const NormalMap:MapDef={
             size:v2(500,500),
             spawn:[
                 [
-                    //{def:"watchtower",count:5},
-
-                    {def:"small_house_1",count:5},
+                    //{def:"small_house_1",count:5},
                     {def:"bunker_1",count:3},
                     {def:"shed",count:20},
                     {def:map_spawns.containers,count:20},
@@ -376,10 +122,8 @@ export const NormalLobby:MapDef={
             size:v2(100,100),
             spawn:[
                 [
-                    //{def:"watchtower",count:1},
                     {def:map_spawns.containers,count:2},
 
-                    //{def:"recorded_tape",count:1},
                     {def:"sillo",count:2},
 
                     {def:"jeep",count:1},

@@ -30,6 +30,7 @@ self.onmessage = (ev) => {
         case "init_level":{
             level=new LevelPlayer(server)
             level.begin(msg.level)
+            if(!server.running)server.mainloop()
             break
         }
         case "init_mode":{
@@ -41,10 +42,10 @@ self.onmessage = (ev) => {
                     limit:100,
                 }
             }))
+            if(!server.running)server.mainloop()
             break
         }
         case "start":{
-            if(!server.running)server.mainloop()
             level.start()
             break
         }

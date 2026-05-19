@@ -99,8 +99,10 @@ export class AmbientManager{
                 const ret=new ABParticle2D({
                     frame:{
                         image:random.choose(this.biome!.ambient.particles),
-                        layer:100
+                        layer:this.game.cam2d.layer,
                     },
+                    tint:ColorM.number(this.biome.ambient.particles_tint??0),
+                    zIndex:zIndexes.Particles,
                     life_time:random.float(10,30),
                     direction:dir,
                     position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height))),
@@ -126,11 +128,12 @@ export class AmbientManager{
                 const dir=random.rad()
                 const ret=new ABParticle2D({
                     frame:{
-                        image:"snow_particle"
+                        image:"snow_particle",
+                        layer:this.game.cam2d.layer,
                     },
+                    zIndex:zIndexes.Particles,
                     life_time:random.float(5,10),
                     direction:dir,
-                    zIndex:zIndexes.Particles,
                     position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height))),
                     speed:random.float(0.1,0.7),
                     angle:ang,
@@ -260,6 +263,8 @@ export class AmbientManager{
 
         this.global_ilumination=1
 
+        this.ambient_particles_emitter.enabled=true
+
         this.set_rain_state(0,0)
         this.deadzone_ambience_sound=this.game.resources.get_sound("deadzone_ambience")
     }
@@ -272,7 +277,7 @@ export class AmbientManager{
         if(!this.game.active_entity)return
         this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*7)
         if(this.rain_value>0)this.rain_particles_emitter.limit=(this.rain_value*150)/this.game.cam2d.zoom
-        this.ambient_particles_emitter.limit=5/this.game.cam2d.zoom
+        this.ambient_particles_emitter.limit=6/this.game.cam2d.zoom
     }
     render(){
     }

@@ -113,7 +113,11 @@ export class Human extends MovingBody{
         base_left_arm_position:v2.zero(),
         base_right_arm_position:v2.zero(),
 
-        consumibles_time:-1
+        consumibles_time:-1,
+
+        walk_speed:1,
+        walk_cycle:0,
+        walk_time:0,
     }
     assets:{
         arm_frame_small?:Frame
@@ -420,16 +424,12 @@ export class Human extends MovingBody{
     on_downed(){
         if(this.downed)return
         this.downed=true
-        this.sprites.left_leg.visible=true
-        this.sprites.right_leg.visible=true
         this.sprites.chest.visible=true
         this.sprites.backpack.visible=false
     }
     on_help_up(){
         if(!this.downed)return
         this.downed=false
-        this.sprites.left_leg.visible=false
-        this.sprites.right_leg.visible=false
         this.sprites.chest.visible=false
         this.sprites.backpack.visible=true
     }
@@ -440,7 +440,7 @@ export class Human extends MovingBody{
                 this.sprites.left_arm.visible=rig.left.visible===undefined?true:rig.left.visible
                 this.sprites.left_arm.position=rig.left.position
                 this.sprites.left_arm.rotation=rig.left.rotation
-                this.sprites.left_arm.zIndex=rig.left.zIndex??1
+                this.sprites.left_arm.zIndex=rig.left.zIndex??2
             }else{
                 this.sprites.left_arm.visible=false
             }
@@ -448,7 +448,7 @@ export class Human extends MovingBody{
                 this.sprites.right_arm.visible=rig.right.visible===undefined?true:rig.right.visible
                 this.sprites.right_arm.position=rig.right.position
                 this.sprites.right_arm.rotation=rig.right.rotation
-                this.sprites.right_arm.zIndex=rig.right.zIndex??1
+                this.sprites.right_arm.zIndex=rig.right.zIndex??2
             }else{
                 this.sprites.right_arm.visible=false
             }
@@ -631,12 +631,14 @@ export class Human extends MovingBody{
             this.sprites.right_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
         }
 
-        this.sprites.left_leg.position=v2(-0.75,-0.22)
-        this.sprites.right_leg.position=v2(-0.75,0.22)
-        this.sprites.left_leg.rotation=0.1
-        this.sprites.right_leg.rotation=-0.1
-        this.sprites.left_leg.visible=false
-        this.sprites.right_leg.visible=false
+        this.sprites.left_leg.rotation=0.05
+        this.sprites.right_leg.rotation=3.19
+        this.sprites.left_leg.position=v2(-0.6,-0.22)
+        this.sprites.right_leg.position=v2(0.6,0.22)
+        //this.sprites.left_leg.position=v2(-0.75,-0.22)
+        //this.sprites.right_leg.position=v2(-0.75,0.22)
+        //this.sprites.left_leg.rotation=0.1
+        //this.sprites.right_leg.rotation=-0.1
         this.sprites.left_leg.zIndex=1
         this.sprites.right_leg.zIndex=1
 
@@ -670,7 +672,7 @@ export class Human extends MovingBody{
         super.update(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
-        if(this.distance_walked>0){
+        if(this.distance_walked>0.01){
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
 
             if(f!==this.current_floor){
@@ -730,6 +732,16 @@ export class Human extends MovingBody{
                         }
                     }))
                 }
+            }
+            this.animation.walk_speed=this.distance_walked*65
+            if(this.animation.walk_cycle===0){
+                this.animation.walk_cycle=1
+                this.animation.walk_time=0
+            }
+        }else{
+            if(this.animation.walk_cycle!==0){
+                this.animation.walk_cycle=0
+                this.animation.walk_time=0
             }
         }
         this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
@@ -854,6 +866,44 @@ export class Human extends MovingBody{
                 this.consumible_particles.enabled=false
                 this.update_weapon(this.current_weapon)
             }
+        }
+        if(this.animation.walk_cycle){
+            this.animation.walk_time+=dt*this.animation.walk_speed
+            this.sprites.left_leg.visible=true
+            this.sprites.right_leg.visible=true
+            switch(this.animation.walk_cycle){
+                case 1:
+                    this.sprites.left_leg.rotation=0.05
+                    this.sprites.right_leg.rotation=3.19
+                    this.sprites.left_leg.position.x=Numeric.lerp(-0.3,-0.5,this.animation.walk_time)
+                    this.sprites.right_leg.position.x=Numeric.lerp(0.3,0.5,this.animation.walk_time)
+                    break
+                case 2:
+                    this.sprites.left_leg.rotation=0.05
+                    this.sprites.right_leg.rotation=3.19
+                    this.sprites.left_leg.position.x=Numeric.lerp(-0.5,-0.3,this.animation.walk_time)
+                    this.sprites.right_leg.position.x=Numeric.lerp(0.5,0.3,this.animation.walk_time)
+                    break
+                case 3:
+                    this.sprites.left_leg.rotation=3.09
+                    this.sprites.right_leg.rotation=-0.05
+                    this.sprites.left_leg.position.x=Numeric.lerp(0.3,0.5,this.animation.walk_time)
+                    this.sprites.right_leg.position.x=Numeric.lerp(-0.3,-0.5,this.animation.walk_time)
+                    break
+                case 4:
+                    this.sprites.left_leg.rotation=3.09
+                    this.sprites.right_leg.rotation=-0.05
+                    this.sprites.left_leg.position.x=Numeric.lerp(0.5,0.3,this.animation.walk_time)
+                    this.sprites.right_leg.position.x=Numeric.lerp(-0.5,-0.3,this.animation.walk_time)
+                    break
+            }
+            if(this.animation.walk_time>=1){
+                this.animation.walk_time=0
+                this.animation.walk_cycle=Numeric.loop(this.animation.walk_cycle+1,1,5)
+            }
+        }else{
+            this.sprites.left_leg.visible=false
+            this.sprites.right_leg.visible=false
         }
 
         if(v2.len(this.sprites.left_arm.position)<=0.6){

@@ -16,12 +16,12 @@ export abstract class MovingBody extends GameObject{
         super()
     }
     override update(dt: number): void {
+        this.distance_walked=0
         if(!this.old_pos){
             this.old_pos=v2.clone(this.position)
         }else if(!v2.is(this.old_pos,this._position)){
-            const dist = v2.distance(this.old_pos, this.position)
+            this.distance_walked=v2.distance(this.old_pos, this.position)
             this.old_pos=v2.clone(this.position)
-            this.distance_walked=dist
         }
         v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
         if(this.enable_auto_rot)this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.dest_rot!,this.game.global_interpolation)

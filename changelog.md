@@ -17,6 +17,9 @@ __                                                                              
 * Brazilian Portuguese Translation
 * Turkish Translation
 * Espanish Translation
+* Positive UI Color Setting
+* Negative UI Color Setting
+* Special UI Color Setting
 * Interactie UI Setting
 * Mobile Aim Line
 * Battle Royale Level Dialogs Part

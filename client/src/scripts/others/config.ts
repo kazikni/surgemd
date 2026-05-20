@@ -50,6 +50,9 @@ export const ConfigCasters=Object.freeze({
 
     sv_ui_primary_color:Casters.toString,
     sv_ui_secondary_color:Casters.toString,
+    sv_ui_positive_color:Casters.toString,
+    sv_ui_negative_color:Casters.toString,
+    sv_ui_special_color:Casters.toString,
     sv_ui_translation:Casters.toString,
     sv_ui_interactive:Casters.toBoolean,
 
@@ -85,6 +88,9 @@ export const ConfigDefaultValues={
 
     sv_ui_primary_color:"#4f6ef7",
     sv_ui_secondary_color:"#1c2447",
+    sv_ui_positive_color:"#00ccff",
+    sv_ui_negative_color:"#ff3c00",
+    sv_ui_special_color:"#fffb00",
     sv_ui_translation:"en",
     sv_ui_interactive:true,
 

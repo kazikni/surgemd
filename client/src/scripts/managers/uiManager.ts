@@ -315,10 +315,19 @@ export class UiManager{
         }
         this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.player.id].name}`
     }
+    killfeed_queue: HTMLDivElement[] = []
+    max_killfeed_messages = 7
     add_killfeed_message(msg:KillFeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
         elem.classList.add("killfeed-message")
         this.content.killfeed.appendChild(elem)
+        this.killfeed_queue.push(elem)
+        while (this.killfeed_queue.length > this.max_killfeed_messages) {
+            const old = this.killfeed_queue.shift()
+            if (old) {
+                old.remove()
+            }
+        }
         switch(msg.type){
             case KillFeedMessageType.join:{
                 const badge_frame=msg.playerBadge!==undefined?this.game.definitions.emotes.getFromNumber(msg.playerBadge).idString:""
@@ -342,9 +351,13 @@ export class UiManager{
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString),
                         })
-                        if(this.game.active_entity&&msg.killer.id===this.game.active_entity.id){
+                        if(msg.victimId===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-negative")
+                        }else if(msg.killer.id===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-good")
                             this.game.ui_manager.signal("info-kill",`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`)
                         }
+
                         if(this.killleader&&msg.killer.id===this.killleader.id){
                             this.killleader.kills=msg.killer.kills
                             this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.killer.id].name}`
@@ -381,6 +394,11 @@ export class UiManager{
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString)
                         })
+                        if(msg.victimId===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-negative")
+                        }else if(msg.killer.id===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-good")
+                        }
                         break
                     }
                     case DamageReason.DeadZone:

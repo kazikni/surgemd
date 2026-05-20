@@ -228,6 +228,7 @@
 }
 #killfeed-container{
     @extend .span-text;
+    font-size: 16px;
     pointer-events: none;
     position: absolute;
     right: 320px;
@@ -237,10 +238,16 @@
     gap: 5px;
     width: 400px;
     .killfeed-message{
-        background-color: color-mix(in srgb,var(--ui-theme-primary) 30%, #0000);
+        background: color-mix(in srgb, var(--ui-theme-secondary) 30%, #0000);
         border-radius: 4px;
         padding: 3px;
         img{align-self: center}
+    }
+    .killfeed-message-good{
+        color:var(--ui-theme-positive);
+    }
+    .killfeed-message-negative{
+        color:var(--ui-theme-negative);
     }
     .badge-icon {
         width: 18px;

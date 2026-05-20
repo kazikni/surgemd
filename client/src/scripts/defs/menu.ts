@@ -929,6 +929,30 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             }
                         },
                         {
+                            type:"color",
+                            name:"settings.ui.positive_color",
+                            var:"sv_ui_positive_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-positive",val)
+                            }
+                        },
+                        {
+                            type:"color",
+                            name:"settings.ui.negative_color",
+                            var:"sv_ui_negative_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-negative",val)
+                            }
+                        },
+                        {
+                            type:"color",
+                            name:"settings.ui.special_color",
+                            var:"sv_ui_special_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-special",val)
+                            }
+                        },
+                        {
                             type:"choose",
                             name:"settings.ui.translation",
                             var:"sv_ui_translation",

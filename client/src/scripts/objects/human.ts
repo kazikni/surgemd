@@ -161,12 +161,12 @@ export class Human extends MovingBody{
             eyes:this.container.add_animated_sprite("eyes",{scale:1.5,zIndex:5,hotspot:CenterHotspot}),
             hair:this.container.add_sprite("hair",{scale:1.5,zIndex:6,hotspot:CenterHotspot}),
 
-            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.4,zIndex:5}),
+            mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.5,zIndex:5}),
 
             helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.5,hotspot:CenterHotspot}),
 
             backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.5,zIndex:3}),
-            vest:this.container.add_sprite("vest",{zIndex:0,scale:1.5,hotspot:CenterHotspot}),
+            vest:this.container.add_sprite("vest",{scale:1.45,hotspot:CenterHotspot}),
 
             left_arm:this.container.add_container("left_arm"),
             right_arm:this.container.add_container("right_arm"),
@@ -184,7 +184,7 @@ export class Human extends MovingBody{
             right_leg_l:new Sprite2D(),
             right_leg_foot:new Sprite2D(),
 
-            chest:this.container.add_sprite("chest",{scale:1.5,hotspot:CenterHotspot,zIndex:1}),
+            chest:this.container.add_sprite("chest",{scale:1.4,hotspot:CenterHotspot,zIndex:1}),
             muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,.5)}),
             parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.half_one,visible:false}),
             weapon:this.container.add_sprite("weapon"),
@@ -238,8 +238,8 @@ export class Human extends MovingBody{
             hotspot:v2.half_one,
             zIndex:0
         })
-        v2m.set(this.sprites.left_leg.scale,1.5,1.5)
-        v2m.set(this.sprites.right_leg.scale,1.5,1.5)
+        v2m.set(this.sprites.left_leg.scale,1.4,1.4)
+        v2m.set(this.sprites.right_leg.scale,1.4,1.4)
 
         this.sprites.left_leg.add_child(this.sprites.left_leg_l)
         this.sprites.left_leg.add_child(this.sprites.left_leg_foot)
@@ -633,8 +633,8 @@ export class Human extends MovingBody{
 
         this.sprites.left_leg.rotation=0.05
         this.sprites.right_leg.rotation=3.19
-        this.sprites.left_leg.position=v2(-0.6,-0.22)
-        this.sprites.right_leg.position=v2(0.6,0.22)
+        this.sprites.left_leg.position=v2(-0.6,-0.2)
+        this.sprites.right_leg.position=v2(0.6,0.2)
         //this.sprites.left_leg.position=v2(-0.75,-0.22)
         //this.sprites.right_leg.position=v2(-0.75,0.22)
         //this.sprites.left_leg.rotation=0.1

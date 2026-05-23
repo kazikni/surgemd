@@ -7,4 +7,3 @@ ___
 ## Fixes
 * Game Over
 * Settings
-___

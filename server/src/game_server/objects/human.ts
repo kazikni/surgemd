@@ -1232,6 +1232,7 @@ export class Human extends MovingBody{
             this.loadout.dirty, // 1
             this.animation_data.dirty, // 1
             this.effects_dirty,
+            this.health_data.boost_def.type===BoostType.Shield&&this.health_data.boost>0,
 
             // Inventory
             this.inventory.net_sync.hand,this.inventory.net_sync.melee_world, // 2

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="131.74426"
-   height="131.74426"
-   viewBox="0 0 34.857004 34.857004"
+   width="130.79929"
+   height="130.79929"
+   viewBox="0 0 34.606981 34.606981"
    version="1.1"
    id="svg2"
    sodipodi:docname="22lr_outline.svg"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
    xml:space="preserve"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -21,9 +21,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.1485321"
-     inkscape:cx="-111.01126"
-     inkscape:cy="239.8714"
+     inkscape:zoom="2.2970642"
+     inkscape:cx="-27.861651"
+     inkscape:cy="108.6169"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -39,12 +39,12 @@
        fy="10.857"
        r="10.964"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.5016725,0,0,1.5016725,1.1249999,1.1249999)" /><linearGradient
+       gradientTransform="matrix(1.5016725,0,0,1.5016725,0.99999036,0.99999036)" /><linearGradient
        id="a"><stop
-         style="stop-color:#cde6f4;stop-opacity:0.60000002;"
+         style="stop-color:#cde6f4;stop-opacity:0.40000001;"
          offset="0"
          id="stop1" /><stop
-         style="stop-color:#888f99;stop-opacity:0.80000001;"
+         style="stop-color:#888f99;stop-opacity:0.69999999;"
          offset="1"
          id="stop2" /></linearGradient><radialGradient
        xlink:href="#a-8"
@@ -63,8 +63,8 @@
          style="stop-color:#8f181d;stop-opacity:.80000001"
          offset=".999"
          id="stop2-4" /></linearGradient></defs><circle
-     style="fill:url(#b);stroke:#889399;stroke-width:2.25;stroke-dasharray:none;stroke-opacity:1"
-     cx="17.428501"
-     cy="17.428501"
+     style="fill:url(#b);stroke:#889399;stroke-width:1.99998;stroke-dasharray:none;stroke-opacity:1"
+     cx="17.303492"
+     cy="17.303492"
      r="16.303501"
      id="circle2" /></svg>

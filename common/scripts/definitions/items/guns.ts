@@ -731,9 +731,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:4.5,
+                    damage:5,
                     range:45,
-                    speed:35,
+                    speed:30,
                     falloff:0.5,
                     criticalMult:1.2,
                     tracer:tracers.small
@@ -760,9 +760,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:4.5,
+                    damage:5,
                     range:45,
-                    speed:35,
+                    speed:30,
                     falloff:0.5,
                     criticalMult:1.2,
                     tracer:tracers.small
@@ -1037,20 +1037,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         guns_factory.dmr("m1_garand","762mm",{
             fire_delay:0.3,
-            spread:1.5,
+            spread:2,
 
             ammo_spawn:{
                 amount:40
             },
 
             bullet:{
-                def:{
-                    damage:33,
-                    falloff:0.7,
-                    range:110,
-                    speed:55,
-                    tracer:tracers.large
-                }
+                def:bullets_factory.sniper(0.8)
             },
 
             reload:{

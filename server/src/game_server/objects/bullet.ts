@@ -230,7 +230,9 @@ export class Bullet extends ServerGameObject{
         b.tracerAlpha=this.tracerAlpha/2
         b.damage=this.damage/2
         b.reflectionCount = this.reflectionCount + 1
-
+        if(this.owner){
+            this.owner.inventory.accessorys.call_event("bullet_reflect",{user:this.owner,item:this,bullet:b,angle:b.angle,position:pos})
+        }
         b.set_direction(Math.atan2(newDir.y, newDir.x))
     }
     clone(){

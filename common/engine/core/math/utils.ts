@@ -656,6 +656,9 @@ export const Numeric={
     dt_expo_inter(k:number,dt:number):number{
         return 1 - Math.exp(-k * dt)
     },
+    get_interpolation_t(ntps:number, dt:number) {
+        return 1-Math.exp(-dt/(1/ntps))
+    },
     normalize_rad(angle: number): number {
         return Math.atan2(Math.sin(angle), Math.cos(angle))
     },

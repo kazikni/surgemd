@@ -537,7 +537,7 @@ export class Game extends ClientGame<GameObject>{
         super.on_update(dt)
 
         if(this.save.get_variable("sv_game_interpolation")){
-            this.global_interpolation=Numeric.dt_expo_inter(30,dt)
+            this.global_interpolation=Numeric.get_interpolation_t(32,dt)
         }else{
             this.global_interpolation=1
         }
@@ -548,16 +548,13 @@ export class Game extends ClientGame<GameObject>{
 
         if (this.cam_type === 1) {
             const move = this.input.movement
-
             if (move.scale > 0) {
                 this.free_cam_pos.x += Math.cos(move.dir) * this.free_cam_speed * dt
                 this.free_cam_pos.y += Math.sin(move.dir) * this.free_cam_speed * dt
                 v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
             }
-
             this.free_cam_speed=5/this.free_cam_zoom
             this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(2, dt))
-
             v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
             v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
             this.sounds.set_listener_position(this.cam2d.position)

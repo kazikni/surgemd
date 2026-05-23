@@ -67,10 +67,24 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     if(e.item.ammo===0||e.item.ammo===e.item.get_capacity()-1){
-                        e.bullet.damage*=1.5
+                        e.bullet.damage*=1.25
+                        e.bullet.modifiers.speed*=1.25
                         e.bullet.modifiers.size*=1.75
                         e.bullet.set_color(true)
                     }
+                }
+            }
+        },
+        {
+            idString:"good_reflective_bullet",
+            rank:ItemRank.A,
+            events:{
+                "bullet_reflect":(e)=>{
+                    e.bullet.damage*=2.5
+                    e.bullet.tracerAlpha*=2
+                    e.bullet.modifiers.speed*=1.25
+                    e.bullet.modifiers.size*=1.75
+                    e.bullet.set_color(true)
                 }
             }
         },

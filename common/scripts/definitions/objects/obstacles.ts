@@ -148,6 +148,11 @@ export const obstacles_factory={
             rotation_mode:RotationMode.null,
             lootTable:id,
             height:1,
+            assets:{
+                frame:{
+                    dead:"wood_crate_dead"
+                }
+            }
         },settings.o??{})
     },
     chest(id:string,settings:{
@@ -292,7 +297,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             idString:"barrel",
             health:140,
             height:1,
-            hitbox:new CircleHitbox2D(v2(0,0),0.7),
+            hitbox:new CircleHitbox2D(v2(0,0),0.65),
             scale:{
                 destroy:0.6
             },
@@ -351,7 +356,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
         {
             idString:"bush",
             health:70,
-            hitbox:new CircleHitbox2D(v2(0,0),0.9),
+            hitbox:new CircleHitbox2D(v2(0,0),0.8),
             no_collision:true,
             scale:{
                 min:1,

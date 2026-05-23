@@ -77,7 +77,7 @@ export abstract class ModeManager{
                 },
                 adrenaline:{
                     decay:0.25,
-                    speed:0.1,
+                    speed:0.15,
                     regen:0.01
                 },
                 mana:{

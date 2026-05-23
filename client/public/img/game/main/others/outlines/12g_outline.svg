@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="131.74426"
-   height="131.74426"
-   viewBox="0 0 34.857004 34.857004"
+   width="130.79929"
+   height="130.79929"
+   viewBox="0 0 34.606981 34.606981"
    version="1.1"
    id="svg2"
    sodipodi:docname="12g_outline.svg"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -22,8 +22,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="4.5941285"
-     inkscape:cx="66.062584"
-     inkscape:cy="65.844915"
+     inkscape:cx="65.627246"
+     inkscape:cy="65.409577"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -41,23 +41,23 @@
        fy="10.857"
        r="10.964"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.5016725,0,0,1.5016725,1.1249999,1.1249999)" />
+       gradientTransform="matrix(1.5016725,0,0,1.5016725,0.99998988,0.99998988)" />
     <linearGradient
        id="a">
       <stop
-         style="stop-color:#ff4f23;stop-opacity:.60000002"
+         style="stop-color:#ff4f23;stop-opacity:0.40000001;"
          offset="0"
          id="stop1" />
       <stop
-         style="stop-color:#8f181d;stop-opacity:.80000001"
-         offset=".999"
+         style="stop-color:#8f181d;stop-opacity:0.69999999;"
+         offset="0.99900001"
          id="stop2" />
     </linearGradient>
   </defs>
   <circle
-     style="fill:url(#b);stroke:#7e131f;stroke-width:2.25;stroke-dasharray:none;stroke-opacity:1"
-     cx="17.428501"
-     cy="17.428501"
+     style="fill:url(#b);stroke:#7e131f;stroke-width:1.99998;stroke-dasharray:none;stroke-opacity:1"
+     cx="17.303492"
+     cy="17.303492"
      r="16.303501"
      id="circle2" />
 </svg>

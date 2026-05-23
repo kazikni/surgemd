@@ -164,8 +164,8 @@ export class GunItem extends GunItemBase implements LItem{
                     speed:user.modifiers.bullet_speed,
                     size:user.modifiers.bullet_size,
                 }
-                b.set_direction(ang)
                 user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,position:pos})
+                b.set_direction(ang)
             }
         }
         if(this.def.synsed_particle){

@@ -16,7 +16,7 @@ export const LootTables={
     ],
     rare_guns:[
         {item:"famas",weight:4},
-        {item:"model94",weight:1.5},
+        {item:"model94",weight:2},
         {item:"spas12",weight:1},
         {item:"blr81",weight:1},
     ],
@@ -159,6 +159,7 @@ export const LootTables={
         {weight:4,item:"bullet_breaker_barrel"},
         {weight:4,item:"rare_projectile"},
         {weight:4,item:"high_quality_projectiles"},
+        {weight:4,item:"good_reflective_bullet"},
     ],
     //Loot Tables
     civil_loot:[

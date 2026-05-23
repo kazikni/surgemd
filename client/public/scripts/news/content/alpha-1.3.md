@@ -41,4 +41,3 @@ ___
 * Parachute
 * Game Over
 * Settings
-___

@@ -1,6 +1,5 @@
-# Surgemd Pre-Beta-7
 ## News
-__                                                                                                                 __
+___
 ### Mains
 * Legs
 * Bunkers
@@ -8,7 +7,7 @@ __                                                                              
 * Remake Animation System
 * Rework Sounds Engine
 * Some Optimisations
-__                                                                                                                 __
+___
 ### Menu
 * Equipment UI
 * Status UI
@@ -25,7 +24,7 @@ __                                                                              
 * Interactive UI Setting
 * Mobile Aim Line
 * Battle Royale Level Dialogs Part
-__                                                                                                                 __
+___
 ### Items
 * Fist - New Default Melee
 * Shovel - A New Melee
@@ -37,7 +36,7 @@ __                                                                              
 * Survival Knife Alt Animation
 * Healing Sprays Test
 * Good Reflective Bullets
-__                                                                                                                 __
+___
 ### Others
 * Black Container
 * Colored Containers
@@ -51,23 +50,23 @@ __                                                                              
 * Stove
 * Sink
 * Bed
-__                                                                                                                 __
+___
 ## Changes
-__                                                                                                                 __
+___
 ### Items
 * Some Balance Changes
 * Some Loot Table Changes
 * Improve Grenades Physics
 * Liquid Insanity And Lastman Helmet now heal boost too
 * Change Guns Background
-__                                                                                                                 __
+___
 ### Menu
 * New Game Over Music
 * New Menu Music By
 * Client Side News
 * Improved Loading Screen
 * Loadout Menu Rework
-__                                                                                                                 __
+___
 ### Others
 * Change Atlas To KSPR(Kazikni sprite sheet with resolution)
 * Improve Explosions Physics
@@ -80,8 +79,3 @@ __                                                                              
 * Airdrop Redesign
 * Airdrop Plane Redesign
 * Rivers Fix
-__                                                                                                                 __
-# Play The Game
-[Web Version](https://surgemd.io)
-[Windows Version](https://surgemd.io/files/surgemd-windows-lasted.zip)
-If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

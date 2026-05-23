@@ -50,7 +50,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 def:{
                     damage:7,
                     speed:20,
-                    range:20,
+                    range:10,
                     tracer:tracers.black_projectile
                 },
                 count:10
@@ -88,7 +88,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 def:{
                     damage:7,
                     speed:20,
-                    range:20,
+                    range:10,
                     tracer:tracers.black_projectile
                 },
                 count:10
@@ -159,7 +159,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 def:{
                     damage:7,
                     speed:12,
-                    range:8,
+                    range:10,
                     tracer:tracers.mirv
                 },
                 count:5
@@ -204,7 +204,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 def:{
                     damage:7,
                     speed:18,
-                    range:8,
+                    range:10,
                     tracer:tracers.mirv
                 },
                 count:5
@@ -284,7 +284,16 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:2,
                 end:4
             },
-            damage:80,
+            damage:60,
+            bullet:{
+                def:{
+                    damage:4,
+                    speed:20,
+                    range:10,
+                    tracer:tracers.black_projectile
+                },
+                count:10
+            },
             assets:{
                 sound:"explosion_1"
             },
@@ -316,12 +325,12 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             damage:60,
             bullet:{
                 def:{
-                    damage:7,
+                    damage:4,
                     speed:20,
-                    range:25,
+                    range:10,
                     tracer:tracers.black_projectile
                 },
-                count:6
+                count:10
             },
             assets:{
                 sound:"explosion_1"

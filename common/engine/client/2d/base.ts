@@ -13,6 +13,7 @@ export interface CamA{
 
     position:Vec2
     size:Vec2
+    layer:number
 
     meter_size:number
     center_pos:boolean
@@ -21,34 +22,38 @@ export interface CamA{
     renderer:Renderer
 
     rect:Rect
+
+    visible_function?:(obj:Container2DObject)=>boolean
+    sort_function:(a:Container2DObject,b:Container2DObject)=>number
 }
 export abstract class Container2DObject {
-    abstract object_type: string;
+    abstract object_type: string
 
-    parent?: Container2D;
-    _zIndex: number = 0;
-    _layer: number = 0;
+    parent?: Container2D
+    id_on_parent:number=0
 
+    _layer: number = 0
     get layer():number{
         return this._layer
     }
     set layer(val:number){
+        if(val===this._layer)return
         this._layer=val
         if(this.parent){
             this.parent.dirty_zindex=true
         }
     }
+    _zIndex: number = 0
     get zIndex():number{
         return this._zIndex
     }
     set zIndex(val:number){
+        if(val===this._zIndex)return
         this._zIndex=val
         if(this.parent){
             this.parent.dirty_zindex=true
         }
     }
-
-    id_on_parent:number=0
 
     _position: Vec2M
     get position(): Vec2 {
@@ -168,13 +173,13 @@ export abstract class Container2DObject {
         return {min:v2.zero,max:v2.zero}
     }
     transform_frame(frame:FrameTransform){
-        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2)this.scale=frame.scale2
-        if(frame.rotation)this.rotation=frame.rotation
-        if(frame.visible)this.visible=frame.visible
-        if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.position)this.position=v2.clone(frame.position)
-        if(frame.layer)this.layer=frame.layer
+        if(frame.scale!==undefined)this.scale=v2(frame.scale,frame.scale)
+        if(frame.scale2!==undefined)this.scale=frame.scale2
+        if(frame.rotation!==undefined)this.rotation=frame.rotation
+        if(frame.visible!==undefined)this.visible=frame.visible
+        if(frame.zIndex!==undefined)this.zIndex=frame.zIndex
+        if(frame.position!==undefined)this.position=v2.clone(frame.position)
+        if(frame.layer!==undefined)this.layer=frame.layer
         this.dirty_reals=true
     }
     abstract draw(cam:CamA): void;

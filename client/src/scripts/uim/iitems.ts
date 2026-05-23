@@ -40,15 +40,15 @@ export class IItemsModule extends UIModule<Game> {
                 img.draggable = false
                 img.width = 30
                 img.height = 30
-                img.src = this.game.resources.get_sprite(s.idString).src
+                img.src = this.game.resources.get_frame(s.idString).src
 
-                el.dataset.drop_kind = "3"
-                el.dataset.slot = s.idNumber!.toString()
+                el.dataset.item_kind = "5"
+                el.dataset.item_value = s.idNumber!.toString()
 
                 el.appendChild(img)
 
-                el.addEventListener("mousedown", this.game.ui.handle_slot_click)
-                el.addEventListener("touchstart", this.game.ui.handle_slot_touch)
+                el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
+                el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
                 this.elements[s.idString]=el
                 this.container.appendChild(el)

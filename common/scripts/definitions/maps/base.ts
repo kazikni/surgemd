@@ -3,19 +3,22 @@ import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap } from "./normal.ts";
-import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
 import { DebugMap, SingleBuildMap } from "./debug.ts";
-import { AbstractGame, Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2 } from "../../../engine/core.ts";
+import { Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
+import { JSONBuildingDef } from "../objects/buildings_base.ts"
+
+import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
+import { type Game } from "../../../../server/src/game_server/others/game.ts";
 export interface Aditional{
     withammo:boolean
 }
-export function loot_table_get_item(item:string,count:number,_aditional:Aditional,game:AbstractGame<any>):LootTableItemRet<GameItem>[]{
-    //@ts-ignore
+export function loot_table_get_item(item:string,count:number,_aditional:Aditional,game:Game):LootTableItemRet<GameItem>[]{
     const itemD=(game.definitions as GameDefinition).game_items.valueString[item]
     if(!itemD){
         console.error(item,"Not Founded")
+        return []
     }
     if(itemD.item_type===InventoryItemType.gun){
         const ret:LootTableItemRet<GameItem>[]=[
@@ -24,12 +27,11 @@ export function loot_table_get_item(item:string,count:number,_aditional:Aditiona
                 count:count
             }
         ]
-        if(itemD.ammoSpawnAmount){
-            //@ts-ignore
-            const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammoSpawn??(itemD as unknown as GunDef).ammoType]
+        if(itemD.ammo_spawn){
+            const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammo_spawn?.type??(itemD as unknown as GunDef).ammo_type]
             ret.push({
                 item:ammo_def,
-                count:(itemD as unknown as GunDef).ammoSpawnAmount!
+                count:(itemD as GunDef).ammo_spawn!.amount
             })
         }
         return ret
@@ -53,6 +55,7 @@ export interface BiomeDef{
         snow?:boolean
         rain?:boolean
         particles:string[]
+        particles_tint?:number
         sound?:string
     }
     musics?:string[]
@@ -75,7 +78,7 @@ export interface IslandDef{
             floor?:FloorType
         }
     },
-    spawn?:{id:string,count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
+    spawn?:{def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
 }
 export interface MapDef{
     loot_tables:Record<string,LootTable>
@@ -84,6 +87,8 @@ export interface MapDef{
     generation:{
         island?:IslandDef
     }
+    assets?:string[]
+    buildings?:JSONBuildingDef[]
     seed?:number
     gen_callback?:(map:GameMap)=>void
 }

@@ -1,5 +1,5 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, Graphics2D, model2d } from "common/engine/client.ts"
-import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d } from "common/engine/client.ts"
+import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Debug } from "../others/config.ts";
@@ -23,11 +23,13 @@ export class Building extends StaticBody{
     objects:Container2DObject[]=[]
 
     ceilings:{
+        def:BuildingCeilingDef
+        alive:boolean
         collided:boolean
         opacity:number
         hitbox:Hitbox2D
-        base_hitbox:Hitbox2D
         container:Container2DObject
+        sprite:Sprite2D
     }[]=[]
 
     
@@ -39,8 +41,8 @@ export class Building extends StaticBody{
             break?:Sound
         }
     }={
-        frame:{
-            particles:[]
+        particles:{
+            images:[]
         },
         sounds:{
             hit:[],
@@ -71,7 +73,40 @@ export class Building extends StaticBody{
     }
 
     override create(_args: Record<string, any>): void {
-        this.updatable=false
+        //this.updatable=false
+    }
+
+    update_ceilings(ceilings:{alive:boolean}[]){
+        for(let i=0;i<ceilings.length;i++){
+            if(this.ceilings[i].alive&&!ceilings[i].alive){
+                if(this.ceilings[i].def.destroy){
+                    this.ceilings[i].alive=false
+                    this.ceilings[i].sprite.set_frame({
+                        image:this.ceilings[i].def.destroy!.frame,
+                        zIndex:zIndexes.DeadCeilings,
+                    },this.game.resources)
+                    if(this.ceilings[i].def.destroy!.sound){
+                        this.game.sounds.play(this.game.resources.get_sound(this.ceilings[i].def.destroy!.sound!),{
+                            position:this.position,
+                            max_distance:40,
+                            delay:0.25,
+                            bus:"obstacles"
+                        })
+                    }
+                    if(this.ceilings[i].def.destroy!.particles?.count){
+                        for(let j=0;j<this.ceilings[i].def.destroy!.particles!.count;j++){
+                            this._add_own_particle(this.ceilings[i].hitbox.randomPoint())
+                        }
+                    }
+                }
+            }else if(!this.ceilings[i].alive&&ceilings[i].alive){
+                this.ceilings[i].alive=true
+                this.ceilings[i].sprite.set_frame({
+                    image:this.ceilings[i].def.frame.image,
+                    zIndex:this.ceilings[i].def.frame.zIndex??zIndexes.BuildingsCeiling
+                },this.game.resources)
+            }
+        }
     }
     set_definition(def:BuildingDef){
         if(this.def)return
@@ -80,63 +115,65 @@ export class Building extends StaticBody{
         this.def=def
         const rot=Angle.side_rad(this.physical_data.side as Orientation)
 
-        for(const f of def.floor_image??[]){
+        this.physical_data.no_collision=this.def.no_collisions??false
+        this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+
+        for(const f of def.content.floor_image??[]){
             const sprite=new Sprite2D()
+
+            sprite.hotspot=v2.half_one
+            sprite._scale.set(2,2)
+            sprite.zIndex=zIndexes.BuildingsFloor
+
             sprite.set_frame({
                 image:f.image,
-                position:f.position?v2.add(this.position,f.position):undefined,
-                hotspot:f.hotspot,
+                position:f.position?v2.add_with_orientation(this.position,f.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(f.rotation??0),
+                layer:this.layer+(f.layer??0),
+
                 scale:f.scale,
-                zIndex:f.zIndex??zIndexes.BuildingsFloor,
-                tint:f.tint
+                scale2:f.scale2,
+                zIndex:f.zIndex,
+                tint:f.tint,
             },this.game.resources)
 
-            sprite.layer=this.layer+(f.layer??0)
             this.game.cam2d.addObject(sprite)
             this.objects.push(sprite)
         }
-        for(const c of def.ceiling??[]){
+        for(const c of def.content.ceiling??[]){
             const sprite=new Sprite2D()
+
+            sprite.hotspot=v2.half_one
+            sprite._scale.set(2,2)
+            sprite.zIndex=zIndexes.BuildingsCeiling
+
             sprite.set_frame({
-                image:c.frame.image,
-                position:c.frame.position?v2.add(this.position,c.frame.position):undefined,
-                hotspot:c.frame.hotspot,
+                image:c.destroy?.frame??c.frame.image,
+                position:c.frame.position?v2.add_with_orientation(this.position,c.frame.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(c.frame.rotation??0),
+                layer:this.layer+(c.frame.layer??0),
+
                 scale:c.frame.scale,
-                zIndex:c.frame.zIndex??zIndexes.BuildingsCeiling,
+                scale2:c.frame.scale2,
+                zIndex:zIndexes.DeadCeilings,
                 tint:c.frame.tint
             },this.game.resources)
-            sprite.layer=this.layer+(c.layer??0)
             this.game.cam2d.addObject(sprite)
             this.objects.push(sprite)
 
             this.ceilings.push({
                 container:sprite,
-                base_hitbox:c.hitbox,
+                def:c,
                 hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
                 opacity:c.visible_opacity??0,
-                collided:false
+                collided:false,
+                alive:false,
+                sprite
             })
         }
-        
-        this.assets_data.frame={
-            particles:[]
-        }
 
-        this.assets_data.frame.particles.push((this.def.assets?.particles)??(this.def.idString+"_particle"))
-
-        if(this.def.assets?.particles_tint){
-            this.assets_data.particles_tint=ColorM.number(this.def.assets.particles_tint)
-        }
-        if(this.def.assets?.particles_variation){
-            const fn=this.assets_data.frame.particles[0]
-            this.assets_data.frame.particles.length=0
-
-            for(let i=0;i<this.def.assets.particles_variation;i++){
-                this.assets_data.frame.particles.push(`${fn}_${i+1}`)
-            }
-        }
+        if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)
+        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,0,this.def.assets.particles)
 
         if(Debug.hitbox){
             this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
@@ -153,5 +190,12 @@ export class Building extends StaticBody{
             const def=this.game.definitions.buildings.getFromNumber(stream.readID())
             this.set_definition(def)
         }
+        const ceilings=stream.readArray(()=>{
+            const bg=stream.readBooleanGroup()
+            return {
+                alive:bg[0]
+            }
+        },1)
+        this.update_ceilings(ceilings)
     }
 }

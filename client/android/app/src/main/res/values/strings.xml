@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Suroimd.io 2</string>
-    <string name="title_activity_main">Suroimd.io 2</string>
-    <string name="package_name">io.suroimd2.game</string>
-    <string name="custom_url_scheme">io.suroimd2.game</string>
-</resources>

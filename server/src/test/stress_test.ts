@@ -80,7 +80,7 @@ class Bot {
 
 // ---------------------------
 
-console.log(`🚀 Starting ${BOT_COUNT} bots...`)
+console.log(`Starting ${BOT_COUNT} bots...`)
 const bots: Bot[] = []
 for (let i = 0; i < BOT_COUNT; i++){
     const b=new Bot(i)
@@ -93,7 +93,7 @@ for (let i = 0; i < BOT_COUNT; i++){
 
 /*await delay(TEST_DURATION)
 
-console.log("🧮 Collecting results...")
+console.log("Collecting results...")
 let totalSent = 0, totalRecv = 0, totalPing = 0, countPing = 0
 
 for (const b of bots) {
@@ -106,6 +106,6 @@ for (const b of bots) {
   }
 }
 
-console.log(`✅ Test finished with ${BOT_COUNT} bots`)
+console.log(`Test finished with ${BOT_COUNT} bots`)
 console.log(`Sent: ${totalSent}  |  Received: ${totalRecv}`)
 console.log(`Avg ping: ${countPing ? (totalPing / countPing).toFixed(2) : "N/A"} ms`)*/

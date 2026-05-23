@@ -57,7 +57,7 @@ export class BattleRoyaleSolo extends ModeManager{
             airdrops:settings.airdrops??{
                 obstacle:"iron_crate",
                 spawn:[
-                    20,100,180,260
+                    20,150,301
                 ]
             }
         }
@@ -119,21 +119,25 @@ export class BattleRoyaleSolo extends ModeManager{
     }
     override on_player_die(p:Player){
         if(p.conn){
-            p.conn.send_game_over(false,p.killed_by?.id)
+            p.conn.send_game_over([p.get_status()],false,p.killed_by?.id)
         }
         if(p.killed_by&&p.conn&&p.killed_by instanceof Player)this.game.add_timeout(()=>{
             p.conn!.set_spectator(p.killed_by! as Player)
         },2)
-        if(this.game.players.living_players.length<=1&&this.game.started){
-            this.game.add_timeout(()=>{
-                this.game.finish()
-            },3)
+        if(this.game.started){
+            this.game.players.give_score(this.rules.score.rank_reward)
+            if(this.game.players.living_players.length<=1){
+                this.game.add_timeout(()=>{
+                    this.game.finish()
+                },3)
+            }
         }
     }
-
     override on_finish(): void {
+        this.game.players.give_score(this.rules.score.win_reward)
         for(const p of this.game.players.living_players){
-            if(p.conn)p.conn.send_game_over(true)
+            this.game.players.give_score(this.rules.score.rank_reward)
+            if(p.conn)p.conn.send_game_over(p.team_data.group?.get_status()??[p.get_status()],true)
         }
     }
 
@@ -147,6 +151,10 @@ export class BattleRoyaleSolo extends ModeManager{
         //this.game.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
+        if(h.team_data.group){
+            const c=h.team_data.group.choose_human(h)
+            if(c?.position)return c.position
+        }
         return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)
     }
 }
@@ -175,7 +183,7 @@ export class BattleRoyaleGroup extends BattleRoyaleSolo{
         this.groupsManager=new GroupsManager()
     }
     override can_down(player:Human):boolean{
-        return (player.team_data.group&&player.team_data.group.get_not_downed_humans().length>1)!
+        return (player.team_data.group&&player.team_data.group.can_down(player))!
     }
     override can_start():boolean{
         return this.groupsManager.get_living_groups().length>1
@@ -206,18 +214,20 @@ export class BattleRoyaleGroup extends BattleRoyaleSolo{
         }
     }
     override on_player_die(p:Player){
-        if(this.groupsManager.get_living_groups().length<=1){
-            this.game.finish()
+        if(p.conn){
+            p.conn.send_game_over(p.team_data.group?.get_status()??[p.get_status()],false,p.killed_by?.id)
+        }
+        if(this.game.started){
+            this.game.players.give_score(this.rules.score.rank_reward)
+            if(this.can_start()){
+                this.game.add_timeout(this.game.finish.bind(this.game),3)
+            }
         }
     }
     override get_group(group: number): Group | undefined {
         return this.groupsManager.groups[group]
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
-        if(h.team_data.group){
-            const c=h.team_data.group.choose_human(h)
-            return c?.position??super.get_human_spawn_position(h)
-        }
         return super.get_human_spawn_position(h)
     }
 }

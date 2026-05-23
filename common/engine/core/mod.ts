@@ -13,6 +13,7 @@ export * from "./game/game.ts"
 export * from "./game/gameObject.ts"
 export * from "./game/particles.ts"
 
+export * from "./lang/kspx.ts"
 export * from "./lang/xml.ts"
 
 export * from "./math/color.ts"
@@ -24,6 +25,7 @@ export * from "./math/utils.ts"
 export * from "./math/vec2.ts"
 export * from "./math/vec3.ts"
 
+export * from "./net/client.ts"
 export * from "./net/packets.ts"
 export * from "./net/server_base.ts"
 export * from "./net/stream.ts"

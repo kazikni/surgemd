@@ -32,7 +32,7 @@ export class Explosion extends GameObject{
     create(_args: Record<string, void>): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
 
-        this.sprite.frame=this.game.resources.get_sprite("base_explosion")
+        this.sprite.frame=this.game.resources.get_frame("base_explosion")
         this.game.cam2d.addObject(this.sprite)
     }
     update(dt:number): void {
@@ -69,10 +69,11 @@ export class Explosion extends GameObject{
         this.def=def
         this.sprite.tint=ColorM.hex(this.def.tint)
         
-        if(this.def.assets&&this.game.play_sounds)this.game.sounds.play(this.game.resources.get_audio(this.def.assets.sound),{
+        if(this.def.assets&&this.game.play_sounds)this.game.sounds.play(this.game.resources.get_sound(this.def.assets.sound),{
             position:this.position,
             max_distance:150,
-        },"explosions")
+            bus:"explosions"
+        })
 
         if(def.particles){
             for(const p of def.particles){

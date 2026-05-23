@@ -1,6 +1,7 @@
 import { NetStream, Packet, v2, Vec2 } from "../../engine/core.ts";
 import { type BiomeDef, type BiomeFloor } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
+import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { Floor } from "../others/terrain.ts";
 export interface MapObjectObstacle{
     type:0,
@@ -18,6 +19,8 @@ export interface MapConfig{
     seed:number
     biome:BiomeDef
     objects:MapObjectEncode[]
+    buildings?:JSONBuildingDef[]
+    assets:string[]
 }
 function write_biome(biome:BiomeDef,stream:NetStream){
     stream.writeString(biome.biome_skin??"",1)
@@ -27,6 +30,7 @@ function write_biome(biome:BiomeDef,stream:NetStream){
     .writeArray(biome.musics??[],(i,_s)=>{
         stream.writeString(i,1)
     })
+    .writeUint32(biome.ambient.particles_tint??0)
     .writeArray(biome.ambient.particles,(i,_s)=>{
         stream.writeString(i,1)
     })
@@ -52,9 +56,8 @@ function decode_biome(stream:NetStream):BiomeDef{
     biome.musics=stream.readArray(()=>{
         return stream.readString(1)
     },1)
-    biome.ambient.particles=stream.readArray(()=>{
-        return stream.readString(1)
-    },1)
+    biome.ambient.particles_tint=stream.readUint32()
+    biome.ambient.particles=stream.readArray(()=>stream.readString(1),1)
     const bg1=stream.readBooleanGroup()
     biome.ambient.rain=bg1[0]
     biome.ambient.snow=bg1[1]
@@ -72,13 +75,13 @@ function decode_biome(stream:NetStream):BiomeDef{
 export class MapPacket extends Packet{
     ID=6
     Name="map"
-    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome}
+    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],assets:[]}
     constructor(){
         super()
     }
     encode(stream: NetStream): void {
         stream.writeArray(this.map.terrain,(t)=>{
-            stream.writeBooleanGroup(t.smooth,t.jagged)
+            stream.writeBooleanGroup(t.smooth,t.jagged,t.visible)
             .writeHitbox(t.final_hb)
             stream.writeUint8(t.type)
             .writeInt8(t.layer)
@@ -99,6 +102,8 @@ export class MapPacket extends Packet{
         .writeUint16(this.map.size.x)
         .writeUint16(this.map.size.y)
         write_biome(this.map.biome,stream)
+        stream.writeObjectAdvanced(this.map.buildings)
+        .writeArray(this.map.assets??[],(v)=>stream.writeString(v,1),1)
     }
     decode(stream: NetStream): void {
         this.map.terrain=stream.readArray(()=>{
@@ -108,6 +113,7 @@ export class MapPacket extends Packet{
                 type:stream.readUint8(),
                 smooth:bg[0],
                 jagged:bg[1],
+                visible:bg[2],
                 layer:stream.readInt8(),
                 final_hb:fhb,
                 hb:fhb
@@ -131,5 +137,7 @@ export class MapPacket extends Packet{
         this.map.seed=stream.readUint32()
         this.map.size=v2(stream.readUint16(),stream.readUint16())
         this.map.biome=decode_biome(stream)
+        this.map.buildings=stream.readObjectAdvanced()
+        this.map.assets=stream.readArray(()=>stream.readString(1),1)
     }
 }

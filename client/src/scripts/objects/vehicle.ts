@@ -35,7 +35,7 @@ export class Vehicle extends MovingBody {
         this.base_hitbox = new RectHitbox2D(v2(-1,-1), v2(1,1))
 
         this.main_sprite.zIndex = 2
-        this.main_sprite.frame = this.game.resources.get_sprite(
+        this.main_sprite.frame = this.game.resources.get_frame(
             def.frame.base ?? def.idString
         )
 
@@ -47,7 +47,7 @@ export class Vehicle extends MovingBody {
         for (let i = 0; i < def.wheels.defs.length; i++) {
             const w = def.wheels.defs[i]
             const spr = new Sprite2D()
-            spr.frame = this.game.resources.get_sprite("wheel")
+            spr.frame = this.game.resources.get_frame("wheel")
             spr.position = v2.clone(w.position)
             spr.scale = v2(w.scale, w.scale)
             spr.zIndex = 1
@@ -61,7 +61,6 @@ export class Vehicle extends MovingBody {
 
         this.container.zIndex = def.frame.zindex ?? zIndexes.Vehicles
         this.container.layer=this.layer
-        this.container.update_zindex()
     }
 
     override update(dt: number) {

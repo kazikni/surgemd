@@ -6,7 +6,7 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameConstants } from "common/scripts/others/constants.ts";
+import { GameConstants, HumanStatus } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -22,7 +22,7 @@ export class BotClient extends PlayerConnManager{
             this.ai.net_update(general_update)
         }
     }
-    override send_game_over(win?: boolean, eliminated_by?: number): void {
+    override send_game_over(status:(HumanStatus&{id:number})[],win?: boolean, eliminated_by?: number): void {
         //
     }
 }
@@ -66,8 +66,8 @@ export class PlayerClient extends PlayerConnManager{
                     this.human.splash_delay--
                 }
             }
-            const scope_view:number=this.human?.equipment_data.scope.scope_view??0.75
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
+            const scope_view:number=(this.human.equipment_data.force_default_scope?this.human.equipment_data.default_scope.scope_view:this.human.equipment_data.scope.scope_view)
+            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(26/scope_view,21/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list(objs,this.view_objects,undefined,undefined,undefined,this.first_tick)
@@ -104,15 +104,15 @@ export class PlayerClient extends PlayerConnManager{
         }
         return up
     }
-    send_game_over(win:boolean=false,eliminated_by:number=0){
+    send_game_over(status:(HumanStatus&{id:number})[]=[],win:boolean=false,eliminated_by:number=0){
         if(!this.human||!(this.human instanceof Player))return
 
         const p=new GameOverPacket()
-        p.Kills=this.human.status.kills
-        p.DamageDealth=this.human.status.damage
-        p.Win=win
-        p.Score=this.human.status.score
-        p.Eliminator=eliminated_by
+        p.status.status=status
+        p.status.win=win
+        if(!p.status.win){
+            p.status.eliminator=eliminated_by
+        }
 
         this.client!.emit(p)
     }
@@ -133,9 +133,16 @@ export class PlayersManager{
     connected_players:Record<number,PlayerClient>={}
     connected_bots:BotClient[]=[]
     living_players:Player[]=[]
+    global_buffer_1?:NetStream
+    global_buffer_2?:NetStream
 
     constructor(game:Game){
         this.game=game
+    }
+    give_score(score:number){
+        for(const p of this.living_players){
+            p.status.score+=score
+        }
     }
     clear_bots(){
         for(const b of this.connected_bots){
@@ -171,6 +178,8 @@ export class PlayersManager{
             //Round6 Easter Egg
             p.name=`${GameConstants.player.defaultName}#${Math.random()<=0.005?456:this.living_players.length+1}`
         }
+
+        p.proccess_join_packet(packet)
 
         this.living_players.push(p)
 
@@ -220,8 +229,6 @@ export class PlayersManager{
 
         return client.human as Player
     }
-    global_buffer_1?:NetStream
-    global_buffer_2?:NetStream
     get_global_update_packet(full:boolean):UpdatePacket{
         if(!this.global_buffer_1)this.global_buffer_1=new NetStream(new ArrayBuffer(1024*1024*2))
         this.global_buffer_1.clear()
@@ -250,7 +257,6 @@ export class PlayersManager{
         const s=new NetStream(new ArrayBuffer(5*1024))
 
         this.general_update.content.started=this.game.started
-        this.general_update.content.planes=this.game.planes
         this.general_update.content.deadzone=undefined
         this.general_update.content.ambient=this.game.ambient
         this.general_update.content.living_count=this.game.modeManager.get_living_count()

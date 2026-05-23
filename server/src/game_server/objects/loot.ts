@@ -2,10 +2,11 @@ import { GameConstants, GameObjectType } from "common/scripts/others/constants.t
 import { ServerGameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { type Obstacle } from "./obstacle.ts";
 
 export class Loot extends ServerGameObject{
     string_type:string="loot"
@@ -35,7 +36,7 @@ export class Loot extends ServerGameObject{
         }
     }
     override can_interact(user: Human): boolean {
-        return user.hitbox.collidingWith(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
+        return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
     interact(user: Human): void {
         const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)
@@ -60,20 +61,26 @@ export class Loot extends ServerGameObject{
             switch(other.number_type){
                 case GameObjectType.Loot:{
                     if(other.id===this.id)continue
-                    const col=this.hitbox.overlapCollision(other.hitbox)
-                    if(col.length>0){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col[0].dir.x===1&&col[0].dir.y===0)?v2.random(-1,1):col[0].dir,4*dt))
+                    const col=this.hitbox.overlap_collision(other.hitbox)
+                    if(col){
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,4*dt))
                     }
                     break
                 }
-                case GameObjectType.StaticBody:
+                // deno-lint-ignore no-fallthrough
                 case GameObjectType.Obstacle:
+                    if((other as Obstacle).physical_data.stairs.length>0){
+                        for(const s of (other as Obstacle).physical_data.stairs){
+                            if(s.hitbox.colliding_with(this.hitbox))this.set_layer(other.layer+s.dest_layer)
+                        }
+                    }
+                case GameObjectType.StaticBody:
                 case GameObjectType.Building:{
                     if((other as StaticBody).physical_data.no_collision)break
-                    const col=this.hitbox.overlapCollision(other.hitbox)
-                    for(const c of col){
-                        this.position=v2.sub(this.position,v2.scale(c.dir,c.pen))
-                        this.velocity=v2.sub(this.velocity,v2.scale((c.dir.x===1&&c.dir.y===0)?v2.random(-1,1):c.dir,0.03))
+                    const collisions=this.hitbox.overlap_collisions(other.hitbox)
+                    for(const col of collisions){
+                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
                     }
                     break
                 }

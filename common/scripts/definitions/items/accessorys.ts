@@ -1,6 +1,7 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
+import { BoostType } from "../player/boosts.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { InventoryItemType } from "../utils.ts";
 
@@ -30,21 +31,23 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
-                    let b=e.user.game.add_bullet(e.position,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
-                    b.damage*=0.2
-                    b.modifiers={
-                        speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.4,
-                    }
-                    b.set_direction(e.angle-0.025)
+                    const spread=0.016
 
-                    b=e.user.game.add_bullet(e.position,e.item.def.bullet.def,e.user,e.item.def.ammoType,e.item.def,e.user.layer,e.bullet.satured)
+                    let b=e.bullet.clone()
                     b.damage*=0.2
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
                     }
-                    b.set_direction(e.angle+0.025)
+                    b.set_direction(e.angle-spread)
+
+                    b=e.bullet.clone()
+                    b.damage*=0.2
+                    b.modifiers={
+                        speed:e.user.modifiers.bullet_speed,
+                        size:e.user.modifiers.bullet_size*0.4,
+                    }
+                    b.set_direction(e.angle+spread)
                 }
             },
         },
@@ -64,10 +67,24 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     if(e.item.ammo===0||e.item.ammo===e.item.get_capacity()-1){
-                        e.bullet.damage*=1.5
+                        e.bullet.damage*=1.25
+                        e.bullet.modifiers.speed*=1.25
                         e.bullet.modifiers.size*=1.75
                         e.bullet.set_color(true)
                     }
+                }
+            }
+        },
+        {
+            idString:"good_reflective_bullet",
+            rank:ItemRank.A,
+            events:{
+                "bullet_reflect":(e)=>{
+                    e.bullet.damage*=2.5
+                    e.bullet.tracerAlpha*=2
+                    e.bullet.modifiers.speed*=1.25
+                    e.bullet.modifiers.size*=1.75
+                    e.bullet.set_color(true)
                 }
             }
         },
@@ -76,7 +93,8 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "kill":(e)=>{
-                    e.owner.health_data.health+=20
+                    e.owner.give_boost(25)
+                    e.owner.health_data.health+=25
                     e.owner.side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,
@@ -151,37 +169,6 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "drop":(e)=>{
                     e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
                 }
-            }
-        },
-
-        {
-            idString:"omni_necklance",
-            rank:ItemRank.S,
-            property:["extended_capacity","infinity_ammo"],
-            modifiers:{
-                health:2,
-            },
-            events:{
-                "kill":(e)=>{
-                    e.owner.health_data.health+=20
-                    e.owner.side_effect({
-                        type:SideEffectType.AddEffect,
-                        duration:4,
-                        effect:"kill_haste"
-                    })
-                },
-                "pickup":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
-                },
-                "drop":(e)=>{
-                    e.user.inventory.extended_capacity=e.user.inventory.accessorys.has_property("extended_capacity")
-                    e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
-                },
-                /*"gun_shoot":(e)=>{
-                    e.bullet.damage*=1.1
-                    e.bullet.set_color(true)
-                }*/
             }
         },
     )

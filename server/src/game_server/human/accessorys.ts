@@ -31,6 +31,14 @@ export class AccessorysManager{
         return false
     }
     has_property(property:string):boolean{
+        if(this.user.equipment_data.helmet?.property){
+            const include=this.user.equipment_data.helmet.property.includes(property)
+            if(include)return true
+        }
+        if(this.user.equipment_data.vest?.property){
+            const include=this.user.equipment_data.vest.property.includes(property)
+            if(include)return true
+        }
         for(const s of this.slots){
             if(s.item&&(s.item.property??[]).includes(property)){
                 return true
@@ -39,6 +47,8 @@ export class AccessorysManager{
         return false
     }
     call_event(name:string,e:any){
+        this.user.equipment_data.helmet?.events?.[name]?.(e)
+        this.user.equipment_data.vest?.events?.[name]?.(e)
         for(const s of this.slots){
             if(s.item&&s.item.events?.[name]){
                 s.item.events[name](e)
@@ -68,6 +78,13 @@ export class AccessorysManager{
             }
         }
         return [undefined,false]
+    }
+    remove_accessory(def:AccessoryDef){
+        for(const slot of this.slots){
+            if(slot.item&&slot.item.idString===def.idString){
+                slot.item=undefined
+            }
+        }
     }
     clear(){
         for(const s of this.slots){

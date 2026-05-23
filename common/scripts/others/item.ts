@@ -9,6 +9,11 @@ export enum ItemRank{
     S,
     Developer
 }
+export enum FireMode{
+    Auto,
+    Single,
+    Burst
+}
 export interface FistRig{
     left?:{
         position:Vec2
@@ -28,24 +33,18 @@ export interface WeaponAssets{
     item_tint?:number
     world?:string
     world_tint?:number
+    switch_sound?:string
     cycle_sound?:string|boolean
     use_sound?:string
 }
-export interface WeaponRig{
-    position:Vec2
-    rotation:number
-    scale?:number
-    zIndex?:number
-    hotspot?:Vec2
-}
 export const DefaultFistRig:FistRig={
     left:{
-        position:v2(0.44,-0.2),
-        rotation:0.1,
+        position:v2(0.37,-0.25),
+        rotation:0,
     },
     right:{
-        position:v2(0.44,0.2),
-        rotation:-0.1,
+        position:v2(0.37,0.25),
+        rotation:0,
     }
 }
 export const WeaponsArmRig={

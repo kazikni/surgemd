@@ -33,7 +33,7 @@ export class Parachute extends ServerGameObject{
 
             const objects:ServerGameObject[]=this.manager.cells.get_objects(obs.hitbox,obs.layer)
             for(const o of objects){
-                if(!o.hitbox.collidingWith(obs.hitbox))continue
+                if(!o.hitbox.colliding_with(obs.hitbox))continue
                 if(o.number_type===GameObjectType.Human){
                     (o as Human).damage({
                         amount:1000,
@@ -57,7 +57,7 @@ export class Parachute extends ServerGameObject{
             }
 
             const def=this.game.definitions.synced_particle.getFromString("airdrop_smoke")
-            for(let i=0;i<8;i++){
+            for(let i=0;i<6;i++){
                 this.game.add_synced_particle(this.position,def,undefined,this.layer)
             }
         }
@@ -66,7 +66,7 @@ export class Parachute extends ServerGameObject{
     }
     create(args: {position:Vec2,obstacle:ObstacleDef}): void {
         this.parachute_data={
-            lifetime:15,
+            lifetime:10,
             spawn_obstacle:args.obstacle
         }
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)

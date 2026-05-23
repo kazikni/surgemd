@@ -31,7 +31,7 @@ export class HandInfoModule extends UIModule<Game>{
             this.container.style.visibility=""
             this.container.style.display=""
             this.count.innerText=`${this.game.inventory.hand_settings.ammo}/${(weapon.def as GunDef).reload?.capacity}`
-            this.consume_type.src=this.game.resources.get_sprite((weapon.def as GunDef).ammoType).src
+            this.consume_type.src=this.game.resources.get_frame((weapon.def as GunDef).ammo_type).src
             this.consume_type.style.display=""
         }else{
             this.container.style.visibility="hidden"

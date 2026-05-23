@@ -1,6 +1,6 @@
 import { Game } from "../others/game.ts";
 import { LevelDefinition, LevelEnemys } from "common/scripts/config/level_definition.ts";
-import { BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
+import { BattleRoyaleDebug, BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
@@ -108,6 +108,10 @@ export class LevelPlayer {
                     this.game.init(new BattleRoyaleSolo(level.mode as unknown as BattleRoyaleSettings))
                 }
                 break
+            case "debug":{
+                this.game.init(new BattleRoyaleDebug(level.mode as unknown as BattleRoyaleSettings))
+                break
+            }
         }
         this.game.signals.on("player_join",(e:any)=>{
             if(!e.player.is_bot){

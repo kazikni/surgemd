@@ -43,14 +43,18 @@ const config: UserConfig = {
 
     plugins: [
         svelte(),
-        spritesheet({"main":"main","normal":"normal","christmas":"christmas"},undefined,[
+        spritesheet("public",{
+            "main":"img/game/main",
+            "normal":"img/game/normal",
+            //"christmas":"christmas"
+        },undefined,[
             {name:"low",scale:0.5},
             {name:"medium",scale:0.75},
             {name:"high",scale:1},
         ]),
         AudiosLists([{
-            input:"public/sounds/game/main",
-            output:"sounds/game/main.json"
+            input:"sounds/game/main",
+            output:"assets/main-sounds.json"
         }]),
     ],
 

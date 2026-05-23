@@ -1,9 +1,9 @@
-@use "../palette.scss";
+@use "common/engine/main.scss";
 #right-joystick,
 #left-joystick{
     position: absolute;
     right: 0px;
-    top: 54vh;
+    top: 50vh;
     width: 300px;
     height: 300px;
     z-index: 9999;
@@ -13,12 +13,12 @@
         background-color: #555e;
     }
     background-color: #0003;
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         width: 130px;
         height: 130px;
-        top: 55vh;
+        top: 50vh;
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         top: 35vh;
         width: 100px;
         height: 100px;
@@ -26,28 +26,25 @@
 }
 #left-joystick{
     left: 10%;
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         left:10%;
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         left:16%;
     }
 }
 #right-joystick{
     left: 54%;
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         left:58%;
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         left:58%;
     }
 }
 #mobile-action-buttons{
     position: absolute;
-    pointer-events: none;
-    *{
-        pointer-events: auto;
-    }
+    pointer-events: fill;
     width: 100vw;
     height: 100vh;
     left: 0px;
@@ -77,23 +74,23 @@
     #btn-mobile-interact{
         left:60%;
         top:30%;
-        div{
-            background-image: url("/img/menu/gui/buttons/interaction_button.svg");
-        }
+        background-color: #0003;
+        background-image: url("/img/menu/gui/buttons/interaction_button.svg");
+        background-size: cover;
     }
     #btn-mobile-reload{
         align-self: center;
         left:68%;
         bottom: 108px;
         transform: scale(60%);
-        div{
-            background-image: url("/img/menu/gui/buttons/reload_button.svg");
-        }
+        background-color: #0003;
+        background-image: url("/img/menu/gui/buttons/reload_button.svg");
+        background-size: cover;
     }
-    @media screen and (max-width: palette.$screen_large) {
+    @include main.medium_screen {
         button{
             left: 20%;
-            width: 50px; //LOL
+            width: 50px;
             height: 50px;
         }
         #btn-mobile-reload{
@@ -101,7 +98,7 @@
             bottom: 66px;
         }
     }
-    @media screen and (max-width: palette.$screen_medium) {
+    @include main.small_screen {
         button{
             width: 50px;
             height: 50px;

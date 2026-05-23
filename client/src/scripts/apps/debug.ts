@@ -153,19 +153,11 @@ export class DebugApp extends GameApp {
     on_tick(_dt:number){
         if(!this.stats)return
 
-        let prof=`
-main:${this.device.game.clock.profiler.data[0]}<br>
-draw:${this.device.game.clock.profiler.data[1]}<br>
-2:${this.device.game.clock.profiler.data[2]}`
-
         this.stats.innerHTML=`
 FPS:${Math.floor(1/this.device.game.delta_time)}<br>
 Ping:
 ${this.device.game.client?.ping??0}<br>
-
 X:${this.device.game.active_entity?.position.x}<br>
-Y:${this.device.game.active_entity?.position.y}<br>
-
-Profilers${prof}`
+Y:${this.device.game.active_entity?.position.y}<br>`
     }
 }

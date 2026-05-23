@@ -1,9 +1,11 @@
-import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
+import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
 import { type Human } from "./human.ts";
-import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-
+import { type Obstacle } from "./obstacle.ts";
+export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
+export type BuildingCeilingChild={type:1,def:BuildingCeilingDef,alive:boolean,connections:Obstacle[]}
 export class Building extends StaticBody {
     override string_type = "building"
     override number_type = GameObjectType.Building
@@ -28,9 +30,9 @@ export class Building extends StaticBody {
         no_collision:true,
         no_bullets_collision:true,
     }
-
-
-    dead = false
+    children:(BuildingObstacleChild|BuildingCeilingChild)[]=[]
+    objects_ids:Record<number,Obstacle>={}
+    ceilings:{hitbox:Hitbox2D,no_scope_block:boolean}[]=[]
 
     constructor() {
         super()
@@ -51,7 +53,7 @@ export class Building extends StaticBody {
         if (this.def) return
         this.def = def
 
-        if (def.hitbox) {
+        if (def.hitbox){
             this.physical_data.hitbox = def.hitbox.clone()
         }
 
@@ -67,44 +69,107 @@ export class Building extends StaticBody {
 
         this.update_hitbox()
     }
-    generate(position: Vec2, side: Orientation){        
-        this.position = position
+    init(side:Orientation=random.int(0,3) as Orientation){
         this.physical_data.side = side
-
         this.base_hitbox=this.physical_data.hitbox.transform(undefined,undefined,undefined,side)
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,side)
+
+        if(this.def.spawnHitbox){
+            this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,side)
+        }else{
+            this.physical_data.spawn_hitbox=this.physical_data.hitbox
+        }
+    }
+    generate(position: Vec2){
+        this.position = position
+        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
 
         /*for(const f of this.def.floors??[]){
             const hb=f.hitbox.transform(this.position)
             const l=this.layer+(f.layer??0)
             this.game.map.terrain.add_floor(f.type,hb,l)
         }*/
-        for (const l of this.def.loots ?? []) {
+        for (const l of this.def.content.loots ?? []) {
             const items = this.game.loot_tables.get_loot(l.table, { withammo: true },this.game)
-            const p = v2.add_with_orientation(this.position, l.position, side)
+            const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
                 this.game.add_loot(p, li.item, li.count, this.layer)
             }
         }
 
-        for (const o of this.def.obstacles ?? []) {
-            const def=this.game.definitions.obstacles.getFromString(o.id)
-
+        for (const o of this.def.content.obstacles ?? []) {
+            const def=this.game.definitions.obstacles.getFromString(typeof o.def==="string"?o.def:random.weight2(o.def)!.def)
+            const side=this.physical_data.side
+            let rotation=o.rotation??0
+            switch(def.rotation_mode){
+                case RotationMode.full:
+                    rotation+=Angle.side_rad(this.physical_data.side)
+                    break
+                case RotationMode.limited:
+                    rotation=Angle.add_orientation(rotation as Orientation,side)
+            }
             const p = v2.add_with_orientation(this.position, o.position, side)
-
-            const obj=this.game.map.add_obstacle(def,o.rotation,this.layer+(o.layer??0))
-            obj.initialize(o.rotation,o.variation,o.skin)
+            const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
+            obj.parent=this
+            if(o.id)this.objects_ids[o.id]=obj
+            obj.initialize(rotation,o.variation,o.skin)
             obj.set_position(p)
-        }
-        for (const b of this.def.sub_building ?? []) {
-            const def=this.game.definitions.buildings.getFromString(b.id)
 
+            if(o.stairs_dest){
+                for(const s in o.stairs_dest){
+                    obj.physical_data.stairs[s].dest_layer=o.stairs_dest[s]
+                }
+            }
+
+            this.children.push({obj,def:o,type:0})
+        }
+        for(const child of this.children){
+            if(child.type!==0)continue
+            for(const conn of child.def.connections??[]){
+                child.obj.connections.push(this.objects_ids[conn])
+            }
+        }
+        for (const b of this.def.content.sub_building ?? []) {
+            const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
+            const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, b.position, side)
 
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
-            obj.generate(p,Angle.add_orientation(side,b.rotation??0))
+            obj.init(Angle.add_orientation(side,b.rotation??0))
+            obj.generate(p)
         }
+       for(const c of this.def.content.ceiling??[]){
+            const conns:Obstacle[]=[]
+            for(const conn of c.connections??[]){
+                conns.push(this.objects_ids[conn])
+            }
+            this.children.push({
+                type:1,
+                def:c,
+                alive:true,
+                connections:conns,
+            })
+            this.ceilings.push({
+                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
+                no_scope_block:!!c.no_scope_block
+            })
+        }
+    }
 
+    verify_childrens(){
+        for(const child of this.children){
+            if(child.type===1){
+                if(child.alive&&child.def.destroy){
+                    let alive_count:number=0
+                    for(const c of child.connections){
+                        if(!c.health_data.dead)alive_count++
+                    }
+                    if(alive_count<=child.def.destroy.count){
+                        child.alive=false
+                        this.net_sync.part=true
+                    }
+                }
+            }
+        }
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writeBooleanGroup(this.physical_data.dirty)
@@ -115,5 +180,8 @@ export class Building extends StaticBody {
         if(full){
             stream.writeID(this.def.idNumber!)
         }
+        stream.writeArray(this.children.filter((o)=>o.type===1),(v)=>{
+            stream.writeBooleanGroup(v.alive)
+        },1)
     }
 }

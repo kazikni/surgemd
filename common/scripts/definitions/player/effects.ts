@@ -87,7 +87,7 @@ Effects.insert(
                 type:SideEffectType.Heal,
                 global:{
                     amount:3,
-                    boost:Boosts[BoostType.Adrenaline]
+                    boost:Boosts[0]
                 }
             },
         ],
@@ -135,7 +135,7 @@ Effects.insert(
             {
                 type:SideEffectType.Modify,
                 modify:{
-                    speed:1.5
+                    speed:1.4
                 }
             },
         ],

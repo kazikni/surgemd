@@ -96,7 +96,6 @@ export class SignalManager {
 
 export class TicksProfiler {
     data: Record<number, {
-        _delta: number
         delta: number
         start: number
     }> = {}
@@ -105,27 +104,18 @@ export class TicksProfiler {
 
     start(id:number) {
         if (!this.enabled) return
-        const d = this.data[id] ??= {
-            delta: 0,
-            _delta:0,
-            start: performance.now(),
+        if(!this.data[id])this.data[id]={
+            delta:0,
+            start:0,
         }
+        this.data[id].start=performance.now()
     }
-
     end(id:number) {
         if (!this.enabled) return
+        if (!this.data[id]) return
 
-        const d = this.data[id]
-        if (!d || d.start === undefined) return
-
-        d._delta = performance.now() - d.start
-        d.start=0
-    }
-
-    finish(){
-        for (const k in this.data) {
-            this.data[k].delta=this.data[k]._delta
-        }
+        this.data[id].delta = performance.now() - this.data[id].start
+        this.data[id].start=0
     }
 }
 export class Clock {
@@ -148,6 +138,8 @@ export class Clock {
         this.timeScale = timeScale
         this.callback = callback
         this.tick = this.tick.bind(this)
+
+        this.profiler.enabled=true
     }
 
     private interval?:number=undefined
@@ -178,7 +170,6 @@ export class Clock {
                 i(dt);
             }
             this.profiler.end(0)
-            this.profiler.finish()
         }
     }
     _tick(){
@@ -664,6 +655,9 @@ export const Numeric={
     },
     dt_expo_inter(k:number,dt:number):number{
         return 1 - Math.exp(-k * dt)
+    },
+    get_interpolation_t(ntps:number, dt:number) {
+        return 1-Math.exp(-dt/(1/ntps))
     },
     normalize_rad(angle: number): number {
         return Math.atan2(Math.sin(angle), Math.cos(angle))

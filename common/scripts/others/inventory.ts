@@ -6,7 +6,6 @@ import { ConsumibleDef } from "../definitions/items/consumibles.ts";
 import { GrenadeDef } from "../definitions/items/grenades.ts";
 import { GunDef } from "../definitions/items/guns.ts";
 import { MeleeDef } from "../definitions/items/melees.ts";
-import { ScopeDef } from "../definitions/items/scopes.ts";
 import { InventoryItemType } from "../definitions/utils.ts";
 
 export abstract class MDItem extends Item{
@@ -101,6 +100,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     net_sync:{
         hand:boolean
         weapons:boolean
+        melee_world:boolean
 
         items:boolean
         aitems:boolean
@@ -108,6 +108,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     }={
         hand:false,
         weapons:false,
+        melee_world:false,
 
         items:false,
         aitems:false,
@@ -122,7 +123,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         this.set_backpack()
         this.weapons_kind=weapons_kind
         this.weapons_defaults=weapons_defaults??{
-            0:definitions.melees.getFromString("survival_knife")
+            0:definitions.melees.getFromString("fist")
         }
         this.clear_weapons()
         this.iitems.push(definitions.scopes.getFromNumber(0))
@@ -141,7 +142,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         }
         if(this.slots.length>backpack.slots){
             while(this.slots.length>backpack.slots){
-              this.slots.pop()
+                this.slots.pop()
             }
         }
         while(this.slots.length<backpack.slots){

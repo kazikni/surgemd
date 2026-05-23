@@ -1,7 +1,7 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, LootTableItemRet, NetStream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, LootTableItemRet, NetStream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
@@ -9,12 +9,15 @@ import { DamageParams } from "../others/utils.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Loot } from "./loot.ts";
 import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { type Building } from "./building.ts";
 
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
     override number_type: number=GameObjectType.Obstacle
 
     def!:ObstacleDef
+    parent?:Building
+    connections:Obstacle[]=[]
 
     max_scale:number=1
 
@@ -46,6 +49,13 @@ export class Obstacle extends StaticBody{
         scale:number
         side:Orientation
         rotation:number
+
+        stairs:{
+            index:number
+            hitbox:Hitbox2D
+            base_hitbox:Hitbox2D
+            dest_layer:number
+        }[]
     }&StaticBodyPhysicalData={
         dirty:false,
         dirty_part:false,
@@ -60,6 +70,8 @@ export class Obstacle extends StaticBody{
         reflect_bullets:false,
         no_collision:true,
         no_bullets_collision:true,
+
+        stairs:[]
     }
 
     loot:LootTableItemRet<GameItem>[]=[]
@@ -77,12 +89,10 @@ export class Obstacle extends StaticBody{
         
     }
 
-    choose_door_side(playerPos: Vec2):-1|0|1 {
-        const forward = v2.from_RadAngle(this.physical_data.rotation)
+    choose_door_side(playerPos: Vec2): -1 | 1 {
         const toPlayer = v2.sub(playerPos, this.position)
-        v2m.normalizeSafe(toPlayer)
-        const dot = v2.dot(forward, toPlayer)
-        return dot >= 0 ? -1 : 1
+        const local = v2.rotate_RadAngle(toPlayer, -this.physical_data.rotation)
+        return local.y >= 0 ? 1 : -1
     }
     override interact(user: Human): void {
         if(this.actived)return
@@ -179,7 +189,7 @@ export class Obstacle extends StaticBody{
                         this.game.add_timeout(()=>{
                             this.destroy()
 
-                            const obs=this.game.map.add_obstacle(def)
+                            const obs=this.game.map.add_obstacle(def,this.layer)
                             obs.initialize()
                             obs.set_position(this.position)
                         },this.def.expanded_behavior.delay)
@@ -188,23 +198,9 @@ export class Obstacle extends StaticBody{
                 }
             }
         }
-        /*if(this.door!==undefined){
-            this.door!.open=this.door!.open===0?1:0
-            const dd=this.def.expanded_behavior!
-            if(dd.open_delay!==undefined&&dd.open_delay>0){
-                this.actived=true
-                this.game.addTimeout(()=>{
-                    this.actived=false
-                    this.door_change_hb()
-                },dd.open_delay!)
-            }else{
-                this.door_change_hb()
-            }
-            this.dirtyPart=true
-        }*/
     }
     override can_interact(user: Human): boolean {
-        return (this.def.interactDestroy||this.def.expanded_behavior) as boolean&&!this.destroyed&&user.hitbox.collidingWith(this.hitbox)
+        return (this.def.interactDestroy||this.def.expanded_behavior)as boolean&&!this.destroyed&&user.hitbox.colliding_with(this.hitbox)&&!this.health_data.dead
     }
     override net_update(): void {
         if(this.door_data)this.door_data.dirty=false
@@ -223,11 +219,22 @@ export class Obstacle extends StaticBody{
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
 
-        this.health_data.max_health=this.def.health
-        this.health_data.health=this.def.health
+        this.health_data.max_health=this.def.health??1
+        this.health_data.health=this.def.health??1
 
         if(this.def.scale?.min&&this.def.scale.max){
             this.max_scale=random.float(this.def.scale.min,this.def.scale.max)
+        }
+
+        let idx=0
+        for(const s of this.def.stair_data??[]){
+            this.physical_data.stairs.push({
+                index:idx,
+                dest_layer:0,
+                hitbox:s.hitbox,
+                base_hitbox:s.hitbox,
+            })
+            idx++
         }
     }
     load_loot(){
@@ -258,14 +265,14 @@ export class Obstacle extends StaticBody{
             this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
         }
         if(rotation===undefined){
-            if(this.def.rotationMode===RotationMode.limited){
+            if(this.def.rotation_mode===RotationMode.limited){
                 this.physical_data.side=random.int(0,3) as Orientation
                 this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
             }else{
-                this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotationMode??RotationMode.full)
+                this.physical_data.rotation=Angle.random_rotation_modded(this.def.rotation_mode??RotationMode.full)
             }
-        }else if(this.def.rotationMode){
-            if(this.def.rotationMode===RotationMode.limited){
+        }else if(this.def.rotation_mode){
+            if(this.def.rotation_mode===RotationMode.limited){
                 this.physical_data.side=Angle.add_orientation(rotation as Orientation,parent_side)
                 this.physical_data.rotation=Angle.side_rad(this.physical_data.side)
             }else{
@@ -294,28 +301,30 @@ export class Obstacle extends StaticBody{
                     break
             }
         }
+
+        for(const s of this.physical_data.stairs){
+            s.base_hitbox=s.base_hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+        }
     }
 
     set_position(position:Vec2){
-        this.reset_scale()
-
-        this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,this.physical_data.scale)
         this.position=position
+        this.reset_scale()
     }
     reset_scale(){
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.max_scale;
-            this.physical_data.scale=Math.max(this.health_data.health / this.def.health*(this.max_scale - destroyScale) + destroyScale,0)
-
-            if(this.door_data){
-                this.base_hitbox=this.door_data.hitboxes[this.door_data.open].transform(undefined,this.physical_data.scale)
-            }else{
-                this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
-            }
-
+            this.physical_data.scale=Math.max(this.health_data.health/this.health_data.max_health*(this.max_scale - destroyScale) + destroyScale,0)
             this.net_sync.part=true
             this.physical_data.dirty_part=true
+        }
+        if(this.door_data){
+            this.base_hitbox=this.door_data.hitboxes[this.door_data.open].transform(undefined,this.physical_data.scale)
+        }else{
+            this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
+        }
+        for(const s of this.physical_data.stairs){
+            s.hitbox=s.base_hitbox.transform(this.position,this.physical_data.scale)
         }
     }
     override side_effect(sf:SideEffect,owner?:Human){
@@ -369,7 +378,7 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
-            this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def)
+            this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
@@ -392,6 +401,21 @@ export class Obstacle extends StaticBody{
         }
 
         if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
+        for(const c of this.connections){
+            if(c.def.imortal)continue
+            c.die({
+                amount:9999,
+                critical:false,
+                direction:0,
+                position:this.position,
+                reason:DamageReason.Connection,
+                owner:params.owner,
+                resistence:10,
+                source:params.source
+            })
+        }
+
+        if(this.parent)this.parent.verify_childrens()
     }
     revive(){
         if(!this.health_data.dead)return
@@ -442,7 +466,7 @@ export class Obstacle extends StaticBody{
             }
         }
         if(full||this.health_data.dirty){
-            stream.writeFloat(this.health_data.health/this.def.health,0,1,1)
+            stream.writeFloat(this.health_data.health/this.health_data.max_health,0,1,1)
         }
 
         if(door_dirty){

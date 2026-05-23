@@ -75,6 +75,7 @@ export interface SelfStateUpdate{
     action?:{delay:number,type:ActionsType}
 
     current_scope:number
+    force_default_scope:boolean
 
     group?:Record<number,GroupMemberState>
 }
@@ -102,6 +103,8 @@ function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         state.action!==undefined, //has Action
 
         state.inventory.hand?.liquid, // Is Liquid
+
+        state.force_default_scope
     )
     if(state.dirty.inventory.items){
         stream.writeArray<InventoryItemData>(state.inventory.items,(i)=>{
@@ -176,6 +179,8 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         hasHand,
         hasAction,
         liquid,
+
+        force_default_scope
     ]=stream.readBooleanGroup2()
     state.dirty={
         inventory:{
@@ -255,6 +260,7 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         },3)
     }
     state.current_scope=stream.readUint8()
+    state.force_default_scope=force_default_scope
 }
 export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     ID=2
@@ -355,6 +361,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                     hand:undefined
                 },
                 current_scope:0,
+                force_default_scope:false,
             }
             decode_self_state(this.priv.self_state,stream,this.definition)
         }

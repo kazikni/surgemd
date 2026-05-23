@@ -3,6 +3,7 @@ import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { ColorM, Hitbox2D, HitboxType2D, v2, Vec2} from "common/engine/client.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 
 export class MinimapManager{
     game:Game
@@ -14,7 +15,7 @@ export class MinimapManager{
         this.ctx=this.canvas.getContext("2d")!
     }
     image: HTMLImageElement=new Image()
-    ms=0.1
+    ms=0.05
     position:Vec2=v2(0,0)
 
     private drawHitbox(color:string,hb: Hitbox2D) {
@@ -104,31 +105,33 @@ export class MinimapManager{
 
             for (const floor of this.config.terrain) {
                 const hb  = floor.final_hb
-                const hex = ColorM.number2hex(Floors[floor.type].default_color)
+                const hex = ColorM.number2hex(this.game.terrain.biome?.floors[floor.type]?.color??Floors[floor.type].default_color)
                 this.drawHitbox(hex, hb)
             }
             this.drawGrid(5,0.06)
             const sorted = [...this.config.objects].sort((a,b)=>{
                 const ad=this.game.definitions.obstacles.getFromNumber(a.def)
                 const bd=this.game.definitions.obstacles.getFromNumber(b.def)
-                return (ad.zIndex ?? 0) - (bd.zIndex ?? 0)
+                return (ad.zIndex?.base ?? zIndexes.Obstacles1) - (bd.zIndex?.base ?? zIndexes.Obstacles1)
             })
             for (const obj of sorted) {
                 const def = this.game.definitions.obstacles.getFromNumber(obj.def)
-                const frameName = GetObstacleBaseFrame(def, obj.variation, 0)
-                const frame = this.game.resources.get_sprite(frameName)
-                if (!frame?.source) continue
+                const frameName = GetObstacleBaseFrame(def, obj.variation,obj.skin)
+                const frame = this.game.resources.get_frame(frameName)
+                if (!frame?.image) continue
 
-                const sx = frame.frame_rect?.x1 ?? 0
-                const sy = frame.frame_rect?.y1 ?? 0
-                const sw = (frame.frame_rect?.x2 ?? frame.source.width) - sx
-                const sh = (frame.frame_rect?.y2 ?? frame.source.height) - sy
+                const sx = frame.frame_rect?.min.x ?? 0
+                const sy = frame.frame_rect?.min.y ?? 0
+                const sw = (frame.frame_rect?.max.x ?? frame.image.width) - sx
+                const sh = (frame.frame_rect?.max.x ?? frame.image.height) - sy
 
                 const fw = frame.frame_size?.x ?? sw
                 const fh = frame.frame_size?.y ?? sh
 
-                const w = (fw*obj.scale)/this.ms/100
-                const h = (fh*obj.scale)/this.ms/100
+                const frame_scale=(def.assets?.frame?.transform?.scale??2)
+
+                const w = (fw*obj.scale*frame_scale)/this.ms/200
+                const h = (fh*obj.scale*frame_scale)/this.ms/200
 
                 const pos = v2.dscale(obj.position,this.ms)
 
@@ -137,7 +140,7 @@ export class MinimapManager{
                 this.ctx.rotate(obj.rotation ?? 0)
 
                 this.ctx.drawImage(
-                    frame.source,
+                    frame.image,
                     sx, sy, sw, sh,
                     -w/2, -h/2,
                     w, h
@@ -145,7 +148,6 @@ export class MinimapManager{
 
                 this.ctx.restore()
             }
-
             resolve(this.canvas.toDataURL("image/png"))
         })
     }

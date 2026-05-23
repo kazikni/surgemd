@@ -162,6 +162,9 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     one:Object.assign(()=>{
         return {x:1,y:1} as Vec2
     },{x:1,y:1}),
+    half_one:Object.assign(()=>{
+        return {x:0.5,y:0.5} as Vec2
+    },{x:0.5,y:0.5}),
     infinity:Object.assign(()=>{
         return {x:Infinity,y:Infinity} as Vec2
     },{x:Infinity,y:Infinity}),
@@ -229,16 +232,16 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         let xOffset: number, yOffset: number;
         switch (side) {
             case 1:
-                xOffset = y.y;
-                yOffset = -y.x;
+                xOffset = -y.y;
+                yOffset = y.x;
                 break;
             case 2:
                 xOffset = -y.x;
                 yOffset = -y.y;
                 break;
             case 3:
-                xOffset = -y.y;
-                yOffset = y.x;
+                xOffset = y.y;
+                yOffset = -y.x;
                 break;
         }
         return this.add(x, v2(xOffset, yOffset));
@@ -496,7 +499,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         return x.x * y.x + x.y * y.y;
     },
     /**
-     * @param Vec2 The `Vec2` used in lenght
+     * @param Vec2 The `Vec2` used in length
      * @returns 
      */
     len(Vec2: Vec2): number {
@@ -575,6 +578,9 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      */
     clone(Vec2:Vec2):Vec2{
         return this.new(Vec2.x,Vec2.y)
+    },
+    is_vec2(val:any):boolean{
+        return typeof val==="object"&&val.x!==undefined&&val.y!==undefined
     },
     /**
      * 

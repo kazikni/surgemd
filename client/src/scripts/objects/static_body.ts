@@ -1,7 +1,8 @@
-import { ABParticle2D, Color, Hitbox2D, NetStream, NullHitbox2D, random, Sound, v2, Vec2 } from "common/engine/client.ts"
+import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Vec2 } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
+import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
 export type StaticBodyPhysicalData={
     hitbox:Hitbox2D
     side:number
@@ -11,9 +12,9 @@ export type StaticBodyPhysicalData={
     no_bullets_collision:boolean
 }
 export interface StaticBodyAssetData{
-    particles_tint?:Color
-    frame:{
-        particles:string[],
+    particles?:{
+        tint?:Color,
+        images:string[]
     }
     sounds:{
         hit:Sound[]
@@ -35,12 +36,12 @@ export abstract class StaticBody extends GameObject{
     abstract assets_data:StaticBodyAssetData
 
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
-        if(!this.assets_data.frame.particles)return
+        if(!this.assets_data.particles)return
         const p=new ABParticle2D({
             frame:{
-                image:random.choose(this.assets_data.frame.particles)
+                image:random.choose(this.assets_data.particles.images),
+                layer:this.layer
             },
-
             position,
             speed:random.float(1,2)*force,
             angle:random.rad(),
@@ -48,8 +49,7 @@ export abstract class StaticBody extends GameObject{
             life_time:random.float(1,2),
             zIndex:zIndexes.Particles,
             scale:small?random.float(0.2,0.5):random.float(0.5,1),
-
-            tint:this.assets_data.particles_tint,
+            tint:this.assets_data.particles.tint,
             to:{
                 speed:random.float(0.1,1),
                 angle:random.rad(),
@@ -63,7 +63,35 @@ export abstract class StaticBody extends GameObject{
             this.game.sounds.play(random.choose(this.assets_data.sounds.hit),{
                 position:this.position,
                 max_distance:12,
-            },"obstacles")
+                bus:"obstacles"
+            })
+        }
+    }
+
+    set_hit_sounds_def(sounds:HitSoundsDef){
+        this.assets_data.sounds.hit.length=0
+        if(sounds.hit){
+            if(sounds.hit_variations){
+                for(let i=1;i<=sounds.hit_variations;i++){
+                    this.assets_data.sounds.hit.push(this.game.resources.get_sound(sounds.hit+`_${i}`))
+                }
+            }else{
+                this.assets_data.sounds.hit.push(this.game.resources.get_sound(sounds.hit))
+            }
+        }
+    }
+    set_hit_particles_def(id:string,variation:number,particles:HitParticlesDef){
+        this.assets_data.particles={
+            images:[],
+        }
+        const particle=particles.particle??id+"_particle"
+        if(particles.tint)this.assets_data.particles.tint=ColorM.number(typeof particles.tint==="number"?particles.tint:particles.tint[variation])
+        if(particles.variations){
+            for(let i=0;i<particles.variations;i++){
+                this.assets_data.particles.images.push(`${particle}_${i+1}`)
+            }
+        }else{
+            this.assets_data.particles.images.push(particle)
         }
     }
 

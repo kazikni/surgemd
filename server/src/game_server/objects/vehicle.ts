@@ -169,7 +169,7 @@ export class Vehicle extends MovingBody {
     }
 
     override can_interact(user: Human): boolean {
-        return this.interaction_hitbox.collidingWith(user.hitbox)&&!this.dead&&!user.seat
+        return this.interaction_hitbox.colliding_with(user.hitbox)&&!this.dead&&!user.seat
     }
     override interact(user: Human): void {
         let interact_seat:VehicleSeat|undefined

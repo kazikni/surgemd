@@ -1,5 +1,5 @@
 import { type AbstractGame } from "../game/game.ts";
-import { random, SeededRandom, type WeightDefinition } from "../math/random.ts";
+import { random, type WeightDefinition } from "../math/random.ts";
 import { Numeric, Tags, hasTag, hasTags } from "../math/utils.ts"
 
 export abstract class Item{
@@ -414,15 +414,16 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
     //#endregion
 }
 
-export abstract class Action<User>{
+export abstract class BaseAction<User>{
     abstract delay:number
     abstract type:number
     abstract on_execute(user:User):void
+    update(user:User,dt:number){}
     constructor(){}
 }
 
-export class ActionsManager<User>{
-    current_action?:Action<User>
+export class ActionsManager<User,Action extends BaseAction<User>>{
+    current_action?:Action
     current_delay:number=0
     user:User
     dirty:boolean=false
@@ -436,7 +437,7 @@ export class ActionsManager<User>{
             this.dirty=true
         }
     }
-    play(action:Action<User>):void{
+    play(action:Action):void{
         if(this.current_action)return
         this.current_action=action
         this.current_delay=action.delay
@@ -451,6 +452,7 @@ export class ActionsManager<User>{
                 this.current_delay=0
                 this.dirty=true
             }
+            this.current_action?.update?.(this.user,deltaTime)
         }
     }
     net_update(){

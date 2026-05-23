@@ -2,9 +2,13 @@ import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { type LItem, type ConsumibleItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 import { type Human } from "../objects/human.ts";
-import { Action, type Slot } from "common/engine/core.ts";
+import { BaseAction, v2, type Slot } from "common/engine/core.ts";
+import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 
-export class ReloadAction extends Action<Human>{
+export abstract class Action<User=Human> extends BaseAction<User>{
+    action_speed:number=1
+}
+export class ReloadAction extends Action{
     delay:number
     item:GunItem
     alt_reload:boolean=false
@@ -27,10 +31,10 @@ export class ReloadAction extends Action<Human>{
             capacity - this.item.ammo
         )
 
-        if(this.item.inventory.infinity_ammo){
+        if(this.item.infinity_ammo()){
             this.item.ammo+=request
         }else{
-            this.item.ammo+=user.inventory.consume_aitems(def.ammoType,request)
+            this.item.ammo+=user.inventory.consume_aitems(def.ammo_type,request)
         }
 
         if(this.item.ammo>=capacity){
@@ -41,33 +45,52 @@ export class ReloadAction extends Action<Human>{
         user.inventory.net_sync.hand=true
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
-        user.animation_data.current_animation=undefined
     }
     type: number=ActionsType.Reload
 }
-export class ConsumingAction extends Action<Human>{
+export class ConsumingActionA extends Action{
     delay:number
     item:ConsumibleItem
     type: number=ActionsType.Consuming
     slot:Slot<LItem>
     constructor(item:ConsumibleItem,slot:Slot<LItem>){
         super()
+        const consuming=item.def.consuming as (ConsumingAction&{type:0})
         this.item=item
-        this.delay=item.def.use_delay
+        this.delay=consuming.use_delay
         this.slot=slot
+        this.action_speed=0.35
     }
     on_execute(user:Human){
-        const def=this.item.def
+        const consuming=this.item.def.consuming as (ConsumingAction&{type:0})
 
-        for(const s of def.side_effects){
+        for(const s of consuming.side_effects){
             user.side_effect(s)
         }
 
         user.net_sync.part=true
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
-        user.animation_data.current_animation=undefined
 
         this.slot.remove(1)
+    }
+}
+export class HelpupAction extends Action<Human>{
+    override type: number=ActionsType.Helpup;
+    delay:number
+    human:Human
+    constructor(human:Human){
+        super()
+        this.human=human
+        this.delay=human.game.modeManager.rules.humans.help_up.time
+        this.action_speed=0.35
+    }
+    on_execute(user:Human){
+        this.human.help_up()
+    }
+    override update(user: Human, dt: number): void {
+        if(v2.distance(user.position,this.human.position)>user.game.modeManager.rules.humans.help_up.distance){
+            user.actions.cancel()
+        }
     }
 }

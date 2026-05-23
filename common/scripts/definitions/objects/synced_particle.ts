@@ -1,4 +1,4 @@
-import { CircleHitbox2D, Definition, Definitions, FrameDef, Hitbox2D, v2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, Definition, Definitions, FrameDef, Hitbox2D, mergeDeep, v2 } from "../../../engine/core.ts";
 import { zIndexes } from "../../others/constants.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 export interface SyncedParticleDef extends Definition{
@@ -51,6 +51,52 @@ export interface SyncedParticleDef extends Definition{
         }
     }
 }
+export const synsed_particle_factory={
+    spray(id:string,tint:number,side_effect:SideEffect[]=[]):SyncedParticleDef{
+        return mergeDeep({
+            idString:id,
+            lifetime:1,
+            no_hit_owner:true,
+            hitbox:new CircleHitbox2D(v2.zero,0.5),
+            side_effect:side_effect,
+            frame:{
+                image:"firing_particle",
+                scale:0.01,
+                tint:tint
+            },
+            movement:{
+                type:"direction",
+                velocity:{
+                    decay:1.5
+                },
+                angular:{
+                    min:5,
+                    max:10
+                },
+            },
+            animation:{
+                spawn:{
+                    alpha:{
+                        from:0,
+                        to:0.7,
+                        duration:0.2,
+                    },
+                    scale:{
+                        to:0.6,
+                        duration:0.5,
+                    }
+                },
+                destroy:{
+                    time:1,
+                    alpha:{
+                        to:0,
+                        duration:0.3,
+                    },
+                }
+            }
+        })
+    }
+}
 export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedParticleDef,{}>){
     synced_particles.insert(
         {
@@ -65,7 +111,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 velocity:{
                     min:0,
                     max:1.7,
-                    decay:0.66
+                    decay:0.5
                 },
                 angular:{
                     min:0.6,
@@ -76,7 +122,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.92,
+                        to:0.9,
                         duration:2,
                     },
                     scale:{
@@ -98,7 +144,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             lifetime:1,
             frame:{
                 image:"smoke_particle",
-                scale:1.25,
+                scale:2,
                 alpha:0.92
             },
             movement:{
@@ -232,5 +278,13 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 }
             }
         },
+        synsed_particle_factory.spray("healing_spray_particle",0x33ff55,[
+            {
+                type:SideEffectType.Heal,
+                health:{
+                    amount:0.25,
+                }
+            }
+        ])
     )
 }

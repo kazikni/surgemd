@@ -1,7 +1,6 @@
 export enum BoostType{
-    Null,
-    Shield,
     Adrenaline,
+    Shield,
     Mana,
     Addiction,
     GreenBless,
@@ -13,11 +12,6 @@ export interface BoostDef{
     color:string
 }
 export const Boosts={
-    [BoostType.Null]:{
-        name:"null",
-        color:"#fff",
-        type:BoostType.Null
-    },
     [BoostType.Shield]:{
         name:"shield",
         color:"#08f",

@@ -10,7 +10,8 @@
         "files":{
             "news":"files/news"
         },
-        "global": "http://localhost:8000"
+        "global": "http://localhost:8000",
+        "key": "your_api_key"
     },
     "game": {
         "max_games": 5,
@@ -52,8 +53,7 @@
             "accounts": "database/accounts.db",
             "forum":"database/forum.db",
             "statistic":"database/statistic.json"
-        },
-        "api_key": "your_api_key"
+        }
     },
     "shop": {
         "skins": {

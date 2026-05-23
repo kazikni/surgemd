@@ -1,0 +1,273 @@
+{
+    "values":{
+        "barrel":"Barril",
+        "Objetos":{
+            "mira_1": "Mira 1x",
+            "mira_2": "Mira 2x",
+            "mira_3": "Mira 4x",
+            "mira_4": "Mira 6x",
+            "mira_5": "Mira 8x",
+            "mira_6": "Mira 10x",
+            "mira_7": "Mira 12x",
+
+            "Vendas":"Vendaje",
+            "medikit":"Kit Botiquin",
+            "yellow_soda":"Refresco Amarillo",
+            "inhaler":"Inhalador",
+            "yellow_pills":"Pildoras Amarillas",
+            "blue_soda":"Refresco Azul",
+            "blue_potion":"Pocion Azul",
+            "blue_pills":"Pildoras Azul",
+            "purple_soda":"Refresco Purpura",
+            "purple_potion":"Pocion Purpura",
+            "purple_pills":"¨Pildora Purpura",
+            "small_red_crystal":"Pequeño Cristal Rojo",
+            "red_soda":"Refresco Rojo",
+            "red_crystal":"Cristal Rojo",
+            "red_pills":"Pildoras Roja",
+            "green_soda":"Refresco Verde",
+            "black_soda":"Refresco negro",
+
+            "basic_vest":"Armadura Simple",
+            "basic_helmet":"Casco Simple",
+            "basic_pack":"Mochila Simple",
+            "regular_vest":"Armadura Medio",
+            "regular_helmet":"Casco Medio",
+            "regular_pack":"Mochila Medio",
+            "tactical_vest":"Armadura Tactica",
+            "tactical_helmet":"Casco Tactico",
+            "tactical_pack":"Mochila Tactica",
+
+            "explosive_ammo":"Municion Explosiva",
+            "gasoline":"Gasolina",
+
+            "fist":"Puños",
+            "survival_knife":"Cuchillo De Supervivencia",
+            "axe":"Hacha",
+            "sledgehammer":"Mazo",
+            "shovel":"Pala",
+
+            "m9_dual":"M9 Doble",
+            "colt1873_dual":"Colt 1873 Duble",
+            "taurustx_dual":"Taurus TX 22 Doble",
+            "yellow_laser_pistol_dual":"Pistola Laser Amarilla Doble",
+            "pfeifer_zeliska_dual":"Pfeifer Zeliska 600 Nitro Express Dupla",
+
+            "frag_grenade":"Granada Explosiva",
+            "smoke_grenade":"Grenada De Humo",
+            "molotov":"Molotov",
+            "mirv_grenade":"Granada mirv",
+            "blue_flare":"Llamarada azul",
+            "red_flare":"Llamarada roja"
+        },
+        "killfeed":{
+            "unirse":"${player} Entro",
+            "muertes":{
+                "abstinence":"${player} murio de abstinencia",
+                "player":"${player1} mato ${player2} con ${source}",
+                "explosion":"${player1} mato a ${player2} con ${source}",
+                "deadzone":"${player} murio por la zona",
+                "side-effect":"${player} murio por efectos secundarios",
+                "disconnect":"${player} Salio De La Partida",
+                "bleend":"${player} El jugador se desangro"
+            },
+            "down":{
+                "abstinence":"${player} cayó en la abstinecia",
+                "player":"${player1} derribo ${player2} con ${source}",
+                "deadzone":" La zona ha derribado a ${player}",
+                "side-effect":"${player} Fue Derribado por Efectos Secundarios",
+                "disconnect":"${player} Se Desconecto",
+                "bleend":"essa menssagem no killfeed e um bug. report."
+            },
+            "killleader":{
+                "assigned":"${player} Se Convirtio en el Lider De Asesinatos",
+                "dead":" El Lider De Asesinatos Ha Muerto"
+            }
+        },
+        "killleader-wait":"Esperando Nuevo Lider",
+        "interact":{
+            "loot":"Pegar ${source}${count}",
+            "obstacles":{
+                "break":"Quebrar ${obstacle}",
+                "door":{
+                    "open":"Abrir Puerta",
+                    "close":"cerrar Puerta"
+                },
+                "scalable":"Escalar",
+                "transform-into":{
+                    "airdrop_locked":"desbloquear airdrop"
+                }
+            }
+        },
+        "gameover":{
+            "eliminated-by":"<span id='gameover-eliminated'>Eliminado Por</span> ${player}",
+            "you-win":"<span id='gameover-you-win'>Você Ganhou</span>",
+            "messages":{
+                "introductions":{
+                    "0":"Oi",
+                    "1":"Ola",
+                    "2":"E aí"
+                },
+                "death":{
+                    "0":"Você morreu de novo.",
+                    "1":"Você virou uma pilha de carne.",
+                    "2":"Você morreu.",
+                    "3":"Você esta morto.",
+                    "4":"Você perdeu.",
+                    "5":"Seu coração parou.",
+                    "6":"Você foi virado do avesso.",
+                    "7":"Você foi destroçado.",
+                    "8":"Você sofreu morte cerebral.",
+                    "9":"Você não existe mais.",
+                    "10":"Você se foi."
+                },
+                "status":{
+                    "kills":"Você conseguiu ${kills} eliminações.",
+                    "no-kills":"Você não eliminou ninguém.",
+                    "no-kills-dead":"Infelismente, esse não é o modo de sair daqui vivo."
+                },
+                "hints":{
+                    "quickswitch":{
+                        "0":"Já ouviu falar de quickswitch?",
+                        "1":"Quickswitch remove o recuo da arma.",
+                        "2":"Troque de arma logo após atirar.",
+                        "3":"Funciona melhor com armas de tiro único.",
+                        "4":"Como snipers ou espingardas."
+                    },
+                    "movement":{
+                        "0":"Movimentação também é uma arma.",
+                        "1":"Use com inteligência."
+                    },
+                    "cover":{
+                        "0":"Cobertura pode salvar sua vida.",
+                        "1":"Lute perto de pedras ou árvores.",
+                        "2":"Nunca fique em campo aberto."
+                    },
+                    "healing":{
+                        "0":"Não lute estando fraco.",
+                        "1":"Cure-se primeiro.",
+                        "2":"Depois lute."
+                    },
+                    "grenade":{
+                        "0":"Uma granada bem posicionada",
+                        "1":"pode vencer uma luta instantaneamente."
+                    }
+                },
+                "motivational":{
+                    "0":{
+                        "0":"O fracasso ensina mais do que a vitória."
+                    },
+                    "1":{
+                        "0":"Você consegue."
+                    },
+                    "2":{
+                        "0":"Cada tentativa ensina algo."
+                    },
+                    "3":{
+                        "0":"Eu confio em você."
+                    },
+                    "4":{
+                        "0":"Nunca desista.",
+                        "1":"Confie nos seus instintos."
+                    },
+                    "5":{
+                        "0":"A esperança é a última que morre."
+                    },
+                    "6":{
+                        "0":"Sem dor.",
+                        "1":"Sem ganho."
+                    },
+                    "7":{
+                        "0":"Fritz nunca desistiu.",
+                        "1":"Olha onde ele esta agora."
+                    }
+                },
+                "final":{
+                    "0":"A morte não é o fim.",
+                    "1":"Existem coisas piores que a morte.",
+                    "2":"Você é importante demais para morrer.",
+                    "3":"Sua hora ainda não chegou."
+                },
+                "death-end":"Levante-se!"
+            }
+        },
+        "menu":{
+            "Opciones":{
+                "play":"Jugar",
+                "settings":"Configuraciones",
+                "loadout":"Equipamiento",
+                "mods":"Modos",
+                "about":"Sobre"
+            },
+            "play":{
+                "label-campaign":"Campaña",
+                "level-selector":"Seleccionar Nivel",
+                "label-online":"Enlinea",
+                "host-game":"Crear Juego",
+                "join-game":"Entrar A un Juego",
+                "play-online":"Jugar Enlinea",
+                "group":"Grupo",
+                "label-files":"Archivos",
+                "replay":"Repeticiones"
+            },
+            "settings":{
+                "game":"Juego",
+                "graphics":"Graficos",
+                "sounds":"Sonidos",
+                "ui":"Interfaz"
+            },
+            "loadout":{
+                "hair":"Cabello",
+                "body":"Cuerpo"
+            },
+            "mods":{
+                "mods-list":"Lista de Modos"
+            },
+            "about":{
+                "social":"Social",
+                "news":"Novedades",
+                "rules":"Reglas",
+                "credits":"Creditos"
+            },
+            "loading-screen":{
+                "load":"Cargando: ${text}",
+                "unload":"Descargando: ${text}"
+            }
+        },
+        "settings":{
+            "game":{
+                "interpolation":"Interpolacion",
+                "client_rot":"Rotacion de cliente",
+                "friendly_fire":"Fuego Amigo"
+            },
+            "graphics":{
+                "resolution":"Calidad De Texturas",
+                "particles":"Particulas",
+                "lights":"Luces",
+                "post_proccess":"Pre Proceso",
+                "climate":"Clima",
+                "fullscreen":"Päntalla Completa"
+            },
+            "sounds":{
+                "master_volume":"Volumen principal",
+                "music_volume":"Volumen De La Musica",
+                "ambient_volume":"Volumen de ambiente"
+            },
+            "ui":{
+                "primary_color":"Color Primario",
+                "secondary_color":"Color Secundario",
+                "translation":"Traduccion",
+                "interactive":"Interactuar"
+            }
+        },
+        "loadout":{
+            "Personaje":{
+                "hair_tint":"Color de Cabello",
+                "type":"Tipo do cabello",
+                "body_tint":"Color de tinte",
+                "female":"Mujer",
+                "shirt":"Camisa"
+            }
+        }
+    }
+}

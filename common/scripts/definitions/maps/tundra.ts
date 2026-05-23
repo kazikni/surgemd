@@ -1,7 +1,8 @@
 import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
+import { LootTables } from "../loot_tables.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
-import { NormalMap } from "./normal.ts";
+import { map_spawns, NormalMap } from "./normal.ts";
 
 export const TundraBiome:BiomeDef={
     floors:{
@@ -15,9 +16,9 @@ export const TundraBiome:BiomeDef={
     biome_skin:"snow",
     assets:["normal"],
     musics:[
-        "game_tundra_music_1",
-        "game_tundra_music_2",
-        "game_tundra_music_3",
+        "/sounds/musics/online/game_tundra_music_1.mp3",
+        "/sounds/musics/online/game_tundra_music_2.mp3",
+        "/sounds/musics/online/game_tundra_music_3.mp3",
     ],
     ambient:{
         particles:[],
@@ -28,8 +29,9 @@ export const TundraBiome:BiomeDef={
 }
 // No Shotguns And Pistols
 export const TundraMap:MapDef={
-    loot_tables:{...NormalMap.loot_tables,
-        "ammos":[
+    loot_tables:{
+        ...LootTables,
+        ammos:[
             {item:"9mm",count:40,weight:6},
             {item:"762mm",count:40,weight:6},
             {item:"556mm",count:40,weight:6},
@@ -40,7 +42,7 @@ export const TundraMap:MapDef={
             {item:"gasoline",count:5,weight:0.05},
             {item:"explosive_ammo",count:2,weight:0.05},
         ],
-        "special_ammos":[
+        special_ammos:[
             {item:"9mm",count:80,weight:5},
             {item:"762mm",count:80,weight:5},
             {item:"556mm",count:80,weight:5},
@@ -51,63 +53,43 @@ export const TundraMap:MapDef={
             {item:"gasoline",count:10,weight:0.2},
             {item:"explosive_ammo",count:4,weight:0.2},
         ],
-        "scopes":[
-            {item:"scope_3",count:1,weight:50},
-            {item:"scope_4",count:1,weight:20},
-            {item:"scope_2",count:1,weight:10},
-            {item:"scope_5",count:1,weight:1.5},
-            {item:"scope_6",count:1,weight:0.1},
-            {item:"scope_7",count:1,weight:0.005},
+        scopes:[
+            {item:"scope_3",count:1,weight:10},
+            {item:"scope_4",count:1,weight:1.7},
+            {item:"scope_2",count:1,weight:0.4},
+            {item:"scope_5",count:1,weight:0.1},
+            {item:"scope_6",count:1,weight:0.01},
+            {item:"scope_7",count:1,weight:0.001},
         ],
-        "special_scopes":[
-            {item:"scope_3",count:1,weight:60},
-            {item:"scope_4",count:1,weight:20},
-            {item:"scope_2",count:1,weight:15},
-            {item:"scope_5",count:1,weight:2},
-            {item:"scope_6",count:1,weight:0.2},
-            {item:"scope_7",count:1,weight:0.01},
+        guns:[
+            {item:"m9",weight:50},
+            {item:"taurustx",weight:50},
+            {item:"colt1873",weight:50},
+            {item:"model94",weight:32},
+            {item:"sr25",weight:32},
+            {item:"blr81",weight:30},
+            {item:"mp5",weight:22},
+            {item:"micro_uzi",weight:22},
+            {item:"ak47",weight:22},
+            {item:"ar15",weight:22},
+            {item:"m1921",weight:22},
+            {item:"kar98k",weight:21},
+            {item:"vector",weight:8},
+            {item:"m1_garand",weight:7},
+            {item:"m2_2",weight:3},
+            {item:"m79",weight:3},
+            {item:"awp",weight:2},
+            {item:"pfeifer_zeliska",weight:1},
+            {item:"awms",weight:1},
         ],
-        "guns":[
-            {item:"m1a1",weight:23},
-            {item:"sr25",weight:23},
-            {item:"model94",weight:23},
-            {item:"blr81",weight:17},
-            {item:"kar98k",weight:15},
-            {item:"ar15",weight:15},
-            {item:"m9",weight:15},
-            {item:"taurustx",weight:15},
-            {item:"mp5",weight:15},
-            {item:"ak47",weight:15},
-            {item:"famas",weight:15},
-            {item:"awp",weight:1},
-            {item:"pfeifer_zeliska",weight:0.05},
-            {item:"awms",weight:0.04},
+        legendary_guns:[
+            {item:"m1_garand",weight:15},
+            {item:"pfeifer_zeliska",weight:10},
+            {item:"awms",weight:6},
+            {item:"rpg7",weight:1},
         ],
-        "special_guns":[
-            {item:"m1a1",weight:23},
-            {item:"sr25",weight:23},
-            {item:"model94",weight:23},
-            {item:"blr81",weight:17},
-            {item:"kar98k",weight:15},
-            {item:"ar15",weight:15},
-            {item:"m9",weight:15},
-            {item:"mp5",weight:15},
-            {item:"ak47",weight:15},
-            {item:"famas",weight:15},
-            {item:"awp",weight:1},
-            {item:"pfeifer_zeliska",weight:0.05},
-            {item:"awms",weight:0.04},
-        ],
-        "tundra_crate":[
-            [
-                {item:"model94",weight:30},
-                {item:"sr25",weight:30},
-                {item:"blr81",weight:15},
-                {item:"kar98k",weight:10},
-                {item:"awp",weight:1},
-                {item:"pfeifer_zeliska",weight:0.05},
-                {item:"awms",weight:0.04},
-            ],
+        tundra_crate:[
+            [{weight:1,count:3,table:"guns"}],
             [
                 {weight:1,count:2,table:"normal_loot"},
                 {weight:0.5,count:3,table:"normal_loot"},
@@ -117,69 +99,72 @@ export const TundraMap:MapDef={
                 {weight:2,count:2,table:"accessorys"},
                 {weight:0.5,count:3,table:"accessorys"},
             ],
-            [{weight:1,table:"special_scopes"}],
+            [{weight:1,table:"normal_scopes"}],
         ],
-        "wood_crate":[
+        wood_crate:[
             {weight:2,count:3,table:"normal_loot"},
             {weight:1,count:4,table:"normal_loot"},
             {weight:0.5,count:5,table:"normal_loot"},
         ],
-        "copper_crate":[
-            {weight:1,count:4,table:"special_loot"},
-            {weight:0.5,count:5,table:"special_loot"},
-            {weight:0.25,count:6,table:"special_loot"},
+        iron_crate:[
+            ...LootTables.iron_crate,
+            [
+                {weight:10,table:"accessorys"},
+                {weight:1,count:2,table:"accessorys"},
+                {weight:0.1,count:3,table:"accessorys"},
+            ],
+        ],
+        gold_crate:[
+            ...LootTables.gold_crate,
+            [
+                {weight:3,table:"accessorys"},
+                {weight:1,count:2,table:"accessorys"},
+                {weight:0.1,count:3,table:"accessorys"},
+            ],
         ],
     },
     default_floor:FloorType.Water,
     biome:TundraBiome,
     generation:{
         island:{
-            size:v2(480,480),
+            size:v2(500,500),
             spawn:[
                 [
-                    {id:"recorded_tape",count:1},
+                    {def:map_spawns.containers,count:20},
 
-                    {id:"watchtower",count:7},
+                    {def:"bunker_1",count:3},
+                    {def:"shed",count:5},
+                    {def:"sillo",count:3},
 
-                    {id:"container_1",count:10},
-                    {id:"container_2",count:10},
+                    {def:"tundra_crate",count:10},
+                    {def:map_spawns.crates,count:190},
 
-                    {id:"sillo",count:3},
+                    {def:"oak_tree",count:200},
+                    {def:map_spawns.rocks,count:150},
+                    {def:"bush",count:100},
+                    {def:"barrel",count:50},
 
-                    {id:"md_crate",count:10},
-                    {id:"tundra_crate",count:10},
-                    {id:"copper_crate",count:20},
-
-                    {id:"wood_crate",count:190},
-
-                    {id:"oak_tree",count:300},
-                    {id:"stone",count:200},
-                    {id:"bush",count:100},
-                    {id:"barrel",count:50},
-
-                    {id:"normal_loot",count:100}
+                    {def:"normal_loot",count:100}
                 ]
             ],
             terrain:{
-                base:FloorType.Water,
+                base:FloorType.Ice,
                 rivers:{
                     divisions:100,
                     spawn_floor:1,
                     expansion:32,
+                    floor:FloorType.Ice,
                     defs:[
                         {
                             rivers:[
-                                {sub_river_width:2,width:7,width_variation:1,sub_river_chance:0.5},
-                                {sub_river_width:1,width:8,width_variation:1,sub_river_chance:0.1},
-                            ],
-                            weight:10
-                        },
-                        {
-                            rivers:[
-                                {sub_river_width:3,width:15,width_variation:1,sub_river_chance:0.9},
+                                {width:10,width_variation:2},
+                                {width:10,width_variation:2},
+                                {width:10,width_variation:2},
+                                {width:5,width_variation:2},
+                                {width:5,width_variation:2},
                             ],
                             weight:1
-                        }
+                        },
                     ]
                 },
                 floors:[

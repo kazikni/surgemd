@@ -38,8 +38,8 @@ export class ItemsModule extends UIModule<Game> {
             <img class="slot-image">
         `
 
-        el.dataset.drop_kind = "3"
-        el.dataset.slot = index.toString()
+        el.dataset.item_kind = "3"
+        el.dataset.item_value = index.toString()
 
         el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
         el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
@@ -59,7 +59,7 @@ export class ItemsModule extends UIModule<Game> {
             const def = this.game.definitions.game_items.valueNumber[slot.idNumber]
 
             count.textContent = `${slot.count}`
-            img.src = this.game.resources.get_sprite(def.idString).src
+            img.src = this.game.resources.get_frame(def.idString).src
             img.style.display = "block"
 
             el.classList.remove("slot-empty")

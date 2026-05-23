@@ -1,11 +1,30 @@
 import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
 import { Human } from "../objects/human.ts";
 import { random } from "common/engine/core.ts";
+import { HumanStatus } from "common/scripts/others/constants.ts";
+import { DamageReason } from "common/scripts/definitions/utils.ts";
 
 export class Team{
     dirty:boolean=true
     humans:Human[]=[]
     id:number=0
+
+    on_human_die(h:Human){
+        if(!this.can_down(h)){
+            for(const p of this.get_downed_players()){
+                p.die({
+                    amount:1000,
+                    critical:false,
+                    direction:0,
+                    position:p.position,
+                    reason:DamageReason.Bleend,
+                })
+            }
+        }
+    }
+    can_down(h:Human){
+        return this.get_not_downed_humans().length>=1
+    }
     remove_human(h:Human){
         if(!h.team_data.team)return
         const idx=this.humans.indexOf(h)
@@ -56,6 +75,14 @@ export class Team{
         const candidates = this.humans.filter(h => h !== self && !h.health_data.dead)
         if (candidates.length === 0) return undefined
         return candidates[random.int(0,candidates.length)]
+    }
+    get_status():(HumanStatus&{id:number})[]{
+        return this.humans.map((v)=>{
+            return {
+                id:v.id,
+                ...v.status
+            }
+        })
     }
     constructor(){
 

@@ -89,6 +89,7 @@ export abstract class BaseObject2D{
         if (!this.manager) return
         this.manager.set_layer(this as any, layer)
     }
+    
     encodeObject(full:boolean,stream:NetStream,options:any){
         const bools=[
             (full||this.net_sync.part)&&this.net_sync.enabled.dirty, //Dirty Part
@@ -143,7 +144,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     }
 
     unregistry(obj: GameObject) {
-        this.removeObjectFromCells(obj);
+        this.remove_object_from_cells(obj);
     }
 
     clear() {
@@ -151,18 +152,15 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         this.object_cells.clear()
         this.dirty_objects.clear()
     }
-    private removeObjectFromCells(obj: GameObject) {
+    private remove_object_from_cells(obj: GameObject) {
         this.dirty_objects.delete(obj)
-
-        const keys = this.object_cells.get(obj.id)
-        if (!keys) return
+        const keys=this.object_cells.get(obj.id)
+        if (!keys)return
         for (const key of keys) {
             const arr = this.cells.get(key)
             if (!arr) continue
-
             const idx = arr.indexOf(obj)
             if (idx !== -1) arr.splice(idx, 1)
-
             if (arr.length === 0) {
                 this.cells.delete(key)
             }
@@ -171,7 +169,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     }
 
     update_object(obj: GameObject) {
-        this.removeObjectFromCells(obj)
+        this.remove_object_from_cells(obj)
 
         const rect = obj.hitbox.to_rect()
         this.cell_pos(rect.min)
@@ -181,7 +179,6 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
             this.object_cells.set(obj.id, [])
         }
         this.object_cells.get(obj.id)!.length=0
-
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const key=hash.hash_3d_big(x,y,obj.layer)
@@ -195,9 +192,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         const rect = hitbox.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
-
         const results:GameObject[] = []
-
         for (let y = rect.min.y; y <= rect.max.y; y++) {
             for (let x = rect.min.x; x <= rect.max.x; x++) {
                 const objects=this.cells.get(hash.hash_3d_big(x,y,layer))
@@ -406,10 +401,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             newLayerData.renderizables.push(obj.id)
         }
 
-        this.cells.registry(obj)
-
         obj.net_sync.full = true
         obj.net_sync.part = true
+
+        this.cells.update_object(obj)
 
         obj.on_layer_set(obj.layer)
     }
@@ -561,10 +556,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         os=stream.readUint16()
         for(let i=0;i<os;i++){
-            const c=stream.readUint8()
             const id=stream.readID()
-            if(process_deletion&&this.objects[c]&&this.objects[c].objects[id]){
-                const obj=this.objects[c].objects[id]
+            if(process_deletion&&this.all_objects.has(id)){
+                const obj=this.all_objects.get(id)!
                 if(obj.net_sync.enabled.deletion)obj.destroy()
                 else obj.on_destroy()
             }
@@ -624,7 +618,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         stream.writeUint16(deletions.length)
         for(let i=0;i<deletions.length;i++){
-            stream.writeUint8(deletions[i].layer)
             stream.writeID(deletions[i].id)
         }
         return {strm:stream,last:objects_list}

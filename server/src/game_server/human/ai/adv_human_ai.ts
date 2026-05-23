@@ -1,4 +1,4 @@
-import { Action, Angle, astar_path2d, BTAction, BTCondition, BTNode, BTSelector, BTSequence, BTState, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, astar_path2d, BTAction, BTCondition, BTNode, BTSelector, BTSequence, BTState, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";

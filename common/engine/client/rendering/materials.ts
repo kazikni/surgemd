@@ -514,11 +514,12 @@ varying highp vec2 v_TexCoord;
 varying lowp vec4 v_Tint;
 
 void main() {
-    gl_Position = u_ProjectionMatrix * vec4(a_Position.xy, 0.0, 1.0);
+    gl_Position = u_ProjectionMatrix * vec4(a_Position, 0.0, 1.0);
     v_TexCoord = a_TexCoord;
     v_Tint = a_Tint;
 }`,
-    frag:   `
+
+    frag: `
 precision mediump float;
 
 varying highp vec2 v_TexCoord;
@@ -529,52 +530,50 @@ uniform sampler2D u_Texture;
 void main() {
     vec2 uv = vec2(v_TexCoord.x, 1.0 - v_TexCoord.y);
     gl_FragColor = texture2D(u_Texture, uv) * v_Tint;
-}
-`,
+}`,
 
     create(glr: WebglRenderer, fac) {
         const gl = glr.gl
 
-        const aPos   = gl.getAttribLocation(fac.program, "a_Position")
-        const aUV    = gl.getAttribLocation(fac.program, "a_TexCoord")
-        const aTint  = gl.getAttribLocation(fac.program, "a_Tint")
+        const aPos  = gl.getAttribLocation(fac.program, "a_Position")
+        const aUV   = gl.getAttribLocation(fac.program, "a_TexCoord")
+        const aTint = gl.getAttribLocation(fac.program, "a_Tint")
 
-        const uProj  = gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
-        const uTex   = gl.getUniformLocation(fac.program, "u_Texture")!
+        const uProj = gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+        const uTex  = gl.getUniformLocation(fac.program, "u_Texture")!
 
-        const buffers:Record<string,GLDynamicBuffer>={
-            position:new GLDynamicBuffer(gl),
-            uv:new GLDynamicBuffer(gl),
-            tint:new GLDynamicBuffer(gl),
-        }
+        const posBuffer  = new GLDynamicBuffer(gl)
+        const uvBuffer   = new GLDynamicBuffer(gl)
+        const tintBuffer = new GLDynamicBuffer(gl)
 
-        const draw = (mat:GLMaterial<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,matrix: Matrix,attr: GL2D_TexBatchAttr) => {
-            if (!attr.vertices) return
+        const draw = (
+            mat: GLMaterial<GL2D_TexBatchArgs, GL2D_TexBatchAttr>,
+            matrix: Matrix,
+            attr: GL2D_TexBatchAttr
+        ) => {
+            const count = attr.vertices.length / 2
+            if (count === 0) return
 
             glr.set_program(fac.program)
             gl.uniformMatrix4fv(uProj, false, matrix)
 
-            // vertices
-            buffers.position.upload(gl.ARRAY_BUFFER,attr.vertices,gl.STATIC_DRAW)
+            posBuffer.upload(gl.ARRAY_BUFFER, attr.vertices)
             gl.enableVertexAttribArray(aPos)
             gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
 
-            // uv
-            buffers.uv.upload(gl.ARRAY_BUFFER,attr.tex_coord,gl.STATIC_DRAW)
+            uvBuffer.upload(gl.ARRAY_BUFFER, attr.tex_coord)
             gl.enableVertexAttribArray(aUV)
             gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0)
 
-            // tint
-            buffers.tint.upload(gl.ARRAY_BUFFER,attr.tint,gl.STATIC_DRAW)
+            tintBuffer.upload(gl.ARRAY_BUFFER, attr.tint)
             gl.enableVertexAttribArray(aTint)
             gl.vertexAttribPointer(aTint, 4, gl.FLOAT, false, 0, 0)
 
-            // texture
             gl.activeTexture(gl.TEXTURE0)
             gl.bindTexture(gl.TEXTURE_2D, mat.texture)
             gl.uniform1i(uTex, 0)
 
-            gl.drawArrays(gl.TRIANGLES, 0, attr.vertices.length / 2)
+            gl.drawArrays(gl.TRIANGLES, 0, count)
         }
 
         return (arg: GL2D_TexBatchArgs) => ({
@@ -582,79 +581,11 @@ void main() {
             factory: fac,
             group: "texture_batch",
             draw,
-            free(){
-                for(const b in buffers){
-                    buffers[b].free()
-                }
+            free() {
+                posBuffer.free()
+                uvBuffer.free()
+                tintBuffer.free()
             }
         })
     }
 }
-
-export type GL2D_LightMatArgs = {
-    color: Color
-}
-export type GL2D_LightMatAttr={
-    model:Model2D
-    position:Vec2
-    scale:Vec2
-}
-export const GLF_Light: GLMaterialFactoryCall<GL2D_LightMatArgs,GL2D_LightMatAttr> = {
-    vertex: `
-attribute vec2 a_Position;
-uniform mat4 u_ProjectionMatrix;
-uniform vec2 u_Translation;
-uniform vec2 u_Scale;
-void main() {
-    gl_Position = u_ProjectionMatrix * vec4((a_Position * u_Scale) + u_Translation, 0.0, 1.0);
-}`,
-    frag: `
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform vec4 u_Color;
-
-void main() {
-    //gl_FragColor = u_Color;
-    gl_FragColor = vec4(u_Color.rgb*u_Color.a,u_Color.a);
-}`,
-    create(gl, fac) {
-        const aPositionLoc = gl.gl.getAttribLocation(fac.program, "a_Position");
-        const uColorLoc     = gl.gl.getUniformLocation(fac.program, "u_Color")!;
-        const uTranslationLoc = gl.gl.getUniformLocation(fac.program, "u_Translation")!;
-        const uScaleLoc = gl.gl.getUniformLocation(fac.program, "u_Scale")!;
-        const uProjectionMatrixLoc = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!;
-
-        const vertexBuffer = gl.gl.createBuffer();
-
-        const draw = (mat: GLMaterial<GL2D_LightMatArgs,GL2D_LightMatAttr>,matrix: Matrix,attr:GL2D_LightMatAttr) => {
-            gl.gl.useProgram(fac.program)
-
-            gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer)
-            gl.gl.bufferData(gl.gl.ARRAY_BUFFER, attr.model.vertices, gl.gl.STATIC_DRAW)
-
-            gl.gl.enableVertexAttribArray(aPositionLoc)
-            gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
-
-            gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
-            gl.gl.uniform2f(uTranslationLoc, attr.position.x, attr.position.y)
-            gl.gl.uniform2f(uScaleLoc, attr.scale.x, attr.scale.y)
-            gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
-
-            gl.gl.drawArrays(gl.gl.TRIANGLES, 0, attr.model.vertices.length / 2)
-        };
-
-        return (arg: GL2D_LightMatArgs) => ({
-            ...arg,
-            factory: fac,
-            draw,
-            free(){
-                for(const b in buffers){
-                    gl.gl.deleteBuffer(buffers[b])
-                }
-            },
-            group:""
-        });
-    }
-};

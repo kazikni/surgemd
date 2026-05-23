@@ -13,6 +13,7 @@ export class Bullet extends ServerGameObject{
     number_type:number=GameObjectType.Bullet
 
     owner?:Human
+    hit_owner:boolean=false
     def!:BulletDef
     angle!:number
     old_position!:Vec2
@@ -64,10 +65,10 @@ export class Bullet extends ServerGameObject{
             if(this.destroyed)break
             switch(obj.number_type){
                 case GameObjectType.Human:{
-                    if(!(obj as Human).health_data.dead&&(!this.owner||((obj as Human).id===this.owner.id&&this.reflectionCount>0)||(obj as Human).id!==this.owner.id)&&!(obj as Human).parachute){
+                    if(!(obj as Human).health_data.dead&&(!this.owner||(obj.id===this.owner.id&&this.hit_owner)||obj.id!==this.owner.id)&&!(obj as Human).parachute){
                         const human = obj as Human
 
-                        const colBody = human.hitbox.overlapLine(this.old_position, this.position)
+                        const colBody = human.hitbox.overlap_line(this.old_position, this.position)
 
                         const reflectSeg = null//human.get_reflect_segment()
                         let colReflect = null
@@ -120,7 +121,7 @@ export class Bullet extends ServerGameObject{
                                 position:v2.clone(chosen.point),
                                 critical:this.critical,
                                 source:this.source as unknown as DamageSourceDef,
-                                direction:Math.atan2(chosen.dir.y,chosen.dir.x)
+                                direction:this.angle+3.1415
                             })
 
                             if(this.def.effect){
@@ -143,29 +144,17 @@ export class Bullet extends ServerGameObject{
                     }
                     break
                 }
-                /*case GameObjectType.Creature:{
-                    if((obj as Creature).hitbox&&!(obj as Creature).dead&&(this.hitbox.collidingWith(obj.hitbox)||obj.hitbox.colliding_with_line(this.old_position,this.position))){
-                        const dmg:number=this.damage
-                        *(this.defs.falloff?Numeric.lerp(1,this.defs.falloff,disT):1)
-                        *(this.critical?(this.defs.criticalMult??1.25):1);
-                        (obj as Player).damage({amount:dmg,owner:this.owner,reason:DamageReason.Player,position:v2.clone(this.position),critical:this.critical,source:this.source as unknown as DamageSourceDef})
-                        this.on_hit()
-                        s=SubSteps
-                        break
-                    }
-                    break
-                }*/
                 case GameObjectType.Obstacle:
                 case GameObjectType.Building:
                     if((obj as StaticBody).physical_data.no_bullets_collision)break
                     if(obj.hitbox){
-                        const col1=obj.hitbox.overlapLine(this.old_position,this.position)
+                        const col1=obj.hitbox.overlap_line(this.old_position,this.position)
                         if(!col1)continue
                         if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&!this.def.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()
-                        const dmg:number=this.damage;
+                        const dmg:number=this.damage*(this.def.obstacleMult??1);
                         (obj as StaticBody).damage({
                             amount:dmg,
                             resistence:0,
@@ -184,8 +173,8 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    create(args: {defs:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
-        this.def=args.defs
+    create(args: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
+        this.def=args.def
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
         this.position=args.position
         this.initial_position=v2.clone(this.position)
@@ -198,7 +187,7 @@ export class Bullet extends ServerGameObject{
         this.source=args.source
         this.ammo=ad
 
-        this.damage=args.defs.damage
+        this.damage=this.def.damage
         this.set_color(args.satured)
     }
     set_color(satured:boolean=false){
@@ -235,13 +224,19 @@ export class Bullet extends ServerGameObject{
             this.layer,
             this.satured
         )
+        b.hit_owner=true
         b.modifiers.size=this.modifiers.size
         b.modifiers.speed=this.modifiers.speed
         b.tracerAlpha=this.tracerAlpha/2
         b.damage=this.damage/2
         b.reflectionCount = this.reflectionCount + 1
-
+        if(this.owner){
+            this.owner.inventory.accessorys.call_event("bullet_reflect",{user:this.owner,item:this,bullet:b,angle:b.angle,position:pos})
+        }
         b.set_direction(Math.atan2(newDir.y, newDir.x))
+    }
+    clone(){
+        return this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)

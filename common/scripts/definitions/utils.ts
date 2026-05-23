@@ -96,8 +96,9 @@ export enum DamageReason{
     Abstinence,
     SideEffect,
     Disconnect,
+    Connection,
     Bleend,
-    Airdrop
+    Airdrop,
 }
 export interface InventoryItemData{
     count:number
@@ -151,5 +152,58 @@ export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
         count:stream.readUint16(),
         idNumber:stream.readUint16(),
         type:stream.readUint8(),
+    }
+}
+
+export interface HitParticlesDef{
+    particle?:string
+    variations?:number
+    tint?:number|(number[])
+}
+export interface HitSoundsDef{
+    hit?:string
+    break?:string
+    hit_variations?:number
+}
+
+export const hit_sounds:Record<string,HitSoundsDef>={
+    tree:{
+        hit:"tree_hit",
+        hit_variations:2,
+        break:"tree_break",
+    },
+    rock:{
+        hit:"rock_hit",
+        hit_variations:2,
+        break:"rock_break",
+    },
+    bush:{
+        hit:"bush_hit",
+        hit_variations:2,
+        break:"bush_break",
+    },
+    light_metal:{
+        hit:"light_metal_hit",
+        hit_variations:2,
+        break:"light_metal_break",
+    },
+    heavy_metal:{
+        hit:"heavy_metal_hit",
+        hit_variations:3,
+        break:"heavy_metal_break",
+    },
+    wood:{
+        hit:"wood_hit",
+        hit_variations:2,
+        break:"wood_break",
+    },
+    plastic:{
+        hit:"plastic",
+        hit_variations:1
+    },
+    tissue:{
+        hit:"tissue_hit",
+        hit_variations:2,
+        break:"tissue_break",
     }
 }

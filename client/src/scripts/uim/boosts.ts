@@ -9,7 +9,7 @@ export class BoostModule extends UIModule<Game>{
 
     boost:number=0
     max_boost:number=100
-    boost_def:BoostDef=Boosts[BoostType.Null]
+    boost_def:BoostDef=Boosts[0]
         
     override on_signal(signal: string, content: SelfStateUpdate): void {
         if(signal==="self_state"){
@@ -41,7 +41,7 @@ export class BoostModule extends UIModule<Game>{
     override on_clear(): void {
         this.boost = 0
         this.max_boost = 100
-        this.boost_def = Boosts[BoostType.Null]
+        this.boost_def = Boosts[0]
 
         this.bar_interior.style.width = "0%"
         this.bar_amount.innerText = "0/100"

@@ -1,4 +1,4 @@
-import { BasicSocket } from "./server_base.ts";
+import { BasicSocket } from "./client.ts";
 
 export class WorkerSocket extends BasicSocket {
     private port: Worker;

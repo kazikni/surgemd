@@ -7,9 +7,9 @@ import { ParticlesManager2D } from "../../core/game/particles.ts"
 import { ClientParticle2D } from "./particles.ts"
 import { InputManager } from "./keys.ts"
 import { GameSave } from "../resources/saves.ts"
-import { SoundManager } from "../resources/sounds.ts"
 import { TranslationManager } from "../../core/definition/definitions.ts";
 import { UIRoot } from "./html_manager.ts";
+import { AudioEngine } from "../resources/sounds.ts";
 export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
@@ -31,7 +31,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
     particles:ParticlesManager2D<ClientParticle2D>
     input_manager:InputManager
 
-    sounds:SoundManager
+    sounds:AudioEngine
     save:GameSave
     ui_manager:UIRoot<any>
 
@@ -45,7 +45,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.language=language
         this.save=new GameSave()
 
-        this.sounds=new SoundManager()
+        this.sounds=new AudioEngine()
         this.resources=new ResourcesManager(renderer as WebglRenderer,this.sounds)
 
         this.input_manager=new InputManager(this.cam2d.meter_size)
@@ -66,7 +66,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
     }
     set_meter_size(size:number){
         this.cam2d.meter_size=size
-        this.input_manager.mouse.meter_size=size
+        this.input_manager.meter_size=size
         this.cam2d.resize()
     }
     bind(){
@@ -94,7 +94,6 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.renderer.clear()
 
         this.on_before_render(dt)
-
         this.cam2d.draw(dt,this.resources)
         for(const l of this.scene_2d.objects.layers){
             for(const o of this.scene_2d.objects.objects[l].renderizables){
@@ -103,7 +102,6 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
             }
         }
         super.draw(dt)
-    
         this.on_render(dt)
         this.clock.profiler.end(3)
     }
@@ -113,9 +111,8 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         for(const t of this.tweens){
             t.update(dt)
         }
-
         this.particles.update(dt)
-        this.sounds.update(dt)
+        this.sounds.update()
         this.input_manager.tick()
         this.ui_manager.update(dt)
         this.clock.profiler.end(2)

@@ -1,14 +1,13 @@
-import { FireMode, GunDef } from "common/scripts/definitions/items/guns.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { AmmoItemBase, ConsumibleItemBase, GInventoryBase, GrenadeItemBase, GunItemBase, MDItem, MeleeItemBase } from "common/scripts/others/inventory.ts";
 import { DamageReason, InventoryDroppable, InventoryItemType, InventoryPreset } from "common/scripts/definitions/utils.ts";
-import { ConsumingAction, ReloadAction } from "./actions.ts";
+import { ConsumingActionA, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
-import { ConsumibleCondition, ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
+import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
-import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
-import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
+import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameObjectType, PlayerAnimationType } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -20,11 +19,12 @@ import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { AccessorysManager } from "./accessorys.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
+import { FireMode } from "common/scripts/others/item.ts";
 export abstract class LItem extends MDItem{
     declare inventory:GInventory
     abstract on_use(user:Human,slot?:Slot<LItem>):void
     abstract on_fire(user:Human):void
-    abstract attacking():boolean
+    abstract on_fire_alt(user:Human):void
     abstract update(user:Human,dt:number):void
     abstract drop():Loot[]
 }
@@ -38,10 +38,11 @@ export class GunItem extends GunItemBase implements LItem{
         t:number
         c:number
     }
-    firing:boolean=false
-    ammo:number=0
+
     reloading=false
-    dd:boolean=false
+    dual_d:boolean=false
+
+    ammo:number=0
     get_capacity():number{
         return (this.inventory.extended_capacity?(this.def.reload?.extended_capacity??this.def.reload?.capacity):this.def.reload?.capacity)??0
     }
@@ -49,12 +50,10 @@ export class GunItem extends GunItemBase implements LItem{
         
     }
     on_fire(user:Human){
-        if(this.def.fireMode===FireMode.Single&&!user.input.using_item_down)return
+        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
         if(this.has_ammo(user)){
             if(this.use_delay<=0){
-                this.switching=false
-                this.firing=true
-                if(this.def.fireMode===FireMode.Burst&&this.def.burst&&!this.burst){
+                if(this.def.fire_mode===FireMode.Burst&&this.def.burst&&!this.burst){
                     this.burst={
                         c:this.def.burst.sequence,
                         t:this.def.burst.delay
@@ -62,35 +61,33 @@ export class GunItem extends GunItemBase implements LItem{
                     this.use_delay=0
                 }else{
                     this.shot(user)
-                    this.use_delay=this.def.fireDelay
+                    this.use_delay=this.def.fire_delay
                 }
             }
         }else{
             this.burst=undefined
         }
     }
+    on_fire_alt(user:Human):void{}
+    infinity_ammo(){
+        return this.inventory.infinity_ammo||this.inventory.infinity_ammos.has(this.def.ammo_type)
+    }
     has_ammo(user:Human):boolean{
-        return (this.ammo>0||!this.def.reload)&&(!this.def.mana_consume||this.has_mana(user))
-    }
-    has_mana(user:Human){
-        return user.health_data.boost_def.type===BoostType.Mana&&this.def.mana_consume!*user.modifiers.mana_consume<=user.health_data.boost
-    }
-    switching:boolean=false
-    attacking():boolean{
-        return this.use_delay>0&&this.firing&&!this.reloading&&!this.switching
+        return (this.ammo>0||!this.def.reload)//&&(!this.def.man||this.has_mana(user))
     }
     reload(user:Human){
         if(!this.def.reload||user.health_data.downed)return
-        if(this.ammo>=this.get_capacity()||(!this.inventory.infinity_ammo&&!user.inventory.aitems[this.def.ammoType])||this.use_delay>0){
+        if(this.ammo>=this.get_capacity()||(!this.infinity_ammo()&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
             this.reloading=false
             return
         }
         user.net_sync.part=true
         user.animation_data.dirty=true
-        user.animation_data.current_animation={
-            type:PlayerAnimationType.Reloading,
-            alt_reload:this.ammo===0,
-        }
+        user.animation_data.current_animation.push(
+            {
+                type:PlayerAnimationType.Reloading,
+                alt_reload:this.ammo===0,
+            })
 
         user.actions.play(new ReloadAction(this))
     }
@@ -107,7 +104,7 @@ export class GunItem extends GunItemBase implements LItem{
             if(obj.number_type!==GameObjectType.Obstacle||obj.number_type!==GameObjectType.Building)continue
 
             const body = obj as StaticBody
-            const hit = body.hitbox.overlapLine(
+            const hit = body.hitbox.overlap_line(
                 start,
                 muzzle
             )
@@ -141,46 +138,43 @@ export class GunItem extends GunItemBase implements LItem{
         this.reloading=false
         if(consume){
             if(this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload!.ammo_consume??1))
-            if(this.def.mana_consume)user.health_data.boost=Math.max(user.health_data.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+            //if(this.def.mana_consume)user.health_data.boost=Math.max(user.health_data.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
         }
 
         const barrel_position=v2(
-            this.def.lenght,
-            this.def.dual_from
-                ? (this.dd ? -this.def.dual_offset : this.def.dual_offset)
-                : 0
+            this.def.barrel_length,
+            (this.def.barrel_offset??0)+(this.def.dual_from?(this.dual_d?-this.def.dual_offset:this.def.dual_offset):0)
         )
         const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
         const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
 
-        if(this.def.dual_from){
-            this.dd=!this.dd
-        }
+        if(this.def.dual_from)this.dual_d=!this.dual_d
+
         if(this.def.bullet){
-            const bc=this.def.bullet.count??1
-            const patternPoint = getPatterningShape(bc, this.def.jitterRadius??1)
-            for(let i=0;i<bc;i++){
+            const bullets_count=this.def.bullet.count??1
+            const patternPoint = getPatterningShape(bullets_count, this.def.jitter_radius??1)
+            for(let i=0;i<bullets_count;i++){
                 let ang=user.physical_data.rotation
                 if(this.def.spread){
                     ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
                 }
-                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
-                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammoType,this.def,user.layer)
+                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammo_type,this.def,user.layer)
                 b.modifiers={
                     speed:user.modifiers.bullet_speed,
                     size:user.modifiers.bullet_size,
                 }
-                b.set_direction(ang)
                 user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,position:pos})
+                b.set_direction(ang)
             }
         }
         if(this.def.synsed_particle){
             const scc=this.def.synsed_particle.count??1
-            const patternPoint = getPatterningShape(scc, this.def.jitterRadius??1)
+            const patternPoint = getPatterningShape(scc, this.def.jitter_radius??0)
             const pdef=user.game.definitions.synced_particle.getFromString(this.def.synsed_particle.def)
 
             for(let i=0;i<scc;i++){
-                const pos=this.def.jitterRadius?v2.add(position,patternPoint[i]):position
+                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
                 const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
                 if(this.def.synsed_particle.speed){
                     let ang=user.physical_data.rotation
@@ -191,25 +185,42 @@ export class GunItem extends GunItemBase implements LItem{
                 }
             }
         }
+        if(this.def.projectile){
+            const scc=this.def.projectile.count??1
+            const patternPoint = getPatterningShape(scc, this.def.jitter_radius??1)
+            const gdef=user.game.definitions.grenades.getFromString(this.def.projectile.def)
+
+            for(let i=0;i<scc;i++){
+                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const proj=user.game.add_grenade(pos,gdef,user,user.layer)
+                proj.physical_data.zpos=0.5
+                proj.physical_data.zpos_speed=1
+                const limit=(gdef.throw_max_speed??0)
+                proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
+            }
+        }
         if(this.def.recoil){
             user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
         }
 
-        //if(!this.def.supresed)user.game.play_sound(position,user.layer,"shot",user)
+        user.animation_data.current_animation.push({
+            type:PlayerAnimationType.Fire,
+            alt:this.dual_d,
+            last:this.ammo===0
+        })
     }
-    update(user:Human){
-        if(this.use_delay>0)this.use_delay-=user.game.delta_time
+    update(user:Human,dt:number){
+        if(this.use_delay>0)this.use_delay-=dt
         if(user.inventory.hand_item===this&&!user.actions.current_action){
-            if((this.ammo<=0||this.reloading)&&this.def.reload&&!this.attacking()){
+            if((this.ammo<=0||this.reloading)&&this.def.reload&&this.use_delay<=0){
                 this.reloading=true
                 this.reload(user)
             }
             if(this.use_delay<=0){
-                this.firing=false
                 if(this.burst){
                     if(this.burst.c<=0||this.ammo<=0){
                         this.burst=undefined
-                        this.use_delay=this.def.fireDelay
+                        this.use_delay=this.def.fire_delay
                     }else{
                         this.burst.c--
                         this.use_delay=this.burst.t
@@ -220,23 +231,24 @@ export class GunItem extends GunItemBase implements LItem{
         }
     }
     override load(): void {
-        if(this.def.switchDelay&&this.use_delay<=this.def.switchDelay){
-            this.use_delay=this.def.switchDelay
+        if(this.def.switch_delay&&this.use_delay<=this.def.switch_delay){
+            this.use_delay=this.def.switch_delay
         }
     }
     override unload(): void {
         this.reloading=false
+        this.burst=undefined
     }
     drop(): Loot[] {
-        if(this.ammo>0){
-            this.inventory.give_item(this.inventory.owner.game.definitions.ammos.getFromString((this.def as GunDef).ammoType),this.ammo)
+        if(this.ammo>0&&!this.infinity_ammo()){
+            this.inventory.give_item(this.inventory.owner.game.definitions.ammos.getFromString((this.def as GunDef).ammo_type),this.ammo)
         }
         if(this.def.dual_from){
             const ret:Loot[]=[]
             for(let i=0;i<2;i++)ret.push(this.inventory.owner.game.add_loot(this.inventory.owner.position,this.inventory.owner.game.definitions.guns.getFromString(this.def.dual_from),1,this.inventory.owner.layer))
             return ret
         }else{
-            return [this.inventory.owner.game.add_loot(this.inventory.owner.position,this.def,1)]
+            return [this.inventory.owner.game.add_loot(this.inventory.owner.position,this.def,1,this.inventory.owner.layer)]
         }
     }
 }
@@ -250,7 +262,8 @@ export class AmmoItem extends AmmoItemBase implements LItem{
     }
     on_fire(_user: Human):void{
     }
-    update(_user: Human): void {
+    on_fire_alt(user:Human):void{}
+    update(_user: Human,dt:number): void {
     }
     drop(): Loot[] {
         return []
@@ -261,41 +274,88 @@ export class AmmoItem extends AmmoItemBase implements LItem{
 }
 export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     declare inventory:GInventory
+    slot?:Slot<LItem>
+    use_delay:number=0
     constructor(def:ConsumibleDef){
         super(def)
     }
     on_use(user: Human,slot?:Slot<LItem>): void {
-        if(this.def.side_effects[0].type!==SideEffectType.Heal)return
-        if(this.def.condition){
-            for(const c of this.def.condition){
-            switch(c){
-                case ConsumibleCondition.UnfullHealth:
-                    
-                    if(user.health_data.health>=user.health_data.max_health*(this.def.side_effects[0].health?.max??1))return
-                    break
-                case ConsumibleCondition.UnfullExtra:
-                    if(!(user.health_data.boost<user.health_data.max_boost*(this.def.side_effects[0].boost?.max??1)||user.health_data.boost_def.type!==this.def.boost_type))return
-                    break
-            }
-            }
+        if(user.actions.current_action)return
+        this.slot=slot
+        switch(this.def.consuming.type){
+            case 0:
+                if(user.consuming_condition(this.def.condition!,this.def.consuming.side_effects)){
+                    user.net_sync.part=true
+                    user.inventory.net_sync.hand=true
+                    user.animation_data.dirty=true
+                    user.animation_data.current_animation.push(
+                        {
+                            type:PlayerAnimationType.Consuming,
+                            item:this.def.idNumber!
+                        }
+                    )
+                    user.actions.play(new ConsumingActionA(this,slot!))
+                }
+                break
+            case 1:
+                user.inventory.set_hand_item(this)
+                this.inventory.weapon_idx=-1
+                this.use_delay=this.def.consuming.delay
+                break
         }
-
-        user.net_sync.part=true
-        user.animation_data.dirty=true
-        user.inventory.net_sync.hand=true
-
-        user.animation_data.current_animation={
-            type:PlayerAnimationType.Consuming,
-            item:this.def.idNumber!
-        }
-        user.actions.play(new ConsumingAction(this,slot!))
     }
-    on_fire(_user:Human):void{
+    on_fire(user:Human):void{
+        if(this.use_delay<=0){
+            this.fire(user,true)
+        }
+    }
+    on_fire_alt(user:Human):void{
+        if(this.use_delay<=0){
+            this.fire(user)
+        }
+    }
+    fire(user:Human,self=false){
+        switch(this.def.consuming.type){
+            case 1:{
+                const barrel_position=v2(this.def.consuming.length,0)
+                const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
+                const position=v2.add(user.position,barrel_point)
+                if(this.def.consuming.synsed_particle){
+                    const scc=this.def.consuming.synsed_particle.count??1
+                    const patternPoint = getPatterningShape(scc, this.def.consuming.jitterRadius??1)
+                    if(this.def.consuming.synsed_particle){
+                        const pdef=user.game.definitions.synced_particle.getFromString(this.def.consuming.synsed_particle.def)
+                        for(let i=0;i<scc;i++){
+                            const pos=this.def.consuming.jitterRadius?v2.add(position,patternPoint[i]):position
+                            const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
+                            if(self){
+                                const rot=user.physical_data.rotation+3.141592
+                                part.no_hit_owner=false
+                                part.just_owner=false
+                                if(this.def.consuming.synsed_particle.self_speed){
+                                    part.push(random.random1(this.def.consuming.synsed_particle.self_speed??0),rot)
+                                }
+                            }else{
+                                if(this.def.consuming.synsed_particle.speed){
+                                    let ang=user.physical_data.rotation
+                                    if(this.def.consuming.spread){
+                                        ang+=Angle.deg2rad(random.float(-this.def.consuming.spread,this.def.consuming.spread))
+                                    }
+                                    part.push(random.random1(this.def.consuming.synsed_particle.speed),ang)
+                                }
+                            }
+                        }
+                    }
+                }
+                this.use_delay=this.def.consuming.delay
+            }
+        }
     }
     attacking():boolean{
         return false
     }
-    update(_user: Human): void {
+    update(_user: Human,dt:number): void {
+        if(this.use_delay>0)this.use_delay-=dt
     }
     drop(): Loot[] {
         return []
@@ -309,6 +369,7 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
     }
     on_use(user: Human,slot?: Slot<LItem>): void {
         user.inventory.set_hand_item(this)
+        this.inventory.weapon_idx=-1
         this.slot=slot
     }
     on_fire(user: Human): void {
@@ -318,11 +379,19 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
             time:this.def.cook?.fuse_time??10,
             slot:this.slot
         }
+
+        user.animation_data.dirty=true
+        user.animation_data.current_animation.push(
+            {
+                type:PlayerAnimationType.Cook,
+            }
+        )
     }
+    on_fire_alt(user:Human):void{}
     attacking():boolean{
         return this.inventory.owner.grenade_holding!==undefined
     }
-    update(_user: Human): void {
+    update(_user: Human,dt:number): void {
 
     }
     drop(): Loot[] {
@@ -344,15 +413,14 @@ export class MeleeItem extends MeleeItemBase implements LItem{
       
     }
     on_fire(user: Human,_slot?: Slot<LItem>): void {
+        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
         if(this.use_delay<=0){
             user.actions.cancel()
 
-            user.net_sync.part=true
             user.animation_data.dirty=true
-
-            user.animation_data.current_animation={
+            user.animation_data.current_animation.push({
                 type:PlayerAnimationType.Melee
-            }
+            })
 
             for(const t of this.def.damage_delays){
                 user.game.add_timeout(()=>{
@@ -363,21 +431,17 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             this.firing=true
         }
     }
+    on_fire_alt(user:Human):void{}
     attack(user:Human):void{
-        const position=v2.add(
-            user.position,
-            v2.from_RadAngle(user.physical_data.rotation,this.def.offset)
-        )
-        const hb=new CircleHitbox2D(position,this.def.radius)
+        const base_hb=this.def.hitbox.transform(this.def.hitbox.position,undefined,user.physical_data.rotation)
+        const hb=base_hb.transform(user.position)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
 
-        user.animation_data.current_animation=undefined
-
         for(const c of collidibles){
-            if(!hb.collidingWith(c.hitbox))continue
+            if(!hb.colliding_with(c.hitbox))continue
             if(c instanceof StaticBody){
                 if(c.number_type===GameObjectType.Obstacle){
-                    if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior){
+                    if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior&&!(c as Obstacle).health_data.dead){
                         user._can_interact=false
                         c.interact(user)
                     }
@@ -406,9 +470,9 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             }
         }
     }
-    update(user: Human): void {
+    update(_user: Human,dt:number): void {
         if(this.use_delay>0){
-            this.use_delay-=user.game.delta_time
+            this.use_delay-=dt
         }else{
             this.firing=false
         }
@@ -426,6 +490,8 @@ export class GInventory extends GInventoryBase<LItem>{
     infinity_ammo:boolean=false
     extended_capacity:boolean=false
 
+    infinity_ammos:Set<string>=new Set()
+
     droppable:InventoryDroppable={
         backpack:true,
         helmet:true,
@@ -436,7 +502,7 @@ export class GInventory extends GInventoryBase<LItem>{
     constructor(owner:Human){
         super()
         this.owner=owner
-        this.accessorys=new AccessorysManager(owner,3)
+        this.accessorys=new AccessorysManager(owner,4)
     }
     override set_backpack(backpack?: BackpackDef,drop=false): void {
         if(drop&&this.backpack.level>=1){
@@ -451,10 +517,13 @@ export class GInventory extends GInventoryBase<LItem>{
             this.owner.actions.cancel()
 
             this.owner.throw_using_projectile()
-            this.owner.animation_data.switching=true
             this.owner.animation_data.dirty=true
         }
         super.set_weapon_index(idx,force)
+        this.owner.animation_data.current_animation.push({
+            type:PlayerAnimationType.Switch,
+        })
+        this.net_sync.melee_world=true
     }
     override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
         if(wep?.idString===this.weapons[slot]?.def.idString)return false
@@ -501,6 +570,7 @@ export class GInventory extends GInventoryBase<LItem>{
     }
     drop_weapon(slot=0):Loot[]{
         if(this.weapon_is_free(slot))return []
+        this.net_sync.melee_world=true
         const loots:Loot[]=this.weapons[slot]!.drop()
         for(const l of loots){
             l.velocity.x-=1.5
@@ -530,6 +600,31 @@ export class GInventory extends GInventoryBase<LItem>{
             this.net_sync.iitems=true
             this.owner.game.add_loot(this.owner.position,a,res,this.owner.layer)
         }
+    }
+    drop_iitem(item:number):Loot|undefined{
+        if(this.owner.equipment_data.default_scope.idNumber===item)return
+        for(let idx=0;idx<this.iitems.length;idx++){
+            if(this.iitems[idx].idNumber===item){
+                const def=this.iitems[idx]
+                const ret=this.owner.game.add_loot(this.owner.position,def,1,this.owner.layer)
+                this.iitems.splice(idx,1)
+                if(this.owner.equipment_data.scope===def)this.owner.equipment_data.scope=this.iitems[this.iitems.length-1] as ScopeDef
+                this.owner.equipment_data.dirty=true
+                this.net_sync.iitems=true
+                idx--
+                return ret
+            }
+        }
+        return undefined
+    }
+    drop_helmet():Loot|undefined{
+        if(this.owner.equipment_data.helmet){
+            const loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
+            this.owner.equipment_data.helmet?.events?.["drop"]?.({user:this.owner})
+            this.owner.equipment_data.helmet=undefined
+            return loot
+        }
+        return
     }
     give_item(def:GameItem,count:number,drop_overflow:boolean=true,full_ammo:boolean=false):number{
         switch(def.item_type){
@@ -603,6 +698,7 @@ export class GInventory extends GInventoryBase<LItem>{
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.vest=d
                     this.owner.equipment_data.vest_health=d.health
+                    this.owner.equipment_data.vest.events?.[name]?.({user:this})
 
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(this.owner.position,def,count-1,this.owner.layer)
@@ -614,16 +710,15 @@ export class GInventory extends GInventoryBase<LItem>{
             case InventoryItemType.helmet:{
                 const d=def as unknown as HelmetDef
                 if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level){
-                    if(this.owner.equipment_data.helmet)this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
-
+                    this.drop_helmet()
                     this.owner.equipment_data.dirty=true
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.helmet=d
                     this.owner.equipment_data.helmet_health=d.health
-
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(this.owner.position,def,count-1,this.owner.layer)
                     }
+                    this.owner.equipment_data.helmet.events?.["pickup"]?.({user:this.owner})
                     return count-1
                 }
                 break
@@ -670,7 +765,7 @@ export class GInventory extends GInventoryBase<LItem>{
             case InventoryItemType.scope:{
                 if(!this.iitems.includes(def)){
                     this.iitems.push(def)
-
+                    this.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
                     if(def.idNumber!>this.owner.equipment_data.scope.idNumber!){
                         this.owner.equipment_data.scope=def
                     }
@@ -804,6 +899,12 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             delete this.aitems[s]
         }
+        for(const s of this.slots){
+            if(s.item&&s.quantity>0){
+                l.push(this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity,layer))
+                s.remove(s.quantity)
+            }
+        }
         if(this.owner.equipment_data.helmet&&this.droppable.helmet){
             l.push(this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,layer))
             this.owner.equipment_data.helmet=undefined
@@ -815,12 +916,6 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.backpack&&this.backpack.level&&this.droppable.backpack){
             l.push(this.owner.game.add_loot(this.owner.position,this.backpack,1,layer))
             this.set_backpack()
-        }
-        for(const s of this.slots){
-            if(s.item&&s.quantity>0){
-                l.push(this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,s.quantity,layer))
-                s.remove(s.quantity)
-            }
         }
         for(const i of this.iitems){
             if((i as ScopeDef).droppable)l.push(this.owner.game.add_loot(this.owner.position,i,1,layer))
@@ -849,6 +944,7 @@ export class GInventory extends GInventoryBase<LItem>{
     net_update(){
         this.net_sync.aitems=false
         this.net_sync.hand=false
+        this.net_sync.melee_world=false
         this.net_sync.iitems=false
         this.net_sync.items=false
         this.net_sync.weapons=false
@@ -860,6 +956,9 @@ export class GInventory extends GInventoryBase<LItem>{
         for(const s of this.slots){
             if(!s.item)continue
             s.item.update(this.owner,dt)
+        }
+        if(this.hand_item&&this.hand_item.item_type!==InventoryItemType.gun&&this.hand_item.item_type!==InventoryItemType.melee){
+            this.hand_item.update(this.owner,dt)
         }
     }
 }

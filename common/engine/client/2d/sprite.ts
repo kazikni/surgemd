@@ -13,14 +13,6 @@ export class Sprite2D extends Container2DObject{
     hotspot:Vec2=v2(0,0)
     _size?:Vec2M
 
-    override get visible(): boolean {
-        return this._visible&&this.frame!==undefined   
-    }
-    override set visible(val:boolean){
-        this._visible=val
-        if(this.parent)this.parent.update_visibility()
-    }
-
     get size():Vec2|undefined{
         return this._size as Vec2|undefined
     }
@@ -39,6 +31,7 @@ export class Sprite2D extends Container2DObject{
         return this._frame
     }
     set frame(f:Frame|undefined){
+        if(f?.id&&f.id===this.frame?.id)return
         this._frame=f
         this.dirty_reals=true
     }
@@ -55,8 +48,8 @@ export class Sprite2D extends Container2DObject{
     }
 
     update_model(){
-        if(!this.frame||!this.frame.source)return
-        this._real_size=this.size??this.frame.frame_size??v2(this.frame.source.width,this.frame.source.height)
+        if(!this.frame)return
+        this._real_size=this.size??this.frame.frame_size
         ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100,this._real_position,this._rect,this.model)
     }
 
@@ -67,32 +60,25 @@ export class Sprite2D extends Container2DObject{
         this._rect={
             min:v2(0,0),
             max:v2(1,1),
-        }
-        this.model=new Float32Array([
-            0,0,0,0,0,0,
-            0,0,0,0,0,0,
-        ])
+        }   
+        this.model=new Float32Array(2*3*2)
     }
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
-        if(frame.image=="")this.frame=undefined
-        if(frame.scale)this.scale=v2(frame.scale,frame.scale)
-        if(frame.scale2)this.scale=frame.scale2
-        if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
-        if(frame.rotation)this.rotation=frame.rotation
-        if(frame.visible)this.visible=frame.visible
-        if(frame.zIndex)this.zIndex=frame.zIndex
-        if(frame.layer)this.layer=frame.layer
-        if(frame.position)this.position=v2.clone(frame.position)
-        if(frame.image)this.frame=resources.get_sprite(frame.image)
-        if(frame.tint)this.tint=ColorM.number(frame.tint)
-        if(frame.alpha)this.tint.a=frame.alpha
+        if(frame.image){
+            this.frame=resources.get_frame(frame.image)
+        }else{
+            this.frame=undefined
+        }
+        this.transform_frame(frame)
+        if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
+        if(frame.alpha!==undefined)this.tint.a=frame.alpha
         this.dirty_reals=true
     }
     override transform_frame(frame:FrameTransform){
         super.transform_frame(frame)
-        if(frame.tint)this.tint=ColorM.number(frame.tint)
-        if(frame.hotspot)this.hotspot=v2.clone(frame.hotspot)
+        if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
+        if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
     }
     override get_rect():Rect{
         return this._rect

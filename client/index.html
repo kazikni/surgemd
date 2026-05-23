@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html translate="no">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content=".IO Game Powered In KLSE" />
@@ -10,6 +10,7 @@
       property="og:image"
       content="img/menu/logos/embed.png"
     />
+    <meta name="google" content="notranslate">
 
     <title>Surgemd</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -20,14 +21,16 @@
   <body>
     <script type="module" src="./src/scripts/others/index.ts" async></script>
     <div id="game" style="display: none;">
+      <canvas id="game-canvas" class="game-canvas"></canvas>
+      <div id="tiltshift-gfx"></div>
       <div>
         <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
           <div id="game-mobile-gui" style="display: none; pointer-events: none;">
             <kl-joystick id="left-joystick"></kl-joystick>
             <kl-joystick id="right-joystick"></kl-joystick>
             <div id="mobile-action-buttons">
-              <button id="btn-mobile-interact" class="btn-dark-green"><div></div></button>
-              <button id="btn-mobile-reload" style="display:none;pointer-events: none;" class="btn-dark-green"><div></div></button>
+              <button id="btn-mobile-interact" class="btn-dark-green"></button>
+              <button id="btn-mobile-reload" style="display:none;pointer-events: none;" class="btn-dark-green"></button>
             </div>
           </div>
           <div id="emote-wheel" class="emote-wheel">
@@ -60,13 +63,15 @@
           </div>
           <div id="information-container">
             <div id="killfeed-container"></div>
-            <div id="information-killbox" class="background-menu"></div>
-            <div id="information-interaction" class="background-menu"></div>
+            <div id="information-box-container">
+              <div id="information-killbox"></div>
+              <div id="information-interaction"></div>
+            </div>
             <div id="killeader-container">
               <div id="killeader-container-icon"></div>
               <span id="killeader-text">Waiting For The Killleader</span>
             </div>
-            <div id="debug-show">60 FPS<br>60 ping</div>
+            <div id="debug-show" class="span-text">60 FPS<br>60 ping</div>
           </div>
           <div id="inventory-container">
             <div id="ui-items">
@@ -77,9 +82,14 @@
             </div>
             <div id="ui-iitems">
             </div>
+            <div id="ui-equipment">
+            </div>
           </div>  
         </div>
         <div id="gameover-container">
+          <div id="gameover-status-container">
+
+          </div>
           <div id="gameover-main-message">
           </div>
           <div id="gameover-buttons">
@@ -88,11 +98,7 @@
             <button id="gameover-report-btn" class="btn-blue">Report Player</button>
           </div>
         </div>
-      </div>  
-      <canvas id="game-canvas"></canvas>
-      <div id="bloom-gfx"></div>
-      <div id="tiltshift-gfx"></div>
-      <div id="recolor-gfx"></div>
+      </div>
     </div>
     <div id="menu">
       <div id="menu-background-effects">
@@ -102,7 +108,7 @@
       </div>
       <div id="menu-content">
       </div>
-      <p id="game-version">Pre-Beta-6</p>
+      <p id="game-version">Pre-Beta-7</p>
     </div>
     <div id="both-ui">
       <div id="loading-screen">
@@ -116,12 +122,15 @@
         <div id="loading-current" class="loading-background">
         </div>
       </div>
-      <div id="initial-screen"></div>
+      <div id="initial-screen">
+        <video id="intro-video" playsinline autoplay muted width="640">
+          <source src="videos/intro.mp4" type="video/mp4">
+        </video>
+      </div>
       <div id="text-gameover-container" style="opacity:0;pointer-events:none;visibility:hidden;">
         <div class="tv-static"></div>
         <p id="text-gameover"></p>
       </div>
-      <div id="vignetting-gfx"></div>
       <div id="history-overlay" style="opacity:0;pointer-events:none;visibility:hidden;">
         <div class="tv-static"></div>
         <div id="history-container">
@@ -143,7 +152,8 @@
           <div id="phase-intro-date"></div>
           <div id="phase-intro-description"></div>
         </div>
-    </div>
+      </div>
+      <div id="vignetting-gfx"></div>
     </div>
   </body>
 </html>

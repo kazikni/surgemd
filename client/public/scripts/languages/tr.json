@@ -1,0 +1,261 @@
+{
+    "values":{
+        "barrel":"Varil",
+        "items":{
+            "scope_1": "1x Dürbün",
+            "scope_2": "2x Dürbün",
+            "scope_3": "4x Dürbün",
+            "scope_4": "6x Dürbün",
+            "scope_5": "8x Dürbün",
+            "scope_6": "10x Dürbün",
+            "scope_7": "12x Dürbün",
+
+            "bandage":"Bandaj",
+            "medikit":"İlk Yardım Çantası",
+            "yellow_soda":"Sarı Gazoz",
+            "inhaler":"Astım Spreyi",
+            "yellow_pills":"Sarı Haplar",
+            "blue_soda":"Mavi Gazoz",
+            "blue_potion":"Mavi İksir",
+            "blue_pills":"Mavi Haplar",
+            "purple_soda":"Mor Gazoz",
+            "purple_potion":"Mor İksir",
+            "purple_pills":"Mor Haplar",
+            "small_red_crystal":"Küçük Kırmızı Kristal",
+            "red_soda":"Kırmızı Gazoz",
+            "red_crystal":"Kırmızı Kristal",
+            "red_pills":"Kırmızı Haplar",
+            "green_soda":"Yeşil Gazoz",
+            "black_soda":"Siyah Gazoz",
+            
+            "basic_vest":"Temel Yelek",
+            "basic_helmet":"Temel Kask",
+            "basic_pack":"Temel Çanta",
+            "regular_vest":"Normal Yelek",
+            "regular_helmet":"Normal Kask",
+            "regular_pack":"Normal Çanta",
+            "tactical_vest":"Taktiksel Yelek",
+            "tactical_helmet":"Taktiksel Kask",
+            "tactical_pack":"Askeri Sırt Çantası",
+
+            "explosive_ammo":"Patlayıcı Mermi",
+            "gasoline":"Gasoline",
+
+            "survival_knife":"Hayatta Kalma Bıçağı",
+            "axe":"Balta",
+            "sledgehammer":"Balyoz",
+
+            "m9_dual":"Çift M9",
+            "colt1873_dual":"Çift Colt 1873",
+            "taurustx_dual":"Çift Taurus TX 22",
+            "yellow_laser_pistol_dual":"Çift Sarı Lazer Tabancası",
+            "pfeifer_zeliska_dual":"Çift Pfeifer Zeliska"
+        },
+        "killfeed":{
+            "join":"${player} Katıldı",
+            "kill":{
+                "abstinence":"${player} Yoksunluktan öldü.",
+                "player":"${player1} Killed ${player2} With ${source}",
+                "explosion":"${player1} Bir patlayıcı kullanarak ${player2} With ${source}",
+                "deadzone":"${player} Ölü bölgeye yakalandı.",
+                "side-effect":"${player} Yan etkiler nedeniyle hayatını kaybetti.",
+                "disconnect":"${player} Pes etti.",
+                "bleend":"${player} Kan kaybından öldü."
+            },
+            "down":{
+                "abstinence":"${player} Yoksunluk Nedeniyle Düştü.",
+                "player":"${player1} Bilinicini kaybettirdi: ${player2} Kullanarak: ${source}",
+                "deadzone":"Ölü bölge, ${player} nakavt etti.",
+                "side-effect":"${player} Yan etkiler nedeniyle hayatını kaybetti.",
+                "disconnect":"${player} Pes etti.",
+                "bleend":"Bu mesaj bir hata sonucunda oldu. Bunun bir görüntüsü alarak gelişticirelere şikayet ediniz."
+            },
+            "killleader":{
+                "assigned":"${player} Lider ilan edildi!",
+                "dead":"Lider hayatını kaybetti."
+            }
+        },
+        "killleader-wait":"Yeni bir lider bekleniyor",
+        "interact":{
+            "loot":"Al: ${source}${count}",
+            "obstacles":{
+                "break":"Kır: ${obstacle}",
+                "door":{
+                    "open":"Kapıyı Aç",
+                    "close":"Kapıyı Kapat"
+                },
+                "scalable":"Tırman",
+                "transform-into":{
+                    "airdrop_locked":"Hava Kargosunun Kilidini Aç"
+                }
+            }
+        },
+        "gameover":{
+            "eliminated-by":"<span id='gameover-eliminated'>Eliminated By</span> ${player}",
+            "you-win":"<span id='gameover-you-win'>You Win!</span>",
+            "messages":{
+                "introductions":{
+                    "0":"Selam",
+                    "1":"Merhaba",
+                    "2":"Hey"
+                },
+                "death":{
+                    "0":"Yine öldün.",
+                    "1":"Bir et yığınına dönüştün bildiğin.",
+                    "2":"Öldün.",
+                    "3":"Hayatını kaybettin..",
+                    "4":"Kaybettin.",
+                    "5":"Kalbin durdu.",
+                    "6":"Ters düz edildin.",
+                    "7":"Parçalara ayrıldın..",
+                    "8":"Beyin ölümün gerçekleşti..",
+                    "9":"Artık var değilsin.",
+                    "10":"Artık balıklarla birlikte uyuyorsun."
+                },
+                "status":{
+                    "kills":"${kills} leş aldın..",
+                    "no-kills":"Kimseyi öldüremedin.",
+                    "no-kills-dead":"Maalesef, buradan canlı çıkmanın tek yolu bu değil."
+                },
+                "hints":{
+                    "quickswitch":{
+                        "0":"Hızlı silah değistirmeyi hiç duymuş muydun?",
+                        "1":"Hızlı silah değiştirme geri tepmeyi sıfırlar.",
+                        "2":"Just switch to another weapon after shooting.",
+	        "3":"Hızlı değiştirme sadece tek tek ateş eden silahlarda işe yarar.",
+                        "4":"Keskin nişancı tüfekleri veya pompalılar gibi."
+                    },
+                    "movement":{
+                        "0":"Haraket etmek de bir silahtır..",
+                        "1":"Onu düzgün kullan."
+                    },
+                    "cover":{
+                        "0":"Siper almak hayatını kurtarabilir..",
+                        "1":"Kayaların veya ağaçların yakınında savaş..",
+                        "2":"Asla açık alanda durma.."
+                    },
+                    "healing":{
+                        "0":"Zayıfken savaşma.",
+                        "1":"Önce iyileş.",
+                        "2":"Sonra savaş.."
+                    },
+                    "grenade":
+                       {"0":"İyi yere atılmış bir el bombası",
+                        "1":"Bir savaşı anında kazandırabilir.."
+                    }
+                },
+                "motivational": {
+                    "0": {
+                        "0": "Hatalar zaferden daha çok şeyi öğretir."
+                    },
+                    "1": {
+                        "0": "Yapabilirsin."
+                    },
+                    "2": {
+                        "0": "Her eneme yeni bir şeyler öğretir."
+                    },
+                    "3": {
+                        "0": "Sana güveniyorum."
+                    },
+                    "4": {
+                        "0": "Asla pes etme.",
+                        "1": "Reflekslerine güven.."
+                    },
+                    "5": {
+                        "0": "Umut her zaman en son ölür."
+                    },
+                    "6": {
+                        "0": "Acı yoksa..",
+                        "1": "Başarıda yoktur."
+                    }
+                },
+                "final": {
+                    "0": "Ölüm bir son değil.",
+                    "1": "Ölümden daha kötü şeyler de var..",
+                    "2": "Ölmek için fazla önemlisin.",
+                    "3": "Vaktin henüz gelmedi."
+                },
+                "death-end":"Ayağa kalk!"
+            }
+        },
+        "menu":{
+            "options":{
+                "play":"Oyna",
+                "settings":"Ayarlar",
+                "loadout":"Teçhizat",
+                "mods":"Modlar",
+                "about":"Hakkında"
+            },
+            "play":{
+                "label-campaign":"Campaign",
+                "level-selector":"Bölüm Seçici",
+                "label-online":"Çevrimiçi",
+                "host-game":"Oyun Kur",
+                "join-game":"Oyuna Katıl",
+                "play-online":"Çevrimiçi Oyna",
+                "group":"Grup",
+                "label-files":"Dosyalar",
+                "replay":"Tekrar İzle"
+            },
+            "settings":{
+                "game":"Oyun",
+                "graphics":"Grafikler",
+                "sounds":"Sesler",
+                "ui":"Arayüz"
+            },
+            "loadout":{
+                "hair":"Saç",
+                "body":"Vücut"
+            },
+            "mods":{
+                "mods-list":"Mod Listesi"
+            },
+            "about":{
+                "social":"Sosyal",
+                "news":"Haberler",
+                "rules":"Kurallar",
+                "credits":"Emeği Geçenler"
+            },
+            "loading-screen":{
+                "load":"Yükleniyor: ${text}",
+                "unload":"Yüklenmesi Kaldrılıyor: ${text}"
+            }
+        },
+        "settings":{
+            "game":{
+                "interpolation":"İnterpolasyon",
+                "client_rot":"Client Side Rotation",
+                "friendly_fire":"Dost Ateşi"
+            },
+            "graphics":{
+                "resolution":"Doku Kalitesi",
+                "particles":"Parçacıklar",
+                "lights":"Işıklar",
+                "post_proccess":"Son İşlem",
+                "climate":"İklim",
+                "fullscreen":"Tam Ekran"
+            },
+            "sounds":{
+                "master_volume":"Ana Ses",
+                "music_volume":"Müzik Sesi",
+                "ambient_volume":"Ortam Sesi"
+            },
+            "ui":{
+                "primary_color":"Birincil Renk",
+                "secondary_color":"İkincil Renk",
+                "translation":"Çeviri"
+            }
+        },
+        "loadout":{
+            "hair":{
+                "tint":"Saç Rengi",
+                "type":"Saç Tipi"
+            },
+            "body":{
+                "tint":"Vücut Rengi",
+                "female":"Kadın Karakter",
+                "shirt":"Tişort"
+            }
+        }
+    }
+}

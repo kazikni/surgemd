@@ -14,7 +14,7 @@ export interface LoadoutBodyDef extends Definition{
         base?:string
         hand?:string
     }
-    mounth:{
+    mounth?:{
         position:Vec2
         normal:string
         open:string
@@ -65,7 +65,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 hand:"human_hand_1",
             },
             mounth:{
-                position:v2(0.3,0),
+                position:v2(0.33,0),
                 normal:"human_mounth_1_1",
                 open:"human_mounth_1_2"
             }
@@ -87,7 +87,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 base:{
-                    position:v2(-0.2,0)
+                    position:v2(-0.22,0)
                 }
             }
         },
@@ -166,6 +166,19 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                     tint:0xf01041
                 },
                 arm_tint:0xf01041
+            }
+        },
+        {
+            item:LoadoutItemKind.Shirt,
+            idString:"black_shirt",
+            rank:ItemRank.E,
+            frame:{
+                arm:"human_shirt_1_arm",
+                chest:{
+                    image:"human_shirt_1_chest",
+                    tint:0x26262b
+                },
+                arm_tint:0x26262b
             }
         },
 

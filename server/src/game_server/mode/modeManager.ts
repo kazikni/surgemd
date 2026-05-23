@@ -39,6 +39,10 @@ export interface GameRules{
             }
         },
         keep_inventory:boolean
+        help_up:{
+            time:number
+            distance:number
+        }
     }
     ambient:{
         day_night_cycle:number
@@ -53,6 +57,13 @@ export interface GameRules{
         enabled:boolean
         speed:number
     }
+    score:{
+        win_reward:number
+        kill_reward:number
+        damage_reward:number
+        rank_reward:number
+        damage_taken_penalty:number
+    }
 }
 export abstract class ModeManager{
     game!:Game
@@ -66,7 +77,7 @@ export abstract class ModeManager{
                 },
                 adrenaline:{
                     decay:0.25,
-                    speed:0.1,
+                    speed:0.15,
                     regen:0.01
                 },
                 mana:{
@@ -90,7 +101,11 @@ export abstract class ModeManager{
                     speed:0.5
                 },
             },
-            keep_inventory:false
+            keep_inventory:false,
+            help_up:{
+                time:7,
+                distance:1
+            }
         },
         ambient:{
             day_night_cycle:1,
@@ -99,11 +114,18 @@ export abstract class ModeManager{
             rain_cycle:1,
             thunderstorm_cycle:1,
             rain_stop_chance:0.3,
-            rain_chance:0.01,
+            rain_chance:0.03,
         },
         deadzone:{
             enabled:true,
             speed:1
+        },
+        score:{
+            win_reward:500,
+            rank_reward:5,
+            damage_reward:0.5,
+            damage_taken_penalty:0.5,
+            kill_reward:100,
         }
     }
 

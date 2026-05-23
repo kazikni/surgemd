@@ -1,5 +1,5 @@
 import { type DegAngle, type RadAngle } from "./geometry.ts";
-import { Numeric, type ID } from "./utils.ts";
+import { type ID } from "./utils.ts";
 import { type Vec2 } from "./vec2.ts";
 
 export interface WeightDefinition{
@@ -16,6 +16,17 @@ export const random=Object.freeze({
     },
     float(min:number,max:number):number{
         return Math.random()*(max-min)+min
+    },
+    neg_value(value:number){
+        return Math.random()<=0.5?-value:value
+    },
+    neg_int(min:number,max:number){
+        const val=Math.floor(Math.random()*(max-min+1)+min)
+        return Math.random()<=0.5?-val:val
+    },
+    neg_float(min:number,max:number){
+        const val=Math.random()*(max-min)+min
+        return Math.random()<=0.5?-val:val
     },
     choose<Val>(val:Val[]):Val{
         return val[Math.floor(Math.random()*val.length)]
@@ -63,69 +74,102 @@ export const random=Object.freeze({
     },
     irandom1(val:Random1):number{
         return typeof val==="number"?val:this.int(val.min,val.max)
-    }
+    },
+    code(n:number,chars:string="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"){
+        let out=""
+        for(let i=0;i<n;i++){
+            out+=chars[random.int(0,chars.length-1)]
+        }
+        return out
+    },
 })
 export class SeededRandom {
-    private _rng = 0;
-    seed:number=0
+    private _rng: number;
+    seed: number;
 
     constructor(seed: number) {
+        this.seed = seed;
         this._rng = seed;
-        this.seed=seed
     }
-
-    /**
-     * @param [min = 0] min value (included)
-     * @param [max = 1] max value (excluded)
-     */
+    private next(): number {
+        this._rng = (this._rng * 16807) % 2147483647;
+        return this._rng / 2147483647;
+    }
     float(min = 0, max = 1): number {
-        this._rng = this._rng * 16807 % 2147483647;
-        return Numeric.lerp(min, max, this._rng / 2147483647);
+        return this.next() * (max - min) + min;
+    }
+    int(min: number, max: number): number {
+        return Math.floor(this.float(min, max + 1));
+    }
+    choose<T>(arr: T[]): T {
+        return arr[this.int(0, arr.length - 1)];
+    }
+    id(): ID {
+        return this.int(1, 16777214);
     }
 
-    /**
-     * @param [min = 0] min value (included)
-     * @param [max = 1] max value (excluded)
-     */
-    int(min = 0, max = 1): number {
-        return Math.round(this.float(min, max));
+    rad(): RadAngle {
+        return this.float(-Math.PI, Math.PI);
     }
-    
-    random1(val:Random1):number{
-        return typeof val==="number"?val:this.float(val.min,val.max)
+    deg(): DegAngle {
+        return this.int(-180, 180);
     }
-    irandom1(val:Random1):number{
-        return typeof val==="number"?val:this.int(val.min,val.max)
+
+    random_in_circle(radius: number): Vec2 {
+        const len = this.float(0, radius);
+        const angle = this.rad();
+        return {
+            x: Math.cos(angle) * len,
+            y: Math.sin(angle) * len
+        };
     }
-    weight(weights: number[]): number {
-        const totalWeight = weights.reduce((a, b) => a + b, 0);
-        let r = this.float(0, totalWeight);
-        for (let i = 0; i < weights.length; i++) {
-        if (r < weights[i]) return i;
-        r -= weights[i];
+    weight<Item>(items: Item[], weights: number[]): Item {
+        if (items.length === 1) return items[0];
+
+        const total = weights.reduce((a, b) => a + b, 0);
+        let r = this.float(0, total);
+
+        for (let i = 0; i < items.length; i++) {
+            if (r < weights[i]) return items[i];
+            r -= weights[i];
         }
-        return weights.length - 1;
+
+        return items[items.length - 1];
     }
-    choose<TP>(array:TP[]):TP{
-        return array[Numeric.clamp(this.int(0,array.length-1),0,array.length-1)]
-    }
-    set_seed(seed:number){
-        this._rng=this.seed
-        this.seed=seed
+    weight2<T extends WeightDefinition>(items: T[]): T {
+        if (items.length === 1) return items[0];
+
+        const total = items.reduce((a, b) => a + b.weight, 0);
+        let r = this.float(0, total);
+
+        for (const item of items) {
+            if (r < item.weight) return item;
+            r -= item.weight;
+        }
+
+        return items[items.length - 1];
     }
 
-    rad():RadAngle{
-        return Math.random()*(Math.PI-(-Math.PI))+(-Math.PI)
+    random1(val: Random1): number {
+        return typeof val === "number" ? val : this.float(val.min, val.max);
     }
-    deg():DegAngle{
-        return this.int(-180,180)
+    irandom1(val: Random1): number {
+        return typeof val === "number" ? val : this.int(val.min, val.max);
     }
-    random_in_circle(radius:number):Vec2{
-        const len=this.float(0,radius)
-        const angle=this.rad()
-        return {x:Math.cos(angle)*len,y:Math.sin(angle)*len}
+
+    code(n:number,chars:string="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"){
+        let out=""
+        for(let i=0;i<n;i++){
+            out+=chars[this.int(0,chars.length)]
+        }
+        return out
     }
-    reset(){
-        this._rng=this.seed
+
+    set_seed(seed: number) {
+        this.seed = seed;
+        this._rng = seed;
+    }
+    reset() {
+        this._rng = this.seed;
     }
 }

@@ -6,7 +6,6 @@ import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
 import { Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
 import { ConfigType, GameConfig, GameDebugOptions } from "common/scripts/config/config.ts";
-import { PlaneData } from "common/scripts/packets/general_update.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
 import { HumansManager } from "../managers/humans_manager.ts";
@@ -33,16 +32,7 @@ import { SyncedParticle } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
-export interface PlaneDataServer extends PlaneData{
-    velocity:Vec2
-    target_pos:Vec2
-    called:boolean
-    speed:number
-    
-    owner?:Human
-    grenade_def?:GrenadeDef
-    obstacle?:ObstacleDef
-}
+import { Plane } from "../objects/plane.ts";
 export interface GameData {
     living_count: number[]
 
@@ -318,29 +308,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.players.update(dt)
         this.deadzone.tick(dt)
         this.modeManager.tick(dt)
-        for(const p of this.planes){
-            if(!p.called){
-                p.direction=v2.lookTo(p.pos,p.target_pos)
-                p.velocity=v2.from_RadAngle(p.direction)
-                v2m.scale(p.velocity,p.velocity,p.speed)
-            }
-            v2m.add(p.pos,p.pos,v2.scale(p.velocity,dt))
-            if(!p.called&&v2.distance(p.pos,p.target_pos)<=4){
-                switch(p.type){
-                    case 0:
-                        this.add_parachute(p.target_pos,p.obstacle!)
-                        break
-                    case 1:{
-                        const g=this.add_grenade(p.target_pos,p.grenade_def!,p.owner,Layers.Normal)
-                        g.physical_data.zpos=1
-                        g.physical_data.zpos_speed=0
-                        g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
-                        break
-                    }
-                }
-                p.called=true
-            }
-        }
     }
     update_data(){
         const data:GameData={
@@ -359,46 +326,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             l.destroy()
         }
         this.loot.length=0
-    }
-    planes:PlaneDataServer[]=[]
-    add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
-        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.any,this.map.random,(_hitbox,_map,_random)=>{
-            return this.deadzone.random_point_inside_new()
-        })
-        if(!position)position=v2(3,3)
-        if(!obstacle)obstacle=this.definitions.obstacles.getFromString("airdrop_locked")
-
-        const direction=random.rad()
-        const planePos = v2.from_RadAngle(direction,this.map.size.x+10)
-
-        this.planes.push({
-            id:random.int(0,1000000),
-            complete:false,
-            direction:direction,
-            target_pos:position,
-            called:false,
-            pos:planePos,
-            speed:13,
-            velocity:v2.zero,
-            obstacle,
-            type:0
-        })
-    }
-    add_airstrike(position:Vec2,grenade:GrenadeDef,owner?:Human){
-        const dir=v2.lookTo(v2(0,0),position)
-        this.planes.push({
-            id:random.int(0,1000000),
-            direction:dir,
-            complete:false,
-            target_pos:position,
-            called:false,
-            pos:v2.zero(),
-            speed:100,
-            velocity:v2.zero,
-            type:1,
-            owner:owner,
-            grenade_def:grenade
-        })
     }
     override on_run(): void {
         this.update_data()
@@ -471,7 +398,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured:boolean=false):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
-            defs:def,
+            def,
             position:v2.clone(position),
             owner:owner,
             ammo:ammo,
@@ -481,15 +408,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         return b
     }
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Human,source?:DamageSourceDef,layer:number=Layers.Normal):Explosion{
-        const e=this.scene_2d.objects.add_object(new Explosion(),layer,undefined,{defs:def,owner,position:position,source}) as Explosion
+        const e=this.scene_2d.objects.add_object(new Explosion(),layer,undefined,{def:def,owner,position:position,source}) as Explosion
         return e
     }
     /*add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
         const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner_badge:owner.loadout.badge,owner,position:v2.duplicate(owner.position)}) as PlayerBody
-        return b
-    }
-    add_player_gore(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(angle,random.float(4,8)),layer,undefined,{owner_name:"",owner,position:v2.duplicate(owner.position),gore_type:1,gore_id:random.int(0,2)}) as PlayerBody
         return b
     }*/
     add_grenade(position:Vec2,def:GrenadeDef,owner?:Human,layer:number=Layers.Normal):Grenade{
@@ -520,6 +443,44 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     add_synced_particle(position:Vec2,def:SyncedParticleDef,owner?:Human,layer=Layers.Normal):SyncedParticle{
         const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position,owner}) as SyncedParticle
         return p
+    }
+
+    add_plane(position:Vec2,args:Record<string,any>,plane?:Plane){
+        if(!plane)plane=new Plane()
+        const direction=random.rad()
+        const planePos = v2.from_RadAngle(direction,this.map.size.x+10)
+        this.scene_2d.objects.add_object(
+            plane,
+            Layers.Normal,
+            undefined,
+            {
+                position: planePos,
+                target_pos: position,
+                ...args
+            }
+        )
+    }
+    add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
+        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.any,this.map.random,(_hitbox,_map,_random)=>{
+            return this.deadzone.random_point_inside_new()
+        })
+        if(!position)position=v2(3,3)
+        if(!obstacle)obstacle=this.definitions.obstacles.getFromString("airdrop_locked")
+
+        this.add_plane(position,{
+            speed: 20,
+            obstacle,
+            type: 0
+        })
+    }
+    add_airstrike(position:Vec2,grenade:GrenadeDef,owner?:Human){
+        this.add_plane(position,{
+            speed: 100,
+            grenade_def: grenade,
+            owner,
+            grenade,
+            type: 1
+        })
     }
     override handle_connection(client:Client,username:string){
         this.players.connection(client,username)

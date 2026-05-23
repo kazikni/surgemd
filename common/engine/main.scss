@@ -21,7 +21,6 @@ html, body {
         border: none !important;
     }
 }
-
 .fill-screen{
     position: absolute;
     left: 0px;
@@ -49,3 +48,14 @@ $reddit:        #ff4500;
 $discord:       #5865f2;
 $youtube:       #ff0000;
 $github:        #252525;
+
+@mixin medium_screen {
+    @media screen and (max-width: $screen_large) {
+        @content;
+    }
+}
+@mixin small_screen {
+    @media screen and (max-width: $screen_medium) {
+        @content;
+    }
+}

@@ -2,7 +2,7 @@ import { api, API_BASE, api_server } from "../others/config.ts";
 import { ApiSettingsS } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { FileManager, formatToHtml, GameSave, HideElement, ImageBuffer, InputManager, ManipulativeSoundInstance, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundManager, typewriter } from "common/engine/client.ts";
+import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -55,7 +55,8 @@ export class MenuManager{
 
     save!:GameSave
     resources!:ResourcesManager
-    sounds!:SoundManager
+    translation!:TranslationManager
+    sounds!:AudioEngine
     submenu_param:boolean
 
     definitions:GameDefinition
@@ -64,13 +65,15 @@ export class MenuManager{
 
     campaign:Record<string,any>={}
 
+    params:URLSearchParams
+
     constructor(definitions:GameDefinition){
-        const params = new URLSearchParams(self.location.search)
+        this.params = new URLSearchParams(self.location.search)
 
         this.account=new AccountManager(definitions)
         this.definitions=definitions
 
-        this.submenu_param=!!params
+        this.submenu_param=!!this.params
 
         this.api_settings={
             modes:[
@@ -104,23 +107,62 @@ export class MenuManager{
         HideElement(this.content.loading_screen)
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
-
-        setTimeout(()=>{
-            HideElement(this.content.initial_screen,true)
-
-            const invite=params.get("group-id")
-            if(invite){
-                this.join_group(invite)
-                this.load_tab("play")
-                const playTab=this.tabs["play"]
-                if(playTab){
-                    const groupOption=playTab.def.options.find(o=>o.type==="button"&&o.subtab==="group")
-                    if(groupOption){
-                        this.opt_click_callback(groupOption,playTab)(new MouseEvent("click"))
-                    }
-                }
+        this.start_intro()
+    }
+    intro_fineshed:boolean=false
+    start_intro(): Promise<void> {
+        return new Promise<void>((resolve) => {
+            if(this.intro_fineshed){
+                resolve()
+                return
             }
-        },1000)
+            const screen = this.content.initial_screen
+            const video = document.getElementById("intro-video") as HTMLVideoElement
+
+            ShowElement(screen)
+
+            screen.style.opacity = "0"
+            screen.offsetHeight
+            screen.style.opacity = "1"
+
+            const start = () => {
+                video.currentTime = 0
+                video.play().catch(() => {
+                    this.intro_fineshed=true
+                    console.warn("Video play blocked")
+                    resolve()
+                })
+            }
+
+            if (video.readyState >= 4) {
+                start()
+            } else {
+                video.addEventListener("canplaythrough", start, { once: true })
+            }
+
+            video.addEventListener("ended",() => {
+                screen.style.opacity = "0"
+                setTimeout(() => {
+                    this.intro_fineshed=true
+                    HideElement(screen, true)
+                    const invite = this.params.get("group-id")
+                    if (invite) {
+                        this.join_group(invite)
+                        this.load_tab("play")
+                        const playTab = this.tabs["play"]
+                        if (playTab) {
+                            const groupOption = playTab.def.options.find(
+                                o => o.type === "button" && o.subtab === "group"
+                            )
+                            if (groupOption) {
+                                this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
+                            }
+                        }
+                    }
+                    resolve()
+                },1000)
+            })
+        })
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
         this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.png" draggable="false"></img>'
@@ -132,7 +174,7 @@ export class MenuManager{
             const btn=document.createElement("button") as HTMLButtonElement
             btn.className="btn-blue menu-options-btn"
             btn.id=`${t.id}-menu-option`
-            btn.innerText=t.name
+            btn.innerText=this.translation.get(t.name)
             this.content.menu_options.appendChild(btn)
 
             btn.addEventListener("click",this.load_tab.bind(this,t.id))
@@ -153,7 +195,7 @@ export class MenuManager{
             const content=document.createElement("kl-md-submenu-content") as HTMLDivElement
 
             const close_btn=document.createElement("button") as HTMLButtonElement
-            close_btn.className="btn-red close-btn submenu-close-btn"
+            close_btn.className="close-btn submenu-close-btn btn-red"
             close_btn.textContent="X"
             close_btn.onclick=this.load_tab.bind(this,"")
 
@@ -164,7 +206,7 @@ export class MenuManager{
 
             for(const st of Object.keys(t.subtabs)){
                 const extra=document.createElement("kl-md-extra") as HTMLDivElement
-                extra.className="background-menu-md background-menu-ss background-menu"
+                extra.className="background-menu-md background-menu-blue"
                 extra.id=`${t.id}-${st}-sm-extra`
 
                 t.subtabs[st].generate(extra,this)
@@ -177,9 +219,9 @@ export class MenuManager{
                 switch(o.type){
                     case "button":{
                         const btn=document.createElement("button")
-                        btn.innerText=o.name
+                        btn.innerText=this.translation.get(o.name)
                         btn.id=`btn-${t.id}-${o.id}`
-                        btn.className="btn-green"
+                        btn.className="btn-blue"
                         btn.onclick=this.opt_click_callback(o,tab)
 
                         options.appendChild(btn)
@@ -188,8 +230,8 @@ export class MenuManager{
                     }
                     case "label":{
                         const p=document.createElement("p")
-                        p.className="span"
-                        p.innerText=o.name
+                        p.className="span-text-base"
+                        p.innerText=this.translation.get(o.name)
                         options.appendChild(p)
                         break
                     }
@@ -201,7 +243,7 @@ export class MenuManager{
             if(t.subtabs[dk].on_open)t.subtabs[dk].on_open(tab.tabs[dk] as HTMLDivElement,this)
             this.tabs[t.id]=tab
             this.tabs_html[t.id]=tab_main
-        }   
+        }
     }
     opt_click_callback(o:SubMenuOption,tab:MenuTab):(e:MouseEvent)=>void{
         return (e)=>{
@@ -223,23 +265,24 @@ export class MenuManager{
             if(this.tabs[this.current_tab].def.on_close)this.tabs[this.current_tab].def.on_close!(this)
         }
         this.current_tab=tab
-        ShowTab(tab,this.tabs_html)
+        ShowTab(tab,this.tabs_html,true)
         if(this.current_tab){
             if(this.tabs[this.current_tab].def.on_open)this.tabs[this.current_tab].def.on_open!(this)
         }
         if(tab){
-            HideElement(this.content.menu_options)
+            this.content.menu_options.style.opacity="0"
         }else{
-            ShowElement(this.content.menu_options)
+            this.content.menu_options.style.opacity="1"
         }
     }
-    init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:SoundManager,mods?:CModsManager){
+    async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
+        this.translation=transition
         this.update_api()
 
-        MenuInitDefault(this,fs,mods)
+        MenuInitDefault(this,definitions,fs,transition,mods)
 
         ShowElement(this.content.menu_options,true)
     }
@@ -309,7 +352,7 @@ export class MenuManager{
     }
     join_group(code:string){
         if(!api)return
-        const ws=new WebSocket(`${api_server.toString("ws")}/group/join/${code}`)
+        const ws=new WebSocket(`${api_server.toString("ws")}/group/join/?code=${code}`)
         ws.addEventListener("message",this.manage_team_message.bind(this))
         ws.addEventListener("close",this.leave_group.bind(this))
         this.team_ws=ws
@@ -342,7 +385,7 @@ export class MenuManager{
     }
     
     set_loading_current(text="",unloading:boolean=false){
-        this.content.loading_screen_current.innerHTML=`<p class="span-medium">${unloading?"Unloading":"Loading"}: ${text}</p>`
+        this.content.loading_screen_current.innerHTML=`<p class="span-medium">${this.translation.get("menu.loading-screen."+(unloading?"unload":"load"),{text:text})}</p>`
     }
 
     show_gameover_text(){
@@ -351,7 +394,7 @@ export class MenuManager{
     hide_gameover_text(){
         HideElement(this.content.gameover_text_screen,true)
     }
-    game_over_messages(text:string[],music:Sound,music_player:ManipulativeSoundInstance,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
+    game_over_messages(text:string[],music:Sound,music_player:SoundController,time_per_message:number=3000,opacity_anim:number=1000):Promise<void>{
         return new Promise<void>((resolve) => {
             this.show_gameover_text()
             music_player.set(music)
@@ -412,7 +455,7 @@ export class MenuManager{
             overlay.className="game-popup-overlay"
 
             const popup=document.createElement("div")
-            popup.className="game-popup background-menu"
+            popup.className="game-popup background-menu-blue"
 
             overlay.appendChild(popup)
             document.body.appendChild(overlay)
@@ -456,7 +499,7 @@ export class MenuManager{
             }
         }
     }
-    async show_history(commands: HistoryCommand[],sounds_manager:SoundManager,resources: ResourcesManager,music_player: ManipulativeSoundInstance,ambient_player: ManipulativeSoundInstance,input:InputManager,time_scale: number = 1): Promise<void> {
+    async show_history(commands: HistoryCommand[],resources: ResourcesManager,music_player: SoundController,ambient_player: SoundController,input:InputManager,time_scale: number = 1): Promise<void> {
         ShowElement(this.content.history_overlay,true)
         music_player.set(undefined)
         ambient_player.set(undefined)
@@ -490,7 +533,6 @@ export class MenuManager{
                     await sleep(0.4)
 
                     const img = await this.history_buffer.load(cmd.frame)
-
                     this.content.history_frame.src = img.src
 
                     requestAnimationFrame(() => {
@@ -522,24 +564,30 @@ export class MenuManager{
                 }
                 case HistoryCommandType.SetMusic: {
                     if (music_player && resources) {
-                        const s = resources.get_audio(cmd.music)
-                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                        const s = resources.get_sound(cmd.music)
+                        music_player.set(s,{
+                            loop:cmd.loop!==undefined?cmd.loop:true,
+                            offset:cmd.start_at
+                        })
                     }
                     break
                 }
                 case HistoryCommandType.SetAmbient: {
-                    if (music_player && resources) {
-                        const s = resources.get_audio(cmd.ambient)
-                        music_player.set(s,cmd.loop!==undefined?cmd.loop:true,cmd.start_at)
+                    if (ambient_player&&resources) {
+                        const s = resources.get_sound(cmd.ambient)
+                        ambient_player.set(s,{
+                            loop:cmd.loop!==undefined?cmd.loop:true,
+                            offset:cmd.start_at
+                        })
                     }
                     break
                 }
                 case HistoryCommandType.PlaySoundEffect: {
                     if (resources) {
-                        const s = resources.get_audio(cmd.sfx)
-                        const inst = sounds_manager.play(s,{
-                            
-                        },cmd.category??"players")
+                        const s = resources.get_sound(cmd.sfx)
+                        const inst = this.sounds.play(s,{
+                          bus:cmd.category??"ui"  
+                        },)
                     }
                     break
                 }
@@ -548,7 +596,7 @@ export class MenuManager{
                     if(!resources||!music_player)break
                     await this.game_over_messages(
                         cmd.text,
-                        resources.get_audio("gameover_music"),
+                        resources.get_sound("gameover_music"),
                         music_player,
                         cmd.time_per_message,
                         cmd.opacity_anim
@@ -568,11 +616,12 @@ export class MenuManager{
         this.content.phase_intro_description.innerText = ""
         ShowElement(this.content.phase_intro_overlay)
     }
-    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[],sounds:SoundManager): Promise<void> {
-        function play_type_sound(_a:string){
-            sounds.play(random.choose(type_sounds),{
-                volume:0.15
-            },"ui")
+    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[]): Promise<void> {
+        const play_type_sound=(_a:string)=>{
+            this.sounds.play(random.choose(type_sounds),{
+                volume:0.15,
+                bus:"ui"
+            })
         }
         const text_speed=config.text_speed??1
         const wait_time=(config.wait_time??2)*1000
@@ -595,43 +644,6 @@ export class MenuManager{
             HideElement(this.content.phase_intro_overlay)
         },wait_time+1000)
         await new Promise(r => setTimeout(r, wait_time))
-    }
-    your_skins:string[]=["default_skin"]
-    show_your_skins(){
-        this.content.submenus.extras.loadout_c.innerHTML=""
-        let sel=this.save.get_variable("sv_loadout_skin")
-        if(!this.definitions.skins.exist(sel))sel="default_skin"
-        for(const s of this.your_skins){
-            const skin=document.createElement("div")
-            skin.id="skin-sel-"+s
-            skin.innerHTML=`
-<div class="name text">${s}</div>
-<img src="${this.resources.get_sprite(s+"_body").src}" class="simage"></div>
-            `
-            skin.classList.add("skin-view-menu")
-            if(s===sel){
-                skin.classList.add("skin-view-menu-selected")
-            }
-            skin.addEventListener("click",this.update_sel_skin.bind(this,s))
-            this.content.submenus.extras.loadout_c.appendChild(skin)
-        }
-        this.update_ss_view(sel)
-    }
-    update_sel_skin(sel=""){
-        if(!this.definitions.skins.exist(sel))sel="default_skin"
-        this.save.set_variable("sv_loadout_skin",sel)
-        const ss=this.content.submenus.extras.loadout_c.querySelectorAll(".skin-view-menu-selected")
-        ss.forEach((v,_)=>{
-            v.classList.remove("skin-view-menu-selected")
-        })
-        const skin=this.content.submenus.extras.loadout_c.querySelector("#skin-sel-"+sel) as HTMLDivElement
-        skin.classList.add("skin-view-menu-selected")
-        this.update_ss_view(sel)
-    }
-    update_ss_view(sel:string){
-        this.content.submenus.extras.loadout_v.innerHTML=`
-            <img src="${this.resources.get_sprite(sel+"_body").src}" class="simage"></div>
-        `
     }
     game_start(){
         ShowElement(this.content.gameD)

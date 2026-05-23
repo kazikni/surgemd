@@ -1,8 +1,9 @@
 import { type Image, createCanvas, loadImage } from "canvas";
-import { type IOption, MaxRectsPacker } from "maxrects-packer";
 import path from "node:path";
-import { writeFileSync } from "node:fs";
-import { SpritesheetJSON } from "../../../src/scripts/engine/resources.ts";
+import { KSPR, write_kspr } from "../../../../common/engine/core/lang/kspx.ts";
+import { RectPacker } from "../../../../common/engine/core/math/geometry.ts";
+import readDirectory from "./readDirectory.ts";
+import { Minimatch } from "minimatch";
 export const cacheDir = ".spritesheet-cache";
 export type CacheData = {
     lastModified: number
@@ -12,183 +13,87 @@ export type CacheData = {
 export const supportedFormats = ["png", "jpeg"] as const;
 
 export interface CompilerOptions {
-    /**
-    * Format of the output image
-    * @default "png"
-    */
     outputFormat: typeof supportedFormats[number]
-
-    /**
-     * Output directory
-     * @default "atlases"
-     */
-    outDir: string
-
-    name: string
-
-    /**
-    * Added pixels between sprites (can prevent pixels leaking to adjacent sprite)
-    * @default 1
-    */
     margin: number
-
-    /**
-     * Remove file extensions from the atlas frames
-     * @default true
-     */
     removeExtensions: boolean
-
-    /**
-    * The Maximum width and height a generated image can be
-    * Once a spritesheet exceeds this size a new one will be created
-    * @default 4096
-    */
     maximumSize: number
-
-    /**
-     * maxrects-packer options
-     * See https://soimy.github.io/maxrects-packer/
-     * Currently does not support `allowRotation` option
-     */
-    packerOptions: Omit<IOption, "allowRotation">
 }
 
-export type AtlasList = Array<{json:SpritesheetJSON, readonly image: Buffer, readonly cacheName?: string }>;
+const defaultGlob = "**/*.{png,gif,jpg,bmp,tiff,svg}";
+const imagesMatcher = new Minimatch(defaultGlob);
 
-export type MultiResAtlasList = Record<string,Record<string,AtlasList>>;
 export interface Resolution{scale:number,name:string}
-/**
- * Pack images spritesheets.
- * @param paths List of paths to the images.
- * @param options Options passed to the packer.
- */
-export async function createSpritesheets(pathMap: Record<string,Map<string, { lastModified: number, path: string }>>,resolutions:Resolution[], options: CompilerOptions): Promise<MultiResAtlasList> {
-    if (!supportedFormats.includes(options.outputFormat)) {
-        throw new Error(`outputFormat should only be one of ${JSON.stringify(supportedFormats)}, but "${options.outputFormat}" was given.`);
+export async function buildKSPRGroup(base: string = "",dir: string,resolutions: Resolution[],compilerOpts: CompilerOptions = {
+        outputFormat: "png",
+        margin: 8,
+        removeExtensions: true,
+        maximumSize: 2048,
+}): Promise<Uint8Array> {
+    const images: { image: Image, path: [string, string] }[] = []
+    const files = readDirectory(base, dir).filter(x => imagesMatcher.match(x[1]))
+    for (const file of files) {
+        images.push({
+            image: await loadImage(file[0]),
+            path: file
+        })
     }
-
-    interface PackerRectData {
-        readonly image: Image
-        readonly path: string
-    }
-
-    const start = performance.now();
-
-    const writeFromStart = (str: string): boolean => process.stdout.write(`\r${str}`);
-
-    console.log();
-
-    const images: Record<string,PackerRectData[]> = {}
-    for(const a of Object.keys(pathMap)){
-        images[a]=[]
-        for(const [_,path] of pathMap[a].entries()){
-            images[a].push({
-                image:await loadImage(path.path),
-                path:path.path
-            })
-        }
-    }
-
-    function createSheet(atlas:string,resolution: number,resolution_name:string): AtlasList{
-        console.log(`Building spritesheet @ ${resolution}x...`);
-        const packer = new MaxRectsPacker(
-            options.maximumSize * resolution,
-            options.maximumSize * resolution,
-            options.margin,
-            {
-                ...options.packerOptions,
-                allowRotation: false
-            }
-        );
-        for (const image of images[atlas]) {
+    images.sort((a, b) =>
+        (b.image.width * b.image.height) -
+        (a.image.width * a.image.height)
+    )
+    const kspr: KSPR = { resolutions: {} }
+    for (const res of resolutions) {
+        const packer = new RectPacker<typeof images[0]>(
+            Math.floor(compilerOpts.maximumSize * res.scale),
+            Math.floor(compilerOpts.maximumSize * res.scale),
+            compilerOpts.margin
+        )
+        for (const img of images) {
             packer.add(
-                image.image.width * resolution,
-                image.image.height * resolution,
-                image
-            );
+                Math.ceil(img.image.width * res.scale),
+                Math.ceil(img.image.height * res.scale),
+                img
+            )
         }
-        const atlases: AtlasList = [];
-
-        let binn=0
+        const atlases = []
         for (const bin of packer.bins) {
-            const canvas = createCanvas(bin.width, bin.height);
-
-            const ctx = canvas.getContext("2d");
-
-            const json: SpritesheetJSON = {
-                meta: {
-                    image: "",
-                    scale: resolution,
-                    size: {
-                        w: bin.width,
-                        h: bin.height
-                    },
-                },
-                frames: {}
-            };
-
-            const rects = bin.rects.length;
-            writeFromStart(`Parsing ${rects} rects`);
+            const canvas = createCanvas(bin.width, bin.height)
+            const ctx = canvas.getContext("2d")
+            const frames: Record<string, any> = {}
             for (const rect of bin.rects) {
-                const data = rect.data as PackerRectData;
-
-                ctx.drawImage(data.image, rect.x, rect.y, rect.width, rect.height);
-
-                const sourceParts = path.relative(process.cwd(),data.path).split(path.sep);
-
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                let name = sourceParts.at(-1)!;
-
-                if (options.removeExtensions) {
-                    name = name.split(".").slice(0, -1).join("");
+                const data = rect.data
+                ctx.drawImage(
+                    data.image,
+                    rect.x,
+                    rect.y,
+                    rect.w,
+                    rect.h
+                )
+                let name = path.basename(data.path[1])
+                if (compilerOpts.removeExtensions) {
+                    name = name.split(".").slice(0, -1).join("")
                 }
-                sourceParts.shift()
-                json.frames[name] = {
-                    w: rect.width,
-                    h: rect.height,
+                let src = data.path[1]
+                if (!src.startsWith("/")) src = "/" + src
+                frames[name] = {
+                    src,
                     x: rect.x,
                     y: rect.y,
-                    file:sourceParts.join("/")
-                };
+                    w: rect.w,
+                    h: rect.h
+                }
             }
-            
-            const buffer = canvas.toBuffer(`image/${options.outputFormat}` as "image/png");
-            json.meta.image = `${options.outDir}/${options.name}-${atlas}-${binn}@${resolution_name}.${options.outputFormat}`;
-            const cacheName = `${options.name}-${atlas}-${binn}@${resolution_name}`;
-
-            writeFileSync(path.join(cacheDir, `${cacheName}.json`), JSON.stringify(json));
-            writeFileSync(path.join(cacheDir, `${cacheName}.${options.outputFormat}`), buffer);
+            const buffer = canvas.toBuffer("image/png")
             atlases.push({
-                json,
-                image: buffer,
-                cacheName
-            });
-            binn++
+                image: new Uint8Array(buffer),
+                frames
+            })
         }
-        return atlases
-    }
-    const sheets:MultiResAtlasList={
-    }
-    
-    const cacheData: CacheData = {
-        lastModified: Date.now(),
-        fileMap: {},
-        atlasFiles:{
+        kspr.resolutions[res.name] = {
+            scale: res.scale,
+            atlases
         }
     }
-    for(const r of resolutions){
-        sheets[r.name]={}
-        cacheData.atlasFiles[r.name]={}
-        for(const k of Object.keys(pathMap)){
-            sheets[r.name][k]=createSheet(k,r.scale,r.name)
-            cacheData.fileMap={...cacheData.fileMap,...Object.fromEntries(Array.from(pathMap[k].entries(), ([name, data]) => [name.slice(1), data.path]))}
-            cacheData.atlasFiles[r.name][k]=sheets[r.name][k].map(s => s.cacheName ?? "")
-        }
-    }
-
-    //writeFileSync(path.join(cacheDir, "data.json"), JSON.stringify(cacheData));
-
-    console.log(`Finished building spritesheets in ${Math.round(performance.now() - start) / 1000}s`);
-
-    return sheets;
+    const stream = write_kspr(kspr)
+    return stream._u8Array.slice(0, stream.length)
 }

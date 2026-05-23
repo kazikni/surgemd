@@ -1,5 +1,6 @@
 import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
+import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
 import { HistoryCommand } from "./history.ts";
@@ -40,7 +41,9 @@ export type LevelMode={
     group_size:number
     teams?:number
     enemies:LevelEnemys[]
-})
+})|{
+    type:"debug"
+}
 export interface LevelDefinition{
     meta:{
         name: string
@@ -63,6 +66,7 @@ export interface LevelDefinition{
     }
     definitions?:{
         enemies?:Record<string,EnemyDef>
+        buildings?:Record<string,JSONBuildingDef>
     }
     begin?:{
         history?:HistoryCommand[]

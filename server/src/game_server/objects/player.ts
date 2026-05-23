@@ -9,9 +9,10 @@ import { type Game } from "../others/game.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
-import { Layers } from "common/scripts/others/constants.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
+import { LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { HumanStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -22,7 +23,7 @@ export abstract class PlayerConnManager{
     constructor(game:Game){
         this.game=game
     }
-    abstract send_game_over(win?:boolean,eliminated_by?:number):void;
+    abstract send_game_over(status:(HumanStatus&{id:number})[],win?:boolean,eliminated_by?:number):void;
     set_spectator(p:Player) {
         this.spectating=true
         this.human=p
@@ -52,7 +53,7 @@ export abstract class PlayerConnManager{
         }
     }
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
-        const layers=layer>=Layers.Normal?[Layers.Normal,Layers.Normal+1,Layers.Normal+2,Layers.Normal+3,Layers.Normal+4]:[layer]
+        const layers=[layer-2,layer-1,layer,layer+1,layer+2]
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
         return objs
     }
@@ -65,14 +66,6 @@ export class Player extends Human{
 
     conn?:PlayerConnManager
 
-    status={
-        damage:0,
-        kills:0,
-        rank:0,
-        money:0,
-        score:0,
-        time_alive:0
-    }
     account_status={
         coins:0,
         xp:0,
@@ -92,6 +85,12 @@ export class Player extends Human{
     constructor(){
         super()
     }
+    get_status():HumanStatus&{id:number}{
+        return {
+            id:this.id,
+            ...this.status
+        }
+    }
     override set_preset(preset: HumanDefinition|undefined): void {
         if(!preset)return
         super.set_preset(preset)
@@ -107,14 +106,9 @@ export class Player extends Human{
     }
     override update(dt: number): void {
         super.update(dt)
-        this.status.time_alive+=dt
     }
     override piercing_damage(params: DamageParams){
         const rr=super.piercing_damage(params)
-        if (params.owner && params.owner instanceof Player && params.owner.id !== this.id && params.reason !== DamageReason.Bleend) {
-            params.owner.status.damage += (rr[1] + rr[0])
-        }
-
         if(this.team_data.group)this.team_data.group.dirty=true
         return rr
     }
@@ -160,7 +154,6 @@ export class Player extends Human{
             if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
                 params.owner.earned.coins+=3
                 params.owner.earned.xp+=1
-                params.owner.earned.score+=5
             }
             this.player_manager.send_killfeed_message({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
@@ -209,7 +202,7 @@ export class Player extends Human{
     }
     override self_state(full: boolean): SelfStateUpdate {
         const ret=super.self_state(full)
-        ret.money=this.status.money
+        ret.money=0
         if(this.team_data.group){
             if(this.team_data.group.dirty||full){
                 ret.dirty.group=true
@@ -218,17 +211,10 @@ export class Player extends Human{
         }
         return ret
     }
-    reset_status(){
-        this.status.damage=0
-        this.status.kills=0
-        this.status.money=0
-        this.status.rank=0
-        this.status.score=0
-        this.status.time_alive=0
-    }
     proccess_input(i:InputPacket){
         this.input.movement=i.movement
 
+        this.input.auto_click=i.auto_fire
         if(this.input.auto_click){
             this.input.using_item_down=i.use_weapon
         }else if(!this.input.using_item&&i.use_weapon){
@@ -237,11 +223,24 @@ export class Player extends Human{
 
         this.input.rotation=i.angle
         this.input.using_item=i.use_weapon
+        this.input.using_item_alt=i.alt_use_weapon
         this.input.dist_to_pointer=i.distance_to_aim
 
         this.input.interaction=i.interact||this.input.interaction
         this.input.reload=i.reload||this.input.reload
         this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
         this.input.actions.push(...i.actions)
+    }
+    proccess_join_packet(jp:JoinPacket){
+        this.loadout.dirty=true
+        if(jp.skin){
+            this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
+            this.loadout.hair={
+                tint:jp.skin.hair_tint,
+                def:this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
+            }
+            this.loadout.body.tint=jp.skin.body_tint
+            this.loadout.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
+        }
     }
 }

@@ -1,0 +1,28 @@
+{
+    "name":"surgemd-binary",
+    "version":"1.0",
+    "task":{
+        "dev":{
+            "task":"go run main.go dev"
+        },
+        "run": {
+            "task":"go run main.go dev"
+        },
+        "build": {
+            "windows":[
+                "rmdir /S /Q dist",
+                "mkdir dist",
+                "mkdir build",
+                "mkdir dist/mods",
+                "mkdir dist/files",
+                "robocopy mods dist/mods /E",
+                "cd ../../client && npx vite build && robocopy dist ../desktop/computer/dist/files /E",
+                "rsrc -ico dist/files/favicon.ico -o rsrc.syso",
+                "go build -ldflags=-H=windowsgui -o dist/surgemd.exe",
+                "del rsrc.syso",
+                "rmdir /S /Q build",
+                "cd ../../server && smde task build && robocopy dist ../desktop/computer/dist /E"
+            ]
+        }
+    }
+}

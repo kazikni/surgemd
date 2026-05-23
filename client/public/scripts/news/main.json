@@ -1,0 +1,52 @@
+{
+  "order": [
+    {
+      "id": "pre-beta-7",
+      "title": "Pre-Beta-7 Patch Notes"
+    },
+    {
+      "id": "pre-beta-6",
+      "title": "Pre-Beta-6 Patch Notes"
+    },
+    {
+      "id": "pre-beta-5",
+      "title": "Pre-Beta-5 Patch Notes"
+    },
+    {
+      "id": "pre-beta-4",
+      "title": "Pre-Beta-4 Patch Notes"
+    },
+    {
+      "id": "pre-beta-3",
+      "title": "Pre-Beta-3 Patch Notes"
+    },
+    {
+      "id": "pre-beta-2",
+      "title": "Pre-Beta-2 Patch Notes"
+    },
+    {
+      "id": "pre-beta",
+      "title": "Pre-Beta Patch Notes"
+    },
+    {
+      "id":"alpha-1.4",
+      "title":"Alpha 1.4 Patch Notes"
+    },
+    {
+      "id":"alpha-1.3.1",
+      "title":"Alpha 1.3.1 Patch Notes"
+    },
+    {
+      "id":"alpha-1.3",
+      "title":"Alpha 1.3 Patch Notes"
+    },
+    {
+      "id":"alpha-1.2",
+      "title":"Alpha 1.2 Patch Notes"
+    },
+    {
+      "id":"alpha-1.1",
+      "title":"Alpha 1.1 Patch Notes"
+    }
+  ]
+}

@@ -137,7 +137,7 @@ export const ColorM={
         return `#${color.toString(16).padStart(6, '0')}`
     },
     hex2number(color: string): number {
-        return parseInt(color.replace(/^0x/, ''), 16)
+        return parseInt(color.replace(/^#/, ''), 16)
     },
     mult(dst:Color,x:Color,y:Color){
         dst.r=x.r*y.r

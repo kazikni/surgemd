@@ -1,10 +1,9 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { NewMDLanguageManager } from "./languages.ts";
-import { BasicSocket, BrowserFileManager, Client, FetchFileManager, FileManager, IPLocation, isMobile, OfflineClientsManager, OfflineSocket, random, ReplayWatcher } from "common/engine/client.ts";
+import { BasicSocket, FetchFileManager, FileManager, isMobile, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
-import { sandbox_version } from "./config.ts";
+import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
 import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
@@ -36,8 +35,6 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
-    const tm=await NewMDLanguageManager("english","/languages")
-
     const fs:FileManager=is_binary?new GoFileManager():new FetchFileManager()
     const mods:CModsManager|undefined=sandbox_version&&is_binary?new CModsManager(fs):undefined
 
@@ -63,7 +60,7 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 
             this.menu_manager=menu_manager
 
-            this.game=new Game(this.definitions,menu_manager,canvas,tm)
+            this.game=new Game(this.definitions,menu_manager,canvas,new TranslationManager({code:"",name:"",values:{}}))
         }
         async init(){
             this.menu_manager.play_callback=this.play_game.bind(this)
@@ -77,7 +74,10 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                 }
             }
             await this.game.bind(fs)
-            this.menu_manager.init(this.game.save,this.file,this.game.resources,this.game.sounds,mods)
+            this.menu_manager.init(this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
+            this.game.load_resources(["main"])
+
+            this.game.mainloop(true)
         }
         join_on_game(url:string,password:string,attempts=0,delay=500){
             console.log("Joining In: ",url)
@@ -97,10 +97,13 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
             this.menu_manager.show_loading_screen()
             switch(play.type){
                 case "online":{
-                    const reg=this.menu_manager.api_settings.regions[this.game.save.get_variable("sv_game_region")]
-                    const ser=new IPLocation(reg.host,reg.port)
-                    const ghost=await((await fetch(`${ser.toString("http")}/api/get-game`)).json())
-
+                    const ghost=await(await fetch(API_BASE+"/find-game",{
+                        method:"post",
+                        body:JSON.stringify({
+                            ...play,
+                            region:this.game.save.get_variable("sv_game_region"),
+                        })
+                    })).json()
                     if(ghost.status===0){
                         this.game.connect(ghost.address)
                     }

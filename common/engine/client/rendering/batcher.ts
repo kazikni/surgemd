@@ -143,7 +143,7 @@ export class Batcher {
         const cmd = this.ensure(frame.batch_mat,matrix)
 
         this.push_array(cmd, "vertices", model, vertexCount)
-        this.push_array(cmd, "tex_coord", frame.texture_coordinates, vertexCount)
+        this.push_array(cmd, "tex_coord", frame.texcoords, vertexCount)
         this.push_array(cmd, "tint", [tint.r,tint.g,tint.b,tint.a], vertexCount)
         for (const k in attr) {
             this.push_array(cmd, k, attr[k], vertexCount)

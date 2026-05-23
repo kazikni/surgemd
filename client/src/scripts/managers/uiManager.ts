@@ -1,5 +1,5 @@
 import { Game } from "../others/game.ts";
-import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -22,6 +22,8 @@ import { WeaponsModule } from "../uim/weapons.ts";
 import { HandInfoModule } from "../uim/hand_info.ts";
 import { ItemsModule } from "../uim/items.ts";
 import { ActionsModule } from "../uim/actions.ts";
+import { EquipmentModule } from "../uim/equipment.ts";
+import { InformationBoxModule } from "../uim/information-box.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -44,13 +46,11 @@ export class UiManager{
 
         gameOver:document.querySelector("#gameover-container") as HTMLDivElement,
         
+        gameover_status_container:document.querySelector("#gameover-status-container") as HTMLDivElement,
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
 
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
-        
-        information_killbox:document.querySelector("#information-killbox") as HTMLDivElement,
-        information_interact:document.querySelector("#information-interaction") as HTMLDivElement,
 
         killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
 
@@ -61,7 +61,6 @@ export class UiManager{
         post_proccess:{
             vignetting:document.querySelector("#vignetting-gfx") as HTMLDivElement,
             tiltshift:document.querySelector("#tiltshift-gfx") as HTMLDivElement,
-            recolor:document.querySelector("#recolor-gfx") as HTMLDivElement,
         },
         emote_wheel:{
             main:document.querySelector("#emote-wheel") as HTMLDivElement,
@@ -96,9 +95,7 @@ export class UiManager{
         this.game=game
 
         HideElement(this.content.gameOver)
-
         HideElement(this.content.emote_wheel.main)
-        HideElement(this.content.information_killbox)
 
         if(isMobile||Debug.force_mobile){
             this.mobile_init()
@@ -114,15 +111,14 @@ export class UiManager{
         this.game.ui_manager.add(new HandInfoModule())
         this.game.ui_manager.add(new ItemsModule())
         this.game.ui_manager.add(new ActionsModule())
+        this.game.ui_manager.add(new EquipmentModule())
+        this.game.ui_manager.add(new InformationBoxModule())
     }
     clear(){
         this.content.killfeed.innerHTML=""
         this.content.killeader_span.innerText=""
         this.killleader=undefined
         this.content.help_gui.innerText=""
-
-        this.information_killbox_messages=[]
-        this.information_killbox_time=0
 
         this.players_name={}
 
@@ -133,12 +129,13 @@ export class UiManager{
 
         this.game.inventory.clear()
         this.game.ui_manager.clear()
-        disableContextMenuPrevent() 
+        disableContextMenuPrevent()
     }
     _makeHint(texts: string[]) {
         const div = document.createElement("div")
         for (const t of texts) {
             const span = document.createElement("span")
+            span.classList="span-text"
             span.textContent = t
             div.appendChild(span)
         }
@@ -160,7 +157,7 @@ export class UiManager{
             this.game.input.movement.dir=Math.atan2(e.detail.y,e.detail.x)
             this.game.input.movement.scale=v2.len(e.detail)
             if(!rotating){
-                this.game.set_lookTo_angle(this.game.input.movement.dir,2,true,0.3)
+                this.game.set_lookTo_angle(this.game.input.movement.dir,2)
             }
         })
         this.mobile_content.left_joystick.addEventListener("joystickend",()=>{
@@ -170,37 +167,48 @@ export class UiManager{
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             rotating=true
-            //this.game.fake_crosshair.visible=true
+            this.game.aim_line=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-            if(dist>0.9){
-                this.game.input.use_weapon=true
-            }else{
-                this.game.input.use_weapon=false
+            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==InventoryItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
+                
+            }*/
+
+            if(this.game.active_entity?.current_weapon){
+                if(this.game.active_entity.current_weapon.item_type===InventoryItemType.gun){
+                    if(dist>0.9){
+                        this.game.input.use_weapon=true
+                    }else{
+                        this.game.input.use_weapon=false
+                    }
+                }else{
+                    this.game.input.use_weapon=true
+                }
             }
             this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),dist)
         })
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
             this.game.input.use_weapon=false
             rotating=false
+            this.game.aim_line=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
-            this.game.input_manager.emit("actiondown",{action:"interact"})
+            this.game.input_manager.listener.emit("actiondown",{action:"interact"})
         })
         this.mobile_content.btn_reload.addEventListener("click",()=>{
-            this.game.input_manager.emit("actiondown",{action:"reload"})
+            this.game.input_manager.listener.emit("actiondown",{action:"reload"})
         })
     }
     emote_wheel={
         positon:v2(0,0),
         active:false,
         current_side:-1,
-        emote:[
-        ] as EmoteDef[]
+        emote:[] as EmoteDef[]
     }
     begin_emote_wheel(position:Vec2,emotes?:EmoteDef[]){
         ShowElement(this.content.emote_wheel.main)
-        this.content.emote_wheel.main.style.left=`${position.x*100}px`
-        this.content.emote_wheel.main.style.top=`${position.y*100}px`
+        const ms=this.game.cam2d.meter_size
+        this.content.emote_wheel.main.style.left=`${position.x*ms}px`
+        this.content.emote_wheel.main.style.top=`${position.y*ms}px`
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
 
@@ -213,7 +221,7 @@ export class UiManager{
     }
     emote_wheel_set_emotes(emote:EmoteDef[]){
         for(const ev in this.content.emote_wheel.emotes){
-            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_sprite(emote[ev].idString).src
+            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote[ev].idString).src
         }
         this.emote_wheel.emote=emote
     }
@@ -231,7 +239,7 @@ export class UiManager{
             })
         }
     }
-    mobile_enabled:boolean=false
+    mobile_enabled:boolean=isMobile||Debug.force_mobile
     mobile_close(){
         HideElement(this.mobile_content.gui)
         ShowElement(this.content.help_gui)
@@ -244,14 +252,12 @@ export class UiManager{
     }
     start(){
         HideElement(this.content.post_proccess.tiltshift)
-        HideElement(this.content.post_proccess.recolor)
         HideElement(this.content.post_proccess.vignetting)
         if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
             ShowElement(this.content.post_proccess.tiltshift)
         }
         if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Normal){
             ShowElement(this.content.post_proccess.vignetting)
-            ShowElement(this.content.post_proccess.recolor)
         }
         this.game.renderer.canvas.focus()
 
@@ -283,17 +289,8 @@ export class UiManager{
         information_box_message:""
     }
     update_hint(){
-        const state=this.state
         for (const [key, el] of Object.entries(this.helpTexts)) {
             el.style.display = this.state[key as keyof HelpGuiState] ? "" : "none";
-        }
-        if(state.information_box_message!==this.content.information_interact.innerHTML){
-            if(state.information_box_message===""){
-                HideElement(this.content.information_interact)
-            }else{
-                ShowElement(this.content.information_interact)
-                this.content.information_interact.innerHTML=state.information_box_message
-            }
         }
         if(this.mobile_enabled){
             if(this.current_interaction){
@@ -301,15 +298,16 @@ export class UiManager{
             }else{
                 HideElement(this.mobile_content.btn_interact)
             }
-            if(state.gun){
+            if(this.state.gun){
                 ShowElement(this.mobile_content.btn_reload)
             }else{
                 HideElement(this.mobile_content.btn_reload)
             }
+        }else{
+            HideElement(this.mobile_content.btn_reload)
+            HideElement(this.mobile_content.btn_interact)
         }
     }
-    information_killbox_messages:string[]=[]
-    information_killbox_time:number=0
     assign_killleader(msg:KillFeedMessageKillleader){
         this.killleader={
             id:msg.player.id,
@@ -317,36 +315,49 @@ export class UiManager{
         }
         this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.player.id].name}`
     }
+    killfeed_queue: HTMLDivElement[] = []
+    max_killfeed_messages = 7
     add_killfeed_message(msg:KillFeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
         elem.classList.add("killfeed-message")
         this.content.killfeed.appendChild(elem)
+        this.killfeed_queue.push(elem)
+        while (this.killfeed_queue.length > this.max_killfeed_messages) {
+            const old = this.killfeed_queue.shift()
+            if (old) {
+                old.remove()
+            }
+        }
         switch(msg.type){
             case KillFeedMessageType.join:{
                 const badge_frame=msg.playerBadge!==undefined?this.game.definitions.emotes.getFromNumber(msg.playerBadge).idString:""
                 const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/main/loadout/badges/${badge_frame}.svg">`
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
-                elem.innerHTML=this.game.language.get("killfeed-join",{"player":this.players_name[msg.playerId].full})
+                elem.innerHTML=this.game.language.get("killfeed.join",{"player":this.players_name[msg.playerId].full})
                 break
             }
             case KillFeedMessageType.kill:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("killfeed-kill-abstinence",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.kill.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Explosion:
                     case DamageReason.Human:{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("killfeed-kill-player",{
+                        elem.innerHTML=this.game.language.get("killfeed.kill.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get(dsd.idString),
+                            source:this.game.language.get("items."+dsd.idString),
                         })
-                        if(this.game.active_entity&&msg.killer.id===this.game.active_entity.id){
-                            this.information_killbox_messages.push(`${msg.killer.kills} Kills`)
+                        if(msg.victimId===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-negative")
+                        }else if(msg.killer.id===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-good")
+                            this.game.ui_manager.signal("info-kill",`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`)
                         }
+
                         if(this.killleader&&msg.killer.id===this.killleader.id){
                             this.killleader.kills=msg.killer.kills
                             this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.killer.id].name}`
@@ -354,16 +365,16 @@ export class UiManager{
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("killfeed-kill-deadzone",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.kill.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("killfeed-kill-side-effect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.kill.side-effect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("killfeed-kill-disconnect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.kill.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("killfeed-kill-bleend",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.kill.bleend",{player:this.players_name[msg.victimId].full})
                         break
                 }
                 break
@@ -372,50 +383,57 @@ export class UiManager{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("killfeed-down-abstinence",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.down.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Human:
                     case DamageReason.Explosion:{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("killfeed-down-player",{
+                        elem.innerHTML=this.game.language.get("killfeed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get(dsd.idString)
+                            source:this.game.language.get("items."+dsd.idString)
                         })
+                        if(msg.victimId===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-negative")
+                        }else if(msg.killer.id===this.game.active_entity?.id){
+                            elem.classList.add("killfeed-message-good")
+                        }
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("killfeed-down-deadzone",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.down.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("killfeed-down-side-effect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.down.side-effect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("killfeed-down-disconnect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("killfeed.down.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("killfeed-down-bleend",{})
+                        elem.innerHTML=this.game.language.get("killfeed.down.bleend",{})
                         break
                 }
                 break
             }
             case KillFeedMessageType.killleader_assigned:{
                 if(!this.players_name[msg.player.id])break
-                elem.innerHTML=this.game.language.get("killfeed-killleader-assigned",{"player":this.players_name[msg.player.id].full})
+                elem.innerHTML=this.game.language.get("killfeed.killleader.assigned",{"player":this.players_name[msg.player.id].full})
                 this.assign_killleader(msg)
-                this.game.sounds.play(this.game.resources.get_audio("kill_leader_assigned"),{
-                    volume:0.4
-                },"player")
+                this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
+                    volume:0.4,
+                    bus:"ui"
+                })
                 break
             }
             case KillFeedMessageType.killleader_dead:{
                 this.killleader=undefined
-                elem.innerHTML=this.game.language.get("killfeed-killleader-dead",{})
+                elem.innerHTML=this.game.language.get("killfeed.killleader.dead",{})
                 this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
-                this.game.sounds.play(this.game.resources.get_audio("kill_leader_dead"),{
-                    volume:0.6
-                },"player")
+                this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
+                    volume:0.6,
+                    bus:"ui"
+                })
                 break
             }
         }
@@ -433,13 +451,13 @@ export class UiManager{
         //this.crosshair_manager.set(new AnimatedCrosshair(document.body,DefaultCrosshair))
         this.crosshair=true
     }
-    update_crosshair(dt:number){
-        if(!this.crosshair)return
-        this.crosshair_manager.tick(dt)
-    }
     disableCrosshair() {
         document.body.style.cursor = this.game.cursors.default
         this.crosshair=false
+    }
+    update_crosshair(dt:number){
+        if(!this.crosshair)return
+        this.crosshair_manager.tick(dt)
     }
     update_self_state(state:SelfStateUpdate){
         if (state.dirty.inventory.aitems) {
@@ -451,15 +469,8 @@ export class UiManager{
         }
         if(state.dirty.inventory.iitems) {
             this.game.inventory.iitems = state.inventory.iitems
-            this.game.inventory.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
         }
-
-        const scope_def=this.game.definitions.scopes.getFromNumber(state.current_scope)
-        if(!this.game.inventory.scope||this.game.inventory.scope!==scope_def){
-            this.game.inventory.scope=scope_def
-            this.game.set_scope(scope_def)
-        }
-
+        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope),state.force_default_scope)
         if(state.dirty.inventory.weapons){
             for(const idx in state.inventory.weapons){
                 this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
@@ -469,82 +480,105 @@ export class UiManager{
             this.game.inventory.hand_settings=state.inventory.hand
             if(state.inventory.hand)this.game.inventory.set_weapon_index(state.inventory.hand.slot,true)
         }
-        /*if(state.dirty.inventory.items) {
-            this.game.inventory.update_items(state.inventory.items)
+        if(state.dirty.inventory.items) {
+            this.items.length=0
+            for (let i = 0; i < state.inventory.items.length; i++) {
+                this.items.push({id:state.inventory.items[i].idNumber,count:state.inventory.items[i].count})
+            }
         }
-        */
 
         this.money=state.money
         this.game.ui_manager.signal("self_state",state)
     }
     handle_slot_click(e:MouseEvent){
         const t=e.currentTarget as HTMLDivElement
+        const item_kind=parseInt(t.dataset.item_kind!)
+        const item_value=parseInt(t.dataset.item_value!)
         if(e.button==2){
-            if(t.dataset.drop_kind==="2"){
-                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.drop!),drop_kind:2})
-            }else if(t.dataset.drop_kind==="3"){
-                this.game.input.actions.push({type:InputActionType.drop,drop:parseInt(t.dataset.slot!),drop_kind:3})
+            switch(item_kind){
+                case 1:
+                case 2:
+                case 3:
+                case 5:
+                    this.game.input.actions.push({type:InputActionType.drop,drop:item_value,drop_kind:item_kind})
+                    break
             }
         }else if(e.button===0){
-            if(t.dataset.drop_kind==="3"){
-                this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+            if(!this.game.save.get_variable("sv_ui_interactive"))return
+            switch(item_kind){
+                case 1:
+                    this.game.input.actions.push({
+                        type:InputActionType.set_hand,
+                        hand:item_value
+                    })
+                    break
+                case 3:
+                    this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.item_value!)})
+                    break
+                case 5:
+                    this.game.input.actions.push({type:InputActionType.set_scope,scope_id:parseInt(t.dataset.item_value!)})
+                    break
             }
         }
     }
     handle_slot_touch(e:TouchEvent){
         const t=e.currentTarget as HTMLDivElement
-        if(t.dataset.drop_kind==="3"){
-            this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.slot!)})
+        const item_kind=parseInt(t.dataset.item_kind!)
+        const item_value=parseInt(t.dataset.item_value!)
+        switch(item_kind){
+            case 1:
+                this.game.input.actions.push({
+                    type:InputActionType.set_hand,
+                    hand:item_value
+                })
+                break
+            case 3:
+                this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.item_value!)})
+                break
+            case 5:
+                this.game.input.actions.push({type:InputActionType.set_scope,scope_id:parseInt(t.dataset.item_value!)})
+                break
         }
     }
     hide_game_over(){
         HideElement(this.content.gameOver)
         ShowElement(this.content.game_gui)
         this.enableCrosshair()
+        enableContextMenuPrevent()
     }
     show_game_over(g:GameOverPacket){
         ShowElement(this.content.gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
-        if(g.Win){
-            this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover-you-win",{})
+        disableContextMenuPrevent()
+
+        this.game.game_over=true
+        if(g.status.win){
+            this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
         }else{
-            this.game.ambient.last_music_pos=this.game.ambient.music.get_position()
+            this.game.ambient.last_music_pos=this.game.ambient.music.offset
             this.game.ambient.music.set(null)
-            if(!this.players_name[g.Eliminator])return
-            this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover-eliminated-by",{
-                player:`<span id="gameover-eliminator">${this.players_name[g.Eliminator].full}</span>`
+            if(!this.players_name[g.status.eliminator])return
+            this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
+                player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
-            /*this.content.gameOver_status.innerText=`You Die!`
-            this.content.gameOver_status.style.color=""
-            if(Math.random()<=0.01){
-                const ge=document.createElement("span")
-                ge.id="gameover-you-dead"
-                ge.innerText="You Die!"
-                document.body.appendChild(ge)
-                setTimeout(()=>{
-                    ge.remove()
-                },2900)
-            }*/
         }
-        /*this.content.gameOver_kills.innerText=`Kills: ${g.Kills}`
-        this.content.gameOver_damaged.innerText=`Damage Dealth: ${g.DamageDealth}`
-        this.content.gameOver_score.innerText=`Score: 0`*/
+        let content=""
+        for(const status of g.status.status){
+            content+=`
+<div class="background-menu-blue">
+    <h1>${this.players_name[status.id].full}</h1>
+    <span>Kills: ${status.kills}</span>
+    <span>Damage: ${status.damage}</span>
+    <span>Damage Taken: ${status.damage_taken}</span>
+    <span>Final Score: ${status.score}</span>
+</div>
+`
+        }
+        this.content.gameover_status_container.innerHTML=content
     }
     ping_time:number=0
     update(dt:number){
-        if(this.information_killbox_messages.length>0){
-            if(this.information_killbox_time<=0){
-                ShowElement(this.content.information_killbox)
-                this.content.information_killbox.innerHTML=this.information_killbox_messages[0]
-            }
-            this.information_killbox_time+=dt
-            if(this.information_killbox_time>=3){
-                this.information_killbox_time=0
-                this.information_killbox_messages.splice(this.information_killbox_messages.length-1,1)
-                HideElement(this.content.information_killbox)
-            }
-        }
         if(this.game.client&&this.game.client.opened){
             this.ping_time-=dt
             if(this.ping_time<=0){
@@ -571,7 +605,7 @@ export class UiManager{
             switch(o.number_type){
                 case GameObjectType.Building:{
                     for(const ceiling of (o as Building).ceilings){
-                        if(ceiling.hitbox.collidingWith(player.hitbox)){
+                        if(ceiling.alive&&ceiling.hitbox.colliding_with(player.hitbox)){
                             ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,Numeric.dt_expo_inter(5,dt))
                             ceiling.collided=true
                         }
@@ -580,38 +614,27 @@ export class UiManager{
             }
             if(!o.can_interact(player)) continue
             this.current_interaction = o
-            const hint = o.get_interact_hint(player)
-            if(hint) {
-                this.state.information_box_message = hint
-            }
             if(this.current_interaction!==old_inter){
                 if(this.game.save.get_variable("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
-                    this.game.input_manager.emit("actiondown",{action:"interact"})
+                    this.game.input_manager.listener.emit("actiondown",{action:"interact"})
+                }
+                const hint = o.get_interact_hint(player)
+                if(hint){
+                    this.game.ui_manager.signal("interaction_hint", hint)
                 }
             }
             break
         }
-        /*const objects:ClientGameObject2D[]=this.manager.cells.get_objects(this.hitbox,this.layer)
-        for(const obj of objects){
-            if(obj.id===this.id)continue
-            switch(obj.stringType){
-                case "building":{
-                    const o:Building=obj as Building
-                    for(const ceiling of o.ceilings){
-                        if(ceiling.hitbox.collidingWith(this.hitbox)){
-                            ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,1/(1+dt*1000))
-                            ceiling.collided=true
-                        }
-                    }
-                }
-            }
-        }*/
+        if(!this.current_interaction&&old_inter){
+            this.game.ui_manager.signal("interaction_hint", "")
+        }
+        this.state.gun=player.current_weapon?.item_type===InventoryItemType.gun
         this.update_hint()
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse.position)
+                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.position)
             )
-            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse.position)
+            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.position)
 
             const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
             const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
@@ -655,5 +678,20 @@ export class UiManager{
             this.game.inventory.set_backpack(player.backpack)
             this.game.ui_manager.signal("backpack_dirty",player.backpack)
         }
+        
+        this.game.ui_manager.signal("active_player_update",{dt,player})
+    }
+
+    items: {id:number,count:number}[] = []
+    free_slot(id:string,limit:number):boolean{
+        return this.items.some((v)=>{
+            return v.count===0||(v.id===this.game.definitions.game_items.keysString[id]&&v.count<limit)
+        })
+    }
+    melee_free():boolean{
+        return this.game.inventory.weapon_is_free(0)
+    }
+    gun_free():boolean{
+        return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
     }
 }

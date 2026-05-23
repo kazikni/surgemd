@@ -1,0 +1,10 @@
+{
+    "appId": "io.surgemd.game",
+    "appName": "Surgemd",
+    "webDir": "../../client/dist",
+    "bundledWebRuntime": false,
+    "android": {
+        "backgroundColor": "#000000",
+        "allowMixedContent": true
+    }
+}

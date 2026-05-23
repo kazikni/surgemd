@@ -1,4 +1,4 @@
-import { random, v2 } from "../../../engine/core.ts";
+import { v2 } from "../../../engine/core.ts";
 import { Layers } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { MapDef } from "./base.ts";
@@ -36,7 +36,7 @@ export const DebugMap:MapDef={
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
             map.game.add_loot(v2(x,y),item,Infinity)
             i++
-            if(i>=15){
+            if(i>=20){
                 i=0
                 x=map.size.x/2
                 y+=2
@@ -48,11 +48,11 @@ export const DebugMap:MapDef={
         y=map.size.y/2-10
         i=0
         for(const def of Object.values(map.game.definitions.obstacles.valueNumber)){
-            const o=map.game.map.add_obstacle(def,undefined,Layers.Normal)
+            const o=map.game.map.add_obstacle(def,Layers.Normal)
             o.initialize(0)
             o.set_position(v2(x,y))
             i++
-            if(i>=15){
+            if(i>=20){
                 i=0
                 x=map.size.x/2
                 y-=5
@@ -63,7 +63,7 @@ export const DebugMap:MapDef={
         for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
             const v=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
             i++
-            if(i>=15){
+            if(i>=20){
                 i=0
                 x=map.size.x/2
                 y-=5
@@ -112,9 +112,27 @@ export const SingleBuildMap:MapDef={
         },
     },
     gen_callback(map) {
-        const def=map.game.definitions.buildings.getFromString("small_house_1")
+        //const def=map.game.definitions.buildings.getFromString("shed")
+        //const def=map.game.definitions.buildings.getFromString("bunker_1")
+        //const def=map.game.definitions.buildings.getFromString("small_house_1")
+        //const def=map.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,4)}`)
+        const def=map.game.definitions.buildings.getFromString("black_container")
 
         const b=map.game.map.add_building(def)
-        b.generate(v2.dscale(map.size,2),0)
+        b.init(0)
+        b.generate(v2.dscale(map.size,2))
+
+        /*let pos=v2.dscale(map.size,2)
+        for(let i=0;i<5;i++){
+            v2m.add(pos,pos,v2(5,0))
+            const b=map.game.map.add_building(def,Layers.Normal-i-1)
+            b.generate(pos,0)
+        }
+        pos=v2.dscale(map.size,2)
+        for(let i=0;i<5;i++){
+            v2m.sub(pos,pos,v2(5,0))
+            const b=map.game.map.add_building(def,Layers.Normal+i+1)
+            b.generate(pos,2)
+        }*/
     },
 }

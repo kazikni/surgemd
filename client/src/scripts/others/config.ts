@@ -50,6 +50,17 @@ export const ConfigCasters=Object.freeze({
 
     sv_ui_primary_color:Casters.toString,
     sv_ui_secondary_color:Casters.toString,
+    sv_ui_positive_color:Casters.toString,
+    sv_ui_negative_color:Casters.toString,
+    sv_ui_special_color:Casters.toString,
+    sv_ui_translation:Casters.toString,
+    sv_ui_interactive:Casters.toBoolean,
+
+    sv_loadout_female:Casters.toBoolean,
+    sv_loadout_body_tint:Casters.toString,
+    sv_loadout_hair:Casters.toString,
+    sv_loadout_hair_tint:Casters.toString,
+    sv_loadout_shirt:Casters.toString,
 })
 export const ConfigDefaultValues={
     sv_loadout_skin:"default_skin",
@@ -77,6 +88,17 @@ export const ConfigDefaultValues={
 
     sv_ui_primary_color:"#4f6ef7",
     sv_ui_secondary_color:"#1c2447",
+    sv_ui_positive_color:"#00ccff",
+    sv_ui_negative_color:"#ff3c00",
+    sv_ui_special_color:"#fffb00",
+    sv_ui_translation:"en",
+    sv_ui_interactive:true,
+
+    sv_loadout_female:false,
+    sv_loadout_body_tint:"#f0a93f",
+    sv_loadout_hair:"hair_1",
+    sv_loadout_hair_tint:"#222222",
+    sv_loadout_shirt:"blue_shirt",
 }
 export const ConfigDefaultActions={
     "move_up":{
@@ -104,7 +126,7 @@ export const ConfigDefaultActions={
         keys:[Key.Mouse_Right]
     },
     "emote_wheel":{
-        buttons:[GamepadButtonID.DPAD_Up],
+        buttons:[GamepadButtonID.Y],
         keys:[Key.V]
     },
     "reload":{
@@ -176,11 +198,11 @@ export const ConfigDefaultActions={
         keys:[]
     },
     "previous_scope":{
-        buttons:[],
+        buttons:[GamepadButtonID.DPAD_Down],
         keys:[Key.Mouse_Wheel_Up]
     },
     "next_scope":{
-        buttons:[],
+        buttons:[GamepadButtonID.DPAD_Up],
         keys:[Key.Mouse_Wheel_Down]
     },
     "next":{

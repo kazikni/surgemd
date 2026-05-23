@@ -1,9 +1,9 @@
-import { CamA, Container2DObject } from "./base.ts";
+/*import { CamA, Container2DObject } from "./base.ts";
 import { WebglRenderer } from "../rendering/renderer.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts";
 import { ImageModel2D, model2d, Model2D } from "../../core/definition/models.ts";
 import { Camera2D } from "./camera.ts"
-import { DefaultTexCoords, ResourcesManager } from "../resources/resources.ts";
+import { ResourcesManager } from "../resources/resources.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 export class SubCanvas2D extends Container2DObject {
@@ -170,4 +170,4 @@ export class SubCanvas2D extends Container2DObject {
             resolve()
         })
     }
-}
+}*/

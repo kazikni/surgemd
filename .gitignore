@@ -10,6 +10,7 @@ node_modules
 
 dist
 dist-ssr
+build
 
 .vite
 *.local
@@ -51,13 +52,13 @@ go.work.sum
 
 !/build/.npmkeep
 
-/client/android/app/src/main/assets
-/client/android/app/src/main/assets/*
-app/src/main/release
-/client/android/app/src/main/res
-/client/android/app/src/main/res/*
-!/client/android/app/src/main/resvalues
-!/client/android/app/src/main/resxml/file_paths.xml
+/desktop/capacitor/android/app/build/
+/desktop/capacitor/android/build/
+/desktop/capacitor/android/app/src/main/assets/*
+/desktop/capacitor/android/app/src/main/res/mipmap-*
+/desktop/capacitor/android/app/src/main/res/drawable-*
+/desktop/capacitor/android/.gradle/
+/desktop/capacitor/android/local.properties
 
 __pycache__
 __pycache__/*

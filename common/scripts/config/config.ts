@@ -39,6 +39,7 @@ export interface ConfigType{
     api: {
         host: HostConfig
         global:string
+        key:string
     };
     game: {
         max_games: number
@@ -71,7 +72,8 @@ export function ZeroConfig():ConfigType{
             host:{
                 port:-1
             },
-            global:""
+            global:"",
+            key:""
         },
         database:{
             enabled:false,

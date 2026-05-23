@@ -23,6 +23,7 @@ export interface ABParticle2Config{
     direction:number
     life_time:number
     zIndex?:number
+    layer?:number
     angle?:number
     scale?:number
     tint?:Color
@@ -67,9 +68,8 @@ export class ABParticle2D extends ClientParticle2D{
         this.sprite.scale=v2(config.scale??1,config.scale??1)
         this.sprite.rotation=config.angle??0
         this.sprite.zIndex=config.zIndex??0
-        if(config.tint){
-            this.sprite.tint=ColorM.clone(config.tint)
-        }
+        if(config.layer)this.sprite.layer=config.layer
+        if(config.tint)this.sprite.tint=ColorM.clone(config.tint)
     }
     override update(dt: number): void {
         this.ticks+=dt

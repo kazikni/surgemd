@@ -1,17 +1,17 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
-import { Materials, ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
+import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
+import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
-
     if(skin>0&&def.assets?.frame?.biome_skins){
         spr+=`_${def.assets.frame.biome_skins[skin-1]}`
     }
-    if(def.assets?.frame?.variations){
+    if(def.assets?.frame?.variations&&(def.assets.frame.sprite_variations===undefined?true:def.assets.frame.sprite_variations)){
         spr+=`_${variation}`
     }
     return spr
@@ -66,7 +66,6 @@ export class Obstacle extends StaticBody{
     }={
         frame:{
             base:"",
-            particles:[],
         },
         sounds:{
             hit:[],
@@ -83,8 +82,8 @@ export class Obstacle extends StaticBody{
 
         this.container.visible=false
         this.container.add_child(this.sprite)
-
-        this.sprite.hotspot=v2(.5,.5)
+        this.sprite.hotspot=v2.half_one
+        this.sprite.scale=v2(2,2)
     }
     override on_layer_set(layer: number): void {
         this.container.layer=layer
@@ -102,23 +101,32 @@ export class Obstacle extends StaticBody{
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
 
         if(this.health_data.dead){
-            if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_sprite(this.assets_data.frame.dead)
-            this.container.zIndex=zIndexes.DeadObstacles
-            if(this.emitter_1)this.emitter_1.destroyed=true
+            if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
 
+            this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
+
+            if(this.emitter_1)this.emitter_1.destroyed=true
             this.physical_data.no_bullets_collision=true
         }else{
-            this.sprite.frame=this.game.resources.get_sprite(this.assets_data.frame.base)
-            this.container.zIndex=this.def.zIndex??zIndexes.Obstacles1
-            this.physical_data.no_bullets_collision=false
+            this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
+            this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
+
+            this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
+            this.physical_data.no_collision=this.def.no_collision??false
         }
+
         this.container.visible=true
+
+        const tid=this.def.assets?.frame?.tint_variations
+        if(tid){
+            this.sprite.tint=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+        }
     }
     die(){
         if(this.health_data.dead)return
         this.health_data.dead=true
-        
         if(this.emitter_1)this.emitter_1.enabled=false
+
         const ac=random.int(8,13)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
@@ -129,100 +137,49 @@ export class Obstacle extends StaticBody{
             this.game.sounds.play(this.assets_data.sounds.break,{
                 position:this.position,
                 max_distance:15,
-            },"obstacles")
+                bus:"obstacles"
+            })
         }
         this.update_frame()
-
-        this.physical_data.no_collision=true
-        this.physical_data.no_bullets_collision=true
     }
-    override render(camera: Camera2D, _dt: number): void {
-        /*super.render(camera, _dt)
-        if(this.def.world_shadow){
-            camera.ctx.fill_style=this.game.world_shadow.color
-            camera.ctx.fill_model(this.def.world_shadow.model,v2.add(this.position,this.game.world_shadow.offset),v2.scale(this.container.scale,this.game.world_shadow.radius),0)
-        }*/
-    }
-    update(_dt:number): void {
-        
-    }
+    override render(camera: Camera2D, _dt: number): void {}
+    update(_dt:number): void {}
     set_definition(def:ObstacleDef){
         if(this.def)return
         this.def=def
 
-        if(this.def.assets?.sounds){
-            this.assets_data.sounds={
-                break:this.game.resources.get_audio(this.def.assets.sounds.break),
-                hit:[]
-            }
-            if(this.def.assets?.sounds.hit_variations){
-                for(let i=1;i<=this.def.assets.sounds.hit_variations;i++){
-                    this.assets_data.sounds.hit.push(this.game.resources.get_audio(this.def.assets.sounds.hit+`_${i}`))
-                }
-            }else{
-                this.game.resources.get_audio(this.def.assets.sounds.hit)
-            }
-        }else if(this.def.material){
-            const mat=Materials[this.def.material]
-            this.assets_data.sounds={
-                break:this.game.resources.get_audio(mat.sounds+"_break"),
-                hit:[]
-            }
-            if(mat.hit_variations){
-                for(let i=1;i<=mat.hit_variations;i++){
-                    this.assets_data.sounds.hit!.push(this.game.resources.get_audio(mat.sounds+`_hit_${i}`))
-                }
-            }else{
-                this.game.resources.get_audio(mat.sounds+"_hit")
-            }
-        }
         this.assets_data.frame={
             base:GetObstacleBaseFrame(this.def,this.variation,this.skin),
-            particles:[]
         }
-
         this.assets_data.frame.dead=this.def.assets?.frame?.dead??this.def.idString+"_dead"
-        this.assets_data.frame.particles.push((this.def.assets?.frame?.particle)??(this.def.idString+"_particle"))
 
-        if(this.def.particles){
-            if(this.def.particles.tint)this.assets_data.particles_tint=ColorM.number(this.def.particles.tint)
+        if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets!.sounds!)
+        if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.variation-1,this.def.assets.particles)
 
-            if(this.def.particles.variations){
-                const fn=this.assets_data.frame.particles[0]
-                this.assets_data.frame.particles.length=0
-                for(let i=0;i<this.def.particles.variations;i++){
-                    this.assets_data.frame.particles.push(`${fn}_${i+1}`)
-                }
-            }
-        }
-
-        if(this.def.onDestroyExplosion&&this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
+        if(this.def.onDestroyExplosion){
             if(!this.emitter_1){
                 this.emitter_1=this.game.particles.add_emiter({
                     delay:0.5,
                     particle:()=>new ABParticle2D({
                         frame:{
-                            image:"gas_smoke_particle"
+                            image:"gas_smoke_particle",
                         },
+                        zIndex:zIndexes.Particles,
+                        layer:this.layer,
                         position:this.position,
-                        speed:random.float(0.5,0.7),
                         angle:0,
+                        scale:0,
+                        speed:random.float(0.5,0.7),
                         direction:random.float(-1.45,-1.65),
                         life_time:random.float(4,6),
-                        zIndex:zIndexes.Particles,
-                        scale:0,
-                        tint:ColorM.hex("#fff5"),
-                        to:{scale:random.float(0.7,1.2),tint:ColorM.hex("#fff0")}
+                        tint:ColorM.rgba(255,255,255,150),
+                        to:{scale:random.float(0.7,1.2),tint:ColorM.rgba(255,255,255,0)}
                     }),
                     enabled:this.health_data.health<=0.4,
                 })
             }
         }
-
-        this.physical_data.no_collision=this.def.no_collision??false
-        this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
-
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 3:
@@ -232,6 +189,14 @@ export class Obstacle extends StaticBody{
                     break
             }
         }
+    }
+
+    override set_hit_sounds_def(sounds: HitSoundsDef): void {
+        this.assets_data.sounds={
+            break:sounds.break?this.game.resources.get_sound(sounds.break):undefined,
+            hit:[]
+        }
+        super.set_hit_sounds_def(sounds)
     }
     initialize_hitboxes(){
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
@@ -253,23 +218,21 @@ export class Obstacle extends StaticBody{
         if(this.transform_into_data?.activated)return
         this.transform_into_data!.activated=true
 
-        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound)this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound!),{
+        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound)this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sound!),{
             max_distance:30,
-        },"obstacles")
+            bus:"obstacles"
+        })
         for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).particles??[]){
             this.game.add_timeout(()=>{
                 for(let c=0;c<p.count;c++){
                     this.game.particles.add_particle(new ABParticle2D({
-                        frame:p.frame,
-
+                        frame:{layer:this.layer,...p.frame},
                         position:this.position,
                         speed:random.float(1,2),
                         angle:this.physical_data.rotation,
                         direction:random.rad(),
                         life_time:2,
                         zIndex:zIndexes.Particles,
-
-                        tint:this.assets_data.particles_tint,
                         to:{
                             speed:random.float(0.1,1),
                             angle:this.physical_data.rotation+random.rad(),
@@ -301,13 +264,15 @@ export class Obstacle extends StaticBody{
                 this.container.rotation=new_rot
             }else{
                 if(ne===0&&(this.def.expanded_behavior as ObstacleBehaviorDoor).close_sound){
-                    this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorDoor).close_sound!),{
+                    this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorDoor).close_sound!),{
                         max_distance:30,
-                    },"obstacles")
+                        bus:"obstacles"
+                    })
                 }else if((this.def.expanded_behavior as ObstacleBehaviorDoor).open_sound){
-                    this.game.sounds.play(this.game.resources.get_audio((this.def.expanded_behavior as ObstacleBehaviorDoor).open_sound!),{
+                    this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorDoor).open_sound!),{
                         max_distance:30,
-                    },"obstacles")
+                        bus:"obstacles"
+                    })
                 }
 
                 this.door_data!.tween=this.game.add_tween({
@@ -327,11 +292,11 @@ export class Obstacle extends StaticBody{
             if(this.def.expanded_behavior.type==1){
                 if(this.interacted)return
                 this.interacted=true
-                this.game.sounds.play(this.game.resources.get_audio(this.def.expanded_behavior.click_sound),{
+                this.game.sounds.play(this.game.resources.get_sound(this.def.expanded_behavior.click_sound),{
                     position:this.position,
                 })
                 this.game.add_timeout(()=>{
-                    this.game.sounds.play(this.game.resources.get_audio("menu_music"),{
+                    this.game.sounds.play(this.game.resources.get_sound("menu_music"),{
                         position:this.position,
                     })
                 },this.def.expanded_behavior.delay)
@@ -340,15 +305,30 @@ export class Obstacle extends StaticBody{
     }
     override get_interact_hint(h:Human){
         if (this.def.interactDestroy) {
-            return h.game.language.get("interact-obstacle-break", {})
+            return h.game.language.get("interact.obstacles.break", {})
         }
-        return h.game.language.get(
-            "interact-obstacle-playaudio-" + this.id,
-            {}
-        )
+        if(this.def.expanded_behavior){
+            switch(this.def.expanded_behavior.type){
+                case 0:
+                    return h.game.language.get("interact.obstacles.door."+(this.door_data?.open?"open":"close"),{
+                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                    })
+                case 1:
+                    return h.game.language.get("interact.obstacles.playaudio",{
+                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                    })
+                case 2:
+                    return h.game.language.get("interact.obstacles.scalable",{})
+                case 3:
+                    return h.game.language.get("interact.obstacles.transform-into."+this.def.idString,{
+                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                    })
+            }
+        }
+        return ""
     }
     override can_interact(h:Human): boolean {
-        return !this.health_data.dead&&this.hitbox.collidingWith(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
+        return !this.health_data.dead&&this.hitbox.colliding_with(h.hitbox)&&(this.def.interactDestroy===true||this.def.expanded_behavior!==undefined)
     }
     override auto_interact(h:Human): boolean {
         return (this.def.interactDestroy===true)

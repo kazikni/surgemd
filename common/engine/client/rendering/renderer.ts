@@ -1,5 +1,5 @@
 import { Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_GridMatArgs, GL2D_GridMatAttr, GL2D_LightMatArgs, GL2D_LightMatAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Grid, GLF_Light, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
+import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_GridMatArgs, GL2D_GridMatAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Grid, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
 import { Matrix } from "../../core/math/matrix.ts";
@@ -72,7 +72,7 @@ export class WebglRenderer extends Renderer {
         grid:GLMaterialFactory<GL2D_GridMatArgs,GL2D_GridMatAttr>,
         texture:GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
-        light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
+        //light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
     }
     readonly factorys3D:{
         simple:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatAttr>,
@@ -117,7 +117,7 @@ export class WebglRenderer extends Renderer {
             grid:this.proccess_factory(GLF_Grid),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
             texture:this.proccess_factory(GLF_Texture),
-            light:this.proccess_factory(GLF_Light),
+            //light:this.proccess_factory(GLF_Light),
         }
 
         this.factorys3D={
@@ -225,7 +225,6 @@ export function applyBorder(elem: HTMLElement) {
 
 export function applyShadow(elem: HTMLElement) {
     elem.style.boxShadow = "0px 4px 17px 0px rgba(0,0,0,0.19)";
-    elem.style.webkitBoxShadow = "0px 4px 17px 0px rgba(0,0,0,0.19)";
 }
 
 export function fullCanvas(elem: HTMLCanvasElement) {

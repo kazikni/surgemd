@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>News</title>
+        <style>
+            :root{
+                --bg:#0d1117;
+                --bg2:#161b22;
+                --card:#1c2128;
+                --blue:#07aaee;
+                --text:#f2f2f2;
+                --text2:#b8c0cc;
+                --border:#2d3748;
+                --shadow:#00000055;
+            }
+            *{
+                box-sizing:border-box;
+            }
+            html,
+            body{
+                margin:0;
+                padding:0;
+                width:100%;
+                min-height:100%;
+                background:linear-gradient(
+                    180deg,
+                    #0b0f14 0%,
+                    #111827 100%
+                );
+                color:var(--text);
+                font-family:"Inter",sans-serif;
+            }
+            body{
+                display:flex;
+                justify-content:center;
+            }
+            #news{
+                width:min(1100px,100%);
+                padding:40px 20px 80px;
+            }
+            .news-header{
+                margin-bottom:40px;
+                border-bottom:1px solid var(--border);
+                padding-bottom:20px;
+            }
+            .news-title{
+                margin:0;
+                font-size:48px;
+                font-weight:900;
+                letter-spacing:-2px;
+            }
+            .news-subtitle{
+                margin-top:10px;
+                color:var(--text2);
+                font-size:18px;
+            }
+            .news-list{
+                display:flex;
+                flex-direction:column;
+                gap:30px;
+            }
+            .news-card{
+                background:rgba(22,27,34,0.85);
+                border:1px solid rgba(7,170,238,0.2);
+                border-radius:20px;
+                overflow:hidden;
+                transition:0.25s;
+                box-shadow:0 10px 30px var(--shadow);
+                backdrop-filter:blur(8px);
+            }
+            .news-card:hover{
+                transform:translateY(-4px);
+                border-color:rgba(7,170,238,0.45);
+                box-shadow:
+                    0 0 20px rgba(7,170,238,0.15),
+                    0 12px 40px rgba(0,0,0,0.45);
+            }
+            .news-cover{
+                width:100%;
+                height:320px;
+                object-fit:cover;
+                display:block;
+                background:#111;
+            }
+            .news-content{
+                padding:28px;
+            }
+            .news-meta{
+                display:flex;
+                align-items:center;
+                gap:12px;
+                margin-bottom:16px;
+                color:var(--text2);
+                font-size:14px;
+            }
+            .news-badge{
+                background:rgba(7,170,238,0.15);
+                border:1px solid rgba(7,170,238,0.4);
+                color:#7ddcff;
+                padding:4px 10px;
+                border-radius:999px;
+                font-size:12px;
+                font-weight:700;
+                text-transform:uppercase;
+            }
+            .news-card-title{
+                margin:0 0 18px;
+                font-size:38px;
+                line-height:1.1;
+                font-weight:900;
+            }
+            .news-description{
+                color:var(--text2);
+                line-height:1.8;
+                font-size:17px;
+            }
+            .news-description img{
+                max-width:100%;
+                border-radius:14px;
+            }
+            .news-description video{
+                max-width:100%;
+                border-radius:14px;
+            }
+            .news-description h1,
+            .news-description h2,
+            .news-description h3{
+                margin-top:32px;
+            }
+            .news-description code{
+                background:#00000055;
+                padding:2px 6px;
+                border-radius:6px;
+            }
+            .news-description pre{
+                background:#0a0a0a;
+                border:1px solid #222;
+                padding:18px;
+                overflow:auto;
+                border-radius:14px;
+            }
+            .news-footer{
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-top:28px;
+                gap:15px;
+                flex-wrap:wrap;
+            }
+            .news-button{
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                gap:10px;
+                padding:12px 22px;
+                background:linear-gradient(
+                    135deg,
+                    rgba(7,170,238,0.15),
+                    rgba(7,170,238,0.25)
+                );
+                border:1px solid rgba(7,170,238,0.4);
+                color:white;
+                text-decoration:none;
+                border-radius:14px;
+                font-weight:700;
+                transition:0.2s;
+            }
+            .news-button:hover{
+                transform:translateY(-2px);
+                background:linear-gradient(
+                    135deg,
+                    rgba(7,170,238,0.25),
+                    rgba(7,170,238,0.4)
+                );
+                box-shadow:0 0 18px rgba(7,170,238,0.2);
+            }
+            .news-author{
+                color:var(--text2);
+                font-size:14px;
+            }
+            .loading{
+                padding:50px;
+                text-align:center;
+                color:var(--text2);
+            }
+            @media (max-width:768px){
+                #news{
+                    padding:20px 12px 60px;
+                }
+                .news-title{
+                    font-size:34px;
+                }
+                .news-card-title{
+                    font-size:28px;
+                }
+                .news-cover{
+                    height:200px;
+                }
+                .news-content{
+                    padding:18px;
+                }
+                .news-description{
+                    font-size:15px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main id="news">
+            <div class="loading">
+                Loading News...
+            </div>
+        </main>
+        <script type="module">
+            import { formatToHtml } from "/scripts/markdown.js"
+            const container = document.querySelector("#news")
+            const NEWS_PATH = "/scripts/news/"
+            async function loadNews(){
+                try{
+                    const main = await (
+                        await fetch(NEWS_PATH + "main.json")
+                    ).json()
+                    container.innerHTML = `
+                        <header class="news-header">
+                            <h1 class="news-title">SURGEMD NEWS</h1>
+                            <div class="news-subtitle">
+                                Updates, patches, events and development logs
+                            </div>
+                        </header>
+
+                        <section class="news-list"></section>
+                    `
+                    const list = container.querySelector(".news-list")
+                    for(const news of main.order){
+                        const markdown = await (
+                            await fetch(
+                                NEWS_PATH + "content/" + news.id + ".md"
+                            )
+                        ).text()
+                        const html = markdown
+                        const article = document.createElement("article")
+                        article.className = "news-card"
+                        article.innerHTML = `${
+                                news.cover
+                                    ? `<img class="news-cover" src="${news.cover}" draggable="false">`
+                                    : ""
+                            }
+
+                            <div class="news-content">
+
+                                <div class="news-meta">
+                                    <div class="news-badge">
+                                        Update
+                                    </div>
+
+                                    ${
+                                        news.date
+                                            ? `<span>${news.date}</span>`
+                                            : ""
+                                    }
+                                </div>
+
+                                <h2 class="news-card-title">
+                                    ${news.title}
+                                </h2>
+
+                                <div class="news-description">
+                                    ${html}
+                                </div>
+
+                                <div class="news-footer">
+                                    <div class="news-author">
+                                        ${
+                                            news.author
+                                                ? `By ${news.author}`
+                                                : "SURGEMD Team"
+                                        }
+                                    </div>
+
+                                    <a
+                                        class="news-button"
+                                        href="/pages/news/?id=${news.id}"
+                                    >
+                                        Read Full Article
+                                    </a>
+                                </div>
+                            </div>
+                        `
+
+                        list.appendChild(article)
+                    }
+
+                }catch(err){
+                    console.error(err)
+
+                    container.innerHTML = `
+                        <div class="loading">
+                            Failed To Load News
+                        </div>
+                    `
+                }
+            }
+
+            loadNews()
+        </script>
+    </body>
+</html>

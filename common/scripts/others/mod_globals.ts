@@ -1,6 +1,6 @@
-import { FireMode, GasParticles, GunClasses, MuzzleFlash } from "../definitions/items/guns.ts";
+import { GasParticles, GunClasses, MuzzleFlash } from "../definitions/items/guns.ts";
 import { InventoryItemType } from "../definitions/utils.ts";
-import { ItemRank, tracers, WeaponsArmRig, WeaponsRig } from "./item.ts";
+import { FireMode, ItemRank, tracers, WeaponsArmRig, WeaponsRig } from "./item.ts";
 
 export function md_make_globals():Record<string,any>{
     return {

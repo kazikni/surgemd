@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { ActionsType, GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
 import { DamageSplash, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
@@ -21,11 +21,14 @@ import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
-import { type Player } from "./player.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+import { type Obstacle } from "./obstacle.ts";
+import { type Building } from "./building.ts";
+import { ConsumibleCondition } from "common/scripts/definitions/items/consumibles.ts";
+import { type Action, HelpupAction } from "../human/actions.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -59,9 +62,10 @@ export class Human extends MovingBody{
         velocity:v2.zero(),
 
         current_floor:0,
+        substeps:2,
     }
 
-    health_data:HumanHealthData&{boost_time:number,imortal:boolean,using_healing_speed:number}={
+    health_data:HumanHealthData&{boost_time:number,imortal:boolean}={
         imortal:false,
         invensibility_time:0,
 
@@ -72,9 +76,7 @@ export class Human extends MovingBody{
 
         boost:0,
         max_boost:100,
-        boost_def:Boosts[BoostType.Null],
-
-        using_healing_speed:0.35,
+        boost_def:Boosts[BoostType.Adrenaline],
         boost_time:0,
     }
     team_data:{
@@ -93,16 +95,19 @@ export class Human extends MovingBody{
         vest?:VestDef
         vest_health?:number
         scope:ScopeDef
+        default_scope:ScopeDef
+        force_default_scope:boolean
 
         dirty:boolean
         dirty_part:boolean
     }
 
     get scope_zoom():number{
-        return 20/this.equipment_data.scope.scope_view
+        return 20/(this.equipment_data.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
     loadout!:HumanLoadoutData&{
         dirty:boolean
+
         emote?:GameObjectDef
         emotes:{
             die?:EmoteDef
@@ -115,14 +120,14 @@ export class Human extends MovingBody{
             }
         }
     }
-    animation_data:HumanAnimationData&{switching:boolean,current_animation?:PlayerAnimation}={
+    animation_data:HumanAnimationData&{current_animation:PlayerAnimation[]}={
         dirty:true,
-        switching:false,
         attacking:false,
+        current_animation:[]
     }
 
     inventory:GInventory
-    actions:ActionsManager<this>
+    actions:ActionsManager<this,Action>
 
     parachute?:{
         value:number
@@ -156,6 +161,7 @@ export class Human extends MovingBody{
 
         auto_click:boolean
         using_item:boolean
+        using_item_alt:boolean
         using_item_down:boolean
 
         actions:InputAction[]
@@ -172,6 +178,7 @@ export class Human extends MovingBody{
 
         auto_click:false,
         using_item:false,
+        using_item_alt:false,
         using_item_down:false,
 
         actions:[],
@@ -184,6 +191,41 @@ export class Human extends MovingBody{
         def:GrenadeDef
         time:number
         slot?:Slot<LItem>
+    }
+
+    killed_by?:Human
+
+    downed_time:number=0
+    downed_by?:Human
+    downed_by_source?:DamageSourceDef
+
+    modifiers:HumanModifiers={
+        size:1,
+        boost:1,
+        health:1,
+        damage_reduction:1,
+
+        damage:1,
+        bullet_size:1,
+        bullet_speed:1,
+        critical_mult:1,
+
+        speed:1,
+
+        luck:1,
+        mana_consume:1,
+    }
+
+    temp_modifiers:Partial<HumanModifiers>={}
+
+    effects:Map<number,EffectInstance>=new Map()
+    effects_dirty:boolean=true
+    
+    status:HumanStatus={
+        damage:0,
+        damage_taken:0,
+        kills:0,
+        score:0,
     }
 
     constructor(){
@@ -220,7 +262,6 @@ export class Human extends MovingBody{
         this.loadout={
             dirty:true,
             original:{
-                //skin_id:"default_skin",
                 emotes:{
 
                 }
@@ -240,10 +281,13 @@ export class Human extends MovingBody{
 
             }
         }
+        const default_scope=this.game.definitions.scopes.getFromNumber(0)
         this.equipment_data={
             dirty:true,
             dirty_part:true,
-            scope:this.game.definitions.scopes.getFromNumber(0)
+            scope:default_scope,
+            default_scope,
+            force_default_scope:false
         }
         this.inventory.initialize(this.game.definitions,{
             0:MeleeItem as (new(item:GameItem)=>LItem),
@@ -251,38 +295,12 @@ export class Human extends MovingBody{
             2:GunItem as (new(item:GameItem)=>LItem),
         })
     }
+    override can_interact(user: Human): boolean {
+        return this.health_data.downed&&this.game.modeManager.is_ally(this,user)
+    }
     interact(user: Human): void {
-        if(!this.health_data.downed||!this.game.modeManager.is_ally(user,this))return
-        this.help_up()
+        user.actions.play(new HelpupAction(this))
     }
-
-    killed_by?:Human
-
-    downed_time:number=0
-    downed_by?:Human
-    downed_by_source?:DamageSourceDef
-
-    modifiers:HumanModifiers={
-        size:1,
-        boost:1,
-        health:1,
-        damage_reduction:1,
-
-        damage:1,
-        bullet_size:1,
-        bullet_speed:1,
-        critical_mult:1,
-
-        speed:1,
-
-        luck:1,
-        mana_consume:1,
-    }
-
-    temp_modifiers:Partial<HumanModifiers>={}
-
-    effects:Map<number,EffectInstance>=new Map()
-    effects_dirty:boolean=true
 
     set_preset(preset:HumanDefinition|undefined){
         if(!preset)return
@@ -309,12 +327,13 @@ export class Human extends MovingBody{
     update_modifiers(){
         this.modifiers.size=this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
         this.apply_modifiers(this.temp_modifiers)
+        if(this.equipment_data.helmet?.modifiers)this.apply_modifiers(this.equipment_data.helmet.modifiers)
+        if(this.equipment_data.vest?.modifiers)this.apply_modifiers(this.equipment_data.vest.modifiers)
         const rules=this.game.modeManager.rules.humans
 
         switch(this.health_data.boost_def.type){
-            case BoostType.Null:
-            case BoostType.Shield:
             case BoostType.Adrenaline:
+            case BoostType.Shield:
             case BoostType.Mana:
                 break
             case BoostType.Addiction:
@@ -330,9 +349,7 @@ export class Human extends MovingBody{
                 this.modifiers.damage_reduction-=(this.health_data.boost/this.health_data.max_boost)*rules.boosts.death.damage_reduction
                 break
         }
-
         this.inventory.accessorys.apply_modifiers(this)
-
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
                 if(sf.type===SideEffectType.Modify){
@@ -340,12 +357,9 @@ export class Human extends MovingBody{
                 }
             }
         }
-
         this.health_data.max_health=100*this.modifiers.health
         this.health_data.max_boost=100*this.modifiers.boost
-
         this.health_data.health=Math.min(this.health_data.health,this.health_data.max_health)
-
         if(this.physical_data.scale!==this.modifiers.size){
             this.physical_data.dirty=true
             this.physical_data.scale=this.modifiers.size
@@ -432,6 +446,26 @@ export class Human extends MovingBody{
                 break
         }
     }
+    consuming_condition(conditions:ConsumibleCondition[],side_effects:SideEffect[]):boolean{
+        for(const c of conditions){
+            for(const se of side_effects){
+                if(se.type!==SideEffectType.Heal)continue
+                switch(c){
+                    case ConsumibleCondition.UnfullHealth:
+                        if(
+                            this.health_data.health>=this.health_data.max_health*(se.health?.max??1)
+                        )return false
+                        break
+                    case ConsumibleCondition.UnfullExtra:
+                        if(
+                            (this.health_data.boost_def.type===se.boost?.def.type&&this.health_data.boost>=this.health_data.max_boost*(se.boost?.max??1))
+                        )return false
+                        break
+                }
+            }
+        }
+        return true
+    }
     throw_using_projectile(){
         if(!this.grenade_holding||(this.grenade_holding.slot&&this.grenade_holding.slot.quantity<=0)){
             this.grenade_holding=undefined
@@ -458,11 +492,16 @@ export class Human extends MovingBody{
         }
         this.grenade_holding=undefined
         this.inventory.net_sync.items=true
+
+        this.animation_data.dirty=true
+        this.animation_data.current_animation.push({
+            type:PlayerAnimationType.Throw
+        })
     }
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
             if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle)&&!(obj as StaticBody).physical_data.no_collision){
-                if(hb.collidingWith(obj.hitbox))return true
+                if(hb.colliding_with(obj.hitbox))return true
             }
         }
         return false
@@ -502,16 +541,19 @@ export class Human extends MovingBody{
         this.input.path_move=undefined
     }
     update_input(){
-        this.animation_data.switching=false
         if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===InventoryItemType.gun){
             (this.inventory.hand_item as GunItem).reloading=true
         }
         if(this.input.swamp_guns){
             this.inventory.swamp_guns()
         }
-        if(this.input.interaction&&this.seat){
-            this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
-            this.seat.clear_human()
+        if(this.input.interaction){
+            if(this.seat){
+                this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
+                this.seat.clear_human()
+            }else if(this.health_data.downed&&this.human_data.self_revive){
+                this.interact(this)
+            }
         }
         if(!this.health_data.downed&&!this.parachute){
             const executed:InputActionType[]=[]
@@ -531,9 +573,14 @@ export class Human extends MovingBody{
                                     break
                                 case 3:
                                     this.inventory.drop_slot(drop)
+                                    this.actions.cancel()
                                     break
                                 case 4:
                                     this.inventory.drop_item(drop)
+                                    this.actions.cancel()
+                                    break
+                                case 5:
+                                    this.inventory.drop_iitem(drop)
                                     break
                             }
                         }
@@ -573,7 +620,7 @@ export class Human extends MovingBody{
                             if(!l)break
                             this.game.add_loot(this.position,l,a.count,this.layer)
                             if(l.item_type===InventoryItemType.gun){
-                                this.game.add_loot(this.position,this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammoType),((l as unknown as GunDef).ammoSpawnAmount??0)*a.count,this.layer)
+                                this.game.add_loot(this.position,this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count,this.layer)
                             }
                         }
                         break
@@ -589,20 +636,40 @@ export class Human extends MovingBody{
     _can_interact=true
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
-            case GameObjectType.Obstacle:
-            case GameObjectType.Building:{
+            case GameObjectType.Obstacle:{
                 if((obj as StaticBody).physical_data.no_collision)break
-
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
                     (obj as Loot).interact(this)
                 }
-
-                const ov=this.hitbox.overlapCollision((obj as StaticBody).hitbox)
-                for(const c of ov){
-                    v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
+                const collision=this.hitbox.overlap_collisions(obj.hitbox)
+                for(const col of collision){
+                    v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
                 }
-
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(obj.layer+s.dest_layer)
+                    }
+                }
+                break
+            }
+            case GameObjectType.Building:{
+                if((obj as StaticBody).physical_data.no_collision)break
+                if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
+                    this._can_interact=false;
+                    (obj as Loot).interact(this)
+                }
+                const collision=this.hitbox.overlap_collisions(obj.hitbox)
+                for(const col of collision){
+                    v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
+                }
+                if(!this.equipment_data.force_default_scope){
+                    for(const c of (obj as Building).ceilings){
+                        if(!c.no_scope_block&&this.hitbox.overlap_collision(c.hitbox)){
+                            this.equipment_data.force_default_scope=true
+                        }
+                    }
+                }
                 break
             }
             case GameObjectType.Vehicle:{
@@ -616,10 +683,11 @@ export class Human extends MovingBody{
                 }*/
                 break
             }
+            case GameObjectType.Human:
             case GameObjectType.Loot:
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
-                    (obj as Loot).interact(this)
+                    obj.interact(this)
                 }
                 break
         }
@@ -631,17 +699,18 @@ export class Human extends MovingBody{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        const acceleration=Numeric.dt_expo_inter(40*(current_floor.acceleration??1),dt)
+        let acceleration=40*(current_floor.acceleration??1)
+            * (this.health_data.downed?0.4:1)
+        acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
-                  * (this.actions.current_action&&this.actions.current_action.type===ActionsType.Consuming?this.health_data.using_healing_speed:1)
-                  * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
-                  * this.modifiers.speed
-                  * (this.health_data.downed?0.25:1)
-                  * (this.parachute?1:((current_floor.speed_mult??1)))
-                  * (this.grenade_holding?0.7:1)
+            * (this.actions.current_action?.action_speed??1)
+            * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
+            * this.modifiers.speed
+            * (this.health_data.downed?0.25:1)
+            * (this.parachute?1:((current_floor.speed_mult??1)))
+            * (this.grenade_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
-            this.animation_data.current_animation=undefined
             if(this.recoil.delay<=0)this.recoil=undefined
         }
         const rules=this.game.modeManager.rules.humans
@@ -718,7 +787,6 @@ export class Human extends MovingBody{
             if(this.input.path&&this.input.path.length > 0){
                 const target = this.input.path[0]
                 const dist=v2.distance(this.position,target)
-
                 if (dist < 0.1) {
                     this.input.path.shift()
                     this.input.path_move=undefined
@@ -729,11 +797,8 @@ export class Human extends MovingBody{
                         return
                     }
                 }
-
                 const dest_rot = v2.lookTo(this.position,target)
-
                 this.physical_data.rotation = Numeric.lerp_rad(this.physical_data.rotation,dest_rot,Numeric.dt_expo_inter(15,dt))
-
                 this.input.path_move = v2.from_PolarMovement({
                     dir:dest_rot,
                     scale:1
@@ -744,7 +809,6 @@ export class Human extends MovingBody{
                 const move=v2.from_PolarMovement(this.input.movement)
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
-
                 if(this.health_data.downed){
                     this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
                 }else{
@@ -754,18 +818,19 @@ export class Human extends MovingBody{
                 this.physical_data.rotation=this.input.rotation
                 this.physical_data.velocity=v2.zero()
             }
-
+            this.equipment_data.force_default_scope=false
             super.update(dt)
-
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false
-                if(this.input.using_item&&this.inventory.hand_item&&!this.grenade_holding&&this.human_data.combat_enabled&&!this.health_data.downed){
-                    this.inventory.hand_item.on_fire(this)
-                    this.animation_data.attacking=this.inventory.hand_item.attacking()
-                    this.input.using_item_down=false
+                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.health_data.downed){
+                    if(this.input.using_item){
+                        this.inventory.hand_item.on_fire(this)
+                        this.input.using_item_down=false
+                    }else if(this.input.using_item_alt){
+                        this.inventory.hand_item.on_fire_alt(this)
+                    }
                 }
-
                 if(this.grenade_holding){
                     this.grenade_holding.time-=dt
                     if(this.grenade_holding.time<=0){
@@ -792,14 +857,6 @@ export class Human extends MovingBody{
                     }
                 }
             }
-            /*if(this.parachute){
-                speed*=1.7+(0.5+this.parachute.value)
-                this.parachute.value-=dt*0.05
-                if(this.parachute.value<=0){
-                    this.parachute=undefined
-                    this.net_sync.full=true
-                }
-            }*/
         }
         this.physical_data.dirty_part=true
         this.net_sync.part=true
@@ -876,6 +933,7 @@ export class Human extends MovingBody{
             }:undefined,
 
             current_scope:this.equipment_data.scope.idNumber!,
+            force_default_scope:this.equipment_data.force_default_scope,
 
             dirty:full?{
                 action:true,
@@ -934,6 +992,7 @@ export class Human extends MovingBody{
         this.physical_data.dirty_part=false
 
         this.animation_data.dirty=false
+        this.animation_data.current_animation.length=0
 
         this.loadout.dirty=false
         this.loadout.emote=undefined
@@ -944,10 +1003,17 @@ export class Human extends MovingBody{
 
         this.inventory.net_update()
     }
+    give_boost(amount:number){
+        if(this.health_data.boost_def.type===BoostType.Death){
+            this.health_data.boost=Math.max(this.health_data.boost-(amount/5),0)
+        }else{
+            this.health_data.boost=Math.min(this.health_data.boost+amount,this.health_data.max_boost)
+        }
+    }
     clear_boost(){
         this.health_data.boost=0
         this.health_data.boost_time=0
-        this.health_data.boost_def=Boosts[BoostType.Null]
+        this.health_data.boost_def=Boosts[0]
     }
     clear(){
         this.inventory.clear()
@@ -956,26 +1022,6 @@ export class Human extends MovingBody{
     }
     damage(params:DamageParams){
         if(this.health_data.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
-
-        /*if(this.equipment_data.helmet_health!==undefined){
-            this.equipment_data.helmet_health-=params.amount*0.5
-            this.equipment_data.dirty_part=true
-            if(this.equipment_data.helmet_health<=0){
-                this.equipment_data.helmet_health=0
-                this.equipment_data.helmet=undefined
-                this.equipment_data.dirty=true
-            }
-        }
-        if(this.equipment_data.vest_health!==undefined){
-            this.equipment_data.vest_health-=params.amount*0.5
-            this.equipment_data.dirty_part=true
-            if(this.equipment_data.vest_health<=0){
-                this.equipment_data.vest_health=0
-                this.equipment_data.vest=undefined
-                this.equipment_data.dirty=true
-            }
-        }*/
-
         let damage=params.amount
         let mod=1
         if(params.owner&&params.owner instanceof Human){
@@ -1000,7 +1046,6 @@ export class Human extends MovingBody{
         damage*=this.modifiers.damage_reduction
         damage*=mod
         params.amount=damage
-
         this.piercing_damage(params)
     }
     piercing_damage(params: DamageParams): [number, number] {
@@ -1026,12 +1071,12 @@ export class Human extends MovingBody{
             )
             if (this.health_data.boost === 0) {
                 this.health_data.invensibility_time = 0.35
-                this.health_data.boost_def = Boosts[BoostType.Null]
             }
         } else {
-            healthDamage = Math.min(this.health_data.health, params.amount)
+            healthDamage = params.amount
         }
         if (healthDamage > 0) {
+            const damage=Math.min(healthDamage,this.health_data.health)
             this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
             this.add_damage_splash(
                 params.owner,
@@ -1041,6 +1086,14 @@ export class Human extends MovingBody{
                 pos,
                 false
             )
+            if(params.owner&&params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
+                params.owner.status.damage+=damage
+                params.owner.status.score+=damage*this.game.modeManager.rules.score.damage_reward
+            }
+            if(!this.health_data.downed){
+                this.status.damage_taken+=damage
+                this.status.score-=damage*this.game.modeManager.rules.score.damage_taken_penalty
+            }
         }
         if (this.health_data.health === 0) {
             if (!this.health_data.downed && (this.game.modeManager.can_down(this)||this.human_data.self_revive)) {
@@ -1102,6 +1155,12 @@ export class Human extends MovingBody{
 
         this.splashes = merged
     }
+    reset_status(){
+        this.status.damage=0
+        this.status.damage_taken=0
+        this.status.kills=0
+        this.status.score=0
+    }
     down(params:DamageParams){
         if(this.health_data.downed)return
         this.health_data.downed=true
@@ -1109,14 +1168,13 @@ export class Human extends MovingBody{
         this.downed_by_source=params.source
 
         this.health_data.health=this.health_data.max_health
-        this.health_data.boost=0
-        this.health_data.boost_def=Boosts[BoostType.Null]
+        this.clear_boost()
 
         this.health_data.invensibility_time=1
 
         this.inventory.set_weapon_index(0)
 
-        this.push(-40,params.direction)
+        this.push(-20,params.direction)
     }
     help_up(){
         if(!this.health_data.downed)return
@@ -1145,12 +1203,15 @@ export class Human extends MovingBody{
         if(params.owner instanceof Human){
             if(params.owner.is_player){
                 if(params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
-                    (params.owner as Player).status.kills++
+                    params.owner.status.kills++
+                    params.owner.status.score+=this.game.modeManager.rules.score.kill_reward
                 }
             }
             params.owner.inventory.accessorys.call_event("kill",params)
         }
 
+        this.team_data.team?.on_human_die?.(this)
+        this.team_data.group?.on_human_die?.(this)
         this.game.modeManager.on_human_die(this)
         this.game.signals.emit("human_die",{human:this})
 
@@ -1171,23 +1232,19 @@ export class Human extends MovingBody{
             this.loadout.dirty, // 1
             this.animation_data.dirty, // 1
             this.effects_dirty,
+            this.health_data.boost_def.type===BoostType.Shield&&this.health_data.boost>0,
 
             // Inventory
-            this.inventory.net_sync.hand, // 1
+            this.inventory.net_sync.hand,this.inventory.net_sync.melee_world, // 2
 
             // State
             this.loadout.emote!==undefined, // 1
-            this.animation_data.current_animation!==undefined, // 1
-
-            this.animation_data.attacking,
-            this.animation_data.switching,
 
             this.health_data.dead,
             this.health_data.downed,
-            this.health_data.invensibility_time>0,
-        )
-        stream.writeBooleanGroup(
-            this.input.path===undefined
+
+            this.input.path===undefined,
+            this.seat!==undefined
         )
         // Physical
         if(full||this.physical_data.dirty_part||this.physical_data.dirty){
@@ -1208,13 +1265,21 @@ export class Human extends MovingBody{
         }
         // Loadout  
         if(full||this.loadout.dirty){
+            stream.writeBooleanGroup(
+                this.loadout.hair!==undefined,
+                this.loadout.eyes!==undefined,
+            )
             stream.writeUint16(this.loadout.body.def.idNumber!)
-            .writeUint16(this.loadout.hair.def.idNumber!)
-            .writeUint16(this.loadout.eyes.idNumber!)
-            .writeUint16(this.loadout.shirt.idNumber!)
+            if(this.loadout.hair){
+                stream.writeUint16(this.loadout.hair.def.idNumber!)
+                .writeUint32(this.loadout.hair.tint)
+            }
+            if(this.loadout.eyes){
+                stream.writeUint16(this.loadout.eyes.idNumber!)
+            }
+            stream.writeUint16(this.loadout.shirt.idNumber!)
             .writeUint16(this.loadout.legs.idNumber!)
             .writeUint32(this.loadout.body.tint)
-            .writeUint32(this.loadout.hair.tint)
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])
@@ -1224,23 +1289,29 @@ export class Human extends MovingBody{
                 stream.writeUint16(e.effect.idNumber!)
             },1)
         }
+        if(full||this.inventory.net_sync.hand){
+            stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
+        }
+        if(full||this.inventory.net_sync.melee_world){
+            stream.writeUint16(this.inventory.weapons[0]?.def.idNumber??0)
+        }
         if(full||this.animation_data.dirty){
-            if(this.animation_data.current_animation!==undefined){
-                stream.writeUint8(this.animation_data.current_animation.type)
-                switch(this.animation_data.current_animation.type){
+            stream.writeArray(this.animation_data.current_animation,(v)=>{
+                stream.writeUint8(v.type)
+                switch(v.type){
+                    case PlayerAnimationType.Fire:
+                        stream.writeBooleanGroup(v.alt,v.last)
+                        break
                     case PlayerAnimationType.Reloading:
-                        stream.writeUint8(this.animation_data.current_animation.alt_reload?1:0)
+                        stream.writeUint8(v.alt_reload?1:0)
                         break
                     case PlayerAnimationType.Consuming:
-                        stream.writeUint16(this.animation_data.current_animation.item)
+                        stream.writeUint16(v.item)
                         break
                     default:
                         break
                 }
-            }
-        }
-        if(full||this.inventory.net_sync.hand){
-            stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
+            },1)
         }
     }
 }

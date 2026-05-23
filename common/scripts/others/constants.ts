@@ -5,7 +5,7 @@ import { FloorType } from "./terrain.ts";
 export const GameConstants={
     player:{
         defaultName:"Player",
-        radius:0.37,
+        radius:0.42,
         max_name_size:25,
     },
     loot:{
@@ -25,12 +25,19 @@ export const GameConstants={
     }
 }
 export enum PlayerAnimationType{
+    Switch,
     Reloading,
     Consuming,
-    Melee
+    Melee,
+    Fire,
+    Cook,
+    Throw,
+    Reset
 }
 export type PlayerAnimation={
 }&({
+    type:PlayerAnimationType.Switch   
+}|{
     type:PlayerAnimationType.Reloading
     alt_reload:boolean
 }|{
@@ -38,6 +45,16 @@ export type PlayerAnimation={
     item:number
 }|{
     type:PlayerAnimationType.Melee
+}|{
+    type:PlayerAnimationType.Fire
+    last:boolean
+    alt:boolean
+}|{
+    type:PlayerAnimationType.Cook
+}|{
+    type:PlayerAnimationType.Throw
+}|{
+    type:PlayerAnimationType.Reset
 })
 export enum Layers{
     Normal=10
@@ -51,23 +68,25 @@ export enum zIndexes{
     Grid,
     BuildingsFloor,
     DeadObstacles,
+    DeadCeilings,
     Decals,
     DeadCreatures,
     PlayersBody,
-    Loots,
-    Bullets,
     Obstacles1,
     Obstacles2,
+    Loots,
+    Bullets,
     Rain2,
     Vehicles,
     Creatures,
     Players,
     Particles,
+    Grenade,
     Obstacles3,
-    Obstacles4,
     Explosions,
     SyncedParticle,
     BuildingsCeiling,
+    Obstacles4,
     ParachutePlayers,
     Rain1,
     Parachute,
@@ -75,11 +94,12 @@ export enum zIndexes{
     DeadZone,
     Lights,
     DamageSplashs,
-    Minimap
+    UI
 }
 export enum ActionsType{
     Reload,
-    Consuming
+    Consuming,
+    Helpup
 }
 
 export type HumanModifiers={
@@ -134,11 +154,11 @@ export interface HumanLoadoutData {
         def:LoadoutBodyDef
         tint:number
     }
-    hair:{
+    hair?:{
         def:LoadoutHairDef
         tint:number
     }
-    eyes:LoadoutEyesDef
+    eyes?:LoadoutEyesDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
 }
@@ -164,4 +184,11 @@ export enum GameObjectType{
     Creature,
     Parachute,
     SyncedParticle,
+    Plane
+}
+export interface HumanStatus{
+    damage:number
+    damage_taken:number
+    kills:number
+    score:number
 }

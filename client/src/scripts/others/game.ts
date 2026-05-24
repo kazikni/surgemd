@@ -44,6 +44,7 @@ import { NewMDLanguageManager } from "./languages.ts";
 import {building_from_json} from "common/scripts/definitions/objects/buildings_base.ts"
 import { load_kspr } from "common/engine/core/lang/kspx.ts";
 import { Plane } from "../objects/plane.ts";
+import { Decal } from "../objects/decals.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -113,7 +114,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane],
         )
 
         this.set_meter_size(80)

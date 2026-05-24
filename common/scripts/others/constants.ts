@@ -64,24 +64,28 @@ export const LayersL=[
 ]
 
 export enum zIndexes{
+    //Ground
     Terrain,
     Grid,
     BuildingsFloor,
+    Decals,
     DeadObstacles,
     DeadCeilings,
-    Decals,
+    ClientDecals,
     DeadCreatures,
     PlayersBody,
     Obstacles1,
     Obstacles2,
     Loots,
-    Bullets,
+    GrenadeGround,
     Rain2,
+
+    Bullets,
     Vehicles,
     Creatures,
     Players,
     Particles,
-    Grenade,
+    GrenadeAir,
     Obstacles3,
     Explosions,
     SyncedParticle,
@@ -94,7 +98,7 @@ export enum zIndexes{
     DeadZone,
     Lights,
     DamageSplashs,
-    UI
+    UI,
 }
 export enum ActionsType{
     Reload,
@@ -178,13 +182,14 @@ export enum GameObjectType{
     Obstacle,
     Building,
     Bullet,
+    Decal,
     Explosion,
     Grenade,
     Vehicle,
     Creature,
     Parachute,
     SyncedParticle,
-    Plane
+    Plane,
 }
 export interface HumanStatus{
     damage:number

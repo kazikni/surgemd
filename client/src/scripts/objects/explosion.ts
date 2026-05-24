@@ -86,7 +86,7 @@ export class Explosion extends GameObject{
                         },
                         scale:p.frame.scale,
                         zIndex:zIndexes.Particles,
-                        direction:random.deg(),
+                        direction:random.rad(),
                         life_time:random.float(p.lifetime.min,p.lifetime.max),
                         position:this.position,
                         speed:random.float(p.speed.min,p.speed.max),

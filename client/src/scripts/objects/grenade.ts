@@ -35,6 +35,11 @@ export class Grenade extends MovingBody{
         this.sprite.position=this.position
         this.sprite.rotation=this.physical_data.rotation
         this.sprite.scale=v2(s,s)
+        if(this.physical_data.zpos===0){
+            this.sprite.zIndex=zIndexes.GrenadeGround
+        }else{
+            this.sprite.zIndex=zIndexes.GrenadeAir
+        }
     }
     constructor(){
         super()
@@ -44,7 +49,7 @@ export class Grenade extends MovingBody{
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.sprite.hotspot=CenterHotspot
-        this.sprite.zIndex=zIndexes.Grenade
+        this.sprite.zIndex=zIndexes.GrenadeAir
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
             this.particles_spawner=this.game.particles.add_emiter({

@@ -1,6 +1,7 @@
 import { Definition, Definitions, FrameDef, MinMax1 } from "../../../engine/core.ts";
 import { tracers } from "../../others/item.ts";
 import { BulletDef } from "../utils.ts";
+import { DecalTint } from "./decals.ts";
 
 export type ExplosionDef={
     size:{
@@ -34,6 +35,11 @@ export type ExplosionDef={
         def:string
         count:number
     }
+    decal?:{
+        def:string
+        tint?:DecalTint
+        scale?:number
+    }
 }&Definition
 
 export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
@@ -43,7 +49,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#445",
             size:{
                 begin:2,
-                end:5
+                end:4.5
             },
             damage:115,
             bullet:{
@@ -74,14 +80,17 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:{
+                def:"explosion_decal"
+            }
         },
         {
             idString:"frag_grenade_explosion",
             tint:"#355",
             size:{
                 begin:2,
-                end:5
+                end:4.5
             },
             damage:115,
             bullet:{
@@ -112,7 +121,11 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:{
+                def:"explosion_decal",
+                scale:1
+            }
         },
         {
             idString:"smoke_grenade_explosion",
@@ -129,6 +142,14 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             synced_particles:{
                 count:11,
                 def:"smoke"
+            },
+            decal:{
+                def:"explosion_decal",
+                scale:1,
+                /*tint:{
+                    color:0xffffff,
+                    alpha:0.75
+                }*/
             }
         },
         {
@@ -152,7 +173,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#09e",
             size:{
                 begin:2,
-                end:5
+                end:4.5
             },
             damage:120,
             bullet:{
@@ -190,7 +211,11 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:{
+                def:"explosion_decal",
+                scale:1
+            }
         },
         {
             idString:"submirv_grenade_explosion",
@@ -228,7 +253,15 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:{
+                def:"explosion_decal",
+                scale:0.5,
+                /*tint:{
+                    color:0xffffff,
+                    alpha:0.75
+                }*/
+            }
         },
         {
             idString:"blue_flare_explosion",
@@ -313,14 +346,18 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:{
+                def:"explosion_decal",
+                scale:1
+            }
         },
         {
             idString:"m79_grenade_explosion",
             tint:"#355",
             size:{
-                begin:3,
-                end:5
+                begin:2,
+                end:4.5
             },
             damage:60,
             bullet:{
@@ -351,7 +388,11 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:{
+                def:"explosion_decal",
+                scale:1
+            }
         },
     )
 }

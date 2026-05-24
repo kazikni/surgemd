@@ -7,19 +7,16 @@ export class ClientDecal extends GameObject{
     ////////////////////////////
     string_type:string="client_decal"
     number_type: number=20
-
     ////////////////////////////
     // Visual                 //
     ////////////////////////////
     sprite:Sprite2D=new Sprite2D()
-
     ////////////////////////////
     // State                  //
     ////////////////////////////
     lifetime:number=15
     dying:boolean=false
     can_die:boolean=true
-
     ////////////////////////////
     // Assets                 //
     ////////////////////////////
@@ -48,6 +45,6 @@ export class ClientDecal extends GameObject{
         super()
         this.sprite=new Sprite2D()
         this.sprite.hotspot=v2.half_one
-        this.sprite.zIndex=zIndexes.Decals
+        this.sprite.zIndex=zIndexes.ClientDecals
     }
 }

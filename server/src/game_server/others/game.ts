@@ -1,4 +1,3 @@
-
 import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
@@ -33,6 +32,8 @@ import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_par
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
 import { Plane } from "../objects/plane.ts";
+import { DecalDef, DecalTint } from "common/scripts/definitions/objects/decals.ts";
+import { Decal } from "../objects/decals.ts";
 export interface GameData {
     living_count: number[]
 
@@ -145,10 +146,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Building,
             Vehicle,
             Bullet,
+            Decal,
             Explosion,
             Creature,
             Parachute,
-            SyncedParticle
+            SyncedParticle,
+            Plane
         ])
 
         this.ntps=30
@@ -410,6 +413,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     add_explosion(position:Vec2,def:ExplosionDef,owner?:Human,source?:DamageSourceDef,layer:number=Layers.Normal):Explosion{
         const e=this.scene_2d.objects.add_object(new Explosion(),layer,undefined,{def:def,owner,position:position,source}) as Explosion
         return e
+    }
+    add_decal(position:Vec2,rotation:number,def:DecalDef,tint?:DecalTint,scale?:number,layer:number=Layers.Normal):Decal{
+        const d=this.scene_2d.objects.add_object(new Decal(),layer,undefined,{def:def,position:position,rotation,tint,scale}) as Decal
+        return d
     }
     /*add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
         const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner_badge:owner.loadout.badge,owner,position:v2.duplicate(owner.position)}) as PlayerBody

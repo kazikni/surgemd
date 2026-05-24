@@ -43,6 +43,9 @@ export class Explosion extends ServerGameObject{
                 this.game.add_synced_particle(this.position,def,this.owner,this.layer)
             }
         }
+        if(this.def.decal){
+            this.game.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+        }
     }
     explode_damage(){
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.colliding_with(v.hitbox))

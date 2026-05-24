@@ -79,7 +79,6 @@ export class Obstacle extends StaticBody{
 
     constructor(){
         super()
-
         this.container.visible=false
         this.container.add_child(this.sprite)
         this.sprite.hotspot=v2.half_one
@@ -102,10 +101,8 @@ export class Obstacle extends StaticBody{
 
         if(this.health_data.dead){
             if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
-
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
-
-            if(this.emitter_1)this.emitter_1.destroyed=true
+            if(this.emitter_1)this.emitter_1.enabled=false
             this.physical_data.no_bullets_collision=true
         }else{
             this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
@@ -126,7 +123,6 @@ export class Obstacle extends StaticBody{
         if(this.health_data.dead)return
         this.health_data.dead=true
         if(this.emitter_1)this.emitter_1.enabled=false
-
         const ac=random.int(8,13)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
@@ -147,21 +143,19 @@ export class Obstacle extends StaticBody{
     set_definition(def:ObstacleDef){
         if(this.def)return
         this.def=def
-
         this.assets_data.frame={
             base:GetObstacleBaseFrame(this.def,this.variation,this.skin),
         }
         this.assets_data.frame.dead=this.def.assets?.frame?.dead??this.def.idString+"_dead"
-
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets!.sounds!)
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.variation-1,this.def.assets.particles)
-
         if(this.def.onDestroyExplosion){
             if(!this.emitter_1){
                 this.emitter_1=this.game.particles.add_emiter({
-                    delay:0.5,
+                    delay:0.4,
                     particle:()=>new ABParticle2D({
                         frame:{
+                            hotspot:v2.half_one,
                             image:"gas_smoke_particle",
                         },
                         zIndex:zIndexes.Particles,
@@ -170,12 +164,12 @@ export class Obstacle extends StaticBody{
                         angle:0,
                         scale:0,
                         speed:random.float(0.5,0.7),
-                        direction:random.float(-1.45,-1.65),
-                        life_time:random.float(4,6),
+                        direction:random.float(-1.4,-1.7),
+                        life_time:random.float(2,4),
                         tint:ColorM.rgba(255,255,255,150),
                         to:{scale:random.float(0.7,1.2),tint:ColorM.rgba(255,255,255,0)}
                     }),
-                    enabled:this.health_data.health<=0.4,
+                    enabled:this.health_data.health<=0.4&&!this.health_data.dead,
                 })
             }
         }
@@ -247,19 +241,13 @@ export class Obstacle extends StaticBody{
     }
     update_door(ne:number,force:boolean=false){
         const old=this.door_data!.open
-
         if(ne!==old){
             this.door_data!.open=ne as -1|0|1
-
             if(this.door_data!.tween)this.door_data!.tween.kill()
-
             let new_rot=this.physical_data.rotation
-
             if(ne===1)new_rot-=(Math.PI/2)
             if(ne===-1)new_rot+=(Math.PI/2)
-
             this.physical_data.hitbox=this.door_data!.hitboxes[this.door_data!.open]
-
             if(force){
                 this.container.rotation=new_rot
             }else{
@@ -274,7 +262,6 @@ export class Obstacle extends StaticBody{
                         bus:"obstacles"
                     })
                 }
-
                 this.door_data!.tween=this.game.add_tween({
                     duration:(this.def.expanded_behavior as ObstacleBehaviorDoor).open_duration,
                     target:this.container,
@@ -286,7 +273,6 @@ export class Obstacle extends StaticBody{
             }
         }
     }
-
     override interact(h:Human){
         if(this.def.expanded_behavior){
             if(this.def.expanded_behavior.type==1){
@@ -384,9 +370,10 @@ export class Obstacle extends StaticBody{
             }else if(!dead&&this.health_data.dead){
                 this.health_data.dead=false
                 this.update_frame()
-            }
-            if(this.emitter_1&&this.health_data.health<=0.4){
-                this.emitter_1.enabled=true
+            }else if(!this.health_data.dead){
+                if(this.emitter_1&&this.health_data.health<=0.4){
+                    this.emitter_1.enabled=true
+                }
             }
         }
 

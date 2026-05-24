@@ -14,6 +14,7 @@ import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
 import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
 import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
+import { DecalDef, Decals_Default_Init } from "./objects/decals.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
 import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
 import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
@@ -93,6 +94,7 @@ export class GameDefinition{
     // Objects
     buildings=new Definitions<BuildingDef,{}>((i)=>{})
     creatures=new Definitions<CreatureDef,{}>((i)=>{})
+    decals=new Definitions<DecalDef,{}>((_v)=>{})
     explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
     obstacles=new Definitions<ObstacleDef,{}>((_v)=>{})
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
@@ -125,6 +127,7 @@ export class GameDefinition{
 
         this.buildings.clear()
         this.creatures.clear()
+        this.decals.clear()
         this.explosions.clear()
         this.obstacles.clear()
         this.vehicles.clear()
@@ -152,6 +155,7 @@ export class GameDefinition{
 
         Buildings_Default_Init(this.buildings)
         Creatures_Default_Init(this.creatures)
+        Decals_Default_Init(this.decals)
         Explosions_Default_Init(this.explosions)
         Obstacles_Default_Init(this.obstacles)
         Vehicles_Default_Init(this.vehicles)

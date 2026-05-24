@@ -479,9 +479,7 @@ export class Human extends MovingBody{
         proj.fuse_delay=this.grenade_holding.time
         if(this.grenade_holding.slot){
             this.grenade_holding.slot.remove(1)
-
             this.inventory.net_sync.items=true
-
             if(this.grenade_holding.slot.quantity<=0){
                 let idx=this.inventory.weapon_idx
                 if(!this.inventory.weapons[this.inventory.weapon_idx]){

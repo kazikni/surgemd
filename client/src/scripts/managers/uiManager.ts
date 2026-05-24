@@ -72,7 +72,9 @@ export class UiManager{
                 document.querySelector("#emote-wheel-left") as HTMLImageElement,
                 document.querySelector("#emote-wheel-top") as HTMLImageElement
             ]
-        }
+        },
+
+        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement
     }
 
     mobile_content={
@@ -113,6 +115,13 @@ export class UiManager{
         this.game.ui_manager.add(new ActionsModule())
         this.game.ui_manager.add(new EquipmentModule())
         this.game.ui_manager.add(new InformationBoxModule())
+
+        this.update_content_creators([
+            {
+                name:"Kazikni",
+                url:"https://youtube.com/@kazikni",
+            },
+        ])
     }
     clear(){
         this.content.killfeed.innerHTML=""
@@ -680,6 +689,18 @@ export class UiManager{
         }
         
         this.game.ui_manager.signal("active_player_update",{dt,player})
+    }
+    update_content_creators(content_creators:{name:string,url:string}[]){
+        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
+        for(const creator of content_creators){
+            this.content.content_creators.innerHTML+=`
+<a href="${creator.url}" target="_blank">
+    <div class="background-menu content-creator">
+        <img id="youtube-logo" src="./img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
+        <span>${creator.name}</span>
+    </div>
+</a>`
+        }
     }
 
     items: {id:number,count:number}[] = []

@@ -1,5 +1,6 @@
 # Surgemd Beta 1.0
 ## News
+* Decals
 __                                                                                                                 __
 ### Mains
 __                                                                                                                 __
@@ -16,6 +17,7 @@ __                                                                              
 ### Menu
 __                                                                                                                 __
 ### Others
+* Fix Explosives Obstacles Particles
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

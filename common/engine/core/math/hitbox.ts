@@ -406,7 +406,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         return
     }
     override point_inside(point: Vec2): boolean {
-        return (point.x>=this.max.x&&point.x<=this.min.x)&&(point.y>=this.max.y&&point.y<=this.min.y)
+        return (point.x>=this.min.x&&point.x<=this.max.x)&&(point.y>=this.min.y&&point.y<=this.max.y)
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
         let tmin = 0

@@ -567,7 +567,7 @@ export class Human extends MovingBody{
                                     this.inventory.drop_weapon(Numeric.clamp(drop,0,2))
                                     break
                                 case 2:
-                                    this.inventory.drop_oitem(drop)
+                                    this.inventory.drop_aitem(drop)
                                     break
                                 case 3:
                                     this.inventory.drop_slot(drop)

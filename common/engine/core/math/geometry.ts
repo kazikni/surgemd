@@ -349,6 +349,62 @@ export const rect=Object.assign(rect_new,Object.freeze({
 
 export type Polygon2D=Vec2[]
 export const polygon2={
+    clone(points:Polygon2D):Polygon2D{
+        const ret: Polygon2D = []
+        for (const point of points) {
+            ret.push(v2.clone(point))
+        }
+        return ret
+    },
+    center(points: Polygon2D): Vec2 {
+        let x = 0
+        let y = 0
+        for(const p of points){
+            x += p.x
+            y += p.y
+        }
+        return v2(x / points.length,y / points.length)
+    },
+    move(points:Polygon2D,position:Vec2):Polygon2D{
+        const ret: Polygon2D = []
+        for (const point of points) {
+            ret.push(v2.add(position,point))
+        }
+        return ret
+    },
+    scale(points: Polygon2D, scale: number,center?:Vec2): Polygon2D {
+        if(!center)center=this.center(points)
+        const ret: Polygon2D = []
+        for (const point of points) {
+            const dir = v2.sub(point, center)
+            ret.push(
+                v2.add(
+                    center,
+                    v2.scale(dir, scale)
+                )
+            )
+        }
+        return ret
+    },
+    offset_polygon(points: Polygon2D, amount: number): Polygon2D {
+        const out: Polygon2D = []
+        for(let i = 0; i < points.length; i++){
+            const prev = points[(i - 1 + points.length) % points.length]
+            const cur = points[i]
+            const next = points[(i + 1) % points.length]
+            const edge1 = v2.normalizeSafe(v2.sub(cur, prev),v2(1,0))
+            const edge2 = v2.normalizeSafe(v2.sub(next, cur),v2(1,0))
+
+            const normal1 = v2(-edge1.y, edge1.x)
+            const normal2 = v2(-edge2.y, edge2.x)
+
+            const normal = v2.normalizeSafe(v2.add(normal1, normal2),normal1)
+
+            out.push(v2.add(cur,v2.scale(normal, amount)))
+        }
+
+        return out
+    },
     jagged_rectangle(min: Vec2,max: Vec2,spacing: number,variation: number,random: SeededRandom): Polygon2D {
         const points:Polygon2D=[]
         const v = variation / 2;
@@ -412,7 +468,57 @@ export const polygon2={
             if (cross > eps) out.push(b)
         }
         return out.length ? out : tmp
-    }
+    },
+    subdivide_polygon(points: Polygon2D,passes = 1): Polygon2D {
+        points = points.slice()
+        for(let p = 0; p < passes; p++){
+            const out:Polygon2D=[]
+            for(let i = 0; i < points.length; i++){
+                const a = points[i]
+                const b = points[(i + 1) % points.length]
+                out.push(a)
+                out.push(
+                    v2.lerp(a,b,0.5)
+                )
+            }
+            points = out
+        }
+        return points
+    },
+    generate_shape(center: Vec2,radius: number,points: number): Polygon2D {
+        const out:Polygon2D=[]
+        for(let i = 0; i < points; i++){
+            const t = i / points
+            const angle = t * Math.PI * 2
+            out.push(v2(center.x + Math.cos(angle) * radius,center.y + Math.sin(angle) * radius))
+        }
+        return out
+    },
+    distort_polygon(points: Polygon2D,variation: number,passes:number,variation_decay:number,random: SeededRandom): Polygon2D {
+        points = points.slice()
+        for(let p = 0; p < passes; p++){
+            const out:Polygon2D=[]
+            for(let i = 0; i < points.length; i++){
+                const a = points[i]
+                const b = points[(i + 1) % points.length]
+                const edge = v2.sub(b,a)
+                const normal = v2.normalizeSafe(v2(-edge.y,edge.x),v2(1,0))
+                const mid = v2.lerp(a,b,0.5)
+                const dist = random.float(-variation,variation)
+                const displaced = v2.add(mid,v2.scale(normal,dist))
+                out.push(a)
+                out.push(displaced)
+            }
+            points = out
+            variation *= variation_decay
+        }
+        return points
+    },
+    island_silhouette(center: Vec2,radius: number,points: number,variation: number,passes:number,variation_decay:number,random: SeededRandom): Polygon2D {
+        let poly = this.generate_shape(center, radius, points)
+        poly = this.distort_polygon(poly,variation,passes,variation_decay,random)
+        return this.clean_polygon(poly);
+    },
 }
 export interface PackedRect<T> {
     x: number

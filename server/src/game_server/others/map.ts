@@ -1,9 +1,9 @@
-import { CircleHitbox2D, Hitbox2D, NetStream, polygon2, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Definition, Hitbox2D, NetStream, polygon2, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
-import { IslandDef, MapDef } from "common/scripts/definitions/maps/base.ts"
+import { IslandDef, MapDef, MapObjectGeneration } from "common/scripts/definitions/maps/base.ts"
 import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
-import { FloorType, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
+import { Floors, FloorType, River, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
@@ -11,6 +11,7 @@ import { building_from_json, BuildingDef } from "common/scripts/definitions/obje
 import { Building } from "../objects/building.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Vehicle } from "../objects/vehicle.ts";
+import { ServerGameObject } from "./gameObject.ts";
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export const generation={
     island:(def:IslandDef)=>{
@@ -18,66 +19,24 @@ export const generation={
             //Terrain
             map.size=def.size
             map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),Layers.Normal,false,false)
-            let cp=0
-            const hitboxes:Hitbox2D[]=[]
+
+            const center=v2.scale(map.size,.5)
+            const base=polygon2.island_silhouette(center,def.terrain.radius,def.terrain.points,def.terrain.variation,def.terrain.passes,def.terrain.variation_decay??.6,random)
+            let poly=polygon2.clone(base)
             for(const f of def.terrain.floors.sort()){
-                cp+=f.padding
-                const min=v2(cp,cp),max=v2(map.size.x-cp,map.size.y-cp)
-                const hb=new PolygonHitbox2D(polygon2.jagged_rectangle(min,max,f.spacing,f.variation,random))
-                hitboxes.push(hb)
-                map.terrain.add_floor(f.type,hb,Layers.Normal,true,true,true,hb)
+                poly=polygon2.offset_polygon(base,f.padding)
+                const hb=new PolygonHitbox2D(polygon2.distort_polygon(poly,f.variation,f.spacing,0.9,random))
+                map.terrain.add_floor(f.type,hb,f.layer??Layers.Normal,true,true,true)
             }
             if(def.terrain.rivers){
-                const r=hitboxes[def.terrain.rivers.spawn_floor].to_rect()
-                const ri=rivers.generate(new RectHitbox2D(r.min,r.max),def.terrain.rivers.defs,random,def.terrain.rivers.expansion)
+                const ri=rivers.generate(base,def.terrain.rivers.defs,random)
+                map.rivers=ri
                 for(const r of ri){
                     map.terrain.add_floor(def.terrain.rivers.floor??FloorType.Water,r.collisions.main,Layers.Normal)
                 }
             }
             for(const spawn of def.spawn??[]){
-                for(const item of spawn){
-                    const count=random.irandom1(item.count)
-                    for(let idx=0;idx<count;idx++){
-                        const itd=typeof item.def==="string"?item.def:random.weight2(item.def)!.def
-                        if(map.game.definitions.creatures.exist(itd)){
-                            const def=map.game.definitions.creatures.getFromString(itd)
-                            const obj=map.game.add_creature(v2(0,0),def,item.layer)
-                            const pos=map.getRandomPosition(obj.hitbox,obj.id,obj.layer,item.spawn??def.spawn??{
-                                type:SpawnModeType.whitelist,
-                                list:[FloorType.Grass,FloorType.Ice]
-                            },random)
-                            if(!pos){
-                                obj.destroy()
-                                break
-                            }
-                            obj.position=pos
-                        }else if(map.game.definitions.buildings.exist(itd)){
-                            const def=map.game.definitions.buildings.getFromString(itd)
-                            const obj=map.generate_building(def,random,item.spawn,item.layer)
-                            if(!obj)break
-                        }else if(map.game.definitions.obstacles.exist(itd)){
-                            const def=map.game.definitions.obstacles.getFromString(itd)
-                            const obj=map.generate_obstacle(def,random,item.spawn,item.layer)
-                            if(!obj)break
-                        }else if(map.game.definitions.vehicles.exist(itd)){
-                            const def=map.game.definitions.vehicles.getFromString(itd)
-                            const obj=map.generate_vehicle(def,random,item.spawn,item.layer)
-                            if(obj)obj.physical_data.rotation=random.rad()
-                            if(!obj)break
-                        }else if(map.game.loot_tables.tables.has(itd)){
-                            const layer=item.layer??Layers.Normal
-                            const loot=map.game.loot_tables.get_loot(itd,{withammo:true},map.game)
-                            const pos:Vec2|undefined=map.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer,{
-                                type:SpawnModeType.blacklist,
-                                list:[map.def.default_floor??FloorType.Water]
-                            },random)
-                            if(!pos)break
-                            for(const ll of loot){
-                                const l = map.game.add_loot(pos,ll.item,ll.count)
-                            }
-                        }
-                    }
-                }
+                map.generate_objects(spawn,random)
             }
         }
     }
@@ -94,7 +53,10 @@ export class GameMap{
     terrain:TerrainManager=new TerrainManager()
     random!:SeededRandom
 
+    rivers:River[]=[]
     objects:StaticBody[]=[]
+
+    default_floor:FloorType=FloorType.Void
 
     point_is_valid(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap){
         const objs=map.game.scene_2d.objects.cells.get_objects(hitbox,layer)
@@ -153,6 +115,48 @@ export class GameMap{
         const o=this.game.scene_2d.objects.add_object(new Obstacle(),layer??Layers.Normal,undefined,{def:def}) as Obstacle
         this.objects.push(o)
         return o
+    }
+    generate_object(name:string,random:SeededRandom,layer?:Layers,spawn?:SpawnMode):ServerGameObject|undefined{
+        let obj:ServerGameObject|undefined
+        if(this.game.definitions.creatures.exist(name)){
+            const def=this.game.definitions.creatures.getFromString(name)
+            obj=this.game.add_creature(v2(0,0),def,layer)
+            const pos=this.getRandomPosition(obj.hitbox,obj.id,obj.layer,spawn??def.spawn??{
+                type:SpawnModeType.whitelist,
+                list:[FloorType.Grass,FloorType.Ice]
+            },random)
+            if(!pos){
+                obj.destroy()
+                return
+            }
+            obj.position=pos
+        }else if(this.game.definitions.buildings.exist(name)){
+            const def=this.game.definitions.buildings.getFromString(name)
+            obj=this.generate_building(def,random,spawn,layer)
+        }else if(this.game.definitions.obstacles.exist(name)){
+            const def=this.game.definitions.obstacles.getFromString(name)
+            obj=this.generate_obstacle(def,random,spawn,layer)
+        }else if(this.game.definitions.vehicles.exist(name)){
+            const def=this.game.definitions.vehicles.getFromString(name)
+            obj=this.generate_vehicle(def,random,spawn,layer)
+            if(obj)(obj as Vehicle).physical_data.rotation=random.rad()
+        }else if(this.game.loot_tables.tables.has(name)){
+            const loot=this.game.loot_tables.get_loot(name,{withammo:true},this.game)
+            const pos:Vec2|undefined=this.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer??Layers.Normal,Spawn.grass,random)
+            if(!pos)return
+            for(const ll of loot){
+                const l = this.game.add_loot(pos,ll.item,ll.count,layer)
+                if(!obj)obj=l
+            }
+        }
+        return obj
+    }
+    generate_objects(obj:MapObjectGeneration,random:SeededRandom){
+        const count=random.random1(obj.count)
+        for(let idx=0;idx<count;idx++){
+            const name=typeof obj.def==="string"?obj.def:random.weight2(obj.def).def
+            this.generate_object(name,random,obj.layer,obj.spawn)
+        }
     }
     generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Obstacle|undefined{
         const o=this.add_obstacle(def,layer)

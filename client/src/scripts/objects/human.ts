@@ -686,7 +686,7 @@ export class Human extends MovingBody{
         super.update(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
-        if(this.distance_walked>0.01){
+        if(!this.seat&&this.distance_walked>0.01){
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
             if(f!==this.current_floor){
                 this.current_floor=f

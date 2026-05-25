@@ -1,7 +1,7 @@
 import { GameConstants, GameObjectType } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { Floors, FloorType, rivers } from "common/scripts/others/terrain.ts";
 import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
@@ -56,6 +56,18 @@ export class Loot extends ServerGameObject{
         const cf=Floors[this.current_floor]
         const speed=1
                   * (cf.speed_mult??1)
+        if(this.current_floor === FloorType.Water){
+            for(const river of this.game.map.rivers){
+                if(!river.collisions.main.point_inside(this.position)){
+                    continue
+                }
+                const point=rivers.get_closest_point(river.points,this.position)
+                if(point){
+                    v2m.add(this.velocity,this.velocity,v2.scale(point.direction,point.push_force*dt))
+                }
+                break
+            }
+        }
         const others:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
         for(const other of others){
             switch(other.number_type){

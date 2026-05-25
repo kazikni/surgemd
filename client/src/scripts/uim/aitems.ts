@@ -49,7 +49,7 @@ export class AItemsModule extends UIModule<Game> {
             <span class="count"></span>
         `
 
-        el.dataset.item_type = "2"
+        el.dataset.item_kind = "2"
         el.dataset.item_value = def.idNumber!.toString()
 
         el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))

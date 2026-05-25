@@ -1,4 +1,4 @@
-import { Collision, hash, Hitbox2D, Orientation, polygon2, PolygonHitbox2D, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
+import { Collision, hash, Hitbox2D, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
 
 export enum FloorType {
     Void = 0,
@@ -75,14 +75,33 @@ export interface Floor {
 }
 
 export type RiverPoint = {
-    position: Vec2;
-    width: number;
+    position: Vec2
+    width: number
+    push_force: number
+    direction: Vec2
 };
 export interface RiverDef{
     width:number
     width_variation?:number
+    push_force?:number
 }
-
+export interface LakeDef {
+    radius: number
+    variation?: number
+    points?: number
+    flow?: boolean
+    push_force?: number
+    island?: {
+        size: number
+        variation?: number
+        floors: {
+            type: FloorType
+            padding: number
+            variation: number
+            spacing: number
+        }[]
+    }
+}
 export class TerrainManager {
     floors: Floor[] = [];
     grid = new Map<bigint,Floor[]>();
@@ -138,6 +157,36 @@ export class TerrainManager {
 }
 
 export const rivers={
+    get_position(points: RiverPoint[], t: number): Vec2 {
+        t = Math.max(0, Math.min(1, t))
+        const max = points.length - 1
+        const idx = t * max
+        const i0 = Math.floor(idx)
+        const i1 = Math.min(i0 + 1, max)
+        const frac = idx - i0
+        return v2.lerp(points[i0].position,points[i1].position,frac)
+    },
+    get_closest_point(points: RiverPoint[], pos: Vec2): RiverPoint | undefined {
+        let closest: RiverPoint | undefined
+        let closestDist = Infinity
+        for(const p of points){
+            const dist = v2.distanceSquared(pos, p.position)
+            if(dist < closestDist){
+                closestDist = dist
+                closest = p
+            }
+        }
+        return closest
+    },
+    apply_flow(points: RiverPoint[]) {
+        for(let i = 0; i < points.length; i++){
+            const prev = points[Math.max(0, i - 1)].position
+            const next = points[Math.min(points.length - 1, i + 1)].position
+            points[i].direction = v2.normalizeSafe(v2.sub(next, prev),v2(1,0))
+        }
+        return points
+    },
+
     init(points:RiverPoint[]):River{
         const hb=new PolygonHitbox2D(polygon2.from_point_line(points))
         const river:River={
@@ -146,34 +195,45 @@ export const rivers={
         }
         return river
     },
-    generate(hitbox: RectHitbox2D,rivers: RiversDef[],random: SeededRandom,hb_expand: number = 0): River[] {
-        const ret: River[] = [];
-        const defs = random.weight2(rivers);
-        for (const r of defs.rivers) {
+    extend_point(point: Vec2,center: Vec2,amount: number): Vec2 {
+        const dir = v2.normalizeSafe(v2.sub(point, center),v2(1,0))
+        return v2.add(point,v2.scale(dir, amount))
+    },
+    generate(hitbox: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
+        const ret: River[] = []
+        const defs = random.weight2(rivers)
+        const center = polygon2.center(hitbox)
+        for(const r of defs.rivers){
             let attempts = 0
-            while (attempts++ < 10) {
-                const s_orientation = random.float(0, 1) <= 0.5 ? 0 : 2;
-                const e_orientation =
-                    s_orientation === 0
-                        ? random.choose([2, 1, 3])
-                        : random.choose([0, 1, 3]);
+            while(attempts++ < 25){
+                const startIndex=random.int(0, hitbox.length - 1)
+                const minOffset=Math.floor(hitbox.length * 0.3)
 
-                const point1 = v2.orientation_random(s_orientation, hitbox.min, hitbox.max, hb_expand, random);
-                const point2 = v2.orientation_random(e_orientation as Orientation, hitbox.min, hitbox.max, hb_expand, random);
-                if (v2.distance(point1, point2) < 50) continue
+                const maxOffset=Math.floor(hitbox.length * 0.7)
+                const offset=random.int(minOffset, maxOffset)
+                const endIndex=(startIndex + offset) % hitbox.length
 
-                const path = this.generate_path(point1, point2, random)
-                if (path.length < 5) continue
+                let point1 = hitbox[startIndex]
+                let point2 = hitbox[endIndex]
 
-                const smooth = this.smooth_path(path)
-                let final = this.apply_width(smooth, r, random)
-                //final = this.process_river_interactions(final, ret)
-                ret.push(this.init(final))
+                point1 = this.extend_point(point1,center,r.width * 1.5)
+                point2 = this.extend_point(point2,center,r.width * 1.5)
+                if(v2.distance(point1, point2) < 80){
+                    continue
+                }
+                let path = this.generate_path(point1,point2,random)
+                if(path.length < 5){
+                    continue
+                }
+                path = this.smooth_path(path)
+                let final = this.apply_width(path,r,random)
+                final = this.apply_flow(final)
+                const river = this.init(final)
+                ret.push(river)
                 break
             }
         }
-
-        return ret;
+        return ret
     },
     generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 6,strength = 0.25): Vec2[] {
         let points: Vec2[] = [start, end]
@@ -248,7 +308,9 @@ export const rivers={
             }
             out.push({
                 position: points[i],
-                width
+                width,
+                direction:v2.zero(),
+                push_force:def.push_force??5
             })
         }
 
@@ -274,14 +336,13 @@ export const rivers={
     merge_rivers(base: RiverPoint[],other: RiverPoint[]): RiverPoint[] {
         const hit = this.find_intersection(base, other)
         if (!hit) return base
-
         const { ai, point } = hit
-
         const newPoints = base.slice(0, ai)
-
         newPoints.push({
             position: point,
-            width: base[ai].width
+            width: base[ai].width,
+            direction:base[ai].direction,
+            push_force:base[ai].push_force
         })
 
         return newPoints

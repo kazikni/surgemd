@@ -369,7 +369,7 @@ export class Game extends ClientGame<GameObject>{
         ])
 
         for (const tt of textures) {
-            this.menu.set_loading_current(`Loading ${tt}.kspr`, true)
+            this.menu.set_loading_current(`Loading ${tt}.kspr`)
             const res = await fetch(`assets/${tt}.kspr`)
             const buffer = await res.arrayBuffer()
             const kspr = load_kspr(buffer)

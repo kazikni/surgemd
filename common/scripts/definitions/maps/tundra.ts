@@ -2,7 +2,7 @@ import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
-import { map_spawns, NormalMap } from "./normal.ts";
+import { map_spawns } from "./normal.ts";
 
 export const TundraBiome:BiomeDef={
     floors:{
@@ -129,39 +129,59 @@ export const TundraMap:MapDef={
         island:{
             size:v2(500,500),
             spawn:[
-                [
-                    {def:map_spawns.containers,count:20},
+                {def:map_spawns.containers,count:20},
 
-                    {def:"bunker_1",count:3},
-                    {def:"shed",count:5},
-                    {def:"sillo",count:3},
+                {def:"bunker_1",count:3},
+                {def:"shed",count:5},
+                {def:"sillo",count:3},
 
-                    {def:"tundra_crate",count:10},
-                    {def:map_spawns.crates,count:190},
+                {def:"tundra_crate",count:10},
+                {def:map_spawns.crates,count:190},
 
-                    {def:"oak_tree",count:200},
-                    {def:map_spawns.rocks,count:150},
-                    {def:"bush",count:100},
-                    {def:"barrel",count:50},
+                {def:"oak_tree",count:200},
+                {def:map_spawns.rocks,count:150},
+                {def:"bush",count:100},
+                {def:"barrel",count:50},
 
-                    {def:"normal_loot",count:100}
-                ]
+                {def:"normal_loot",count:100}
             ],
+            
             terrain:{
                 base:FloorType.Ice,
+                radius:230,
+                passes:3,
+                points:5,
+                variation:50,
                 rivers:{
-                    divisions:100,
+                    divisions:50,
                     spawn_floor:1,
                     expansion:32,
                     floor:FloorType.Ice,
                     defs:[
                         {
                             rivers:[
-                                {width:10,width_variation:2},
-                                {width:10,width_variation:2},
-                                {width:10,width_variation:2},
-                                {width:5,width_variation:2},
-                                {width:5,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:9,width_variation:2},
+                                {width:9,width_variation:2},
+                            ],
+                            weight:1
+                        },
+                        {
+                            rivers:[
+                                {width:25,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                                {width:15,width_variation:2},
+                            ],
+                            weight:1
+                        },
+                        {
+                            rivers:[
+                                {width:25,width_variation:2},
+                                {width:25,width_variation:2},
+                                {width:25,width_variation:2},
                             ],
                             weight:1
                         },
@@ -169,19 +189,19 @@ export const TundraMap:MapDef={
                 },
                 floors:[
                     {
-                        padding:30,
+                        padding:0,
                         type:FloorType.Sand,
                         spacing:3,
                         variation:3,
                     },
                     {
-                        padding:14,
+                        padding:10,
                         type:FloorType.Snow,
                         spacing:3,
                         variation:3,
                     }
                 ]
-            }
+            },
         }
     },
 }

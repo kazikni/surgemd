@@ -1,8 +1,9 @@
 # Surgemd Beta 1.0
 ## News
-* Decals
 __                                                                                                                 __
 ### Mains
+* Decals
+* River Push Loot
 __                                                                                                                 __
 ### Menu
 __                                                                                                                 __

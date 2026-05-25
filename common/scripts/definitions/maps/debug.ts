@@ -12,18 +12,22 @@ export const DebugMap:MapDef={
             size:v2(500,500),
             terrain:{
                 base:FloorType.Water,
+                radius:230,
+                passes:3,
+                points:5,
+                variation:50,
                 floors:[
                     {
-                        padding:30,
+                        padding:0,
                         type:FloorType.Sand,
                         spacing:3,
-                        variation:1.3,
+                        variation:3,
                     },
                     {
-                        padding:20,
+                        padding:10,
                         type:FloorType.Grass,
                         spacing:3,
-                        variation:1.3,
+                        variation:3,
                     }
                 ]
             },
@@ -91,21 +95,25 @@ export const SingleBuildMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2(80,80),
+            size:v2(100,100),
             terrain:{
                 base:FloorType.Water,
+                radius:50,
+                passes:1,
+                points:5,
+                variation:1,
                 floors:[
                     {
-                        padding:10,
+                        padding:0,
                         type:FloorType.Sand,
-                        spacing:3,
-                        variation:1.3,
+                        spacing:1,
+                        variation:1,
                     },
                     {
-                        padding:5,
+                        padding:10,
                         type:FloorType.Grass,
-                        spacing:3,
-                        variation:1.3,
+                        spacing:1,
+                        variation:1,
                     }
                 ]
             },

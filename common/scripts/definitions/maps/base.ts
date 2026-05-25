@@ -1,6 +1,6 @@
 import { InventoryItemType } from "../utils.ts";
 import { GunDef } from "../items/guns.ts";
-import { FloorType, RiversDef } from "../../others/terrain.ts";
+import { FloorType, LakeDef, RiversDef } from "../../others/terrain.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap } from "./normal.ts";
 import { DebugMap, SingleBuildMap } from "./debug.ts";
@@ -60,25 +60,33 @@ export interface BiomeDef{
     }
     musics?:string[]
 }
+export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface IslandDef{
     size:Vec2
+    spawn?:MapObjectGeneration[]
     terrain:{
         base:FloorType
+        radius:number
+        variation:number
+        variation_decay?:number
+        points:number
+        passes:number
         floors:{
             type:FloorType
+            layer?:number
             padding:number
             variation:number
             spacing:number
         }[]
         rivers?:{
             defs:RiversDef[]
+            lakes?:LakeDef[]
             expansion?:number
             spawn_floor:number
             divisions:number
             floor?:FloorType
         }
     },
-    spawn?:{def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
 }
 export interface MapDef{
     loot_tables:Record<string,LootTable>

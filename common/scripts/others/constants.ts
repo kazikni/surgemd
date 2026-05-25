@@ -135,9 +135,17 @@ export const Spawn={
     any:{
         type:SpawnModeType.any,
     },
+    outside_water:{
+        type:SpawnModeType.blacklist,
+        list:[FloorType.Water,FloorType.Ice,FloorType.Void]
+    },
     grass:{
         type:SpawnModeType.whitelist,
         list:[FloorType.Grass,FloorType.Snow]
+    },
+    ground:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Grass,FloorType.Snow,FloorType.Sand]
     },
 } satisfies Record<string,SpawnMode>
 

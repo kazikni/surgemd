@@ -77,6 +77,7 @@ export class AudioVoice {
     base_volume=1
     max_distance=20
     stopping=false
+    play_id=0
     on_complete?:()=>void
     constructor(public engine:AudioEngine,public ctx:AudioContext){
         this.gain=ctx.createGain()
@@ -103,7 +104,11 @@ export class AudioVoice {
         this.source.loop=this.loop
         this.source.connect(this.gain)
         this.gain.gain.value=this.base_volume
-        this.source.onended=()=>{
+        const id = ++this.play_id
+        this.source.onended = ()=>{
+            if(id !== this.play_id){
+                return
+            }
             this.finish()
         }
         const delay=(options.delay??0)*0.001
@@ -111,22 +116,20 @@ export class AudioVoice {
         this.started_at=this.ctx.currentTime
         this.state=VoiceState.playing
         this.stopping=false
+        this.update_volume()
     }
-    update(){
-        if(this.state!==VoiceState.playing)return
+    update_volume(){
         if(this.spatial&&this.position){
             const spatial=this.engine.spatial
-            const pan=spatial.compute_pan(
-                this.position,
-                this.max_distance
-            )
-            const volume=spatial.compute_volume(
-                this.position,
-                this.max_distance
-            )
+            const pan=spatial.compute_pan(this.position,this.max_distance)
+            const volume=spatial.compute_volume(this.position,this.max_distance)
             this.pan.pan.value=pan
             this.gain.gain.value=this.base_volume*volume
         }
+    }
+    update(){
+        if(this.state!==VoiceState.playing)return
+        this.update_volume()
     }
     stop(immediate=false){
         if(this.state===VoiceState.free)return
@@ -212,15 +215,20 @@ export class VoicePool {
                 return v
             }
         }
-        if(this.voices.length<this.maxVoices){
-            const v=new AudioVoice(this.engine,this.ctx)
+        if(this.voices.length < this.maxVoices){
+            const v = new AudioVoice(this.engine,this.ctx)
             this.voices.push(v)
             return v
         }
-        const worst=this.voices[0]
-        worst.stop(true)
-        worst.finish()
-        return worst
+        let oldest = this.voices[0]
+        for(const v of this.voices){
+            if(v.started_at < oldest.started_at){
+                oldest = v
+            }
+        }
+        oldest.stop(true)
+        oldest.finish()
+        return oldest
     }
     update(){
         for(const v of this.voices){

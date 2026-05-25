@@ -468,7 +468,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         )
     }
     add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
-        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.any,this.map.random,(_hitbox,_map,_random)=>{
+        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.ground,this.map.random,(_hitbox,_map,_random)=>{
             return this.deadzone.random_point_inside_new()
         })
         if(!position)position=v2(3,3)

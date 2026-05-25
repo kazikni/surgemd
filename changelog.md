@@ -2,6 +2,7 @@
 ## News
 __                                                                                                                 __
 ### Mains
+* Non-Rect Island
 * Decals
 * River Push Loot
 __                                                                                                                 __

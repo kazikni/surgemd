@@ -127,7 +127,7 @@ export const TundraMap:MapDef={
     biome:TundraBiome,
     generation:{
         island:{
-            size:v2(500,500),
+            size:v2(550,550),
             spawn:[
                 {def:map_spawns.containers,count:20},
 
@@ -145,13 +145,12 @@ export const TundraMap:MapDef={
 
                 {def:"normal_loot",count:100}
             ],
-            
             terrain:{
                 base:FloorType.Ice,
-                radius:230,
+                radius:250,
                 passes:3,
-                points:5,
-                variation:50,
+                points:6,
+                variation:60,
                 rivers:{
                     divisions:50,
                     spawn_floor:1,

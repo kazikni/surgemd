@@ -57,7 +57,7 @@ export const NormalMap:MapDef={
     ],
     generation:{
         island:{
-            size:v2(500,500),
+            size:v2(550,550),
             spawn:[
                 //{def:"small_house_1",count:5},
                 {def:"bunker_1",count:3},
@@ -79,10 +79,10 @@ export const NormalMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Water,
-                radius:230,
+                radius:250,
                 passes:3,
-                points:5,
-                variation:50,
+                points:6,
+                variation:60,
                 rivers:{
                     divisions:50,
                     spawn_floor:1,

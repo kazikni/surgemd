@@ -1,6 +1,8 @@
 import { CircleHitbox2D, cloneDeep, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Game } from "./game.ts";
 import { DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
+import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
+import { FloorType } from "common/scripts/others/terrain.ts";
 export interface MakeDeadZoneSettings{
     wait_time:{
         initial:number
@@ -100,12 +102,14 @@ export interface DeadZoneConfig {
     deenabled?:boolean
     stages?: DeadZoneStage[]
     timeSpeed?: number
+    damage?: number
     randomPosAttempts?: number
 }
 export const DefaultDeadzone:DeadZoneConfig={
     mode:DeadZoneMode.Staged,
     stages:DeadZoneDefinition,
-    timeSpeed: 1,
+    timeSpeed: 10,
+    damage: 0
 }
 export class DeadZoneManager {
     readonly game: Game
@@ -193,11 +197,11 @@ export class DeadZoneManager {
             const center = v2.scale(this.game.map.size, 0.5)
             this.state.old_position = center
             this.state.position = center
-            this.state.new_position = this.random_point_in_map(this.state.new_radius)
+            this.state.new_position = this.next_position(this.state.new_radius)
         }else if(stage.state === DeadZoneState.Waiting){
             this.state.old_position = this.state.new_position
             this.state.position = this.state.new_position
-            this.state.new_position = this.random_point_inside(this.state.new_radius)
+            this.state.new_position = this.next_position(this.state.new_radius)
         }else if(stage.state === DeadZoneState.Advancing){
             this.state.old_position = this.state.position
         }
@@ -254,7 +258,43 @@ export class DeadZoneManager {
             this.do_damage=true
         }
     }
-
+    next_position(radius:number,mode:SpawnMode=Spawn.ground,attempts:number = 30):Vec2{
+        for(let i = 0; i < attempts; i++){
+            let pos:Vec2
+            if(this.stageIndex===0){
+                pos=this.random_point_in_map(radius)
+            }else{
+                const angle = random.rad()
+                const maxLen=Math.max(this.state.radius - radius, 0)
+                const len=random.float(0, maxLen)
+                pos=v2.from_RadAngle(angle, len)
+                v2m.add(pos,pos,this.state.position)
+            }
+            const floor=this.game.map.terrain.get_floor_type(pos,Layers.Normal,FloorType.Void)
+            let valid = true
+            switch(mode.type){
+                case SpawnModeType.any:
+                    break
+                case SpawnModeType.blacklist:{
+                    valid = !mode.list.includes(floor)
+                    break
+                }
+                case SpawnModeType.whitelist:{
+                    valid = mode.list.includes(floor)
+                    break
+                }
+            }
+            if(valid){
+                return pos
+            }
+        }
+        const angle=random.rad()
+        const maxLen=Math.max(this.state.radius - radius, 0)
+        const len=random.float(0, maxLen)
+        const pos=v2.from_RadAngle(angle, len)
+        v2m.add(pos,pos,this.state.position)
+        return pos
+    }
     random_point_in_map(radius:number):Vec2{
         return v2(
             random.float(radius, this.game.map.size.x - radius),
@@ -286,13 +326,11 @@ export class DeadZoneManager {
 
     is_on_deadzone(position:Vec2){
         const dist2 = v2.distanceSquared(position,this.state.position)
-
         return dist2 > this.state.radius*this.state.radius
     }
 
     damageAt(position:Vec2){
-        if(!this.is_on_deadzone(position)) return 0
-
-        return this.damage
+        if(!this.is_on_deadzone(position))return 0
+        return this.damage*(this.config.damage??1)
     }
 }

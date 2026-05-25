@@ -38,6 +38,7 @@ export class Obstacle extends StaticBody{
 
     container:Container2D=new Container2D()
     sprite=new Sprite2D()
+    aditional_sprite:Sprite2D[]=[]
 
     health_data:{
         health:number,
@@ -104,12 +105,19 @@ export class Obstacle extends StaticBody{
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
             if(this.emitter_1)this.emitter_1.enabled=false
             this.physical_data.no_bullets_collision=true
+
+            for(const spr of this.aditional_sprite){
+                spr.visible=false
+            }
         }else{
             this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
             this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
 
             this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
             this.physical_data.no_collision=this.def.no_collision??false
+            for(const spr of this.aditional_sprite){
+                spr.visible=true
+            }
         }
 
         this.container.visible=true
@@ -122,7 +130,6 @@ export class Obstacle extends StaticBody{
     die(){
         if(this.health_data.dead)return
         this.health_data.dead=true
-        if(this.emitter_1)this.emitter_1.enabled=false
         const ac=random.int(8,13)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
@@ -182,6 +189,13 @@ export class Obstacle extends StaticBody{
                     }
                     break
             }
+        }
+
+        for(const d of this.def.assets?.aditional_sprites??[]){
+            const s=new Sprite2D()
+            s.set_frame(d,this.game.resources)
+            this.container.add_child(s)
+            this.aditional_sprite.push(s)
         }
     }
 

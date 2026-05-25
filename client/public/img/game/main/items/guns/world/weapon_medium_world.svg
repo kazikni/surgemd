@@ -1,1 +1,37 @@
-<svg width="149.62" height="29.806" viewBox="0 0 39.587 7.886" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><path style="fill:#fff;fill-opacity:1;stroke:#9ea2a4;stroke-width:6.80145;stroke-opacity:1" d="M7.438 98.736h203.549c5.845 0 10.583 4.738 10.583 10.583v7.074c0 5.845-4.738 10.584-10.583 10.584H7.438c-5.845 0-10.583-4.739-10.583-10.584v-7.074c0-5.845 4.738-10.583 10.583-10.583z" transform="matrix(.17099 0 0 .22504 1.12 -21.454)"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="149.62"
+   height="29.806"
+   viewBox="0 0 39.587 7.886"
+   xml:space="preserve"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="weapon_medium_world.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs1" /><sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.4837589"
+     inkscape:cx="-61.330719"
+     inkscape:cy="185.0031"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" /><path
+     style="fill:#ffffff;fill-opacity:1;stroke:#9ea2a4;stroke-width:6.80145;stroke-opacity:1"
+     d="M 29.874837,98.736 H 188.55074 c 17.81176,0 33.01926,4.738 33.01926,10.583 v 7.074 c 0,5.845 -15.57621,10.584 -33.01926,10.584 H 29.874837 C 12.297584,126.977 -3.145,122.238 -3.145,116.393 v -7.074 c 0,-5.845 13.617567,-10.583 33.019837,-10.583 z"
+     transform="matrix(0.17099,0,0,0.22504,1.12,-21.454)"
+     id="path1"
+     sodipodi:nodetypes="sssssssss" /></svg>

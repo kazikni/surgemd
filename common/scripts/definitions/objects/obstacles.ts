@@ -1,5 +1,6 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
+import { type GunDef } from "../items/guns.ts";
 import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 export interface ObstacleBehaviorDoor{
     type:0,
@@ -64,6 +65,7 @@ export interface ObstacleDef extends Definition{
     }
 
     assets?:{
+        aditional_sprites?:FrameDef[]
         frame?:{
             base?:string
             dead?:string
@@ -102,6 +104,41 @@ export interface ObstacleDef extends Definition{
     }[]
 }
 export const obstacles_factory={
+    gun_mount(id:string,gun:GunDef,settings:{
+        o?:DeepPartial<ObstacleDef>
+    }){
+        return mergeDeep({
+            idString:id,
+            health:65,
+            height:1,
+            hitbox:new RectHitbox2D(v2(-0.7,-0.2),v2(0.7,0.2)),
+            scale:{
+                destroy:0.8
+            },
+            assets:{
+                frame:{
+                    base:"gun_mount",
+                    transform:{
+                        tint:0x583b08
+                    }
+                },
+                aditional_sprites:[{
+                    ...gun.rig_image,
+                    image:gun.assets?.world??gun.idString+"_world",
+                    tint:gun.assets?.world_tint,
+                    hotspot:v2.half_one,
+                    zIndex:1,
+                    position:v2.zero()
+                }],
+                sounds:hit_sounds.wood
+            },
+            rotation_mode:RotationMode.limited,
+            lootTable:[{
+                weight:1,
+                item:gun.idString
+            }],
+        },settings.o??{})
+    },
     rock(id:string,settings:{
         tint?:number,
         hitbox?:Hitbox2D,
@@ -282,8 +319,28 @@ export const obstacles_factory={
     }
 }
 export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x00ff0d,0x4e4f50]
-export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
+export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>){
     obstacles.insert(
+        {
+            idString:"barrel",
+            health:100,
+            height:1,
+            hitbox:new CircleHitbox2D(v2(0,0),0.65),
+            scale:{
+                destroy:0.6
+            },
+            assets:{
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x484848
+                },
+                sounds:hit_sounds.heavy_metal
+            },
+            rotation_mode:RotationMode.full,
+            onDestroyExplosion:"barrel_explosion",
+            reflect_bullets:true,
+            spawnMode:Spawn.grass,
+        },
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
         obstacles_factory.rock("golden_rock",{tint:0xffd92b,o:{
             lootTable:"golden_rock",
@@ -836,5 +893,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>){
             rotation_mode:RotationMode.limited,
             height:1,
         },
+        obstacles_factory.gun_mount("pkp_mounth",guns.getFromString("pkp"),{}),
     )
 }

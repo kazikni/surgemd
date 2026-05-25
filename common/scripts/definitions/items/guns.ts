@@ -255,7 +255,7 @@ export const guns_factory={
             rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_small_world",
-                world_tint:0xaaaaaa
+                world_tint:0x22222f
             },
 
             speed_mod:0.98,
@@ -286,7 +286,7 @@ export const guns_factory={
             },
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x3f3a2f
+                world_tint:0x22222f
             },
             speed_mod:0.97,
         },extend??{})
@@ -316,7 +316,7 @@ export const guns_factory={
             },
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x3f3a2f
+                world_tint:0x22222f
             },
 
             speed_mod:0.98,
@@ -349,7 +349,7 @@ export const guns_factory={
             },
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x3f3a2f
+                world_tint:0x22222f
             },
 
             speed_mod:0.95,
@@ -383,7 +383,7 @@ export const guns_factory={
             },
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x3f3a2f,
+                world_tint:0x22222f,
                 cycle_sound:true
             },
 
@@ -417,7 +417,7 @@ export const guns_factory={
             },
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x3f3a2f,
+                world_tint:0x22222f,
                 cycle_sound:true
             },
 
@@ -827,6 +827,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:1.35,
                 speed:0.6
             },
+            assets:{
+                world_tint:0x040c29
+            }
         }),
         guns_factory.sniper("awms","308sub",{
             rank:ItemRank.S,
@@ -936,6 +939,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:1.1,
                 speed:0.6
             },
+            assets:{
+                world_tint:0x30150e
+            }
         }),
         guns_factory.shotgun("spas12","12g",{
             rank:ItemRank.B,
@@ -969,6 +975,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:1.1,
                 speed:0.6
             },
+            assets:{
+                world_tint:0x47527d
+            }
         }),
         guns_factory.shotgun("hp18","12g",{
             rank:ItemRank.D,
@@ -1219,7 +1228,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rig_arms:WeaponsArmRig[2],
             assets:{
                 world:"weapon_medium_world",
-                world_tint:0x3f3a2f
+                world_tint:0x22222f
             },
             rig_image:{
                 position:v2.new(0.6,0.45),

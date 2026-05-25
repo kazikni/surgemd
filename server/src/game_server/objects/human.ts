@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, PlayerAnimation, PlayerAnimationType } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, PlayerAnimation, PlayerAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
 import { DamageSplash, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
@@ -221,12 +221,7 @@ export class Human extends MovingBody{
     effects:Map<number,EffectInstance>=new Map()
     effects_dirty:boolean=true
     
-    status:HumanStatus={
-        damage:0,
-        damage_taken:0,
-        kills:0,
-        score:0,
-    }
+    status:HumanStatus
 
     constructor(){
         super()
@@ -239,6 +234,17 @@ export class Human extends MovingBody{
             v2(0,0),
             GameConstants.player.radius
         )
+
+        this.status={
+            damage:0,
+            damage_taken:0,
+            kills:0,
+            score:0,
+        }
+    }
+
+    apply_score(type:number,amount:number){
+        this.status.score+=amount
     }
     get_reflect_segment(): [Vec2, Vec2] {
         const rot = this.physical_data.rotation
@@ -1086,11 +1092,11 @@ export class Human extends MovingBody{
             )
             if(params.owner&&params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
                 params.owner.status.damage+=damage
-                params.owner.status.score+=damage*this.game.modeManager.rules.score.damage_reward
+                params.owner.apply_score(ScoreApplyerType.DamageDealth,damage*this.game.modeManager.rules.score.damage_reward)
             }
             if(!this.health_data.downed){
                 this.status.damage_taken+=damage
-                this.status.score-=damage*this.game.modeManager.rules.score.damage_taken_penalty
+                this.apply_score(ScoreApplyerType.DamageTaken,damage*this.game.modeManager.rules.score.damage_taken_penalty)
             }
         }
         if (this.health_data.health === 0) {
@@ -1202,7 +1208,7 @@ export class Human extends MovingBody{
             if(params.owner.is_player){
                 if(params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
                     params.owner.status.kills++
-                    params.owner.status.score+=this.game.modeManager.rules.score.kill_reward
+                    this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
                 }
             }
             params.owner.inventory.accessorys.call_event("kill",params)

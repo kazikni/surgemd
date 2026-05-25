@@ -6,7 +6,7 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameConstants, HumanStatus } from "common/scripts/others/constants.ts";
+import { GameConstants, HumanStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -139,9 +139,9 @@ export class PlayersManager{
     constructor(game:Game){
         this.game=game
     }
-    give_score(score:number){
+    apply_score(type:ScoreApplyerType,amount:number){
         for(const p of this.living_players){
-            p.status.score+=score
+            p.apply_score(type,amount)
         }
     }
     clear_bots(){

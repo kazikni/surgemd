@@ -12,7 +12,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { HumanStatus } from "common/scripts/others/constants.ts";
+import { HumanStatus, PlayerStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -82,14 +82,25 @@ export class Player extends Human{
     }
 
     player_manager!:PlayersManager
+    override status:PlayerStatus
     constructor(){
         super()
-    }
-    get_status():HumanStatus&{id:number}{
-        return {
-            id:this.id,
-            ...this.status
+        this.status={
+            id:0,
+            damage:0,
+            damage_taken:0,
+            kills:0,
+            score:0,
+            time_alive:0,
+            score_applyer:[]
         }
+    }
+    override apply_score(type: number, amount: number): void {
+        super.apply_score(type,amount)
+        this.status.score_applyer.push({
+            amount:amount,
+            type:type
+        })
     }
     override set_preset(preset: HumanDefinition|undefined): void {
         if(!preset)return
@@ -106,6 +117,7 @@ export class Player extends Human{
     }
     override update(dt: number): void {
         super.update(dt)
+        this.status.time_alive+=dt
     }
     override piercing_damage(params: DamageParams){
         const rr=super.piercing_damage(params)
@@ -242,5 +254,9 @@ export class Player extends Human{
             this.loadout.body.tint=jp.skin.body_tint
             this.loadout.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
         }
+    }
+    override create(args: Record<string, void>): void {
+        super.create(args)
+        this.status.id=this.id
     }
 }

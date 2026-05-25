@@ -199,9 +199,25 @@ export enum GameObjectType{
     SyncedParticle,
     Plane,
 }
+export enum ScoreApplyerType{
+    Kill,
+    Win,
+    Rank,
+    DamageTaken,
+    DamageDealth,
+}
+export type ScoreApplyer={
+    type:number
+    amount:number
+}
 export interface HumanStatus{
     damage:number
     damage_taken:number
     kills:number
     score:number
+}
+export interface PlayerStatus extends HumanStatus{
+    id:number
+    time_alive:number
+    score_applyer:ScoreApplyer[]
 }

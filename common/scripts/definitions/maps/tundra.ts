@@ -151,6 +151,23 @@ export const TundraMap:MapDef={
                 passes:3,
                 points:6,
                 variation:60,
+                additional:[
+                    {
+                        floors:[
+                            {
+                                type:FloorType.Ice,
+                                padding:0,
+                                spacing:1,
+                                variation:1,
+                            },
+                        ],
+                        radius:60,
+                        variation:15,
+                        passes:2,
+                        points:5,
+
+                    },
+                ],
                 rivers:{
                     divisions:50,
                     spawn_floor:1,

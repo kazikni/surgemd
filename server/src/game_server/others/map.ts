@@ -1,9 +1,9 @@
-import { CircleHitbox2D, Definition, Hitbox2D, NetStream, polygon2, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D,Hitbox2D, NetStream, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef, MapObjectGeneration } from "common/scripts/definitions/maps/base.ts"
 import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
-import { Floors, FloorType, River, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
+import { FloorType, generate_terrain_shape, River, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
@@ -20,16 +20,15 @@ export const generation={
             map.size=def.size
             map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),Layers.Normal,false,false)
 
-            const center=v2.scale(map.size,.5)
-            const base=polygon2.island_silhouette(center,def.terrain.radius,def.terrain.points,def.terrain.variation,def.terrain.passes,def.terrain.variation_decay??.6,random)
-            let poly=polygon2.clone(base)
-            for(const f of def.terrain.floors.sort()){
-                poly=polygon2.offset_polygon(base,f.padding)
-                const hb=new PolygonHitbox2D(polygon2.distort_polygon(poly,f.variation,f.spacing,0.9,random))
-                map.terrain.add_floor(f.type,hb,f.layer??Layers.Normal,true,true,true)
+            const center=v2.scale(map.size,0.5)
+
+            const base=generate_terrain_shape(def.terrain,map.terrain,random,Layers.Normal,center)
+            for(const shape of def.terrain.additional??[]){
+                generate_terrain_shape(shape,map.terrain,random,Layers.Normal,v2.random(center.x*0.5,center.x*1.5))
             }
+            
             if(def.terrain.rivers){
-                const ri=rivers.generate(base,def.terrain.rivers.defs,random)
+                const ri=rivers.generate_rivers(base,def.terrain.rivers.defs,random)
                 map.rivers=ri
                 for(const r of ri){
                     map.terrain.add_floor(def.terrain.rivers.floor??FloorType.Water,r.collisions.main,Layers.Normal)

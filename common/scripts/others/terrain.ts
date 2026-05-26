@@ -1,4 +1,5 @@
 import { Collision, hash, Hitbox2D, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
+import { TerrainLayerDef, TerrainShapeDef } from "../definitions/maps/base.ts";
 
 export enum FloorType {
     Void = 0,
@@ -85,23 +86,6 @@ export interface RiverDef{
     width_variation?:number
     push_force?:number
 }
-export interface LakeDef {
-    radius: number
-    variation?: number
-    points?: number
-    flow?: boolean
-    push_force?: number
-    island?: {
-        size: number
-        variation?: number
-        floors: {
-            type: FloorType
-            padding: number
-            variation: number
-            spacing: number
-        }[]
-    }
-}
 export class TerrainManager {
     floors: Floor[] = [];
     grid = new Map<bigint,Floor[]>();
@@ -155,7 +139,25 @@ export class TerrainManager {
         v2m.floor(p)
     }
 }
-
+export interface TerrainShapeResult{
+    base:Polygon2D
+    floors:{
+        def:TerrainLayerDef
+        polygon:Polygon2D
+        hitbox:PolygonHitbox2D
+    }[]
+}
+export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainManager,random:SeededRandom,layer:number=0,position:Vec2=v2(0,0)):Polygon2D{
+    const center=shape.position??position
+    const base = polygon2.island_silhouette(center,shape.radius,shape.points ?? 6,shape.variation ?? 50,shape.passes ?? 3,shape.variation_decay ?? 0.6,random)
+    let poly = polygon2.clone(base)
+    for(const floor of shape.floors.sort((a,b)=>a.padding-b.padding)){
+        poly = polygon2.offset_polygon(base,floor.padding)
+        poly = polygon2.distort_polygon(poly,floor.variation,floor.spacing,0.9,random)
+        terrain.add_floor(floor.type,new PolygonHitbox2D(poly),floor.layer??layer,true,true,true)
+    }
+    return base
+}
 export const rivers={
     get_position(points: RiverPoint[], t: number): Vec2 {
         t = Math.max(0, Math.min(1, t))
@@ -199,13 +201,13 @@ export const rivers={
         const dir = v2.normalizeSafe(v2.sub(point, center),v2(1,0))
         return v2.add(point,v2.scale(dir, amount))
     },
-    generate(hitbox: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
+    generate_rivers(hitbox: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
         const ret: River[] = []
         const defs = random.weight2(rivers)
         const center = polygon2.center(hitbox)
         for(const r of defs.rivers){
             let attempts = 0
-            while(attempts++ < 25){
+            while(attempts++<25){
                 const startIndex=random.int(0, hitbox.length - 1)
                 const minOffset=Math.floor(hitbox.length * 0.3)
 

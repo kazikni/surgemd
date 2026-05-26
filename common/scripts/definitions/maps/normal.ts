@@ -83,6 +83,35 @@ export const NormalMap:MapDef={
                 passes:3,
                 points:6,
                 variation:60,
+                additional:[
+                    {
+                        floors:[
+                            {
+                                type:FloorType.Water,
+                                padding:0,
+                                spacing:1,
+                                variation:1,
+                            },
+                            {
+                                type:FloorType.Sand,
+                                padding:30,
+                                spacing:1,
+                                variation:1,
+                            },
+                            {
+                                type:FloorType.Grass,
+                                padding:35,
+                                spacing:1,
+                                variation:1,
+                            },
+                        ],
+                        radius:70,
+                        variation:15,
+                        passes:1,
+                        points:10,
+
+                    },
+                ],
                 rivers:{
                     divisions:50,
                     spawn_floor:1,

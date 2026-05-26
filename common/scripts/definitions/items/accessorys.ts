@@ -1,7 +1,6 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
-import { BoostType } from "../player/boosts.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { InventoryItemType } from "../utils.ts";
 

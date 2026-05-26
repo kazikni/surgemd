@@ -104,8 +104,8 @@ export class MinimapManager{
             this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
 
             for (const floor of this.config.terrain) {
-                const hb  = floor.final_hb
-                const hex = ColorM.number2hex(this.game.terrain.biome?.floors[floor.type]?.color??Floors[floor.type].default_color)
+                const hb  = floor.hb
+                const hex = ColorM.number2hex(floor.tint??this.game.terrain.biome?.floors[floor.type as FloorType]?.color??Floors[floor.type as FloorType].default_color)
                 this.drawHitbox(hex, hb)
             }
             this.drawGrid(5,0.06)
@@ -123,7 +123,7 @@ export class MinimapManager{
                 const sx = frame.frame_rect?.min.x ?? 0
                 const sy = frame.frame_rect?.min.y ?? 0
                 const sw = (frame.frame_rect?.max.x ?? frame.image.width) - sx
-                const sh = (frame.frame_rect?.max.x ?? frame.image.height) - sy
+                const sh = (frame.frame_rect?.max.y ?? frame.image.height) - sy
 
                 const fw = frame.frame_size?.x ?? sw
                 const fh = frame.frame_size?.y ?? sh

@@ -1034,6 +1034,7 @@ export class NetStream {
     writeHitbox(hb:Hitbox2D){
         this.writeUint8(hb.type)
         hb.encode(this)
+        return this
     }
     readHitbox():Hitbox2D{
         switch(this.readUint8() as HitboxType2D){

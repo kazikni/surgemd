@@ -11,6 +11,7 @@ export * from "./definition/replay.ts"
 export * from "./game/console.ts"
 export * from "./game/game.ts"
 export * from "./game/gameObject.ts"
+export * from "./game/terrain.ts"
 export * from "./game/particles.ts"
 
 export * from "./lang/kspx.ts"

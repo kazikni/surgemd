@@ -81,10 +81,13 @@ export class MapPacket extends Packet{
     }
     encode(stream: NetStream): void {
         stream.writeArray(this.map.terrain,(t)=>{
-            stream.writeBooleanGroup(t.smooth,t.jagged,t.visible)
-            .writeHitbox(t.final_hb)
-            stream.writeUint8(t.type)
+            stream.writeBooleanGroup(t.smooth,t.visible,t.tint!==undefined)
+            .writeHitbox(t.hb)
+            .writeUint8(t.type)
             .writeInt8(t.layer)
+            if(t.tint!==undefined){
+                stream.writeUint32(t.tint)
+            }
         },2)
         .writeArray(this.map.objects,(i)=>{
             stream.writeUint8(i.type)
@@ -108,16 +111,18 @@ export class MapPacket extends Packet{
     decode(stream: NetStream): void {
         this.map.terrain=stream.readArray(()=>{
             const bg=stream.readBooleanGroup()
-            const fhb=stream.readHitbox()
-            return {
+            const hb=stream.readHitbox()
+            const floor:Floor={
                 type:stream.readUint8(),
-                smooth:bg[0],
-                jagged:bg[1],
-                visible:bg[2],
                 layer:stream.readInt8(),
-                final_hb:fhb,
-                hb:fhb
+                smooth:bg[0],
+                visible:bg[1],
+                hb:hb,
             }
+            if(bg[2]){
+                floor.tint=stream.readUint32()
+            }
+            return floor
         },2)
         this.map.objects=stream.readArray(()=>{
             const tp=stream.readUint8()

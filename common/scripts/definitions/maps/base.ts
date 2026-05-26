@@ -63,6 +63,8 @@ export interface BiomeDef{
 export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface TerrainLayerDef {
     type:FloorType
+
+    tint?:number
     layer?:number
     padding:number
     variation:number
@@ -85,6 +87,7 @@ export interface IslandDef{
     spawn?:MapObjectGeneration[]
     terrain:{
         base:FloorType
+        base_tint?:number
         additional?:TerrainShapeDef[]
         rivers?:{
             defs:RiversDef[]
@@ -92,6 +95,7 @@ export interface IslandDef{
             spawn_floor:number
             divisions:number
             floor?:FloorType
+            floor_tint?:number
         }
     }&TerrainShapeDef,
 }

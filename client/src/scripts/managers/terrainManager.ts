@@ -1,4 +1,4 @@
-import { Floors, TerrainManager } from "common/scripts/others/terrain.ts";
+import { Floors, FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { type Game } from "../others/game.ts";
 import { Debug } from "../others/config.ts";
@@ -19,7 +19,7 @@ export class TerrainM extends TerrainManager{
         return new Promise<void>((resolve, _reject) => {
             this.map=mp
             for(const f of mp.terrain){
-                this.add_floor(f.type,f.hb,f.layer,f.smooth)
+                this.add_floor(f)
             }
             this.biome=mp.biome
             this.game.ambient.biome=this.biome
@@ -33,12 +33,12 @@ export class TerrainM extends TerrainManager{
             graphic.clear()
             for(const f of this.floors){
                 if(layer<f.layer)continue
-                const flb=this.biome?.floors[f.type]
+                const flb=this.biome?.floors[f.type as FloorType]
                 graphic.beginPath()
                 graphic.set_hitbox(f.hb)
                 graphic.repeat_size=3
                 graphic.endPath()
-                const col=(flb?.color!==undefined)?flb?.color:Floors[f.type].default_color
+                const col=f.tint??((flb?.color!==undefined)?flb?.color:Floors[f.type as FloorType].default_color)
                 graphic.fill_color(ColorM.number(col))
                 graphic.fill()
             }

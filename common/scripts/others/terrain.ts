@@ -1,5 +1,6 @@
-import { Collision, hash, Hitbox2D, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts";
-import { TerrainLayerDef, TerrainShapeDef } from "../definitions/maps/base.ts";
+import { Collision, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts"
+import { BasicTerrainManager, FloorBase } from "../../engine/core/game/terrain.ts"
+import { TerrainLayerDef, TerrainShapeDef } from "../definitions/maps/base.ts"
 
 export enum FloorType {
     Void = 0,
@@ -65,14 +66,10 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
 };
 
-export interface Floor {
-    type: FloorType;
-    layer:number;
-    smooth: boolean;
-    jagged: boolean;
+export interface Floor extends FloorBase {
+    smooth: boolean
     visible:boolean
-    hb: Hitbox2D;
-    final_hb:Hitbox2D;
+    tint?:number
 }
 
 export type RiverPoint = {
@@ -86,59 +83,6 @@ export interface RiverDef{
     width_variation?:number
     push_force?:number
 }
-export class TerrainManager {
-    floors: Floor[] = [];
-    grid = new Map<bigint,Floor[]>();
-
-    add_floor(type: FloorType, hb: Hitbox2D, layer = 0, smooth = true,jagged:boolean=false,visible:boolean=true,final_hb?:Hitbox2D) {
-        const floor: Floor = { type, hb, smooth,jagged,final_hb:final_hb??hb,visible,layer };
-        this.floors.push(floor);
-
-        const rect = hb.to_rect()
-        this.cell_pos(rect.min)
-        this.cell_pos(rect.max)
-
-        for (let y = rect.min.y; y <= rect.max.y; y++) {
-            for (let x = rect.min.x; x <= rect.max.x; x++) {
-                const h=hash.hash_3d_big(x,y,layer)
-                if(!this.grid.has(h)){
-                    this.grid.set(h,[])
-                }
-                this.grid.get(h)!.push(floor);
-            }
-        }
-    }
-
-    get_floor(position: Vec2, layer: number): Floor | undefined {
-        const pos=v2.clone(position)
-        this.cell_pos(pos)
-        const floorsInCell = this.grid.get(hash.hash_3d_big(pos.x,pos.y,layer))??[]
-        for (let i = floorsInCell.length - 1; i >= 0; i--) {
-            const floor = floorsInCell[i];
-            if (floor.final_hb.point_inside(position)) {
-                return floor
-            }
-        }
-        return undefined
-    }
-
-    get_floor_type(position:Vec2,layer:number,place_holder:FloorType):FloorType{
-        const pos=v2.clone(position)
-        this.cell_pos(pos)
-        const floorsInCell = this.grid.get(hash.hash_3d_big(pos.x,pos.y,layer))??[]
-        for (let i = floorsInCell.length - 1; i >= 0; i--) {
-            const floor = floorsInCell[i];
-            if (floor.final_hb.point_inside(position)) {
-                return floor.type
-            }
-        }
-        return place_holder
-    }
-    cell_pos(p: Vec2) {
-        v2m.dscale(p,p,10)
-        v2m.floor(p)
-    }
-}
 export interface TerrainShapeResult{
     base:Polygon2D
     floors:{
@@ -147,6 +91,9 @@ export interface TerrainShapeResult{
         hitbox:PolygonHitbox2D
     }[]
 }
+export class TerrainManager extends BasicTerrainManager<Floor>{
+    
+}
 export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainManager,random:SeededRandom,layer:number=0,position:Vec2=v2(0,0)):Polygon2D{
     const center=shape.position??position
     const base = polygon2.island_silhouette(center,shape.radius,shape.points ?? 6,shape.variation ?? 50,shape.passes ?? 3,shape.variation_decay ?? 0.6,random)
@@ -154,7 +101,15 @@ export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainMana
     for(const floor of shape.floors.sort((a,b)=>a.padding-b.padding)){
         poly = polygon2.offset_polygon(base,floor.padding)
         poly = polygon2.distort_polygon(poly,floor.variation,floor.spacing,0.9,random)
-        terrain.add_floor(floor.type,new PolygonHitbox2D(poly),floor.layer??layer,true,true,true)
+        const hb=new PolygonHitbox2D(poly)
+        terrain.add_floor({
+            type:floor.type,
+            hb:hb,
+            smooth:true,
+            visible:true,
+            layer:floor.layer??layer,
+            tint:floor.tint,
+        })
     }
     return base
 }

@@ -18,21 +18,35 @@ export const generation={
         return (map:GameMap,random:SeededRandom)=>{
             //Terrain
             map.size=def.size
-            map.terrain.add_floor(def.terrain.base,new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),Layers.Normal,false,false)
-
+            map.terrain.add_floor({
+                type:def.terrain.base,
+                hb:new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),
+                layer:Layers.Normal,
+                visible:true,
+                smooth:false,
+            
+                tint:def.terrain.base_tint,
+            })
             const center=v2.scale(map.size,0.5)
-
             const base=generate_terrain_shape(def.terrain,map.terrain,random,Layers.Normal,center)
-            for(const shape of def.terrain.additional??[]){
-                generate_terrain_shape(shape,map.terrain,random,Layers.Normal,v2.random(center.x*0.5,center.x*1.5))
-            }
             
             if(def.terrain.rivers){
                 const ri=rivers.generate_rivers(base,def.terrain.rivers.defs,random)
                 map.rivers=ri
                 for(const r of ri){
-                    map.terrain.add_floor(def.terrain.rivers.floor??FloorType.Water,r.collisions.main,Layers.Normal)
+                    map.terrain.add_floor({
+                        type:def.terrain.rivers.floor??FloorType.Water,
+                        hb:r.collisions.main,
+                        layer:Layers.Normal,
+                        visible:true,
+                        smooth:false,
+                    
+                        tint:def.terrain.rivers.floor_tint,
+                    })
                 }
+            }
+            for(const shape of def.terrain.additional??[]){
+                generate_terrain_shape(shape,map.terrain,random,Layers.Normal,v2.random(center.x*0.5,center.x*1.5))
             }
             for(const spawn of def.spawn??[]){
                 map.generate_objects(spawn,random)

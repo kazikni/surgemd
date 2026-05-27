@@ -94,8 +94,6 @@ export interface IslandDef{
             expansion?:number
             spawn_floor:number
             divisions:number
-            floor?:FloorType
-            floor_tint?:number
         }
     }&TerrainShapeDef,
 }

@@ -3,7 +3,7 @@ import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef, MapObjectGeneration } from "common/scripts/definitions/maps/base.ts"
 import { MapPacket,MapObjectEncode } from "common/scripts/packets/map_packet.ts"
-import { FloorType, generate_terrain_shape, River, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
+import { Floors, FloorType, generate_terrain_shape, River, rivers, TerrainManager } from "common/scripts/others/terrain.ts"
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
@@ -31,18 +31,19 @@ export const generation={
             const base=generate_terrain_shape(def.terrain,map.terrain,random,Layers.Normal,center)
             
             if(def.terrain.rivers){
-                const ri=rivers.generate_rivers(base,def.terrain.rivers.defs,random)
-                map.rivers=ri
-                for(const r of ri){
-                    map.terrain.add_floor({
-                        type:def.terrain.rivers.floor??FloorType.Water,
-                        hb:r.collisions.main,
-                        layer:Layers.Normal,
-                        visible:true,
-                        smooth:false,
-                    
-                        tint:def.terrain.rivers.floor_tint,
-                    })
+                const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
+                map.rivers=rivers
+                for(const r of rivers){
+                    for(const layer of r.layers){
+                        map.terrain.add_floor({
+                            type:layer.floor,
+                            hb:layer.hb,
+                            visible:true,
+                            smooth:true,
+                            tint:layer.floor_tint,
+                            layer:layer.layer??Layers.Normal,
+                        })
+                    }
                 }
             }
             for(const shape of def.terrain.additional??[]){
@@ -181,6 +182,15 @@ export class GameMap{
             return undefined
         }
         o.set_position(p)
+
+        const floor=this.terrain.get_floor_type(p,o.layer,FloorType.Void)
+        const skin_apply=Floors[floor as FloorType]?.skin_apply
+        if(skin_apply){
+            const idx=(def.assets?.frame?.biome_skins??[]).indexOf(skin_apply)
+            if(idx!==-1){
+                o.visual_data.skin=idx+1
+            }
+        }
         o.manager.cells.update_object(o)
 
         return o

@@ -166,8 +166,8 @@ export const buildings_factory={
             ceiling?:string,
             b?:DeepPartial<BuildingDef>
         }={}){
-            const min=v2(-3.05,-1.5)
-            const max=v2(3.05,1.5)
+            const min=v2(-2.44,-1.2)
+            const max=v2(2.44,1.2)
             return mergeDeep({
                 idString:id,
                 reflect_bullets:true,
@@ -176,7 +176,7 @@ export const buildings_factory={
                     bottom:true,
                     right:false,
                     top:true
-                },0.5),
+                },0.4),
                 spawnHitbox:new RectHitbox2D(min,max),
                 assets:{
                     particles:{
@@ -209,8 +209,8 @@ export const buildings_factory={
             ceiling?:string,
             b?:DeepPartial<BuildingDef>
         }={}){
-            const min=v2(-3.05,-1.5)
-            const max=v2(3.05,1.5)
+            const min=v2(-2.44,-1.2)
+            const max=v2(2.44,1.2)
             return mergeDeep({
                 idString:id,
                 reflect_bullets:true,
@@ -219,7 +219,7 @@ export const buildings_factory={
                     bottom:true,
                     right:false,
                     top:true
-                },0.5),
+                },0.4),
                 spawnHitbox:new RectHitbox2D(min,max),
                 assets:{
                     particles:{

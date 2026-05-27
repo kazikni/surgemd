@@ -58,10 +58,11 @@ export class Loot extends ServerGameObject{
                   * (cf.speed_mult??1)
         if(this.current_floor === FloorType.Water){
             for(const river of this.game.map.rivers){
-                if(!river.collisions.main.point_inside(this.position)){
+                const col=river.get_point_inside(this.position)
+                if(!col?.push){
                     continue
                 }
-                const point=rivers.get_closest_point(river.points,this.position)
+                const point=river.get_closest_point(this.position)
                 if(point){
                     v2m.add(this.velocity,this.velocity,v2.scale(point.direction,point.push_force*dt))
                 }

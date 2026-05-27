@@ -1,5 +1,6 @@
 import { RectHitbox2D, v2 } from "../../../engine/core.ts";
-import { FloorType } from "../../others/terrain.ts";
+import { Spawn } from "../../others/constants.ts";
+import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { building_to_json, buildings_factory } from "../objects/buildings_base.ts";
 import { BiomeDef, CounterMapDef, type MapDef } from "./base.ts";
@@ -25,18 +26,26 @@ export const map_spawns={
     containers:[
         {def:"blue_container_1",weight:10},
         {def:"blue_container_2",weight:10},
+        {def:"blue_container_3",weight:10},
+        {def:"blue_container_4",weight:10},
         {def:"red_container_1",weight:10},
         {def:"red_container_2",weight:10},
+        {def:"red_container_3",weight:10},
+        {def:"red_container_4",weight:10},
         {def:"yellow_container_1",weight:10},
         {def:"yellow_container_2",weight:10},
+        {def:"yellow_container_3",weight:10},
+        {def:"yellow_container_4",weight:10},
         {def:"green_container_1",weight:10},
         {def:"green_container_2",weight:10},
-        {def:"black_container",weight:0.1},
+        {def:"green_container_3",weight:10},
+        {def:"green_container_4",weight:10},
+        {def:"black_container",weight:1},
     ],
     crates:[
         {def:"wood_crate",weight:1000},
         {def:"copper_crate",weight:100},
-        {def:"campfire_crate",weight:20},
+        {def:"campfire_crate",weight:10},
         {def:"iron_crate",weight:1},
         {def:"gold_crate",weight:0.05},
     ],
@@ -57,7 +66,7 @@ export const NormalMap:MapDef={
     ],
     generation:{
         island:{
-            size:v2(550,550),
+            size:v2(600,600),
             spawn:[
                 //{def:"small_house_1",count:5},
                 {def:"bunker_1",count:3},
@@ -69,17 +78,26 @@ export const NormalMap:MapDef={
 
                 {def:"sillo",count:10},
 
-                {def:map_spawns.crates,count:500},
-                {def:"oak_tree",count:1000},
-                {def:map_spawns.rocks,count:500},
-                {def:"bush",count:200},
-                {def:"barrel",count:100},
+
+                //Tundra Biome
+                {def:"campfire_crate",count:5,spawn:Spawn.snow_only},
+                {def:map_spawns.crates,count:15,spawn:Spawn.snow_only},
+                {def:"oak_tree",count:30,spawn:Spawn.snow_only},
+                {def:map_spawns.rocks,count:25,spawn:Spawn.snow_only},
+                {def:"bush",count:25,spawn:Spawn.snow_only},
+                {def:"barrel",count:15,spawn:Spawn.snow_only},
+                //Normal Biome
+                {def:map_spawns.crates,count:500,spawn:Spawn.grass_only},
+                {def:"oak_tree",count:1000,spawn:Spawn.grass_only},
+                {def:map_spawns.rocks,count:500,spawn:Spawn.grass_only},
+                {def:"bush",count:200,spawn:Spawn.grass_only},
+                {def:"barrel",count:100,spawn:Spawn.grass_only},
 
                 {def:"normal_loot",count:50}
             ],
             terrain:{
                 base:FloorType.Water,
-                radius:250,
+                radius:280,
                 passes:3,
                 points:6,
                 variation:60,
@@ -89,23 +107,24 @@ export const NormalMap:MapDef={
                             {
                                 type:FloorType.Water,
                                 padding:0,
-                                spacing:1,
-                                variation:1,
+                                spacing:2,
+                                variation:2,
                             },
                             {
                                 type:FloorType.Sand,
-                                padding:30,
-                                spacing:1,
-                                variation:1,
+                                padding:10,
+                                spacing:2,
+                                variation:2,
+                                tint:0x8a979e
                             },
                             {
-                                type:FloorType.Grass,
-                                padding:35,
-                                spacing:1,
-                                variation:1,
+                                type:FloorType.Snow,
+                                padding:15,
+                                spacing:2,
+                                variation:2,
                             },
                         ],
-                        radius:70,
+                        radius:100,
                         variation:15,
                         passes:1,
                         points:10,
@@ -262,7 +281,7 @@ export const SnowBiome:BiomeDef={
         }
     },
     biome_skin:"snow",
-    assets:["normal","christmas"],
+    assets:["normal"],
     ambient:{
         particles:[],
         rain:false,
@@ -270,3 +289,24 @@ export const SnowBiome:BiomeDef={
         sound:"snowstorm_ambience"
     }
 }
+export const DesertBiome:BiomeDef={
+    floors:{
+        [FloorType.Sand]:{
+            color:0xa1761a
+        }
+    },
+    biome_skin:"desert",
+    assets:["normal"],
+    ambient:{
+        particles:[],
+        rain:false,
+    }
+}
+export const river_layers={
+    ice:[
+        {
+            floor:FloorType.Ice,
+            push:false,
+        }
+    ]
+} satisfies Record<string,RiverLayerDef[]>

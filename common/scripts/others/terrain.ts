@@ -12,7 +12,7 @@ export enum FloorType {
 
     Metal
 }
-export enum FloorKind{
+export enum FloorKind {
     Void=0,
     Solid,
     Liquid,
@@ -25,8 +25,8 @@ export interface FloorDef {
     floor_kind:FloorKind
     footstep_sounds?:string[]
     footstep_decal?:boolean
+    skin_apply?:string
 }
-export interface RiversDef { weight: number; rivers: RiverDef[] }[]
 
 export const Floors: Record<FloorType, FloorDef> = {
     [FloorType.Void]: {
@@ -43,6 +43,7 @@ export const Floors: Record<FloorType, FloorDef> = {
         default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_snow_1","footstep_snow_2"],
         footstep_decal:true,
+        skin_apply:"snow"
     },
     [FloorType.Sand]: {
         default_color: 0xb59924,floor_kind:FloorKind.Solid,
@@ -65,23 +66,33 @@ export const Floors: Record<FloorType, FloorDef> = {
         footstep_sounds:["footstep_metal_1","footstep_metal_2"]
     },
 };
-
 export interface Floor extends FloorBase {
     smooth: boolean
     visible:boolean
     tint?:number
 }
 
+export interface RiversDef { weight: number; rivers: RiverDef[] }[]
 export type RiverPoint = {
     position: Vec2
     width: number
     push_force: number
     direction: Vec2
 };
+export interface RiverLayerDef {
+    margin?:number
+    scale?:number
+    floor:number
+    push:boolean
+    floor_tint?:number
+    layer?:number
+}
 export interface RiverDef{
     width:number
     width_variation?:number
     push_force?:number
+    min_distance?:number
+    layers?:RiverLayerDef[]
 }
 export interface TerrainShapeResult{
     base:Polygon2D
@@ -114,165 +125,6 @@ export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainMana
     return base
 }
 export const rivers={
-    get_position(points: RiverPoint[], t: number): Vec2 {
-        t = Math.max(0, Math.min(1, t))
-        const max = points.length - 1
-        const idx = t * max
-        const i0 = Math.floor(idx)
-        const i1 = Math.min(i0 + 1, max)
-        const frac = idx - i0
-        return v2.lerp(points[i0].position,points[i1].position,frac)
-    },
-    get_closest_point(points: RiverPoint[], pos: Vec2): RiverPoint | undefined {
-        let closest: RiverPoint | undefined
-        let closestDist = Infinity
-        for(const p of points){
-            const dist = v2.distanceSquared(pos, p.position)
-            if(dist < closestDist){
-                closestDist = dist
-                closest = p
-            }
-        }
-        return closest
-    },
-    apply_flow(points: RiverPoint[]) {
-        for(let i = 0; i < points.length; i++){
-            const prev = points[Math.max(0, i - 1)].position
-            const next = points[Math.min(points.length - 1, i + 1)].position
-            points[i].direction = v2.normalizeSafe(v2.sub(next, prev),v2(1,0))
-        }
-        return points
-    },
-
-    init(points:RiverPoint[]):River{
-        const hb=new PolygonHitbox2D(polygon2.from_point_line(points))
-        const river:River={
-            points:points,
-            collisions:{main:hb},
-        }
-        return river
-    },
-    extend_point(point: Vec2,center: Vec2,amount: number): Vec2 {
-        const dir = v2.normalizeSafe(v2.sub(point, center),v2(1,0))
-        return v2.add(point,v2.scale(dir, amount))
-    },
-    generate_rivers(hitbox: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
-        const ret: River[] = []
-        const defs = random.weight2(rivers)
-        const center = polygon2.center(hitbox)
-        for(const r of defs.rivers){
-            let attempts = 0
-            while(attempts++<25){
-                const startIndex=random.int(0, hitbox.length - 1)
-                const minOffset=Math.floor(hitbox.length * 0.3)
-
-                const maxOffset=Math.floor(hitbox.length * 0.7)
-                const offset=random.int(minOffset, maxOffset)
-                const endIndex=(startIndex + offset) % hitbox.length
-
-                let point1 = hitbox[startIndex]
-                let point2 = hitbox[endIndex]
-
-                point1 = this.extend_point(point1,center,r.width * 1.5)
-                point2 = this.extend_point(point2,center,r.width * 1.5)
-                if(v2.distance(point1, point2) < 80){
-                    continue
-                }
-                let path = this.generate_path(point1,point2,random)
-                if(path.length < 5){
-                    continue
-                }
-                path = this.smooth_path(path)
-                let final = this.apply_width(path,r,random)
-                final = this.apply_flow(final)
-                const river = this.init(final)
-                ret.push(river)
-                break
-            }
-        }
-        return ret
-    },
-    generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 6,strength = 0.25): Vec2[] {
-        let points: Vec2[] = [start, end]
-        const globalDir = v2.normalizeSafe(v2.sub(end, start), v2(1, 0))
-        const globalNormal = v2(-globalDir.y, globalDir.x)
-        for (let p = 0; p < passes; p++) {
-            const next: Vec2[] = []
-
-            for (let i = 0; i < points.length - 1; i++) {
-                const a = points[i]
-                const b = points[i + 1]
-
-                next.push(a)
-
-                const mid = v2.scale(v2.add(a, b), 0.5)
-
-                const dir = v2.normalizeSafe(v2.sub(b, a), globalDir)
-                const normal = v2.normalizeSafe(
-                    v2.add(
-                        v2(-dir.y, dir.x),
-                        v2.scale(globalNormal, 0.5)
-                    ),
-                    globalNormal
-                )
-
-                const dist = v2.distance(a, b)
-                const falloff = Math.min(1, dist * 0.1)
-
-                const offset = random.float(-1, 1) * dist * strength * falloff
-                next.push(v2.add(mid, v2.scale(normal, offset)))
-            }
-
-            next.push(points[points.length - 1])
-            points = next
-
-            strength *= 0.55
-        }
-
-        return points
-    },
-    smooth_path(points: Vec2[], steps = 2): Vec2[] {
-        const out: Vec2[] = []
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const p0 = points[Math.max(i-1,0)]
-            const p1 = points[i]
-            const p2 = points[i+1]
-            const p3 = points[Math.min(i+2, points.length-1)]
-
-            for (let t = 0; t < 1; t += 1/steps) {
-                const tt = t*t
-                const ttt = tt*t
-
-                const q = v2(
-                    0.5 * ((2*p1.x) + (-p0.x+p2.x)*t + (2*p0.x-5*p1.x+4*p2.x-p3.x)*tt + (-p0.x+3*p1.x-3*p2.x+p3.x)*ttt),
-                    0.5 * ((2*p1.y) + (-p0.y+p2.y)*t + (2*p0.y-5*p1.y+4*p2.y-p3.y)*tt + (-p0.y+3*p1.y-3*p2.y+p3.y)*ttt)
-                )
-
-                out.push(q)
-            }
-        }
-
-        out.push(points[points.length-1])
-        return out
-    },
-    apply_width(points: Vec2[],def: RiverDef,random: SeededRandom): RiverPoint[] {
-        const out: RiverPoint[] = []
-        for (let i = 0; i < points.length; i++) {
-            let width = def.width
-            if (def.width_variation) {
-                width += random.float(0, def.width_variation)
-            }
-            out.push({
-                position: points[i],
-                width,
-                direction:v2.zero(),
-                push_force:def.push_force??5
-            })
-        }
-
-        return out
-    },
     find_intersection(a: RiverPoint[],b: RiverPoint[]): { ai: number, bi: number, point: Vec2 } | null {
         for (let i = 1; i < a.length; i++) {
             const a1 = a[i - 1].position
@@ -344,7 +196,196 @@ export const rivers={
         return newRiver
     }
 }
-export interface River{
-    collisions:Record<string, PolygonHitbox2D>
-    points:RiverPoint[]
+export interface RiverLayer{
+    hb:PolygonHitbox2D
+    floor:number
+
+    push:boolean
+    floor_tint?:number
+    layer?:number
+}
+export class River{
+    base:PolygonHitbox2D
+    layers:RiverLayer[]=[]
+    points:RiverPoint[]=[]
+
+    static default_layers:RiverLayerDef[]=[
+        {
+            floor:FloorType.Water,
+            push:true,
+            scale:0.8
+        }
+    ]
+    constructor(points:RiverPoint[],def:RiverDef){
+        this.base=new PolygonHitbox2D(polygon2.from_point_line(points))
+        for(const layer of def.layers??River.default_layers){
+            this.layers.push({
+                hb:River.create_layer(points,layer.margin,layer.scale),
+                floor:layer.floor,
+                floor_tint:layer.floor_tint,
+                push:layer.push,
+                layer:layer.layer
+            })
+        }
+    }
+    get_point_inside(position:Vec2):RiverLayer|undefined{
+        for(let l=this.layers.length-1;l>=0;l--){
+            if(this.layers[l].hb.point_inside(position)){
+                return this.layers[l]
+            }
+        }
+    }
+    get_position(t: number): Vec2 {
+        t = Math.max(0, Math.min(1, t))
+        const max = this.points.length - 1
+        const idx = t * max
+        const i0 = Math.floor(idx)
+        const i1 = Math.min(i0 + 1, max)
+        const frac = idx - i0
+        return v2.lerp(this.points[i0].position,this.points[i1].position,frac)
+    }
+    get_closest_point(pos: Vec2): RiverPoint | undefined {
+        let closest: RiverPoint | undefined
+        let closestDist = Infinity
+        for(const p of this.points){
+            const dist = v2.distanceSquared(pos, p.position)
+            if(dist < closestDist){
+                closestDist = dist
+                closest = p
+            }
+        }
+        return closest
+    }
+
+    // Create
+    static generate(point1:Vec2,point2:Vec2,def:RiverDef,random:SeededRandom):River|undefined{
+        if(v2.distance(point1, point2)<(def.min_distance??80)){
+            return
+        }
+        let path = this.generate_path(point1,point2,random)
+        if(path.length < 5){
+            return
+        }
+
+        path = this.smooth_path(path)
+        let final = this.apply_width(path,def,random)
+        final = this.apply_flow(final)
+        return new River(final,def)
+    }
+    static create_layer(points:RiverPoint[],margin:number=0,scale:number=1){
+        const expanded:RiverPoint[]=[]
+        for(const p of points){
+            expanded.push({...p,width:p.width*scale+margin})
+        }
+        return new PolygonHitbox2D(polygon2.from_point_line(expanded))
+    }
+    static generate_rivers(hitbox: Polygon2D,rivers: RiversDef[],random: SeededRandom): River[] {
+        const ret: River[] = []
+        const defs = random.weight2(rivers)
+        const center = polygon2.center(hitbox)
+        for(const def of defs.rivers){
+            let attempts = 0
+            while(attempts++<25){
+                const startIndex=random.int(0, hitbox.length - 1)
+                const minOffset=Math.floor(hitbox.length * 0.3)
+
+                const maxOffset=Math.floor(hitbox.length * 0.7)
+                const offset=random.int(minOffset, maxOffset)
+                const endIndex=(startIndex + offset) % hitbox.length
+
+                let point1 = hitbox[startIndex]
+                let point2 = hitbox[endIndex]
+
+                point1 = this.extend_point(point1,center,def.width * 1.7)
+                point2 = this.extend_point(point2,center,def.width * 1.7)
+
+                const river=River.generate(point1,point2,def,random)
+                if(!river){
+                    continue
+                }
+                ret.push(river)
+                break
+            }
+        }
+        return ret
+    }
+    // Utils
+    static extend_point(point: Vec2,center: Vec2,amount: number): Vec2 {
+        const dir = v2.normalizeSafe(v2.sub(point, center),v2(1,0))
+        return v2.add(point,v2.scale(dir, amount))
+    }
+    static generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 6,strength = 0.25): Vec2[] {
+        let points: Vec2[] = [start, end]
+        const globalDir = v2.normalizeSafe(v2.sub(end, start), v2(1, 0))
+        const globalNormal = v2(-globalDir.y, globalDir.x)
+        for (let p = 0; p < passes; p++) {
+            const next: Vec2[] = []
+            for (let i = 0; i < points.length - 1; i++) {
+                const a = points[i]
+                const b = points[i + 1]
+
+                next.push(a)
+
+                const mid = v2.scale(v2.add(a, b), 0.5)
+
+                const dir = v2.normalizeSafe(v2.sub(b, a), globalDir)
+                const normal = v2.normalizeSafe(v2.add(v2(-dir.y, dir.x),v2.scale(globalNormal, 0.5)),globalNormal)
+
+                const dist = v2.distance(a, b)
+                const falloff = Math.min(1, dist * 0.1)
+
+                const offset = random.float(-1, 1) * dist * strength * falloff
+                next.push(v2.add(mid, v2.scale(normal, offset)))
+            }
+            next.push(points[points.length - 1])
+            points = next
+            strength *= 0.55
+        }
+        return points
+    }
+    static smooth_path(points: Vec2[], steps = 2): Vec2[] {
+        const out: Vec2[] = []
+        for (let i = 0; i < points.length - 1; i++) {
+            const p0 = points[Math.max(i-1,0)]
+            const p1 = points[i]
+            const p2 = points[i+1]
+            const p3 = points[Math.min(i+2, points.length-1)]
+            for (let t = 0; t < 1; t += 1/steps) {
+                const tt = t*t
+                const ttt = tt*t
+                const q = v2(
+                    0.5 * ((2*p1.x) + (-p0.x+p2.x)*t + (2*p0.x-5*p1.x+4*p2.x-p3.x)*tt + (-p0.x+3*p1.x-3*p2.x+p3.x)*ttt),
+                    0.5 * ((2*p1.y) + (-p0.y+p2.y)*t + (2*p0.y-5*p1.y+4*p2.y-p3.y)*tt + (-p0.y+3*p1.y-3*p2.y+p3.y)*ttt)
+                )
+                out.push(q)
+            }
+        }
+        out.push(points[points.length-1])
+        return out
+    }
+    static apply_width(points: Vec2[],def: RiverDef,random: SeededRandom): RiverPoint[] {
+        const out: RiverPoint[] = []
+        for (let i = 0; i < points.length; i++) {
+            let width = def.width
+            if (def.width_variation) {
+                width += random.float(0, def.width_variation)
+            }
+            out.push({
+                position: points[i],
+                width,
+                direction:v2.zero(),
+                push_force:def.push_force??5
+            })
+        }
+
+        return out
+    }
+    static apply_flow(points: RiverPoint[]) {
+        for(let i = 0; i < points.length; i++){
+            const prev = points[Math.max(0, i - 1)].position
+            const next = points[Math.min(points.length - 1, i + 1)].position
+            points[i].direction = v2.normalizeSafe(v2.sub(next, prev),v2(1,0))
+        }
+        return points
+    }
 }

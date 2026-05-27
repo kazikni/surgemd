@@ -2,7 +2,7 @@
 ## News
 __                                                                                                                 __
 ### Mains
-* Non-Rect Island
+* New Map
 * Decals
 * River Push Loot
 __                                                                                                                 __
@@ -17,9 +17,12 @@ __                                                                              
 ### Items
 __                                                                                                                 __
 ### Menu
+* Rework Minimap System
 __                                                                                                                 __
 ### Others
 * Fix Explosives Obstacles Particles
+* Reduce Containers Size
+* Change Containers Spawn
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

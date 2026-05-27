@@ -147,6 +147,14 @@ export const Spawn={
         type:SpawnModeType.whitelist,
         list:[FloorType.Grass,FloorType.Snow,FloorType.Sand]
     },
+    snow_only:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Snow]
+    },
+    grass_only:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Grass]
+    },
 } satisfies Record<string,SpawnMode>
 
 export interface HumanHealthData{

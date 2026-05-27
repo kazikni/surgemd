@@ -2,7 +2,7 @@ import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
-import { map_spawns } from "./normal.ts";
+import { map_spawns, river_layers } from "./normal.ts";
 
 export const TundraBiome:BiomeDef={
     floors:{
@@ -160,11 +160,23 @@ export const TundraMap:MapDef={
                                 spacing:1,
                                 variation:1,
                             },
+                            {
+                                type:FloorType.Sand,
+                                padding:30,
+                                spacing:1,
+                                variation:1,
+                            },
+                            {
+                                type:FloorType.Snow,
+                                padding:35,
+                                spacing:1,
+                                variation:1,
+                            },
                         ],
-                        radius:60,
+                        radius:70,
                         variation:15,
-                        passes:2,
-                        points:5,
+                        passes:1,
+                        points:10,
 
                     },
                 ],
@@ -172,24 +184,23 @@ export const TundraMap:MapDef={
                     divisions:50,
                     spawn_floor:1,
                     expansion:32,
-                    floor:FloorType.Ice,
                     defs:[
                         {
                             rivers:[
-                                {width:15,width_variation:2},
-                                {width:15,width_variation:2},
-                                {width:15,width_variation:2},
-                                {width:9,width_variation:2},
-                                {width:9,width_variation:2},
+                                {width:15,width_variation:2,layers:river_layers.ice},
+                                {width:15,width_variation:2,layers:river_layers.ice},
+                                {width:15,width_variation:2,layers:river_layers.ice},
+                                {width:9,width_variation:2,layers:river_layers.ice},
+                                {width:9,width_variation:2,layers:river_layers.ice},
                             ],
                             weight:1
                         },
                         {
                             rivers:[
-                                {width:25,width_variation:2},
-                                {width:15,width_variation:2},
-                                {width:15,width_variation:2},
-                                {width:15,width_variation:2},
+                                {width:25,width_variation:2,layers:river_layers.ice},
+                                {width:15,width_variation:2,layers:river_layers.ice},
+                                {width:15,width_variation:2,layers:river_layers.ice},
+                                {width:15,width_variation:2,layers:river_layers.ice},
                             ],
                             weight:1
                         },

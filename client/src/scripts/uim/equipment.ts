@@ -65,7 +65,11 @@ export class EquipmentModule extends UIModule<Game> {
     override on_destroy(): void {}
 
     override on_clear(): void {
-        this.container.innerHTML = ""
+        this.render_slot(this.helmet)
+        this.render_slot(this.vest)
+        this.render_slot(this.backpack)
+        this.accessories_container.innerHTML = ""
         this.cache = []
+        HideElement(this.container)
     }
 }

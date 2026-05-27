@@ -88,6 +88,12 @@ export class Game extends ClientGame<GameObject>{
     terrain_gfx=new Graphics2D()
     grid_gfx=new Graphics2D()
 
+    grid={
+        size:5,
+        tint:{r:0,g:0,b:0,a:0.1},
+        line_size:0.05
+    }
+
     loaded=false
     loaded_textures:string[]=[]
 
@@ -577,7 +583,7 @@ export class Game extends ClientGame<GameObject>{
             }
         }
         this.terrain.draw(this.terrain_gfx,this.cam2d.layer)
-        this.update_grid(this.grid_gfx,5,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height),0.05)
+        this.update_grid(this.grid_gfx,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height))
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
             this.input.auto_fire=this.ui.mobile_enabled
@@ -591,7 +597,7 @@ export class Game extends ClientGame<GameObject>{
         this.input.swamp_guns=false
         this.input.actions.length=0
     }
-    update_grid(grid_gfx:Graphics2D,gridSize:number,camera_position:Vec2,camera_size:Vec2,line_size:number){
+    update_grid(grid_gfx:Graphics2D,camera_position:Vec2,camera_size:Vec2){
         this.grid_gfx.position=v2(0,0)
         grid_gfx.clear()
         grid_gfx.layer=this.terrain_gfx.layer
@@ -602,14 +608,14 @@ export class Game extends ClientGame<GameObject>{
 
         const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)
-        v2m.dscale(begin,begin,gridSize)
+        v2m.dscale(begin,begin,this.grid.size)
         v2m.floor(begin)
         v2m.sub_component(begin,1,1)
 
-        const size=v2(camera_size.x/gridSize+2,camera_size.y/gridSize+2)
+        const size=v2(camera_size.x/this.grid.size+2,camera_size.y/this.grid.size+2)
         v2m.ceil(size)
-        grid_gfx.fill_color({r:0,g:0,b:0,a:0.1})
-        grid_gfx.drawGrid(begin,size,gridSize,line_size)
+        grid_gfx.fill_color(this.grid.tint)
+        grid_gfx.drawGrid(begin,size,this.grid.size,this.grid.line_size)
     }
     override on_render(_dt: number): void {
         this.ambient.render()

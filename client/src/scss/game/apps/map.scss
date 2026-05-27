@@ -10,7 +10,6 @@
         height: 100%;
     }
 
-    // ================= LEFT =================
     .map-sidebar {
         background: #15181f;
         padding: 12px;
@@ -67,16 +66,23 @@
         cursor: grabbing;
     }
 
-    .map-inner {
-        position: absolute;
-        transform-origin: 0 0;
-        will-change: transform;
+    .map-inner{
+        position:absolute;
+        left:0;
+        top:0;
+        transform-origin:0 0;
+        will-change:transform;
     }
-
-    .map-image {
-        display: block;
-        user-select: none;
-        pointer-events: none;
+    .map-tiles{
+        position:absolute;
+        left:0;
+        top:0;
+    }
+    .map-tile{
+        position:absolute;
+        image-rendering:auto;
+        pointer-events:none;
+        user-select:none;
     }
 
     .map-pings {

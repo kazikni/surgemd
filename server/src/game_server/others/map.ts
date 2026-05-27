@@ -232,6 +232,7 @@ export class GameMap{
                 }
             }
         }
+
         if(definition.generation.island)generation.island(definition.generation.island)(this,random)
         if(definition.gen_callback)definition.gen_callback(this)
 

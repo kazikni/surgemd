@@ -9,7 +9,7 @@ export const DebugMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2(500,500),
+            size:v2(550,550),
             terrain:{
                 base:FloorType.Water,
                 radius:230,

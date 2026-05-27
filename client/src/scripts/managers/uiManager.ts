@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-import { KillFeedMessage, KillFeedMessageKillleader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { KillFeedMessage, KillFeedMessageLeader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
@@ -52,7 +52,7 @@ export class UiManager{
 
         killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
 
-        killeader_span:document.querySelector("#killeader-text") as HTMLSpanElement,
+        leader_span:document.querySelector("#leader-text") as HTMLSpanElement,
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
 
@@ -86,7 +86,7 @@ export class UiManager{
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
     }
 
-    killleader?:{
+    leader?:{
         id:number
         kills:number
     }
@@ -125,8 +125,8 @@ export class UiManager{
     }
     clear(){
         this.content.killfeed.innerHTML=""
-        this.content.killeader_span.innerText=""
-        this.killleader=undefined
+        this.content.leader_span.innerText=""
+        this.leader=undefined
         this.content.help_gui.innerText=""
 
         this.players_name={}
@@ -270,7 +270,7 @@ export class UiManager{
         }
         this.game.renderer.canvas.focus()
 
-        this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
+        this.content.leader_span.innerText=this.game.language.get("leader-wait",{})
         this.enableCrosshair()
         enableContextMenuPrevent()
 
@@ -283,10 +283,10 @@ export class UiManager{
             const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/main/loadout/badges/${badge_frame}.svg">`
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
-        if(jp.kill_leader){
-            this.assign_killleader({
-                type:KillFeedMessageType.killleader_assigned,
-                player:jp.kill_leader
+        if(jp.leader){
+            this.assign_leader({
+                type:KillFeedMessageType.leader_assigned,
+                player:jp.leader
             })
         }
         
@@ -317,12 +317,12 @@ export class UiManager{
             HideElement(this.mobile_content.btn_interact)
         }
     }
-    assign_killleader(msg:KillFeedMessageKillleader){
-        this.killleader={
+    assign_leader(msg:KillFeedMessageLeader){
+        this.leader={
             id:msg.player.id,
             kills:msg.player.kills
         }
-        this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.player.id].name}`
+        this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
     }
     killfeed_queue: HTMLDivElement[] = []
     max_killfeed_messages = 7
@@ -367,9 +367,9 @@ export class UiManager{
                             this.game.ui_manager.signal("info-kill",`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`)
                         }
 
-                        if(this.killleader&&msg.killer.id===this.killleader.id){
-                            this.killleader.kills=msg.killer.kills
-                            this.content.killeader_span.innerText=`${this.killleader.kills} - ${this.players_name[msg.killer.id].name}`
+                        if(this.leader&&msg.killer.id===this.leader.id){
+                            this.leader.kills=msg.killer.kills
+                            this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.killer.id].name}`
                         }
                         break
                     }
@@ -425,20 +425,20 @@ export class UiManager{
                 }
                 break
             }
-            case KillFeedMessageType.killleader_assigned:{
+            case KillFeedMessageType.leader_assigned:{
                 if(!this.players_name[msg.player.id])break
-                elem.innerHTML=this.game.language.get("killfeed.killleader.assigned",{"player":this.players_name[msg.player.id].full})
-                this.assign_killleader(msg)
+                elem.innerHTML=this.game.language.get("killfeed.leader.assigned",{"player":this.players_name[msg.player.id].full})
+                this.assign_leader(msg)
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
                     volume:0.4,
                     bus:"ui"
                 })
                 break
             }
-            case KillFeedMessageType.killleader_dead:{
-                this.killleader=undefined
-                elem.innerHTML=this.game.language.get("killfeed.killleader.dead",{})
-                this.content.killeader_span.innerText=this.game.language.get("killleader-wait",{})
+            case KillFeedMessageType.leader_dead:{
+                this.leader=undefined
+                elem.innerHTML=this.game.language.get("killfeed.leader.dead",{})
+                this.content.leader_span.innerText=this.game.language.get("leader-wait",{})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
                     volume:0.6,
                     bus:"ui"

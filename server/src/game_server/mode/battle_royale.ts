@@ -9,6 +9,7 @@ import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -27,6 +28,8 @@ export interface BattleRoyaleSettings{
     airdrops?:AirdropConfig
 }
 export class BattleRoyaleSolo extends ModeManager{
+    leader?:Player
+
     settings:{
         players:{
             limit:number
@@ -105,6 +108,40 @@ export class BattleRoyaleSolo extends ModeManager{
     }
     can_start():boolean{
         return this.game.players.living_players.length>1
+    }
+
+    can_be_leader(p:Human):boolean{
+        return p instanceof Player&&(this.leader===undefined?p.status.kills>=this.rules.leader.kills_min:this.leader.status.kills<p.status.kills)
+    }
+    is_leader(p:Human):boolean{
+        return this.leader?.id===p.id
+    }
+    get_leader(): Human|undefined {
+        return this.leader
+    }
+    assign_leader(p:Human):boolean{
+        if(this.can_be_leader(p)){
+            this.leader=p as Player
+            this.game.players.send_killfeed_message({
+                type:KillFeedMessageType.leader_assigned,
+                player:{
+                    id:p.id,
+                    kills:p.status.kills
+                }
+            })
+            return true
+        }
+        return false
+    }
+    leader_die(p:Human){
+        this.leader=undefined
+        this.game.players.send_killfeed_message({
+            type:KillFeedMessageType.leader_dead,
+            player:{
+                id:p.id,
+                kills:p.status.kills
+            }
+        })
     }
 
     override on_player_connect(_p:Player){
@@ -214,6 +251,7 @@ export class BattleRoyaleGroup extends BattleRoyaleSolo{
         }
     }
     override on_player_die(p:Player){
+        super.on_player_die(p)
         if(p.conn){
             p.conn.send_game_over(p.team_data.group?.get_status()??[p.status],false,p.killed_by?.id)
         }

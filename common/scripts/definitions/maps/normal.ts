@@ -77,16 +77,6 @@ export const NormalMap:MapDef={
                 {def:"bike",count:5},
 
                 {def:"sillo",count:10},
-
-
-                //Tundra Biome
-                {def:"campfire_crate",count:5,spawn:Spawn.snow_only},
-                {def:map_spawns.crates,count:15,spawn:Spawn.snow_only},
-                {def:"oak_tree",count:30,spawn:Spawn.snow_only},
-                {def:map_spawns.rocks,count:25,spawn:Spawn.snow_only},
-                {def:"bush",count:25,spawn:Spawn.snow_only},
-                {def:"barrel",count:15,spawn:Spawn.snow_only},
-                //Normal Biome
                 {def:map_spawns.crates,count:500,spawn:Spawn.grass_only},
                 {def:"oak_tree",count:1000,spawn:Spawn.grass_only},
                 {def:map_spawns.rocks,count:500,spawn:Spawn.grass_only},
@@ -115,10 +105,9 @@ export const NormalMap:MapDef={
                                 padding:10,
                                 spacing:2,
                                 variation:2,
-                                tint:0x8a979e
                             },
                             {
-                                type:FloorType.Snow,
+                                type:FloorType.Grass,
                                 padding:15,
                                 spacing:2,
                                 variation:2,

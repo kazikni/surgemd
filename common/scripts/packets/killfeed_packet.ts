@@ -4,8 +4,8 @@ export enum KillFeedMessageType{
     kill,
     down,
     join,
-    killleader_assigned,
-    killleader_dead
+    leader_assigned,
+    leader_dead
 }
 export interface KillFeedMessageKill{
     type:KillFeedMessageType.kill|KillFeedMessageType.down,
@@ -17,8 +17,8 @@ export interface KillFeedMessageKill{
     damage_reason:DamageReason
     victimId:number
 }
-export interface KillFeedMessageKillleader{
-    type:KillFeedMessageType.killleader_assigned|KillFeedMessageType.killleader_dead,
+export interface KillFeedMessageLeader{
+    type:KillFeedMessageType.leader_assigned|KillFeedMessageType.leader_dead,
     player:{
         kills:number
         id:number
@@ -30,7 +30,7 @@ export interface KillFeedMessageJoin{
     playerBadge?:number
     playerName:string
 }
-export type KillFeedMessage=KillFeedMessageKill|KillFeedMessageJoin|KillFeedMessageKillleader
+export type KillFeedMessage=KillFeedMessageKill|KillFeedMessageJoin|KillFeedMessageLeader
 export class KillFeedPacket extends Packet{
     ID=4
     Name="killfeed"
@@ -57,8 +57,8 @@ export class KillFeedPacket extends Packet{
                 stream.writeStringSized(28,this.message.playerName)
                 stream.writeUint16((this.message.playerBadge??-1)+1)
                 break
-            case KillFeedMessageType.killleader_dead:
-            case KillFeedMessageType.killleader_assigned:
+            case KillFeedMessageType.leader_dead:
+            case KillFeedMessageType.leader_assigned:
                 stream.writeID(this.message.player.id)
                 stream.writeUint8(this.message.player.kills)
                 break
@@ -90,8 +90,8 @@ export class KillFeedPacket extends Packet{
                 msg["playerBadge"]=b===0?undefined:b-1
                 break
             }
-            case KillFeedMessageType.killleader_dead:
-            case KillFeedMessageType.killleader_assigned:
+            case KillFeedMessageType.leader_dead:
+            case KillFeedMessageType.leader_assigned:
                 msg["player"]={
                     id:stream.readID(),
                     kills:stream.readUint8()

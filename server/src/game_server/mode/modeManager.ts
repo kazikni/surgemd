@@ -5,6 +5,8 @@ import { Player } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
+import { DamageParams } from "../others/utils.ts";
+import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 
 export interface GameRules{
     humans:{
@@ -63,11 +65,17 @@ export interface GameRules{
         damage_reward:number
         rank_reward:number
         damage_taken_penalty:number
+
+        //Special
+        kill_leader:number
+        leader_multiplier:number
+    }
+    leader:{
+        kills_min:number
     }
 }
 export abstract class ModeManager{
     game!:Game
-    kill_leader?:Player
 
     rules:GameRules={
         humans:{
@@ -126,6 +134,12 @@ export abstract class ModeManager{
             damage_reward:0.5,
             damage_taken_penalty:0.5,
             kill_reward:100,
+
+            kill_leader:100,
+            leader_multiplier:1.1
+        },
+        leader:{
+            kills_min:3
         }
     }
 
@@ -207,6 +221,12 @@ export abstract class ModeManager{
     abstract can_join():boolean
     abstract can_down(human:Human):boolean
     abstract is_ally(a:Human,b:Human):boolean
+
+    abstract is_leader(p:Human):boolean
+    abstract get_leader():Human|undefined
+    abstract can_be_leader(p:Human):boolean
+    abstract assign_leader(p:Human):boolean
+    abstract leader_die(p:Human):void
 
     on_player_connect(p:Player):void{}
     on_player_join(p:Player):void{}

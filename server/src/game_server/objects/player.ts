@@ -151,17 +151,6 @@ export class Player extends Human{
         if(this.health_data.dead)return
         super.die(params)
 
-        if(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader===this){
-            this.game.modeManager.kill_leader=undefined
-            this.player_manager.send_killfeed_message({
-                type:KillFeedMessageType.killleader_dead,
-                player:{
-                    id:this.id,
-                    kills:this.status.kills
-                }
-            })
-        }
-
         if(params.owner&&params.owner instanceof Player){
             if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
                 params.owner.earned.coins+=3
@@ -177,16 +166,7 @@ export class Player extends Human{
                 type:KillFeedMessageType.kill,
                 damage_reason:params.reason,
             })
-            if((!this.game.modeManager.kill_leader&&params.owner.status.kills>=3)||(this.game.modeManager.kill_leader&&this.game.modeManager.kill_leader.status.kills<params.owner.status.kills)){
-                this.game.modeManager.kill_leader=params.owner
-                this.player_manager.send_killfeed_message({
-                    type:KillFeedMessageType.killleader_assigned,
-                    player:{
-                        id:params.owner.id,
-                        kills:params.owner.status.kills
-                    }
-                })
-            }
+
             if(this.game.statistics){
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }

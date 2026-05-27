@@ -79,12 +79,12 @@
                 "disconnect":"${player} desistiu",
                 "bleend":"essa menssagem no killfeed e um bug. report."
             },
-            "killleader":{
-                "assigned":"${player} se tornou o killleader",
-                "dead":"o killleader ja era"
+            "leader":{
+                "assigned":"${player} se tornou o lider",
+                "dead":"o lider ja era"
             }
         },
-        "killleader-wait":"Esperando um kill leader",
+        "leader-wait":"Esperando um lider",
         "interact":{
             "loot":"Pegar ${source}${count}",
             "obstacles":{

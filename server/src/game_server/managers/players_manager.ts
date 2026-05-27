@@ -298,10 +298,11 @@ export class PlayersManager{
                         })
                     }
                     jp.date=this.game.ambient.date
-                    if(this.game.modeManager.kill_leader){
-                        jp.kill_leader={
-                            id:this.game.modeManager.kill_leader.id,
-                            kills:this.game.modeManager.kill_leader.status.kills,
+                    const leader=this.game.modeManager.get_leader()
+                    if(leader){
+                        jp.leader={
+                            id:leader.id,
+                            kills:leader.status.kills,
                         }
                     }
 

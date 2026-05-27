@@ -206,9 +206,9 @@ export const TundraMap:MapDef={
                         },
                         {
                             rivers:[
-                                {width:25,width_variation:2},
-                                {width:25,width_variation:2},
-                                {width:25,width_variation:2},
+                                {width:25,width_variation:2,layers:river_layers.ice},
+                                {width:25,width_variation:2,layers:river_layers.ice},
+                                {width:25,width_variation:2,layers:river_layers.ice},
                             ],
                             weight:1
                         },

@@ -91,8 +91,7 @@ export class Vehicle extends MovingBody {
             }
 
             this.is_moving = dirVec.y !== 0
-        }
-        else {
+        }else {
             // Car controls
             const target = Math.atan2(dirVec.y, dirVec.x)
 

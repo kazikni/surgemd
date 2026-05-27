@@ -762,7 +762,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"loot_drawer",
+            lootTable:"wood_crate",
             height:1,
         },
         {
@@ -832,7 +832,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.wood,
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"loot_drawer",
+            lootTable:"wood_crate",
             height:1,
         },
 
@@ -891,6 +891,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.tissue
             },
             rotation_mode:RotationMode.limited,
+            lootTable:"wood_crate",
             height:1,
         },
         obstacles_factory.gun_mount("pkp_mounth",guns.getFromString("pkp"),{}),

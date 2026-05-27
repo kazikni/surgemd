@@ -129,12 +129,12 @@
                 "disconnect":"${player} Give Up",
                 "bleend":"This Killfeed Message Are A Bug - Report"
             },
-            "killleader":{
-                "assigned":"${player} Become The Kill Leader",
-                "dead":"The Kill Leader Are Dead"
+            "leader":{
+                "assigned":"${player} Become The Leader",
+                "dead":"The Leader Are Dead"
             }
         },
-        "killleader-wait":"Waiting For A Kill Leader",
+        "leader-wait":"Waiting For A Leader",
         "interact":{
             "loot":"Take ${source}${count}",
             "obstacles":{

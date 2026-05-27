@@ -244,6 +244,7 @@ export class Human extends MovingBody{
     }
 
     apply_score(type:number,amount:number){
+        if(this.game.modeManager.is_leader(this))amount*=this.game.modeManager.rules.score.leader_multiplier
         this.status.score+=amount
     }
     get_reflect_segment(): [Vec2, Vec2] {
@@ -1028,10 +1029,10 @@ export class Human extends MovingBody{
         if(this.health_data.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
         let damage=params.amount
         let mod=1
-        if(params.owner&&params.owner instanceof Human){
+        if(params.owner instanceof Human){
             const is_ally=this.game.modeManager.is_ally(this,params.owner)
-            if((params.owner.id!==this.id&&is_ally&&!(this.human_data.friendly_fire&&params.owner.human_data.friendly_fire)))return
-            if(params.owner.id!==this.id)mod*=params.owner.modifiers.damage
+            if(params.owner.id!==this.id&&is_ally&&!(this.human_data.friendly_fire&&params.owner.human_data.friendly_fire))return
+            mod*=params.owner.modifiers.damage
         }
         if(this.equipment_data.vest){
             mod-=this.equipment_data.vest.reduction
@@ -1205,21 +1206,30 @@ export class Human extends MovingBody{
 
         this.destroy()
         if(params.owner instanceof Human){
-            if(params.owner.is_player){
-                if(params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
-                    params.owner.status.kills++
-                    this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
-                }
+            if(params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
+                params.owner.on_kill_enemy(this)
+                params.owner.inventory.accessorys.call_event("kill",params)
             }
-            params.owner.inventory.accessorys.call_event("kill",params)
         }
 
         this.team_data.team?.on_human_die?.(this)
         this.team_data.group?.on_human_die?.(this)
         this.game.modeManager.on_human_die(this)
         this.game.signals.emit("human_die",{human:this})
+        if(this.game.modeManager.is_leader(this)){
+            this.game.modeManager.leader_die(this)
+        }
 
         //this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
+    }
+
+    on_kill_enemy(victim:Human){
+        if(this.game.modeManager.is_leader(victim)){
+            this.apply_score(ScoreApplyerType.KillLeader,this.game.modeManager.rules.score.kill_leader)
+        }
+        this.status.kills++
+        this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
+        this.game.modeManager.assign_leader(this)
     }
     override destroy(): void {
         super.destroy()

@@ -213,6 +213,7 @@ export enum ScoreApplyerType{
     Rank,
     DamageTaken,
     DamageDealth,
+    KillLeader
 }
 export type ScoreApplyer={
     type:number

@@ -305,7 +305,7 @@
         color: var(--ui-theme-primary);
     }
 }
-#killeader-container{
+#leader-container{
     pointer-events: none;
     position: absolute;
     display: flex;
@@ -318,7 +318,7 @@
     right: 5px;
     padding: 15px;
     color: var(--ui-theme-primary);
-    #killeader-container-icon{
+    #leader-container-icon{
         background-image: url("/img/menu/icons/aim.svg");
         background-size: cover;
         width: 40px;
@@ -326,7 +326,7 @@
         position: relative;
         left: 0px;
     }
-    #killeader-text{
+    #leader-text{
         transform: translateY(25%);
         width: fit-content;
         height: fit-content;
@@ -335,7 +335,7 @@
         font-size: 15px;
         top: 5px;
         right: 5px;
-        #killeader-container-icon{
+        #leader-container-icon{
             width: 30px;
             height: 30px;
         }
@@ -344,7 +344,7 @@
         font-size: 10px;
         top: 5px;
         right: 5px;
-        #killeader-container-icon{
+        #leader-container-icon{
             width: 20px;
             height: 20px;
         }

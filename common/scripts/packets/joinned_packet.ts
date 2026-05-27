@@ -35,7 +35,7 @@ export class JoinnedPacket extends Packet{
     ID=5
     Name="joinned"
     players:{id:number,name:string,badge?:number}[]=[]
-    kill_leader?:{id:number,kills:number}
+    leader?:{id:number,kills:number}
 
     date!:KDate
     mode:{
@@ -45,10 +45,10 @@ export class JoinnedPacket extends Packet{
         super()
     }
     encode(stream: NetStream): void {
-        stream.writeBooleanGroup(this.kill_leader!==undefined)
-        if(this.kill_leader){
-            stream.writeID(this.kill_leader.id)
-            stream.writeUint8(this.kill_leader.kills)
+        stream.writeBooleanGroup(this.leader!==undefined)
+        if(this.leader){
+            stream.writeID(this.leader.id)
+            stream.writeUint8(this.leader.kills)
         }
         stream.writeArray(this.players,(e)=>{
             stream.writeUint16((e.badge??-1)+1)
@@ -61,9 +61,9 @@ export class JoinnedPacket extends Packet{
         stream.writeKDate(this.date)
     }
     decode(stream: NetStream): void {
-        const [killleader]=stream.readBooleanGroup()
-        if(killleader){
-            this.kill_leader={
+        const [leader]=stream.readBooleanGroup()
+        if(leader){
+            this.leader={
               id:stream.readID(),
               kills:stream.readUint8()
             }

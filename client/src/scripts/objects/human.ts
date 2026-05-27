@@ -690,7 +690,7 @@ export class Human extends MovingBody{
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
             if(f!==this.current_floor){
                 this.current_floor=f
-                this.assets.footstep_sounds=Floors[f].footstep_sounds
+                this.assets.footstep_sounds=Floors[f as FloorType].footstep_sounds
             }
             this.distance_since_last_footstep+=this.distance_walked
             // Play Footstep Sound And Do Water Riple
@@ -706,7 +706,7 @@ export class Human extends MovingBody{
                         bus:"humans"
                     })
                 }
-                if(Floors[f].footstep_decal){
+                if(Floors[f as FloorType].footstep_decal){
                     const d=new ClientDecal()
                     d.sprite.frame=this.game.resources.get_frame("player_footstep")
                     d.sprite.rotation=walk_dir
@@ -719,7 +719,7 @@ export class Human extends MovingBody{
 
                     this.footstep_alternate=!this.footstep_alternate
                 }
-                if(Floors[f].floor_kind===FloorKind.Liquid){
+                if(Floors[f as FloorType].floor_kind===FloorKind.Liquid){
                     this.game.particles.add_particle(new ABParticle2D({
                         direction:0,
                         frame:{

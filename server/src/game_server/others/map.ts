@@ -197,7 +197,7 @@ export class GameMap{
     }
     generate_vehicle(def:VehicleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers):Vehicle|undefined{
         const o=this.game.add_vehicle(v2(0,0),def,layer)
-        const p=this.getRandomPosition(o.base_hitbox,o.id,layer??o.layer,spawn??Spawn.grass,random)
+        const p=this.getRandomPosition(o.base_hitbox,o.id,layer??o.layer,spawn??def.spawn??Spawn.grass,random)
         if(!p){
             o.destroy()
             return undefined

@@ -135,6 +135,10 @@ export const Spawn={
     any:{
         type:SpawnModeType.any,
     },
+    water:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Water,FloorType.Ice]
+    },
     outside_water:{
         type:SpawnModeType.blacklist,
         list:[FloorType.Water,FloorType.Ice,FloorType.Void]

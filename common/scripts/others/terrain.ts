@@ -28,7 +28,6 @@ export interface FloorDef {
     skin_apply?:string
 
     traction:number
-    drag:number
     rolling_resistance:number
 }
 
@@ -37,58 +36,51 @@ export const Floors: Record<FloorType, FloorDef> = {
         default_color: 0x0d131a,
         floor_kind:FloorKind.Solid,
         footstep_sounds:[],
-        drag: 1,
         traction: 1,
-        rolling_resistance:1,
+        rolling_resistance:0,
     },
     [FloorType.Grass]: {
         default_color: 0x4d9635,
         floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_grass_1","footstep_grass_2"],
-        drag: 1,
         traction: 1,
-        rolling_resistance:1.1,
+        rolling_resistance:0,
     },
     [FloorType.Snow]: {
         default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_snow_1","footstep_snow_2"],
         footstep_decal:true,
         skin_apply:"snow",
-        drag: 1,
         traction: 0.8,
-        rolling_resistance:0.8,
+        rolling_resistance:-0.2,
     },
     [FloorType.Sand]: {
         default_color: 0xb59924,floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_sand_1","footstep_sand_2"],
-        drag: 1,
         traction: 0.9,
-        rolling_resistance:1,
+        rolling_resistance:0,
     },
     [FloorType.Water]: {
         default_color: 0x2466a2,
         speed_mult: 0.6,
         floor_kind:FloorKind.Liquid,
         footstep_sounds:["footstep_water_1","footstep_water_2"],
-        drag: 2,
         traction: 1,
-        rolling_resistance:10,
+        rolling_resistance:0,
     },
     [FloorType.Ice]: {
         default_color: 0x4681a3,
         acceleration:0.05,
         floor_kind:FloorKind.Ice,
         footstep_sounds:["footstep_ice_1","footstep_ice_2"],
-        drag: 1,
         traction: 0.1,
-        rolling_resistance:0.5,
+        rolling_resistance:-0.5,
     },
     [FloorType.Metal]: {
         default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_metal_1","footstep_metal_2"],
-        drag: 1,
         traction: 1,
-        rolling_resistance:1,
+        rolling_resistance:0,
     },
 };
 export interface Floor extends FloorBase {

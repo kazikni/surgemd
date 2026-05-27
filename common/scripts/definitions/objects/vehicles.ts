@@ -1,11 +1,23 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
-
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { Spawn, SpawnMode } from "../../others/constants.ts";
+import { FloorKind } from "../../others/terrain.ts";
+export interface WheelDef{
+    movable: boolean
+    position: Vec2
+    scale: number
+    marks?: {
+        frame?:string
+        stress_resistance?:number
+        frame_transform?:FrameTransform
+    }
+}
 export interface VehicleDef extends Definition {
     hitbox: Hitbox2D
 
+    spawn?:SpawnMode
     frame: {
         base?: string
-        base_scale?: number
+        base_transform?: FrameTransform
         zindex?: number
     }
     center: Vec2
@@ -18,13 +30,12 @@ export interface VehicleDef extends Definition {
         traction: number
 
         drag: number
-        rolling_resistance: number
 
         max_steer_speed: number
         steer_force: number
-
-        max_speed: number
         reverse_speed_mult: number
+
+        floor_kind?:Record<number,{rolling_resistance:number,traction:number}>
     }
     pillot_seat?: {
         position: Vec2
@@ -37,11 +48,8 @@ export interface VehicleDef extends Definition {
         doors: Vec2[]
     }[]
     wheels: {
-        defs: {
-            movable: boolean
-            position: Vec2
-            scale: number
-        }[]
+        stress_distance?:number
+        defs: WheelDef[]
         frame?: string
     }
     infinity_walk?: boolean
@@ -50,13 +58,16 @@ export interface VehicleDef extends Definition {
 export const VehicleTemplates = {
     bike: (id: string, ...merge: DeepPartial<VehicleDef>[]) => mergeDeep({
         idString: id,
+        spawn:Spawn.ground,
         hitbox: new HitboxGroup2D(
             new CircleHitbox2D(v2(1.0, 0), 1.0),
             new CircleHitbox2D(v2(-0.9, 0), 1.0),
             new CircleHitbox2D(v2(0, 0), 1.2)
         ),
         frame: {
-            base_scale: 2.5
+            base_transform:{
+                scale:2.5
+            }
         },
         center: v2(0, 0),
         pillot_seat: {
@@ -74,26 +85,23 @@ export const VehicleTemplates = {
             ]
         },
         physics:{
-            mass:100,
+            mass:130,
 
-            engine_force:800,
+            engine_force:700,
             brake_force:700,
 
-            traction:0.7,
+            traction:1.1,
 
             drag:0.1,
-            rolling_resistance:0.5,
 
             max_steer_speed:7,
             steer_force:20,
-
-            max_speed:22,
             reverse_speed_mult:0.25
         },
     }, ...merge),
     jeep:(id:string,...merge)=>mergeDeep({
         idString:id,
-
+        spawn:Spawn.ground,
         hitbox:new HitboxGroup2D(
             new CircleHitbox2D(v2(1.2,0.55),1.15),
             new CircleHitbox2D(v2(1.2,-0.55),1.15),
@@ -103,21 +111,29 @@ export const VehicleTemplates = {
 
             new CircleHitbox2D(v2(0,0),1.45)
         ),
-        frame:{
-            base_scale:4
+        frame: {
+            base_transform:{
+                scale:4
+            }
         },
         center:v2(0,0),
         physics:{
             mass:1200,
-            engine_force:3500,
+
+            engine_force:4500,
             brake_force:1000,
+            reverse_speed_mult:0.45,
+
             traction:1,
-            drag:0.2,
-            rolling_resistance:0.1,
+            drag:0.3,
             max_steer_speed:12,
             steer_force:12,
-            max_speed:20,
-            reverse_speed_mult:0.45
+            floor_kind:{
+                [FloorKind.Liquid]:{
+                    traction:0.2,
+                    rolling_resistance:5,
+                }
+            }
         },
         pillot_seat:{
             position:v2(0,-0.7),
@@ -138,24 +154,86 @@ export const VehicleTemplates = {
                 {
                     movable:true,
                     position:v2(.4,-1.4),
-                    scale:2.5
+                    marks:{
+                        stress_resistance:2.5,
+                    },
+                    scale:2.5,
                 },
                 {
                     movable:true,
                     position:v2(.4,1.4),
+                    marks:{
+                        stress_resistance:2.5,
+                    },
                     scale:2.5
                 },
                 {
                     movable:false,
                     position:v2(-1.5,-1.4),
+                    marks:{
+                    },
                     scale:2.5
                 },
                 {
                     movable:false,
                     position:v2(-1.5,1.4),
+                    marks:{
+                    },
                     scale:2.5
                 }
             ]
+        },
+    },...merge),
+    boat:(id:string,...merge)=>mergeDeep({
+        idString:id,
+        spawn:Spawn.water,
+        hitbox:new HitboxGroup2D(
+            new CircleHitbox2D(v2(1.2,0.55),1.15),
+            new CircleHitbox2D(v2(1.2,-0.55),1.15),
+
+            new CircleHitbox2D(v2(-1.2,0.55),1.2),
+            new CircleHitbox2D(v2(-1.2,-0.55),1.2),
+
+            new CircleHitbox2D(v2(0,0),1.45)
+        ),
+        frame: {
+            base:"jeep",
+            base_transform:{
+                scale:4
+            }
+        },
+        center:v2(0,0),
+        physics:{
+            mass:1200,
+
+            engine_force:4500,
+            brake_force:1000,
+            reverse_speed_mult:0.45,
+            traction:0.4,
+            drag:5,
+            max_steer_speed:12,
+            steer_force:12,
+            floor_kind:{
+                [FloorKind.Liquid]:{
+                    traction:4,
+                    rolling_resistance:-4.8
+                },
+            }
+        },
+        pillot_seat:{
+            position:v2(-2,0),
+            leave:v2(-2,-1.5),
+            doors:[v2(-2,-1.5)]
+        },
+        seats:[
+            {
+                position:v2(0,0),
+                leave:v2(0,-1.5),
+                doors:[v2(0,-1.5)]
+            },
+        ],
+        wheels:{
+            defs:[]
         }
     },...merge)
 } satisfies Record<string, (id: string, ...merge: DeepPartial<VehicleDef>[]) => VehicleDef>
@@ -164,5 +242,6 @@ export function Vehicles_Default_Init(vehicles: Definitions<VehicleDef, {}>) {
     vehicles.insert(
         VehicleTemplates.bike("bike"),
         VehicleTemplates.jeep("jeep"),
+        VehicleTemplates.boat("boat"),
     )
 }

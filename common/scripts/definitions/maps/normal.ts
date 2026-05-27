@@ -75,6 +75,7 @@ export const NormalMap:MapDef={
 
                 {def:"jeep",count:5},
                 {def:"bike",count:5},
+                {def:"boat",count:5},
 
                 {def:"sillo",count:10},
                 {def:map_spawns.crates,count:500,spawn:Spawn.grass_only},

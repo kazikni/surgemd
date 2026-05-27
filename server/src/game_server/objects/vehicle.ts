@@ -80,6 +80,7 @@ export class Vehicle extends MovingBody {
 
     speed = 0
     direction = 0
+    tire_stress=0
 
     dead = false
     back_walk = false
@@ -110,8 +111,8 @@ export class Vehicle extends MovingBody {
 
         traction: 1,
 
-        drag: 0.4,
-        rolling_resistance: 1,
+        drag: 1,
+        rolling_resistance: 0,
 
         steer_force: 4,
         max_steer_speed: 8,
@@ -133,11 +134,12 @@ export class Vehicle extends MovingBody {
     }
 
     private update_surface() {
-        const floor = Floors[this.current_floor] ?? Floors[FloorType.Void]
+        const floor=Floors[this.current_floor]??Floors[FloorType.Void]
+        const kindData=this.def.physics.floor_kind?.[floor.floor_kind]
 
-        this.physical_data.traction = this.def.physics.traction * floor.traction
-        this.physical_data.drag = this.def.physics.drag * floor.drag
-        this.physical_data.rolling_resistance=this.def.physics.rolling_resistance * floor.rolling_resistance
+        this.physical_data.traction=this.def.physics.traction*(kindData?.traction??1)*floor.traction
+        this.physical_data.drag=this.def.physics.drag
+        this.physical_data.rolling_resistance=(kindData?.rolling_resistance??0)+floor.rolling_resistance
     }
 
     private update_physics(dt: number) {
@@ -151,13 +153,8 @@ export class Vehicle extends MovingBody {
 
         const throttle = pd.throttle
 
-        const maxSpeed =
-            throttle < 0
-                ? this.def.physics.max_speed * this.def.physics.reverse_speed_mult
-                : this.def.physics.max_speed
-
-        if (Math.abs(forwardSpeed) < maxSpeed || Math.sign(throttle) !== Math.sign(forwardSpeed)) {
-            const accel=(pd.engine_force * throttle) / Math.max(pd.mass, 1)
+        if (Math.abs(throttle) > 0.001) {
+            const accel=(pd.engine_force * throttle)/Math.max(pd.mass, 1)
 
             pd.velocity.x += forward.x * accel * dt
             pd.velocity.y += forward.y * accel * dt
@@ -178,12 +175,6 @@ export class Vehicle extends MovingBody {
 
         pd.velocity.x *= damping
         pd.velocity.y *= damping
-        const speedRatio=Math.abs(forwardSpeed) / maxSpeed
-        if(speedRatio > 1){
-            const limiter=1/(1+dt*(speedRatio-1)*8)
-            pd.velocity.x *= limiter
-            pd.velocity.y *= limiter
-        }
 
         const absForward=Math.abs(forwardSpeed)
         const steerFactor=Numeric.clamp(absForward / pd.max_steer_speed,0,1)
@@ -195,8 +186,16 @@ export class Vehicle extends MovingBody {
         pd.angular_velocity = Numeric.clamp(pd.angular_velocity,-maxAngular,maxAngular)
     
         pd.rotation = Numeric.normalize_rad(pd.rotation + pd.angular_velocity * dt)
-
         this.speed = forwardSpeed
+
+        const speedAbs=Math.abs(forwardSpeed)
+
+        // Tire Stress
+        const lateralStress=Math.abs(lateralSpeed)*0.9
+        const steeringStress=Math.abs(pd.angular_velocity)*Numeric.lerp(0.4, 1.4,Numeric.clamp(speedAbs / 12, 0, 1))
+        const accelStress=Math.max(0,throttle)*Numeric.clamp(speedAbs*0.2,0,2)
+        const brakeStress=Math.max(0-throttle)*Numeric.clamp(speedAbs*0.5,0,10)
+        this.tire_stress=lateralStress+steeringStress+accelStress+brakeStress
     }
 
     private update_seats() {
@@ -274,20 +273,12 @@ export class Vehicle extends MovingBody {
         )
 
         this.update_surface()
-
         this.update_physics(dt)
-
         super.update(dt)
-
         this.update_seats()
-
         this.interaction_hitbox = this.hitbox
 
-        if (
-            Math.abs(this.speed) > 0.001 ||
-            Math.abs(this.physical_data.angular_velocity) > 0.001 ||
-            this.is_new
-        ) {
+        if(Math.abs(this.speed) > 0.001 ||Math.abs(this.physical_data.angular_velocity) > 0.001 ||this.is_new){
             this.physical_data.dirty = true
             this.net_sync.part = true
         }
@@ -310,13 +301,10 @@ export class Vehicle extends MovingBody {
         this.physical_data.brake_force=this.def.physics.brake_force
         this.physical_data.traction=this.def.physics.traction
         this.physical_data.drag=this.def.physics.drag
-        this.physical_data.rolling_resistance = this.def.physics.rolling_resistance
 
-        this.physical_data.steer_force =
-            this.def.physics.steer_force
+        this.physical_data.steer_force=this.def.physics.steer_force
 
-        this.physical_data.max_steer_speed =
-            this.def.physics.max_steer_speed
+        this.physical_data.max_steer_speed =this.def.physics.max_steer_speed
 
         if (this.def.pillot_seat) {
             this.seats.push(
@@ -421,6 +409,7 @@ export class Vehicle extends MovingBody {
 
         stream.writeFloat32(this.speed)
         stream.writeRad(this.direction)
+        stream.writeFloat32(this.tire_stress)
 
         if (full) {
             stream.writeUint8(this.def.idNumber!)

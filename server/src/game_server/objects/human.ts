@@ -787,7 +787,7 @@ export class Human extends MovingBody{
         }
         if(this.seat){
             if(this.seat.rotation!==undefined)this.physical_data.rotation=this.seat.rotation
-            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload,dt,this.human_data.alternative_vehicle_control)
+            if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload)
         }else{
             if(this.input.path&&this.input.path.length > 0){
                 const target = this.input.path[0]

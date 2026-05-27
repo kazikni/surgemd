@@ -135,6 +135,9 @@ export const TundraMap:MapDef={
                 {def:"shed",count:5},
                 {def:"sillo",count:3},
 
+                {def:"jeep",count:5},
+                {def:"bike",count:5},
+
                 {def:"tundra_crate",count:10},
                 {def:map_spawns.crates,count:190},
 

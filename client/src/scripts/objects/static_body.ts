@@ -10,6 +10,7 @@ export type StaticBodyPhysicalData={
     reflect_bullets:boolean
     no_collision:boolean
     no_bullets_collision:boolean
+    passable_by_bullets:boolean
 }
 export interface StaticBodyAssetData{
     particles?:{

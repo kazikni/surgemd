@@ -28,6 +28,7 @@ export class Obstacle extends StaticBody{
         no_bullets_collision:true,
         no_collision:true,
         reflect_bullets:false,
+        passable_by_bullets:false,
 
         scale:0,
         rotation:0,
@@ -197,6 +198,8 @@ export class Obstacle extends StaticBody{
             this.container.add_child(s)
             this.aditional_sprite.push(s)
         }
+
+        this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
     }
 
     override set_hit_sounds_def(sounds: HitSoundsDef): void {

@@ -52,6 +52,7 @@ export interface ObstacleDef extends Definition{
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
     no_collision?:boolean
+    passable_by_bullets?:boolean
     no_bullets_collision?:boolean
 
     invisible_on_map?:boolean
@@ -415,10 +416,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             health:70,
             hitbox:new CircleHitbox2D(v2(0,0),0.8),
             no_collision:true,
+            passable_by_bullets:true,
             scale:{
                 min:1,
                 max:1.2,
-                destroy:0.75
             },
             assets:{
                 particles:{
@@ -840,6 +841,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             idString:"wood_table",
             health:110,
             no_collision:true,
+            passable_by_bullets:true,
             hitbox:new RectHitbox2D(v2(-0.75,-1.12),v2(0.75,1.12)),
             scale:{
                 destroy:0.9

@@ -41,6 +41,8 @@ export class Bullet extends ServerGameObject{
     tracerColor:number=0
     tracerAlpha:number=255
     projColor:number=0
+
+    collided_with:Set<ServerGameObject>=new Set()
     constructor(){
         super()
         this.velocity=v2(0,0)
@@ -145,28 +147,31 @@ export class Bullet extends ServerGameObject{
                     break
                 }
                 case GameObjectType.Obstacle:
-                case GameObjectType.Building:
-                    if((obj as StaticBody).physical_data.no_bullets_collision)break
-                    if(obj.hitbox){
-                        const col1=obj.hitbox.overlap_line(this.old_position,this.position)
-                        if(!col1)continue
+                case GameObjectType.Building:{
+                    if((obj as StaticBody).physical_data.no_bullets_collision||this.collided_with.has(obj))break
+                    const col1=obj.hitbox.overlap_line(this.old_position,this.position)
+                    if(!col1)continue
+
+                    this.collided_with.add(obj)
+                    if(!(obj as StaticBody).physical_data.passable_by_bullets){
                         if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&!this.def.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()
-                        const dmg:number=this.damage*(this.def.obstacleMult??1);
-                        (obj as StaticBody).damage({
-                            amount:dmg,
-                            resistence:0,
-                            owner:this.owner,
-                            reason:DamageReason.Human,
-                            position:v2.clone(this.position),
-                            critical:this.critical,
-                            source:this.source as unknown as DamageSourceDef,
-                            direction:Math.atan2(col1.dir.y,col1.dir.x)
-                        })
                     }
+                    const dmg:number=this.damage*(this.def.obstacleMult??1);
+                    (obj as StaticBody).damage({
+                        amount:dmg,
+                        resistence:0,
+                        owner:this.owner,
+                        reason:DamageReason.Human,
+                        position:v2.clone(this.position),
+                        critical:this.critical,
+                        source:this.source as unknown as DamageSourceDef,
+                        direction:Math.atan2(col1.dir.y,col1.dir.x)
+                    })
                     break
+                }
             }
         }
         if(v2.distance(this.initial_position,this.position)>this.max_distance){

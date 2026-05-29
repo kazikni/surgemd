@@ -128,7 +128,6 @@ export class Vehicle extends MovingBody {
         this.physical_data.steer_input = Numeric.clamp(dir.x, -1, 1)
 
         this.back_walk = backWalk
-        this.direction = Math.atan2(dir.y, dir.x)
 
         this.is_moving=Math.abs(this.physical_data.throttle) > 0.001 ||Math.abs(this.physical_data.steer_input) > 0.001
     }
@@ -191,11 +190,14 @@ export class Vehicle extends MovingBody {
         const speedAbs=Math.abs(forwardSpeed)
 
         // Tire Stress
-        const lateralStress=Math.abs(lateralSpeed)*0.9
+        const lateralStress=Math.abs(lateralSpeed)*1
         const steeringStress=Math.abs(pd.angular_velocity)*Numeric.lerp(0.4, 1.4,Numeric.clamp(speedAbs / 12, 0, 1))
         const accelStress=Math.max(0,throttle)*Numeric.clamp(speedAbs*0.2,0,2)
-        const brakeStress=Math.max(0-throttle)*Numeric.clamp(speedAbs*0.5,0,10)
+        const brakeStress=Math.max(0-throttle)*Numeric.clamp(speedAbs*5,0,10)
         this.tire_stress=lateralStress+steeringStress+accelStress+brakeStress
+
+        const slipAngle = Math.atan2(lateralSpeed,Math.abs(forwardSpeed) + 0.001)
+        this.direction = slipAngle * 0.7 + pd.steer_input * 0.5
     }
 
     private update_seats() {

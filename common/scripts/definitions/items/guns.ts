@@ -428,9 +428,9 @@ export const guns_factory={
 export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
     guns.insert(
         guns_factory.pistol("m9","9mm",{
-            fire_delay:0.15,
+            fire_delay:0.2,
             fire_mode:FireMode.Single,
-            spread:2,
+            spread:4,
 
             ammo_spawn:{
                 amount:45,
@@ -459,7 +459,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 dual_offset:0.2,
 
                 fire_delay:0.1,
-                spread:3,
+                spread:7,
                 ammo_spawn:{
                     amount:90,
                 },

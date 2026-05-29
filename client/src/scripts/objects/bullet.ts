@@ -61,6 +61,7 @@ export class Bullet extends GameObject{
     particles=0
     par_time=0
 
+    collided_with:Set<GameObject>=new Set()
     constructor(){
         super()
 
@@ -133,11 +134,12 @@ export class Bullet extends GameObject{
                         break
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
-                        if(!(obj as StaticBody).physical_data.no_bullets_collision){
+                        if(!(obj as StaticBody).physical_data.no_bullets_collision||this.collided_with.has(obj)){
                             const col=obj.hitbox.overlap_line(this.old_position,this.position)
                             if(col){
+                                this.collided_with.add(obj);
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
-                                this.dying=true
+                                if(!(obj as StaticBody).physical_data.passable_by_bullets)this.dying=true
                             }
                         }
                         break

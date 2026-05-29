@@ -29,6 +29,7 @@ export class Building extends StaticBody {
         reflect_bullets:false,
         no_collision:true,
         no_bullets_collision:true,
+        passable_by_bullets:false,
     }
     children:(BuildingObstacleChild|BuildingCeilingChild)[]=[]
     objects_ids:Record<number,Obstacle>={}

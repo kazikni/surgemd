@@ -73,8 +73,8 @@ export const Floors: Record<FloorType, FloorDef> = {
         acceleration:0.05,
         floor_kind:FloorKind.Ice,
         footstep_sounds:["footstep_ice_1","footstep_ice_2"],
-        traction: 0.1,
-        rolling_resistance:-0.5,
+        traction: 0.3,
+        rolling_resistance:-0.4,
     },
     [FloorType.Metal]: {
         default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,

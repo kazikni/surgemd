@@ -26,6 +26,7 @@ __                                                                              
 * Fix Explosives Obstacles Particles
 * Reduce Containers Size
 * Change Containers Spawn
+* Bullets can now pass through bushes and tables
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

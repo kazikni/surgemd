@@ -10,6 +10,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Loot } from "./loot.ts";
 import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { type Building } from "./building.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
@@ -70,6 +71,7 @@ export class Obstacle extends StaticBody{
         reflect_bullets:false,
         no_collision:true,
         no_bullets_collision:true,
+        passable_by_bullets:false,
 
         stairs:[]
     }
@@ -218,6 +220,7 @@ export class Obstacle extends StaticBody{
         this.physical_data.no_collision=this.def.no_collision??false
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
+        this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
 
         this.health_data.max_health=this.def.health??1
         this.health_data.health=this.def.health??1

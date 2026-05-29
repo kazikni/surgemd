@@ -17,6 +17,7 @@ export class Building extends StaticBody{
         no_bullets_collision:false,
         no_collision:false,
         reflect_bullets:false,
+        passable_by_bullets:false,
 
         side:0
     };

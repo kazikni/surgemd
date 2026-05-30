@@ -245,17 +245,17 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                             "backpack":[
                                 {"item":"basic_pack","weight":10},
                                 {"item":"regular_pack","weight":15,"drop_chance":0.3},
-                                {"item":"tactical_pack","weight":10,"drop_chance":0.5}
+                                {"item":"military_pack","weight":10,"drop_chance":0.5}
                             ],
                             "vest":[
                                 {"item":"basic_vest","weight":10,"drop_chance":0.3},
                                 {"item":"regular_vest","weight":15,"drop_chance":0.5},
-                                {"item":"tactical_vest","weight":10,"drop_chance":0.75}
+                                {"item":"military_vest","weight":10,"drop_chance":0.75}
                             ],
                             "helmet":[
                                 {"item":"basic_helmet","weight":10,"drop_chance":0.3},
                                 {"item":"regular_helmet","weight":15,"drop_chance":0.5},
-                                {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
+                                {"item":"military_helmet","weight":10,"drop_chance":0.75}
                             ],
                             "gun1":[
                                 {"item":"blr81","weight":6},

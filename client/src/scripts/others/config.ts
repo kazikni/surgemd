@@ -29,7 +29,7 @@ export const ConfigCasters=Object.freeze({
     sv_loadout_name:Casters.toString,
     sv_loadout_skin:Casters.toString,
 
-    sv_graphics_resolution:Casters.generateUnionCaster(["low","medium","high"]),
+    sv_graphics_resolution:Casters.generateUnionCaster(["low","medium"]),
     sv_graphics_renderer:Casters.generateUnionCaster(["webgl1","webgl2"]),
     sv_graphics_particles:Casters.toInt,
     sv_graphics_lights:Casters.toInt,
@@ -67,7 +67,7 @@ export const ConfigDefaultValues={
     sv_loadout_name:"",
 
     sv_graphics_renderer:"webgl2",
-    sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"high",
+    sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"medium",
     sv_graphics_particles:GraphicsDConfig.Advanced,
     sv_graphics_lights:GraphicsDConfig.Advanced,
     sv_graphics_post_proccess:GraphicsDConfig.Advanced,

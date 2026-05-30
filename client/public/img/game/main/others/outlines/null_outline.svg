@@ -6,7 +6,7 @@
    version="1.1"
    id="svg2"
    sodipodi:docname="null_outline.svg"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -22,7 +22,7 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.6242697"
-     inkscape:cx="-15.083702"
+     inkscape:cx="-15.699363"
      inkscape:cy="106.20157"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -45,17 +45,17 @@
     <linearGradient
        id="a">
       <stop
-         style="stop-color:#a9c1c0;stop-opacity:.60000002"
+         style="stop-color:#a9c1c0;stop-opacity:0.5;"
          offset="0"
          id="stop1" />
       <stop
-         style="stop-color:#4e5252;stop-opacity:.80000001"
+         style="stop-color:#4e5252;stop-opacity:0.69999999;"
          offset="1"
          id="stop2" />
     </linearGradient>
   </defs>
   <circle
-     style="fill:url(#b);stroke:#3f4242;stroke-width:2.25;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:url(#b);stroke:#3f4242;stroke-width:1.99998094;stroke-dasharray:none;stroke-opacity:1"
      cx="17.428501"
      cy="17.428501"
      r="16.303501"

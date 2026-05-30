@@ -34,9 +34,9 @@
             "regular_vest":"Armadura Medio",
             "regular_helmet":"Casco Medio",
             "regular_pack":"Mochila Medio",
-            "tactical_vest":"Armadura Tactica",
-            "tactical_helmet":"Casco Tactico",
-            "tactical_pack":"Mochila Tactica",
+            "Military_vest":"Armadura Militar",
+            "Military_helmet":"Casco Militar",
+            "Military_pack":"Mochila Militar",
 
             "explosive_ammo":"Municion Explosiva",
             "gasoline":"Gasolina",

@@ -63,7 +63,7 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             rank:ItemRank.D
         },
         {
-            idString:"tactical_helmet",
+            idString:"military_helmet",
             defence:0,
             level:3,
             health:1600,
@@ -128,7 +128,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             rank:ItemRank.D
         },
         {
-            idString:"tactical_vest",
+            idString:"military_vest",
             defence:0,
             level:3,
             health:2600,

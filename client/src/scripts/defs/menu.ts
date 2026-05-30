@@ -825,7 +825,6 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             options:[
                                 {name:"Low",value:"low"},
                                 {name:"Medium",value:"medium"},
-                                {name:"High",value:"high"},
                             ],
                         },
                         {

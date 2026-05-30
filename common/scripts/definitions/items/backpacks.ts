@@ -103,7 +103,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             slots:5,
         },
         {
-            idString:"tactical_pack",
+            idString:"military_pack",
             level:3,
             max:{
                 "12g":80,

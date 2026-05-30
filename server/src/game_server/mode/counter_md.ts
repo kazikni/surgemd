@@ -146,15 +146,15 @@ export class CounterMD extends ModeManager {
 
                 {id:"basic_helmet",cost:100},
                 {id:"regular_helmet",cost:400},
-                {id:"tactical_helmet",cost:800},
+                {id:"military_helmet",cost:800},
 
                 {id:"basic_vest",cost:100},
                 {id:"regular_vest",cost:400},
-                {id:"tactical_vest",cost:800},
+                {id:"military_vest",cost:800},
 
                 {id:"basic_pack",cost:100},
                 {id:"regular_pack",cost:400},
-                {id:"tactical_pack",cost:800},
+                {id:"military_pack",cost:800},
 
                 {id:"scope_2",cost:90},
                 {id:"scope_3",cost:250},

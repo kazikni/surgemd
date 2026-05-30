@@ -151,8 +151,8 @@ export class Loot extends GameObject{
                 case InventoryItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true;
-                    this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.scale=v2(2,2);
+                    this.sprite_main.scale=v2(1.4,1.4)
+                    this.sprite_outline.visible=false;
                     this.pickup_sound=this.game.resources.get_sound("ammo_pickup")
                     radius=GameConstants.loot.radius.ammo
                     break

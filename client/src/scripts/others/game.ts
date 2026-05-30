@@ -379,7 +379,11 @@ export class Game extends ClientGame<GameObject>{
             const res = await fetch(`assets/${tt}.kspr`)
             const buffer = await res.arrayBuffer()
             const kspr = load_kspr(buffer)
-            const resolution = this.save.get_variable("sv_graphics_resolution")
+            let resolution = this.save.get_variable("sv_graphics_resolution")
+            if(!["low","medium"].includes(resolution)){
+                resolution="low"
+                this.save.set_variable("sv_graphics_resolution",resolution)
+            }
             await this.resources.load_kspr(kspr,resolution,tt,"",this.menu.set_loading_current)
         }
 

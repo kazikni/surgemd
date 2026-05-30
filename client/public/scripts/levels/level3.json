@@ -167,19 +167,19 @@
                         {"item":"","weight":28},
                         {"item":"basic_pack","weight":20},
                         {"item":"regular_pack","weight":15,"drop_chance":0.3},
-                        {"item":"tactical_pack","weight":10,"drop_chance":0.5}
+                        {"item":"military_pack","weight":10,"drop_chance":0.5}
                     ],
                     "vest":[
                         {"item":"","weight":28},
                         {"item":"basic_vest","weight":20,"drop_chance":0.3},
                         {"item":"regular_vest","weight":15,"drop_chance":0.5},
-                        {"item":"tactical_vest","weight":10,"drop_chance":0.75}
+                        {"item":"military_vest","weight":10,"drop_chance":0.75}
                     ],
                     "helmet":[
                         {"item":"","weight":28},
                         {"item":"basic_helmet","weight":20,"drop_chance":0.3},
                         {"item":"regular_helmet","weight":15,"drop_chance":0.5},
-                        {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
+                        {"item":"military_helmet","weight":10,"drop_chance":0.75}
                     ],
                     "gun1":[
                         {"item":"m9","weight":20},
@@ -217,17 +217,17 @@
                     "backpack":[
                         {"item":"basic_pack","weight":10},
                         {"item":"regular_pack","weight":15,"drop_chance":0.3},
-                        {"item":"tactical_pack","weight":10,"drop_chance":0.5}
+                        {"item":"military_pack","weight":10,"drop_chance":0.5}
                     ],
                     "vest":[
                         {"item":"basic_vest","weight":10,"drop_chance":0.3},
                         {"item":"regular_vest","weight":15,"drop_chance":0.5},
-                        {"item":"tactical_vest","weight":10,"drop_chance":0.75}
+                        {"item":"military_vest","weight":10,"drop_chance":0.75}
                     ],
                     "helmet":[
                         {"item":"basic_helmet","weight":10,"drop_chance":0.3},
                         {"item":"regular_helmet","weight":15,"drop_chance":0.5},
-                        {"item":"tactical_helmet","weight":10,"drop_chance":0.75}
+                        {"item":"military_helmet","weight":10,"drop_chance":0.75}
                     ],
                     "gun1":[
                         {"item":"hp18","weight":1},
@@ -266,7 +266,7 @@
             "hand":1,
             "team":0,
             "backpack":[
-                {"item":"tactical_pack","weight":1}
+                {"item":"military_pack","weight":1}
             ],
             "vest":[
                 {"item":"elite_vest","weight":10,"droppable":false}

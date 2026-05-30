@@ -36,9 +36,9 @@
             "regular_vest":"Regular Vest",
             "regular_helmet":"Regular Helmet",
             "regular_pack":"Regular Backpack",
-            "tactical_vest":"Tactical Vest",
-            "tactical_helmet":"Tactical Helmet",
-            "tactical_pack":"Military Backpack",
+            "military_vest":"Military Vest",
+            "military_helmet":"Military Helmet",
+            "military_pack":"Military Backpack",
 
             "12g":"12G",
             "762mm":"7.62MM",

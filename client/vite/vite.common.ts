@@ -49,8 +49,7 @@ const config: UserConfig = {
             //"christmas":"christmas"
         },undefined,[
             {name:"low",scale:0.5},
-            {name:"medium",scale:0.75},
-            {name:"high",scale:1},
+            {name:"medium",scale:1},
         ]),
         AudiosLists([{
             input:"sounds/game/main",

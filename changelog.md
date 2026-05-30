@@ -18,6 +18,7 @@ __                                                                              
 ## Changes
 __                                                                                                                 __
 ### Items
+* Change Equipment Sprites
 __                                                                                                                 __
 ### Menu
 * Rework Minimap System

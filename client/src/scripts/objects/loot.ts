@@ -1,5 +1,5 @@
 
-import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, Container2D, ease, NetStream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, NetStream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -10,6 +10,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { Debug } from "../others/config.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -151,7 +152,7 @@ export class Loot extends GameObject{
                 case InventoryItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true;
-                    this.sprite_main.scale=v2(1.4,1.4)
+                    this.sprite_main.scale=v2(1.2,1.2)
                     this.sprite_outline.visible=false;
                     this.pickup_sound=this.game.resources.get_sound("ammo_pickup")
                     radius=GameConstants.loot.radius.ammo
@@ -174,7 +175,7 @@ export class Loot extends GameObject{
                     this.sprite_outline.visible=true;
                     this.sprite_main.scale=v2(0.8,0.8);
                     this.sprite_outline.scale=v2(1.4,1.4);
-                    (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
+                    radius=GameConstants.loot.radius.equipament
                     this.pickup_sound=this.game.resources.get_sound(`helmet_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break
@@ -207,7 +208,7 @@ export class Loot extends GameObject{
                     this.sprite_outline.visible=true;
                     this.sprite_main.scale=v2(1.5,1.5);
                     this.sprite_outline.scale=v2(1.4,1.4);
-                    (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.scopes
+                    radius=GameConstants.loot.radius.scopes
                     this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break
@@ -260,11 +261,16 @@ export class Loot extends GameObject{
             }
             this.base_hitbox=new CircleHitbox2D(v2(0,0),radius)
             this.container.visible=true
-        }
-        if(this.game.save.get_variable("sv_game_interpolation")&&!full){
-            this.dest_pos=position
-        }else{
+
             this.position=position
+            if(Debug.hitbox){
+                this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
+                this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
+            }
+        }else{
+            if(this.game.save.get_variable("sv_game_interpolation")){
+                this.dest_pos=position
+            }
         }
     }
 }

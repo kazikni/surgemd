@@ -101,7 +101,7 @@ export class Loot extends ServerGameObject{
             
         }
         if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*2.4))
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*3))
             const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }

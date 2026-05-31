@@ -1,5 +1,6 @@
 @use "common/engine/main.scss";
 @use "../fonts.scss";
+@use "../components/text.scss";
 .item-maximized{
     color:var(--ui-theme-special)
 }
@@ -404,5 +405,33 @@
             width: 35px;
             height: 35px;
         }
+    }
+}
+#item-tooltip{
+    @extend .span-text;
+    opacity:0;
+    pointer-events:none;
+    position:fixed;
+
+    min-width: 300px;
+
+    padding:8px;
+    border-radius:6px;
+
+    background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
+    box-shadow: 0 0 3px var(--ui-theme-primary);
+
+    transition:opacity .15s;
+    transform: translate(-100%,-100%);
+    #item-tooltip-title{
+        font-weight:bold;
+        margin-bottom:4px;
+        font-size: 20px;
+    }
+    #item-tooltip-description{
+        font-size: 15px;
+    }
+    &.tooltip-visible{
+        opacity:1;
     }
 }

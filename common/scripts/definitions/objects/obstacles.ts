@@ -352,26 +352,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             health:230,
         }}),
         {
-            idString:"barrel",
-            health:100,
-            height:1,
-            hitbox:new CircleHitbox2D(v2(0,0),0.65),
-            scale:{
-                destroy:0.6
-            },
-            assets:{
-                particles:{
-                    particle:"metal_particle",
-                    tint:0x484848
-                },
-                sounds:hit_sounds.heavy_metal
-            },
-            rotation_mode:RotationMode.full,
-            onDestroyExplosion:"barrel_explosion",
-            reflect_bullets:true,
-            spawnMode:Spawn.grass,
-        },
-        {
             idString:"sillo",
             health:1,
             imortal:true,

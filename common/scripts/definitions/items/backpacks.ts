@@ -20,13 +20,12 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "9mm":100,
                 "762mm":80,
                 "556mm":80,
-
                 "45acp":80,
                 "22lr":120,
 
                 "50cal":50,
-                "308sub":10,
-                "explosive_ammo":5,
+                "308sub":15,
+                "explosive_ammo":7,
                 "gasoline":5,
 
                 "frag_grenade":9,
@@ -68,15 +67,14 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             max:{
                 "12g":40,
                 "9mm":200,
-                "762mm":140,
-                "556mm":140,
-
-                "45acp":140,
+                "762mm":160,
+                "556mm":160,
+                "45acp":160,
                 "22lr":240,
 
                 "50cal":80,
-                "308sub":20,
-                "explosive_ammo":10,
+                "308sub":30,
+                "explosive_ammo":14,
                 "gasoline":10,
             },
             rank:ItemRank.E,
@@ -88,15 +86,14 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             max:{
                 "12g":60,
                 "9mm":300,
-                "762mm":220,
-                "556mm":220,
+                "762mm":240,
+                "556mm":240,
+                "45acp":240,
+                "22lr":360,
 
-                "45acp":220,
-                "22lr":380,
-
-                "308sub":40,
+                "308sub":45,
                 "50cal":130,
-                "explosive_ammo":15,
+                "explosive_ammo":21,
                 "gasoline":15,
             },
             rank:ItemRank.D,
@@ -108,15 +105,14 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             max:{
                 "12g":80,
                 "9mm":400,
-                "762mm":300,
-                "556mm":300,
-    
-                "45acp":300,
-                "22lr":500,
+                "762mm":320,
+                "556mm":320,
+                "45acp":320,
+                "22lr":480,
 
-                "308sub":80,
+                "308sub":60,
                 "50cal":160,
-                "explosive_ammo":20,
+                "explosive_ammo":28,
                 "gasoline":20,
             },
             rank:ItemRank.C,

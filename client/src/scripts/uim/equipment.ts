@@ -1,16 +1,19 @@
 import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { type Human } from "../objects/human.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 
 export class EquipmentModule extends UIModule<Game> {
     container!: HTMLDivElement
 
-    // slots fixos
-    helmet!: HTMLDivElement
-    vest!: HTMLDivElement
-    backpack!: HTMLDivElement
+    helmet?:HelmetDef
+    helmet_el!: HTMLDivElement
+    vest?:VestDef
+    vest_el!: HTMLDivElement
+    backpack?:BackpackDef
+    backpack_el!: HTMLDivElement
 
-    // acessórios dinâmicos
     accessories_container!: HTMLDivElement
     cache: HTMLDivElement[] = []
 
@@ -26,9 +29,9 @@ export class EquipmentModule extends UIModule<Game> {
             <div class="equipment-accessories"></div>
         `
 
-        this.helmet = this.container.querySelector(`[data-type="helmet"]`)!
-        this.vest = this.container.querySelector(`[data-type="vest"]`)!
-        this.backpack = this.container.querySelector(`[data-type="backpack"]`)!
+        this.helmet_el = this.container.querySelector(`[data-type="helmet"]`)!
+        this.vest_el = this.container.querySelector(`[data-type="vest"]`)!
+        this.backpack_el = this.container.querySelector(`[data-type="backpack"]`)!
         this.accessories_container = this.container.querySelector(".equipment-accessories")!
     }
 
@@ -41,11 +44,29 @@ export class EquipmentModule extends UIModule<Game> {
         const hasAny=player.helmet||player.vest||player.backpack
         this.container.style.display = hasAny ? "" : "none"
 
-        this.render_slot(this.helmet, player.helmet?.idString,player.helmet!==undefined?`<span class="span-text">Level ${player.helmet.level}</span>`:"")
-        this.render_slot(this.vest, player.vest?.idString,player.vest!==undefined?`<span class="span-text">Level ${player.vest.level}</span>`:"")
-        this.render_slot(this.backpack, player.backpack?.idString,player.backpack!==undefined?`<span class="span-text">Level ${player.backpack.level}</span>`:"")
+        if(player.helmet===this.helmet&&player.vest===this.vest&&player.backpack===this.backpack){
+            return
+        }
+        this.helmet=player.helmet
+        this.vest=player.vest
+        this.backpack=player.backpack
+        if(this.helmet){
+            this.render_slot(this.helmet_el,this.helmet.idString,`<span class="span-text">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
+        }else{
+            this.render_slot(this.helmet_el,undefined,"")
+        }
+        if(this.vest){
+            this.render_slot(this.vest_el,this.vest.idString,`<span class="span-text">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
+        }else{
+            this.render_slot(this.vest_el,undefined,"")
+        }
+        if(this.backpack){
+            this.render_slot(this.backpack_el,this.backpack.idString,`<span class="span-text">Level ${this.backpack.level}</span>`,"items.description.backpack")
+        }else{
+            this.render_slot(this.backpack_el,undefined,"")
+        }
     }
-    private render_slot(el: HTMLDivElement, id?: string,span="") {
+    private render_slot(el: HTMLDivElement, id?: string,span="",description_def:string="items.description.vest",replace?:Record<string,string>) {
         if (!id) {
             HideElement(el)
             return
@@ -56,18 +77,25 @@ export class EquipmentModule extends UIModule<Game> {
             return
         }
         ShowElement(el)
-
         el.style.display = ""
         el.innerHTML = `${span}<img class="slot-image" src="${sprite.src}">`
+
+        const description=this.game.language.get(description_def,replace)
+        el.onmouseenter=(e)=>{
+            this.game.ui.tooltip_show("items."+id,description,e.clientX,e.clientY)
+        }
+        el.onmouseleave=()=>{
+            this.game.ui.tooltip_hide()
+        }
     }
 
     override on_update(_dt: number): void {}
     override on_destroy(): void {}
 
     override on_clear(): void {
-        this.render_slot(this.helmet)
-        this.render_slot(this.vest)
-        this.render_slot(this.backpack)
+        this.render_slot(this.helmet_el)
+        this.render_slot(this.vest_el)
+        this.render_slot(this.backpack_el)
         this.accessories_container.innerHTML = ""
         this.cache = []
         HideElement(this.container)

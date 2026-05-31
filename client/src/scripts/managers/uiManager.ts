@@ -74,7 +74,11 @@ export class UiManager{
             ]
         },
 
-        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement
+        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
+
+        tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
+        tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
+        tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
     }
 
     mobile_content={
@@ -714,5 +718,18 @@ export class UiManager{
     }
     gun_free():boolean{
         return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
+    }
+
+    tooltip_show(title:string,description:string,x:number,y:number){
+        this.content.tooltip_title.innerText=this.game.language.get(title)
+        this.content.tooltip_description.innerText=description
+
+        this.content.tooltip.style.left=`${x-10}px`
+        this.content.tooltip.style.top=`${y-10}px`
+
+        this.content.tooltip.classList.add("tooltip-visible")
+    }
+    tooltip_hide(){
+        this.content.tooltip.classList.remove("tooltip-visible")
     }
 }

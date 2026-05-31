@@ -108,7 +108,13 @@
             "molotov":"Molotov Cocktail",
             "mirv_grenade":"Mirv Grenade",
             "blue_flare":"Blue flare",
-            "red_flare":"red_flare"
+            "red_flare":"red_flare",
+
+            "description":{
+                "helmet":"Reduce damage taken by ${reduction}%",
+                "vest":"Reduce damage taken by ${reduction}%",
+                "backpack":"Increse store capacity"
+            }
         },
         "killfeed":{
             "join":"${player} Joined",

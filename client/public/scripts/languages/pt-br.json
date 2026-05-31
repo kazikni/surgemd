@@ -13,7 +13,7 @@
             "bandage":"Bandagem",
             "medikit":"Kit Medico",
             "yellow_soda":"Refrigerante Amarelo",
-            "inhaler":"Bombinha",
+            "inhaler":"Inalador",
             "yellow_pills":"Comprimidos Amarelos",
             "blue_soda":"Refrigerante Azul",
             "blue_potion":"Poção Azul",
@@ -58,7 +58,44 @@
             "molotov":"Coquetel molotov",
             "mirv_grenade":"Granada mirv",
             "blue_flare":"Sinalizador azul",
-            "red_flare":"Sinalizador vermelho"
+            "red_flare":"Sinalizador vermelho",
+
+            "description":{
+                "12g":"Calibre 12. Usado em espingardas",
+                "762mm":"7.62mm usado em snipers e ar",
+                "556mm":"5.56mm usado em snipers e ar. quase a mesma coisa de 7.62mm",
+                "9mm":"9mm usando em pistolas e SMG",
+                "45acp":"5.56mm usado em snipers e ar. quase a mesma coisa de 7.62mm",
+                "22lr":"22lr usando em pistolas e SMG. quase a mesma coisa do 9mm",
+                "50cal":"Um grande calibre. Usado em pistolas, dmr e snipers",
+                "308sub":"Maior que uma mão. usado em pistolas, snipers e dmr",
+                "explosive_ammo":"Boom Boom Filho Da Puta!",
+                "gasoline":"Um bom combustivel",
+                "mana_mm":"Mana-MM namoral. agora to criando a traducao pros items em portugues brazil. agora sao 19:12",
+
+                "bandage":"Uma bandagem clássica.<br>Recupera 20 pontos de vida.<br>Só pode curar até 75% da vida máxima.",
+                "medikit":"Esta pequena caixa contém vários suprimentos médicos.<br>Recupera 100 pontos de vida sem limite de cura.",
+
+                "yellow_soda":"Um refrigerante delicioso com gosto de pura energia.<br>Concede 25 de adrenalina.",
+                "inhaler":"Este dispositivo transforma comprimidos em vapor, aumentando sua eficiência.<br>Concede 50 de adrenalina.",
+                "yellow_pills":"Um medicamento muito poderoso.<br>Seis vezes mais forte que os comprimidos usados no inalador.<br>Concede 100 de adrenalina.",
+
+                "blue_soda":"Um refrigerante delicioso.<br>Contém um composto que cria uma barreira semelhante a vidro ao redor do usuário.<br>Concede 25 de escudo, até um máximo de 50%.",
+                "blue_potion":"Esta garrafa foi produzida por um método milenar, mas seu conteúdo utiliza tecnologia de ponta.<br>Concede 50 de escudo.",
+                "blue_pills":"Um medicamento usado por soldados como barreira defensiva.<br>Possui tecnologia digital avançada.<br>Concede 100 de escudo.",
+
+                "red_soda":"A receita deste refrigerante é altamente secreta.<br>Especialistas acreditam que ele contém um composto químico extremamente tóxico e viciante.<br>Concede 50 de vício, até um máximo de 50%.",
+                "small_red_crystal":"Mesmo esta pequena quantidade de RQPU já é capaz de aumentar atributos físicos, mas não é suficiente para saciar o vício.<br>Concede 25 de vício.",
+                "red_crystal":"Esta droga ilegal pode torná-lo extremamente rápido e forte, mas é altamente viciante.<br>Parece que ninguém se importa muito com a legalidade.<br>Concede 50 de vício.",
+                "red_pills":"Esta droga é capaz de destruir a vida de alguém.<br>Felizmente, a polícia está sempre combatendo o tráfico de drogas.<br>Mas para onde vão as drogas apreendidas?<br>Concede 100 de vício.",
+
+                "green_soda":"Este refrigerante é incrivelmente saboroso.<br>Após bebê-lo, você se sente abençoado.<br>Concede 100 de Bênção Verde.",
+                "black_soda":"Este veneno é forte o suficiente para derrubar um elefante.<br>Apesar de ser um veneno, comporta-se de maneira semelhante a uma bactéria.<br>Inicia a Morte.",
+
+                "helmet":"Reduz o dano recebido em ${reduction}%.",
+                "vest":"Reduz o dano recebido em ${reduction}%.",
+                "backpack":"Aumenta a capacidade do inventário."
+            }
         },
         "killfeed":{
             "join":"${player} Entrou",

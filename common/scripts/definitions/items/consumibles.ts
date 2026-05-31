@@ -35,6 +35,7 @@ export interface ConsumibleDef extends Definition{
         pickup_sound?:string
     }
     item_type?:InventoryItemType.consumible
+    description?:string|boolean
 }
 export enum ConsumibleCondition{
     UnfullHealth,
@@ -97,6 +98,7 @@ export const ConsumiblesAnimations={
 export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:number=25,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
         idString:color+"_soda",
+        description:true,
         consuming:{
             type:0,
             side_effects:[
@@ -126,6 +128,7 @@ export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:
 export function CreatePills(color:string,boost_type:BoostType,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
         idString:color+"_pills",
+        description:true,
         consuming:{
             type:0,
             side_effects:[
@@ -189,6 +192,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 ],
                 use_delay:3,
             },
+            description:true,
             rank:ItemRank.D,
             condition:[ConsumibleCondition.UnfullHealth],
             assets:{
@@ -210,6 +214,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 use_delay:5.5,
             },
             rank:ItemRank.D,
+            description:true,
             condition:[ConsumibleCondition.UnfullHealth]
         },
 
@@ -259,6 +264,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
             },
             rank:ItemRank.C,
             condition:[ConsumibleCondition.UnfullExtra],
+            description:true,
             assets:{
                 using_sound:"using_potion"
             },
@@ -295,6 +301,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         CreateSoda("red",BoostType.Addiction,0.5,50),
         {
             idString:"small_red_crystal",
+            description:true,
             consuming:{
                 type:0,
                 use_delay:1.5,
@@ -315,6 +322,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
         {
             idString:"red_crystal",
+            description:true,
             consuming:{
                 type:0,
                 use_delay:3,

@@ -2,6 +2,7 @@ import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface AmmoDef extends Definition{
+    description?:string|boolean
     tint:number
     defaultTrail:number
     strongTrail:number
@@ -21,6 +22,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"12g",
             ammoType:"12g",
+            description:true,
             defaultTrail:0xcfada0,
             strongTrail:0xdb2218,
             defaultProj:0xcfada0,
@@ -32,6 +34,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"762mm",
             ammoType:"762mm",
+            description:true,
             defaultTrail:0xb8ccde,
             strongTrail:0x0034f2,
             defaultProj:0xefef9f,
@@ -42,6 +45,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"556mm",
             ammoType:"556mm",
+            description:true,
             defaultTrail:0x66ff88,
             strongTrail:0x00a41c,
             defaultProj:0xefef9f,
@@ -52,6 +56,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"9mm",
             ammoType:"9mm",
+            description:true,
             defaultTrail:0xefef9f,
             strongTrail:0xefef33,
             defaultProj:0xefef9f,
@@ -63,6 +68,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"45acp",
             ammoType:"45acp",
+            description:true,
             defaultTrail:0xcea2e0,
             strongTrail:0x791390,
             defaultProj:0xefef9f,
@@ -73,6 +79,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"22lr",
             ammoType:"22lr",
+            description:true,
             defaultTrail:0xefefef,
             strongTrail:0xefefff,
             defaultProj:0xefef9f,
@@ -83,6 +90,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"50cal",
             ammoType:"50cal",
+            description:true,
             defaultTrail:0x555555,
             strongTrail:0x000000,
             defaultProj:0xefef9f,
@@ -94,6 +102,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"308sub",
             ammoType:"308sub",
+            description:true,
             defaultTrail:0x222835,
             strongTrail:0x0c1420,
             defaultProj:0xefef9f,
@@ -105,6 +114,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"explosive_ammo",
             ammoType:"explosive_ammo",
+            description:true,
             defaultTrail:0x616d61,
             strongTrail:0x2b402b,
             defaultProj:0xefef9f,
@@ -115,6 +125,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"gasoline",
             ammoType:"gasoline",
+            description:true,
             defaultTrail:0xefef33,
             strongTrail:0x889fcb,
             defaultProj:0xefef9f,
@@ -126,6 +137,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"mana_mm",
             ammoType:"mana",
+            description:true,
             defaultTrail:0x889fcb,
             strongTrail:0x009fcb,
             defaultProj:0xefef9f,

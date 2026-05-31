@@ -722,7 +722,7 @@ export class UiManager{
 
     tooltip_show(title:string,description:string,x:number,y:number){
         this.content.tooltip_title.innerText=this.game.language.get(title)
-        this.content.tooltip_description.innerText=description
+        this.content.tooltip_description.innerHTML=description
 
         this.content.tooltip.style.left=`${x-10}px`
         this.content.tooltip.style.top=`${y-10}px`

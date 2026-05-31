@@ -409,13 +409,18 @@
 }
 #item-tooltip{
     @extend .span-text;
+
     opacity:0;
     pointer-events:none;
     position:fixed;
 
-    min-width: 300px;
+    min-width:300px;
+    max-width:450px;
 
-    padding:8px;
+    max-height:300px;
+    overflow-y:auto;
+
+    padding:10px;
     border-radius:6px;
 
     background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
@@ -423,14 +428,23 @@
 
     transition:opacity .15s;
     transform: translate(-100%,-100%);
+
     #item-tooltip-title{
         font-weight:bold;
-        margin-bottom:4px;
-        font-size: 20px;
+        margin-bottom:6px;
+        font-size:20px;
     }
+
     #item-tooltip-description{
-        font-size: 15px;
+        font-size:15px;
+
+        white-space:pre-wrap;
+        overflow-wrap:break-word;
+        word-break:break-word;
+
+        line-height:1.35;
     }
+
     &.tooltip-visible{
         opacity:1;
     }

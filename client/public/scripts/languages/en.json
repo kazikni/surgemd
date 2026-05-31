@@ -111,9 +111,40 @@
             "red_flare":"red_flare",
 
             "description":{
-                "helmet":"Reduce damage taken by ${reduction}%",
-                "vest":"Reduce damage taken by ${reduction}%",
-                "backpack":"Increse store capacity"
+                "12g":"12 Gauge. Used in shotguns",
+                "762mm":"7.62mm used in snipers and AR.",
+                "556mm":"5.56mm used in Snipers and AR. Almost the same thing of 7.62mm",
+                "9mm":"9mm used in Pistols and SMG.",
+                "45acp":"5.56mm used in Snipers and AR. Almost the same thing of 7.62mm",
+                "22lr":"9mm used in Pistols and SMG. Almost the same thing of 9mm",
+                "50cal":"A big ammo. used into pistols, snipers and dmr",
+                "308sub":"Biggerst than a hand. used into pistols, snipers and dmr",
+                "explosive_ammo":"Boom Boom Motherfucker!",
+                "gasoline":"A good fuel.",
+                "mana_mm":"Mana-MM I'm tired of creating descriptions. It's already 18:50.",
+
+                "bandage":"A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
+                "medikit":"This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",
+
+                "yellow_soda":"A delicious soda that tastes like pure energy.<br>Grants 25 adrenaline.",
+                "inhaler":"This device turns tablets into vapor, increasing their effectiveness.<br>Grants 50 adrenaline.",
+                "yellow_pills":"A very powerful medicine.<br>Six times stronger than the tablets used in the inhaler.<br>Grants 100 adrenaline.",
+
+                "blue_soda":"A delicious soda.<br>Contains a compound that creates a glass-like barrier around the user.<br>Grants 25 shield up to a maximum of 50%.",
+                "blue_potion":"This bottle was crafted using an ancient method, but its contents use cutting-edge technology.<br>Grants 50 shield.",
+                "blue_pills":"A medicine used by soldiers as a defensive barrier.<br>Features advanced digital technology.<br>Grants 100 shield.",
+
+                "red_soda":"The recipe for this soda is highly classified.<br>Experts believe it contains an extremely toxic and addictive chemical compound.<br>Grants 50 addiction up to a maximum of 50%.",
+                "small_red_crystal":"Even this small amount of RQPU can enhance physical abilities, but it is not enough to satisfy the addiction.<br>Grants 25 addiction.",
+                "red_crystal":"This illegal drug can make you incredibly fast and strong, but it is highly addictive.<br>It seems nobody cares much about the law.<br>Grants 50 addiction.",
+                "red_pills":"This drug is capable of ruining someone's life.<br>Fortunately, the police are always fighting drug trafficking.<br>But where do the confiscated drugs go?<br>Grants 100 addiction.",
+
+                "green_soda":"This soda is incredibly tasty.<br>After drinking it, you feel blessed.<br>Grants 100 Green Bless.",
+                "black_soda":"This poison is strong enough to kill an elephant.<br>Despite being a poison, it behaves similarly to a bacterium.<br>Triggers Death.",
+
+                "helmet":"Reduces incoming damage by ${reduction}%.",
+                "vest":"Reduces incoming damage by ${reduction}%.",
+                "backpack":"Increases inventory capacity."
             }
         },
         "killfeed":{

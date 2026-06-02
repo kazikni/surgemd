@@ -20,18 +20,6 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
     ammos.insert(
         //Main
         {
-            idString:"12g",
-            ammoType:"12g",
-            description:true,
-            defaultTrail:0xcfada0,
-            strongTrail:0xdb2218,
-            defaultProj:0xcfada0,
-            strongProj:0xdb2218,
-            tint:0xff0000,
-            drop_count:15,
-            rank:ItemRank.E
-        },
-        {
             idString:"762mm",
             ammoType:"762mm",
             description:true,
@@ -64,7 +52,6 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             tint:0xffff00,
             rank:ItemRank.E
         },
-        //Modes
         {
             idString:"45acp",
             ammoType:"45acp",
@@ -88,6 +75,20 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             rank:ItemRank.E
         },
         {
+            idString:"12g",
+            ammoType:"12g",
+            description:true,
+            defaultTrail:0xcfada0,
+            strongTrail:0xdb2218,
+            defaultProj:0xcfada0,
+            strongProj:0xdb2218,
+            tint:0xff0000,
+            drop_count:15,
+            rank:ItemRank.E
+        },
+
+        //Exotic
+        {
             idString:"50cal",
             ammoType:"50cal",
             description:true,
@@ -98,7 +99,6 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             tint:0x000000,
             rank:ItemRank.B
         },
-        //Exotic
         {
             idString:"308sub",
             ammoType:"308sub",

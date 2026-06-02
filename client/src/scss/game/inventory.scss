@@ -280,12 +280,14 @@
     }
 }
 #ui-aitems{
-    display: grid;
-    grid-template-columns: repeat(auto, 5);
+    display: flex;
+    flex-direction: column;
+    flex-wrap:wrap-reverse;
+    max-height: 35vh;
     gap: 5px;
     position: absolute;
-    right: 5px;
-    top: 50%;
+    right: 10px;
+    top: 65%;
     transform: translate(0%, -50%);
     justify-items: end;
     pointer-events: none;
@@ -324,7 +326,8 @@
                 height: 20px;
             }
         }
-        left: 2px;
+        gap: 3px;
+        right: 7px;
     }
     @include main.small_screen{
         .aitem-slot{
@@ -336,7 +339,8 @@
                 height: 12px;
             }
         }
-        left: 3px;
+        gap: 2px;
+        right: 5px;
     }
 }
 #ui-equipment{
@@ -387,6 +391,7 @@
     @include main.medium_screen {
         right: 7px;
         bottom: 7px;
+        font-size: 10px;
         .equipment-fixed {
             gap: 7px;
         }

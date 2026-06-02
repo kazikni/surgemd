@@ -20,23 +20,39 @@ export class AItemsModule extends UIModule<Game> {
 
         this.render(this.game.inventory.aitems)
     }
-
+    private sort_html(keys:string[]){
+        for(const key of keys){
+            const el=this.cache.get(key)
+            if(el){
+                this.container.appendChild(el)
+            }
+        }
+    }
     private render(items: Record<string, number>) {
         const keys = Object.keys(items)
 
+        keys.sort((a, b) => {
+            return this.game.definitions.game_items.keysString[a]-this.game.definitions.game_items.keysString[b]
+        })
         for (const k of this.cache.keys()) {
             if (!keys.includes(k)) {
                 this.cache.get(k)!.remove()
                 this.cache.delete(k)
             }
         }
-
         for (const k of keys) {
             if (!this.cache.has(k)) {
                 this.create(k)
             }
+
             this.update_one(k, items[k])
+
+            const el = this.cache.get(k)
+            if (el) {
+                this.container.appendChild(el)
+            }
         }
+        this.sort_html(keys)
     }
 
     private create(key: string) {

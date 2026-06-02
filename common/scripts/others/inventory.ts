@@ -211,7 +211,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         this.iitems.length=1
         this.set_backpack()
         for(const s of this.slots){
-          s.clear()
+            s.clear()
         }
         this.clear_weapons()
     }

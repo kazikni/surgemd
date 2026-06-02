@@ -124,7 +124,7 @@ export class Bullet extends GameObject{
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).number_type){
                     case GameObjectType.Human:
-                        if(!(obj as Human).dead&&!(obj as Human).parachute){
+                        if(!(obj.id===this.owner_id&&this.reflection_count===0)&&!(obj as Human).dead&&!(obj as Human).parachute){
                             const col=obj.hitbox.overlap_line(this.old_position,this.position)
                             if(col){
                                 (obj as Human).on_hitted(this.position,this._critical)

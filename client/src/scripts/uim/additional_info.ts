@@ -1,4 +1,4 @@
-import { format_time, UIModule } from "common/engine/client.ts";
+import { format_time, HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { DeadZoneState, DeadZoneUpdate, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 
@@ -42,16 +42,14 @@ export class AdditionalInfoModule extends UIModule<Game> {
         this.update_living_count(gu.living_count)
         if(gu.deadzone&&gu.deadzone.state!==DeadZoneState.Deenabled){
             if(this.content.deadzone_info.style.visibility==="hidden"){
-                this.content.deadzone_info.style.visibility="visible"
+                ShowElement(this.content.deadzone_info)
             }
             this.content.deadzone_info_timer.innerText=format_time(gu.deadzone.timer)
             if(!this.old_deadzone_update||this.old_deadzone_update.state!==gu.deadzone.state){
                 this.content.deadzone_info_icon.src=`/img/menu/gui/deadzone/deadzone_state_${gu.deadzone.state}.svg`
             }
-        }else{
-            if(this.content.deadzone_info.style.visibility==="visibile"){
-                this.content.deadzone_info.style.visibility="hidden"
-            }
+        }else if(!this.old_deadzone_update||gu.deadzone?.state!==this.old_deadzone_update.state){ 
+            HideElement(this.content.deadzone_info)
         }
         this.old_deadzone_update=gu.deadzone
     }
@@ -62,5 +60,6 @@ export class AdditionalInfoModule extends UIModule<Game> {
     }
     override on_clear(): void {
         this.content.kills_count.innerText=""
+        this.old_deadzone_update=undefined
     }
 }

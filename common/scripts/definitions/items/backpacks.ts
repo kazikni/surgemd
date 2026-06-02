@@ -59,7 +59,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             },
             rank:ItemRank.E,
             no_world_image:true,
-            slots:3,
+            slots:4,
         },
         {
             idString:"basic_pack",
@@ -78,7 +78,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "gasoline":10,
             },
             rank:ItemRank.E,
-            slots:4,
+            slots:5,
         },
         {
             idString:"regular_pack",
@@ -97,7 +97,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "gasoline":15,
             },
             rank:ItemRank.D,
-            slots:5,
+            slots:6,
         },
         {
             idString:"military_pack",
@@ -116,7 +116,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "gasoline":20,
             },
             rank:ItemRank.C,
-            slots:6,
+            slots:7,
         }
     )
 }

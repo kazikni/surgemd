@@ -641,7 +641,6 @@ export class GInventory extends GInventoryBase<LItem>{
 
                 const drop=Math.max((ac+count)-max,0)
                 this.aitems[def.idString]=Numeric.max(ac+count,max)
-
                 if(drop_overflow&&drop>0){
                     this.owner.game.add_loot(this.owner.position,def,drop,this.owner.layer)
                 }
@@ -791,8 +790,8 @@ export class GInventory extends GInventoryBase<LItem>{
     drop_item(id:number,count:number=5){
         for(const s in this.slots){
             if(this.slots[s].item&&this.owner.game.definitions.game_items.keysString[this.slots[s].item.def.idString]===id){
-              this.drop_slot(s as unknown as number,count)
-              break
+                this.drop_slot(s as unknown as number,count)
+                break
             }
         }
     }

@@ -60,7 +60,7 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 
             this.menu_manager=menu_manager
 
-            this.game=new Game(this.definitions,menu_manager,canvas,new TranslationManager({code:"",name:"",values:{}}))
+            this.game=new Game(this.definitions,menu_manager,canvas,new TranslationManager())
         }
         async init(){
             this.menu_manager.play_callback=this.play_game.bind(this)
@@ -110,8 +110,9 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                     break
                 }
                 case "campaign":{
-                    const js=JSON.parse(await this.file.read_file(this.menu_manager.campaign.charpters[play.charpter].levels[play.level]))
-                    this.game.start_campaign_level(js)
+                    const path=this.menu_manager.campaign.charpters[play.charpter].levels[play.level]
+                    const js=JSON.parse(await this.file.read_file(path+"/level.json"))
+                    this.game.start_campaign_level(js,"/"+path)
                     break
                 }
                 case "join":{

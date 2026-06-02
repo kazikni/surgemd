@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, isMobile, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -40,7 +40,6 @@ import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { DebugApp } from "../apps/debug.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { NewMDLanguageManager } from "./languages.ts";
 import {building_from_json} from "common/scripts/definitions/objects/buildings_base.ts"
 import { load_kspr } from "common/engine/core/lang/kspx.ts";
 import { Plane } from "../objects/plane.ts";
@@ -50,6 +49,7 @@ export class Game extends ClientGame<GameObject>{
     input:InputPacket=new InputPacket()
 
     level?:LevelDefinition
+    level_path:string=""
     offline:boolean=false
     can_act:boolean=true
     get play_sounds():boolean{
@@ -226,10 +226,10 @@ export class Game extends ClientGame<GameObject>{
                 case "weapon3":
                     this.input.actions.push({type:InputActionType.set_hand,hand:2})
                     break
-                case "full_tab":
+                case "toggle_full_device":
                     this.device.toggle_full()
                     break
-                case "hide_tab":
+                case "toggle_hide_device":
                     this.device.toggle_visibility()
                     break
                 case "use_item1":
@@ -291,6 +291,7 @@ export class Game extends ClientGame<GameObject>{
                     }
                     break
             }
+            this.ui_manager.signal("actiondown",a)
         })
         this.input_manager.listener.on(InputEventType.ActionUp,(a:InputActionEvent)=>{
             switch(a.action){
@@ -304,6 +305,7 @@ export class Game extends ClientGame<GameObject>{
                     this.ui.end_emote_wheel()
                     break
             }
+            this.ui_manager.signal("actionup",a)
         })
         this.input_manager.listener.on(InputEventType.MouseMove,()=>{
             if(!isMobile){
@@ -329,7 +331,10 @@ export class Game extends ClientGame<GameObject>{
             type:"localstorage",
             key:"surgemd-settings"
         })
-        this.language=await NewMDLanguageManager(this.save.get_variable("sv_ui_translation"),"en","/scripts/languages")
+
+        this.language.load_default_language(await(await fetch("/scripts/languages/en.json")).json() as Language,"main")
+        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.get_variable("sv_ui_translation")}.json`)).json() as Language,"main")
+
         this.fs=fs
     }
     set_lookTo_angle(angle:number,dist:number){
@@ -409,19 +414,27 @@ export class Game extends ClientGame<GameObject>{
                     await this.resources.load_sound(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
                 }
             }
-            if(this.menu.campaign?.history){
-                this.menu.history_buffer.clear()
-                await this.menu.preload_history_frames(this.menu.campaign.history)
+
+            try{
+                this.language.load_default_language(await this.resources.load_json(`${this.level_path}/languages/en.json`),"level")
+                this.language.load_language(await this.resources.load_json(`${this.level_path}/languages/${this.save.get_variable("sv_ui_translation")}.json`),"level")
+            }catch(e){
+                console.log(e)
+            }
+
+            if(this.level.cutscenes?.begin){
+                await this.menu.preload_cutscene(this.level_path+"/cutscenes/"+this.level.cutscenes.begin)
             }
         }
 
         this.menu.hide_loading_screen()
         this.loaded=true
     }
-    start_campaign_level(level:LevelDefinition){
+    start_campaign_level(level:LevelDefinition,path:string){
         this.local_server.begin_campaign_level(level)
         this.local_server.connect()
         this.level=level
+        this.level_path=path
     }
     async start(assets:string[]){
         await this.load_resources(assets)
@@ -437,8 +450,8 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.music.set(undefined)
 
         if(this.level){
-            if(this.level?.begin?.history){
-                await this.menu.show_history(this.level.begin.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+            if(this.menu.cutscene){
+                await this.menu.show_history(this.menu.cutscene,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
             this.local_server.start()
         }
@@ -449,11 +462,11 @@ export class Game extends ClientGame<GameObject>{
         this.watcher?.play?.()
     }
     async end_level(kills:number=0){
-        if(this.level?.end&&this.fs){
+        /*if(this.level?.end&&this.fs){
             if(this.level?.end?.history){
                 await this.menu.show_history(this.level.end.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
-        }
+        }*/
     }
     make_green_light_death_message(status:HumanStatus):string[]{
         const messages: string[] = []
@@ -531,6 +544,8 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.on_game_close()
         this.client=undefined
         this.cam_type=0
+
+        this.language.clear("level")
     }
     soft_close_game(){
         this.clear()
@@ -640,6 +655,7 @@ export class Game extends ClientGame<GameObject>{
         }else if(!up.started){
             this.started=false
         }
+        this.ui.proccess_general_update(up)
     }
     process_private(priv:PrivateUpdate){
         if(priv.active_entity.dirty){
@@ -660,6 +676,7 @@ export class Game extends ClientGame<GameObject>{
             this.device.update_self_state(priv.self_state)
         }
         this.device.update_private(priv)
+        this.ui_manager.signal("private",priv)
     }
     join(){
         if(!this.client)return

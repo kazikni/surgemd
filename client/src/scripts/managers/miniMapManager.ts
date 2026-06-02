@@ -48,6 +48,8 @@ export class MinimapManager {
                 await this.render_tile(v2(x,y),sorted)
             }
         }
+
+        this.game.ui_manager.signal("minimap",{})
     }
 
     async render_tile(position:Vec2,objects:MapObjectObstacle[]){

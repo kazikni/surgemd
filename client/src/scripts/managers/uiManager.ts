@@ -24,6 +24,8 @@ import { ItemsModule } from "../uim/items.ts";
 import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
+import { MinimapModule } from "../uim/minimap.ts";
+import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -79,6 +81,8 @@ export class UiManager{
         tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
+
+        living_count:document.querySelector("#living-count-container") as HTMLSpanElement,
     }
 
     mobile_content={
@@ -118,6 +122,7 @@ export class UiManager{
         this.game.ui_manager.add(new ItemsModule())
         this.game.ui_manager.add(new ActionsModule())
         this.game.ui_manager.add(new EquipmentModule())
+        this.game.ui_manager.add(new MinimapModule())
         this.game.ui_manager.add(new InformationBoxModule())
 
         this.update_content_creators([
@@ -294,6 +299,25 @@ export class UiManager{
             })
         }
         
+    }
+    living_count:number[]=[]
+    update_living_count(count:number[]){
+        if(count.length===this.living_count.length){
+            let ok=true
+            for(const i in count){
+                if(this.living_count[i]!==count[i]){
+                    ok=false
+                }
+            }
+            if(ok)return
+        }
+        this.living_count=count
+        this.content.living_count.innerHTML=`
+<span class="span-text-base">${count[0]}</span>
+        `
+    }
+    proccess_general_update(gu:GeneralUpdate){
+        this.update_living_count(gu.living_count)
     }
     state:HelpGuiState={
         driving:false,

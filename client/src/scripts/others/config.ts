@@ -141,11 +141,11 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.L3],
         keys:[Key.F]
     },
-    "full_tab":{
+    "toggle_full_device":{
         buttons:[GamepadButtonID.Start],
         keys:[Key.M]
     },
-    "hide_tab":{
+    "toggle_hide_device":{
         buttons:[GamepadButtonID.Select],
         keys:[Key.N]
     },

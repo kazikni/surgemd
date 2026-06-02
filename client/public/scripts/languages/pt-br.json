@@ -97,6 +97,13 @@
                 "backpack":"Aumenta a capacidade do inventário."
             }
         },
+        "characters":{
+            "nick_mom":"(Mãe) Nick",
+            "nick_dad":"(Pai) Nick",
+
+            "shelly_mom":"(Mãe) Shelly",
+            "shelly_dad":"(Pai) Shelly"
+        },
         "killfeed":{
             "join":"${player} Entrou",
             "kill":{

@@ -64,6 +64,7 @@ export class MenuManager{
     play_callback?:(play_args:PlayArgs)=>void
 
     campaign:Record<string,any>={}
+    cutscene:HistoryCommand[]=[]
 
     params:URLSearchParams
 
@@ -488,6 +489,11 @@ export class MenuManager{
         })
     }
     history_buffer:ImageBuffer=new ImageBuffer()
+    async preload_cutscene(path:string){
+        this.cutscene=await this.resources.load_json(path,this.set_loading_current)
+        this.history_buffer.clear()
+        await this.preload_history_frames(this.cutscene)
+    }
     async preload_history_frames(commands: HistoryCommand[], max = 6){
         let count = 0
         for(const cmd of commands){
@@ -542,19 +548,19 @@ export class MenuManager{
                     break
                 }
                 case HistoryCommandType.SetDialog: {
-                    if(cmd.text){
+                    const text=cmd.text??(cmd.text_ln===undefined?"":this.translation.get(cmd.text_ln))
+                    if(text){
                         ShowElement(this.content.history_dialog_text,true)
+
+                        const name=cmd.name??(cmd.name_ln===undefined?"":this.translation.get(cmd.name_ln))
                         this.content.history_dialog_text.innerHTML = `
-                            ${cmd.name?`<p class="name">${cmd.name}</p>`:""}
+                            ${name?`<p class="name">${name}</p>`:""}
                             <p class="content"></p>
                         `
 
                         const content=this.content.history_dialog_text.querySelector(".content") as HTMLSpanElement
-                        await typewriter(
-                            content,
-                            cmd.text,
-                            cmd.typewriter_delay??20
-                        )
+
+                        await typewriter(content,text,cmd.typewriter_delay??20)
                         content.style.color = cmd.color ?? "white"
                         
                     }else{

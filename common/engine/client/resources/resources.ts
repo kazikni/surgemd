@@ -400,4 +400,9 @@ export class ResourcesManager {
             this.unload_sound(r)
         }
     }
+
+    async load_json(path:string,callback?:(msg:string)=>void):Promise<any>{
+        callback?.(path)
+        return await(await fetch(path)).json()
+    }
 }

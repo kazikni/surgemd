@@ -476,7 +476,8 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
     menu.campaign=cloneDeep(campaign)
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
-            campaign.charpters[c].levels[l]=JSON.parse(await fs.read_file(campaign.charpters[c].levels[l]))
+            const txt=await fs.read_file(campaign.charpters[c].levels[l]+"/level.json")
+            campaign.charpters[c].levels[l]=JSON.parse(txt)
         }
     }
     const play_subtabs={
@@ -486,13 +487,11 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
         "replays":{
             generate: (parent, manager) => {
                 parent.innerHTML = `
-                    <h2>Play Replay</h2>
-
-                    <div class="replay-upload background-menu-blue">
-                        <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
-                        <button class="btn-green" id="btn-load-replay">Load Replay</button>
-                    </div>
-                `
+                <h2>Play Replay</h2>
+                <div class="replay-upload background-menu-blue">
+                    <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
+                    <button class="btn-green" id="btn-load-replay">Load Replay</button>
+                </div>`
 
                 const input = parent.querySelector("#replay-file-input") as HTMLInputElement
                 const btn = parent.querySelector("#btn-load-replay") as HTMLButtonElement

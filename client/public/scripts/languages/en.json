@@ -147,6 +147,18 @@
                 "backpack":"Increases inventory capacity."
             }
         },
+        "characters":{
+            "nick":"Nick",
+            "justin":"Justin",
+            "shelly":"Shelly",
+            "Victoria":"Victoria",
+
+            "nick_mom":"Nick (Mom)",
+            "nick_dad":"Nick (Dad)",
+
+            "shelly_mom":"Shelly (Mom)",
+            "shelly_dad":"Shelly (Dad)"
+        },
         "killfeed":{
             "join":"${player} Joined",
             "kill":{

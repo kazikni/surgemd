@@ -37,7 +37,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
 
     happening:boolean=false
 
-    constructor(renderer:Renderer,language:TranslationManager=new TranslationManager({code:"none",name:"none",values:{}}),objects:Array<new ()=>GObject2D>=[]){
+    constructor(renderer:Renderer,language:TranslationManager=new TranslationManager(),objects:Array<new ()=>GObject2D>=[]){
         super(60,objects)
 
         this.renderer=renderer

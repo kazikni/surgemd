@@ -53,6 +53,9 @@ export interface LevelDefinition{
         location: string
         date:string
     }
+    cutscenes?:{
+        begin?:string
+    }
     mode:LevelMode
     deadzone?:{
         stage?:number
@@ -67,16 +70,5 @@ export interface LevelDefinition{
     definitions?:{
         enemies?:Record<string,EnemyDef>
         buildings?:Record<string,JSONBuildingDef>
-    }
-    begin?:{
-        history?:HistoryCommand[]
-    }
-    end?:{
-        history?:HistoryCommand[]
-        next?:{
-            type:"level"
-            charpter:number
-            level:number
-        }
     }
 }

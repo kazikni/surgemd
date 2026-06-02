@@ -207,33 +207,52 @@ export interface Language {
     values: Record<string, any>
     all_values?: string
 }
+export interface LanguageLayer{
+    tag:string
+    language:Language
+}
 export class TranslationManager {
-    private _language: Language
-    default_language?: Language
+    private language_layers: LanguageLayer[] = []
+    private default_layers: LanguageLayer[] = []
+    constructor() {
 
-    constructor(language: Language, defaultLanguage?: Language) {
-        this._language = language
-        this.default_language = defaultLanguage
     }
-    setLanguage(language: Language) {
-        this._language = language
+    load_language(language:Language,tag:string){
+        this.language_layers.push({
+            tag,
+            language
+        })
     }
-    setDefaultLanguage(language: Language) {
-        this.default_language = language
+    load_default_language(language:Language,tag:string){
+        this.default_layers.push({
+            tag,
+            language
+        })
     }
-    getLanguage(): Language {
-        return this._language
+    clear(tag:string){
+        this.language_layers=this.language_layers.filter(v=>v.tag!==tag)
+        this.default_layers=this.default_layers.filter(v=>v.tag!==tag)
     }
-    get(key: string, replace: Record<string, string> = {}): string {
-        let value = this._getFromLang(this._language, key)
-        if ((value === undefined || typeof value !== "string") && this.default_language) {
-            value = this._getFromLang(this.default_language, key)
+    get(key:string,replace:Record<string,string>={}){
+        let value=this.get_value(this.language_layers,key)
+        if(value===undefined){
+            value=this.get_value(this.default_layers,key)
         }
-        if (value === undefined || typeof value !== "string") {
-            console.warn(`[TranslationManager] Missing translation for "${key}"`)
+        if(typeof value!=="string"){
+            console.warn(`[TranslationManager] Missing translation "${key}"`)
             return key
         }
-        return this._interpolate(value, replace)
+        return this._interpolate(value,replace)
+    }
+    private get_value(layers:{tag:string,language:Language}[],key:string){
+        for(let i=layers.length-1;i>=0;i--){
+            const value=this._getFromLang(layers[i].language,key)
+            if(value!==undefined){
+                return value
+            }
+        }
+
+        return undefined
     }
     private _getFromLang(lang: Language, key: string): any {
         if (lang.all_values !== undefined) {

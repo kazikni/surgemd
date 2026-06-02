@@ -12,6 +12,7 @@ export interface DeadZoneUpdate{
     radius:number
     new_position:Vec2
     new_radius:number
+    timer:number
 }
 export interface AmbientData{
     date:KDate
@@ -33,15 +34,16 @@ function encode_general_update(stream:NetStream,up:GeneralUpdate){
     )
     if(up.deadzone){
         stream.writeUint8(up.deadzone.state)
-        stream.writeFloat(up.deadzone.radius,0,3000,3)
-        stream.writeFloat(up.deadzone.new_radius,0,3000,3)
-        stream.writePos2(up.deadzone.position)
-        stream.writePos2(up.deadzone.new_position)
+        .writeFloat(up.deadzone.radius,0,3000,3)
+        .writeFloat(up.deadzone.new_radius,0,3000,3)
+        .writePos2(up.deadzone.position)
+        .writePos2(up.deadzone.new_position)
+        .writeUint16(Math.floor(up.deadzone.timer))
     }
     if(up.ambient!==undefined){
         stream.writeKDate(up.ambient.date)
-        stream.writeFloat(up.ambient.rain,0,1,1)
-        stream.writeFloat(up.ambient.thunder_storm,0,1,1)
+        .writeFloat(up.ambient.rain,0,1,1)
+        .writeFloat(up.ambient.thunder_storm,0,1,1)
     }
     stream.writeArray(up.living_count,(i,_s)=>{
         stream.writeUint8(i)
@@ -62,7 +64,8 @@ function decode_general_update(stream:NetStream,up:GeneralUpdate){
             radius:stream.readFloat(0,3000,3),
             new_radius:stream.readFloat(0,3000,3),
             position:stream.readPos2(),
-            new_position:stream.readPos2()
+            new_position:stream.readPos2(),
+            timer:stream.readUint16(),
         }
     }
     if(ambient){

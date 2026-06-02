@@ -124,6 +124,7 @@ export class DeadZoneManager {
         old_radius:100,
         position:v2.zero(),
         radius:100,
+        timer:0,
         state:DeadZoneState.Deenabled
     }
     stages: DeadZoneStage[] = []
@@ -228,6 +229,7 @@ export class DeadZoneManager {
         if(!this.running||this.state.state===DeadZoneState.Deenabled) return
 
         if(this.state.state!==DeadZoneState.Finished){
+            this.state.timer=Math.max(Math.floor(this.duration-this.timer),0)
             this.timer += dt*(this.config.timeSpeed ?? 1)
             const t = Numeric.clamp(this.timer / this.duration,0,1)
             if(this.state.state === DeadZoneState.Advancing){

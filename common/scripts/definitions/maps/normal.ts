@@ -118,7 +118,6 @@ export const NormalMap:MapDef={
                         variation:15,
                         passes:1,
                         points:10,
-
                     },
                 ],
                 rivers:{

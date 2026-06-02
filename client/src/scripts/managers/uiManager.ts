@@ -8,7 +8,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, Numeric, ShowElement, v2, Vec2 } from "common/engine/client.ts";
+import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, format_time, HideElement, isMobile, Numeric, ShowElement, v2, Vec2 } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -25,7 +25,8 @@ import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { DeadZoneState, DeadZoneUpdate, GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { AdditionalInfoModule } from "../uim/additional_info.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -81,8 +82,6 @@ export class UiManager{
         tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
-
-        living_count:document.querySelector("#living-count-container") as HTMLSpanElement,
     }
 
     mobile_content={
@@ -98,7 +97,6 @@ export class UiManager{
         id:number
         kills:number
     }
-
     money:number=0
 
     constructor(game:Game){
@@ -124,6 +122,7 @@ export class UiManager{
         this.game.ui_manager.add(new EquipmentModule())
         this.game.ui_manager.add(new MinimapModule())
         this.game.ui_manager.add(new InformationBoxModule())
+        this.game.ui_manager.add(new AdditionalInfoModule())
 
         this.update_content_creators([
             {
@@ -298,26 +297,8 @@ export class UiManager{
                 player:jp.leader
             })
         }
-        
     }
-    living_count:number[]=[]
-    update_living_count(count:number[]){
-        if(count.length===this.living_count.length){
-            let ok=true
-            for(const i in count){
-                if(this.living_count[i]!==count[i]){
-                    ok=false
-                }
-            }
-            if(ok)return
-        }
-        this.living_count=count
-        this.content.living_count.innerHTML=`
-<span class="span-text-base">${count[0]}</span>
-        `
-    }
-    proccess_general_update(gu:GeneralUpdate){
-        this.update_living_count(gu.living_count)
+    proccess_general_update(up:GeneralUpdate){
     }
     state:HelpGuiState={
         driving:false,
@@ -392,7 +373,7 @@ export class UiManager{
                             elem.classList.add("killfeed-message-negative")
                         }else if(msg.killer.id===this.game.active_entity?.id){
                             elem.classList.add("killfeed-message-good")
-                            this.game.ui_manager.signal("info-kill",`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`)
+                            this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                         }
 
                         if(this.leader&&msg.killer.id===this.leader.id){

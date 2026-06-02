@@ -732,3 +732,20 @@ export async function importFromString(code: string) {
     }
 }
 export const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)))
+export function format_time(time:number):string{
+    time = Math.floor(time)
+    const days = Math.floor(time / 86400)
+    const hours = Math.floor((time % 86400) / 3600)
+    const minutes = Math.floor((time % 3600) / 60)
+    const seconds = time % 60
+    if(days > 0){
+        return `${days}:${hours.toString().padStart(2,"0")}d`
+    }
+    if(hours > 0){
+        return `${hours}:${minutes.toString().padStart(2,"0")}h`
+    }
+    if(minutes > 0){
+        return `${minutes}:${seconds.toString().padStart(2,"0")}m`
+    }
+    return `${seconds}s`
+}

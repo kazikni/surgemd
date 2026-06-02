@@ -656,6 +656,7 @@ export class Game extends ClientGame<GameObject>{
             this.started=false
         }
         this.ui.proccess_general_update(up)
+        this.ui_manager.signal("general_update",up)
     }
     process_private(priv:PrivateUpdate){
         if(priv.active_entity.dirty){

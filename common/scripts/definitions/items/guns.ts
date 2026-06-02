@@ -11,6 +11,7 @@ export type GunDef={
 
     fire_delay:number
     switch_delay?:number
+    switch_multiply?:number
 
     spread?:number
     jitter_radius?:number
@@ -400,7 +401,8 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.2,
+            switch_delay:0.1,
+            switch_multiply:1.5,
 
             gas_particles:GasParticles.shotgun,
             case_particle:{
@@ -566,7 +568,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.pistol("pfeifer_zeliska","308sub",{
             rank:ItemRank.S,
 
-            fire_delay:1.4,
+            fire_delay:1.5,
             switch_delay:0.1,
             spread:0.7,
             fire_mode:FireMode.Single,
@@ -591,8 +593,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:7,
             },
             recoil:{
-                duration:1.45,
-                speed:0.25
+                duration:1.5,
+                speed:0.3
             },
             dual:{
                 dual_offset:0.2,
@@ -779,7 +781,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.sniper("kar98k","762mm",{
-            fire_delay:1.2,
+            fire_delay:1.3,
             spread:0.3,
 
             ammo_spawn:{
@@ -790,7 +792,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:bullets_factory.sniper(1)
             },
             reload:{
-                delay:0.9,
+                delay:1,
                 capacity:5,
                 extended_capacity:7,
                 reload_count:1,
@@ -799,7 +801,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 },
             },
             recoil:{
-                duration:1.25,
+                duration:1.4,
                 speed:0.5
             },
 
@@ -808,7 +810,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.sniper("awp","762mm",{
-            fire_delay:1.3,
+            fire_delay:1.5,
             spread:0.3,
 
             ammo_spawn:{
@@ -824,7 +826,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:10,
             },
             recoil:{
-                duration:1.35,
+                duration:1.6,
                 speed:0.6
             },
             assets:{
@@ -834,7 +836,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.sniper("awms","308sub",{
             rank:ItemRank.S,
 
-            fire_delay:1.4,
+            fire_delay:1.75,
             spread:0.5,
 
             ammo_spawn:{
@@ -858,14 +860,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:6,
             },
             recoil:{
-                duration:1.45,
+                duration:1.85,
                 speed:0.3
             },
         }),
         guns_factory.sniper("blr81","556mm",{
             rank:ItemRank.B,
 
-            fire_delay:0.8,
+            fire_delay:1,
             spread:0.3,
 
             ammo_spawn:{
@@ -881,14 +883,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:5
             },
             recoil:{
-                duration:0.9,
-                speed:0.6
+                duration:1,
+                speed:0.75
             },
         }),
         guns_factory.sniper("model94","45acp",{
             rank:ItemRank.B,
 
-            fire_delay:0.8,
+            fire_delay:1,
             spread:0.5,
 
             ammo_spawn:{
@@ -896,7 +898,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.8)
+                def:bullets_factory.sniper(0.75)
             },
             reload:{
                 delay:0.6,
@@ -905,8 +907,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 reload_count:1,
             },
             recoil:{
-                duration:1,
-                speed:0.6
+                duration:0.9,
+                speed:0.75
             },
         }),
         guns_factory.shotgun("m870","12g",{
@@ -1053,7 +1055,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.8)
+                def:bullets_factory.sniper(0.75)
             },
 
             reload:{

@@ -233,6 +233,8 @@ export class GunItem extends GunItemBase implements LItem{
     override load(): void {
         if(this.def.switch_delay&&this.use_delay<=this.def.switch_delay){
             this.use_delay=this.def.switch_delay
+        }else if(this.def.switch_multiply){
+            this.use_delay=Math.min(this.def.fire_delay,this.use_delay*this.def.switch_multiply)
         }
     }
     override unload(): void {

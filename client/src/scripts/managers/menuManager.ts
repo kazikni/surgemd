@@ -7,6 +7,8 @@ import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+import { PlayerStatus } from "common/scripts/others/constants.ts";
+import { FinalScreenDef } from "common/scripts/config/final_screen.ts";
 type PhaseIntroConfig = {
     location: string
     name: string

@@ -243,9 +243,8 @@ export class Human extends MovingBody{
         }
     }
 
-    apply_score(type:number,amount:number){
-        if(this.game.modeManager.is_leader(this))amount*=this.game.modeManager.rules.score.leader_multiplier
-        this.status.score+=amount
+    apply_score(type:number,amount:number,multiplier:number=1){
+        this.status.score+=amount*multiplier
     }
     get_reflect_segment(): [Vec2, Vec2] {
         const rot = this.physical_data.rotation
@@ -1097,7 +1096,7 @@ export class Human extends MovingBody{
             }
             if(!this.health_data.downed){
                 this.status.damage_taken+=damage
-                this.apply_score(ScoreApplyerType.DamageTaken,damage*this.game.modeManager.rules.score.damage_taken_penalty)
+                this.apply_score(ScoreApplyerType.DamageTaken,damage*-this.game.modeManager.rules.score.damage_taken_penalty)
             }
         }
         if (this.health_data.health === 0) {

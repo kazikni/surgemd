@@ -91,7 +91,6 @@
         position: absolute;
         color: #fff;
         font-style: italic;
-        z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
@@ -119,7 +118,6 @@
         position: absolute;
         color: #fff;
         font-style: italic;
-        z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
@@ -538,7 +536,6 @@
     top: 360px;
     right: 0px;
     padding: 15px;
-    color: var(--ui-theme-primary);
     #leader-container-icon{
         background-image: url("/img/menu/icons/aim.svg");
         background-size: cover;

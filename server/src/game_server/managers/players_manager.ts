@@ -6,7 +6,7 @@ import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameConstants, HumanStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
+import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
 import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -104,7 +104,7 @@ export class PlayerClient extends PlayerConnManager{
         }
         return up
     }
-    send_game_over(status:(HumanStatus&{id:number})[]=[],win:boolean=false,eliminated_by:number=0){
+    send_game_over(status:PlayerStatus[]=[],win:boolean=false,eliminated_by:number=0){
         if(!this.human||!(this.human instanceof Player))return
 
         const p=new GameOverPacket()
@@ -112,6 +112,9 @@ export class PlayerClient extends PlayerConnManager{
         p.status.win=win
         if(!p.status.win){
             p.status.eliminator=eliminated_by
+        }
+        if(this.game.leaderboards.length>0){
+            p.status.leaderboards=this.game.leaderboards
         }
 
         this.client!.emit(p)

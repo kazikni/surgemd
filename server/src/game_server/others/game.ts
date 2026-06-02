@@ -34,6 +34,7 @@ import { PingData } from "common/scripts/packets/update_packet.ts";
 import { Plane } from "../objects/plane.ts";
 import { DecalDef, DecalTint } from "common/scripts/definitions/objects/decals.ts";
 import { Decal } from "../objects/decals.ts";
+import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 export interface GameData {
     living_count: number[]
 
@@ -137,6 +138,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
 
     replay?:ReplayRecorder
+
+    leaderboards:LeaderboardPlayer[]=[]
     constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
         super(100,id,clients,[
             Human,

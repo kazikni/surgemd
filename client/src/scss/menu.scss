@@ -181,7 +181,6 @@
 }
 #title-section {
     width: 500px;
-    z-index: 1;
 
     user-select: none;
     margin-bottom: 100px;
@@ -545,7 +544,7 @@
         animation:
             text-gameover-rotate alternate 3s ease-in-out infinite,
             text-gameover-scale 5s alternate ease-in-out infinite,
-            text-gameover-translate 30s alternate ease-in-out infinite;
+            text-gameover-translate 10s alternate ease-in-out infinite;
     }
     pointer-events: all;
     @include main.medium_screen {
@@ -602,15 +601,21 @@
     100%{transform:translate(0,0) rotate(-20deg) scale(1)}
 }
 @keyframes text-gameover-translate{
-    0%    { transform:translate(-10%,-10%) }
-    25%   { transform:translate(-10%,10%) }
-    50%   { transform:translate(10%,10%) }
-    75%   { transform:translate(10%,-10%) }
-    100%    { transform:translate(-10%,10%) }
+    0%   { transform:translate(-10px,-2px); }
+    10%  { transform:translate(6px,4px); }
+    20%  { transform:translate(-8px,1px); }
+    30%  { transform:translate(10px,-3px); }
+    40%  { transform:translate(-4px,6px); }
+    50%  { transform:translate(8px,-7px); }
+    60%  { transform:translate(-10px,3px); }
+    70%  { transform:translate(4px,-5px); }
+    80%  { transform:translate(-7px,8px); }
+    90%  { transform:translate(9px,-1px); }
+    100% { transform:translate(-10px,2px); }
 }
 @keyframes text-gameover-rotate{
-    0%   { rotate:1deg }
-    100% { rotate:-1deg }
+    0%   { rotate:3deg }
+    100% { rotate:-3deg }
 }
 @keyframes text-gameover-scale{
     0%   { scale:0.95 }
@@ -869,5 +874,130 @@
             border-color: #07aaeeaa;
             box-shadow: 0 0 20px #07aaeeaa;
         }
+    }
+}
+#final-screen{
+    @extend .span-text-base;
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    user-select: none;
+    transition: opacity 1s ease;
+    z-index: 11;
+    .final-score{
+        transition: opacity ease-in-out 0.2s;
+    }
+    .final-screen-layer-image{
+        position: absolute;
+        background-size: cover;
+    }
+    .score-float{
+        position:absolute;
+
+        left:20px;
+        bottom:10px;
+
+        color:#fff;
+
+        font-size:100px;
+        font-style: italic;
+
+        animation: text-score-float 1s alternate ease-in-out infinite;
+    }
+    .score-ap{
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        position: absolute;
+        left: 20px;
+        bottom: 70px;
+        max-height: 600px;
+        min-height: 600px;
+        .score-row{
+            font-size: 30px;
+            transition: font-size ease-in-out 0.2s, opacity ease-in-out 0.2s;
+            opacity: 1;
+        }
+        .last{
+            font-size: 0px;
+            opacity: 0;
+        }
+        font-style: italic;
+    }
+    @keyframes text-score-float {
+        0%{
+            transform: translate(-5%,-5%) rotate(-1deg);
+        }
+        100%{
+            transform: translate(5%,5%) rotate(1deg);
+        }
+    }
+    .final-leaderboard{
+        border-left:4px solid #ffffff22;
+        background:#0004;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+
+        position:absolute;
+
+        width: 800px;
+        height: 700px;
+        padding: 40px;
+        left:50%;
+        top:50%;
+
+        transform:translate(-50%,-50%);
+
+        transition: opacity ease-in-out 0.2s;
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+    .leaderboard-row{
+        display:flex;
+        align-items:center;
+        gap:20px;
+        min-width:500px;
+        padding:12px 20px;
+        background:#0004;
+        border-left:4px solid #fff2;
+        transition:
+            transform .2s ease,
+            opacity .2s ease,
+            font-size .2s ease,
+            background .2s ease;
+        .place{
+            width:70px;
+            border-right: 2px solid #fff2;
+        }
+        .name{
+            flex:1;
+            border-right: 2px solid #fff2;
+        }
+        .status{
+            font-size:1.2em;
+            width: 70px;
+            border-right: 2px solid #fff2;
+        }
+    }
+    .leaderboard-row.hidden{
+        opacity:0;
+        transform:translateX(-80px);
+    }
+    .leaderboard-row.current{
+        transform:translateX(20px);
+        background:#ffffff10;
+        border-left-color:var(--fs-accent);
+    }
+    .leaderboard-row.winner{
+        border-left-color:var(--ui-theme-special);
+    }
+    .leaderboard-row.leaderboard-header{
+        border-left-color:var(--fs-accent);
+        margin-bottom: 5px;
     }
 }

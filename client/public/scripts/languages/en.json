@@ -377,6 +377,14 @@
             "sa":"South America",
             "eu":"Europe",
             "as":"Asia"
+        },
+        "score_applier":{
+            "0":"Kill",
+            "1":"Win",
+            "2":"Rank",
+            "3":"Damage taken",
+            "4":"Damage Dealth",
+            "5":"Kill Leader"
         }
     }
 }

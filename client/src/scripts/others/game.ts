@@ -10,7 +10,7 @@ import { Human } from "../objects/human.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { HumanStatus, Layers, zIndexes } from "common/scripts/others/constants.ts";
+import { HumanStatus, Layers, PlayerStatus, zIndexes } from "common/scripts/others/constants.ts";
 import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -29,7 +29,7 @@ import { MinimapManager } from "../managers/miniMapManager.ts";
 import { MapApp } from "../apps/map.ts";
 import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
-import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
+import { GameOverPacket, GameOverStatus } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
 import { Creature } from "../objects/creature.ts";
@@ -44,6 +44,8 @@ import {building_from_json} from "common/scripts/definitions/objects/buildings_b
 import { load_kspr } from "common/engine/core/lang/kspx.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
+import { FinalScreenManager } from "../managers/final_screen.ts";
+import { city_final } from "common/scripts/config/final_screen.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -79,6 +81,7 @@ export class Game extends ClientGame<GameObject>{
     ambient:AmbientManager
     device:GameDeviceManager
     minimap:MinimapManager
+    final_screen:FinalScreenManager
 
     active_entity?:Human
     active_entity_id?:number
@@ -151,6 +154,7 @@ export class Game extends ClientGame<GameObject>{
         this.ambient=new AmbientManager(this)
         this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
+        this.final_screen=new FinalScreenManager(this)
 
         this.cam2d.addObject(this.terrain_gfx)
         this.cam2d.addObject(this.grid_gfx)
@@ -461,7 +465,15 @@ export class Game extends ClientGame<GameObject>{
 
         this.watcher?.play?.()
     }
-    async end_level(kills:number=0){
+    async show_final_screen(game_over:GameOverStatus){
+        this.final_screen.set_final_screen(city_final)
+        await this.final_screen.show_final_screen()
+        await this.final_screen.show_status(game_over.status[0] as PlayerStatus)
+        if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)
+        await this.final_screen.hide_final_screen()
+
+    }
+    async end_level(game_over:GameOverStatus){
         /*if(this.level?.end&&this.fs){
             if(this.level?.end?.history){
                 await this.menu.show_history(this.level.end.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
@@ -571,6 +583,7 @@ export class Game extends ClientGame<GameObject>{
         this.ui.update(dt)
         this.device.tick(dt)
         this.dead_zone.tick(dt)
+        this.final_screen.update(dt)
 
         if (this.cam_type === 1) {
             const move = this.input.movement
@@ -735,16 +748,17 @@ export class Game extends ClientGame<GameObject>{
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
         })
-        client.on("gameover",(p:GameOverPacket)=>{
+        client.on("gameover",async(p:GameOverPacket)=>{
             this.game_over = true
-            this.ui.show_game_over(p)
+            await this.show_final_screen(p.status)
             if(this.level){
                 if(p.status.win){
-                    this.end_level(p.status.status[0]?.kills??0)
+                    await this.end_level(p.status)
                 }else{
-                    this.on_die_level(p)
+                    await this.on_die_level(p)
                 }
             }
+            this.ui.show_game_over(p)
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
             if(!this.game_over)this.close_game()

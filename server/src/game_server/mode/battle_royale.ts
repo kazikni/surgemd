@@ -1,4 +1,4 @@
-import { ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
@@ -155,6 +155,12 @@ export class BattleRoyaleSolo extends ModeManager{
         }
     }
     override on_player_die(p:Player){
+        this.game.leaderboards.push({
+            id:p.id,
+            kills:p.status.kills,
+            score:p.status.score,
+            rank:this.game.players.living_players.length+1,
+        })
         if(p.conn){
             p.conn.send_game_over([p.status],false,p.killed_by?.id)
         }
@@ -174,7 +180,15 @@ export class BattleRoyaleSolo extends ModeManager{
         this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
         for(const p of this.game.players.living_players){
             this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward)
-            if(p.conn)p.conn.send_game_over(p.team_data.group?.get_status()??[p.status],true)
+            this.game.leaderboards.push({
+                id:p.id,
+                kills:p.status.kills,
+                score:p.status.score,
+                rank:1,
+            })
+        }
+        for(const p of this.game.players.living_players){
+            if(p.conn)p.conn.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
         }
     }
 
@@ -253,7 +267,7 @@ export class BattleRoyaleGroup extends BattleRoyaleSolo{
     override on_player_die(p:Player){
         super.on_player_die(p)
         if(p.conn){
-            p.conn.send_game_over(p.team_data.group?.get_status()??[p.status],false,p.killed_by?.id)
+            p.conn.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],false,p.killed_by?.id)
         }
         if(this.game.started){
             this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward)

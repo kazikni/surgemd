@@ -12,7 +12,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { HumanStatus, PlayerStatus } from "common/scripts/others/constants.ts";
+import { PlayerStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -23,7 +23,7 @@ export abstract class PlayerConnManager{
     constructor(game:Game){
         this.game=game
     }
-    abstract send_game_over(status:(HumanStatus&{id:number})[],win?:boolean,eliminated_by?:number):void;
+    abstract send_game_over(status:PlayerStatus[],win?:boolean,eliminated_by?:number):void;
     set_spectator(p:Player) {
         this.spectating=true
         this.human=p
@@ -95,12 +95,19 @@ export class Player extends Human{
             score_applyer:[]
         }
     }
-    override apply_score(type: number, amount: number): void {
-        super.apply_score(type,amount)
-        this.status.score_applyer.push({
-            amount:amount,
-            type:type
-        })
+    override apply_score(type: number, amount: number,multiplier:number=1): void {
+        if(this.game.modeManager.is_leader(this))multiplier*=this.game.modeManager.rules.score.leader_multiplier
+        super.apply_score(type,amount,multiplier)
+        if(amount>0)amount*=multiplier
+        if(this.status.score_applyer.length>0&&this.status.score_applyer[this.status.score_applyer.length-1].type===type&&this.status.score_applyer[this.status.score_applyer.length-1].multiplier===multiplier){
+            this.status.score_applyer[this.status.score_applyer.length-1].amount+=amount
+        }else{
+            this.status.score_applyer.push({
+                amount:amount,
+                type:type,
+                multiplier:multiplier
+            })
+        }
     }
     override set_preset(preset: HumanDefinition|undefined): void {
         if(!preset)return

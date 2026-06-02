@@ -222,6 +222,7 @@ export enum ScoreApplyerType{
 export type ScoreApplyer={
     type:number
     amount:number
+    multiplier:number
 }
 export interface HumanStatus{
     damage:number

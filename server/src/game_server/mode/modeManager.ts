@@ -5,8 +5,6 @@ import { Player } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
-import { DamageParams } from "../others/utils.ts";
-import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
 
 export interface GameRules{
     humans:{
@@ -136,7 +134,7 @@ export abstract class ModeManager{
             kill_reward:100,
 
             kill_leader:100,
-            leader_multiplier:1.1
+            leader_multiplier:1.2
         },
         leader:{
             kills_min:3

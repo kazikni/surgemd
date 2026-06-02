@@ -3,7 +3,7 @@ import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
-import { HistoryCommand } from "./history.ts";
+import { FinalScreenDef } from "./final_screen.ts"
 
 export type HumanDefinition={
     name?:string

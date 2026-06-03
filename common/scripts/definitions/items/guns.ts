@@ -535,10 +535,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:16,
+                    damage:17,
                     range:130,
                     falloff:0.8,
-                    speed:47,
+                    speed:50,
                     tracer:tracers.large
                 }
             },

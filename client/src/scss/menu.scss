@@ -956,11 +956,10 @@
         transition: opacity ease-in-out 0.2s;
         overflow-x: hidden;
         overflow-y: scroll;
-        /*.leaderboards-players{
+        .leaderboards-players{
             display: flex;
-            flex-direction: column;
-            gap:5px;
-        }*/
+            flex-direction: column-reverse;
+        }
     }
     .leaderboard-row{
         display:flex;

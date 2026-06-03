@@ -11,6 +11,7 @@ import { JSONBuildingDef } from "../objects/buildings_base.ts"
 
 import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
 import { type Game } from "../../../../server/src/game_server/others/game.ts";
+import { MapRegion } from "../../packets/map_packet.ts";
 export interface Aditional{
     withammo:boolean
 }
@@ -82,13 +83,17 @@ export interface TerrainShapeDef {
 
     floors:TerrainLayerDef[]
 }
+export interface MapStructureDef extends TerrainShapeDef{
+    spawn?:MapObjectGeneration[]
+    region?:MapRegion
+}
 export interface IslandDef{
     size:Vec2
     spawn?:MapObjectGeneration[]
+    structures?:MapStructureDef[]
     terrain:{
         base:FloorType
         base_tint?:number
-        additional?:TerrainShapeDef[]
         rivers?:{
             defs:RiversDef[]
             expansion?:number

@@ -388,7 +388,7 @@ export class Obstacle extends StaticBody{
                 this.health_data.dead=false
                 this.update_frame()
             }else if(!this.health_data.dead){
-                if(this.emitter_1&&this.health_data.health<=0.4){
+                if(this.emitter_1&&this.health_data.health<=0.5){
                     this.emitter_1.enabled=true
                 }
             }

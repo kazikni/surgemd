@@ -47,7 +47,7 @@ export const Floors: Record<FloorType, FloorDef> = {
         rolling_resistance:0,
     },
     [FloorType.Snow]: {
-        default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
+        default_color: 0xbec8cf,floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_snow_1","footstep_snow_2"],
         footstep_decal:true,
         skin_apply:"snow",

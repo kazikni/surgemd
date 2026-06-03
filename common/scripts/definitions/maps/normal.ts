@@ -78,13 +78,59 @@ export const NormalMap:MapDef={
                 {def:"boat",count:5},
 
                 {def:"sillo",count:10},
-                {def:map_spawns.crates,count:500,spawn:Spawn.grass_only},
-                {def:"oak_tree",count:1000,spawn:Spawn.grass_only},
-                {def:map_spawns.rocks,count:500,spawn:Spawn.grass_only},
-                {def:"bush",count:200,spawn:Spawn.grass_only},
-                {def:"barrel",count:100,spawn:Spawn.grass_only},
+                {def:map_spawns.crates,count:400},
+                {def:"oak_tree",count:900},
+                {def:map_spawns.rocks,count:500},
+                {def:"bush",count:300},
+                {def:"barrel",count:150},
 
-                {def:"normal_loot",count:50}
+                {def:"normal_loot",count:100}
+            ],
+            structures:[
+                {
+                    floors:[],
+                    radius:60,
+                    variation:15,
+                    passes:1,
+                    points:10,
+                    spawn:[
+                        {def:"oak_tree",count:400,spawn:Spawn.grass_only},
+                    ],
+                    region:{
+                        name:"Soul Forest",
+                        position:v2(0,0)
+                    }
+                },
+                {
+                    floors:[
+                        {
+                            type:FloorType.Water,
+                            padding:0,
+                            spacing:2,
+                            variation:2,
+                        },
+                        {
+                            type:FloorType.Sand,
+                            padding:10,
+                            spacing:2,
+                            variation:2,
+                        },
+                        {
+                            type:FloorType.Grass,
+                            padding:15,
+                            spacing:2,
+                            variation:2,
+                        },
+                    ],
+                    radius:100,
+                    variation:15,
+                    passes:1,
+                    points:10,
+                    region:{
+                        name:"Sub Island",
+                        position:v2(0,0)
+                    }
+                },
             ],
             terrain:{
                 base:FloorType.Water,
@@ -92,34 +138,6 @@ export const NormalMap:MapDef={
                 passes:3,
                 points:6,
                 variation:60,
-                additional:[
-                    {
-                        floors:[
-                            {
-                                type:FloorType.Water,
-                                padding:0,
-                                spacing:2,
-                                variation:2,
-                            },
-                            {
-                                type:FloorType.Sand,
-                                padding:10,
-                                spacing:2,
-                                variation:2,
-                            },
-                            {
-                                type:FloorType.Grass,
-                                padding:15,
-                                spacing:2,
-                                variation:2,
-                            },
-                        ],
-                        radius:100,
-                        variation:15,
-                        passes:1,
-                        points:10,
-                    },
-                ],
                 rivers:{
                     divisions:50,
                     spawn_floor:1,
@@ -266,7 +284,7 @@ export const NormalCounterMD:CounterMapDef={
 export const SnowBiome:BiomeDef={
     floors:{
         [FloorType.Sand]:{
-            color:0x8a979e
+            color:0x505659
         }
     },
     biome_skin:"snow",

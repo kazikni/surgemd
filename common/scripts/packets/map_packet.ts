@@ -3,6 +3,10 @@ import { type BiomeDef, type BiomeFloor } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { Floor } from "../others/terrain.ts";
+export interface MapRegion{
+    name:string
+    position:Vec2
+}
 export interface MapObjectObstacle{
     type:0,
     def:number
@@ -19,6 +23,7 @@ export interface MapConfig{
     seed:number
     biome:BiomeDef
     objects:MapObjectEncode[]
+    regions:MapRegion[]
     buildings?:JSONBuildingDef[]
     assets:string[]
 }
@@ -75,7 +80,7 @@ function decode_biome(stream:NetStream):BiomeDef{
 export class MapPacket extends Packet{
     ID=6
     Name="map"
-    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],assets:[]}
+    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],assets:[],regions:[]}
     constructor(){
         super()
     }
@@ -107,6 +112,10 @@ export class MapPacket extends Packet{
         write_biome(this.map.biome,stream)
         stream.writeObjectAdvanced(this.map.buildings)
         .writeArray(this.map.assets??[],(v)=>stream.writeString(v,1),1)
+        .writeArray(this.map.regions,(v)=>{
+            stream.writeString(v.name,1)
+            .writePos2(v.position)
+        },1)
     }
     decode(stream: NetStream): void {
         this.map.terrain=stream.readArray(()=>{
@@ -144,5 +153,11 @@ export class MapPacket extends Packet{
         this.map.biome=decode_biome(stream)
         this.map.buildings=stream.readObjectAdvanced()
         this.map.assets=stream.readArray(()=>stream.readString(1),1)
+        this.map.regions=stream.readArray(()=>{
+            return {
+                name:stream.readString(1),
+                position:stream.readPos2()
+            }
+        },1)
     }
 }

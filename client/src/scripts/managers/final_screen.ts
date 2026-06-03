@@ -267,7 +267,7 @@ export class FinalScreenManager {
         const leaderboardPlayers = document.createElement("div")
         leaderboardPlayers.className = "leaderboards-players"
         this.leaderboardContainer.appendChild(leaderboardPlayers)
-        players.sort((a, b) => a.rank - b.rank)
+        players.sort((a, b) => b.rank-a.rank)
         const header = document.createElement("div");
         header.className = "leaderboard-row leaderboard-header";
         header.innerHTML = `
@@ -287,7 +287,7 @@ export class FinalScreenManager {
 
             row.className =
                 "leaderboard-row hidden" +
-                (player.rank === 1 ? " winner" : "");
+                (player.rank <= 1 ? " winner" : "");
 
             row.innerHTML = `
                 <span class="place">#${player.rank}</span>

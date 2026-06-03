@@ -158,7 +158,7 @@ export const island_final:FinalScreenDef={
                 bottom:50px;
                 height:50px;
                 opacity:50%;
-                filter: blur(4px);
+                filter: blur(1px);
             `,
             speed:0.13
         },
@@ -169,7 +169,7 @@ export const island_final:FinalScreenDef={
                 bottom:150px;
                 height:40px;
                 opacity:50%;
-                filter: blur(4px);
+                filter: blur(1px);
             `,
             speed:0.12
         },
@@ -180,7 +180,7 @@ export const island_final:FinalScreenDef={
                 bottom:215px;
                 height:35px;
                 opacity:50%;
-                filter: blur(4px);
+                filter: blur(1px);
             `,
             speed:0.11
         },
@@ -191,7 +191,7 @@ export const island_final:FinalScreenDef={
                 bottom:295px;
                 height:30px;
                 opacity:50%;
-                filter: blur(4px);
+                filter: blur(1px);
             `,
             speed:0.1
         },

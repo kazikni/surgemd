@@ -1,10 +1,9 @@
 import { type Game } from "../others/game.ts"
 import { ColorM,hash,Hitbox2D, HitboxType2D,v2,v2m,Vec2 } from "common/engine/client.ts"
 import { Floors,FloorType } from "common/scripts/others/terrain.ts"
-import { MapConfig, MapObjectObstacle } from "common/scripts/packets/map_packet.ts"
+import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_packet.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
-
 export interface MinimapTile {
     position:Vec2
     image:HTMLImageElement
@@ -80,6 +79,9 @@ export class MinimapManager {
         for(const obj of objects){
             this.draw_object(obj,minimap_min)
         }
+        for(const r of this.config.regions){
+            this.draw_region(r,minimap_min)
+        }
 
         const image=new Image()
         image.src=this.canvas.toDataURL("image/png")
@@ -89,6 +91,28 @@ export class MinimapManager {
             image,
             loaded:true
         })
+    }
+    get_region(){
+        for(const region of this.config.regions){
+            return region
+        }
+    }
+    draw_region(region:MapRegion,cam_position:Vec2){
+        const pos=v2.scale(region.position,this.meter_size)
+        pos.x-=cam_position.x
+        pos.y-=cam_position.y
+        if(pos.x<-200||pos.y<-50||pos.x>this.canvas.width+200||pos.y>this.canvas.height+50)return
+        const ctx=this.ctx
+        ctx.save()
+        ctx.textAlign="center"
+        ctx.textBaseline="middle"
+        ctx.font="bold 80px Arial"
+        ctx.lineWidth=8
+        ctx.strokeStyle="rgba(0,0,0,0.7)"
+        ctx.strokeText(region.name,pos.x,pos.y)
+        ctx.fillStyle="rgba(255,255,255,0.8)"
+        ctx.fillText(region.name,pos.x,pos.y)
+        ctx.restore()
     }
     draw_grid(cam_position:Vec2){
         const ctx=this.ctx

@@ -114,7 +114,8 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
                         },
                     )
                 }
-                for(let i=0;i<100;i++){
+                const pc=500
+                for(let i=0;i<pc;i++){
                     let name="player-"+(i+1)
                     this.game.ui.players_name[i]={
                         badge:"",
@@ -125,7 +126,7 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
                         {
                             id:i,
                             kills:1,
-                            rank:100-i,
+                            rank:pc-i,
                             score:i*5
                         }
                     )

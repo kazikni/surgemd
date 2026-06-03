@@ -138,15 +138,15 @@ export const TundraMap:MapDef={
                 {def:"jeep",count:5},
                 {def:"bike",count:5},
 
-                {def:"tundra_crate",count:10},
-                {def:map_spawns.crates,count:190},
-
-                {def:"oak_tree",count:200},
-                {def:map_spawns.rocks,count:150},
+                {def:"tundra_crate",count:5},
+                {def:"copper_crate",count:20},
+                {def:map_spawns.crates,count:90},
+                {def:"oak_tree",count:150},
+                {def:map_spawns.rocks,count:100},
                 {def:"bush",count:100},
                 {def:"barrel",count:50},
 
-                {def:"normal_loot",count:100}
+                {def:"normal_loot",count:150}
             ],
             terrain:{
                 base:FloorType.Ice,
@@ -154,35 +154,6 @@ export const TundraMap:MapDef={
                 passes:3,
                 points:6,
                 variation:60,
-                additional:[
-                    {
-                        floors:[
-                            {
-                                type:FloorType.Ice,
-                                padding:0,
-                                spacing:2,
-                                variation:2,
-                            },
-                            {
-                                type:FloorType.Sand,
-                                padding:10,
-                                spacing:2,
-                                variation:2,
-                            },
-                            {
-                                type:FloorType.Snow,
-                                padding:15,
-                                spacing:2,
-                                variation:2,
-                            },
-                        ],
-                        radius:100,
-                        variation:15,
-                        passes:1,
-                        points:10,
-
-                    },
-                ],
                 rivers:{
                     divisions:50,
                     spawn_floor:1,
@@ -232,6 +203,34 @@ export const TundraMap:MapDef={
                     }
                 ]
             },
+            structures:[
+                {
+                    floors:[
+                        {
+                            type:FloorType.Ice,
+                            padding:0,
+                            spacing:2,
+                            variation:2,
+                        },
+                        {
+                            type:FloorType.Sand,
+                            padding:10,
+                            spacing:2,
+                            variation:2,
+                        },
+                        {
+                            type:FloorType.Snow,
+                            padding:15,
+                            spacing:2,
+                            variation:2,
+                        },
+                    ],
+                    radius:100,
+                    variation:15,
+                    passes:1,
+                    points:10,
+                },
+            ],
         }
     },
 }

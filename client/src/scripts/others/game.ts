@@ -45,7 +45,7 @@ import { load_kspr } from "common/engine/core/lang/kspx.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { FinalScreenManager } from "../managers/final_screen.ts";
-import { city_final } from "common/scripts/config/final_screen.ts";
+import { city_final, island_final } from "common/scripts/config/final_screen.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -466,7 +466,7 @@ export class Game extends ClientGame<GameObject>{
         this.watcher?.play?.()
     }
     async show_final_screen(game_over:GameOverStatus){
-        this.final_screen.set_final_screen(city_final)
+        this.final_screen.set_final_screen(island_final)
         await this.final_screen.show_final_screen()
         await this.final_screen.show_status(game_over.status[0] as PlayerStatus)
         if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)

@@ -1,235 +1,321 @@
-import { FinalScreenDef, FinalScreenLayer } from "common/scripts/config/final_screen.ts"
-import { HideElement,Numeric,ShowElement, sleep } from "common/engine/client.ts"
+import { FinalScreenDef, FinalScreenLayer, FinalScreenLayerType } from "common/scripts/config/final_screen.ts";
+import { HideElement, Numeric, ShowElement, sleep } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 
-interface FSLayer{
-    def:FinalScreenLayer
-    content:{
-        el:HTMLImageElement
-        x:number
-    }[]
+interface FSLayer {
+    def: FinalScreenLayer
+    content: (HTMLImageElement|HTMLDivElement)[]
 }
-export class FinalScreenManager{
-    root!:HTMLDivElement
 
-    viewport!:HTMLDivElement
+export class FinalScreenManager {
+    root!: HTMLDivElement
 
-    background!:HTMLDivElement
-    effects!:HTMLDivElement
-    foreground!:HTMLDivElement
+    background!: HTMLDivElement
+    foreground!: HTMLDivElement
+    scoreContainer!: HTMLDivElement
+    leaderboardContainer!: HTMLDivElement
 
-    scoreContainer!:HTMLDivElement
-    leaderboardContainer!:HTMLDivElement
+    current?: FinalScreenDef;
 
-    current?:FinalScreenDef
+    time = 0;
+    enabled = false;
 
-    time=0
-    enabled:boolean=false
+    layers: FSLayer[] = [];
 
-    layers:FSLayer[]=[]
-
-    constructor(public game:Game){
-        this.create_html()
+    constructor(public game: Game) {
+        this.create_html();
     }
-    private create_html(){
-        this.root=document.createElement("div")
-        this.root.id="final-screen"
-        this.root.innerHTML=`
+
+    private create_html() {
+        this.root = document.createElement("div");
+        this.root.id = "final-screen";
+
+        this.root.innerHTML = `
             <div class="final-background"></div>
-            <div class="final-effects"></div>
-            <div class="final-title"></div>
             <div class="final-score"></div>
             <div class="final-leaderboard"></div>
             <div class="final-foreground"></div>
-        `
-        document.body.appendChild(this.root)
-        this.background=this.root.querySelector(".final-background")!
-        this.effects=this.root.querySelector(".final-effects")!
-        this.scoreContainer=this.root.querySelector(".final-score")!
-        this.leaderboardContainer=this.root.querySelector(".final-leaderboard")!
-        this.foreground=this.root.querySelector(".final-foreground")!
-        HideElement(this.root,true)
+        `;
+
+        document.body.appendChild(this.root);
+
+        this.background = this.root.querySelector(".final-background")!
+        this.scoreContainer = this.root.querySelector(".final-score")!
+        this.leaderboardContainer = this.root.querySelector(".final-leaderboard")!
+        this.foreground = this.root.querySelector(".final-foreground")!
+
+        this.root.style.opacity = "0"
+        this.scoreContainer.style.opacity = "0"
+        this.leaderboardContainer.style.opacity = "0"
+
+        HideElement(this.root, true)
     }
+    set_final_screen(def: FinalScreenDef) {
+        this.current = def;
+        this.time = 0;
+
+        this.background.innerHTML = ""
+        this.foreground.innerHTML = ""
     
-    set_final_screen(def:FinalScreenDef){
-        this.current=def
-        this.time=0
-        this.background.innerHTML=""
-        this.effects.innerHTML=""
-        this.foreground.innerHTML=""
-        this.layers.length=0
-        this.root.style.opacity="0"
-        this.root.style.background=def.theme.background
-        this.root.style.color=def.theme.text
-        this.root.style.setProperty("--fs-accent",def.theme.accent)
-
-        for(const layer of def.background){
-            this.create_layer(this.background,layer)
+        this.layers.length = 0
+        if (def.theme.accent) {
+            this.root.style.setProperty("--fs-accent", def.theme.accent)
         }
-        for(const layer of def.foreground){
-            this.create_layer(this.background,layer)
+        this.root.style.cssText=`
+            opacity: 0;
+            ${def.theme.accent===undefined?"":"--fs-accent: "+def.theme.accent+";"}
+            ${def.theme.css??""}
+        `
+        if (def.theme.class_name) {
+            this.root.className = def.theme.class_name;
         }
-        /*
-        for(const effect of def.effects){
-            this.create_effect(effect)
-        }*/
+        for (const layer of def.background??[]) {
+            this.create_layer(this.background, layer);
+        }
+        for (const layer of def.foreground??[]) {
+            this.create_layer(this.foreground, layer);
+        }
     }
 
-    create_layer(el:HTMLDivElement,layer:FinalScreenLayer){
-        const la:FSLayer={
-            def:layer,
-            content:[],
+    private create_layer(parent: HTMLDivElement, layer: FinalScreenLayer): FSLayer {
+        const fsLayer: FSLayer = {
+            def: layer,
+            content: []
         }
-        const count=layer.count??1
-        for(let c=0;c<count;c++){
-            const img=new Image()
-            img.className="final-screen-layer-image"
-            img.style.top=layer.y+"px"
-            img.draggable=false
-            if(layer.x){
-                img.style.left=layer.x;
+        
+        switch(layer.type){
+            case FinalScreenLayerType.Static:{
+                const img = new Image()
+                img.src = layer.image
+                img.draggable = false
+                img.className = `final-screen-layer-image ${layer.class_name ?? ""}`
+                if (layer.css) {
+                    img.style.cssText = layer.css
+                }
+                parent.appendChild(img)
+                fsLayer.content.push(img)
+                break
             }
-            if(layer.transform){
-                img.style.transform=layer.transform
-            }
-            img.src=layer.image
-            el.appendChild(img)
-            const gap=(c*(layer.gap??5))
-            la.content.push({
-                el:img,
-                x:this.root.clientWidth+100+gap
-            })
-        }
-        this.layers.push(la)
-        return la
-    }
+            case FinalScreenLayerType.Walk:{
+                const count=(layer.count ?? 1)
+                const gap=layer.gap ?? 0
+                for (let i = 0; i < count; i++) {
+                    const img = new Image()
+                    img.src = layer.image
+                    img.draggable = false
+                    img.className = `final-screen-layer-image ${layer.class_name ?? ""}`
+                    if (layer.css) {
+                        img.style.cssText = layer.css
+                    }
+                    parent.appendChild(img)
 
-    async show_final_screen(){
-        if(!this.current)return
+                    const dir=layer.inverted?1:-1
+                    img.style.left=(layer.begin_x??this.root.clientWidth)+(i*gap*dir)+"px";
+                    fsLayer.content.push(img)
+                }
+                break
+            }
+            case FinalScreenLayerType.Tile:{
+                const tile=document.createElement("div")
+                tile.className=`final-screen-layer-tile ${layer.class_name??""}`
+                tile.style.cssText=`
+                    position:absolute;
+                    left:0;
+                    width:100%;
+                    background-image:url("${layer.image}");
+                    background-repeat:repeat-x;
+                    background-position-x:0px;
+                    background-size:auto 100%;
+                    ${layer.css??""}
+                `
+                parent.appendChild(tile)
+                fsLayer.content.push(tile)
+                break
+            }
+        }
+        this.layers.push(fsLayer)
+        return fsLayer
+    }
+    async show_final_screen() {
+        if (!this.current) return;
         this.game.ambient.music.stop()
-        if(this.current.theme.music){
+        if (this.current.theme.music) {
             this.game.resources.unload_sound("gameplay_music")
-            this.game.ambient.music.set(await this.game.resources.load_sound("gameplay_music",{
-                src:this.current.theme.music,
-                volume:1
-            }))
+            this.game.ambient.music.set(
+                await this.game.resources.load_sound("gameplay_music", {
+                    src: this.current.theme.music,
+                    volume: 1
+                })
+            );
         }
-        this.root.style.opacity="1"
-        await sleep(1)
-        this.enabled=true
-        this.time=0
-        ShowElement(this.root,true)
-    }
-    async hide_final_screen(){
+        ShowElement(this.root, true)
         this.root.style.opacity="0"
+        await sleep(0.01)
+        this.enabled = true
+        this.time = 0
+    }
+    async hide_final_screen() {
         await sleep(1)
         this.game.ambient.music.stop()
         HideElement(this.root)
-        this.scoreContainer.innerHTML=""
-        this.leaderboardContainer.innerHTML=""
-        this.enabled=false
+        this.scoreContainer.innerHTML = ""
+        this.leaderboardContainer.innerHTML = ""
+        this.enabled = false
     }
-    update(dt:number){
-        if(!this.current&&this.enabled)return
-        const time=dt*1000
-        for(const layer of this.layers){
-            const speed=(layer.def.speed===undefined?0:layer.def.speed)*time
-            if(speed){
-                for(const img of layer.content){
-                    img.x-=speed
-                    if(img.x<=-img.el.width){
-                        img.x=this.root.clientWidth+(img.el.width)+100
+    update(dt: number) {
+        if (!this.enabled || !this.current) {
+            return;
+        }
+        this.time += dt
+        const root_width = this.root.clientWidth
+        for (const layer of this.layers) {
+            switch(layer.def.type){
+                case FinalScreenLayerType.Static:
+                    break
+                case FinalScreenLayerType.Walk:{
+                    const screen_width=root_width+(layer.def.gap??0)
+                    const speed = (layer.def.speed ?? 0)*dt*1000
+                    if (!speed) {
+                        continue
                     }
-                    img.el.style.left=`${img.x}px`
+                    for (let c=0;c<layer.content.length;c++) {
+                        const content=layer.content[c]
+                        let x = parseFloat(content.style.left.replace("px",""))
+                        const dir=layer.def.inverted?-1:1
+                        x+=speed*dir
+                        let c_width=content.clientWidth
+                        if(content instanceof HTMLImageElement){
+                            c_width=content.naturalWidth||content.width|512
+                        }
+                        if (layer.def.inverted) {
+                            if (x<-c_width) {
+                                x=root_width+c_width;
+                            }
+                        } else {
+                            if (x>screen_width) {
+                                x=-c_width
+                            }
+                        }
+                        content.style.left=`${x}px`;
+                    }
+                    break
                 }
+                case FinalScreenLayerType.Tile:{
+                    const speed=(layer.def.speed??0)*this.time*1000
+                    for(const tile of layer.content){
+                        const dir=layer.def.inverted?1:-1
+                        tile.style.backgroundPositionX=`${speed*dir}px`
+                    }
+                    break
+                }
+            }
+            if (layer.def.type !== FinalScreenLayerType.Walk&&layer.def.type !== FinalScreenLayerType.Tile) {
+                continue
             }
         }
     }
-    async show_status(status:PlayerStatus):Promise<void>{
-        this.scoreContainer.innerHTML=""
-        this.scoreContainer.style.opacity="1"
-        const score_float=document.createElement("div")
-        score_float.className="score-float"
-        const score_ap=document.createElement("div")
-        score_ap.className="score-ap"
-        this.scoreContainer.appendChild(score_float)
-        this.scoreContainer.appendChild(score_ap)
+    async show_status(status: PlayerStatus): Promise<void> {
+        this.scoreContainer.innerHTML = ""
+        this.scoreContainer.style.opacity = "1"
+        const scoreFloat = document.createElement("div")
+        scoreFloat.className = "score-float"
+        const scoreAp = document.createElement("div")
+        scoreAp.className = "score-ap"
 
-        const score_list:HTMLSpanElement[]=[]
-        let score=0
-        for(const applier of status.score_applyer){
-            await sleep(0.2)
-            if(score_list.length>0){
-                score_list[score_list.length-1].classList.remove("last")
+        this.scoreContainer.appendChild(scoreFloat)
+        this.scoreContainer.appendChild(scoreAp)
+
+        const scoreList: HTMLSpanElement[] = []
+        let score = 0
+
+        for (const applier of status.score_applyer) {
+            await sleep(0.22)
+            if (scoreList.length > 0) {
+                scoreList[scoreList.length - 1].classList.remove("last");
             }
-            if(score_list.length>12){
-                const v=score_list.shift()
-                if(v){
-                    v.classList.add('last')
-                    setTimeout(()=>v.remove(),200)
+            if (scoreList.length > 12) {
+                const old = scoreList.shift()
+                if (old) {
+                    old.classList.add("last");
+                    setTimeout(() => old.remove(), 200);
                 }
             }
-
-            const row=document.createElement("span")
-            row.className="score-row last"
-            row.innerHTML=`${this.game.language.get("score_applier."+applier.type)}: ${Math.floor(applier.amount)}${applier.multiplier!==1&&applier.amount>0?(" * "+Numeric.maxDecimals(applier.multiplier,2)):""}`
-            score_ap.appendChild(row)
-            score+=applier.amount*applier.multiplier
-            score_float.innerText=Math.floor(score).toString()
-            score_list.push(row)
+            const row = document.createElement("span")
+            row.className = "score-row last"
+            row.innerHTML = `${this.game.language.get("score_applier."+applier.type)}: `+`${Math.floor(applier.amount)}`+(applier.multiplier !== 1 && applier.amount > 0? ` * ${Numeric.maxDecimals(applier.multiplier, 2)}`:"")
+            scoreAp.appendChild(row)
+            score += applier.amount * applier.multiplier
+            scoreFloat.innerText = Math.floor(score).toString()
+            scoreList.push(row)
         }
-        score_list[score_list.length-1].classList.remove("last")
+        if (scoreList.length > 0) {
+            scoreList[scoreList.length - 1].classList.remove("last")
+        }
         await sleep(0.5)
-        score_float.innerText=`${status.score}`
+        scoreFloat.innerText = `${status.score}`
         await this.game.input_manager.wait_for_action("next")
-        this.scoreContainer.style.opacity="0"
+        this.scoreContainer.style.opacity = "0"
         await sleep(0.2)
-        this.scoreContainer.innerHTML=""
+        this.scoreContainer.innerHTML = "";
     }
-    async show_leaderboards(players:LeaderboardPlayer[]) {
-        players.sort((a,b)=>b.id-b.id||a.rank-b.rank)
-        this.leaderboardContainer.innerHTML=""
-        this.leaderboardContainer.style.opacity="1"
-        const leaderboard_players=document.createElement("div")
-        this.leaderboardContainer.appendChild(leaderboard_players)
-        
-        const row=document.createElement("div")
-        row.className="leaderboard-row leaderboard-header"
-        row.innerHTML=`
+
+    async show_leaderboards(players: LeaderboardPlayer[]) {
+        this.leaderboardContainer.innerHTML = ""
+        this.leaderboardContainer.style.opacity = "1"
+        const leaderboardPlayers = document.createElement("div")
+        leaderboardPlayers.className = "leaderboards-players"
+        this.leaderboardContainer.appendChild(leaderboardPlayers)
+        players.sort((a, b) => a.rank - b.rank)
+        const header = document.createElement("div");
+        header.className = "leaderboard-row leaderboard-header";
+        header.innerHTML = `
             <span class="place">Rank</span>
             <span class="name">Name</span>
             <span class="status">Kills</span>
             <span class="status">Score</span>
         `
-        this.leaderboardContainer.prepend(row)
-
-        const rows:HTMLDivElement[]=[]
-        for(let i=players.length-1;i>=0;i--){
-            if(rows.length>0){
-                rows[rows.length-1].classList.remove("current")
+        this.leaderboardContainer.prepend(header)
+        const rows: HTMLDivElement[] = []
+        for (const player of players) {
+            if (rows.length > 0) {
+                rows[rows.length - 1].classList.remove("current");
             }
-            const row=document.createElement("div")
-            row.className="leaderboard-row hidden"+(players[i].rank<=1?" winner":"")
-            row.innerHTML=`
-                <span class="place">#${players[i].rank}</span>
-                <span class="name">${this.game.ui.players_name[players[i].id]?.full??"Unknown"}</span>
-                <span class="status">${players[i].kills}</span>
-                <span class="status">${players[i].score}</span>
-            `
-            leaderboard_players.prepend(row)
-            rows.push(row)
-            row.classList.remove("hidden")
-            row.classList.add("current")
-            await sleep(0.03)
+
+            const row = document.createElement("div");
+
+            row.className =
+                "leaderboard-row hidden" +
+                (player.rank === 1 ? " winner" : "");
+
+            row.innerHTML = `
+                <span class="place">#${player.rank}</span>
+                <span class="name">${this.game.ui.players_name[player.id]?.full ?? "Unknown"}</span>
+                <span class="status">${player.kills}</span>
+                <span class="status">${player.score}</span>
+            `;
+
+            leaderboardPlayers.appendChild(row);
+
+            rows.push(row);
+
+            row.classList.remove("hidden");
+            row.classList.add("current");
+
+            await sleep(0.03);
         }
-        if(rows.length>0){
-            rows[rows.length-1].classList.remove("current")
+
+        if (rows.length > 0) {
+            rows[rows.length - 1].classList.remove("current");
         }
-        await this.game.input_manager.wait_for_action("next")
-        this.leaderboardContainer.style.opacity="0"
-        await sleep(0.2)
-        this.leaderboardContainer.innerHTML=""
+
+        await this.game.input_manager.wait_for_action("next");
+
+        this.leaderboardContainer.style.opacity = "0";
+
+        await sleep(0.2);
+
+        this.leaderboardContainer.innerHTML = "";
     }
 }

@@ -98,9 +98,8 @@ export class Player extends Human{
     override apply_score(type: number, amount: number,multiplier:number=1): void {
         if(this.game.modeManager.is_leader(this))multiplier*=this.game.modeManager.rules.score.leader_multiplier
         super.apply_score(type,amount,multiplier)
-        if(amount>0)amount*=multiplier
         if(this.status.score_applyer.length>0&&this.status.score_applyer[this.status.score_applyer.length-1].type===type&&this.status.score_applyer[this.status.score_applyer.length-1].multiplier===multiplier){
-            this.status.score_applyer[this.status.score_applyer.length-1].amount+=amount
+            this.status.score_applyer[this.status.score_applyer.length-1].amount+=amount*=multiplier
         }else{
             this.status.score_applyer.push({
                 amount:amount,

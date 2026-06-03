@@ -941,13 +941,13 @@
         background:#0004;
         display:flex;
         flex-direction:column;
-        gap:8px;
+        gap:20px;
 
         position:absolute;
 
         width: 800px;
         height: 700px;
-        padding: 40px;
+        padding: 50px;
         left:50%;
         top:50%;
 
@@ -956,6 +956,11 @@
         transition: opacity ease-in-out 0.2s;
         overflow-x: hidden;
         overflow-y: scroll;
+        /*.leaderboards-players{
+            display: flex;
+            flex-direction: column;
+            gap:5px;
+        }*/
     }
     .leaderboard-row{
         display:flex;
@@ -998,6 +1003,5 @@
     }
     .leaderboard-row.leaderboard-header{
         border-left-color:var(--fs-accent);
-        margin-bottom: 5px;
     }
 }

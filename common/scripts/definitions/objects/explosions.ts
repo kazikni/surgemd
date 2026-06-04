@@ -59,7 +59,7 @@ export const explosion_cam_shakes={
 export const explosions_decals={
     big:{
         def:"explosion_decal",
-        scale:4,
+        scale:6,
         tint:{
             color:0x000000,
             alpha:200,

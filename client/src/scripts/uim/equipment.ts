@@ -33,6 +33,14 @@ export class EquipmentModule extends UIModule<Game> {
         this.vest_el = this.container.querySelector(`[data-type="vest"]`)!
         this.backpack_el = this.container.querySelector(`[data-type="backpack"]`)!
         this.accessories_container = this.container.querySelector(".equipment-accessories")!
+
+        this.helmet_el.dataset.item_kind  = "6"
+        this.helmet_el.dataset.item_value = "0"
+        this.helmet_el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
+        this.vest_el.dataset.item_kind  = "6"
+        this.vest_el.dataset.item_value = "1"
+        this.vest_el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
+
     }
 
     override on_signal(signal: string, state: { dt: number, player: Human }): void {

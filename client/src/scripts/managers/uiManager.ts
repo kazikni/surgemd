@@ -519,6 +519,7 @@ export class UiManager{
                 case 2:
                 case 3:
                 case 5:
+                case 6:
                     this.game.input.actions.push({type:InputActionType.drop,drop:item_value,drop_kind:item_kind})
                     break
             }

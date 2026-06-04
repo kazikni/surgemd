@@ -619,11 +619,32 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         return undefined
     }
-    drop_helmet():Loot|undefined{
+    drop_helmet(force:boolean=false):Loot|undefined{
+        if(!force&&!this.droppable.helmet)return
         if(this.owner.equipment_data.helmet){
-            const loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
+            let loot:Loot|undefined
+            if(this.droppable.vest){
+                loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,this.owner.layer)
+            }
+            this.owner.equipment_data.dirty=true
+            this.owner.equipment_data.dirty_part=true
             this.owner.equipment_data.helmet?.events?.["drop"]?.({user:this.owner})
             this.owner.equipment_data.helmet=undefined
+            return loot
+        }
+        return
+    }
+    drop_vest(force:boolean=false):Loot|undefined{
+        if(!force&&!this.droppable.vest)return
+        if(this.owner.equipment_data.vest){
+            let loot:Loot|undefined
+            if(this.droppable.vest){
+                loot=this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.vest,1,this.owner.layer)
+            }
+            this.owner.equipment_data.dirty=true
+            this.owner.equipment_data.dirty_part=true
+            this.owner.equipment_data.vest?.events?.["drop"]?.({user:this.owner})
+            this.owner.equipment_data.vest=undefined
             return loot
         }
         return
@@ -693,8 +714,7 @@ export class GInventory extends GInventoryBase<LItem>{
             case InventoryItemType.vest:{
                 const d=def as unknown as VestDef
                 if(!this.owner.equipment_data.vest||this.owner.equipment_data.vest.level<d.level){
-                    if(this.owner.equipment_data.vest)this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.vest,1)
-
+                    this.drop_vest()
                     this.owner.equipment_data.dirty=true
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.vest=d
@@ -906,14 +926,8 @@ export class GInventory extends GInventoryBase<LItem>{
                 s.remove(s.quantity)
             }
         }
-        if(this.owner.equipment_data.helmet&&this.droppable.helmet){
-            l.push(this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.helmet,1,layer))
-            this.owner.equipment_data.helmet=undefined
-        }
-        if(this.owner.equipment_data.vest&&this.droppable.vest){
-            l.push(this.owner.game.add_loot(this.owner.position,this.owner.equipment_data.vest,1,layer))
-            this.owner.equipment_data.vest=undefined
-        }
+        this.drop_helmet(true)
+        this.drop_vest(true)
         if(this.backpack&&this.backpack.level&&this.droppable.backpack){
             l.push(this.owner.game.add_loot(this.owner.position,this.backpack,1,layer))
             this.set_backpack()

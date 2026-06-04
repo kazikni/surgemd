@@ -253,15 +253,6 @@ export class Human extends MovingBody{
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
         this.sprites.vest._frame=this.game.resources.get_frame("player_vest")
         this.sprites.vest.sync_rotation=false
-        this.sprites.emote_bg.set_frame({
-            image:"emote_background",
-            hotspot:CenterHotspot,
-            scale:2
-        },this.game.resources)
-        this.sprites.emote_sprite.transform_frame({
-            hotspot:CenterHotspot,
-            scale:2.6
-        })
         this.consumible_particles=this.game.particles.add_emiter({
             delay:0.2,
             particle:()=>new ABParticle2D({
@@ -283,13 +274,22 @@ export class Human extends MovingBody{
         })
 
         // Emote
+        this.sprites.emote_bg.set_frame({
+            image:"emote_background",
+            hotspot:CenterHotspot,
+            scale:2
+        },this.game.resources)
+        this.sprites.emote_sprite.transform_frame({
+            hotspot:CenterHotspot,
+            scale:2.6
+        })
         this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
         this.sprites.emote_container.sync_rotation=false
         this.sprites.emote_container.position=v2(0,-1.5)
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
-        this.sprites.emote_container.visible=false
         this.game.cam2d.addObject(this.sprites.emote_container)
+        this.sprites.emote_container.visible=false
 
         this.set_skin(
             this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
@@ -1263,7 +1263,7 @@ export class Human extends MovingBody{
         })
     }
     set_helmet(helmet:number){
-        if(this.helmet&&helmet-1===this.helmet.idNumber!)return
+        if(helmet-1===this.helmet?.idNumber!)return
         if(helmet>0){
             this.helmet=this.game.definitions.helmets.getFromNumber(helmet-1)
             const h=this.helmet
@@ -1275,16 +1275,18 @@ export class Human extends MovingBody{
             }
             this.sprites!.helmet.frame=this.game.resources.get_frame(h.idString+"_world")
         }else{
+            this.helmet=undefined
             this.sprites.helmet.frame=undefined
         }
     }
     set_vest(vest:number){
-        if(this.vest&&vest-1===this.vest.idNumber!)return
+        if(vest-1===this.vest?.idNumber!)return
         if(vest>0){
             this.sprites.vest.visible=true
             this.vest=this.game.definitions.vests.getFromNumber(vest-1)
             this.sprites!.vest.tint=ColorM.number(this.vest.tint)
         }else{
+            this.vest=undefined
             this.sprites.vest.visible=false
         }
     }

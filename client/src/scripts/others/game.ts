@@ -45,7 +45,7 @@ import { load_kspr } from "common/engine/core/lang/kspx.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { FinalScreenManager } from "../managers/final_screen.ts";
-import { city_final, island_final } from "common/scripts/config/final_screen.ts";
+import { island_final } from "common/scripts/config/final_screen.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()

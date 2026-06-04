@@ -141,11 +141,11 @@ export const TundraMap:MapDef={
             idString:"bush_group_1",
             no_collisions:true,
             no_bullet_collision:true,
-            hitbox:{
+            /*hitbox:{
                 type:HitboxType2D.rect,
                 min:v2(-10,-10),
                 max:v2(10,10),
-            },
+            },*/
             content:{
                 loots:[
                     {
@@ -226,11 +226,11 @@ export const TundraMap:MapDef={
             idString:"bush_group_2",
             no_collisions:true,
             no_bullet_collision:true,
-            hitbox:{
+            /*hitbox:{
                 type:HitboxType2D.rect,
                 min:v2(-10,-10),
                 max:v2(10,10),
-            },
+            },*/
             content:{
                 loots:[
                     {
@@ -303,7 +303,6 @@ export const TundraMap:MapDef={
                 {def:"jeep",count:5},
                 {def:"bike",count:5},
 
-                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:50},
                 {def:"tundra_crate",count:5},
                 {def:"copper_crate",count:20},
                 {def:map_spawns.crates,count:90},
@@ -311,6 +310,7 @@ export const TundraMap:MapDef={
                 {def:map_spawns.rocks,count:100},
                 {def:"bush",count:100},
                 {def:"barrel",count:50},
+                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:50},
 
                 {def:"normal_loot",count:150}
             ],

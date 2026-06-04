@@ -586,6 +586,13 @@ export class Human extends MovingBody{
                                 case 5:
                                     this.inventory.drop_iitem(drop)
                                     break
+                                case 6:
+                                    if(a.drop===0){
+                                        this.inventory.drop_helmet()
+                                    }else if(a.drop===1){
+                                        this.inventory.drop_vest()
+                                    }
+                                    break
                             }
                         }
                         break
@@ -1221,7 +1228,6 @@ export class Human extends MovingBody{
 
         //this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
     }
-
     on_kill_enemy(victim:Human){
         if(this.game.modeManager.is_leader(victim)){
             this.apply_score(ScoreApplyerType.KillLeader,this.game.modeManager.rules.score.kill_leader)

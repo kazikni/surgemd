@@ -25,7 +25,7 @@ export class Slot<ItemBase extends Item = Item>{
      */
     add(item:ItemBase,quantity:number=1):number{
         if(this.item==null){
-            if(this.accept_tags.length==0||hasTags(this.accept_tags,item.tags)){
+            if(this.accept_tags.length===0||hasTags(this.accept_tags,item.tags)){
                 this.item=item
             }else{
                 return quantity
@@ -77,11 +77,16 @@ export class Inventory<ItemBase extends Item = Item>{
      */
     add(item:ItemBase,quantity:number=1):number{
         let ret=quantity
-        for(const i in this.slots){
+        let i=-1
+        while(i < this.slots.length&&ret>0){
+            i++
+            if(this.slots[i]?.item==null)continue
             ret=this.slots[i].add(item,ret)
-            if(ret==0){
-                break
-            }
+        }
+        i=-1
+        while(i < this.slots.length&&ret>0){
+            i++
+            ret=this.slots[i].add(item,ret)
         }
         return ret
     }

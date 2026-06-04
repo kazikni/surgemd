@@ -959,6 +959,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 {name:"Espanhol",value:"es"},
                                 {name:"Brazilian Portuguese",value:"pt-br"},
                                 {name:"Turkish",value:"tr"},
+                                {name:"Ak-47",value:"ak47"},
                             ],
                         },
                         isMobile?undefined:{

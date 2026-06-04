@@ -97,6 +97,9 @@ export class Obstacle extends StaticBody{
     below:boolean=false
     alpha_tween?:Tween<Color>
     below_hitbox?:Hitbox2D
+    can_below(other:Hitbox2D):boolean{
+        return this.def.below!==undefined&&!this.health_data.dead&&other.colliding_with(this.below_hitbox??this.hitbox)
+    }
     set_below(below:boolean){
         if(this.below===below||!this.def.below)return
         if(this.alpha_tween)this.alpha_tween.kill()

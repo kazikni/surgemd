@@ -624,7 +624,7 @@ export class UiManager{
         for(const o of this.hover_objects){
             switch(o.number_type){
                 case GameObjectType.Obstacle:{
-                    if(!player.hitbox.colliding_with((o as Obstacle).below_hitbox??o.hitbox)){
+                    if(!(o as Obstacle).can_below(player.hitbox)){
                         (o as Obstacle).set_below(false)
                         this.hover_objects.delete(o)
                     }
@@ -643,7 +643,7 @@ export class UiManager{
                     break
                 }
                 case GameObjectType.Obstacle:{
-                    if((o as Obstacle).def.below&&player.hitbox.colliding_with((o as Obstacle).below_hitbox??o.hitbox)&&!this.hover_objects.has(o)){
+                    if((o as Obstacle).can_below(player.hitbox)&&!this.hover_objects.has(o)){
                         (o as Obstacle).set_below(true)
                         this.hover_objects.add(o)
                     }

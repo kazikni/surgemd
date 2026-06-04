@@ -58,6 +58,7 @@
             "shovel":"Shovel",
             "sledgehammer":"Sledgehammer",
             "katana":"Katana",
+            "bonesaw":"Bonesaw",
 
             "m9":"M9",
             "m9_dual":"Dual M9",
@@ -85,6 +86,7 @@
             "spas12":"Spas-12",
             "hp18":"HP18",
             "sr25":"SR-25",
+            "vss":"VSS Vintorez",
             "m1_garand":"M1 Garand",
             "pkp":"PKP Pecheneg",
             "rpg7":"RPG-7",

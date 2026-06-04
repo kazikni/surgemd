@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    xml:space="preserve"
-   width="107.6263"
-   height="26.378008"
-   viewBox="0 0 28.476519 6.9793656"
+   width="95.522408"
+   height="23.411478"
+   viewBox="0 0 25.273987 6.1944505"
    version="1.1"
    id="svg53"
    sodipodi:docname="vss.svg"
@@ -21,9 +21,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="4.7904228"
-     inkscape:cx="59.80683"
-     inkscape:cy="35.591848"
+     inkscape:zoom="3.3873404"
+     inkscape:cx="44.13492"
+     inkscape:cy="53.877076"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -59,7 +59,7 @@
          style="stroke-width:.487199;stroke-linecap:square;paint-order:markers fill stroke;stop-color:#000"
          transform="matrix(.34644 0 0 .34644 302.154 64.887)"
          id="path3" /></pattern></defs><g
-     transform="matrix(0.71328588,0.42858539,-0.42858539,0.71328588,-6.0014249,-6.92963)"
+     transform="matrix(0.63306818,0.38038573,-0.38038573,0.63306818,-5.3264798,-6.1503084)"
      id="g53"><path
        d="m 12.656,5.006 -0.748,0.431 c 0.656,0.426 1.907,2.428 2.133,3.632 l 0.728,-0.428 -1.27,-3.495 z"
        style="display:inline;opacity:1;fill:#3d4147;fill-opacity:1;stroke:#2f3237;stroke-width:0.30572;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"

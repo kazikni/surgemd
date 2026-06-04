@@ -43,8 +43,9 @@ export const LootTables={
         {item:"survival_knife",weight:15},
         {item:"shovel",weight:15},
         {item:"axe",weight:10},
-        {item:"katana",weight:4},
-        {item:"sledgehammer",weight:1},
+        {item:"katana",weight:3},
+        {item:"sledgehammer",weight:3},
+        {item:"bonesaw",weight:3},
     ],
     //Consumibles
     consumibles:[

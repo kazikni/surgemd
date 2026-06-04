@@ -1047,7 +1047,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.dmr("vss","9mm",{
-            fire_delay:0.3,
+            fire_delay:0.25,
             spread:1,
 
             ammo_spawn:{
@@ -1056,7 +1056,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:17,
+                    damage:15,
                     falloff:0.75,
                     range:110,
                     speed:50,

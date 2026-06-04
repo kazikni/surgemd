@@ -15,6 +15,7 @@ __                                                                              
 __                                                                                                                 __
 ### Items
 * VSS - 9mm DMR
+* Bonesaw
 __                                                                                                                 __
 ### Others
 * Camera Shake On Explosions

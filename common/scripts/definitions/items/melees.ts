@@ -137,6 +137,130 @@ export function AnimationSwing(time:number):AKeyFrame[]{
         },
     ]
 }
+export function AnimationBonesaw(time:number):AKeyFrame[]{
+    return [
+        {
+            time:0,
+            actions:[
+            ]
+        },
+        {
+            time:time*0.2,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x+0.08,DefaultFistRig.right!.position.y+0.15),
+                        rotation:Angle.deg2rad(45),
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation+0.4,
+                        position:v2(DefaultFistRig.right!.position.x+0.08,DefaultFistRig.right!.position.y+0.15)
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.15,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x+0.25,DefaultFistRig.right!.position.y-0.4),
+                        rotation:Angle.deg2rad(-75),
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation-0.7,
+                        position:v2(DefaultFistRig.right!.position.x+0.25,DefaultFistRig.right!.position.y-0.4),
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.2,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x+0.3,DefaultFistRig.right!.position.y-0.45),
+                        rotation:Angle.deg2rad(-85),
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        rotation:DefaultFistRig.right!.rotation-0.7,
+                        position:v2(DefaultFistRig.right!.position.x+0.3,DefaultFistRig.right!.position.y-0.45),
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.15,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.4),
+                        rotation:Angle.deg2rad(-50),
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.4),
+                        rotation:DefaultFistRig.right!.rotation+1,
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+        {
+            time:time*0.3,
+            actions:[
+                {
+                    fuser:"weapon",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                        rotation:Angle.deg2rad(-13),
+                    },
+                    ease:ease.quadraticInOut
+                },
+                {
+                    fuser:"right_arm",
+                    type:"tween",
+                    to:{
+                        position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                        rotation:DefaultFistRig.right!.rotation+0.4,
+                    },
+                    ease:ease.quadraticInOut
+                },
+            ]
+        },
+    ]
+}
 export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
     melees.insert({
             idString:"fist",
@@ -425,6 +549,40 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     hotspot:v2(1,0.5),
                     rotation:3.3
                 }
+            }
+        },
+        {
+            idString:"bonesaw",
+            rank:ItemRank.S,
+
+            hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
+            damage:20,
+            attack_delay:0.65,
+            switch_delay:0.5,
+            damage_delays:[0.4,0.7],
+
+            rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
+                right:{
+                    position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                    rotation:DefaultFistRig.right!.rotation+0.4,
+                    zIndex:2,
+                },
+            },
+            rig_image:{
+                position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                rotation:Angle.deg2rad(-13),
+                zIndex:1,
+                hotspot:v2(0.18,0.4)
+            },
+            animation:AnimationBonesaw(0.6),
+            assets:{
+                use_sound:"light_swing",
+                hit_sound:"bonesaw_hit",
             }
         },
         /*{

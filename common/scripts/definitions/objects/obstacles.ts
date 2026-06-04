@@ -445,7 +445,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         obstacles_factory.bush("squared_bush",{
             hitbox:new RectHitbox2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
             o:{
-                health:100,
+                health:150,
                 scale:{
                     min:1,
                     max:1.1,
@@ -453,6 +453,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 assets:{
                     frame:{
                         biome_skins:["snow"],
+                        dead:"bush_dead",
                     },
                 }
             }

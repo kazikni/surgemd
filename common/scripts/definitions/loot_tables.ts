@@ -3,26 +3,25 @@ import { LootTable } from "../../engine/core.ts";
 export const LootTables={
     //Guns Quality
     common_guns:[
-        {item:"taurustx",weight:9},
-        {item:"m9",weight:9},
-        {item:"mp5",weight:8},
-        {item:"colt1873",weight:7},
-        {item:"micro_uzi",weight:7},
-        {item:"hp18",weight:5},
-        {item:"ak47",weight:3.5},
-        {item:"ar15",weight:3.5},
-        {item:"m1921",weight:3.5},
-        {item:"m870",weight:3.5},
-    ],
-    rare_guns:[
-        {item:"famas",weight:4},
-        {item:"model94",weight:2},
-        {item:"spas12",weight:1},
-        {item:"blr81",weight:1},
+        {item:"taurustx",weight:100},
+        {item:"m9",weight:100},
+        {item:"mp5",weight:90},
+        {item:"colt1873",weight:90},
+        {item:"micro_uzi",weight:80},
+        {item:"hp18",weight:60},
+        {item:"ak47",weight:40},
+        {item:"ar15",weight:40},
+        {item:"m1921",weight:40},
+        {item:"m870",weight:39},
+        {item:"famas",weight:10},
+        {item:"spas12",weight:8},
+        {item:"model94",weight:8},
+        {item:"blr81",weight:7},
     ],
     mythic_guns:[
-        {item:"sr25",weight:12},
-        {item:"vector",weight:12},
+        {item:"sr25",weight:13},
+        {item:"vss",weight:13},
+        {item:"vector",weight:13},
         {item:"kar98k",weight:7},
         {item:"m2_2",weight:5},
         {item:"m79",weight:1},
@@ -36,10 +35,9 @@ export const LootTables={
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:50},
-        {table:"rare_guns",weight:10},
-        {table:"mythic_guns",weight:1},
-        {table:"legendary_guns",weight:0.03}
+        {table:"common_guns",weight:120},
+        {table:"mythic_guns",weight:15},
+        {table:"legendary_guns",weight:1}
     ],
     melees:[
         {item:"survival_knife",weight:15},

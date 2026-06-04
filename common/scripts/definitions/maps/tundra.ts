@@ -62,25 +62,36 @@ export const TundraMap:MapDef={
             {item:"scope_7",count:1,weight:0.001},
         ],
         guns:[
-            {item:"m9",weight:50},
-            {item:"taurustx",weight:50},
-            {item:"colt1873",weight:50},
-            {item:"model94",weight:32},
-            {item:"sr25",weight:32},
-            {item:"blr81",weight:30},
-            {item:"mp5",weight:22},
-            {item:"micro_uzi",weight:22},
-            {item:"ak47",weight:22},
-            {item:"ar15",weight:22},
-            {item:"m1921",weight:22},
-            {item:"kar98k",weight:21},
-            {item:"vector",weight:8},
-            {item:"m1_garand",weight:7},
-            {item:"m2_2",weight:3},
-            {item:"m79",weight:3},
-            {item:"awp",weight:2},
-            {item:"pfeifer_zeliska",weight:1},
-            {item:"awms",weight:1},
+            // Too Common Pistols
+            {item:"m9",weight:100},
+            {item:"taurustx",weight:100},
+            {item:"colt1873",weight:100},
+    
+            // Uncommon Guns
+            {item:"sr25",weight:85},
+            {item:"vss",weight:85},
+            {item:"model94",weight:83},
+            {item:"blr81",weight:83},
+
+            // Unrelated Weapons
+            {item:"mp5",weight:65},
+            {item:"micro_uzi",weight:65},
+            {item:"ak47",weight:55},
+            {item:"ar15",weight:55},
+            {item:"m1921",weight:55},
+    
+            {item:"kar98k",weight:45},
+
+            // Rare Guns
+            {item:"vector",weight:14},
+            {item:"m1_garand",weight:14},
+            {item:"m2_2",weight:14},
+            {item:"m79",weight:14},
+
+            // Epic Guns
+            {item:"awp",weight:5},
+            {item:"pfeifer_zeliska",weight:4},
+            {item:"awms",weight:4},
         ],
         legendary_guns:[
             {item:"m1_garand",weight:15},

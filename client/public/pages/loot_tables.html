@@ -127,10 +127,8 @@ input {
         <button onclick="simulate()">Simulate 10k</button>
         <button onclick="sortByWeight()">Sort Weight</button>
     </div>
-
-    <div id="items"></div>
-
     <div class="card" id="output"></div>
+    <div id="items"></div>
 </div>
 
 <script>
@@ -359,7 +357,7 @@ function sortByWeight(desc = true) {
         </div>
     `
 }
-let sortDescending = true
+let sortDescending = false
 
 function sortByWeight() {
     items.sort((a, b) => {
@@ -367,9 +365,7 @@ function sortByWeight() {
             ? b.weight - a.weight
             : a.weight - b.weight
     })
-
     render()
-
     document.getElementById("output").innerHTML = `
         <h3>Sorted</h3>
         <div class="result-line">
@@ -378,8 +374,6 @@ function sortByWeight() {
             </span>
         </div>
     `
-
-    sortDescending = !sortDescending
 }
 render()
 

@@ -1,4 +1,4 @@
-import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Vec2 } from "common/engine/client.ts"
+import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Tween, Vec2 } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
@@ -29,7 +29,6 @@ export abstract class StaticBody extends GameObject{
     number_type: number=GameObjectType.StaticBody
 
     abstract physical_data:StaticBodyPhysicalData
-
     constructor(){
         super()
     }

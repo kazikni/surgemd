@@ -1,4 +1,4 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, ColorM, Container2D, model2d, NetStream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, model2d, NetStream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -93,6 +93,21 @@ export class Obstacle extends StaticBody{
     override create(_args: Record<string,any>): void {
         this.game.cam2d.addObject(this.container)
         this.updatable=false
+    }
+    below:boolean=false
+    alpha_tween?:Tween<Color>
+    below_hitbox?:Hitbox2D
+    set_below(below:boolean){
+        if(this.below===below||!this.def.below)return
+        if(this.alpha_tween)this.alpha_tween.kill()
+        this.below=below
+        this.alpha_tween=this.game.add_tween({
+            duration:this.def.below.duration??0.5,
+            target:this.container.tint,
+            to:{
+                a:below?this.def.below.alpha:1
+            }
+        })
     }
     override on_destroy(): void {
         this.container.destroy()
@@ -191,14 +206,12 @@ export class Obstacle extends StaticBody{
                     break
             }
         }
-
         for(const d of this.def.assets?.aditional_sprites??[]){
             const s=new Sprite2D()
             s.set_frame(d,this.game.resources)
             this.container.add_child(s)
             this.aditional_sprite.push(s)
         }
-
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
     }
 
@@ -211,7 +224,6 @@ export class Obstacle extends StaticBody{
     }
     initialize_hitboxes(){
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
-
         this.base_hitbox=this.physical_data.hitbox
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
@@ -223,6 +235,9 @@ export class Obstacle extends StaticBody{
                         opening:false,
                     }
             }
+        }
+        if(this.def.below?.hitbox){
+            this.below_hitbox=this.def.below.hitbox.transform(this.position,this.physical_data.scale)
         }
     }
     transform_into_update(def:number){

@@ -25,8 +25,9 @@ import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { DeadZoneState, DeadZoneUpdate, GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
+import { type Obstacle } from "../objects/obstacle.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -83,7 +84,6 @@ export class UiManager{
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
     }
-
     mobile_content={
         gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
         left_joystick:document.querySelector("#left-joystick") as HTMLDivElement,
@@ -92,13 +92,13 @@ export class UiManager{
         btn_interact:document.querySelector("#btn-mobile-interact") as HTMLButtonElement,
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
     }
-
     leader?:{
         id:number
         kills:number
     }
     money:number=0
 
+    hover_objects:Set<GameObject>=new Set()
     constructor(game:Game){
         this.game=game
 
@@ -146,6 +146,7 @@ export class UiManager{
 
         this.game.inventory.clear()
         this.game.ui_manager.clear()
+        this.hover_objects.clear()
         disableContextMenuPrevent()
     }
     _makeHint(texts: string[]) {
@@ -619,6 +620,16 @@ export class UiManager{
         this.state.information_box_message = ""
 
         const objs = this.game.scene_2d.objects.cells.get_objects(player.hitbox, player.layer)
+        for(const o of this.hover_objects){
+            switch(o.number_type){
+                case GameObjectType.Obstacle:{
+                    if(!player.hitbox.colliding_with((o as Obstacle).below_hitbox??o.hitbox)){
+                        (o as Obstacle).set_below(false)
+                        this.hover_objects.delete(o)
+                    }
+                }
+            }
+        }
         for (const o of objs) {
             switch(o.number_type){
                 case GameObjectType.Building:{
@@ -628,6 +639,14 @@ export class UiManager{
                             ceiling.collided=true
                         }
                     }
+                    break
+                }
+                case GameObjectType.Obstacle:{
+                    if((o as Obstacle).def.below&&player.hitbox.colliding_with((o as Obstacle).below_hitbox??o.hitbox)&&!this.hover_objects.has(o)){
+                        (o as Obstacle).set_below(true)
+                        this.hover_objects.add(o)
+                    }
+                    break
                 }
             }
             if(!o.can_interact(player)) continue

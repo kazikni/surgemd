@@ -51,6 +51,11 @@ export interface ObstacleDef extends Definition{
     //Collisions
     hitbox?:Hitbox2D
     spawnHitbox?:Hitbox2D
+    below?:{
+        hitbox?:Hitbox2D
+        duration?:number
+        alpha:number
+    }
     no_collision?:boolean
     passable_by_bullets?:boolean
     no_bullets_collision?:boolean
@@ -95,7 +100,6 @@ export interface ObstacleDef extends Definition{
     spawnMode?:SpawnMode
 
     height?:0|1|2 // 0 = Invisible | 1 = Mayble | 2 = All
-    hover_alpha?:number
 
     expanded_behavior?:(
         ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto
@@ -389,6 +393,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 base:zIndexes.Obstacles4
             },
             rotation_mode:RotationMode.full,
+            below:{
+                hitbox:new CircleHitbox2D(v2(0,0),2),
+                alpha:0.5
+            },
             spawnMode:Spawn.grass,
         },
         {
@@ -417,6 +425,9 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
+            below:{
+                alpha:0.5
+            },
             height:2
         },
         obstacles_factory.crate("wood_crate",{

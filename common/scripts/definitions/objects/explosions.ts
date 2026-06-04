@@ -1,7 +1,7 @@
 import { Definition, Definitions, FrameDef, MinMax1 } from "../../../engine/core.ts";
 import { tracers } from "../../others/item.ts";
 import { BulletDef } from "../utils.ts";
-import { DecalDef, DecalInstanceDef, DecalTint } from "./decals.ts";
+import { DecalInstanceDef } from "./decals.ts";
 export interface CamShake{
     duration:number
     intensity:number

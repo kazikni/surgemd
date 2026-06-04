@@ -27,6 +27,7 @@ export interface BulletDef{
         color?:number
     }
     reflection?:BulletReflection
+    pass_through_humans?:boolean
     obstacleMult?:number
     criticalMult?:number
     on_hit_explosion?:string

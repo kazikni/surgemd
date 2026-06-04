@@ -43,6 +43,8 @@ export class Bullet extends ServerGameObject{
     projColor:number=0
 
     collided_with:Set<ServerGameObject>=new Set()
+
+    pass_through_humans=false
     constructor(){
         super()
         this.velocity=v2(0,0)
@@ -67,82 +69,79 @@ export class Bullet extends ServerGameObject{
             if(this.destroyed)break
             switch(obj.number_type){
                 case GameObjectType.Human:{
-                    if(!(obj as Human).health_data.dead&&(!this.owner||(obj.id===this.owner.id&&this.hit_owner)||obj.id!==this.owner.id)&&!(obj as Human).parachute){
-                        const human = obj as Human
-
-                        const colBody = human.hitbox.overlap_line(this.old_position, this.position)
-
-                        const reflectSeg = null//human.get_reflect_segment()
-                        let colReflect = null
-                        if (reflectSeg) {
-                            const segHit = Collision.segment_intersection(
-                                this.old_position,
-                                this.position,
-                                reflectSeg[0],
-                                reflectSeg[1]
-                            )
-
-                            if (segHit) {
-                                const segDir = v2.sub(reflectSeg[1], reflectSeg[0])
-                                const normal = v2.normalizeSafe(v2(-segDir.y, segDir.x))
-                                colReflect = {
-                                    point: segHit.point,
-                                    dir: normal
-                                }
+                    if((obj as Human).health_data.dead||this.collided_with.has(obj)||(obj as Human).parachute||(this.owner&&obj.id===this.owner.id&&!this.hit_owner))break
+                    const colBody = obj.hitbox.overlap_line(this.old_position, this.position)
+                    /*const reflectSeg = null//human.get_reflect_segment()
+                    let colReflect = null
+                    if (reflectSeg) {
+                        const segHit = Collision.segment_intersection(
+                            this.old_position,
+                            this.position,
+                            reflectSeg[0],
+                            reflectSeg[1]
+                        )
+                        if (segHit) {
+                            const segDir = v2.sub(reflectSeg[1], reflectSeg[0])
+                            const normal = v2.normalizeSafe(v2(-segDir.y, segDir.x))
+                            colReflect = {
+                                point: segHit.point,
+                                dir: normal
                             }
                         }
-                        let chosen: typeof colBody | typeof colReflect = null
-                        let isReflect = false
-
-                        if (colBody || colReflect) {
-                            const distBody = colBody ? v2.distance(this.old_position, colBody.point) : Infinity
-                            const distPan = colReflect ? v2.distance(this.old_position, colReflect.point) : Infinity
-
-                            if (distPan < distBody) {
-                                chosen = colReflect
-                                isReflect = true
-                            } else {
-                                chosen = colBody
-                            }
+                    }
+                    let chosen: typeof colBody | typeof colReflect = null
+                    let isReflect = false
+                    if (colBody || colReflect) {
+                        const distBody = colBody ? v2.distance(this.old_position, colBody.point) : Infinity
+                        const distPan = colReflect ? v2.distance(this.old_position, colReflect.point) : Infinity
+                        if (distPan < distBody) {
+                            chosen = colReflect
+                            isReflect = true
+                        } else {
+                            chosen = colBody
                         }
-                        if(chosen) {
-                            if (isReflect) {
-                                this.on_hit()
-                                this.reflect(chosen.dir, chosen.point)
-                                break
-                            }
-
-                            const dmg:number=this.damage
-                                *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
-                                *(this.critical?(this.def.criticalMult??1.25):1);
-
-                            human.damage({
-                                amount:dmg,
-                                owner:this.owner,
-                                reason:DamageReason.Human,
-                                position:v2.clone(chosen.point),
-                                critical:this.critical,
-                                source:this.source as unknown as DamageSourceDef,
-                                direction:this.angle+3.1415
-                            })
-
-                            if(this.def.effect){
-                                for(const e of this.def.effect){
-                                    human.side_effect({
-                                        type:SideEffectType.AddEffect,
-                                        duration:e.time,
-                                        effect:e.id
-                                    })
-                                }
-                            }
-
-                            // Armor Reflect
-                            if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
-                                this.reflect(chosen.dir,chosen.point)
-                            }
+                    }*/
+                    const chosen=colBody
+                    const isReflect=false
+                    console.log(chosen,colBody)
+                    if(chosen) {
+                        this.collided_with.add(obj)
+                        if (isReflect) {
                             this.on_hit()
+                            this.reflect(chosen.dir, chosen.point)
+                            break
                         }
-                        break
+                        const dmg:number=this.damage
+                            *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
+                            *(this.critical?(this.def.criticalMult??1.25):1);
+
+                        (obj as Human).damage({
+                            amount:dmg,
+                            owner:this.owner,
+                            reason:DamageReason.Human,
+                            position:v2.clone(chosen.point),
+                            critical:this.critical,
+                            source:this.source as unknown as DamageSourceDef,
+                            direction:this.angle+3.1415
+                        })
+
+                        if(this.def.effect){
+                            for(const e of this.def.effect){
+                                (obj as Human).side_effect({
+                                    type:SideEffectType.AddEffect,
+                                    duration:e.time,
+                                    effect:e.id
+                                })
+                            }
+                        }
+
+                        // Armor Reflect
+                        if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
+                            this.reflect(chosen.dir,chosen.point)
+                            this.on_hit()
+                        }else if(!this.pass_through_humans){
+                            this.on_hit()
+                        }  
                     }
                     break
                 }
@@ -193,6 +192,7 @@ export class Bullet extends ServerGameObject{
         this.ammo=ad
 
         this.damage=this.def.damage
+        this.pass_through_humans=this.def.pass_through_humans??false
         this.set_color(args.satured)
     }
     set_color(satured:boolean=false){
@@ -262,9 +262,8 @@ export class Bullet extends ServerGameObject{
                 .writeUint32(this.projColor)
             }
             stream.writeUint8(this.def.tracer.particles?.frame??0)
-            .writeBooleanGroup(this.critical)
+            .writeBooleanGroup(this.hit_owner,this.critical,this.pass_through_humans)
             .writeID(this.owner?.id??0)
-            .writeUint8(this.reflectionCount)
         }
     }
 }

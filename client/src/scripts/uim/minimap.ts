@@ -273,15 +273,14 @@ export class MinimapModule extends UIModule<Game>{
         }
     }
     override on_update(dt:number):void{
-        if(!this.enabled){
+        if(this.enabled||this.fullscreen){
+            ShowElement(this.container)
+            this.updateTransform()
+            this.updateDeadzone()
+            this.updatePings(dt)
+        }else{
             HideElement(this.container)
-            if(this.fullscreen)this.toggle_fullscreen()
-            return
         }
-        ShowElement(this.container)
-        this.updateTransform()
-        this.updateDeadzone()
-        this.updatePings(dt)
     }
     override on_destroy():void{}
     override on_clear():void{

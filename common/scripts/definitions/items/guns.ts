@@ -1046,6 +1046,35 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
         }),
+        guns_factory.dmr("vss","9mm",{
+            fire_delay:0.3,
+            spread:1,
+
+            ammo_spawn:{
+                amount:60
+            },
+
+            bullet:{
+                def:{
+                    damage:17,
+                    falloff:0.75,
+                    range:110,
+                    speed:50,
+                    pass_through_humans:true,
+                    tracer:tracers.large
+                }
+            },
+
+            reload:{
+                delay:2.5,
+                capacity:20,
+                extended_capacity:30,
+            },
+            recoil:{
+                duration:0.4,
+                speed:0.8
+            },
+        }),
         guns_factory.dmr("m1_garand","762mm",{
             fire_delay:0.3,
             spread:2,
@@ -1065,7 +1094,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:0.4,
-                speed:0.75
+                speed:0.7
             },
             assets:{
                 use_last:true,

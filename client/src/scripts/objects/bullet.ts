@@ -50,7 +50,6 @@ export class Bullet extends GameObject{
     ////////////////////////////
     dying:boolean=false
     sendDelete: boolean=true;
-    reflection_count:number=0;
     private tticks:number=0
 
     ////////////////////////////
@@ -62,6 +61,9 @@ export class Bullet extends GameObject{
     par_time=0
 
     collided_with:Set<GameObject>=new Set()
+
+    hit_owner:boolean=false
+    pass_through_humans:boolean=false
     constructor(){
         super()
 
@@ -107,7 +109,7 @@ export class Bullet extends GameObject{
             v2m.add(this._position,this._position,dst)
 
             // Bullet Whiz Sound
-            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){
+            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&!this.hit_owner)){
                 if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.colliding_with(this.hitbox)){
                     this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
@@ -123,18 +125,19 @@ export class Bullet extends GameObject{
             for(const obj of objs){
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).number_type){
-                    case GameObjectType.Human:
-                        if(!(obj.id===this.owner_id&&this.reflection_count===0)&&!(obj as Human).dead&&!(obj as Human).parachute){
-                            const col=obj.hitbox.overlap_line(this.old_position,this.position)
-                            if(col){
-                                (obj as Human).on_hitted(this.position,this._critical)
-                                this.dying=true
-                            }
+                    case GameObjectType.Human:{
+                        if((obj as Human).dead||(obj as Human).parachute||this.collided_with.has(obj)||(obj.id===this.owner_id&&!this.hit_owner))break
+                        const col=obj.hitbox.overlap_line(this.old_position,this.position)
+                        if(col){
+                            this.collided_with.add(obj);
+                            (obj as Human).on_hitted(this.position,this._critical)
+                            if(!this.pass_through_humans)this.dying=true
                         }
                         break
+                    }
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
-                        if(!(obj as StaticBody).physical_data.no_bullets_collision||this.collided_with.has(obj)){
+                        if(!(obj as StaticBody).physical_data.no_bullets_collision){
                             const col=obj.hitbox.overlap_line(this.old_position,this.position)
                             if(col){
                                 this.collided_with.add(obj);
@@ -221,9 +224,11 @@ export class Bullet extends GameObject{
             }
             this.particles=stream.readUint8()
             this.container.visible=true
-            this._critical=stream.readBooleanGroup()[0]
+            const bg=stream.readBooleanGroup()
+            this.hit_owner=bg[0]
+            this._critical=bg[1]
+            this.pass_through_humans=bg[2]
             this.owner_id=stream.readID()
-            this.reflection_count=stream.readUint8()
         }
     }
 }

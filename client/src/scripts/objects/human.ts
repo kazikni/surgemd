@@ -263,14 +263,14 @@ export class Human extends MovingBody{
             scale:2.6
         })
         this.consumible_particles=this.game.particles.add_emiter({
-            delay:0.3,
+            delay:0.2,
             particle:()=>new ABParticle2D({
                 direction:-3.141592/2,
                 frame:{
                     image:this.assets.consumible_particles,
                 },
                 position:this.hitbox.randomPoint(),
-                life_time:random.float(1,2),
+                life_time:random.float(1,2.5),
                 layer:this.layer,
                 zIndex:zIndexes.Particles,
                 speed:1,

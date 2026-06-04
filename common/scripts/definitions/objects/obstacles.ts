@@ -177,6 +177,40 @@ export const obstacles_factory={
             height:1,
         },settings.o??{})
     },
+    bush(id:string,settings:{
+        tint?:number,
+        hitbox?:Hitbox2D,
+        o?:DeepPartial<ObstacleDef>
+    }={}):ObstacleDef{
+        return mergeDeep({
+            idString:id,
+            health:70,
+            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.8),
+            no_collision:true,
+            passable_by_bullets:true,
+            scale:{
+                min:1,
+                max:1.2,
+            },
+            assets:{
+                particles:{
+                    particle:"leaf_1_particle",
+                    tint:0x0e5c00,
+                    variations:1
+                },
+                sounds:hit_sounds.bush
+            },
+            zIndex:{
+                base:zIndexes.Obstacles3
+            },
+            rotation_mode:RotationMode.full,
+            spawnMode:Spawn.grass,
+            below:{
+                alpha:0.5
+            },
+            height:2
+        },settings.o??{})
+    },
     crate(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
@@ -399,37 +433,30 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             spawnMode:Spawn.grass,
         },
-        {
-            idString:"bush",
-            health:70,
-            hitbox:new CircleHitbox2D(v2(0,0),0.8),
-            no_collision:true,
-            passable_by_bullets:true,
-            scale:{
-                min:1,
-                max:1.2,
-            },
-            assets:{
-                particles:{
-                    particle:"leaf_1_particle",
-                    tint:0x0e5c00,
-                    variations:1
+        obstacles_factory.bush("bush",{
+            o:{
+                assets:{
+                    frame:{
+                        biome_skins:["snow"],
+                    },
+                }
+            }
+        }),
+        obstacles_factory.bush("squared_bush",{
+            hitbox:new RectHitbox2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
+            o:{
+                health:100,
+                scale:{
+                    min:1,
+                    max:1.1,
                 },
-                frame:{
-                    biome_skins:["snow"],
-                },
-                sounds:hit_sounds.bush
-            },
-            zIndex:{
-                base:zIndexes.Obstacles3
-            },
-            rotation_mode:RotationMode.full,
-            spawnMode:Spawn.grass,
-            below:{
-                alpha:0.5
-            },
-            height:2
-        },
+                assets:{
+                    frame:{
+                        biome_skins:["snow"],
+                    },
+                }
+            }
+        }),
         obstacles_factory.crate("wood_crate",{
             o:{
                 assets:{

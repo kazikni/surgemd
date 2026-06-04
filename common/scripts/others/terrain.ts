@@ -227,11 +227,16 @@ export class River{
     points:RiverPoint[]=[]
 
     static default_layers:RiverLayerDef[]=[
+        /*{
+            floor:FloorType.Sand,
+            push:true,
+            scale:1
+        },*/
         {
             floor:FloorType.Water,
             push:true,
             scale:0.8
-        }
+        },
     ]
     constructor(points:RiverPoint[],def:RiverDef){
         this.base=new PolygonHitbox2D(polygon2.from_point_line(points))
@@ -244,6 +249,7 @@ export class River{
                 layer:layer.layer
             })
         }
+        this.points=points
     }
     get_point_inside(position:Vec2):RiverLayer|undefined{
         for(let l=this.layers.length-1;l>=0;l--){

@@ -184,7 +184,7 @@ export const NormalMap:MapDef={
                         type:FloorType.Grass,
                         spacing:3,
                         variation:3,
-                    }
+                    },
                 ]
             }
         }

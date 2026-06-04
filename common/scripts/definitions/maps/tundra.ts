@@ -1,4 +1,4 @@
-import { v2 } from "../../../engine/core.ts";
+import { HitboxType2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
@@ -136,6 +136,160 @@ export const TundraMap:MapDef={
     },
     default_floor:FloorType.Water,
     biome:TundraBiome,
+    buildings:[
+        {
+            idString:"bush_group_1",
+            no_collisions:true,
+            no_bullet_collision:true,
+            hitbox:{
+                type:HitboxType2D.rect,
+                min:v2(-10,-10),
+                max:v2(10,10),
+            },
+            content:{
+                loots:[
+                    {
+                        table:"normal_loot",
+                        position:v2(0,0)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(3,0)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(3,3)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(-3,3)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(-3,-3)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(-6,-3)
+                    }
+                ],
+                obstacles:[
+                    {def:"squared_bush",position:v2(-8,-6)},
+                    {def:"squared_bush",position:v2(-8,-4)},
+                    {def:"squared_bush",position:v2(-8,-2)},
+                    {def:"squared_bush",position:v2(-8,0)},
+
+                    {def:"squared_bush",position:v2(-6,-6)},
+                    {def:"squared_bush",position:v2(-6,-4)},
+                    {def:"squared_bush",position:v2(-6,-2)},
+                    {def:"squared_bush",position:v2(-6,0)},
+
+                    {def:"squared_bush",position:v2(-4,-6)},
+                    {def:"squared_bush",position:v2(-4,-4)},
+                    {def:"squared_bush",position:v2(-4,-2)},
+                    {def:"squared_bush",position:v2(-4,0)},
+                    {def:"squared_bush",position:v2(-4,2)},
+                    {def:"squared_bush",position:v2(-4,4)},
+
+                    {def:"squared_bush",position:v2(-2,-6)},
+                    {def:"squared_bush",position:v2(-2,-4)},
+                    {def:"squared_bush",position:v2(-2,-2)},
+                    {def:"squared_bush",position:v2(-2,0)},
+                    {def:"squared_bush",position:v2(-2,2)},
+                    {def:"squared_bush",position:v2(-2,4)},
+
+                    {def:"squared_bush",position:v2(0,-4)},
+                    {def:"squared_bush",position:v2(0,-2)},
+                    {def:"squared_bush",position:v2(0,0)},
+                    {def:"squared_bush",position:v2(0,2)},
+                    {def:"squared_bush",position:v2(0,4)},
+                    {def:"squared_bush",position:v2(0,6)},
+                    {def:"squared_bush",position:v2(0,8)},
+
+                    {def:"squared_bush",position:v2(2,-4)},
+                    {def:"squared_bush",position:v2(2,-2)},
+                    {def:"squared_bush",position:v2(2,0)},
+                    {def:"squared_bush",position:v2(2,2)},
+                    {def:"squared_bush",position:v2(2,4)},
+                    {def:"squared_bush",position:v2(2,6)},
+                    {def:"squared_bush",position:v2(2,8)},
+
+                    {def:"squared_bush",position:v2(4,0)},
+                    {def:"squared_bush",position:v2(4,2)},
+                    {def:"squared_bush",position:v2(4,4)},
+                    {def:"squared_bush",position:v2(4,6)},
+                    {def:"squared_bush",position:v2(4,8)},
+                ]
+            }
+        },
+        {
+            idString:"bush_group_2",
+            no_collisions:true,
+            no_bullet_collision:true,
+            hitbox:{
+                type:HitboxType2D.rect,
+                min:v2(-10,-10),
+                max:v2(10,10),
+            },
+            content:{
+                loots:[
+                    {
+                        table:"normal_loot",
+                        position:v2(-3,0)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(3,0)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(3,3)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(-3,3)
+                    },
+                    {
+                        table:"normal_loot",
+                        position:v2(-3,-3)
+                    },
+                ],
+                obstacles:[
+                    {def:"squared_bush",position:v2(-2,0)},
+                    {def:"squared_bush",position:v2(-2,2)},
+                    {def:"squared_bush",position:v2(-2,4)},
+
+                    {def:"squared_bush",position:v2(-4,-2)},
+                    {def:"squared_bush",position:v2(-4,0)},
+                    {def:"squared_bush",position:v2(-4,2)},
+                    {def:"squared_bush",position:v2(-4,4)},
+                    {def:"squared_bush",position:v2(-4,6)},
+
+                    {def:"squared_bush",position:v2(-2,-4)},
+                    {def:"squared_bush",position:v2(-2,-2)},
+                    {def:"squared_bush",position:v2(-2,0)},
+                    {def:"squared_bush",position:v2(-2,2)},
+                    {def:"squared_bush",position:v2(-2,4)},
+                    {def:"squared_bush",position:v2(-2,6)},
+
+                    {def:"squared_bush",position:v2(0,-4)},
+                    {def:"squared_bush",position:v2(0,-2)},
+                    {def:"squared_bush",position:v2(0,0)},
+                    {def:"squared_bush",position:v2(0,2)},
+                    {def:"squared_bush",position:v2(0,4)},
+
+                    {def:"squared_bush",position:v2(2,-4)},
+                    {def:"squared_bush",position:v2(2,-2)},
+                    {def:"squared_bush",position:v2(2,0)},
+                    {def:"squared_bush",position:v2(2,2)},
+
+                    {def:"squared_bush",position:v2(4,-2)},
+                    {def:"squared_bush",position:v2(4,0)},
+                    {def:"squared_bush",position:v2(4,2)},
+                ]
+            }
+        }
+    ],
     generation:{
         island:{
             size:v2(550,550),
@@ -149,6 +303,7 @@ export const TundraMap:MapDef={
                 {def:"jeep",count:5},
                 {def:"bike",count:5},
 
+                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:50},
                 {def:"tundra_crate",count:5},
                 {def:"copper_crate",count:20},
                 {def:map_spawns.crates,count:90},

@@ -72,13 +72,14 @@ export class Sprite2D extends Container2DObject{
         }
         this.transform_frame(frame)
         if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
-        if(frame.alpha!==undefined)this.tint.a=frame.alpha
+        if(frame.alpha!==undefined)this.tint.a=frame.alpha/255
         this.dirty_reals=true
     }
     override transform_frame(frame:FrameTransform){
         super.transform_frame(frame)
         if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
         if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
+        if(frame.alpha!==undefined)this.tint.a=frame.alpha/255
     }
     override get_rect():Rect{
         return this._rect

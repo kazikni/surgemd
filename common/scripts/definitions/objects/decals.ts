@@ -12,6 +12,11 @@ export interface DecalDef extends Definition{
     }
     lifetime?:number
 }
+export interface DecalInstanceDef{
+    def:string
+    tint?:DecalTint
+    scale?:number
+}
 export function Decals_Default_Init(decals:Definitions<DecalDef,{}>){
     decals.insert({
         idString:"explosion_decal",

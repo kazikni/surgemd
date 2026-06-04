@@ -602,3 +602,10 @@ export class RectPacker<T> {
         return false
     }
 }
+export const circle={
+    random_point_inside(center:Vec2,radius:number){
+        const angle = random.float(0,Math.PI*2)
+        const length = random.float(0,radius)
+        return v2(center.x+(Math.cos(angle)*length),center.y+(Math.sin(angle)*length))
+    }
+}

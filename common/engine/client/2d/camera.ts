@@ -6,6 +6,7 @@ import { Context2D, GLContext2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { Rect } from "../../core/math/geometry.ts";
+import { circle } from "../mod.ts";
 
 export class Camera2D{
     renderer:Renderer
@@ -35,6 +36,11 @@ export class Camera2D{
     after_draw:((cam:CamA)=>void)[]=[]
 
     ctx:Context2D
+
+    _shake?:{
+        intensity:number
+        duration:number
+    }
 
     visible_callback?:(obj:Container2DObject)=>boolean
     sort_callback?:(a:Container2DObject,b:Container2DObject)=>number
@@ -79,13 +85,31 @@ export class Camera2D{
         this.width = scaleX;
         this.height = scaleY;
     }
+    shake(intensity:number,duration:number){
+        if(this._shake){
+            if(this._shake.intensity<intensity)this._shake={
+                intensity:intensity,
+                duration:duration
+            }
+        }else{
+            this._shake={
+                intensity:intensity,
+                duration:duration
+            }
+        }
+    }
 
     update(dt:number,resources:ResourcesManager): void {
         this.projectionMatrix=this.SubMatrix
         if(this.center_pos){
             const halfViewSize = v2(this.width / 2, this.height / 2);
-            const cameraPos = v2.sub(this.position, halfViewSize);
+            let cameraPos = v2.sub(this.position, halfViewSize);
 
+            if(this._shake){
+                cameraPos=circle.random_point_inside(cameraPos,this._shake.intensity)
+                this._shake.duration-=dt
+                if(this._shake.duration<=0)this._shake=undefined
+            }
             this.visual_position=cameraPos
             this.projectionMatrix=this.SubMatrix
 

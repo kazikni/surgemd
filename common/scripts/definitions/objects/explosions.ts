@@ -1,8 +1,12 @@
 import { Definition, Definitions, FrameDef, MinMax1 } from "../../../engine/core.ts";
 import { tracers } from "../../others/item.ts";
 import { BulletDef } from "../utils.ts";
-import { DecalTint } from "./decals.ts";
-
+import { DecalDef, DecalInstanceDef, DecalTint } from "./decals.ts";
+export interface CamShake{
+    duration:number
+    intensity:number
+    distance?:number
+}
 export type ExplosionDef={
     size:{
         begin:number
@@ -35,13 +39,49 @@ export type ExplosionDef={
         def:string
         count:number
     }
-    decal?:{
-        def:string
-        tint?:DecalTint
-        scale?:number
-    }
+    decal?:DecalInstanceDef
+    cam_shake?:CamShake
 }&Definition
-
+export const explosion_cam_shakes={
+    big:{
+        duration:3,
+        intensity:5,
+    },
+    normal:{
+        duration:0.25,
+        intensity:1,
+    },
+    small:{
+        duration:0.25,
+        intensity:0.4,
+    }
+} satisfies Record<string,CamShake>
+export const explosions_decals={
+    big:{
+        def:"explosion_decal",
+        scale:4,
+        tint:{
+            color:0x000000,
+            alpha:200,
+        },
+    },
+    normal:{
+        def:"explosion_decal",
+        scale:1,
+        tint:{
+            color:0x000000,
+            alpha:150,
+        },
+    },
+    small:{
+        def:"explosion_decal",
+        scale:0.5,
+        tint:{
+            color:0x000000,
+            alpha:150,
+        },
+    }
+} satisfies Record<string,DecalInstanceDef>
 export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
     explosions.insert(
         {
@@ -81,9 +121,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ],
-            decal:{
-                def:"explosion_decal"
-            }
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal
         },
         {
             idString:"frag_grenade_explosion",
@@ -122,10 +161,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ],
-            decal:{
-                def:"explosion_decal",
-                scale:1
-            }
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal
         },
         {
             idString:"smoke_grenade_explosion",
@@ -143,14 +180,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 count:11,
                 def:"smoke"
             },
-            decal:{
-                def:"explosion_decal",
-                scale:1,
-                /*tint:{
-                    color:0xffffff,
-                    alpha:0.75
-                }*/
-            }
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.small
         },
         {
             idString:"molotov_explosion",
@@ -166,7 +197,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             synced_particles:{
                 count:15,
                 def:"molotov_fire"
-            }
+            },
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"mirv_grenade_explosion",
@@ -212,10 +244,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ],
-            decal:{
-                def:"explosion_decal",
-                scale:1
-            }
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"submirv_grenade_explosion",
@@ -254,14 +284,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ],
-            decal:{
-                def:"explosion_decal",
-                scale:0.5,
-                /*tint:{
-                    color:0xffffff,
-                    alpha:0.75
-                }*/
-            }
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"blue_flare_explosion",
@@ -275,6 +299,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_3"
             },
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.small,
         },
         {
             idString:"red_flare_explosion",
@@ -288,6 +314,11 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_3"
             },
+            decal:explosions_decals.small,
+            cam_shake:{
+                duration:0.25,
+                intensity:1,
+            }
         },
         {
             idString:"nuke_explosion",
@@ -309,6 +340,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_2"
             },
+            decal:explosions_decals.big,
+            cam_shake:explosion_cam_shakes.big,
         },
         {
             idString:"rocket_explosion",
@@ -347,10 +380,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ],
-            decal:{
-                def:"explosion_decal",
-                scale:1
-            }
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"m79_grenade_explosion",
@@ -389,10 +420,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     }
                 }
             ],
-            decal:{
-                def:"explosion_decal",
-                scale:1
-            }
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal,
         },
     )
 }

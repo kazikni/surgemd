@@ -13,8 +13,10 @@ __                                                                              
 * UI improvements
 __                                                                                                                 __
 ### Items
+* VSS - 9mm DMR
 __                                                                                                                 __
 ### Others
+* Camera Shake On Explosions
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

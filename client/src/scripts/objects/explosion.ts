@@ -99,5 +99,8 @@ export class Explosion extends GameObject{
                 }
             }
         }
+        if(def.cam_shake){
+            if(v2.distance(this.position,this.game.cam2d.position)<=(def.cam_shake.distance??40))this.game.cam2d.shake(def.cam_shake.intensity*0.2,def.cam_shake.duration)
+        }
     }
 }

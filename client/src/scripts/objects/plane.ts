@@ -40,7 +40,7 @@ export class Plane extends MovingBody {
         this.container.position=this.position
         this.container.rotation = this.physical_data.rotation
         if (this.sound) {
-            this.sound.position = v2.clone(this.position)
+            this.sound.position = this.position
         }
     }
 
@@ -54,7 +54,7 @@ export class Plane extends MovingBody {
                     this.sprite.set_frame(
                         {
                             image: "airdrop_plane",
-                            scale: 11,
+                            scale: 20,
                             hotspot: v2.half_one
                         },
                         this.game.resources
@@ -63,9 +63,9 @@ export class Plane extends MovingBody {
                         this.game.resources.get_sound("airdrop_plane_sfx"),
                         {
                             max_distance: 40,
-                            position: v2.clone(this.position),
+                            position: this.position,
                             loop: true,
-                            volume: 0.5
+                            volume: 0.7
                         }
                     )
                     break
@@ -81,10 +81,10 @@ export class Plane extends MovingBody {
                     this.sound = this.game.sounds.play(
                         this.game.resources.get_sound("airstrike_plane_sfx"),
                         {
-                            max_distance: 40,
-                            position: v2.clone(this.position),
+                            max_distance: 300,
+                            position: this.position,
                             loop: false,
-                            volume: 0.5
+                            volume: 0.7
                         }
                     )
                     break

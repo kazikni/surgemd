@@ -19,6 +19,7 @@ export class Explosion extends GameObject{
     // State                   //
     ////////////////////////////
     maxRadius:number=3
+    radius:number=0
     t:number=0
     constructor(){
         super()
@@ -39,8 +40,8 @@ export class Explosion extends GameObject{
         if(this.def){
             this.sprite.tint.a=1-this.t
             this.t+=3*dt;
-            (this.base_hitbox as CircleHitbox2D).radius=this.maxRadius*this.t
-            this.sprite.scale=v2((this.base_hitbox as CircleHitbox2D).radius,(this.base_hitbox as CircleHitbox2D).radius)
+            const r=this.maxRadius*this.t
+            this.sprite.scale=v2(r,r)
             if(this.t>=1){
                 this.destroy()
             }
@@ -53,11 +54,11 @@ export class Explosion extends GameObject{
         const pos=stream.readPos2()
         this.position=pos
 
-        this.maxRadius=stream.readFloat(0,50,3)
+        this.radius=stream.readFloat(0,50,3)
 
         this.set_definition(this.game.definitions.explosions.getFromNumber(stream.readID()))
 
-        this._base_hitbox=new CircleHitbox2D(v2(0,0),this.maxRadius)
+        this._base_hitbox=new CircleHitbox2D(v2(0,0),this.radius)
 
         this.sprite.position=this.position
         this.sprite.visible=true
@@ -102,5 +103,7 @@ export class Explosion extends GameObject{
         if(def.cam_shake){
             if(v2.distance(this.position,this.game.cam2d.position)<=(def.cam_shake.distance??40))this.game.cam2d.shake(def.cam_shake.intensity*0.2,def.cam_shake.duration)
         }
+        (this.base_hitbox as CircleHitbox2D).radius=this.radius
+        this.maxRadius=this.radius*(this.def.size.visual??1)*1.25
     }
 }

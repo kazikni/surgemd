@@ -1,6 +1,6 @@
 import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { circle, CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
@@ -22,6 +22,9 @@ export class Plane extends MovingBody {
     target_pos: Vec2 = v2.zero()
     called = false
     owner?: Human
+
+    count:number=1
+    radius:number=0
     grenade_def?: GrenadeDef
     obstacle?: ObstacleDef
 
@@ -30,7 +33,7 @@ export class Plane extends MovingBody {
     }
 
     override create(args: Record<string, any>): void {
-        this.base_hitbox=new CircleHitbox2D(v2.zero,60)
+        this.base_hitbox=new CircleHitbox2D(v2.zero,100)
         this.position = args.position
         this.target_pos = args.target_pos
         this.speed = args.speed
@@ -38,6 +41,8 @@ export class Plane extends MovingBody {
         this.owner = args.owner
         this.grenade_def = args.grenade_def
         this.obstacle = args.obstacle
+        this.count=args.count
+        this.radius=args.radius
     }
     override update(dt: number): void {
         super.update(dt)
@@ -51,15 +56,17 @@ export class Plane extends MovingBody {
                     )
                     break
                 case 1: {
-                    const g = this.game.add_grenade(
-                        this.target_pos,
-                        this.grenade_def!,
-                        this.owner,
-                        Layers.Normal
-                    )
-                    g.physical_data.zpos=1
-                    g.physical_data.zpos_speed=0
-                    g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
+                    for(let c=0;c<this.count;c++){
+                        const g = this.game.add_grenade(
+                            this.radius===0?this.target_pos:circle.random_point_inside(this.target_pos,this.radius),
+                            this.grenade_def!,
+                            this.owner,
+                            Layers.Normal
+                        )
+                        g.physical_data.zpos=1
+                        g.physical_data.zpos_speed=0
+                        g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
+                    }
                     break
                 }
             }

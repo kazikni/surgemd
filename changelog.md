@@ -12,6 +12,7 @@ __                                                                              
 ### Menu
 * UI improvements
 * Ak-47 Translation
+* Drop Equipments
 __                                                                                                                 __
 ### Items
 * VSS - 9mm DMR

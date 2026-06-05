@@ -11,6 +11,7 @@ export type ExplosionDef={
     size:{
         begin:number
         end:number
+        visual?:number
     }
     tint:string
     damage:number
@@ -82,6 +83,25 @@ export const explosions_decals={
         },
     }
 } satisfies Record<string,DecalInstanceDef>
+export const explostion_factory={
+    flare_explosion(id:string,tint:string){
+        return {
+            idString:id,
+            tint:tint,
+            push_force:0,
+            size:{
+                begin:0.5,
+                end:1
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_3"
+            },
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.small,
+        }
+    }
+}
 export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
     explosions.insert(
         {
@@ -287,62 +307,9 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             decal:explosions_decals.small,
             cam_shake:explosion_cam_shakes.normal,
         },
-        {
-            idString:"blue_flare_explosion",
-            tint:"#08b0ce",
-            push_force:0,
-            size:{
-                begin:0.5,
-                end:1
-            },
-            damage:0,
-            assets:{
-                sound:"explosion_3"
-            },
-            decal:explosions_decals.small,
-            cam_shake:explosion_cam_shakes.small,
-        },
-        {
-            idString:"red_flare_explosion",
-            tint:"#ca0819",
-            push_force:0,
-            size:{
-                begin:0.5,
-                end:1
-            },
-            damage:0,
-            assets:{
-                sound:"explosion_3"
-            },
-            decal:explosions_decals.small,
-            cam_shake:{
-                duration:0.25,
-                intensity:1,
-            }
-        },
-        {
-            idString:"nuke_explosion",
-            tint:"#445",
-            size:{
-                begin:5,
-                end:25
-            },
-            damage:500,
-            bullet:{
-                def:{
-                    damage:30,
-                    speed:20,
-                    range:25,
-                    tracer:tracers.black_projectile
-                },
-                count:40
-            },
-            assets:{
-                sound:"explosion_2"
-            },
-            decal:explosions_decals.big,
-            cam_shake:explosion_cam_shakes.big,
-        },
+        explostion_factory.flare_explosion("blue_flare_explosion","#08b0ce"),
+        explostion_factory.flare_explosion("red_flare_explosion","#ca0819"),
+        explostion_factory.flare_explosion("orange_flare_explosion","#ce4a08"),
         {
             idString:"rocket_explosion",
             tint:"#445",
@@ -422,6 +389,73 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             ],
             decal:explosions_decals.normal,
             cam_shake:explosion_cam_shakes.normal,
+        },
+        {
+            idString:"nuke_explosion",
+            tint:"#445",
+            size:{
+                begin:5,
+                end:25
+            },
+            damage:500,
+            bullet:{
+                def:{
+                    damage:30,
+                    speed:20,
+                    range:25,
+                    tracer:tracers.black_projectile
+                },
+                count:40
+            },
+            assets:{
+                sound:"explosion_2"
+            },
+            decal:explosions_decals.big,
+            cam_shake:explosion_cam_shakes.big,
+        },
+        {
+            idString:"mini_nuke_explosion",
+            tint:"#d38218",
+            size:{
+                begin:2,
+                end:6,
+                visual:1.5
+            },
+            damage:115,
+            bullet:{
+                def:{
+                    damage:7,
+                    speed:20,
+                    range:25,
+                    tracer:tracers.black_projectile
+                },
+                count:10
+            },
+            assets:{
+                sound:"explosion_1"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:{
+                duration:explosion_cam_shakes.normal.duration*2,
+                intensity:explosion_cam_shakes.normal.intensity*2,
+            }
         },
     )
 }

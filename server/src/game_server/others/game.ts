@@ -483,10 +483,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             type: 0
         })
     }
-    add_airstrike(position:Vec2,grenade:GrenadeDef,owner?:Human){
+    add_airstrike(position:Vec2,grenade:GrenadeDef,count:number,radius:number,owner?:Human){
         this.add_plane(position,{
-            speed: 100,
+            speed: 130,
             grenade_def: grenade,
+            count,
+            radius,
             owner,
             grenade,
             type: 1

@@ -106,6 +106,7 @@ export const LootTables={
         {item:"molotov",count:1,weight:30},
         {item:"mirv_grenade",count:1,weight:20},
         {item:"blue_flare",count:1,weight:1},
+        {item:"orange_flare",count:2,weight:1},
         {item:"red_flare",count:1,weight:1},
     ],
     //Scopes

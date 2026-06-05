@@ -29,6 +29,7 @@ import { type Obstacle } from "./obstacle.ts";
 import { type Building } from "./building.ts";
 import { ConsumibleCondition } from "common/scripts/definitions/items/consumibles.ts";
 import { type Action, HelpupAction } from "../human/actions.ts";
+import { type SyncedParticle } from "./synced_particle.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -665,6 +666,13 @@ export class Human extends MovingBody{
                 break
             }
             case GameObjectType.Building:{
+                if(!this.equipment_data.force_default_scope){
+                    for(const c of (obj as Building).ceilings){
+                        if(!c.no_scope_block&&this.hitbox.overlap_collision(c.hitbox)){
+                            this.equipment_data.force_default_scope=true
+                        }
+                    }
+                }
                 if((obj as StaticBody).physical_data.no_collision)break
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
@@ -673,13 +681,6 @@ export class Human extends MovingBody{
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
                 for(const col of collision){
                     v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
-                }
-                if(!this.equipment_data.force_default_scope){
-                    for(const c of (obj as Building).ceilings){
-                        if(!c.no_scope_block&&this.hitbox.overlap_collision(c.hitbox)){
-                            this.equipment_data.force_default_scope=true
-                        }
-                    }
                 }
                 break
             }
@@ -692,6 +693,12 @@ export class Human extends MovingBody{
                 for(const c of ov){
                     v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
                 }*/
+                break
+            }
+            case GameObjectType.SyncedParticle:{
+                if((obj as SyncedParticle).def.force_default_scope&&this.hitbox.colliding_with(obj.hitbox)){
+                    this.equipment_data.force_default_scope=true
+                }
                 break
             }
             case GameObjectType.Human:
@@ -727,7 +734,9 @@ export class Human extends MovingBody{
         const rules=this.game.modeManager.rules.humans
         switch(this.health_data.boost_def.type){
             case BoostType.Adrenaline:
-                speed*=1+(rules.boosts.adrenaline.speed*(this.health_data.boost/this.health_data.max_boost))
+                if(this.health_data.boost>this.health_data.max_boost/2){
+                    speed*=1+rules.boosts.adrenaline.speed
+                }
                 this.health_data.boost=Math.max(this.health_data.boost-rules.boosts.adrenaline.decay*dt,0)
                 this.health_data.health=Math.min(this.health_data.health+(this.health_data.boost*dt)*rules.boosts.adrenaline.regen,this.health_data.max_health)
                 break

@@ -112,8 +112,7 @@ export const obstacles_factory={
     gun_mount(id:string,gun:GunDef,settings:{
         o?:DeepPartial<ObstacleDef>
     }){
-        return mergeDeep({
-            idString:id,
+        return mergeDeep({idString:id},{
             health:65,
             height:1,
             hitbox:new RectHitbox2D(v2(-0.7,-0.2),v2(0.7,0.2)),
@@ -147,12 +146,13 @@ export const obstacles_factory={
     rock(id:string,settings:{
         tint?:number,
         hitbox?:Hitbox2D,
+        spawn_hitbox?:Hitbox2D,
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
-        return mergeDeep({
-            idString:id,
+        return mergeDeep({idString:id},{
             health:170,
             hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.82),
+            spawnHitbox:settings.spawn_hitbox,
             scale:{
                 destroy:0.7,
             },
@@ -182,8 +182,7 @@ export const obstacles_factory={
         hitbox?:Hitbox2D,
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
-        return mergeDeep({
-            idString:id,
+        return mergeDeep({idString:id},{
             health:70,
             hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.8),
             no_collision:true,
@@ -214,8 +213,7 @@ export const obstacles_factory={
     crate(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
-        return mergeDeep({
-            idString:id,
+        return mergeDeep({idString:id},{
             health:65,
             hitbox:new RectHitbox2D(v2(-0.71,-0.71),v2(0.71,0.71)),
             scale:{
@@ -234,8 +232,7 @@ export const obstacles_factory={
     chest(id:string,settings:{
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
-        return mergeDeep({
-            idString:id,
+        return mergeDeep({idString:id},{
             health:65,
             hitbox:new RectHitbox2D(v2(-0.71,-1),v2(0.71,1)),
             scale:{
@@ -381,6 +378,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             spawnMode:Spawn.grass,
         },
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
+        obstacles_factory.rock("river_rock",{
+            spawn_hitbox:new CircleHitbox2D(v2.zero,1.2),
+            o:{
+                scale:{
+                    min:1.5,
+                    max:2
+                },
+                health:300,
+                spawnMode:Spawn.river_water
+            },
+            tint:0x353638,
+        }),
         obstacles_factory.rock("golden_rock",{tint:0xffd92b,o:{
             lootTable:"golden_rock",
             health:200,

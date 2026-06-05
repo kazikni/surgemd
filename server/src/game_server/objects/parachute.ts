@@ -26,11 +26,9 @@ export class Parachute extends ServerGameObject{
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
-            const obs=this.game.map.add_obstacle(this.parachute_data.spawn_obstacle)
+            const obs=this.game.map.add_obstacle(this.parachute_data.spawn_obstacle,this.layer)
             obs.initialize()
             obs.set_position(this.position)
-            this.destroy()
-
             const objects:ServerGameObject[]=this.manager.cells.get_objects(obs.hitbox,obs.layer)
             for(const o of objects){
                 if(!o.hitbox.colliding_with(obs.hitbox))continue
@@ -55,11 +53,11 @@ export class Parachute extends ServerGameObject{
                     })
                 }
             }
-
             const def=this.game.definitions.synced_particle.getFromString("airdrop_smoke")
             for(let i=0;i<6;i++){
                 this.game.add_synced_particle(this.position,def,undefined,this.layer)
             }
+            this.destroy()
         }
     }
     interact(user: Human): void {

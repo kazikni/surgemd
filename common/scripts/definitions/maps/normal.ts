@@ -69,7 +69,7 @@ export const NormalMap:MapDef={
             size:v2(600,600),
             spawn:[
                 //{def:"small_house_1",count:5},
-                {def:"bunker_1",count:3},
+                {def:"bunker_1",count:2},
                 {def:"shed",count:20},
                 {def:map_spawns.containers,count:20},
 
@@ -80,6 +80,7 @@ export const NormalMap:MapDef={
                 {def:"sillo",count:10},
                 {def:map_spawns.crates,count:400},
                 {def:"oak_tree",count:900},
+                {def:"river_rock",count:200},
                 {def:map_spawns.rocks,count:500},
                 {def:"bush",count:300},
                 {def:"barrel",count:150},
@@ -94,6 +95,7 @@ export const NormalMap:MapDef={
                     passes:1,
                     points:10,
                     spawn:[
+                        {def:"bunker_1",count:1},
                         {def:"oak_tree",count:400,spawn:Spawn.grass_only},
                     ],
                     region:{

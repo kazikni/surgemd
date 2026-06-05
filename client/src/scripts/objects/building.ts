@@ -1,8 +1,41 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween, Container2D } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Debug } from "../others/config.ts";
+export class BuildingCeiling{
+    parent:Building
+    def:BuildingCeilingDef
+    alpha_tween?:Tween<Color>
+    alive:boolean=false
+    below:boolean=false
+    opacity:number=1
+    hitbox:Hitbox2D
+    container:Container2DObject
+    sprite:Sprite2D
+    constructor(parent:Building,def:BuildingCeilingDef,hitbox:Hitbox2D,container:Container2DObject,sprite:Sprite2D){
+        this.parent=parent
+        this.def=def
+        this.hitbox=hitbox
+        this.container=container
+        this.sprite=sprite
+    }
+    can_below(other:Hitbox2D):boolean{
+        return !this.def.below?.deenabled&&this.alive&&other.colliding_with(this.hitbox)
+    }
+    set_below(below:boolean){
+        if(this.below===below||this.def.below?.deenabled)return
+        if(this.alpha_tween)this.alpha_tween.kill()
+        this.below=below
+        this.alpha_tween=this.parent.game.add_tween({
+            duration:this.def.below?.duration??1,
+            target:this.container.tint,
+            to:{
+                a:below?(this.def.below?.alpha??0):1,
+            }
+        })
+    }
+}
 export class Building extends StaticBody{
     ////////////////////////////
     // Definition             //
@@ -23,15 +56,7 @@ export class Building extends StaticBody{
     };
     objects:Container2DObject[]=[]
 
-    ceilings:{
-        def:BuildingCeilingDef
-        alive:boolean
-        collided:boolean
-        opacity:number
-        hitbox:Hitbox2D
-        container:Container2DObject
-        sprite:Sprite2D
-    }[]=[]
+    ceilings:BuildingCeiling[]=[]
 
     ////////////////////////////
     // Assets                 //
@@ -54,26 +79,12 @@ export class Building extends StaticBody{
             o.destroy()
         }
     }
-    update(dt:number): void {
-        for(const c of this.ceilings){
-            if(c.container.tint.a===0&&c.container.visible){
-                c.container.visible=false
-            }else if(c.container.tint.a!==0&&!c.container.visible){
-                c.container.visible=true
-            }
-
-            if(!c.collided){
-                c.container.tint.a=Numeric.lerp(c.container.tint.a,1,Numeric.dt_expo_inter(5,dt))
-            }
-            c.collided=false
-        }
-    }
+    update(dt:number): void {}
     constructor(){
         super()
+        this.updatable=false
     }
-
     override create(_args: Record<string, any>): void {
-        //this.updatable=false
     }
 
     update_ceilings(ceilings:{alive:boolean}[]){
@@ -161,15 +172,8 @@ export class Building extends StaticBody{
             this.game.cam2d.addObject(sprite)
             this.objects.push(sprite)
 
-            this.ceilings.push({
-                container:sprite,
-                def:c,
-                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
-                opacity:c.visible_opacity??0,
-                collided:false,
-                alive:false,
-                sprite
-            })
+            const ceiling=new BuildingCeiling(this,c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),sprite,sprite)
+            this.ceilings.push(ceiling)
         }
 
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)

@@ -1,13 +1,13 @@
 @use "common/engine/main.scss";
 .span-text-base{
     font-family: "Russo-One","Inter", sans-serif;
-    color: #ffffff;
 }
 .span-text{
     @extend .span-text-base;
     font-size:18px;
     pointer-events: none;
     user-select: none;
+    color: #ffffff;
     
     @include main.medium_screen {
         font-size:13px;

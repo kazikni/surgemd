@@ -10,6 +10,8 @@ __                                                                              
 * Vehicles Tire Marks
 __                                                                                                                 __
 ### Menu
+* Final Screen
+* Tertiary Color Settings
 * UI improvements
 * Ak-47 Translation
 * Drop Equipments
@@ -20,7 +22,11 @@ __                                                                              
 __                                                                                                                 __
 ### Others
 * Camera Shake On Explosions
+* Squared Bush
+* River Rock
 * Tundra Bush Group
+* River Stones
+* News Musics
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

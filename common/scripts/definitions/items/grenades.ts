@@ -440,7 +440,8 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             rig_arms:DefaultFistRig,
             rig_image:GrenadeRig,
-            rank:ItemRank.A
+            rank:ItemRank.A,
+            push_force_resistence:0,
         },
     )
 }

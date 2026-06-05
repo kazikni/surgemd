@@ -36,11 +36,8 @@ export class EquipmentModule extends UIModule<Game> {
 
         this.helmet_el.dataset.item_kind  = "6"
         this.helmet_el.dataset.item_value = "0"
-        this.helmet_el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
         this.vest_el.dataset.item_kind  = "6"
         this.vest_el.dataset.item_value = "1"
-        this.vest_el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
-
     }
 
     override on_signal(signal: string, state: { dt: number, player: Human }): void {
@@ -59,17 +56,17 @@ export class EquipmentModule extends UIModule<Game> {
         this.vest=player.vest
         this.backpack=player.backpack
         if(this.helmet){
-            this.render_slot(this.helmet_el,this.helmet.idString,`<span class="span-text">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
+            this.render_slot(this.helmet_el,this.helmet.idString,`<span class="span-text-base">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
         }else{
             this.render_slot(this.helmet_el,undefined,"")
         }
         if(this.vest){
-            this.render_slot(this.vest_el,this.vest.idString,`<span class="span-text">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
+            this.render_slot(this.vest_el,this.vest.idString,`<span class="span-text-base">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
         }else{
             this.render_slot(this.vest_el,undefined,"")
         }
         if(this.backpack){
-            this.render_slot(this.backpack_el,this.backpack.idString,`<span class="span-text">Level ${this.backpack.level}</span>`,"items.description.backpack")
+            this.render_slot(this.backpack_el,this.backpack.idString,`<span class="span-text-base">Level ${this.backpack.level}</span>`,"items.description.backpack")
         }else{
             this.render_slot(this.backpack_el,undefined,"")
         }
@@ -79,6 +76,7 @@ export class EquipmentModule extends UIModule<Game> {
             HideElement(el)
             return
         }
+        el.onmousedown=this.game.ui.handle_slot_click.bind(this.game.ui)
         const sprite = this.game.resources.get_frame(id, false)
         if (!sprite?.src) {
             HideElement(el)

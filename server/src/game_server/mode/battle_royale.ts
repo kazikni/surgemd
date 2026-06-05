@@ -143,7 +143,9 @@ export class BattleRoyaleSolo extends ModeManager{
             }
         })
     }
-
+    give_rank_score(){
+        this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward/this.game.players.match_players_count)
+    }
     override on_player_connect(_p:Player){
         if(!this.game.started&&this.can_start()){
             this.game.add_timeout(()=>{
@@ -168,7 +170,7 @@ export class BattleRoyaleSolo extends ModeManager{
             p.conn!.set_spectator(p.killed_by! as Player)
         },2)
         if(this.game.started){
-            this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward)
+            this.give_rank_score()
             if(this.game.players.living_players.length<=1){
                 this.game.add_timeout(()=>{
                     this.game.finish()
@@ -177,9 +179,8 @@ export class BattleRoyaleSolo extends ModeManager{
         }
     }
     override on_finish(): void {
-        this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
         for(const p of this.game.players.living_players){
-            this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward)
+            this.give_rank_score()
             this.game.leaderboards.push({
                 id:p.id,
                 kills:p.status.kills,
@@ -187,6 +188,7 @@ export class BattleRoyaleSolo extends ModeManager{
                 rank:1,
             })
         }
+        this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
         for(const p of this.game.players.living_players){
             if(p.conn)p.conn.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
         }

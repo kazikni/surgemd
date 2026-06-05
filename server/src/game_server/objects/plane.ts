@@ -52,7 +52,7 @@ export class Plane extends MovingBody {
                 case 0:
                     this.game.add_parachute(
                         this.target_pos,
-                        this.obstacle!
+                        this.obstacle!,
                     )
                     break
                 case 1: {

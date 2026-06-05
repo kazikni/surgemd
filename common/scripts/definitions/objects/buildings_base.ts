@@ -5,11 +5,15 @@ import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 //20mm = 0.17619
 //2mm  = 0.017619
 export type BuildingCeilingDef={
-    frame:FrameDef,
-    hitbox:Hitbox2D,
-    visible_opacity?:number,
-    layer?:number,
-    connections?:number[],
+    frame:FrameDef
+    hitbox:Hitbox2D
+    below?:{
+        deenabled?:boolean
+        duration?:number
+        alpha?:number
+    }
+    layer?:number
+    connections?:number[]
     no_scope_block?:boolean
     destroy?:{
         frame:string
@@ -63,11 +67,14 @@ export interface BuildingDef extends Definition{
     }
 }
 export type JSONBuildingCeilingDef={
-    frame:FrameDef,
-    hitbox:JsonHitbox2D,
-    visible_opacity?:number,
-    layer?:number,
-    connections?:number[],
+    frame:FrameDef
+    hitbox:JsonHitbox2D
+    below?:{
+        duration?:number
+        alpha?:number
+    }
+    layer?:number
+    connections?:number[]
     no_scope_block?:boolean
     destroy?:{
         frame:string
@@ -118,7 +125,7 @@ export function building_to_json(b: BuildingDef): JSONBuildingDef {
             ceiling: b.content.ceiling?.map(c => ({
                 frame: c.frame,
                 hitbox: c.hitbox.to_json(),
-                visible_opacity: c.visible_opacity,
+                below: c.below,
                 layer: c.layer,
                 connections: c.connections,
                 no_scope_block: c.no_scope_block,

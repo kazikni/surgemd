@@ -159,6 +159,8 @@ export class FinalScreenManager {
     async hide_final_screen() {
         await sleep(1)
         this.game.ambient.music.stop()
+        this.game.ambient.rain_value=0
+        this.game.ambient.ambience.stop()
         HideElement(this.root)
         this.scoreContainer.innerHTML = ""
         this.leaderboardContainer.innerHTML = ""

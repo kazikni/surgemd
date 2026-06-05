@@ -83,24 +83,39 @@ export class GameMap{
     default_floor:FloorType=FloorType.Void
 
     point_is_valid(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap){
+        switch(mode.type){
+            case SpawnModeType.any:
+                break
+            case SpawnModeType.blacklist:{
+                const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Void)
+                return !mode.list.includes(floor)
+            }
+            case SpawnModeType.whitelist:{
+                const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Void)
+                return mode.list.includes(floor)
+            }
+            case SpawnModeType.river:{
+                let some=false
+                for(const river of map.rivers){
+                    if(river.get_point_inside(hitbox.position)){
+                        if(mode.list.length>0){
+                            const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Void)
+                            if(!mode.list.includes(floor))continue
+                        }
+                        some=true
+                        break
+                    }
+                }
+                if(!some)return false
+                break
+            }
+        }
         const objs=map.game.scene_2d.objects.cells.get_objects(hitbox,layer)
         for(const o of objs){
             if(!(o.id===id&&o.layer===layer)){
                 if((o.string_type==="obstacle"||o.string_type==="building")&&hitbox.colliding_with((o as StaticBody).spawn_hitbox??o.hitbox)){
                     return false
                 }
-            }
-        }
-        switch(mode.type){
-            case SpawnModeType.any:
-                break
-            case SpawnModeType.blacklist:{
-                const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Water)
-                return !mode.list.includes(floor)
-            }
-            case SpawnModeType.whitelist:{
-                const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Water)
-                return mode.list.includes(floor)
             }
         }
         return true

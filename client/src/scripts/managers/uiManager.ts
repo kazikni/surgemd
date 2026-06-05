@@ -8,12 +8,12 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, format_time, HideElement, isMobile, Numeric, ShowElement, v2, Vec2 } from "common/engine/client.ts";
+import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, Numeric, ShowElement, v2, Vec2 } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
-import { type Building } from "../objects/building.ts";
+import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { HealthModule } from "../uim/health.ts";
 import { BoostModule } from "../uim/boosts.ts";
 import { AItemsModule } from "../uim/aitems.ts";
@@ -98,7 +98,7 @@ export class UiManager{
     }
     money:number=0
 
-    hover_objects:Set<GameObject>=new Set()
+    hover_objects:Set<GameObject|BuildingCeiling>=new Set()
     constructor(game:Game){
         this.game=game
 
@@ -622,12 +622,20 @@ export class UiManager{
 
         const objs = this.game.scene_2d.objects.cells.get_objects(player.hitbox, player.layer)
         for(const o of this.hover_objects){
-            switch(o.number_type){
-                case GameObjectType.Obstacle:{
-                    if(!(o as Obstacle).can_below(player.hitbox)){
-                        (o as Obstacle).set_below(false)
-                        this.hover_objects.delete(o)
+            if(o instanceof GameObject){
+                switch(o.number_type){
+                    case GameObjectType.Obstacle:{
+                        if(!(o as Obstacle).can_below(player.hitbox)){
+                            (o as Obstacle).set_below(false)
+                            this.hover_objects.delete(o)
+                        }
+                        break
                     }
+                }
+            }else if(o instanceof BuildingCeiling){
+                if(!o.can_below(player.hitbox)){
+                    o.set_below(false)
+                    this.hover_objects.delete(o)
                 }
             }
         }
@@ -635,9 +643,9 @@ export class UiManager{
             switch(o.number_type){
                 case GameObjectType.Building:{
                     for(const ceiling of (o as Building).ceilings){
-                        if(ceiling.alive&&ceiling.hitbox.colliding_with(player.hitbox)){
-                            ceiling.container.tint.a=Numeric.lerp(ceiling.container.tint.a,ceiling.opacity,Numeric.dt_expo_inter(5,dt))
-                            ceiling.collided=true
+                        if(ceiling.can_below(player.hitbox)&&!this.hover_objects.has(ceiling)){
+                            ceiling.set_below(true)
+                            this.hover_objects.add(ceiling)
                         }
                     }
                     break

@@ -67,6 +67,7 @@
 
     font-family: "Russo-One", serif;
 
+    color: var(--ui-theme-tertiary);
     .slot-image {
         width: 50px;
         height: 50px;
@@ -83,14 +84,12 @@
         font-weight: bold;
         text-shadow: 0 0 2px #000;
     }
-
     .slot-number {
         position: absolute;
         top: 2px;
         left: 4px;
         font-size: 12px;
-        color: #fff9;
-        color: var(--ui-theme-primary)
+        color: var(--ui-theme-primary);
     }
     @include main.medium_screen {
         width: 55px;
@@ -156,7 +155,7 @@
             position: absolute;
             bottom: 5px;
             right: 10px;
-            color: #fff;
+            color: var(--ui-theme-tertiary);
         }
         .weapon-slot-image {
             pointer-events: none;
@@ -292,6 +291,7 @@
     justify-items: end;
     pointer-events: none;
     .aitem-slot{
+        color: var(--ui-theme-tertiary);
         background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
         display: flex;
         flex-direction: column;
@@ -347,6 +347,7 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
+    color: var(--ui-theme-tertiary);
     .equipment-fixed {
         display: flex;
         gap: 10px;
@@ -386,7 +387,6 @@
         font-size: 10px;
         bottom: 2px;
         left: 2px;
-        color: #aaa;
     }
     @include main.medium_screen {
         right: 7px;
@@ -413,7 +413,7 @@
     }
 }
 #item-tooltip{
-    @extend .span-text;
+    @extend .span-text-base;
 
     opacity:0;
     pointer-events:none;
@@ -434,12 +434,12 @@
     transition:opacity .15s;
     transform: translate(-100%,-100%);
 
+    color: var(--ui-theme-tertiary);
     #item-tooltip-title{
         font-weight:bold;
         margin-bottom:6px;
         font-size:20px;
     }
-
     #item-tooltip-description{
         font-size:15px;
 
@@ -449,7 +449,6 @@
 
         line-height:1.35;
     }
-
     &.tooltip-visible{
         opacity:1;
     }

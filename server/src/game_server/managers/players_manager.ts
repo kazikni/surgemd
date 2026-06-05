@@ -133,6 +133,7 @@ export class PlayersManager{
     splashes:DamageSplash[]=[]
     general_update:GeneralUpdatePacket=new GeneralUpdatePacket()
 
+    match_players_count:number=0
     connected_players:Record<number,PlayerClient>={}
     connected_bots:BotClient[]=[]
     living_players:Player[]=[]
@@ -185,6 +186,9 @@ export class PlayersManager{
         p.proccess_join_packet(packet)
 
         this.living_players.push(p)
+        if(this.living_players.length>this.match_players_count){
+            this.match_players_count=this.living_players.length
+        }
 
         this.send_killfeed_message({
             type:KillFeedMessageType.join,

@@ -103,7 +103,6 @@ export class Bullet extends ServerGameObject{
                     }*/
                     const chosen=colBody
                     const isReflect=false
-                    console.log(chosen,colBody)
                     if(chosen) {
                         this.collided_with.add(obj)
                         if (isReflect) {

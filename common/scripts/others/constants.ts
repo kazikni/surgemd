@@ -123,11 +123,15 @@ export enum  SpawnModeType{
     any,
     blacklist,
     whitelist,
+    river
 }
 export type SpawnMode={
     type:SpawnModeType.any
 }|{
     type:SpawnModeType.blacklist|SpawnModeType.whitelist
+    list:FloorType[]
+}|{
+    type:SpawnModeType.river
     list:FloorType[]
 }
 
@@ -158,6 +162,10 @@ export const Spawn={
     grass_only:{
         type:SpawnModeType.whitelist,
         list:[FloorType.Grass]
+    },
+    river_water:{
+        type:SpawnModeType.river,
+        list:[FloorType.Water,FloorType.Ice]
     },
 } satisfies Record<string,SpawnMode>
 

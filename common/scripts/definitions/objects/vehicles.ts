@@ -186,7 +186,7 @@ export const VehicleTemplates = {
     },...merge),
     boat:(id:string,...merge)=>mergeDeep({
         idString:id,
-        spawn:Spawn.water,
+        spawn:Spawn.river_water,
         hitbox:new HitboxGroup2D(
             new CircleHitbox2D(v2(1.2,0.55),1.15),
             new CircleHitbox2D(v2(1.2,-0.55),1.15),

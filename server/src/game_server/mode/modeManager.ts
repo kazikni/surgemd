@@ -128,7 +128,7 @@ export abstract class ModeManager{
         },
         score:{
             win_reward:500,
-            rank_reward:5,
+            rank_reward:500,
             damage_reward:0.5,
             damage_taken_penalty:0.5,
             kill_reward:100,

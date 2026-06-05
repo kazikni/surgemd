@@ -347,7 +347,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         //Death
         CreateSoda("black",BoostType.Death,undefined,1),
         //Misc
-        {
+        /*{
             idString:"pocket_portal",
             consuming:{
                 type:0,
@@ -360,7 +360,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 boost_type:BoostType.Mana
             },
             rank:ItemRank.A,
-        },
+        },*/
 
         CreateSpray("healing")
     )

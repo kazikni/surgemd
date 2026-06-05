@@ -85,6 +85,7 @@ export class Obstacle extends StaticBody{
         this.container.add_child(this.sprite)
         this.sprite.hotspot=v2.half_one
         this.sprite.scale=v2(2,2)
+        this.updatable=false
     }
     override on_layer_set(layer: number): void {
         this.container.layer=layer
@@ -92,7 +93,6 @@ export class Obstacle extends StaticBody{
     // deno-lint-ignore no-explicit-any
     override create(_args: Record<string,any>): void {
         this.game.cam2d.addObject(this.container)
-        this.updatable=false
     }
     below:boolean=false
     alpha_tween?:Tween<Color>

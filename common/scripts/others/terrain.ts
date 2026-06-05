@@ -62,7 +62,7 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Water]: {
         default_color: 0x2466a2,
-        speed_mult: 0.6,
+        speed_mult: 0.7,
         floor_kind:FloorKind.Liquid,
         footstep_sounds:["footstep_water_1","footstep_water_2"],
         traction: 1,

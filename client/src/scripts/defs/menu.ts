@@ -928,6 +928,14 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"color",
+                            name:"settings.ui.tertiary_color",
+                            var:"sv_ui_tertiary_color",
+                            on_set(val:string){
+                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-tertiary",val)
+                            }
+                        },
+                        {
+                            type:"color",
                             name:"settings.ui.positive_color",
                             var:"sv_ui_positive_color",
                             on_set(val:string){

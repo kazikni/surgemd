@@ -76,17 +76,19 @@ export class Inventory<ItemBase extends Item = Item>{
      * @returns `Inventory` Overflow
      */
     add(item:ItemBase,quantity:number=1):number{
-        let ret=quantity
+        /*let ret=quantity
         let i=-1
-        while(i < this.slots.length&&ret>0){
+        while(i < this.slots.length&&ret>0&&this.slots[i]){
             i++
-            if(this.slots[i]?.item==null)continue
             ret=this.slots[i].add(item,ret)
         }
-        i=-1
-        while(i < this.slots.length&&ret>0){
-            i++
+        return ret*/
+        let ret=quantity
+        for(const i in this.slots){
             ret=this.slots[i].add(item,ret)
+            if(ret==0){
+                break
+            }
         }
         return ret
     }

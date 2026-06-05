@@ -8,6 +8,7 @@ export interface SyncedParticleDef extends Definition{
     side_effect?:SideEffect[]
     no_hit_owner?:boolean
     hitbox?:Hitbox2D
+    force_default_scope?:boolean
     movement?:({
         type:"walk"
         velocity:{
@@ -102,6 +103,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
         {
             idString:"smoke",
             lifetime:33,
+            force_default_scope:true,
             frame:{
                 image:"smoke_particle",
                 scale:0.01
@@ -141,11 +143,12 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
         },
         {
             idString:"airdrop_smoke",
-            lifetime:1,
+            lifetime:1.5,
+            force_default_scope:true,
             frame:{
                 image:"smoke_particle",
                 scale:2,
-                alpha:0.92
+                alpha:230
             },
             movement:{
                 type:"walk",

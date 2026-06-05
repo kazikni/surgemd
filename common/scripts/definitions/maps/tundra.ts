@@ -1,4 +1,4 @@
-import { HitboxType2D, v2 } from "../../../engine/core.ts";
+import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { type BiomeDef, type MapDef } from "./base.ts";
@@ -19,6 +19,7 @@ export const TundraBiome:BiomeDef={
         "/sounds/musics/online/game_tundra_music_1.mp3",
         "/sounds/musics/online/game_tundra_music_2.mp3",
         "/sounds/musics/online/game_tundra_music_3.mp3",
+        "/sounds/musics/online/game_tundra_music_4.mp3",
     ],
     ambient:{
         particles:[],
@@ -308,9 +309,10 @@ export const TundraMap:MapDef={
                 {def:map_spawns.crates,count:90},
                 {def:"oak_tree",count:150},
                 {def:map_spawns.rocks,count:100},
+                {def:"river_rock",count:50},
                 {def:"bush",count:100},
                 {def:"barrel",count:50},
-                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:50},
+                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:20},
 
                 {def:"normal_loot",count:150}
             ],

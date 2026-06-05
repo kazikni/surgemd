@@ -28,7 +28,7 @@ export class BuildingCeiling{
         if(this.alpha_tween)this.alpha_tween.kill()
         this.below=below
         this.alpha_tween=this.parent.game.add_tween({
-            duration:this.def.below?.duration??1,
+            duration:this.def.below?.duration??0.5,
             target:this.container.tint,
             to:{
                 a:below?(this.def.below?.alpha??0):1,

@@ -24,6 +24,7 @@ export interface BulletDef{
             height:number
             color?:number
         }
+        alpha?:number
         color?:number
     }
     reflection?:BulletReflection

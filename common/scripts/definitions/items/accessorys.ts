@@ -34,6 +34,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
 
                     let b=e.bullet.clone()
                     b.damage*=0.2
+                    b.tracerAlpha*=0.75
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
@@ -42,6 +43,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
 
                     b=e.bullet.clone()
                     b.damage*=0.2
+                    b.tracerAlpha*=0.75
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,

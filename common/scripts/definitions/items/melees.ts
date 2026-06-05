@@ -4,6 +4,7 @@ import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
     rank:ItemRank
     item_type?:InventoryItemType.melee
+    description?:string|boolean
 
     hitbox:Hitbox2D
     damage:number

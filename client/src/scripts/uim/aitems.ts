@@ -73,11 +73,8 @@ export class AItemsModule extends UIModule<Game> {
         el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
         el.onmouseenter = (e) => {
-            if (el.dataset.item_name) {
-                this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description ?? "",e.clientX,e.clientY)
-            }
+            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description ?? "")
         }
-
         el.onmouseleave = () => {
             this.game.ui.tooltip_hide()
         }

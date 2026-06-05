@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -210,7 +210,7 @@ export class Game extends ClientGame<GameObject>{
                     this.input.alt_use_weapon=true
                     break
                 case "emote_wheel":
-                    this.ui.begin_emote_wheel(this.input_manager.position)
+                    this.ui.begin_emote_wheel(this.input_manager.mouse_position)
                     break
                 case "reload":
                     this.input.reload=true
@@ -311,10 +311,10 @@ export class Game extends ClientGame<GameObject>{
             }
             this.ui_manager.signal("actionup",a)
         })
-        this.input_manager.listener.on(InputEventType.MouseMove,()=>{
+        this.input_manager.listener.on(InputEventType.MouseMove,(e:InputMouseMoveEvent)=>{
             if(!isMobile){
                 const cam_c=v2(this.cam2d.width/2,this.cam2d.height/2)
-                const mouse_p=v2.dscale(this.input_manager.position,this.cam2d.zoom)
+                const mouse_p=v2.dscale(e.position,this.cam2d.zoom)
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
                 this.set_lookTo_angle(angle,dist)

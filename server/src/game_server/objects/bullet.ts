@@ -183,6 +183,7 @@ export class Bullet extends ServerGameObject{
         this.initial_position=v2.clone(this.position)
         this.old_position=this.position
         this.max_distance=this.def.range/2.5
+        if(this.def.tracer.alpha)this.tracerAlpha=255*this.def.tracer.alpha
 
         const ad=args.ammo?this.game.definitions.ammos.getFromString(args.ammo):undefined
         this.owner=args.owner

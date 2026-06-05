@@ -149,7 +149,7 @@ export const tracers={
     },
     black_projectile:{
         height:1,
-        width:1.3,
+        width:2,
         color:0x334455,
         proj:{
             img:0,

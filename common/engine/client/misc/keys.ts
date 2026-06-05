@@ -200,7 +200,7 @@ export type InputMouseMoveEvent = {
     position: Vec2
     delta: Vec2
 }
-export type InputEvent =InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent
+export type InputEvent = InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent
 export class InputManager {
     listener = new SignalManager()
 
@@ -223,11 +223,12 @@ export class InputManager {
 
     axis: Record<string, AxisData> = {}
 
-    mouse_position = v2(0, 0)
-    mouse_delta = v2(0, 0)
+    real_mouse_position = v2.zero()
+    mouse_position = v2.zero()
+    mouse_delta = v2.zero()
 
-    left_stick = v2(0, 0)
-    right_stick = v2(0, 0)
+    left_stick = v2.zero()
+    right_stick = v2.zero()
 
     dead_zone = v2(0.15, 0.15)
 
@@ -305,18 +306,18 @@ export class InputManager {
     private on_pointer_move(e: PointerEvent,canvas: HTMLCanvasElement) {
         if (!this.focus) return
         const rect = canvas.getBoundingClientRect()
-        const scaleX = canvas.width / rect.width
-        const scaleY = canvas.height / rect.height
+        const scale = v2(canvas.width / rect.width, canvas.height / rect.height)
         const old = this.mouse_position
-        this.mouse_position = v2((e.clientX - rect.left) * scaleX,(e.clientY - rect.top) * scaleY)
+        this.real_mouse_position=v2(e.clientX - rect.left,e.clientY - rect.top)
+        this.mouse_position = v2.mult(this.real_mouse_position,scale)
         this.mouse_delta = v2.sub(this.mouse_position,old)
-        this.emit({type: InputEventType.MouseMove,position: this.position,delta: this.mouse_delta})
+        this.emit({type: InputEventType.MouseMove,position: this.world_mouse_position,delta: this.mouse_delta})
     }
-    get position(): Vec2 {
+    get world_mouse_position(): Vec2 {
         return v2.dscale(this.mouse_position,this.meter_size)
     }
     camera_pos(camera: Camera2D): Vec2 {
-        return v2.add(v2.scale(this.position,camera.zoom),camera.position)
+        return v2.add(v2.scale(this.world_mouse_position,camera.zoom),camera.position)
     }
     private apply_dead_zone(x: number,y: number): Vec2 {
         return v2(

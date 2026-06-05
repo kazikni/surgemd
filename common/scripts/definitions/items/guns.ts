@@ -5,6 +5,7 @@ export type GunDef={
     item_type?:InventoryItemType.gun
     class:GunClasses
     rank:ItemRank
+    description?:string|boolean
 
     barrel_length:number
     barrel_offset?:number
@@ -1061,7 +1062,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:130,
                     speed:47,
                     pass_through_humans:true,
-                    tracer:tracers.medium
+                    tracer:{
+                        ...tracers.medium,
+                        alpha:0.5
+                    }
                 }
             },
 

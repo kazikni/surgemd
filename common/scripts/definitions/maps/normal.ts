@@ -78,7 +78,7 @@ export const NormalMap:MapDef={
                 {def:"boat",count:5},
 
                 {def:"sillo",count:10},
-                {def:map_spawns.crates,count:400},
+                {def:map_spawns.crates,count:500},
                 {def:"oak_tree",count:900},
                 {def:"river_rock",count:200},
                 {def:map_spawns.rocks,count:500},

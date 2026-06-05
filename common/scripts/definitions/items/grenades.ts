@@ -14,6 +14,7 @@ export type Airstrike={
 export type GrenadeDef={
     rank:ItemRank
     item_type?:InventoryItemType.grenade
+    description?:string|boolean
 
     explosion?:string
     call_airdrop?:{
@@ -210,7 +211,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"blue_flare",
             rank:ItemRank.A,
-
+            description:true,
             explosion:"blue_flare_explosion",
             call_airdrop:{
                 delay:9
@@ -233,7 +234,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                     scale:0.01
                 }
             },
-
             gravity:2,
             radius:0.25,
             zBaseScale:0.4,
@@ -259,7 +259,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"red_flare",
             rank:ItemRank.A,
-
+            description:true,
             explosion:"red_flare_explosion",
             call_airstrike:{
                 bomb:{
@@ -269,7 +269,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
 
             },
             particles:{
-                spawn_delay:3,
+                spawn_delay:0.5,
                 tint:0xca0819,
                 delay:0.1,
                 spawn:v2(0.3,0),
@@ -311,6 +311,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"orange_flare",
             rank:ItemRank.A,
+            description:true,
             explosion:"orange_flare_explosion",
             call_airstrike:{
                 delay:2,
@@ -323,7 +324,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 }
             },
             particles:{
-                spawn_delay:3,
+                spawn_delay:0.5,
                 tint:0xce4a08,
                 delay:0.1,
                 spawn:v2(0.3,0),

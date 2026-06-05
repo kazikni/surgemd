@@ -224,9 +224,8 @@ export class UiManager{
     }
     begin_emote_wheel(position:Vec2,emotes?:EmoteDef[]){
         ShowElement(this.content.emote_wheel.main)
-        const ms=this.game.cam2d.meter_size
-        this.content.emote_wheel.main.style.left=`${position.x*ms}px`
-        this.content.emote_wheel.main.style.top=`${position.y*ms}px`
+        this.content.emote_wheel.main.style.left=`${position.x}px`
+        this.content.emote_wheel.main.style.top=`${position.y}px`
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
 
@@ -610,6 +609,10 @@ export class UiManager{
                 this.update_active_player(this.game.active_entity as Human,dt)
             }
         }
+        if(this.content.tooltip.classList.contains("tooltip-visible")){
+            this.content.tooltip.style.left=`${this.game.input_manager.real_mouse_position.x-10}px`
+            this.content.tooltip.style.top=`${this.game.input_manager.real_mouse_position.y-10}px`
+        }
         this.update_crosshair(dt)
     }
     current_interaction?: GameObject
@@ -678,9 +681,9 @@ export class UiManager{
         this.update_hint()
         if (this.emote_wheel.active) {
             const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.position)
+                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
             )
-            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.position)
+            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
 
             const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
             const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
@@ -753,13 +756,10 @@ export class UiManager{
         return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
     }
 
-    tooltip_show(title:string,description:string,x:number,y:number){
+    tooltip_show(title:string|null|undefined,description:string){
+        if(!title)return
         this.content.tooltip_title.innerText=this.game.language.get(title)
         this.content.tooltip_description.innerHTML=description
-
-        this.content.tooltip.style.left=`${x-10}px`
-        this.content.tooltip.style.top=`${y-10}px`
-
         this.content.tooltip.classList.add("tooltip-visible")
     }
     tooltip_hide(){

@@ -45,9 +45,7 @@ export class ItemsModule extends UIModule<Game> {
         el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
         el.onmouseenter=(e)=>{
-            if(el.dataset.item_name){
-                this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description??"",e.clientX,e.clientY)
-            }
+            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description??"")
         }
         el.onmouseleave=()=>{
             this.game.ui.tooltip_hide()
@@ -77,7 +75,7 @@ export class ItemsModule extends UIModule<Game> {
 
             count.classList.toggle("item-maximized",slot.count >= this.game.inventory.item_limit(def))
 
-            if(def.item_type===InventoryItemType.consumible){
+            if(def.item_type===InventoryItemType.consumible||def.item_type===InventoryItemType.grenade){
                 if(def.description){
                     let descriptionKey = `items.description.${def.idString}`
                     if(typeof def.description === "string"){

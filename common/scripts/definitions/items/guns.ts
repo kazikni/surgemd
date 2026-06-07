@@ -380,11 +380,11 @@ export const guns_factory={
 
             rig_arms:WeaponsArmRig[2],
             rig_image:{
-                position:v2.new(0.6,0.0),
+                position:v2.new(0.7,0.0),
                 rotation:0,
             },
             assets:{
-                world:"weapon_medium_world",
+                world:"weapon_large_world",
                 world_tint:0x22222f,
                 cycle_sound:true
             },
@@ -479,18 +479,17 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 delay:0.05,
                 sequence:4
             },
-            spread:2,
-
+            spread:3,
             ammo_spawn:{
                 amount:60
             },
 
             bullet:{
                 def:{
-                    damage:4.5,
-                    range:80,
-                    falloff:0.6,
-                    speed:35,
+                    damage:7,
+                    range:70,
+                    falloff:0.5,
+                    speed:27,
                     tracer:tracers.tiny
                 }
             },
@@ -507,7 +506,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 dual_offset:0.2,
 
                 fire_delay:0.2,
-                spread:3.5,
+                spread:4,
 
                 ammo_spawn:{
                     amount:120

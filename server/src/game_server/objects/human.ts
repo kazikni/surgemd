@@ -30,6 +30,7 @@ import { type Building } from "./building.ts";
 import { ConsumibleCondition } from "common/scripts/definitions/items/consumibles.ts";
 import { type Action, HelpupAction } from "../human/actions.ts";
 import { type SyncedParticle } from "./synced_particle.ts";
+import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -247,22 +248,11 @@ export class Human extends MovingBody{
     apply_score(type:number,amount:number,multiplier:number=1){
         this.status.score+=amount*multiplier
     }
-    get_reflect_segment(): [Vec2, Vec2] {
-        const rot = this.physical_data.rotation
-
-        const center = v2.add(
-            this.position,
-            v2.from_RadAngle(rot, 0.6)
-        )
-
-        const side = v2.perp(v2.from_RadAngle(rot))
-
-        const half = 0.35
-
-        const a = v2.add(center, v2.scale(side, -half))
-        const b = v2.add(center, v2.scale(side,  half))
-
-        return [a, b]
+    get_reflect_segment(): Hitbox2D|undefined {
+        if(!(this.inventory.weapons[0]?.def as MeleeDef).reflective)return undefined
+        const reflect=this.inventory.weapon_idx===0?(this.inventory.weapons[0]!.def as MeleeDef).reflective!.equipped:(this.inventory.weapons[0]!.def as MeleeDef).reflective!.unequipped
+        if(!reflect)return undefined
+        return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
     create(_args: Record<string, void>): void {
         const female=Math.random()<0.5

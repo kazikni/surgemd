@@ -137,7 +137,7 @@ export const NormalMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Water,
-                radius:280,
+                radius:265,
                 passes:3,
                 points:6,
                 variation:60,

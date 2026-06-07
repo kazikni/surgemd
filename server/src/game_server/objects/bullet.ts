@@ -71,23 +71,10 @@ export class Bullet extends ServerGameObject{
                 case GameObjectType.Human:{
                     if((obj as Human).health_data.dead||this.collided_with.has(obj)||(obj as Human).parachute||(this.owner&&obj.id===this.owner.id&&!this.hit_owner))break
                     const colBody = obj.hitbox.overlap_line(this.old_position, this.position)
-                    /*const reflectSeg = null//human.get_reflect_segment()
+                    const reflectSeg = (obj as Human).get_reflect_segment()
                     let colReflect = null
                     if (reflectSeg) {
-                        const segHit = Collision.segment_intersection(
-                            this.old_position,
-                            this.position,
-                            reflectSeg[0],
-                            reflectSeg[1]
-                        )
-                        if (segHit) {
-                            const segDir = v2.sub(reflectSeg[1], reflectSeg[0])
-                            const normal = v2.normalizeSafe(v2(-segDir.y, segDir.x))
-                            colReflect = {
-                                point: segHit.point,
-                                dir: normal
-                            }
-                        }
+                        colReflect = reflectSeg.overlap_line(this.old_position,this.position)
                     }
                     let chosen: typeof colBody | typeof colReflect = null
                     let isReflect = false
@@ -100,14 +87,16 @@ export class Bullet extends ServerGameObject{
                         } else {
                             chosen = colBody
                         }
-                    }*/
-                    const chosen=colBody
-                    const isReflect=false
+                    }
                     if(chosen) {
                         this.collided_with.add(obj)
                         if (isReflect) {
                             this.on_hit()
-                            this.reflect(chosen.dir, chosen.point)
+                            const b=this.reflect(chosen.dir, chosen.point)
+                            if(b){
+                                b.owner=obj as Human
+                                b.hit_owner=false
+                            }
                             break
                         }
                         const dmg:number=this.damage
@@ -206,7 +195,7 @@ export class Bullet extends ServerGameObject{
         this.net_sync.full=true
         this.angle=angle;
     }
-    reflect(normal: Vec2, point: Vec2) {
+    reflect(normal: Vec2, point: Vec2):Bullet|undefined{
         if(this.reflectionCount>=3)return
         const n = v2.normalizeSafe(normal)
         const d = this.dir
@@ -239,6 +228,7 @@ export class Bullet extends ServerGameObject{
             this.owner.inventory.accessorys.call_event("bullet_reflect",{user:this.owner,item:this,bullet:b,angle:b.angle,position:pos})
         }
         b.set_direction(Math.atan2(newDir.y, newDir.x))
+        return b
     }
     clone(){
         return this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)

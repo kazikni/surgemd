@@ -127,10 +127,27 @@ export class Bullet extends GameObject{
                 switch((obj as BaseGameObject2D).number_type){
                     case GameObjectType.Human:{
                         if((obj as Human).dead||(obj as Human).parachute||this.collided_with.has(obj)||(obj.id===this.owner_id&&!this.hit_owner))break
-                        const col=obj.hitbox.overlap_line(this.old_position,this.position)
-                        if(col){
+                        const colBody=obj.hitbox.overlap_line(this.old_position,this.position)
+                        const reflectSeg = (obj as Human).get_reflect_segment()
+                        let colReflect = null
+                        let isReflect = false
+                        let chosen: typeof colBody | typeof colReflect = null
+                        if (reflectSeg) {
+                            colReflect = reflectSeg.overlap_line(this.old_position,this.position)
+                        }
+                        if (colBody || colReflect) {
+                            const distBody = colBody ? v2.distance(this.old_position, colBody.point) : Infinity
+                            const distPan = colReflect ? v2.distance(this.old_position, colReflect.point) : Infinity
+                            if (distPan < distBody) {
+                                chosen = colReflect
+                                isReflect = true
+                            } else {
+                                chosen = colBody
+                            }
+                        }
+                        if(chosen){
                             this.collided_with.add(obj);
-                            (obj as Human).on_hitted(this.position,this._critical)
+                            (obj as Human).on_hitted(this.position,this._critical,undefined,isReflect)
                             if(!this.pass_through_humans)this.dying=true
                         }
                         break

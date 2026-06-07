@@ -31,8 +31,14 @@ export interface MeleeDef extends Definition{
     }
 
     reflective?:{
-        frame?:string
-        offset:number
+        equipped?:{
+            offset:Vec2
+            radius:number
+        }
+        unequipped?:{
+            offset:Vec2
+            radius:number
+        }
     }
 }
 export function AnimationSwing(time:number):AKeyFrame[]{
@@ -402,8 +408,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"axe",
             rank:ItemRank.C,
-            offset:v2(0.5,0),
-            radius:0.3,
+            offset:v2(0.7,0),
+            radius:0.4,
             damage:40,
             resistence_damage:1,
             attack_delay:0.4,
@@ -437,8 +443,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"sledgehammer",
             rank:ItemRank.A,
-            offset:v2(0.5,0),
-            radius:0.3,
+            offset:v2(0.7,0),
+            radius:0.4,
             damage:55,
             resistence_damage:2,
             attack_delay:0.6,
@@ -472,8 +478,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"shovel",
             rank:ItemRank.D,
-            offset:v2(0.5,0),
-            radius:0.3,
+            offset:v2(0.7,0),
+            radius:0.4,
             damage:20,
             attack_delay:0.35,
             switch_delay:0.5,
@@ -506,8 +512,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"katana",
             rank:ItemRank.B,
-            offset:v2(0.6,0),
-            radius:0.4,
+            offset:v2(0.7,0),
+            radius:0.5,
             damage:45,
             resistence_damage:1,
             attack_delay:0.4,
@@ -543,12 +549,14 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     image:"katana_bag",
                     position:v2.new(-0.95,0.25),
                     hotspot:v2(1,0.5),
+                    scale:2,
                     rotation:3.3
                 },
                 unequipped_frame:{
                     image:"katana",
                     position:v2.new(-0.95,0.25),
                     hotspot:v2(1,0.5),
+                    scale:2,
                     rotation:3.3
                 }
             }
@@ -587,17 +595,16 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 hit_sound:"bonesaw_hit",
             }
         },
-        /*{
+        {
             idString:"pan",
             damage:20,
-            offset:0.6,
+            offset:v2(0.8,0.1),
+            radius:0.35,
+            attack_delay:0.5,
+            switch_delay:0.5,
             rank:ItemRank.D,
-            radius:0.9,
-            size:2,
-            attack_delay:0.4,
-            switchDelay:0.5,
-            damage_delays:[0.3],
-            arms:{
+            damage_delays:[0.4],
+            rig_arms:{
                 right:{
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
@@ -609,21 +616,115 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     zIndex:2,
                 }
             },
-            image:{
-                position:DefaultFistRig.left!.position,
-                rotation:Angle.deg2rad(90),
+            rig_image:{
+                position:DefaultFistRig.right!.position,
+                rotation:Angle.deg2rad(-10),
                 zIndex:1,
-                hotspot:v2(0.2,0.4)
+                hotspot:v2(0.2,0.5)
             },
+            animation:[
+                {
+                    time:0,
+                    actions:[
+                    ]
+                },
+                {
+                    time:0.2,
+                    actions:[
+                        {
+                            fuser:"weapon",
+                            type:"tween",
+                            to:{
+                                rotation:Angle.deg2rad(-40),
+                                position:v2(DefaultFistRig.right!.position.x+0.2,DefaultFistRig.right!.position.y-0.4)
+                            },
+                            ease:ease.quadraticInOut
+                        },
+                        {
+                            fuser:"right_arm",
+                            type:"tween",
+                            to:{
+                                rotation:Angle.deg2rad(-20),
+                                position:v2(DefaultFistRig.right!.position.x+0.2,DefaultFistRig.right!.position.y-0.4)
+                            },
+                            ease:ease.quadraticInOut
+                        },
+                    ]
+                },
+                {
+                    time:0.1,
+                    actions:[
+                        {
+                            fuser:"weapon",
+                            type:"tween",
+                            to:{
+                                rotation:Angle.deg2rad(40),
+                                position:v2(DefaultFistRig.right!.position.x-0.2,DefaultFistRig.right!.position.y+0.2)
+                            },
+                            ease:ease.quadraticInOut
+                        },
+                        {
+                            fuser:"right_arm",
+                            type:"tween",
+                            to:{
+                                rotation:Angle.deg2rad(30),
+                                position:v2(DefaultFistRig.right!.position.x-0.2,DefaultFistRig.right!.position.y+0.2)
+                            },
+                            ease:ease.quadraticInOut
+                        },
+                    ]
+                },
+                {
+                    time:0.2,
+                    actions:[
+                        {
+                            fuser:"weapon",
+                            type:"tween",
+                            to:{
+                                position:DefaultFistRig.right!.position,
+                                rotation:Angle.deg2rad(-10),
+                            },
+                            ease:ease.quadraticInOut
+                        },
+                        {
+                            fuser:"right_arm",
+                            type:"tween",
+                            to:{
+                                position:DefaultFistRig.right!.position,
+                                rotation:Angle.deg2rad(-10),
+                            },
+                            ease:ease.quadraticInOut
+                        },
+                    ]
+                },
+            ],
             reflective:{
-                frame:"pan_world",
-                offset:0.6
+                equipped:{
+                    offset:v2(DefaultFistRig.right!.position.x+0.4,DefaultFistRig.right!.position.y),
+                    radius:0.2
+                },
+                unequipped:{
+                    offset:v2(-0.3,0.25),
+                    radius:0.3
+                }
             },
-            animation:AnimationSwing(0.45),
             assets:{
                 use_sound:"heavy_swing",
                 hit_sound:"axe_hit",
+                world:"pan_world"
+            },
+            character_frame:{
+                equipped_frame:{
+                    visible:false,
+                },
+                unequipped_frame:{
+                    visible:true,
+                    position:v2(-0.4,0.25),
+                    rotation:Angle.deg2rad(45),
+                    scale:2,
+                    image:"pan_world"
+                }
             }
-        },*/
+        },
     )
 }

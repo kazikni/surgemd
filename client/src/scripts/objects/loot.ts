@@ -215,22 +215,22 @@ export class Loot extends GameObject{
                 case InventoryItemType.grenade:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
+                    this.sprite_main.scale=v2(2,2)
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true
-                    this.sprite_main.scale=v2(0.8,0.8);
                     this.sprite_outline.scale=v2(1.4,1.4);
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     radius=GameConstants.loot.radius.grenade
-
                     this.container.add_child(this.sprite_outline)
                     break
                 case InventoryItemType.melee:
                     this.sprite_main.frame=this.game.resources.get_frame((this.item as MeleeDef).assets?.item??this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
+                    this.sprite_main.scale=v2(2,2)
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_outline.scale=v2(2,2);
+                    this.sprite_outline.scale=v2(1.9,1.9);
                     this.pickup_sound=this.game.resources.get_sound("gun_pickup")
                     radius=GameConstants.loot.radius.weapon
                     this.container.add_child(this.sprite_outline)
@@ -261,7 +261,6 @@ export class Loot extends GameObject{
             }
             this.base_hitbox=new CircleHitbox2D(v2(0,0),radius)
             this.container.visible=true
-
             this.position=position
             if(Debug.hitbox){
                 this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))

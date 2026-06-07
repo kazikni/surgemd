@@ -45,7 +45,13 @@ export const LootTables={
         {item:"axe",weight:10},
         {item:"katana",weight:3},
         {item:"sledgehammer",weight:3},
-        {item:"bonesaw",weight:3},
+        {item:"bonesaw",weight:2},
+        {item:"pan",weight:2},
+    ],
+    military_melees:[
+        {item:"sledgehammer",weight:3},
+        {item:"bonesaw",weight:2},
+        {item:"pan",weight:2},
     ],
     //Consumibles
     consumibles:[
@@ -215,7 +221,7 @@ export const LootTables={
         [{weight:1,table:"mythic_guns"}],
         [{weight:1,table:"throwables"}],
         [{weight:1,table:"scopes"}],
-        [{weight:9,table:""},{weight:1,table:"melees"}],
+        [{weight:7,table:""},{weight:1,table:"military_melees"}],
     ],
     gold_crate:[
         [{weight:1,table:"ammos",count:2}],
@@ -224,7 +230,7 @@ export const LootTables={
         [{weight:10,table:"legendary_guns"}],
         [{weight:1,table:"throwables"}],
         [{weight:1,table:"scopes"}],
-        [{weight:1,table:""},{weight:4,table:"melees"}],
+        [{weight:1,table:""},{weight:4,table:"military_melees"}],
     ],
     ammo_crate:[
         {weight:1,count:5,table:"ammos"},

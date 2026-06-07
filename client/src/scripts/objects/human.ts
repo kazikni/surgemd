@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, NetStream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -251,7 +251,7 @@ export class Human extends MovingBody{
 
         this.game.cam2d.addObject(this.container)
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
-        this.sprites.vest._frame=this.game.resources.get_frame("player_vest")
+        this.sprites.vest._frame=this.game.resources.get_frame("human_vest")
         this.sprites.vest.sync_rotation=false
         this.consumible_particles=this.game.particles.add_emiter({
             delay:0.2,
@@ -309,7 +309,15 @@ export class Human extends MovingBody{
         this.sprites.emote_container.layer=layer
     }
 
-    on_hitted(position:Vec2,critical:boolean=false,sound?:string){
+    on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
+        if(reflected){
+            this.game.sounds.play(this.game.resources.get_sound(sound??"human_metal_hit"),{
+                position:this.position,
+                max_distance:10,
+                bus:"humans"
+            })
+            return
+        }
         if(this.shield){
         }else{
             if(Math.random()<=0.1){
@@ -345,15 +353,14 @@ export class Human extends MovingBody{
                 zIndex:zIndexes.Particles
             }))
         }
-
         this.game.sounds.play(this.game.resources.get_sound(sound??(
             (this.vest&&this.vest.reflect_bullets)?
                 (
-                    "player_metal_hit"
+                    "human_metal_hit"
                 ):
                 (critical?
-                    "player_headshot":
-                    `player_hit_${random.int(1,2)}`
+                    "human_headshot":
+                    `human_hit_${random.int(1,2)}`
                 )
             )
         ),{
@@ -402,7 +409,7 @@ export class Human extends MovingBody{
             const angle=random.rad()
             this.game.particles.add_particle(new ABParticle2D({
                 frame:{
-                    image:`player_gore_${random.int(1,2)}`,
+                    image:`human_gore_${random.int(1,2)}`,
                     layer:this.layer,
                 },
 
@@ -489,7 +496,6 @@ export class Human extends MovingBody{
                     this.sprites.weapon2.visible=true
                     this.sprites.weapon2.tint=tint
                     this.sprites.weapon2.transform_frame(def.rig_image)
-
                     this.sprites.weapon.position.y=(def as GunDef&DualAdditional).dual_offset!
                     this.sprites.weapon2.position.y=-(def as GunDef&DualAdditional).dual_offset!
                 }
@@ -533,6 +539,7 @@ export class Human extends MovingBody{
                         rotation:0,
                         hotspot:v2.half_one,
                         zIndex:2,
+                        scale:2,
                     },this.game.resources)
                 }else{
                     frame=weapon.assets?.world??weapon.idString+"_world"
@@ -548,6 +555,7 @@ export class Human extends MovingBody{
                 image:frame,
                 rotation:0,
                 hotspot:v2.half_one,
+                scale:2,
                 zIndex:2,
             },this.game.resources)
 
@@ -708,7 +716,7 @@ export class Human extends MovingBody{
                 }
                 if(Floors[f as FloorType].footstep_decal){
                     const d=new ClientDecal()
-                    d.sprite.frame=this.game.resources.get_frame("player_footstep")
+                    d.sprite.frame=this.game.resources.get_frame("human_footstep")
                     d.sprite.rotation=walk_dir
                     d.lifetime=30
 
@@ -1416,6 +1424,12 @@ export class Human extends MovingBody{
                 max_distance:15
             })
         }
+    }
+    get_reflect_segment(): Hitbox2D|undefined {
+        if(!this.melee?.reflective)return undefined
+        const reflect=this.current_weapon===this.melee?this.melee.reflective!.equipped:this.melee.reflective!.unequipped
+        if(!reflect)return undefined
+        return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
     override decode(stream: NetStream, full: boolean): void {
         const [

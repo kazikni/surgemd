@@ -319,7 +319,7 @@ export const TundraMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Ice,
-                radius:280,
+                radius:265,
                 passes:3,
                 points:6,
                 variation:60,

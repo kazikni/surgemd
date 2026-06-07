@@ -10,7 +10,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Loot } from "./loot.ts";
 import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { type Building } from "./building.ts";
-import { ServerGameObject } from "../others/gameObject.ts";
+import { type Decal } from "./decals.ts";
 
 export class Obstacle extends StaticBody{
     override string_type:string="obstacle"
@@ -310,9 +310,14 @@ export class Obstacle extends StaticBody{
         }
     }
 
+    decal?:Decal
     set_position(position:Vec2){
         this.position=position
         this.reset_scale()
+        if(this.decal)this.decal.destroy()
+        if(this.def.decal){
+            this.decal=this.game.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+        }
     }
     reset_scale(){
         if(this.def.hitbox&&this.def.scale){

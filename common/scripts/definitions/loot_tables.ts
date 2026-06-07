@@ -35,7 +35,7 @@ export const LootTables={
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:130},
+        {table:"common_guns",weight:150},
         {table:"mythic_guns",weight:15},
         {table:"legendary_guns",weight:1}
     ],
@@ -125,14 +125,14 @@ export const LootTables={
         {item:"military_helmet",weight:0.2},
     ],
     vests:[
-        {item:"basic_vest",weight:8},
+        {item:"basic_vest",weight:10},
         {item:"regular_vest",weight:1},
-        {item:"military_vest",weight:0.2},
+        {item:"military_vest",weight:0.1},
     ],
     backpacks:[
-        {item:"basic_pack",weight:8},
+        {item:"basic_pack",weight:10},
         {item:"regular_pack",weight:1},
-        {item:"military_pack",weight:0.2},
+        {item:"military_pack",weight:0.1},
     ],
     armors:[
         {table:"helmets",weight:1},
@@ -146,7 +146,7 @@ export const LootTables={
     military_equipments:[
         {item:"military_vest",weight:1},
         {item:"military_helmet",weight:1},
-        {item:"military_pack",weight:0.8},
+        {item:"military_pack",weight:1},
     ],
     accessorys:[
         {weight:5,item:"lucky_coin"},
@@ -225,6 +225,9 @@ export const LootTables={
         [{weight:1,table:"throwables"}],
         [{weight:1,table:"scopes"}],
         [{weight:1,table:""},{weight:4,table:"melees"}],
+    ],
+    ammo_crate:[
+        {weight:1,count:5,table:"ammos"},
     ],
     platinum_crate:[
         [{weight:1,table:"ammos",count:4}],

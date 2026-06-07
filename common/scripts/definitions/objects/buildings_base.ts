@@ -2,6 +2,7 @@ import { DeepPartial, Definition, Definitions, FrameDef, Hitbox2D, hitbox_from_j
 import { Spawn, SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { DecalTint } from "./decals.ts";
 //20mm = 0.17619
 //2mm  = 0.017619
 export type BuildingCeilingDef={
@@ -36,6 +37,14 @@ export type BuildingObstacles={
     scale?:number
     stairs_dest?:Record<number,number>
 }
+export type BuildingDecal={
+    def:string
+    position:Vec2
+    rotation?:number
+    scale?:number
+    layer?:number
+    tint?:DecalTint
+}
 export type BuildingLoot={
     table:string
     position:Vec2
@@ -53,6 +62,7 @@ export interface BuildingDef extends Definition{
     content:{
         ceiling?:BuildingCeilingDef[]
         obstacles?:BuildingObstacles[]
+        decals?:BuildingDecal[]
         sub_building?:BuildingSubBuilding[]
         loots?:BuildingLoot[]
         floors?:{hitbox:Hitbox2D,type:FloorType,layer?:number}[]
@@ -100,6 +110,7 @@ export type JSONBuildingDef={
         ceiling?: JSONBuildingCeilingDef[]
         floors?: {hitbox:JsonHitbox2D,type:FloorType,layer?:number}[]
         obstacles?:BuildingObstacles[]
+        decals?:BuildingDecal[]
         sub_building?:BuildingSubBuilding[]
         loots?:BuildingLoot[]
         floor_image?:(FrameDef&{layer?:number})[]
@@ -165,6 +176,12 @@ export function building_from_json(b: JSONBuildingDef): BuildingDef {
             floor_image: b.content.floor_image
         }
     }
+}
+export const buildings_spawns={
+    box:[
+        {def:"box",weight:2},
+        {def:"",weight:1},
+    ]
 }
 export const buildings_factory={
     container:{
@@ -258,8 +275,8 @@ export const buildings_factory={
             const b={
                 content:{
                     loots:[
-                        {table:"special_loot",position:v2.new(-1,0)},
-                        {table:"special_loot",position:v2.new(1,0)}
+                        {table:"normal_loot",position:v2.new(-1,0)},
+                        {table:"normal_loot",position:v2.new(1,0)}
                     ]
                 }
             }
@@ -679,7 +696,57 @@ export const buildings_factory={
                 spawnMode:Spawn.grass,
             },settings.b??{})
         }
-    }
+    },
+    storehouse(id:string,settings:{
+        floor?:string,
+        ceiling?:string,
+        b?:DeepPartial<BuildingDef>
+    }={}){
+        const min=v2(-9.47,-4.95)
+        const max=v2(9.47,4.95)
+        const wall_size=0.31
+        const side_wall_size=1.4
+        return mergeDeep({
+            idString:id,
+            reflect_bullets:true,
+            hitbox:new HitboxGroup2D(
+                new RectHitbox2D(min,v2(min.x+wall_size,min.y+side_wall_size)),
+                new RectHitbox2D(v2(min.x,max.y-side_wall_size),v2(min.x+wall_size,max.y)),
+                new RectHitbox2D(v2(max.x-wall_size,min.y),v2(max.x,min.y+side_wall_size)),
+                new RectHitbox2D(v2(max.x-wall_size,max.y-side_wall_size),v2(max.x,max.y)),
+                ...RectHitbox2D.wall_enabled_list(min,max,{
+                    left:false,
+                    bottom:true,
+                    right:false,
+                    top:true
+                },wall_size),
+            ),
+            spawnHitbox:new RectHitbox2D(v2(min.x-1,min.y),v2(max.x+1,max.y)),
+            assets:{
+                particles:{
+                    particle:"metal_particle",
+                },
+                sounds:hit_sounds.heavy_metal,
+            },
+            content:{
+                floor_image:[
+                    {
+                        image:settings.floor??"storehouse_floor_1",
+                        scale:2.5
+                    }
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:settings.ceiling??"storehouse_ceiling_1",
+                            scale:2.5
+                        },
+                        hitbox:new RectHitbox2D(min,max),
+                    }
+                ]
+            }
+        } as BuildingDef,settings.b??{})
+    },
 }
 export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
     buildings.insert(
@@ -721,11 +788,67 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             b:{
                 content:{
                     loots:[
-                        {table:"special_loot",position:v2.new(0.5,0)},
+                        {table:"normal_loot",position:v2.new(0.5,0)},
                     ]
                 }
             }
         }),
+        buildings_factory.storehouse("storehouse_1",{
+            b:{
+                content:{
+                    obstacles:[
+                        /*{def:buildings_spawns.box,position:v2(-0.5,-4)},
+                        {def:buildings_spawns.box,position:v2(0.5,-4)},
+                        {def:buildings_spawns.box,position:v2(-0.5,-3)},
+                        {def:buildings_spawns.box,position:v2(0.5,-3)},*/
+
+                        {def:buildings_spawns.box,position:v2(-3,-4)},
+                        {def:buildings_spawns.box,position:v2(-2,-4)},
+                        {def:buildings_spawns.box,position:v2(-3,-3)},
+                        {def:buildings_spawns.box,position:v2(-2,-3)},
+                        {def:buildings_spawns.box,position:v2(3,-4)},
+                        {def:buildings_spawns.box,position:v2(2,-4)},
+                        {def:buildings_spawns.box,position:v2(3,-3)},
+                        {def:buildings_spawns.box,position:v2(2,-3)},
+
+                        /*{def:buildings_spawns.box,position:v2(-0.5,4)},
+                        {def:buildings_spawns.box,position:v2(0.5,4)},
+                        {def:buildings_spawns.box,position:v2(-0.5,3)},
+                        {def:buildings_spawns.box,position:v2(0.5,3)},*/
+
+                        {def:buildings_spawns.box,position:v2(-3,4)},
+                        {def:buildings_spawns.box,position:v2(-2,4)},
+                        {def:buildings_spawns.box,position:v2(-3,3)},
+                        {def:buildings_spawns.box,position:v2(-2,3)},
+                        {def:buildings_spawns.box,position:v2(3,4)},
+                        {def:buildings_spawns.box,position:v2(2,4)},
+                        {def:buildings_spawns.box,position:v2(3,3)},
+                        {def:buildings_spawns.box,position:v2(2,3)},
+
+                        {def:"ammo_crate",position:v2(0,-3.5)},
+                        {def:"ammo_crate",position:v2(0,3.5)},
+                        {def:[
+                            {def:"ammo_crate",weight:50},
+                            {def:"airdrop_locked",weight:1},
+                        ],position:v2(0,0)},
+
+                        {def:"wood_crate",position:v2(0,-1.8)},
+                        {def:"wood_crate",position:v2(0,1.8)},
+
+                        {def:"wood_crate",position:v2(8.3,3.9)},
+                        {def:"barrel",position:v2(8.3,-3.9)},
+                        {def:"barrel",position:v2(-8.3,-3.9)},
+                    ],
+                    decals:[
+                        {def:"wood_pallet",position:v2(-2.5,-3.5)},
+                        {def:"wood_pallet",position:v2(2.5,-3.5)},
+
+                        {def:"wood_pallet",position:v2(-2.5,3.5)},
+                        {def:"wood_pallet",position:v2(2.5,3.5)},
+                    ]
+                }
+            }
+        })
         /*buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,
             doors_tint:2,

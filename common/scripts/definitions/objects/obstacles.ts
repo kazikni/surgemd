@@ -2,6 +2,7 @@ import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTr
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
 import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { DecalInstanceDef } from "./decals.ts";
 export interface ObstacleBehaviorDoor{
     type:0,
     open_delay?:number
@@ -92,6 +93,7 @@ export interface ObstacleDef extends Definition{
 
     onDestroyExplosion?:string
 
+    decal?:DecalInstanceDef
     lootTable?:LootTable
 
     interactDestroy?:boolean
@@ -208,6 +210,30 @@ export const obstacles_factory={
                 alpha:0.5
             },
             height:2
+        },settings.o??{})
+    },
+    box(id:string,settings:{
+        o?:DeepPartial<ObstacleDef>,
+    }={}):ObstacleDef{
+        return mergeDeep({idString:id},{
+            health:35,
+            hitbox:new RectHitbox2D(v2(-0.35,-0.35),v2(0.35,0.35)),
+            scale:{
+                destroy:0.8,
+            },
+            rotation_mode:RotationMode.null,
+            lootTable:id,
+            height:1,
+            assets:{
+                frame:{
+                    dead:"box_dead",
+                },
+                particles:{
+                    particle:"tissue_particle",
+                    tint:0xda946d,
+                },
+                sounds:hit_sounds.tissue
+            }
         },settings.o??{})
     },
     crate(id:string,settings:{
@@ -467,6 +493,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 }
             }
         }),
+        obstacles_factory.box("box",{
+            o:{
+                lootTable:"normal_loot",
+                assets:{
+                    frame:{
+                        variations:2
+                    }
+                }
+            }
+        }),
         obstacles_factory.crate("wood_crate",{
             o:{
                 assets:{
@@ -560,6 +596,27 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 invisible_on_map:true,
                 reflect_bullets:true,
                 hitbox:new RectHitbox2D(v2(-0.8,-0.8),v2(0.8,0.8)),
+            }
+        }),
+        obstacles_factory.crate("ammo_crate",{
+            o:{
+                health:150,
+                resistence:1,
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x0a753d
+                    },
+                    sounds:hit_sounds.metal,
+                    frame:{
+                        dead:"ammo_crate_dead"
+                    }
+                },
+                decal:{
+                    def:"wood_pallet",
+                    scale:1.6
+                },
+                lootTable:"ammo_crate",
             }
         }),
 

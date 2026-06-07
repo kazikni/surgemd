@@ -46,7 +46,7 @@ export class DamageSplashOBJ extends GameObject{
     async create(args: DamageSplash): Promise<void> {
         const color = args.shield
             ? (args.critical ? "#114e" : "#0f9e")
-            : (args.critical ? "#ff0e" : "#fffe")
+            : (args.critical ? this.game.save.get_variable("sv_ui_special_color") : this.game.save.get_variable("sv_ui_tertiary_color"))
 
         
         const human = this.manager.get_object(args.taker) as Human|undefined

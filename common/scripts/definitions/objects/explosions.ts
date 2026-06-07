@@ -106,7 +106,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
     explosions.insert(
         {
             idString:"barrel_explosion",
-            tint:"#445",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:4.5
@@ -146,7 +146,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         {
             idString:"frag_grenade_explosion",
-            tint:"#355",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:4.5
@@ -222,7 +222,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         {
             idString:"mirv_grenade_explosion",
-            tint:"#09e",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:4.5
@@ -269,7 +269,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         {
             idString:"submirv_grenade_explosion",
-            tint:"#09e",
+            tint:"#9c3932",
             size:{
                 begin:1,
                 end:4
@@ -312,7 +312,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         explostion_factory.flare_explosion("orange_flare_explosion","#ce4a08"),
         {
             idString:"rocket_explosion",
-            tint:"#445",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:4
@@ -352,7 +352,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         {
             idString:"m79_grenade_explosion",
-            tint:"#355",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:4.5
@@ -392,7 +392,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         {
             idString:"nuke_explosion",
-            tint:"#445",
+            tint:"#9c3932",
             size:{
                 begin:5,
                 end:25

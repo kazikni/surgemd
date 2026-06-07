@@ -18,7 +18,12 @@ export interface DecalInstanceDef{
     scale?:number
 }
 export function Decals_Default_Init(decals:Definitions<DecalDef,{}>){
-    decals.insert({
-        idString:"explosion_decal",
-    })
+    decals.insert(
+        {
+            idString:"explosion_decal",
+        },
+        {
+            idString:"wood_pallet",
+        }
+    )
 }

@@ -96,9 +96,17 @@ export class Building extends StaticBody {
                 this.game.add_loot(p, li.item, li.count, this.layer)
             }
         }
-
+        for (const d of this.def.content.decals ?? []) {
+            const def=this.game.definitions.decals.getFromString(d.def)
+            const side=this.physical_data.side
+            const p = v2.add_with_orientation(this.position, d.position, side)
+            const rotation=(d.rotation??0)+Angle.side_rad(this.physical_data.side)
+            this.game.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
+        }
         for (const o of this.def.content.obstacles ?? []) {
-            const def=this.game.definitions.obstacles.getFromString(typeof o.def==="string"?o.def:random.weight2(o.def)!.def)
+            const def_name=typeof o.def==="string"?o.def:random.weight2(o.def)!.def
+            if(!def_name||def_name==="")continue
+            const def=this.game.definitions.obstacles.getFromString(def_name)
             const side=this.physical_data.side
             let rotation=o.rotation??0
             switch(def.rotation_mode){
@@ -154,6 +162,8 @@ export class Building extends StaticBody {
                 no_scope_block:!!c.no_scope_block
             })
         }
+
+        this.manager.cells.update_object(this)
     }
 
     verify_childrens(){

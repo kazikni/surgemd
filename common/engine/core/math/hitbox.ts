@@ -354,6 +354,27 @@ export class RectHitbox2D extends BaseHitbox2D{
         }
         return ret
     }
+    static wall_enabled_list(min:Vec2,max:Vec2,walls:{
+        left:boolean
+        right:boolean
+        top:boolean
+        bottom:boolean
+    },walls_size:number):Hitbox2D[]{
+        const ret:Hitbox2D[]=[]
+        if(walls.left){
+            ret.push(new RectHitbox2D(v2(min.x,min.y),v2(min.x+walls_size,max.y)))
+        }
+        if(walls.right){
+            ret.push(new RectHitbox2D(v2(max.x-walls_size,min.y),v2(max.x,max.y)))
+        }
+        if(walls.top){
+            ret.push(new RectHitbox2D(v2(min.x,min.y),v2(max.x,min.y+walls_size)))
+        }
+        if(walls.bottom){
+            ret.push(new RectHitbox2D(v2(min.x,max.y-walls_size),v2(max.x,max.y)))
+        }
+        return ret
+    }
     get position():Vec2{
         return this.min
     }

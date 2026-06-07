@@ -1,4 +1,10 @@
 import { NetStream } from "../net/stream.ts";
+export enum KSPRImageFormat {
+    RawRGBA = 0,
+    PNG = 1,
+    JPEG = 2,
+}
+
 export interface FrameData {
     x: number
     y: number
@@ -7,6 +13,9 @@ export interface FrameData {
     src:string
 }
 export interface KSPRAtlas {
+    format: KSPRImageFormat
+    width:number
+    height:number
     image: Uint8Array
     frames: Record<string, FrameData>
 }
@@ -21,7 +30,7 @@ export function write_kspr(data: KSPR, stream?: NetStream): NetStream {
     const s = stream ?? new NetStream(new ArrayBuffer(10_000_000))
     // HEADER
     s.writeStringSized(5, ".KSPR")
-    s.writeUint8(1)
+    s.writeUint8(2)
     const resolutions = Object.entries(data.resolutions)
     s.writeUint8(resolutions.length)
     for (const [resolutionName, res] of resolutions) {
@@ -30,8 +39,11 @@ export function write_kspr(data: KSPR, stream?: NetStream): NetStream {
         s.writeUint16(res.atlases.length)
         for (const atlas of res.atlases) {
             // imagem
+            s.writeUint8(atlas.format)
+            s.writeUint16(atlas.width)
+            s.writeUint16(atlas.height)
             s.writeUint32(atlas.image.length)
-            s._u8Array.set(atlas.image, s.index)
+            s._u8Array.set(atlas.image,s.index)
             s.index += atlas.image.length
             // frames
             const entries = Object.entries(atlas.frames)
@@ -65,8 +77,11 @@ export function load_kspr(buffer: ArrayBuffer): KSPR {
         const atlases: KSPRAtlas[] = []
         for (let a = 0; a < atlasCount; a++) {
             // imagem
+            const format = stream.readUint8()
+            const width = stream.readUint16()
+            const height = stream.readUint16()
             const imgSize = stream.readUint32()
-            const imgBytes = new Uint8Array(buffer, stream.index, imgSize)
+            const image = new Uint8Array(buffer,stream.index,imgSize)
             stream.index += imgSize
             // frames
             const frameCount = stream.readUint16()
@@ -81,7 +96,10 @@ export function load_kspr(buffer: ArrayBuffer): KSPR {
                 frames[id] = {src,x,y,w,h}
             }
             atlases.push({
-                image: new Uint8Array(imgBytes),
+                format,
+                width,
+                height,
+                image: new Uint8Array(image),
                 frames
             })
         }

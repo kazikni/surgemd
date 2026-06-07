@@ -4,7 +4,7 @@ import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
 import { MapPacket,MapObjectEncode, MapRegion } from "common/scripts/packets/map_packet.ts"
 import { Floors, FloorType, generate_terrain_shape, River, TerrainManager } from "common/scripts/others/terrain.ts"
-import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
+import { GameObjectType, Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
 import { building_from_json, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
@@ -88,11 +88,13 @@ export class GameMap{
                 break
             case SpawnModeType.blacklist:{
                 const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Void)
-                return !mode.list.includes(floor)
+                if(mode.list.includes(floor))return false
+                break
             }
             case SpawnModeType.whitelist:{
                 const floor=map.terrain.get_floor_type(hitbox.position,layer,FloorType.Void)
-                return mode.list.includes(floor)
+                if(!mode.list.includes(floor))return false
+                break
             }
             case SpawnModeType.river:{
                 let some=false
@@ -112,8 +114,8 @@ export class GameMap{
         }
         const objs=map.game.scene_2d.objects.cells.get_objects(hitbox,layer)
         for(const o of objs){
-            if(!(o.id===id&&o.layer===layer)){
-                if((o.string_type==="obstacle"||o.string_type==="building")&&hitbox.colliding_with((o as StaticBody).spawn_hitbox??o.hitbox)){
+            if(o.id!==id){
+                if((o.number_type===GameObjectType.Obstacle||o.number_type===GameObjectType.Building)&&hitbox.colliding_with((o as StaticBody).spawn_hitbox??o.hitbox)){
                     return false
                 }
             }

@@ -1,9 +1,9 @@
 import { type Image, createCanvas, loadImage } from "canvas";
 import path from "node:path";
-import { KSPR, write_kspr } from "../../../../common/engine/core/lang/kspx.ts";
+import { KSPR, write_kspr,KSPRImageFormat } from "../../../../common/engine/core/lang/kspx.ts";
 import { RectPacker } from "../../../../common/engine/core/math/geometry.ts";
 import readDirectory from "./readDirectory.ts";
-import { Minimatch } from "minimatch";
+import { Minimatch } from "minimatch"
 export const cacheDir = ".spritesheet-cache";
 export type CacheData = {
     lastModified: number
@@ -86,12 +86,15 @@ export async function buildKSPRGroup(base: string = "",dir: string,resolutions: 
             const buffer = canvas.toBuffer("image/png")
             atlases.push({
                 image: new Uint8Array(buffer),
-                frames
+                frames,
+                width:bin.width,
+                height:bin.height,
+                format:KSPRImageFormat.PNG,
             })
         }
         kspr.resolutions[res.name] = {
             scale: res.scale,
-            atlases
+            atlases,
         }
     }
     const stream = write_kspr(kspr)

@@ -68,7 +68,7 @@ export const NormalMap:MapDef={
         island:{
             size:v2(600,600),
             spawn:[
-                //{def:"small_house_1",count:5},
+                {def:"small_house_1",count:4},
                 {def:"storehouse_1",count:4},
                 {def:"bunker_1",count:2},
                 {def:"shed",count:20},

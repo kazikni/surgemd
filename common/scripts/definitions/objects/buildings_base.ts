@@ -533,24 +533,44 @@ export const buildings_factory={
             column_tint?:number
             b?:DeepPartial<BuildingDef>
         }={}){
-            const walls_tint=settings.walls_tint??1
+            const walls_tint=settings.walls_tint??2
             const doors_tint=settings.doors_tint??walls_tint
             const column_tint=settings.column_tint??walls_tint
+
+            const wall_size=0.3
+            const min=v2(-7.5,-6.75)
+            const max=v2(7.5,6.75)
             return mergeDeep({
                 idString:id,
-                spawnHitbox:new RectHitbox2D(v2(-7.7,-7.7),v2(7.7,7.7)),
+                spawnHitbox:new RectHitbox2D(v2(-7.7,-7),v2(7.7,7)),
+                hitbox:new HitboxGroup2D(
+                    new RectHitbox2D(min,v2(max.x,min.y+wall_size)),
+                    new RectHitbox2D(min,v2(min.x+wall_size,min.y+0.9)),
+                    new RectHitbox2D(v2(min.x,min.y+2.32),v2(min.x+wall_size,max.y)),
+
+                    new RectHitbox2D(v2(max.x-wall_size,min.y),v2(max.x,max.y-2.45)),
+                    new RectHitbox2D(v2(max.x-wall_size,max.y-1.05),v2(max.x,max.y)),
+
+                    new RectHitbox2D(v2(min.x,max.y-wall_size),v2(max.x,max.y)),
+                ),
                 content:{
                     obstacles:[
                         {
                             def:"wood_door",
-                            position:v2(-7.37,-6.7),
+                            position:v2(-7.36,-5.9),
                             rotation:1,
+                            variation:doors_tint
+                        },
+                        {
+                            def:"wood_door",
+                            position:v2(7.37,5.73),
+                            rotation:3,
                             variation:doors_tint
                         },
 
                         {
-                            def:"wood_wall_8x1",
-                            position:v2(-0.54,-6.3),
+                            def:"wood_wall_4x1",
+                            position:v2(-0.54,-5.97),
                             rotation:1,
                             variation:walls_tint
                         },
@@ -581,33 +601,33 @@ export const buildings_factory={
                         },
 
                         {
-                            def:"wood_wall_10x1",
-                            position:v2(2.38,-6.08),
+                            def:"wood_wall_8x1",
+                            position:v2(2.38,-5.5),
                             rotation:1,
                             connections:[2],
                             variation:walls_tint,
                         },
                         {
                             def:"wood_door",
-                            position:v2(2.38,-4.9),
+                            position:v2(2.38,-4.6),
                             rotation:1,
                             id:2,
                             variation:doors_tint,
                         },
                         {
                             def:"wood_wall_16x1",
-                            position:v2(2.38,-1.52),
+                            position:v2(2.38,-1.22),
                             rotation:1,
                             variation:walls_tint,
                         },
                         {
                             def:"wood_column",
-                            position:v2(2.38,0.5),
+                            position:v2(2.38,0.8),
                             variation:column_tint,
                         },
                         {
                             def:"wood_wall_20x1",
-                            position:v2(4.9,0.5),
+                            position:v2(4.9,0.8),
                             rotation:0,
                             variation:walls_tint,
                         },
@@ -630,36 +650,43 @@ export const buildings_factory={
                             rotation:1,
                             position:v2(-4,-5.5)
                         },
+                        {
+                            def:"large_drawer",
+                            rotation:1,
+                            position:v2(0.9,-6.05),
+                        },
 
                         {
                             def:"large_drawer",
                             rotation:1,
                             position:v2(-6.1,-0.04),
                         },
+
                         {
                             def:"small_stove",
                             rotation:3,
                             variation:2,
-                            position:v2(-5.5,6.71),
+                            position:v2(-5.5,5.9),
                         },
                         {
                             def:"sink",
                             rotation:3,
                             variation:2,
-                            position:v2(-4.4,6.71),
+                            position:v2(-4.4,5.9),
                         },
                         {
                             def:"large_kitchen_drawer",
                             rotation:3,
                             variation:2,
-                            position:v2(-2.75,6.71),
+                            position:v2(-2.75,5.9),
                         },
 
                         {
                             def:"small_bed",
                             rotation:0,
-                            position:v2(5.95,-6.2),
+                            position:v2(5.95,-5.6),
                         },
+
                         {
                             def:"wood_chair",
                             rotation:0,
@@ -681,18 +708,16 @@ export const buildings_factory={
                             image:"small_house_1_floor",
                         }
                     ],
+                    ceiling:[
+                        {
+                            frame:{image:"small_house_1_ceiling"},
+                            hitbox:new RectHitbox2D(min,max),
+                        }
+                    ],
                 },
                 assets:{
                     sounds:hit_sounds.wood
                 },
-                hitbox:new HitboxGroup2D(
-                    new RectHitbox2D(v2(-7.5,-7.5),v2(7.5,-7.25)),
-                    new RectHitbox2D(v2(-7.5,-7.5),v2(-7.25,-6.65)),
-                    new RectHitbox2D(v2(-7.5,-5.44),v2(-7.25,7.5)),
-
-                    new RectHitbox2D(v2(7.25,-7.5),v2(7.5,7.5)),
-                    new RectHitbox2D(v2(-7.5,7.25),v2(7.5,7.5)),
-                ),
                 spawnMode:Spawn.grass,
             },settings.b??{})
         }
@@ -725,6 +750,7 @@ export const buildings_factory={
             assets:{
                 particles:{
                     particle:"metal_particle",
+                    tint:0x404143
                 },
                 sounds:hit_sounds.heavy_metal,
             },
@@ -848,10 +874,10 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     ]
                 }
             }
-        })
-        /*buildings_factory.house.small_house_1("small_house_1",{
+        }),
+        buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,
             doors_tint:2,
-        })*/
+        })
     )
 }

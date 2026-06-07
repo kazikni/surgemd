@@ -435,8 +435,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     }
     on_fire_alt(user:Human):void{}
     attack(user:Human):void{
-        const base_hb=this.def.hitbox.transform(this.def.hitbox.position,undefined,user.physical_data.rotation)
-        const hb=base_hb.transform(user.position)
+        const hb=new CircleHitbox2D(v2.add_rotate_RadAngle(user.position,this.def.offset,user.physical_data.rotation),this.def.radius)
         const collidibles:ServerGameObject[]=user.manager.cells.get_objects(hb,user.layer)
 
         for(const c of collidibles){

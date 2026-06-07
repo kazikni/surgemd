@@ -944,8 +944,7 @@ export class Human extends MovingBody{
                     bus:"humans"
                 })
             }
-            const hb=def.hitbox.transform(def.hitbox.position,undefined,this.physical_data.rotation)
-            hb.translate(this.position)
+            const hb=new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,def.offset,this.physical_data.rotation),def.radius)
             const collidibles:GameObject[]=this.manager.cells.get_objects(hb,this.layer)
             for(const c of collidibles){
                 if(!hb.colliding_with(c.hitbox))continue

@@ -2,6 +2,8 @@
 ## News
 __                                                                                                                 __
 ### Mains
+* Storehouse!
+* Small House
 * New Map
 * Decals
 * River Push Loot
@@ -27,6 +29,9 @@ __                                                                              
 * Tundra Bush Group
 * River Stones
 * News Musics
+* Ammo Crate
+* Box
+* Wood Pallet
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

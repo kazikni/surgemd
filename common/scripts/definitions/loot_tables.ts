@@ -120,9 +120,9 @@ export const LootTables={
     ],
     //Armors And Backpacks
     helmets:[
-        {item:"basic_helmet",weight:8},
+        {item:"basic_helmet",weight:10},
         {item:"regular_helmet",weight:1},
-        {item:"military_helmet",weight:0.2},
+        {item:"military_helmet",weight:0.1},
     ],
     vests:[
         {item:"basic_vest",weight:10},

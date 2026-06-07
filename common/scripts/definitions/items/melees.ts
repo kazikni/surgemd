@@ -1,4 +1,4 @@
-import { AKeyFrame, Angle, CircleHitbox2D, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, CircleHitbox2D, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, Vec2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -6,7 +6,8 @@ export interface MeleeDef extends Definition{
     item_type?:InventoryItemType.melee
     description?:string|boolean
 
-    hitbox:Hitbox2D
+    offset:Vec2
+    radius:number
     damage:number
     resistence_damage?:number
     fire_mode?:FireMode
@@ -266,8 +267,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
     melees.insert({
             idString:"fist",
             rank:ItemRank.E,
-
-            hitbox:new CircleHitbox2D(v2.new(0.5,0),0.5),
+            offset:v2(0.5,0),
+            radius:0.3,
             damage:15,
             attack_delay:0.25,
             switch_delay:0.1,
@@ -318,8 +319,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"survival_knife",
             rank:ItemRank.D,
-
-            hitbox:new CircleHitbox2D(v2.new(0.5,0),0.5),
+            offset:v2(0.5,0),
+            radius:0.3,
             damage:25,
             attack_delay:0.25,
             switch_delay:0.5,
@@ -401,8 +402,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"axe",
             rank:ItemRank.C,
-
-            hitbox:new CircleHitbox2D(v2.new(0.6,0),0.5),
+            offset:v2(0.5,0),
+            radius:0.3,
             damage:40,
             resistence_damage:1,
             attack_delay:0.4,
@@ -436,8 +437,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"sledgehammer",
             rank:ItemRank.A,
-
-            hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
+            offset:v2(0.5,0),
+            radius:0.3,
             damage:55,
             resistence_damage:2,
             attack_delay:0.6,
@@ -471,8 +472,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"shovel",
             rank:ItemRank.D,
-
-            hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
+            offset:v2(0.5,0),
+            radius:0.3,
             damage:20,
             attack_delay:0.35,
             switch_delay:0.5,
@@ -505,8 +506,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"katana",
             rank:ItemRank.B,
-
-            hitbox:new CircleHitbox2D(v2.new(0.6,0),1),
+            offset:v2(0.6,0),
+            radius:0.4,
             damage:45,
             resistence_damage:1,
             attack_delay:0.4,
@@ -555,8 +556,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         {
             idString:"bonesaw",
             rank:ItemRank.S,
-
-            hitbox:new CircleHitbox2D(v2(0.6,0),0.6),
+            offset:v2(0.5,0),
+            radius:0.35,
             damage:20,
             attack_delay:0.65,
             switch_delay:0.5,

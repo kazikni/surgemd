@@ -428,7 +428,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     add_rotate_RadAngle(a:Vec2,b:Vec2,angle:RadAngle):Vec2 {
         const cos = Math.cos(angle)
         const sin = Math.sin(angle)
-        return this.new(a.x+(a.x*cos-b.y*sin),b.y+(b.x*sin+b.y*cos))
+        return this.new(a.x+(b.x*cos-b.y*sin),a.y+(b.x*sin+b.y*cos))
     },
     /**
      * 
@@ -439,7 +439,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         angle=Angle.deg2rad(angle)
         const cos = Math.cos(angle)
         const sin = Math.sin(angle)
-        return this.new(a.x+(b.x*cos-b.y*sin),b.y+(b.x*sin+b.y*cos))
+        return this.new(a.x+(b.x*cos-b.y*sin),a.y+(b.x*sin+b.y*cos))
     },
     /**
      * 

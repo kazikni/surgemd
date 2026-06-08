@@ -126,7 +126,7 @@ export class Game extends ClientGame<GameObject>{
             [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane],
         )
 
-        this.set_meter_size(78)
+        this.set_meter_size(77)
         this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
 
         this.local_server=new LocalGameServer(this)

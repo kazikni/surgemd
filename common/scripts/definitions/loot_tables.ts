@@ -14,9 +14,10 @@ export const LootTables={
         {item:"m1921",weight:40},
         {item:"m870",weight:39},
         {item:"famas",weight:10},
-        {item:"spas12",weight:7},
-        {item:"model94",weight:7},
-        {item:"blr81",weight:7},
+        {item:"rifle_cbc",weight:8},
+        {item:"spas12",weight:8},
+        {item:"model94",weight:8},
+        {item:"blr81",weight:8},
     ],
     mythic_guns:[
         {item:"sr25",weight:13},

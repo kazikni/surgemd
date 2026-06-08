@@ -298,18 +298,20 @@ export class AmbientManager{
             }
 
             if(!this.game.game_over){
-                if(this.finding_music&&!this.music.running&&this.musics.length>0){
-                    if(Math.random()<=0.01){
-                        const music=random.choose(this.musics)
-                        this.game.resources.unload_sound("gameplay_music")
-                        this.game.resources.load_sound("gameplay_music",{
-                            src:music,
-                            volume:1
-                        }).then((v)=>{
-                            this.music.set(v)
-                            this.finding_music=true
-                        })
-                        this.finding_music=false
+                if(this.game.save.get_variable("sv_sounds_gameplay_music")){
+                    if(this.finding_music&&!this.music.running&&this.musics.length>0){
+                        if(Math.random()<=0.01){
+                            const music=random.choose(this.musics)
+                            this.game.resources.unload_sound("gameplay_music")
+                            this.game.resources.load_sound("gameplay_music",{
+                                src:music,
+                                volume:1
+                            }).then((v)=>{
+                                this.music.set(v)
+                                this.finding_music=true
+                            })
+                            this.finding_music=false
+                        }
                     }
                 }
             }

@@ -59,6 +59,7 @@
             "sledgehammer":"Sledgehammer",
             "katana":"Katana",
             "bonesaw":"Bonesaw",
+            "pan":"Pan",
 
             "m9":"M9",
             "m9_dual":"Dual M9",
@@ -87,6 +88,7 @@
             "hp18":"HP18",
             "sr25":"SR-25",
             "vss":"VSS Vintorez",
+            "rifle_cbc":"Rifle-CBC",
             "m1_garand":"M1 Garand",
             "pkp":"PKP Pecheneg",
             "rpg7":"RPG-7",
@@ -357,7 +359,8 @@
             "sounds":{
                 "master_volume":"Master Volume",
                 "music_volume":"Music Volume",
-                "ambient_volume":"Ambient Volume"
+                "ambient_volume":"Ambient Volume",
+                "gameplay_music":"Gameplay Music"
             },
             "ui":{
                 "primary_color":"Primary Color",

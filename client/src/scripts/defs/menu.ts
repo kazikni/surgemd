@@ -906,6 +906,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             max:1,
                             step:0.05
                         },
+                        {
+                            type:"toggle",
+                            name:"settings.sounds.gameplay_music",
+                            var:"sv_sounds_gameplay_music",
+                        },
                     ],translation),
                 },
                 "ui":{

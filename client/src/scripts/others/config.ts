@@ -47,6 +47,7 @@ export const ConfigCasters=Object.freeze({
     sv_sounds_master_volume:Casters.toNumber,
     sv_sounds_music_volume:Casters.toNumber,
     sv_sounds_ambient_volume:Casters.toNumber,
+    sv_sounds_gameplay_music:Casters.toBoolean,
 
     sv_ui_primary_color:Casters.toString,
     sv_ui_secondary_color:Casters.toString,
@@ -86,6 +87,7 @@ export const ConfigDefaultValues={
     sv_sounds_master_volume:1,
     sv_sounds_music_volume:1,
     sv_sounds_ambient_volume:1,
+    sv_sounds_gameplay_music:true,
 
     sv_ui_primary_color:"#4f6ef7",
     sv_ui_secondary_color:"#1c2447",

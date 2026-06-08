@@ -1078,6 +1078,41 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.8
             },
         }),
+        guns_factory.dmr("rifle_cbc","22lr",{
+            fire_delay:0.2,
+            spread:0.5,
+
+            ammo_spawn:{
+                amount:54
+            },
+
+            bullet:{
+                def:{
+                    damage:15,
+                    falloff:0.5,
+                    range:100,
+                    speed:35,
+                    pass_through_humans:true,
+                    tracer:{
+                        ...tracers.small,
+                        alpha:0.75
+                    }
+                }
+            },
+            reload:{
+                delay:0.7,
+                capacity:9,
+                extended_capacity:15,
+                reload_count:1
+            },
+            recoil:{
+                duration:0.4,
+                speed:0.85
+            },
+            assets:{
+                cycle_sound:true,
+            }
+        }),
         guns_factory.dmr("m1_garand","762mm",{
             fire_delay:0.3,
             spread:2,

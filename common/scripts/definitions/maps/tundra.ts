@@ -70,9 +70,10 @@ export const TundraMap:MapDef={
     
             // Uncommon Guns
             {item:"sr25",weight:85},
-            {item:"vss",weight:85},
+            {item:"rifle_cbc",weight:85},
             {item:"model94",weight:83},
             {item:"blr81",weight:83},
+            {item:"vss",weight:83},
 
             // Unrelated Weapons
             {item:"mp5",weight:65},

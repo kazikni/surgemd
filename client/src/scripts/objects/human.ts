@@ -13,7 +13,7 @@ import { Camera2D } from "common/engine/client/2d/camera.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
@@ -90,6 +90,8 @@ export class Human extends MovingBody{
         emote_sprite:Sprite2D
 
         melee_world:Sprite2D
+
+        accessorys:Sprite2D[]
     }
     consumible_particles!:ParticlesEmitter2D<ClientParticle2D>
     animation={
@@ -194,6 +196,8 @@ export class Human extends MovingBody{
             emote_bg:new Sprite2D(),
             emote_sprite:new Sprite2D(),
             melee_world:this.container.add_sprite("melee_world",{zIndex:2,hotspot:v2.half_one}),
+
+            accessorys:[]
         }
 
         this.sprites.left_shirt_arm.transform_frame({
@@ -297,7 +301,8 @@ export class Human extends MovingBody{
             undefined,undefined,
             this.game.definitions.loadout.getFromString("white_shirt") as LoadoutShirtDef,
             this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
-            0xffffff
+            0xffffff,
+            []
         )
     }
     override on_destroy(): void {
@@ -589,7 +594,7 @@ export class Human extends MovingBody{
             this.sprites.melee_world.visible=false
         }
     }
-    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number){
+    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number,accessorys:LoadoutAccessoryDef[]){
         if(
             this.loadout&&
             this.loadout.body.def===body_def&&this.loadout.body.tint===body_tint&&
@@ -604,7 +609,8 @@ export class Human extends MovingBody{
             hair:hair,
             eyes:eyes_def,
             shirt:shirt_def,
-            legs:legs_def
+            legs:legs_def,
+            accessorys
         }
 
         const body_t=ColorM.number(body_tint)
@@ -678,6 +684,22 @@ export class Human extends MovingBody{
             this.sprites.mounth.frame=this.game.resources.get_frame(body_def.mounth.normal)
         }else{
             this.sprites.mounth.visible=false
+        }
+
+        for(const a of this.sprites.accessorys){
+            a.destroy()
+        }
+        this.sprites.accessorys.length=0
+        for(const a of accessorys){
+            const spr=new Sprite2D()
+            spr.set_frame({
+                image:a.frame?.image??a.idString,
+                hotspot:v2.half_one,
+                scale:2,
+                zIndex:6
+            },this.game.resources)
+            if(a.frame)spr.transform_frame(a.frame)
+            this.container.add_child(spr)
         }
 
         this.reset_anim()
@@ -1499,7 +1521,10 @@ export class Human extends MovingBody{
             const shirt_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutShirtDef
             const legs_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutLegDef
             const body_tint=stream.readUint32()
-            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint)
+            const accessorys:LoadoutAccessoryDef[]=stream.readArray(()=>{
+                return this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutAccessoryDef
+            },1)
+            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
         }
         if(has_emote){
             this.add_emote(this.game.definitions.game_objects.valueNumber[stream.readUint16()])

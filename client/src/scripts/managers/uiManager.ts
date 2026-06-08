@@ -287,8 +287,8 @@ export class UiManager{
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     proccess_joinned_packet(jp:JoinnedPacket){
         for(const p of jp.players){
-            const badge_frame=p.badge!==undefined?this.game.definitions.emotes.getFromNumber(p.badge).idString:""
-            const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/main/loadout/badges/${badge_frame}.svg">`
+            const badge_frame=p.badge!==undefined?this.game.definitions.badges.getFromNumber(p.badge).idString:""
+            const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
         if(jp.leader){
@@ -348,8 +348,8 @@ export class UiManager{
         }
         switch(msg.type){
             case KillFeedMessageType.join:{
-                const badge_frame=msg.playerBadge!==undefined?this.game.definitions.emotes.getFromNumber(msg.playerBadge).idString:""
-                const badge_html=badge_frame===""?"":`<img class="badge-icon" src="./img/game/main/loadout/badges/${badge_frame}.svg">`
+                const badge_frame=msg.playerBadge!==undefined?this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:""
+                const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
                 elem.innerHTML=this.game.language.get("killfeed.join",{"player":this.players_name[msg.playerId].full})
                 break

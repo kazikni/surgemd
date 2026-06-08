@@ -38,6 +38,7 @@ __                                                                              
 * Ammo Crate
 * Box
 * Wood Pallet
+* 2 New Hairs
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

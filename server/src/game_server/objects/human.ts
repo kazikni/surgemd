@@ -22,7 +22,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -50,6 +50,7 @@ export class Human extends MovingBody{
 
     splashes: DamageSplash[] = []
     splash_delay:number=0
+    spawn_body:boolean=false
 
     // Physical
     old_position:Vec2=v2.zero()
@@ -268,7 +269,7 @@ export class Human extends MovingBody{
                 tint:random.choose([0xffc166,0xf0a93f])
             },
             hair:{
-                def:this.game.definitions.loadout.getFromString(female?"hair_2":"hair_1") as LoadoutHairDef,
+                def:this.game.definitions.loadout.getFromString(female?random.choose(["hair_2","hair_3"]):random.choose(["hair_1","hair_4"])) as LoadoutHairDef,
                 tint:random.choose([0x222222,0xffffff,0xf01041,0x0066ff,0x331f00,0x4d3108,0xfbff05])
             },
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
@@ -276,7 +277,11 @@ export class Human extends MovingBody{
             legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
             emotes:{
 
-            }
+            },
+            accessorys:female?[
+                this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
+            ]:[],
+            badge:this.game.definitions.badges.getFromString("stone_1_badge")
         }
         const default_scope=this.game.definitions.scopes.getFromNumber(0)
         this.equipment_data={
@@ -1225,7 +1230,7 @@ export class Human extends MovingBody{
             this.game.modeManager.leader_die(this)
         }
 
-        //this.game.add_player_body(this,v2.lookTo(params.position,this.position),this.layer)
+        if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
     }
     on_kill_enemy(victim:Human){
         if(this.game.modeManager.is_leader(victim)){
@@ -1298,6 +1303,9 @@ export class Human extends MovingBody{
             stream.writeUint16(this.loadout.shirt.idNumber!)
             .writeUint16(this.loadout.legs.idNumber!)
             .writeUint32(this.loadout.body.tint)
+            .writeArray(this.loadout.accessorys,(v)=>{
+                stream.writeUint16(v.idNumber!)
+            },1)
         }
         if(this.loadout.emote){
             stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])

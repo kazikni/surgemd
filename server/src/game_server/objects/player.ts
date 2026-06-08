@@ -11,7 +11,7 @@ import { NetStream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
@@ -94,6 +94,7 @@ export class Player extends Human{
             time_alive:0,
             score_applyer:[]
         }
+        this.spawn_body=true
     }
     override apply_score(type: number, amount: number,multiplier:number=1): void {
         if(this.game.modeManager.is_leader(this))multiplier*=this.game.modeManager.rules.score.leader_multiplier
@@ -239,6 +240,10 @@ export class Player extends Human{
             }
             this.loadout.body.tint=jp.skin.body_tint
             this.loadout.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
+            this.loadout.accessorys=[]
+            if(jp.skin.female){
+                this.loadout.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
+            }
         }
     }
     override create(args: Record<string, void>): void {

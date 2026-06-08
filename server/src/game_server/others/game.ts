@@ -1,4 +1,4 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -35,6 +35,8 @@ import { Plane } from "../objects/plane.ts";
 import { DecalDef, DecalTint } from "common/scripts/definitions/objects/decals.ts";
 import { Decal } from "../objects/decals.ts";
 import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+import { HumanBody } from "../objects/human_body.ts";
 export interface GameData {
     living_count: number[]
 
@@ -421,10 +423,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const d=this.scene_2d.objects.add_object(new Decal(),layer,undefined,{def:def,position:position,rotation,tint,scale}) as Decal
         return d
     }
-    /*add_player_body(owner:Player,angle?:number,layer:number=Layers.Normal):PlayerBody{
-        const b=this.scene.objects.add_object(new PlayerBody(angle),layer,undefined,{owner_name:owner.name,owner_badge:owner.loadout.badge,owner,position:v2.duplicate(owner.position)}) as PlayerBody
+    add_human_body(position:Vec2,name:string,angle:number,badge?:BadgeDef,layer:number=Layers.Normal):HumanBody{
+        const b=this.scene_2d.objects.add_object(new HumanBody(),layer,undefined,{name:name,badge:badge,position:position,angle}) as HumanBody
         return b
-    }*/
+    }
     add_grenade(position:Vec2,def:GrenadeDef,owner?:Human,layer:number=Layers.Normal):Grenade{
         const p=this.scene_2d.objects.add_object(new Grenade(),layer,undefined,{def:def,owner,position:position}) as Grenade
         return p

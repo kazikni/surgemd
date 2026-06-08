@@ -46,6 +46,7 @@ import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { FinalScreenManager } from "../managers/final_screen.ts";
 import { island_final } from "common/scripts/config/final_screen.ts";
+import { HumanBody } from "../objects/human_body.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -123,7 +124,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody],
         )
 
         this.set_meter_size(77)

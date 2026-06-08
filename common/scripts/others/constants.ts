@@ -1,4 +1,4 @@
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -23,6 +23,23 @@ export const GameConstants={
         threads:2,
         chunckSize:2
     }
+}
+export enum GameObjectType{
+    StaticBody,
+    Human,
+    HumanBody,
+    Loot,
+    Obstacle,
+    Building,
+    Bullet,
+    Decal,
+    Explosion,
+    Grenade,
+    Vehicle,
+    Creature,
+    Parachute,
+    SyncedParticle,
+    Plane,
 }
 export enum HumanAnimationType{
     Switch,
@@ -194,6 +211,7 @@ export interface HumanLoadoutData {
     eyes?:LoadoutEyesDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
+    accessorys:LoadoutAccessoryDef[]
 }
 export interface HumanAnimationData{
     dirty:boolean
@@ -203,22 +221,6 @@ export interface ObstacleVisualData{
     dirty:boolean
     skin:number
     variation:number
-}
-export enum GameObjectType{
-    StaticBody,
-    Human,
-    Loot,
-    Obstacle,
-    Building,
-    Bullet,
-    Decal,
-    Explosion,
-    Grenade,
-    Vehicle,
-    Creature,
-    Parachute,
-    SyncedParticle,
-    Plane,
 }
 export enum ScoreApplyerType{
     Kill,

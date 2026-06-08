@@ -148,7 +148,7 @@ export class Bullet extends GameObject{
                         if(chosen){
                             this.collided_with.add(obj);
                             (obj as Human).on_hitted(this.position,this._critical,undefined,isReflect)
-                            if(!this.pass_through_humans)this.dying=true
+                            if(!this.pass_through_humans||isReflect)this.dying=true
                         }
                         break
                     }

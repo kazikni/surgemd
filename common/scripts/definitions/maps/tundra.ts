@@ -81,17 +81,21 @@ export const TundraMap:MapDef={
             {item:"ak47",weight:55},
             {item:"ar15",weight:55},
             {item:"m1921",weight:55},
-    
+
             {item:"kar98k",weight:45},
 
             // Rare Guns
             {item:"vector",weight:14},
-            {item:"m1_garand",weight:14},
-            {item:"m2_2",weight:14},
-            {item:"m79",weight:14},
+            {item:"p90",weight:14},
+            {item:"m4a1",weight:14},
 
-            // Epic Guns
-            {item:"awp",weight:5},
+            // Mythic Guns
+            {item:"awp",weight:9},
+            {item:"m1_garand",weight:9},
+            {item:"m2_2",weight:9},
+            {item:"m79",weight:9},
+
+            // Legendary Guns
             {item:"pfeifer_zeliska",weight:4},
             {item:"awms",weight:4},
         ],

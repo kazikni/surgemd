@@ -24,7 +24,7 @@ export const GameConstants={
         chunckSize:2
     }
 }
-export enum PlayerAnimationType{
+export enum HumanAnimationType{
     Switch,
     Reloading,
     Consuming,
@@ -34,27 +34,28 @@ export enum PlayerAnimationType{
     Throw,
     Reset
 }
-export type PlayerAnimation={
+export type HumanAnimation={
 }&({
-    type:PlayerAnimationType.Switch   
+    type:HumanAnimationType.Switch   
 }|{
-    type:PlayerAnimationType.Reloading
+    type:HumanAnimationType.Reloading
     alt_reload:boolean
 }|{
-    type:PlayerAnimationType.Consuming
+    type:HumanAnimationType.Consuming
     item:number
 }|{
-    type:PlayerAnimationType.Melee
+    type:HumanAnimationType.Melee
 }|{
-    type:PlayerAnimationType.Fire
+    type:HumanAnimationType.Fire
     last:boolean
     alt:boolean
+    alt_func:boolean
 }|{
-    type:PlayerAnimationType.Cook
+    type:HumanAnimationType.Cook
 }|{
-    type:PlayerAnimationType.Throw
+    type:HumanAnimationType.Throw
 }|{
-    type:PlayerAnimationType.Reset
+    type:HumanAnimationType.Reset
 })
 export enum Layers{
     Normal=10

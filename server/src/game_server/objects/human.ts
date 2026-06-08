@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, PlayerAnimation, PlayerAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
 import { DamageSplash, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
@@ -122,7 +122,7 @@ export class Human extends MovingBody{
             }
         }
     }
-    animation_data:HumanAnimationData&{current_animation:PlayerAnimation[]}={
+    animation_data:HumanAnimationData&{current_animation:HumanAnimation[]}={
         dirty:true,
         attacking:false,
         current_animation:[]
@@ -490,7 +490,7 @@ export class Human extends MovingBody{
 
         this.animation_data.dirty=true
         this.animation_data.current_animation.push({
-            type:PlayerAnimationType.Throw
+            type:HumanAnimationType.Throw
         })
     }
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
@@ -1317,13 +1317,13 @@ export class Human extends MovingBody{
             stream.writeArray(this.animation_data.current_animation,(v)=>{
                 stream.writeUint8(v.type)
                 switch(v.type){
-                    case PlayerAnimationType.Fire:
-                        stream.writeBooleanGroup(v.alt,v.last)
+                    case HumanAnimationType.Fire:
+                        stream.writeBooleanGroup(v.alt,v.last,v.alt_func)
                         break
-                    case PlayerAnimationType.Reloading:
+                    case HumanAnimationType.Reloading:
                         stream.writeUint8(v.alt_reload?1:0)
                         break
-                    case PlayerAnimationType.Consuming:
+                    case HumanAnimationType.Consuming:
                         stream.writeUint16(v.item)
                         break
                     default:

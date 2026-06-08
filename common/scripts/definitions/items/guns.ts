@@ -1,6 +1,10 @@
 import { DeepPartial, Definition, Definitions, FrameTransform, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
 import { BulletDef, InventoryItemType } from "../utils.ts";
+export interface GunRecoilDef{
+    duration:number
+    speed:number
+}
 export type GunDef={
     item_type?:InventoryItemType.gun
     class:GunClasses
@@ -50,10 +54,7 @@ export type GunDef={
     }
     alt_func?:GunAltFunc
 
-    recoil?:{
-        duration:number
-        speed:number
-    }
+    recoil?:GunRecoilDef
     speed_mod?:number
 
     ammo_type:string
@@ -79,6 +80,7 @@ export type GunDef={
         reload_sound?:string
         reload_sound_alt?:string
         use_last?:boolean|string
+        use_alt_func?:string
     }
     dual?:DeepPartial<GunDef>&DualAdditional
 }&({
@@ -124,6 +126,8 @@ export interface GunAltFunc{
     type:0// Shot Projectile
     projectile:string
     speed:number
+    delay:number
+    ammo:string
 }
 export const GunsConstructors={
     extends(gun:GunDef,variant:DeepPartial<GunDef>):GunDef{
@@ -220,6 +224,16 @@ export const bullets_factory={
             obstacleMult: 1.25,
             falloff: 0.75,
             tracer: tracer
+        }
+    },
+    smg(power:number,tracer=tracers.small):BulletDef{
+        return {
+            damage:5 * power,
+            range:46 * (1 + (power - 1) * 0.4),
+            speed:30 * (1 + (power - 1) * 0.4),
+            falloff:0.7,
+            criticalMult:1.2,
+            tracer:tracer
         }
     }
 }
@@ -612,7 +626,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:4,
 
             ammo_spawn:{
-                amount:90
+                amount:60
             },
 
             bullet:{
@@ -633,7 +647,63 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:5,
 
             ammo_spawn:{
-                amount:30
+                amount:60
+            },
+
+            bullet:{
+                def:bullets_factory.ar(1)
+            },
+            reload:{
+                delay:2.5,
+                capacity:30,
+                extended_capacity:45,
+            },
+            recoil:{
+                duration:0.1,
+                speed:0.75
+            },
+        }),
+        guns_factory.assault("m4a1","556mm",{
+            fire_delay:0.08,
+            spread:1.2,
+
+            ammo_spawn:{
+                amount:60
+            },
+
+            bullet:{
+                def:bullets_factory.ar(1.1)
+            },
+            reload:{
+                delay:2.7,
+                capacity:20,
+                extended_capacity:35,
+            },
+            recoil:{
+                duration:0.1,
+                speed:0.7
+            },
+        }),
+        guns_factory.assault("m16_gl","556mm",{
+            fire_delay:0.07,
+            spread:5,
+
+            alt_func:{
+                type:0,
+                ammo:"explosive_ammo",
+                delay:2.5,
+                projectile:"m79_grenade",
+                speed:13
+            },
+
+            assets:{
+                use_sound:"ar15_fire",
+                use_alt_func:"m79_fire",
+                reload_sound:"ar15_reload",
+                switch_sound:"ar15_switch",
+            },
+            ammo_spawn:{
+                amount:60
             },
 
             bullet:{
@@ -732,14 +802,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:5,
-                    range:45,
-                    speed:30,
-                    falloff:0.5,
-                    criticalMult:1.2,
-                    tracer:tracers.small
-                }
+                def:bullets_factory.smg(1)
             },
             reload:{
                 delay:1.7,
@@ -754,21 +817,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("vector","9mm",{
             rank:ItemRank.A,
             fire_delay:0.03,
-            spread:2,
+            spread:1.3,
 
             ammo_spawn:{
                 amount:96
             },
 
             bullet:{
-                def:{
-                    damage:5,
-                    range:45,
-                    speed:30,
-                    falloff:0.5,
-                    criticalMult:1.2,
-                    tracer:tracers.small
-                }
+                def:bullets_factory.smg(1)
             },
             reload:{
                 delay:1.7,
@@ -778,6 +834,28 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             recoil:{
                 duration:0.07,
                 speed:0.77
+            },
+        }),
+        guns_factory.smg("p90","45acp",{
+            rank:ItemRank.A,
+            fire_delay:0.04,
+            spread:1.3,
+
+            ammo_spawn:{
+                amount:90
+            },
+
+            bullet:{
+                def:bullets_factory.smg(1.3)
+            },
+            reload:{
+                delay:2.6,
+                capacity:30,
+                extended_capacity:45,
+            },
+            recoil:{
+                duration:0.07,
+                speed:0.7
             },
         }),
         guns_factory.sniper("kar98k","762mm",{

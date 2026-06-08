@@ -1,6 +1,6 @@
 
 import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
-import { GameConstants, GameObjectType,  HumanLoadoutData,  PlayerAnimation, PlayerAnimationType, zIndexes } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
@@ -127,6 +127,7 @@ export class Human extends MovingBody{
         weapon_cycle_sound?:Sound
         weapon_fire_sound?:Sound
         weapon_fire_last_sound?:Sound
+        weapon_fire_alt_func_sound?:Sound
         weapon_reload_sound?:Sound
         weapon_reload_sound_alt?:Sound
         footstep_sounds?:string[]
@@ -518,6 +519,7 @@ export class Human extends MovingBody{
 
         this.assets.weapon_fire_sound=undefined
         this.assets.weapon_fire_last_sound=undefined
+        this.assets.weapon_fire_alt_func_sound=undefined
         this.assets.weapon_reload_sound=undefined
         this.assets.weapon_reload_sound_alt=undefined
         this.assets.weapon_switch_sound=undefined
@@ -545,11 +547,18 @@ export class Human extends MovingBody{
                     frame=weapon.assets?.world??weapon.idString+"_world"
                 }
                 if(weapon.assets?.use_last)this.assets.weapon_fire_last_sound=this.game.resources.get_sound(typeof weapon.assets?.use_last==="string"?weapon.assets.use_last:weapon.idString+"_fire_last")
+                    if(weapon.assets?.use_alt_func)this.assets.weapon_fire_last_sound=this.game.resources.get_sound(weapon.assets.use_alt_func)
             }else{
                 frame=weapon.assets?.world??weapon.idString
             }
             this.assets.weapon_fire_sound=this.game.resources.get_sound(weapon.assets?.use_sound??original_name+"_fire")
             this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets?.switch_sound??original_name+"_switch")
+
+            if(typeof weapon.assets?.cycle_sound==="string"){
+                this.assets.weapon_cycle_sound=this.game.resources.get_sound(weapon.assets.cycle_sound)
+            }else if(weapon.assets?.cycle_sound){
+                this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
+            }
 
             this.sprites.weapon.set_frame({
                 image:frame,
@@ -558,13 +567,6 @@ export class Human extends MovingBody{
                 scale:2,
                 zIndex:2,
             },this.game.resources)
-
-
-            if(typeof weapon.assets?.cycle_sound==="string"){
-                this.assets.weapon_cycle_sound=this.game.resources.get_sound(weapon.assets.cycle_sound)
-            }else if(weapon.assets?.cycle_sound){
-                this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
-            }
         }else{
             this.set_arms_rig(undefined)
         }
@@ -974,7 +976,7 @@ export class Human extends MovingBody{
         this.game.add_timeout(att,delay)
     }
     }
-    play_fire_animation(def:GunDef,alt:boolean,last:boolean){
+    play_fire_animation(def:GunDef,alt:boolean,last:boolean,alt_func:boolean){
         let barrel_offset=def.barrel_offset??0
         if(def.dual_from){
             this.animation.recoil_state=0
@@ -1057,11 +1059,15 @@ export class Human extends MovingBody{
         }
 
         let sound:Sound|undefined
-        if(last){
-            if(this.assets.weapon_fire_last_sound)sound=this.assets.weapon_fire_last_sound
-            else sound=this.assets.weapon_fire_sound
+        if(alt_func){
+            sound=this.assets.weapon_fire_alt_func_sound??this.assets.weapon_fire_sound
         }else{
-            sound=this.assets.weapon_fire_sound
+            if(last){
+                if(this.assets.weapon_fire_last_sound)sound=this.assets.weapon_fire_last_sound
+                else sound=this.assets.weapon_fire_sound
+            }else{
+                sound=this.assets.weapon_fire_sound
+            }
         }
         if(sound){
             this.game.sounds.play(sound,{
@@ -1082,10 +1088,10 @@ export class Human extends MovingBody{
             this.animation.muzzle_flash_time=Math.min(def.fire_delay*0.9,0.1)
         }
     }
-    set_animations(animations:PlayerAnimation[]){
+    set_animations(animations:HumanAnimation[]){
         for(const a of animations){
             switch(a.type){
-                case PlayerAnimationType.Switch:{
+                case HumanAnimationType.Switch:{
                     if(this.animation.switch_and_cycle)this.animation.switch_and_cycle.stop()
                     if(this.assets.weapon_switch_sound){
                         // deno-lint-ignore ban-ts-comment
@@ -1096,14 +1102,14 @@ export class Human extends MovingBody{
                     this.reset_anim()
                     break
                 }
-                case PlayerAnimationType.Fire:{
-                    if(this.current_weapon!.item_type===InventoryItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last)
+                case HumanAnimationType.Fire:{
+                    if(this.current_weapon!.item_type===InventoryItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last,a.alt_func)
                     break
                 }
-                case PlayerAnimationType.Melee:
+                case HumanAnimationType.Melee:
                     if(this.current_weapon!.item_type===InventoryItemType.melee)this.play_melee_animation(this.current_weapon as MeleeDef)
                     break
-                case PlayerAnimationType.Reloading:{
+                case HumanAnimationType.Reloading:{
                     if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun)break
                     const d=this.current_weapon as GunDef
                     const sound=(d.reload?.reload_alt&&a.alt_reload)?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
@@ -1117,7 +1123,7 @@ export class Human extends MovingBody{
                     }
                     break
                 }
-                case PlayerAnimationType.Consuming:{
+                case HumanAnimationType.Consuming:{
                     const def=this.game.definitions.consumibles.getFromNumber(a.item)
                     const sound=this.game.resources.get_sound((def.assets?.using_sound)??`using_${def.idString}`)
                     const consuming=def.consuming as (ConsumingAction&{type:0})
@@ -1171,7 +1177,7 @@ export class Human extends MovingBody{
                     }
                     break
                 }
-                case PlayerAnimationType.Cook:
+                case HumanAnimationType.Cook:
                     this.container.play_animation([
                         {
                             time:0.1,
@@ -1217,7 +1223,7 @@ export class Human extends MovingBody{
                         },
                     ])
                     break
-                case PlayerAnimationType.Throw:
+                case HumanAnimationType.Throw:
                     this.container.play_animation([
                         {
                             time:0.1,
@@ -1244,7 +1250,7 @@ export class Human extends MovingBody{
                         this.update_weapon(this.current_weapon)
                     })
                     break
-                case PlayerAnimationType.Reset:
+                case HumanAnimationType.Reset:
             }
         }
     }
@@ -1518,26 +1524,27 @@ export class Human extends MovingBody{
             }
         }
         if(full||animation_dirty){
-            const animations:PlayerAnimation[]=stream.readArray(()=>{
-                let animation:PlayerAnimation
-                const tp=stream.readUint8() as PlayerAnimationType
+            const animations:HumanAnimation[]=stream.readArray(()=>{
+                let animation:HumanAnimation
+                const tp=stream.readUint8() as HumanAnimationType
                 switch(tp){
-                    case PlayerAnimationType.Fire:{
+                    case HumanAnimationType.Fire:{
                         const bg=stream.readBooleanGroup()
                         animation={
                             type:tp,
                             alt:bg[0],
-                            last:bg[1]
+                            last:bg[1],
+                            alt_func:bg[2]
                         }
                         break
                     }
-                    case PlayerAnimationType.Reloading:
+                    case HumanAnimationType.Reloading:
                         animation={
                             type:tp,
                             alt_reload:!!stream.readUint8()
                         }
                         break
-                    case PlayerAnimationType.Consuming:
+                    case HumanAnimationType.Consuming:
                         animation={
                             type:tp,
                             item:stream.readUint16()

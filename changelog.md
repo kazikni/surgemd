@@ -14,12 +14,17 @@ __                                                                              
 ### Menu
 * Final Screen
 * Tertiary Color Settings
+* Gameplay Music Settings
+* Document Body
 * UI improvements
 * Ak-47 Translation
 * Drop Equipments
 __                                                                                                                 __
 ### Items
 * VSS - 9mm DMR
+* Rifle CBC - 22lr DMR
+* P90 - 45acp SMG
+* M4A1 - 556mm Assault
 * Bonesaw
 * Pan
 __                                                                                                                 __

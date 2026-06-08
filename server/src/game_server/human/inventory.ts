@@ -9,7 +9,7 @@ import { BackpackDef, } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
-import { GameObjectType, PlayerAnimationType } from "common/scripts/others/constants.ts";
+import { GameObjectType, HumanAnimationType } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Angle, CircleHitbox2D, getPatterningShape, Numeric, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
@@ -68,7 +68,18 @@ export class GunItem extends GunItemBase implements LItem{
             this.burst=undefined
         }
     }
-    on_fire_alt(user:Human):void{}
+    on_fire_alt(user:Human):void{
+        if(this.def.alt_func){
+            switch(this.def.alt_func.type){
+                case 0:
+                    if(this.use_delay<=0){
+                        this.shot_alt(user)
+                        this.use_delay=this.def.alt_func.delay
+                    }
+                    break
+            }
+        }
+    }
     infinity_ammo(){
         return this.inventory.infinity_ammo||this.inventory.infinity_ammos.has(this.def.ammo_type)
     }
@@ -85,7 +96,7 @@ export class GunItem extends GunItemBase implements LItem{
         user.animation_data.dirty=true
         user.animation_data.current_animation.push(
             {
-                type:PlayerAnimationType.Reloading,
+                type:HumanAnimationType.Reloading,
                 alt_reload:this.ammo===0,
             })
 
@@ -204,8 +215,42 @@ export class GunItem extends GunItemBase implements LItem{
         }
 
         user.animation_data.current_animation.push({
-            type:PlayerAnimationType.Fire,
+            type:HumanAnimationType.Fire,
             alt:this.dual_d,
+            last:this.ammo===0,
+            alt_func:false,
+        })
+    }
+    shot_alt(user:Human){
+        user.actions.cancel()
+
+        user.net_sync.part=true
+        user.animation_data.dirty=true
+        user.inventory.net_sync.hand=true
+
+        this.reloading=false
+
+        const barrel_position=v2(
+            this.def.barrel_length,
+            (this.def.barrel_offset??0)+(this.def.dual_from?(this.dual_d?-this.def.dual_offset:this.def.dual_offset):0)
+        )
+        const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
+        const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
+        if(this.def.dual_from)this.dual_d=!this.dual_d
+
+        const proj_def=user.game.definitions.grenades.getFromString(this.def.alt_func!.projectile)
+        const proj=user.game.add_grenade(position,proj_def,user,user.layer)
+        proj.physical_data.zpos=0.5
+        proj.physical_data.zpos_speed=1
+        const limit=this.def.alt_func!.speed
+        proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
+        if(this.def.recoil){
+            user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
+        }
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Fire,
+            alt:this.dual_d,
+            alt_func:true,
             last:this.ammo===0
         })
     }
@@ -292,7 +337,7 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
                     user.animation_data.dirty=true
                     user.animation_data.current_animation.push(
                         {
-                            type:PlayerAnimationType.Consuming,
+                            type:HumanAnimationType.Consuming,
                             item:this.def.idNumber!
                         }
                     )
@@ -385,7 +430,7 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         user.animation_data.dirty=true
         user.animation_data.current_animation.push(
             {
-                type:PlayerAnimationType.Cook,
+                type:HumanAnimationType.Cook,
             }
         )
     }
@@ -421,7 +466,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
 
             user.animation_data.dirty=true
             user.animation_data.current_animation.push({
-                type:PlayerAnimationType.Melee
+                type:HumanAnimationType.Melee
             })
 
             for(const t of this.def.damage_delays){
@@ -522,7 +567,7 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         super.set_weapon_index(idx,force)
         this.owner.animation_data.current_animation.push({
-            type:PlayerAnimationType.Switch,
+            type:HumanAnimationType.Switch,
         })
         this.net_sync.melee_world=true
     }

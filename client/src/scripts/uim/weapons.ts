@@ -2,6 +2,8 @@ import { UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { WeaponDef } from "common/scripts/definitions/game_defs.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 
 export class WeaponsModule extends UIModule<Game> {
     container!: HTMLDivElement
@@ -98,7 +100,19 @@ export class WeaponsModule extends UIModule<Game> {
         }
 
         this.currentWeapon = this.game.inventory.weapon_idx
+        const item=this.game.inventory.weapons[this.game.inventory.weapon_idx]
         this.elements[this.currentWeapon]?.classList.add("weapon-slot-selected")
+
+        if(item&&item.item_type===InventoryItemType.gun){
+            const def=(item.def as GunDef)
+            this.game.aim_line.width=((def.bullet?.def.range??1000)*0.43)
+            /*const spread=def.spread??0
+            const jr=def.jitter_radius??0
+            this.game.aim_line.height=(spread*0.33)+jr*/
+        }else{
+            this.game.aim_line.width=10
+            this.game.aim_line.height=0.1
+        }
     }
     override on_update(dt: number): void {
     }

@@ -8,7 +8,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, Numeric, ShowElement, v2, Vec2 } from "common/engine/client.ts";
+import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, Vec2 } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -91,6 +91,7 @@ export class UiManager{
 
         btn_interact:document.querySelector("#btn-mobile-interact") as HTMLButtonElement,
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
+        btn_emotes:document.querySelector("#btn-mobile-emotes") as HTMLButtonElement,
     }
     leader?:{
         id:number
@@ -185,7 +186,7 @@ export class UiManager{
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             rotating=true
-            this.game.aim_line=true
+            this.game.aim_line.enabled=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
             /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==InventoryItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
                 
@@ -207,7 +208,7 @@ export class UiManager{
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
             this.game.input.use_weapon=false
             rotating=false
-            this.game.aim_line=false
+            this.game.aim_line.enabled=false
         })
         this.mobile_content.btn_interact.addEventListener("click",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"interact"})
@@ -215,19 +216,25 @@ export class UiManager{
         this.mobile_content.btn_reload.addEventListener("click",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"reload"})
         })
+        this.mobile_content.btn_emotes.addEventListener("click",(e)=>{
+            this.begin_emote_wheel(v2(this.game.renderer.canvas.clientWidth/2,this.game.renderer.canvas.clientHeight/2),false)
+        })
     }
     emote_wheel={
         positon:v2(0,0),
         active:false,
+        up_enable:true,
         current_side:-1,
-        emote:[] as EmoteDef[]
+        emote:[] as EmoteDef[],
     }
-    begin_emote_wheel(position:Vec2,emotes?:EmoteDef[]){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:EmoteDef[]){
         ShowElement(this.content.emote_wheel.main)
+        HideElement(this.mobile_content.btn_emotes)
         this.content.emote_wheel.main.style.left=`${position.x}px`
         this.content.emote_wheel.main.style.top=`${position.y}px`
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
+        this.emote_wheel.up_enable=up_enable
 
         this.emote_wheel_set_emotes(emotes??[
             this.game.definitions.emotes.getFromString("emote_neutral"), //Right
@@ -236,14 +243,10 @@ export class UiManager{
             this.game.definitions.emotes.getFromString("emote_happy"), //Top
         ])
     }
-    emote_wheel_set_emotes(emote:EmoteDef[]){
-        for(const ev in this.content.emote_wheel.emotes){
-            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote[ev].idString).src
-        }
-        this.emote_wheel.emote=emote
-    }
-    end_emote_wheel(){
+    end_emote_wheel(force:boolean=false){
+        if(!this.emote_wheel.up_enable&&!force)return
         HideElement(this.content.emote_wheel.main)
+        ShowElement(this.mobile_content.btn_emotes)
         this.emote_wheel.active=false
         let selected_emote:EmoteDef|undefined=undefined
         if(this.emote_wheel.current_side!==-1){
@@ -255,6 +258,57 @@ export class UiManager{
                 emote:selected_emote.idNumber!
             })
         }
+    }
+    update_emote_wheel(){
+        if (this.emote_wheel.active) {
+            const angle = Angle.rad2deg(
+                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
+            )
+            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
+
+            const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
+            const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
+
+            const norm = (angle + 360) % 360
+
+            if (distance > 18) {
+                if (this.content.emote_wheel.hover.src !== shsrc) {
+                    this.content.emote_wheel.hover.src = shsrc
+                }
+                let sideClass = "wheel-hover"
+                if (norm >= 45 && norm < 135) {
+                    sideClass += " wheel-hover-bottom"
+                    this.emote_wheel.current_side=1
+                } else if (norm >= 135 && norm < 225) {
+                    sideClass += " wheel-hover-left"
+                    this.emote_wheel.current_side=2
+                } else if (norm >= 225 && norm < 315) {
+                    sideClass += " wheel-hover-top"
+                    this.emote_wheel.current_side=3
+                } else {
+                    sideClass += " wheel-hover-right"
+                    this.emote_wheel.current_side=0
+                }
+                if (this.content.emote_wheel.hover.className !== sideClass) {
+                    this.content.emote_wheel.hover.className = sideClass
+                }
+            } else {
+                this.emote_wheel.current_side=-1
+                if (this.content.emote_wheel.hover.src !== chsrc) {
+                    this.content.emote_wheel.hover.src = chsrc
+                    this.content.emote_wheel.hover.className = "wheel-hover wheel-hover-center"
+                }
+            }
+        }
+    }
+    emote_wheel_set_emotes(emotes:EmoteDef[]){
+        for(const ev in this.content.emote_wheel.emotes){
+            const emote=emotes[ev]
+            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote.idString).src
+            this.content.emote_wheel.emotes[ev].draggable=false
+        }
+        this.content.emote_wheel.main.onclick=(e)=>this.end_emote_wheel(true)
+        this.emote_wheel.emote=emotes
     }
     mobile_enabled:boolean=isMobile||Debug.force_mobile
     mobile_close(){
@@ -613,6 +667,7 @@ export class UiManager{
             this.content.tooltip.style.left=`${this.game.input_manager.real_mouse_position.x-10}px`
             this.content.tooltip.style.top=`${this.game.input_manager.real_mouse_position.y-10}px`
         }
+        this.update_emote_wheel()
         this.update_crosshair(dt)
     }
     current_interaction?: GameObject
@@ -679,49 +734,6 @@ export class UiManager{
         }
         this.state.gun=player.current_weapon?.item_type===InventoryItemType.gun
         this.update_hint()
-        if (this.emote_wheel.active) {
-            const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
-            )
-            const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
-
-            const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
-            const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
-
-            const norm = (angle + 360) % 360
-
-            if (distance > 0.24) {
-                if (this.content.emote_wheel.hover.src !== shsrc) {
-                    this.content.emote_wheel.hover.src = shsrc
-                }
-
-                let sideClass = "wheel-hover"
-
-                if (norm >= 45 && norm < 135) {
-                    sideClass += " wheel-hover-bottom"
-                    this.emote_wheel.current_side=1
-                } else if (norm >= 135 && norm < 225) {
-                    sideClass += " wheel-hover-left"
-                    this.emote_wheel.current_side=2
-                } else if (norm >= 225 && norm < 315) {
-                    sideClass += " wheel-hover-top"
-                    this.emote_wheel.current_side=3
-                } else {
-                    sideClass += " wheel-hover-right"
-                    this.emote_wheel.current_side=0
-                }
-
-                if (this.content.emote_wheel.hover.className !== sideClass) {
-                    this.content.emote_wheel.hover.className = sideClass
-                }
-            } else {
-                this.emote_wheel.current_side=-1
-                if (this.content.emote_wheel.hover.src !== chsrc) {
-                    this.content.emote_wheel.hover.src = chsrc
-                    this.content.emote_wheel.hover.className = "wheel-hover wheel-hover-center"
-                }
-            }
-        }
 
         if(player.backpack?.idString!==this.game.inventory.backpack.idString){
             this.game.inventory.set_backpack(player.backpack)

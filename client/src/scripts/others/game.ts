@@ -118,7 +118,17 @@ export class Game extends ClientGame<GameObject>{
 
     hitboxes_gfx:Graphics2D=new Graphics2D()
     ui_gfx:Graphics2D=new Graphics2D()
-    aim_line:boolean=false
+    aim_line:{
+        enabled:boolean
+        width:number
+        height:number
+        color:Color
+    }={
+        enabled:false,
+        width:1000,
+        height:0.1,
+        color:{r:1,g:1,b:1,a:0.9}
+    }
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
@@ -610,9 +620,9 @@ export class Game extends ClientGame<GameObject>{
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
                 this.cam2d.layer=this.active_entity.layer
                 this.ui_gfx.clear()
-                if(this.aim_line){
-                    this.ui_gfx.fill_color({r:1,g:1,b:1,a:0.1})
-                    this.ui_gfx.drawLine(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,1000)),0.05/this.cam2d.zoom)
+                if(this.aim_line.enabled){
+                    this.ui_gfx.fill_color(this.aim_line.color)
+                    this.ui_gfx.drawLine(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,this.aim_line.width)),this.aim_line.height/this.cam2d.zoom)
                 }
                 if(this.active_entity.dead)this.active_entity=undefined
             }

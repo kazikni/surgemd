@@ -44,6 +44,8 @@ __                                                                              
 ## Changes
 __                                                                                                                 __
 ### Items
+* Change Loot Tables
+* Some Balance Changes
 * Change Equipment Sprites
 __                                                                                                                 __
 ### Menu
@@ -56,6 +58,7 @@ __                                                                              
 * Bullets can now pass through bushes and tables
 * Fix Badges
 * Readd Human Bodys
+* Deadzone Visual Rework
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

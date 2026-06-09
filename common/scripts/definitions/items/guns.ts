@@ -1225,7 +1225,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.1,
             switch_delay:1,
-            spread:5,
+            spread:4,
 
             ammo_type:"762mm",
             ammo_spawn:{

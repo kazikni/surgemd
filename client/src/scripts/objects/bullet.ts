@@ -93,7 +93,8 @@ export class Bullet extends GameObject{
 
     }
     update(dt:number): void {
-        if(this.dying||v2.distance(this.initialPosition,this.position)>this.maxDistance){
+        if(v2.distance(this.initialPosition,this.position)>this.maxDistance)this.die()
+        if(this.dying){
             this.dying=true
             this.tticks-=dt
             this.sprite_projectile?.destroy()
@@ -148,7 +149,7 @@ export class Bullet extends GameObject{
                         if(chosen){
                             this.collided_with.add(obj);
                             (obj as Human).on_hitted(this.position,this._critical,undefined,isReflect)
-                            if(!this.pass_through_humans||isReflect)this.dying=true
+                            if(!this.pass_through_humans||isReflect)this.die()
                         }
                         break
                     }
@@ -159,7 +160,7 @@ export class Bullet extends GameObject{
                             if(col){
                                 this.collided_with.add(obj);
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
-                                if(!(obj as StaticBody).physical_data.passable_by_bullets)this.dying=true
+                                if(!(obj as StaticBody).physical_data.passable_by_bullets)this.die()
                             }
                         }
                         break
@@ -204,6 +205,11 @@ export class Bullet extends GameObject{
             ),
             this.maxLength
         );
+    }
+    die(){
+        this.dying=true
+        this.velocity.x=0
+        this.velocity.y=0
     }
     override decode(stream: NetStream, full: boolean): void {
         this.position=stream.readPos2()

@@ -17,11 +17,12 @@ export class Parachute extends GameObject{
     }
     sprite:Sprite2D=new Sprite2D()
 
-    override on_layer_set(layer: number): void {
-        this.sprite.layer=layer
+    constructor(){
+        super()
+
+        this.allow_tick=true
     }
-    // deno-lint-ignore no-explicit-any
-    create(_args: Record<string,any>): void {
+    override on_create(_args: void): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
         this.sprite.set_frame({
             image:"parachute",
@@ -31,14 +32,13 @@ export class Parachute extends GameObject{
         },this.game.resources)
         this.game.cam2d.addObject(this.sprite)
     }
-
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
+    }
     override on_destroy(): void {
         this.sprite.destroy()
     }
-    constructor(){
-        super()
-    }
-    override update(dt: number): void {
+    override on_tick(dt: number): void {
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
@@ -50,7 +50,7 @@ export class Parachute extends GameObject{
         v2m.add(this.sprite.scale,s,v2(1,1))
         this.sprite.position=this.position
     }
-    override decode(stream:NetStream,full: boolean):void{
+    override on_decode(stream:NetStream,full: boolean):void{
         this.time=stream.readFloat(0,30,2)
         if(full){
             this.position=stream.readPos2()

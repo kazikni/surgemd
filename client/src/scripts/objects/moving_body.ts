@@ -14,8 +14,10 @@ export abstract class MovingBody extends GameObject{
     enable_auto_rot:boolean=true
     constructor(){
         super()
+
+        this.allow_tick=true
     }
-    override update(dt: number): void {
+    override on_tick(dt: number): void {
         this.distance_walked=0
         if(!this.old_pos){
             this.old_pos=v2.clone(this.position)

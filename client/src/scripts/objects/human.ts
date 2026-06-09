@@ -141,6 +141,7 @@ export class Human extends MovingBody{
     melee?:MeleeDef
     current_weapon?:WeaponDef
     dead:boolean=true
+    downed:boolean=false
     shield:boolean=false
     effects:{def:EffectDef,lifetime:number}[]=[]
     current_floor?:FloorType
@@ -155,7 +156,7 @@ export class Human extends MovingBody{
     constructor(){
         super()
     }
-    override create(_args: Record<string, void>): void {
+    override on_create(_args: void): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.player.radius)
         this.container=new AnimatedContainer2D(this.game as unknown as ClientGame)
 
@@ -310,9 +311,9 @@ export class Human extends MovingBody{
         this.container.destroy()
         this.sprites.emote_container.destroy()
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
-        this.sprites.emote_container.layer=layer
+    override on_layer_set(): void {
+        this.container.layer=this.layer
+        this.sprites.emote_container.layer=this.layer
     }
 
     on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
@@ -374,6 +375,60 @@ export class Human extends MovingBody{
             max_distance:10,
             bus:"humans"
         })
+    }
+    broke_shield(){
+        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
+            for(let p=0;p<14;p++){
+                const a=random.rad()
+                this.game.particles.add_particle(new ABParticle2D({
+                    direction:random.rad(),
+                    life_time:0.5+(Math.random()*0.5),
+                    position:this.position,
+                    speed:7,
+                    scale:random.float(2,3),
+                    frame:{
+                        layer:this.layer,
+                        zIndex:zIndexes.Particles,
+                        image:"shield_part"
+                    },
+                    angle:a,
+                    tint:ColorM.rgba(255,255,255,255),
+                    to:{
+                    tint:ColorM.rgba(255,255,255,0),
+                        scale:0.3,
+                        angle:random.float(-10,10),
+                        speed:5,
+                    }
+                }))
+            }
+        }
+        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
+            this.game.particles.add_particle(new ABParticle2D({
+                direction:0,
+                life_time:0.4,
+                position:this.position,
+                speed:0,
+                scale:0.1,
+                frame:{
+                    image:"shockwave",
+                    layer:this.layer,
+                    zIndex:zIndexes.Particles,
+                    hotspot:v2.half_one
+                },
+                tint:ColorM.rgba(255,255,255,255),
+                to:{
+                tint:ColorM.rgba(255,255,255,0),
+                    scale:10,
+                }
+            }))
+        }
+        const sound=this.game.resources.get_sound(`shield_break`)
+        if(sound){
+            this.game.sounds.play(sound,{
+                position:this.position,
+                max_distance:15
+            })
+        }
     }
     on_die(){
         if(this.dead&&this.container.destroyed)return
@@ -439,7 +494,6 @@ export class Human extends MovingBody{
         this.container.destroy()
         this.destroy()
     }
-    downed:boolean=false
     on_downed(){
         if(this.downed)return
         this.downed=true
@@ -461,6 +515,7 @@ export class Human extends MovingBody{
         this.sprites.right_leg.visible=false
     }
 
+    // Weapon And Arm Rig
     set_arms_rig(rig?:FistRig){
         if(rig){
             if(rig.left){
@@ -594,6 +649,7 @@ export class Human extends MovingBody{
             this.sprites.melee_world.visible=false
         }
     }
+
     set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number,accessorys:LoadoutAccessoryDef[]){
         if(
             this.loadout&&
@@ -711,11 +767,9 @@ export class Human extends MovingBody{
         this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.player.radius*scale)
     }
 
-    override render(camera: Camera2D, _dt: number): void {
-    }
-    override update(dt:number): void {
+    override on_tick(dt:number): void {
         const old_pos=this.old_pos
-        super.update(dt)
+        super.on_tick(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
         if(!this.seat&&this.distance_walked>0.01){
@@ -838,6 +892,8 @@ export class Human extends MovingBody{
         }
         this.update_animations(dt)
     }
+
+    // Animation
     reset_anim(){
         this.sprites.muzzle_flash.visible=false
         this.animation.recoil_state=-1
@@ -1276,6 +1332,7 @@ export class Human extends MovingBody{
             }
         }
     }
+
     add_emote(emote:GameObjectDef){
         this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
             position:this.position,
@@ -1399,67 +1456,13 @@ export class Human extends MovingBody{
         }
         this.effects = result
     }
-    broke_shield(){
-        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
-            for(let p=0;p<14;p++){
-                const a=random.rad()
-                this.game.particles.add_particle(new ABParticle2D({
-                    direction:random.rad(),
-                    life_time:0.5+(Math.random()*0.5),
-                    position:this.position,
-                    speed:7,
-                    scale:random.float(2,3),
-                    frame:{
-                        layer:this.layer,
-                        zIndex:zIndexes.Particles,
-                        image:"shield_part"
-                    },
-                    angle:a,
-                    tint:ColorM.rgba(255,255,255,255),
-                    to:{
-                    tint:ColorM.rgba(255,255,255,0),
-                        scale:0.3,
-                        angle:random.float(-10,10),
-                        speed:5,
-                    }
-                }))
-            }
-        }
-        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
-            this.game.particles.add_particle(new ABParticle2D({
-                direction:0,
-                life_time:0.4,
-                position:this.position,
-                speed:0,
-                scale:0.1,
-                frame:{
-                    image:"shockwave",
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles,
-                    hotspot:v2.half_one
-                },
-                tint:ColorM.rgba(255,255,255,255),
-                to:{
-                tint:ColorM.rgba(255,255,255,0),
-                    scale:10,
-                }
-            }))
-        }
-        const sound=this.game.resources.get_sound(`shield_break`)
-        if(sound){
-            this.game.sounds.play(sound,{
-                position:this.position,
-                max_distance:15
-            })
-        }
-    }
     get_reflect_segment(): Hitbox2D|undefined {
         if(!this.melee?.reflective)return undefined
         const reflect=this.current_weapon===this.melee?this.melee.reflective!.equipped:this.melee.reflective!.unequipped
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         const [
             physical_dirty_part,physical_dirty,
             equipment_dirty_part,equipment_dirty,

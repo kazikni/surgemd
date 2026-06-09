@@ -244,6 +244,7 @@ export class Human extends MovingBody{
             kills:0,
             score:0,
         }
+        this.allow_net_update=true
     }
 
     apply_score(type:number,amount:number,multiplier:number=1){
@@ -255,7 +256,7 @@ export class Human extends MovingBody{
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
-    create(_args: Record<string, void>): void {
+    override on_create(_args: Record<string, void>): void {
         const female=Math.random()<0.5
         this.loadout={
             dirty:true,
@@ -300,7 +301,7 @@ export class Human extends MovingBody{
     override can_interact(user: Human): boolean {
         return this.health_data.downed&&this.game.modeManager.is_ally(this,user)
     }
-    interact(user: Human): void {
+    override on_interact(user: Human): void {
         user.actions.play(new HelpupAction(this))
     }
 
@@ -552,7 +553,7 @@ export class Human extends MovingBody{
                 this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
                 this.seat.clear_human()
             }else if(this.health_data.downed&&this.human_data.self_revive){
-                this.interact(this)
+                this.on_interact(this)
             }
         }
         if(!this.health_data.downed&&!this.parachute){
@@ -647,7 +648,7 @@ export class Human extends MovingBody{
                 if((obj as StaticBody).physical_data.no_collision)break
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
-                    (obj as Loot).interact(this)
+                    (obj as Loot).on_interact(this)
                 }
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
                 for(const col of collision){
@@ -671,7 +672,7 @@ export class Human extends MovingBody{
                 if((obj as StaticBody).physical_data.no_collision)break
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
-                    (obj as Loot).interact(this)
+                    (obj as Loot).on_interact(this)
                 }
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
                 for(const col of collision){
@@ -682,12 +683,8 @@ export class Human extends MovingBody{
             case GameObjectType.Vehicle:{
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
-                    (obj as Loot).interact(this)
+                    (obj as Loot).on_interact(this)
                 }
-                /*const ov=[...this.hitbox.overlapCollision((obj as StaticBody).hitbox)]
-                for(const c of ov){
-                    v2m.sub(this.position,this.position,v2.scale(c.dir,c.pen))
-                }*/
                 break
             }
             case GameObjectType.SyncedParticle:{
@@ -700,12 +697,12 @@ export class Human extends MovingBody{
             case GameObjectType.Loot:
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
-                    obj.interact(this)
+                    obj.on_interact(this)
                 }
                 break
         }
     }
-    override update(dt:number): void {
+    override on_tick(dt:number): void {
         if(this.health_data.dead){
             return
         }
@@ -834,7 +831,7 @@ export class Human extends MovingBody{
                 this.physical_data.velocity=v2.zero()
             }
             this.equipment_data.force_default_scope=false
-            super.update(dt)
+            super.on_tick(dt)
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false
@@ -874,7 +871,7 @@ export class Human extends MovingBody{
             }
         }
         this.physical_data.dirty_part=true
-        this.net_sync.part=true
+        this.set_dirty_part()
 
         this._can_interact=this.human_data.movement_enabled&&!this.health_data.downed
         if(!v2.is(this.position,this.old_position)){
@@ -923,6 +920,24 @@ export class Human extends MovingBody{
             }*/
         }
 
+    }
+    override on_net_update(): void {
+        super.on_net_update()
+
+        this.physical_data.dirty=false
+        this.physical_data.dirty_part=false
+
+        this.animation_data.dirty=false
+        this.animation_data.current_animation.length=0
+
+        this.loadout.dirty=false
+        this.loadout.emote=undefined
+
+        this.equipment_data.dirty=false
+
+        this.effects_dirty=false
+
+        this.inventory.net_update()
     }
     self_state(full:boolean):SelfStateUpdate{
         const ret:SelfStateUpdate={
@@ -1000,24 +1015,6 @@ export class Human extends MovingBody{
         }
         return ret
     }
-    override net_update(): void {
-        super.net_update()
-
-        this.physical_data.dirty=false
-        this.physical_data.dirty_part=false
-
-        this.animation_data.dirty=false
-        this.animation_data.current_animation.length=0
-
-        this.loadout.dirty=false
-        this.loadout.emote=undefined
-
-        this.equipment_data.dirty=false
-
-        this.effects_dirty=false
-
-        this.inventory.net_update()
-    }
     give_boost(amount:number){
         if(this.health_data.boost_def.type===BoostType.Death){
             this.health_data.boost=Math.max(this.health_data.boost-(amount/5),0)
@@ -1033,7 +1030,7 @@ export class Human extends MovingBody{
     clear(){
         this.inventory.clear()
         this.clear_boost()
-        this.net_sync.full=true
+        this.set_dirty_full()
     }
     damage(params:DamageParams){
         if(this.health_data.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
@@ -1066,7 +1063,6 @@ export class Human extends MovingBody{
     piercing_damage(params: DamageParams): [number, number] {
         let shieldDamage = 0
         let healthDamage = 0
-        this.net_sync.part = true
         const pos = params.position ?? this.position
         if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
             shieldDamage = Math.min(this.health_data.boost, params.amount*this.game.modeManager.rules.humans.boosts.shield.damage_multiplier)
@@ -1132,7 +1128,6 @@ export class Human extends MovingBody{
 
             shield_break,
         }
-
         this.splashes.push(splash)
         if(owner&&owner.is_player&&owner.id !== this.id){
             owner.splashes.push({
@@ -1204,9 +1199,10 @@ export class Human extends MovingBody{
     die(params:DamageParams){
         if(this.health_data.dead)return
 
-        this.net_sync.enabled.deletion=false
+        this.net_sync_deletion=false
         this.health_data.dead=true
-        this.net_sync.part=true
+        this.set_dirty_part()
+
         if(this.loadout.emotes.die){
             this.game.add_timeout(()=>this.loadout.emote=this.loadout.emotes.die,0.5)
         }
@@ -1240,12 +1236,11 @@ export class Human extends MovingBody{
         this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
         this.game.modeManager.assign_leader(this)
     }
-    override destroy(): void {
-        super.destroy()
+    override on_destroy(): void {
         const idx=this.humans_manager.humans.indexOf(this)
         if(idx!==-1)this.humans_manager.humans.splice(idx,1)
     }
-    override encode(stream: NetStream, full: boolean,utils:any): void {
+    override on_encode(stream: NetStream, full: boolean,utils:any): void {
         stream.writeBooleanGroup2(
             // Physical
             this.physical_data.dirty_part,this.physical_data.dirty, // 2

@@ -54,7 +54,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     reset(){
         this.objects.clear()
         this.objects.add_object = this._addObject.bind(this);
-        this.objects.oncreate=(_id:number,_layer:number,t)=>{
+        this.objects.make_object=(_id:number,_layer:number,t)=>{
             if(!this.game.objects.getFromNumber(t))return undefined
             return new (this.game.objects.getFromNumber(t))()
         }
@@ -67,9 +67,8 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
             }
         }
     }
-
     update(dt:number,net_update:boolean=true,destroy_queue:boolean=true):void{
-        this.objects.update(dt)
+        this.objects.tick(dt)
         if(net_update){
             this.objects.update_to_net()
         }

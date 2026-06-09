@@ -79,24 +79,26 @@ export class Obstacle extends StaticBody{
     ////////////////////////////
     emitter_1?:ParticlesEmitter2D<ClientParticle2D>
 
+    below:boolean=false
+    alpha_tween?:Tween<Color>
+    below_hitbox?:Hitbox2D
+
     constructor(){
         super()
         this.container.visible=false
         this.container.add_child(this.sprite)
         this.sprite.hotspot=v2.half_one
         this.sprite.scale=v2(2,2)
-        this.updatable=false
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
+    override on_layer_set(): void {
+        this.container.layer=this.layer
     }
     // deno-lint-ignore no-explicit-any
-    override create(_args: Record<string,any>): void {
+    override on_create(_args: Record<string,any>): void {
         this.game.cam2d.addObject(this.container)
     }
-    below:boolean=false
-    alpha_tween?:Tween<Color>
-    below_hitbox?:Hitbox2D
+
+    // Below
     can_below(other:Hitbox2D):boolean{
         return this.def.below!==undefined&&!this.health_data.dead&&other.colliding_with(this.below_hitbox??this.hitbox)
     }
@@ -116,6 +118,7 @@ export class Obstacle extends StaticBody{
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
     }
+
     update_frame(){
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
 
@@ -164,8 +167,7 @@ export class Obstacle extends StaticBody{
         }
         this.update_frame()
     }
-    override render(camera: Camera2D, _dt: number): void {}
-    update(_dt:number): void {}
+
     set_definition(def:ObstacleDef){
         if(this.def)return
         this.def=def
@@ -308,7 +310,7 @@ export class Obstacle extends StaticBody{
             }
         }
     }
-    override interact(h:Human){
+    override on_interact(h:Human){
         if(this.def.expanded_behavior){
             if(this.def.expanded_behavior.type==1){
                 if(this.interacted)return
@@ -355,7 +357,7 @@ export class Obstacle extends StaticBody{
         return (this.def.interactDestroy===true)
     }
 
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         const [
             visual,
             physical_data,physical_data_part,

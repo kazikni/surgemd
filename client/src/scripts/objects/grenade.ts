@@ -18,19 +18,21 @@ export class Grenade extends MovingBody{
     def!:GrenadeDef
     particles_spawner?:ParticlesEmitter2D<Particle2D>
 
-    create(_args: Record<string, void>): void {
+    constructor(){
+        super()
+    }
+    override on_create(_args: Record<string, void>): void {
         this.game.cam2d.addObject(this.sprite)
     }
-    override on_layer_set(layer: number): void {
-        this.sprite.layer=layer
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
     }
     override on_destroy(): void {
         this.sprite.destroy()
         if(this.particles_spawner)this.particles_spawner.destroyed=true
     }
-
-    override update(dt:number): void {
-        super.update(dt)
+    override on_tick(dt:number): void {
+        super.on_tick(dt)
         const s=(this.def.zBaseScale+(this.def.zScaleAdd*this.physical_data.zpos))*2
         this.sprite.position=this.position
         this.sprite.rotation=this.physical_data.rotation
@@ -40,9 +42,6 @@ export class Grenade extends MovingBody{
         }else{
             this.sprite.zIndex=zIndexes.GrenadeAir
         }
-    }
-    constructor(){
-        super()
     }
     set_definition(def:GrenadeDef){
         if(this.def)return
@@ -84,7 +83,7 @@ export class Grenade extends MovingBody{
             },def.particles!.spawn_delay??0)
         }
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         this.decode_physical_data(stream,full)
         this.physical_data.zpos=stream.readFloat(0,1,1)
         if(full){

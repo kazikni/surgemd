@@ -370,7 +370,7 @@ export class Game extends ClientGame<GameObject>{
         this.input.interact=true
         this.ui.update_active_player(this.active_entity)
         if(this.active_entity&&this.ui.current_interaction){
-            this.ui.current_interaction.interact(this.active_entity)
+            this.ui.current_interaction.on_interact(this.active_entity)
         }
     }
     set_scope(scope:ScopeDef,force_default:boolean=false){

@@ -12,15 +12,17 @@ export class Decal extends GameObject{
     def!:DecalDef
     rotation:number=0
 
-    override on_layer_set(layer: number): void {
-        if(this.sprite)this.sprite.layer=layer
+    constructor(){
+        super()
+        this.allow_tick=true
     }
-    // deno-lint-ignore no-explicit-any
-    create(_args: Record<string,any>): void {
+    override on_create(_args: any): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),0.5)
-        this.updatable=false
     }
-    override update(dt: number): void {}
+    override on_layer_set(): void {
+        if(this.sprite)this.sprite.layer=this.layer
+    }
+    override on_tick(dt: number): void {}
     set_definition(def:DecalDef){
         if(this.def||this.sprite)return
         this.def=def
@@ -49,7 +51,7 @@ export class Decal extends GameObject{
     override on_destroy(): void {
         if(this.sprite)this.sprite.destroy()
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         const [
             tint_dirty,
             scale

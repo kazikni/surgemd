@@ -17,22 +17,22 @@ export class Creature extends MovingBody {
 
     constructor() {
         super()
-
         this.container.zIndex = zIndexes.Creatures
+        this.allow_tick=true
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
-    }
-    create(_args: any): void {
+    override on_create(_args: any): void {
         this.game.cam2d.addObject(this.container)
+    }
+    override on_layer_set(): void {
+        this.container.layer=this.layer
     }
     override on_destroy(): void {
         this.container.destroy()
     }
 
-    override update(dt: number): void {
+    override on_tick(dt: number): void {
         if(!this.def)return
-        super.update(dt)
+        super.on_tick(dt)
 
         this.def.update?.(this, dt, true)
 
@@ -53,7 +53,7 @@ export class Creature extends MovingBody {
         this.def = def
         this.def.on_start?.(this, {}, true)
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         const [physical_dirty,dead]=stream.readBooleanGroup()
         if(physical_dirty||full){
             this.decode_physical_data(stream,full)

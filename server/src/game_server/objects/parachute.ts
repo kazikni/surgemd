@@ -18,11 +18,28 @@ export class Parachute extends ServerGameObject{
 
     constructor(){
         super()
+
+        this.allow_tick=true
     }
 
-    override net_update(): void {
+    override on_create(args: {position:Vec2,obstacle:ObstacleDef}): void {
+        this.parachute_data={
+            lifetime:10,
+            spawn_obstacle:args.obstacle
+        }
+        this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
+        this.position=args.position
+
+        this.game.pings.push({
+            position:this.position,
+            def:this.game.definitions.ping.getFromString("ping_airdrop").idNumber!,
+            id:-1,
+            color:0xffffff,
+        })
     }
-    update(dt:number): void {
+    override on_net_update(): void {
+    }
+    override on_tick(dt:number): void {
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
@@ -60,24 +77,7 @@ export class Parachute extends ServerGameObject{
             this.destroy()
         }
     }
-    interact(user: Human): void {
-    }
-    create(args: {position:Vec2,obstacle:ObstacleDef}): void {
-        this.parachute_data={
-            lifetime:10,
-            spawn_obstacle:args.obstacle
-        }
-        this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
-        this.position=args.position
-
-        this.game.pings.push({
-            position:this.position,
-            def:this.game.definitions.ping.getFromString("ping_airdrop").idNumber!,
-            id:-1,
-            color:0xffffff,
-        })
-    }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         stream.writeFloat(this.time,0,30,2)
         if(full){
             stream.writePos2(this.position)

@@ -25,8 +25,11 @@ export class Loot extends ServerGameObject{
 
     constructor(){
         super()
+
         this.velocity=v2.zero()
         this.old_position=v2.clone(this.position)
+
+        this.allow_tick=true
     }
     reduce_count(count:number){
         this.loot_data.count-=count
@@ -38,24 +41,55 @@ export class Loot extends ServerGameObject{
     override can_interact(user: Human): boolean {
         return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
-    interact(user: Human): void {
+    override on_interact(user: Human): void {
         const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)
         if(c!==this.loot_data.count){
             this.reduce_count(this.loot_data.count-c)
         }
         return
     }
-    override net_update(): void {
-        super.net_update()
+    override on_create(args: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
+
+        this.loot_data={
+            count:args.count,
+            item:args.item,
+            real_radius:0
+        }
+
+        switch(this.loot_data.item.item_type){
+            case InventoryItemType.gun:
+            case InventoryItemType.melee:
+                this.loot_data.real_radius=GameConstants.loot.radius.weapon
+                break
+            case InventoryItemType.ammo:
+                this.loot_data.real_radius=GameConstants.loot.radius.ammo
+                break
+            case InventoryItemType.consumible:
+                this.loot_data.real_radius=GameConstants.loot.radius.consumible
+                break
+            case InventoryItemType.backpack:
+            case InventoryItemType.helmet:
+            case InventoryItemType.vest:
+                this.loot_data.real_radius=GameConstants.loot.radius.equipament
+                break
+            case InventoryItemType.grenade:
+                this.loot_data.real_radius=GameConstants.loot.radius.grenade
+                break
+            case InventoryItemType.accessory:
+                this.loot_data.real_radius=GameConstants.loot.radius.accessory
+                break
+            case InventoryItemType.scope:
+                this.loot_data.real_radius=GameConstants.loot.radius.scopes
+                break
+        }
+        (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
+        this.position=args.position
     }
-    update(dt:number): void {
-        /*if(this.loot_data.real_radius!==(this.base_hitbox as CircleHitbox2D).radius){
-            (this.base_hitbox as CircleHitbox2D).radius=Numeric.lerp((this.base_hitbox as CircleHitbox2D).radius,this.loot_data.real_radius,Numeric.dt_expo_inter(dt,2));
-            (this.hitbox as CircleHitbox2D).radius=(this.base_hitbox as CircleHitbox2D).radius
-        }*/
+    override on_tick(dt:number): void {
         const cf=Floors[this.current_floor]
         const speed=1
-                  * (cf.speed_mult??1)
+                * (cf.speed_mult??1)
         if(this.current_floor === FloorType.Water){
             for(const river of this.game.map.rivers){
                 const col=river.get_point_inside(this.position)
@@ -106,60 +140,23 @@ export class Loot extends ServerGameObject{
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }
         if(!v2.is(this.position,this.old_position)){
-            this.net_sync.part=true
             this.old_position=v2.clone(this.position)
             this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
+            this.set_dirty_part()
         }
     }
     push(speed:number,angle:number){
         const a=v2.from_RadAngle(angle)
         v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
-    create(args: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
-        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
 
-        this.loot_data={
-            count:args.count,
-            item:args.item,
-            real_radius:0
-        }
-
-        switch(this.loot_data.item.item_type){
-            case InventoryItemType.gun:
-            case InventoryItemType.melee:
-                this.loot_data.real_radius=GameConstants.loot.radius.weapon
-                break
-            case InventoryItemType.ammo:
-                this.loot_data.real_radius=GameConstants.loot.radius.ammo
-                break
-            case InventoryItemType.consumible:
-                this.loot_data.real_radius=GameConstants.loot.radius.consumible
-                break
-            case InventoryItemType.backpack:
-            case InventoryItemType.helmet:
-            case InventoryItemType.vest:
-                this.loot_data.real_radius=GameConstants.loot.radius.equipament
-                break
-            case InventoryItemType.grenade:
-                this.loot_data.real_radius=GameConstants.loot.radius.grenade
-                break
-            case InventoryItemType.accessory:
-                this.loot_data.real_radius=GameConstants.loot.radius.accessory
-                break
-            case InventoryItemType.scope:
-                this.loot_data.real_radius=GameConstants.loot.radius.scopes
-                break
-        }
-        (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
-        this.position=args.position
-    }
     override on_destroy(): void {
         const idx=this.game.loot.indexOf(this)
         if(idx!==-1){
             this.game.loot.splice(idx,1)
         }
     }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)
         if(full){
             stream.writeUint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])

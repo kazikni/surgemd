@@ -17,16 +17,15 @@ export class Explosion extends ServerGameObject{
     parent?:Projectile
     owner?:Human
     source?:DamageSourceDef
-    constructor(){
-        super()
-        this.net_sync.enabled.deletion=false
-    }
+
     exploded_base:boolean=false
     delay:number=0.1
-    interact(_user: Human): void {
-        return
-    }
+    constructor(){
+        super()
+        this.net_sync_deletion=false
 
+        this.allow_tick=true
+    }
     explode_base(){
         if(this.exploded_base)return
         this.exploded_base=true
@@ -124,7 +123,7 @@ export class Explosion extends ServerGameObject{
         }
         this.destroy()
     }
-    update(dt:number): void {
+    override on_tick(dt:number): void {
         this.explode_base()
         if(this.delay<=0){
             this.explode_damage()
@@ -132,14 +131,14 @@ export class Explosion extends ServerGameObject{
             this.delay-=dt
         }
     }
-    create(args: {def:ExplosionDef,source?:DamageSourceDef,position:Vec2,owner?:Human}): void {
+    override on_create(args: {def:ExplosionDef,source?:DamageSourceDef,position:Vec2,owner?:Human}): void {
         this.def=args.def
         this.owner=args.owner
         this.source=args.source
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.size.end)
         this.position=args.position
     }
-    override encode(stream: NetStream, _full: boolean): void {
+    override on_encode(stream: NetStream, _full: boolean): void {
         stream.writePos2(this.position)
         .writeFloat((this.base_hitbox as CircleHitbox2D).radius,0,50,3)
         .writeID(this.def.idNumber!)

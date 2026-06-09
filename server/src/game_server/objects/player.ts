@@ -96,6 +96,10 @@ export class Player extends Human{
         }
         this.spawn_body=true
     }
+    override on_create(args: Record<string, void>): void {
+        super.on_create(args)
+        this.status.id=this.id
+    }
     override apply_score(type: number, amount: number,multiplier:number=1): void {
         if(this.game.modeManager.is_leader(this))multiplier*=this.game.modeManager.rules.score.leader_multiplier
         super.apply_score(type,amount,multiplier)
@@ -119,11 +123,8 @@ export class Player extends Human{
             this.game.modeManager.get_team(preset.group)?.add_human(this)
         }
     }
-    override net_update(): void {
-        super.net_update()
-    }
-    override update(dt: number): void {
-        super.update(dt)
+    override on_tick(dt: number): void {
+        super.on_tick(dt)
         this.status.time_alive+=dt
     }
     override piercing_damage(params: DamageParams){
@@ -245,9 +246,5 @@ export class Player extends Human{
                 this.loadout.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
             }
         }
-    }
-    override create(args: Record<string, void>): void {
-        super.create(args)
-        this.status.id=this.id
     }
 }

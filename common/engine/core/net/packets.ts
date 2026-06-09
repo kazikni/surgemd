@@ -32,23 +32,24 @@ export class PacketsManager{
     }
     decode(stream:NetStream):Packet{
         if(stream.index>=stream._view.byteLength)return new InvalidPacket()
-        const passcode=stream.readUint16()
-        if(passcode!=2314){
-            return new InvalidPacket()
+        try{
+            const passcode=stream.readUint16()
+            if(passcode!=2314){
+                return new InvalidPacket()
+            }
+            const id:PacketID=stream.readUint16()
+            if(this.packets.get(id)){
+                const pt:new () => Packet=this.packets.get(id)!
+                const p=new pt()
+                if(this.pre_packet)this.pre_packet(p)
+                p.decode(stream)
+                p._size=stream.index
+                return p
+            }
+        }catch(e){
+            console.error(e)
         }
-        const id:PacketID=stream.readUint16()
-        if (this.packets.get(id)){
-            // deno-lint-ignore ban-ts-comment
-            //@ts-expect-error
-            const pt:new () => Packet=this.packets.get(id)
-            const p=new pt()
-            if(this.pre_packet)this.pre_packet(p)
-            p.decode(stream)
-            p._size=stream.index
-            return p
-        }else{
-            return new InvalidPacket()
-        }
+        return new InvalidPacket()
     }
     add_packet(pack:new () => Packet){
         const p=new pack()

@@ -38,11 +38,12 @@ export class Creature extends MovingBody {
             hitbox:new NullHitbox2D(v2.zero),
             spawn_hitbox:new NullHitbox2D(v2.zero)
         }
+
+        this.allow_tick=true
+        this.allow_net_update=true
     }
 
-    override interact(_user: Human): void {
-    }
-    create(args: { position: Vec2, def: CreatureDef }) {
+    override on_create(args: { position: Vec2, def: CreatureDef }) {
         this.def = args.def
 
         this.position=args.position
@@ -83,27 +84,25 @@ export class Creature extends MovingBody {
     override on_collided(obj: ServerGameObject,_dt:number) {
         this.def.on_collided?.(obj, false)
     }
-    override net_update(): void {
+    override on_net_update(): void {
         this.def.net_update?.(this, false)
         this.physical_data.dirty=false
     }
-    override update(dt: number): void {
+    override on_tick(dt: number): void {
         if (this.dead) {
             this.destroy()
             return
         }
-        super.update(dt)
+        super.on_tick(dt)
         this.def.update?.(this, dt, false)
-
         if(this.old_rot===undefined||!this.old_pos||!v2.is(this.old_pos,this.position)||this.is_new){
             this.old_pos=v2.clone(this.position)
             this.old_rot=this.physical_data.rotation
             this.physical_data.dirty = true
-            this.net_sync.part = true
+            this.set_dirty_part()
         }
     }
-
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         stream.writeBooleanGroup(this.physical_data.dirty,this.dead)
 
         if(this.physical_data.dirty||full)this.physical_encode(stream)

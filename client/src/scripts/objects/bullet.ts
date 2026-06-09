@@ -76,11 +76,13 @@ export class Bullet extends GameObject{
 
         this.container.add_child(this.sprite_trail)
         this.container.zIndex=zIndexes.Bullets
+
+        this.allow_tick=true
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
+    override on_layer_set(): void {
+        this.container.layer=this.layer
     }
-    override create(_args: Record<string, void>) {
+    override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
         this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,55) // Metter Size * 2
         this.game.cam2d.addObject(this.container)
@@ -92,7 +94,7 @@ export class Bullet extends GameObject{
     override render(_camera: Camera2D, _dt: number): void {
 
     }
-    update(dt:number): void {
+    override on_tick(dt:number): void {
         if(v2.distance(this.initialPosition,this.position)>this.maxDistance)this.die()
         if(this.dying){
             this.dying=true
@@ -211,7 +213,7 @@ export class Bullet extends GameObject{
         this.velocity.x=0
         this.velocity.y=0
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         this.position=stream.readPos2()
         this.old_position=v2.clone(this.position)
         this.tticks=stream.readFloat(0,60,2)

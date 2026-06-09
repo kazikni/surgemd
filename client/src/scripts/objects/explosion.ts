@@ -26,17 +26,18 @@ export class Explosion extends GameObject{
         this.sprite.visible=false
         this.sprite.hotspot=CenterHotspot
         this.sprite.size=v2(300,300)
-    }
-    override on_layer_set(layer: number): void {
-        this.sprite.layer=layer
-    }
-    create(_args: Record<string, void>): void {
-        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
 
+        this.allow_tick=true
+    }
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
+    }
+    override on_create(_args: Record<string, void>): void {
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
         this.sprite.frame=this.game.resources.get_frame("base_explosion")
         this.game.cam2d.addObject(this.sprite)
     }
-    update(dt:number): void {
+    override on_tick(dt:number): void {
         if(this.def){
             this.sprite.tint.a=1-this.t
             this.t+=3*dt;
@@ -49,19 +50,6 @@ export class Explosion extends GameObject{
     }
     override on_destroy(): void {
       this.sprite.destroy()
-    }
-    override decode(stream: NetStream, _full: boolean): void {
-        const pos=stream.readPos2()
-        this.position=pos
-
-        this.radius=stream.readFloat(0,50,3)
-
-        this.set_definition(this.game.definitions.explosions.getFromNumber(stream.readID()))
-
-        this._base_hitbox=new CircleHitbox2D(v2(0,0),this.radius)
-
-        this.sprite.position=this.position
-        this.sprite.visible=true
     }
     set_definition(def:ExplosionDef){
         if(this.def)return
@@ -105,5 +93,18 @@ export class Explosion extends GameObject{
         }
         (this.base_hitbox as CircleHitbox2D).radius=this.radius
         this.maxRadius=this.radius*(this.def.size.visual??1)*1.25
+    }
+    override on_decode(stream: NetStream, _full: boolean): void {
+        const pos=stream.readPos2()
+        this.position=pos
+
+        this.radius=stream.readFloat(0,50,3)
+
+        this.set_definition(this.game.definitions.explosions.getFromNumber(stream.readID()))
+
+        this._base_hitbox=new CircleHitbox2D(v2(0,0),this.radius)
+
+        this.sprite.position=this.position
+        this.sprite.visible=true
     }
 }

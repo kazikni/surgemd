@@ -21,12 +21,22 @@ export class Plane extends MovingBody {
         super()
     }
 
-    override create(args: Record<string, any>): void {
+    override on_create(args: Record<string, any>): void {
         this.container.add_child(this.sprite)
         this.game.cam2d.addObject(this.container)
         this.container.zIndex = zIndexes.Planes
-        this.container.layer = Layers.Normal
         this.position = this.container.position
+    }
+    override on_layer_set(){
+        this.container.layer = this.layer
+    }
+    override on_tick(dt: number) {
+        super.on_tick(dt)
+        this.container.position=this.position
+        this.container.rotation = this.physical_data.rotation
+        if (this.sound) {
+            this.sound.position = this.position
+        }
     }
     override on_destroy() {
         this.container.destroy()
@@ -34,17 +44,7 @@ export class Plane extends MovingBody {
         this.destroyed = true
         this.sound?.stop()
     }
-
-    override update(dt: number) {
-        super.update(dt)
-        this.container.position=this.position
-        this.container.rotation = this.physical_data.rotation
-        if (this.sound) {
-            this.sound.position = this.position
-        }
-    }
-
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         this.decode_physical_data(stream, full)
         const type = stream.readUint8()
         if (this.initial) {

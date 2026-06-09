@@ -37,18 +37,13 @@ export class Building extends StaticBody {
 
     constructor() {
         super()
-        this.updatable = false
+
+        this.allow_net_update=true
     }
 
-    override net_update(): void {
+    override on_net_update(): void {
         this.physical_data.dirty=false
     }
-    override update(dt: number): void {
-    }
-    override create(args: Record<string, any>): void {
-        this.updatable=false
-    }
-    override interact(_user: Human): void {}
 
     set_definition(def: BuildingDef) {
         if (this.def) return
@@ -176,13 +171,13 @@ export class Building extends StaticBody {
                     }
                     if(alive_count<=child.def.destroy.count){
                         child.alive=false
-                        this.net_sync.part=true
+                        this.set_dirty_part()
                     }
                 }
             }
         }
     }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         stream.writeBooleanGroup(this.physical_data.dirty)
         if(full||this.physical_data.dirty){
             stream.writePos2(this.position)

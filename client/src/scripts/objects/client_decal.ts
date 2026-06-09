@@ -25,26 +25,28 @@ export class ClientDecal extends GameObject{
         hit?:Sound[]
     }
 
-    create(_args: any) {
-        this.game.cam2d.addObject(this.sprite)
-    }
-
-    override on_layer_set(layer: number): void {
-        this.sprite.layer=layer
-    }
-    override on_destroy(): void {
-        this.sprite.destroy()
-    }
-    update(dt:number): void {
-        this.lifetime-=dt
-        if(this.lifetime<=0){
-            this.destroy()
-        }
-    }
     constructor(){
         super()
         this.sprite=new Sprite2D()
         this.sprite.hotspot=v2.half_one
         this.sprite.zIndex=zIndexes.ClientDecals
+
+        this.allow_tick=true
+    }
+    override on_create(_args: any) {
+        this.game.cam2d.addObject(this.sprite)
+    }
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
+    }
+    override on_destroy(): void {
+        this.sprite.destroy()
+    }
+
+    override on_tick(dt:number): void {
+        this.lifetime-=dt
+        if(this.lifetime<=0){
+            this.destroy()
+        }
     }
 }

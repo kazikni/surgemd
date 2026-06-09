@@ -92,7 +92,6 @@ export class GunItem extends GunItemBase implements LItem{
             this.reloading=false
             return
         }
-        user.net_sync.part=true
         user.animation_data.dirty=true
         user.animation_data.current_animation.push(
             {
@@ -142,7 +141,6 @@ export class GunItem extends GunItemBase implements LItem{
     shot(user:Human,consume:boolean=true){
         user.actions.cancel()
 
-        user.net_sync.part=true
         user.animation_data.dirty=true
         user.inventory.net_sync.hand=true
 
@@ -224,7 +222,6 @@ export class GunItem extends GunItemBase implements LItem{
     shot_alt(user:Human){
         user.actions.cancel()
 
-        user.net_sync.part=true
         user.animation_data.dirty=true
         user.inventory.net_sync.hand=true
 
@@ -332,7 +329,6 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
         switch(this.def.consuming.type){
             case 0:
                 if(user.consuming_condition(this.def.condition!,this.def.consuming.side_effects)){
-                    user.net_sync.part=true
                     user.inventory.net_sync.hand=true
                     user.animation_data.dirty=true
                     user.animation_data.current_animation.push(
@@ -489,7 +485,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                 if(c.number_type===GameObjectType.Obstacle){
                     if(!(c as Obstacle).def.interactDestroy&&(c as Obstacle).def.expanded_behavior&&!(c as Obstacle).health_data.dead){
                         user._can_interact=false
-                        c.interact(user)
+                        c.on_interact(user)
                     }
                 }
                 c.damage({
@@ -987,7 +983,7 @@ export class GInventory extends GInventoryBase<LItem>{
         this.accessorys.clear()
         for(let i=0;i<5;i++){
             for(const loot of l){
-                loot.update(1/30)
+                loot.on_tick(1/30)
             }
         }
         for(const loot of l){

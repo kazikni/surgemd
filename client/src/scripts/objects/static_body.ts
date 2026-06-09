@@ -1,4 +1,4 @@
-import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Tween, Vec2 } from "common/engine/client.ts"
+import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Vec2 } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
@@ -93,13 +93,5 @@ export abstract class StaticBody extends GameObject{
         }else{
             this.assets_data.particles.images.push(particle)
         }
-    }
-
-    // deno-lint-ignore no-explicit-any
-    create(_args: Record<string,any>): void {
-        this.updatable=false
-    }
-
-    override on_destroy(): void {
     }
 }

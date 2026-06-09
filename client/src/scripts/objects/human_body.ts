@@ -17,22 +17,6 @@ export class HumanBody extends GameObject{
     sprite_badge:Sprite2D=new Sprite2D()
     sprite:Sprite2D=new Sprite2D()
 
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
-    }
-    // deno-lint-ignore no-explicit-any
-    create(_args: any) {
-        this.base_hitbox=new NullHitbox2D(v2(0,0))
-        this.game.cam2d.addObject(this.container)
-        this.sprite.frame=this.game.resources.get_frame("human_body")
-        this.updatable=false
-    }
-    override on_destroy(): void {
-        this.container.destroy()
-        this.sprite_text.frame?.free()
-    }
-    update(_dt:number): void {
-    }
     constructor(){
         super()
         this.sprite_text.hotspot=v2(0.5,0)
@@ -45,8 +29,22 @@ export class HumanBody extends GameObject{
         this.container.add_child(this.sprite_badge)
         this.container.add_child(this.sprite)
         this.container.visible=false
+
+        //this.allow_tick=true
     }
-    override async decode(stream: NetStream, full: boolean): Promise<void> {
+    override on_create(_args: any) {
+        this.base_hitbox=new NullHitbox2D(v2(0,0))
+        this.game.cam2d.addObject(this.container)
+        this.sprite.frame=this.game.resources.get_frame("human_body")
+    }
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
+    }
+    override on_destroy(): void {
+        this.container.destroy()
+        this.sprite_text.frame?.free()
+    }
+    override async on_decode(stream: NetStream, full: boolean): Promise<void> {
         const pos=stream.readPos2()
         if(full){
             const name=stream.readStringSized(30)

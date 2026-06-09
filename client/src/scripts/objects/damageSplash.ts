@@ -40,10 +40,7 @@ export class DamageSplashOBJ extends GameObject{
 
         this.sprite.zIndex=zIndexes.DamageSplashs
     }
-    override set_layer(layer: number): void {
-        this.sprite.layer=layer
-    }
-    async create(args: DamageSplash): Promise<void> {
+    override async on_create(args: DamageSplash): Promise<void> {
         const color = args.shield
             ? (args.critical ? "#114e" : "#0f9e")
             : (args.critical ? this.game.save.get_variable("sv_ui_special_color") : this.game.save.get_variable("sv_ui_tertiary_color"))
@@ -89,11 +86,14 @@ export class DamageSplashOBJ extends GameObject{
         
         this.game.cam2d.addObject(this.sprite)
     }
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
+    }
     override on_destroy(): void {
         this.sprite.frame?.free()
         this.sprite.destroy()
     }
-    update(dt:number): void {
+    override on_tick(dt:number): void {
         this.lifetime-=dt
         if(this.lifetime<=0){
             this.dying=true

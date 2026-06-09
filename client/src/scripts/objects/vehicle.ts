@@ -24,13 +24,12 @@ export class Vehicle extends MovingBody {
         speed: 0,
     }
 
-    override on_layer_set(layer:number){
-        this.container.layer=layer
-    }
-
-    create() {
+    override on_create() {
         this.game.cam2d.addObject(this.container)
         this.container.add_child(this.main_sprite)
+    }
+    override on_layer_set(): void {
+        this.main_sprite.layer=this.layer
     }
 
     set_def(def: VehicleDef) {
@@ -66,8 +65,8 @@ export class Vehicle extends MovingBody {
         this.container.layer=this.layer
     }
 
-    override update(dt: number) {
-        super.update(dt)
+    override on_tick(dt: number) {
+        super.on_tick(dt)
         const moving = Math.abs(this.physical_data.speed) > 0.1
 
         const maxSteer = 35 * (Math.PI / 180)
@@ -119,12 +118,10 @@ export class Vehicle extends MovingBody {
         this.container.position = this.position
         this.container.rotation = this.physical_data.rotation
     }
-
     override on_destroy() {
         this.container.destroy()
     }
-
-    override decode(stream: NetStream, full: boolean) {
+    override on_decode(stream: NetStream, full: boolean) {
         const [physical_data_dirty,dead]=stream.readBooleanGroup()
         if(physical_data_dirty||full)this.decode_physical_data(stream, full)
 

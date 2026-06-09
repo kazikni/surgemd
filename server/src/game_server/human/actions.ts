@@ -41,7 +41,6 @@ export class ReloadAction extends Action{
             this.item.reloading=false
         }
 
-        user.net_sync.part=true
         user.inventory.net_sync.hand=true
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
@@ -68,7 +67,6 @@ export class ConsumingActionA extends Action{
             user.side_effect(s)
         }
 
-        user.net_sync.part=true
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
 

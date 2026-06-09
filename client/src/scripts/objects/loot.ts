@@ -43,14 +43,16 @@ export class Loot extends GameObject{
 
         this.container.zIndex=zIndexes.Loots
         this.container.add_child(this.sprite_main)
+
+        this.allow_tick=true
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
-    }
-    create(_args: Record<string, void>): void {
+    override on_create(_args: Record<string, void>): void {
         this.game.cam2d.addObject(this.container)
     }
-    update(_dt:number): void {
+    override on_layer_set(): void {
+        this.container.layer=this.layer
+    }
+    override on_tick(_dt:number): void {
         if(this.dest_pos){
             v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
         }
@@ -66,7 +68,7 @@ export class Loot extends GameObject{
         return this.item&&h.hitbox.colliding_with(this.hitbox)
     }
 
-    override interact(h:Human): void {
+    override on_interact(h:Human): void {
         switch(this.item.item_type!){
             case InventoryItemType.gun:
                 if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.gun)))return
@@ -129,7 +131,7 @@ export class Loot extends GameObject{
             count: this.count > 1 ? `(${this.count})` : ""
         })
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         const position=stream.readPos2()
         if(full){
             this.item=this.game.definitions.game_items.valueNumber[stream.readUint16()]

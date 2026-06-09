@@ -27,12 +27,16 @@ export class Plane extends MovingBody {
     radius:number=0
     grenade_def?: GrenadeDef
     obstacle?: ObstacleDef
+    constructor(){
+        super()
+        this.allow_tick=true
+    }
 
     override on_collided(_obj:ServerGameObject,_dt:number){
 
     }
 
-    override create(args: Record<string, any>): void {
+    override on_create(args: Record<string, any>): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,100)
         this.position = args.position
         this.target_pos = args.target_pos
@@ -44,9 +48,9 @@ export class Plane extends MovingBody {
         this.count=args.count
         this.radius=args.radius
     }
-    override update(dt: number): void {
-        super.update(dt)
-        this.net_sync.part=true
+    override on_tick(dt: number): void {
+        super.on_tick(dt)
+        this.set_dirty_part()
         if(!this.called&&v2.distance(this.position, this.target_pos) <= 4) {
             switch (this.type) {
                 case 0:
@@ -79,8 +83,7 @@ export class Plane extends MovingBody {
         }
 
     }
-    override interact(user: Human): void {}
-    override encode(stream: NetStream,full: boolean): void {
+    override on_encode(stream: NetStream,full: boolean): void {
         this.physical_encode(stream)
         stream.writeUint8(this.type)
     }

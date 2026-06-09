@@ -85,8 +85,8 @@ export class Grenade extends Projectile{
             }
         }
     }
-    override update(dt:number): void {
-        super.update(dt)
+    override on_tick(dt:number): void {
+        super.on_tick(dt)
 
         if(this.physical_data.zpos>0){
             this.physical_data.zpos_speed=Numeric.clamp(this.physical_data.zpos_speed-this.def.gravity*dt,-3,3)
@@ -121,9 +121,9 @@ export class Grenade extends Projectile{
                 }
             }*/
         }
-        this.net_sync.part=true
+        this.set_dirty_part()
     }
-    create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
+    override on_create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
         this.def=args.def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.position=args.position
@@ -153,7 +153,7 @@ export class Grenade extends Projectile{
             },this.def.call_airstrike.delay)
         }
     }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         this.physical_encode(stream)
         stream.writeFloat(this.physical_data.zpos,0,1,1)
         if(full){

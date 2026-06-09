@@ -49,16 +49,18 @@ export class Bullet extends ServerGameObject{
         super()
         this.velocity=v2(0,0)
         this.dir=v2(0,0)
-        this.net_sync.enabled.deletion=false
+
+        this.net_sync_deletion=false
+
+        this.allow_tick=true
     }
-    override interact(user: Human): void {}
     on_hit(){
         if(this.def.on_hit_explosion){
             this.game.add_explosion(this.position,this.game.definitions.explosions.getFromString(this.def.on_hit_explosion),this.owner,this.source,this.layer)
         }
         this.destroy()
     }
-    update(dt:number): void {
+    override on_tick(dt:number): void {
         this.old_position=v2.clone(this.position)
         this.tticks+=dt
         const disT=v2.distance(this.initial_position,this.position)/this.max_distance
@@ -165,7 +167,7 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    create(args: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
+    override on_create(args: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
         this.def=args.def
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
         this.position=args.position
@@ -192,7 +194,7 @@ export class Bullet extends ServerGameObject{
     set_direction(angle:number){
         this.dir=v2.from_RadAngle(angle)
         this.velocity=v2.scale(this.dir,this.def.speed*this.modifiers.speed)
-        this.net_sync.full=true
+        this.set_dirty_full()
         this.angle=angle;
     }
     reflect(normal: Vec2, point: Vec2):Bullet|undefined{
@@ -233,7 +235,7 @@ export class Bullet extends ServerGameObject{
     clone(){
         return this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
     }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)
         .writeFloat(this.tticks,0,100,2)
         if(full){

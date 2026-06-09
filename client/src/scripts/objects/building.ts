@@ -1,4 +1,4 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween, Container2D } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -74,19 +74,14 @@ export class Building extends StaticBody{
         }
     }
 
+    constructor(){
+        super()
+    }
     override on_destroy(): void {
         for(const o of this.objects){
             o.destroy()
         }
     }
-    update(dt:number): void {}
-    constructor(){
-        super()
-        this.updatable=false
-    }
-    override create(_args: Record<string, any>): void {
-    }
-
     update_ceilings(ceilings:{alive:boolean}[]){
         for(let i=0;i<ceilings.length;i++){
             if(this.ceilings[i].alive&&!ceilings[i].alive){
@@ -184,7 +179,7 @@ export class Building extends StaticBody{
             this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
         }
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode(stream: NetStream, full: boolean): void {
         const [physical_data]=stream.readBooleanGroup()
         if(physical_data||full){
             this.position=stream.readPos2()

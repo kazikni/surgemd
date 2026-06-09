@@ -57,7 +57,6 @@ export class VehicleSeat {
 
     clear_human() {
         if (!this.human || !this.vehicle.can_leave) return
-        this.human.net_sync.part = true
         this.human.seat = undefined
         this.human = undefined
     }
@@ -120,7 +119,49 @@ export class Vehicle extends MovingBody {
         throttle: 0,
         steer_input: 0,
     }
+    override on_create(args: { position: Vec2; def: VehicleDef }) {
+        this.position = v2.clone(args.position)
 
+        this.def = args.def
+
+        this.base_hitbox = this.def.hitbox.clone()
+        this.physical_data.mass = this.def.physics.mass
+        this.physical_data.engine_force=this.def.physics.engine_force
+
+        this.physical_data.brake_force=this.def.physics.brake_force
+        this.physical_data.traction=this.def.physics.traction
+        this.physical_data.drag=this.def.physics.drag
+
+        this.physical_data.steer_force=this.def.physics.steer_force
+
+        this.physical_data.max_steer_speed =this.def.physics.max_steer_speed
+
+        if (this.def.pillot_seat) {
+            this.seats.push(
+                new VehicleSeat(
+                    this,
+                    this.def.pillot_seat.position,
+                    true,
+                    this.def.pillot_seat.leave,
+                    this.def.pillot_seat.doors
+                )
+            )
+        }
+
+        for (const s of this.def.seats ?? []) {
+            this.seats.push(
+                new VehicleSeat(
+                    this,
+                    s.position,
+                    false,
+                    s.leave,
+                    s.doors
+                )
+            )
+        }
+
+        this.interaction_hitbox = this.hitbox
+    }
     move(input: PolarMovement, backWalk: boolean, _alt = false) {
         const dir = v2.from_PolarMovement(input)
 
@@ -265,7 +306,7 @@ export class Vehicle extends MovingBody {
         }
     }
 
-    override update(dt: number) {
+    override on_tick(dt: number) {
         if (this.dead) return
 
         this.current_floor = this.game.map.terrain.get_floor_type(
@@ -276,63 +317,19 @@ export class Vehicle extends MovingBody {
 
         this.update_surface()
         this.update_physics(dt)
-        super.update(dt)
+        super.on_tick(dt)
         this.update_seats()
         this.interaction_hitbox = this.hitbox
 
         if(Math.abs(this.speed) > 0.001 ||Math.abs(this.physical_data.angular_velocity) > 0.001 ||this.is_new){
             this.physical_data.dirty = true
-            this.net_sync.part = true
+            this.set_dirty_part()
         }
 
         this.physical_data.throttle = 0
         this.physical_data.steer_input = 0
 
         this.is_moving = false
-    }
-
-    create(args: { position: Vec2; def: VehicleDef }) {
-        this.position = v2.clone(args.position)
-
-        this.def = args.def
-
-        this.base_hitbox = this.def.hitbox.clone()
-        this.physical_data.mass = this.def.physics.mass
-        this.physical_data.engine_force=this.def.physics.engine_force
-
-        this.physical_data.brake_force=this.def.physics.brake_force
-        this.physical_data.traction=this.def.physics.traction
-        this.physical_data.drag=this.def.physics.drag
-
-        this.physical_data.steer_force=this.def.physics.steer_force
-
-        this.physical_data.max_steer_speed =this.def.physics.max_steer_speed
-
-        if (this.def.pillot_seat) {
-            this.seats.push(
-                new VehicleSeat(
-                    this,
-                    this.def.pillot_seat.position,
-                    true,
-                    this.def.pillot_seat.leave,
-                    this.def.pillot_seat.doors
-                )
-            )
-        }
-
-        for (const s of this.def.seats ?? []) {
-            this.seats.push(
-                new VehicleSeat(
-                    this,
-                    s.position,
-                    false,
-                    s.leave,
-                    s.doors
-                )
-            )
-        }
-
-        this.interaction_hitbox = this.hitbox
     }
 
     override on_collided(obj: ServerGameObject, _dt: number): void {
@@ -348,7 +345,7 @@ export class Vehicle extends MovingBody {
         )
     }
 
-    override interact(user: Human): void {
+    override on_interact(user: Human): void {
         let interact_seat: VehicleSeat | undefined
         let dist = Infinity
         let door: Vec2 | undefined
@@ -395,11 +392,11 @@ export class Vehicle extends MovingBody {
         }
     }
 
-    override net_update() {
+    override on_net_update() {
         this.physical_data.dirty = false
     }
 
-    override encode(stream: NetStream, full: boolean) {
+    override on_encode(stream: NetStream, full: boolean) {
         stream.writeBooleanGroup(
             this.physical_data.dirty,
             this.dead

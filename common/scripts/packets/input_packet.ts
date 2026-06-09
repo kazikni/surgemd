@@ -66,7 +66,7 @@ export class InputPacket extends Packet{
             switch(i.type){
               case InputActionType.drop:
                     stream.writeUint8(i.drop)
-                    stream.writeUint8(i.drop_kind)
+                    .writeUint8(i.drop_kind)
                     break
               case InputActionType.use_item:
                     stream.writeUint8(i.slot)

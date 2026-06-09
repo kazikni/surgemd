@@ -42,19 +42,14 @@ export abstract class Projectile extends MovingBody{
             (obj as Human|Obstacle).damage({amount:this.projectile_data.collision_damage,direction:0,critical:false,position:this.position,reason:DamageReason.Human,owner:this.owner,resistence:this.projectile_data.collision_damage_resistence})
         }
     }
-    override update(dt:number): void {
+    override on_tick(dt:number): void {
         if(!v2.is(this.physical_data.velocity,v2.zero)){
-            this.net_sync.part=true
-            super.update(dt)
+            this.set_dirty_part()
+            super.on_tick(dt)
         }
         this.physical_data.rotation+=this.physical_data.angular_velocity*dt
     }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         this.physical_encode(stream)
-    }
-
-    override interact(user: Human): void {}
-    override can_interact(user: Human): boolean {
-        return false
     }
 }

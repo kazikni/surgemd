@@ -87,16 +87,12 @@ export class Obstacle extends StaticBody{
         super()
     }
 
-    override update(_dt:number): void {
-        
-    }
-
     choose_door_side(playerPos: Vec2): -1 | 1 {
         const toPlayer = v2.sub(playerPos, this.position)
         const local = v2.rotate_RadAngle(toPlayer, -this.physical_data.rotation)
         return local.y >= 0 ? 1 : -1
     }
-    override interact(user: Human): void {
+    override on_interact(user: Human): void {
         if(this.actived)return
         if(this.def.interactDestroy){
             this.die({
@@ -122,7 +118,7 @@ export class Obstacle extends StaticBody{
                             }
 
                             this.game.add_timeout(()=>{
-                                this.net_sync.part=true
+                                this.set_dirty_part()
                                 this.door_data!.dirty=true
                                 this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
                                 this.door_data!.opening=false
@@ -133,7 +129,7 @@ export class Obstacle extends StaticBody{
                             }else{
                                 this.door_data!.open=0
                             }
-                            this.net_sync.part=true
+                            this.set_dirty_part()
                             this.door_data!.dirty=true
                             this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
                         }
@@ -181,7 +177,7 @@ export class Obstacle extends StaticBody{
                 }
                 case 3:{
                     if(!this.transform_into_data?.activated){
-                        this.net_sync.part=true
+                        this.set_dirty_part()
                         const choose=random.weight2(this.def.expanded_behavior.obstacles)!
                         this.transform_into_data={
                             activated:true,
@@ -204,7 +200,7 @@ export class Obstacle extends StaticBody{
     override can_interact(user: Human): boolean {
         return (this.def.interactDestroy||this.def.expanded_behavior)as boolean&&!this.destroyed&&user.hitbox.colliding_with(this.hitbox)&&!this.health_data.dead
     }
-    override net_update(): void {
+    override on_net_update(): void {
         if(this.door_data)this.door_data.dirty=false
 
         this.physical_data.dirty_part=false
@@ -245,9 +241,7 @@ export class Obstacle extends StaticBody{
             this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true},this.game)
         }
     }
-    override create(args: {def:ObstacleDef}): void {
-        this.updatable=false
-
+    override on_create(args: {def:ObstacleDef}): void {
         this.set_definition(args.def)
     }
     initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0){
@@ -323,7 +317,7 @@ export class Obstacle extends StaticBody{
         if(this.def.hitbox&&this.def.scale){
             const destroyScale = (this.def.scale.destroy ?? 1)*this.max_scale;
             this.physical_data.scale=Math.max(this.health_data.health/this.health_data.max_health*(this.max_scale - destroyScale) + destroyScale,0)
-            this.net_sync.part=true
+            this.set_dirty_part()
             this.physical_data.dirty_part=true
         }
         if(this.door_data){
@@ -377,7 +371,7 @@ export class Obstacle extends StaticBody{
             this.reset_scale()
         }
 
-        this.net_sync.part=true
+        this.set_dirty_part()
         this.health_data.dirty=true
     }
     die(params:DamageParams){
@@ -393,7 +387,7 @@ export class Obstacle extends StaticBody{
             loots.push(this.game.add_loot(this.hitbox.randomPoint(),l.item,l.count,this.layer))
         }
 
-        this.net_sync.part=true
+        this.set_dirty_part()
         this.health_data.dead=true
         this.health_data.dirty=true
         this.physical_data.no_collision=true
@@ -401,7 +395,7 @@ export class Obstacle extends StaticBody{
 
         for(let i=0;i<10;i++){
             for(const loot of loots){
-                loot.update(1/30)
+                loot.on_tick(1/30)
             }
         }
         for(const loot of loots){
@@ -428,7 +422,7 @@ export class Obstacle extends StaticBody{
     revive(){
         if(!this.health_data.dead)return
         this.health_data.dead=false
-        this.net_sync.full=true
+        this.set_dirty_part()
 
         this.physical_data.no_collision=this.def.no_collision??false
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
@@ -441,12 +435,12 @@ export class Obstacle extends StaticBody{
         if(this.health_data.dead){
             this.revive()
         }else{
-            this.net_sync.full=true
+            this.set_dirty_full()
             this.health_data.health=this.health_data.max_health
             this.reset_scale()
         }
     }
-    override encode(stream: NetStream, full: boolean): void {
+    override on_encode(stream: NetStream, full: boolean): void {
         const door_dirty=this.door_data&&(full||this.door_data.dirty)
 
         stream.writeBooleanGroup(

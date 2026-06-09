@@ -67,7 +67,7 @@ export class Client{
     protected manager:PacketsManager
     opened:boolean // Client Is Connected
     ID:ID=0 // Client ID Sysed With Server And Client
-    IP:string // Clinet IP
+    IP:string // Client IP
     protected signals:SignalManager
     onopen?:()=>void
     show_errors:boolean=true
@@ -142,7 +142,7 @@ export class Client{
             this.emit(new PongPacket(packet.time))
         })
     }
-    private stream_cache:NetStream=new NetStream(new ArrayBuffer(1024 * 40))
+    private static stream_cache:NetStream=new NetStream(new ArrayBuffer(1024 * 40))
 
     /**
      * Send A `Packet` To `Server/Client`
@@ -150,9 +150,9 @@ export class Client{
      */
     emit(packet: Packet): void {
         if (this.ws.readyState !== WebSocket.OPEN) return
-        this.stream_cache.clear()
-        this.manager.encode(packet, this.stream_cache)
-        if (this.ws.send) this.ws.send(this.stream_cache._u8Array.subarray(0,this.stream_cache.length))
+        Client.stream_cache.clear()
+        this.manager.encode(packet, Client.stream_cache)
+        if (this.ws.send) this.ws.send(Client.stream_cache._u8Array.subarray(0,Client.stream_cache.length))
     }
 
     /**

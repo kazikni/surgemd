@@ -14,6 +14,7 @@ export abstract class MovingBody extends ServerGameObject{
 
     constructor(){
         super()
+        this.allow_tick=true
     }
     push(speed:number,dir:number){
         const vel=v2.from_RadAngle(dir)
@@ -40,7 +41,7 @@ export abstract class MovingBody extends ServerGameObject{
             }
         }
     }
-    update(dt: number): void {
+    override on_tick(dt: number): void {
         const substeps = this.physical_data.substeps ?? 0
         if (substeps > 1) {
             const objs = this.manager.cells.get_objects(this.hitbox, this.layer)

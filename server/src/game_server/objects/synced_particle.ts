@@ -64,7 +64,7 @@ export class SyncedParticle extends MovingBody {
             }
         }
     }
-    create(args:{position:Vec2,def:SyncedParticleDef,owner?:Human}){
+    override on_create(args:{position:Vec2,def:SyncedParticleDef,owner?:Human}){
         this.owner=args.owner
         this.position=v2.clone(args.position)
         this.spiral_origin=v2.clone(args.position)
@@ -89,9 +89,9 @@ export class SyncedParticle extends MovingBody {
         }
     }
 
-    override update(dt:number){
+    override on_tick(dt:number){
         this.action_tick+=dt
-        super.update(dt)
+        super.on_tick(dt)
         if(this.action_tick>=this.action_time){
             this.action_tick=0
         }
@@ -115,14 +115,9 @@ export class SyncedParticle extends MovingBody {
         }
 
         this.physical_data.rotation=Numeric.loop_rad(this.physical_data.rotation+this.angular_speed*dt)
-        this.net_sync.part=true
+        this.set_dirty_part()
     }
-
-    override interact(_user:Human){}
-
-    override net_update(){}
-
-    override encode(stream:NetStream,full:boolean){
+    override on_encode(stream:NetStream,full:boolean){
         this.physical_encode(stream)
         if(full){
             stream.writeFloat(this.time,0,120,2)

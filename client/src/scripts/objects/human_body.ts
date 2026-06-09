@@ -51,15 +51,16 @@ export class HumanBody extends GameObject{
         if(full){
             const name=stream.readStringSized(30)
             const badge=stream.readUint8()
-            this.sprite_text.frame=await this.game.resources.render_text(`${name}`,50,"#ccc")
+            const color=this.game.save.get_variable("sv_ui_tertiary_color")
+            this.sprite_text.frame=await this.game.resources.render_text(`${name}`,60,color)
             if(badge){
                 this.sprite_badge.visible=true
                 this.sprite_badge.frame=this.game.resources.get_frame(`${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
-                this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/400)-0.1
+                this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.cam2d.meter_size*4))-0.1
             }else{
                 this.sprite_badge.visible=false
             }
-            this.sprite.tint=ColorM.hex("#ccc")
+            this.sprite.tint=ColorM.hex(color)
             this.container.visible=true
         }
         this.position=pos

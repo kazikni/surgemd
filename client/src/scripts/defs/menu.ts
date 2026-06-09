@@ -2,7 +2,7 @@
 import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
-import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave, isMobile, Key } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
@@ -783,6 +783,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     name:"menu.settings.ui",
                     subtab:"ui"
                 },
+                {
+                    id:"keybinds",
+                    type:"button",
+                    name:"menu.settings.keybinds",
+                    subtab:"keybinds"
+                }
             ],
             subtabs:{
                 "game":{
@@ -981,6 +987,55 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             var:"sv_ui_interactive",
                         },
                     ],translation),
+                },
+                "keybinds":{
+                    generate:(parent,_m)=>{
+                        const generate_actions=()=>{
+                            parent.innerHTML=""
+                            const actions=menu.save.input_manager?.actions ?? {}
+                            for(const [name,action] of Object.entries(actions)){
+                                const row=document.createElement("div")
+                                row.className="settings-row"
+
+                                const current=document.createElement("span")
+                                current.className="span-text"
+                                current.textContent=" "+action.keys.map(k=>Key[k]).join(", ")
+
+                                const btn=document.createElement("button")
+                                btn.className="btn-blue"
+                                btn.textContent=translation.get("keybinds."+name)
+
+                                btn.onclick=async()=>{
+                                    const key=await menu.game_popup(async(ctx)=>{
+                                        ctx.parent.innerHTML=`
+                                        <h2>Waiting Key</h2>
+                                        <p>Press any key...</p>
+                                        `
+                                        ctx.resolve(await menu.input.wait_for_any_key())
+                                    })
+                                    menu.save.set_action(name,{
+                                        ...action,
+                                        keys:[key]
+                                    })
+                                    current.textContent=" "+menu.input.actions[name].keys.map(k=>Key[k]).join(", ")
+                                }
+                                row.append(btn,current)
+                                parent.appendChild(row)
+                            }
+                            parent.appendChild(reset)
+                        }
+                        const reset=document.createElement("button")
+                        reset.className="btn-red"
+                        reset.textContent="Reset Keybinds"
+                        reset.onclick=()=>{
+                            menu.save.input_manager?.resetAllActions()
+                            if(menu.save.current_save){
+                                menu.save.save(menu.save.current_save)
+                            }
+                            generate_actions()
+                        }
+                        generate_actions()
+                    }
                 }
             },
             on_close(_m){

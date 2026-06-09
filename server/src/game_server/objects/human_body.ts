@@ -36,7 +36,7 @@ export class HumanBody extends ServerGameObject{
         this.badge=args.badge
         this.base_hitbox=new CircleHitbox2D(v2.zero(),1)
         this.position=args.position
-        this.velocity=v2.from_RadAngle(args.angle,7)
+        this.velocity=v2.from_RadAngle(args.angle+Math.PI,7)
     }
     override encode(stream: NetStream, full: boolean): void {
         stream.writePos2(this.position)

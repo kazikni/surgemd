@@ -12,6 +12,7 @@ __                                                                              
 * Vehicles Tire Marks
 __                                                                                                                 __
 ### Menu
+* Keybind Settings
 * Final Screen
 * Tertiary Color Settings
 * Gameplay Music Settings
@@ -53,6 +54,8 @@ __                                                                              
 * Reduce Containers Size
 * Change Containers Spawn
 * Bullets can now pass through bushes and tables
+* Fix Badges
+* Readd Human Bodys
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

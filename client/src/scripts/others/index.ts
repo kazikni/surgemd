@@ -9,9 +9,6 @@ import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
-import { city_final, island_final } from "common/scripts/config/final_screen.ts";
-import { ScoreApplyer, ScoreApplyerType } from "common/scripts/others/constants.ts";
-import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -77,7 +74,7 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
                 }
             }
             await this.game.bind(fs)
-            this.menu_manager.init(this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
+            this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
             this.game.load_resources(["main"])
 
             /*this.game.final_screen.set_final_screen(island_final)

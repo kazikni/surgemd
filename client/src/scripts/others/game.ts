@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputKeyEvent, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -205,9 +205,11 @@ export class Game extends ClientGame<GameObject>{
             if(!this.can_act)return
             switch(a.action){
                 case "fire":
+                    if(a.element!==this.renderer.canvas)break
                     this.input.use_weapon=true
                     break
                 case "alt_fire":
+                    if(a.element!==this.renderer.canvas)break
                     this.input.alt_use_weapon=true
                     break
                 case "emote_wheel":

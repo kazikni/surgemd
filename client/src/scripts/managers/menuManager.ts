@@ -7,8 +7,6 @@ import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
-import { PlayerStatus } from "common/scripts/others/constants.ts";
-import { FinalScreenDef } from "common/scripts/config/final_screen.ts";
 type PhaseIntroConfig = {
     location: string
     name: string
@@ -60,6 +58,7 @@ export class MenuManager{
     translation!:TranslationManager
     sounds!:AudioEngine
     submenu_param:boolean
+    input!:InputManager
 
     definitions:GameDefinition
 
@@ -278,11 +277,12 @@ export class MenuManager{
             this.content.menu_options.style.opacity="1"
         }
     }
-    async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
         this.translation=transition
+        this.input=input
         this.update_api()
 
         MenuInitDefault(this,definitions,fs,transition,mods)
@@ -482,9 +482,7 @@ export class MenuManager{
                     resolve(undefined)
                 }
             }
-
             content(ctx)
-
             requestAnimationFrame(()=>{
                 overlay.style.opacity="1"
             })

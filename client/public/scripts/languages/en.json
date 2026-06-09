@@ -325,7 +325,8 @@
                 "game":"Game",
                 "graphics":"Graphics",
                 "sounds":"Sounds",
-                "ui":"UI"
+                "ui":"UI",
+                "keybinds":"Keybinds"
             },
             "loadout":{
                 "character":"Character"
@@ -368,12 +369,43 @@
             "ui":{
                 "primary_color":"Primary Color",
                 "secondary_color":"Secondary Color",
+                "tertiary_color":"Tertiary Color",
                 "positive_color":"Positive Color",
                 "negative_color":"Negative Color",
                 "special_color":"Special Color",
                 "translation":"Translation",
                 "interactive":"Interactive UI"
             }
+        },
+        "keybinds":{
+            "move_up":"Move Up",
+            "move_down":"Move Down",
+            "move_left":"Move Left",
+            "move_right":"Move Right",
+            "fire":"Fire/Use",
+            "alt_fire":"Fire Alt/Use Alt",
+            "emote_wheel":"Emote Wheel",
+            "reload":"Reload",
+            "interact":"Interact",
+            "swamp_guns":"Swamp Guns Slot",
+            "toggle_full_device":"Minimap Toggle Full",
+            "toggle_hide_device":"Hide/Show Minimap",
+            "weapon1":"Melee",
+            "weapon2":"Gun 1",
+            "weapon3":"Gun 2",
+            "use_item1":"Item 1",
+            "use_item2":"Item 2",
+            "use_item3":"Item 3",
+            "use_item4":"Item 4",
+            "use_item5":"Item 5",
+            "use_item6":"Item 6",
+            "use_item7":"Item 7",
+            "previous_weapon":"Previous Weapon",
+            "next_weapon":"Next Weapon",
+            "previous_scope":"Previous Scope",
+            "next_scope":"Next Scope",
+            "next":"Next",
+            "debug_menu":"Debug Menu"
         },
         "loadout":{
             "character":{

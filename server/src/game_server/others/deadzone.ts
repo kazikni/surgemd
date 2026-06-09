@@ -64,10 +64,10 @@ export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStag
     return stages
 }
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
-    count:9,
+    count:10,
     radius:{
         decay:0.65,
-        initial:36
+        initial:37
     },
     damage:{
         add:2,

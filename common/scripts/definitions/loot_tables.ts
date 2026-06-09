@@ -124,8 +124,8 @@ export const LootTables={
         {item:"scope_3",count:1,weight:10},
         {item:"scope_4",count:1,weight:1.5},
         {item:"scope_5",count:1,weight:0.1},
-        {item:"scope_6",count:1,weight:0.01},
-        {item:"scope_7",count:1,weight:0.001},
+        {item:"scope_6",count:1,weight:0.05},
+        {item:"scope_7",count:1,weight:0.01},
     ],
     //Armors And Backpacks
     helmets:[

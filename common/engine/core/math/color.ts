@@ -153,7 +153,6 @@ export const ColorM={
         aMul: number = 1
     ): Color {
         const hsv = this.rgb2hsv(color)
-
         return this.hsv(
             hsv.h * hMul,
             Numeric.clamp(hsv.s * sMul, 0, 1),

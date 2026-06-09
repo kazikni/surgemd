@@ -59,8 +59,8 @@ export const TundraMap:MapDef={
             {item:"scope_4",count:1,weight:1.7},
             {item:"scope_2",count:1,weight:0.4},
             {item:"scope_5",count:1,weight:0.1},
-            {item:"scope_6",count:1,weight:0.01},
-            {item:"scope_7",count:1,weight:0.001},
+            {item:"scope_6",count:1,weight:0.05},
+            {item:"scope_7",count:1,weight:0.01},
         ],
         guns:[
             // Too Common Pistols
@@ -116,7 +116,7 @@ export const TundraMap:MapDef={
                 {weight:2,count:2,table:"accessorys"},
                 {weight:0.5,count:3,table:"accessorys"},
             ],
-            [{weight:1,table:"normal_scopes"}],
+            [{weight:1,table:"scopes"}],
         ],
         wood_crate:[
             {weight:2,count:3,table:"normal_loot"},

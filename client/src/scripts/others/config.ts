@@ -207,7 +207,7 @@ export const ConfigDefaultActions={
     },
     "next":{
         buttons:[],
-        keys:[Key.E,Key.Space,Key.Enter,Key.Mouse_Left]
+        keys:[Key.E,Key.Space,Key.Enter]
     },
     "debug_menu":{
         buttons:[GamepadButtonID.R3],

@@ -91,6 +91,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                         rotation:r-1,
                         position:v2.add(DefaultFistRig.left!.position,v2(0,0))
                     },
+                    ease:ease.quadraticInOut
                 },
                 {
                     fuser:"left_arm",
@@ -121,7 +122,8 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     to:{
                         rotation:r,
                         position:DefaultFistRig.left!.position
-                    }
+                    },
+                    ease:ease.quadraticInOut
                 },
                 {
                     fuser:"left_arm",

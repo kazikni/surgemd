@@ -1,6 +1,6 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, NetStream, random, Sprite2D, v2 } from "common/engine/client.ts";
+import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, random, Sprite2D, v2 } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 export class Explosion extends GameObject{
     ////////////////////////////
@@ -94,13 +94,13 @@ export class Explosion extends GameObject{
         (this.base_hitbox as CircleHitbox2D).radius=this.radius
         this.maxRadius=this.radius*(this.def.size.visual??1)*1.25
     }
-    override on_decode(stream: NetStream, _full: boolean): void {
-        const pos=stream.readPos2()
+    override on_decode_net(stream: Stream, _full: boolean): void {
+        const pos=stream.read_pos2()
         this.position=pos
 
-        this.radius=stream.readFloat(0,50,3)
+        this.radius=stream.read_float(0,50,3)
 
-        this.set_definition(this.game.definitions.explosions.getFromNumber(stream.readID()))
+        this.set_definition(this.game.definitions.explosions.getFromNumber(stream.read_id()))
 
         this._base_hitbox=new CircleHitbox2D(v2(0,0),this.radius)
 

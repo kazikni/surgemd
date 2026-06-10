@@ -1,5 +1,5 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, NetStream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
+import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
@@ -83,11 +83,11 @@ export class Grenade extends MovingBody{
             },def.particles!.spawn_delay??0)
         }
     }
-    override on_decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         this.decode_physical_data(stream,full)
-        this.physical_data.zpos=stream.readFloat(0,1,1)
+        this.physical_data.zpos=stream.read_float(0,1,1)
         if(full){
-            this.set_definition(this.game.definitions.grenades.getFromNumber(stream.readID()))
+            this.set_definition(this.game.definitions.grenades.getFromNumber(stream.read_id()))
         }
     }
 }

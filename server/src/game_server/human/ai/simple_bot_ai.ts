@@ -1,5 +1,5 @@
 import { type Game } from "../../others/game.ts";
-import { NetStream, Numeric, PolarMovement, random, v2, Vec2 } from "common/engine/core.ts";
+import { Stream, Numeric, PolarMovement, random, v2, Vec2 } from "common/engine/core.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../../objects/human.ts";
 import { GameObjectDef } from "common/scripts/definitions/game_defs.ts";
@@ -19,7 +19,7 @@ export abstract class BotAi{
         this.human=human
     }
     abstract AI(dt:number):void
-    abstract net_update(general_update:NetStream):void
+    abstract net_update(general_update:Stream):void
     reset_inputs(){
         this.human.input.using_item=false
         this.human.input.using_item_down=false
@@ -102,7 +102,7 @@ export class SimpleBotAi extends BotAi{
             }
         }
         if(Math.random()<=0.003){
-            this.human.input.actions.push({type:InputActionType.emote,emote:random.choose(this.emotes).idNumber!})
+            this.human.input.actions.push({type:InputActionType.emote_emote,emote:random.choose(this.emotes).idNumber!})
         }
     }
 }

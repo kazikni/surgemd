@@ -1,7 +1,7 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 
 import { random } from "./random.ts";
-import { NetStream } from "../net/stream.ts";
+import { Stream } from "../net/stream.ts";
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
 
@@ -86,7 +86,7 @@ export abstract class BaseHitbox2D{
     abstract readonly position:Vec2
     abstract translate(position:Vec2,angle?:number):void
     abstract clamp(position:Vec2,min:Vec2,max:Vec2):Vec2 // returns clamped position
-    abstract encode(stream:NetStream):void
+    abstract encode(stream:Stream):void
     abstract to_json():JsonHitbox2D
 
     constructor(){
@@ -146,16 +146,16 @@ export class NullHitbox2D extends BaseHitbox2D{
     override clamp(position:Vec2,min:Vec2,max:Vec2){
         return v2.clamp2(position,min,max)
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.position)
+    override encode(stream:Stream){
+        stream.write_pos2(this.position)
     }
     override to_json():JsonNullHitbox2D{
         return {
             type:HitboxType2D.null,
         }
     }
-    static decode(stream:NetStream):NullHitbox2D{
-        return new NullHitbox2D(stream.readPos2())
+    static decode(stream:Stream):NullHitbox2D{
+        return new NullHitbox2D(stream.read_pos2())
     }
 }
 export class CircleHitbox2D extends BaseHitbox2D{
@@ -301,9 +301,9 @@ export class CircleHitbox2D extends BaseHitbox2D{
             v2.sub(max, r)
         )
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.position)
-        stream.writeFloat(this.radius,0,500,2)
+    override encode(stream:Stream){
+        stream.write_pos2(this.position)
+        stream.write_float(this.radius,0,500,2)
     }
     override to_json():JsonCircleHitbox2D{
         return {
@@ -312,8 +312,8 @@ export class CircleHitbox2D extends BaseHitbox2D{
             radius:this.radius
         }
     }
-    static decode(stream:NetStream):CircleHitbox2D{
-        return new CircleHitbox2D(stream.readPos2(),stream.readFloat(0,500,2))
+    static decode(stream:Stream):CircleHitbox2D{
+        return new CircleHitbox2D(stream.read_pos2(),stream.read_float(0,500,2))
     }
 }
 
@@ -625,12 +625,12 @@ export class RectHitbox2D extends BaseHitbox2D{
             max:this.max
         }
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.min)
-        stream.writePos2(this.max)
+    override encode(stream:Stream){
+        stream.write_pos2(this.min)
+        stream.write_pos2(this.max)
     }
-    static decode(stream:NetStream):RectHitbox2D{
-        return new RectHitbox2D(stream.readPos2(),stream.readPos2())
+    static decode(stream:Stream):RectHitbox2D{
+        return new RectHitbox2D(stream.read_pos2(),stream.read_pos2())
     }
     override clamp(position: Vec2, min: Vec2, max: Vec2): Vec2 {
         const size = v2.sub(this.max, this.min);
@@ -750,11 +750,11 @@ export class HitboxGroup2D extends BaseHitbox2D{
             v2.sub(max, size)
         );
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.position)
+    override encode(stream:Stream){
+        stream.write_pos2(this.position)
     }
-    static decode(stream:NetStream):NullHitbox2D{
-        return new NullHitbox2D(stream.readPos2())
+    static decode(stream:Stream):NullHitbox2D{
+        return new NullHitbox2D(stream.read_pos2())
     }
     override to_json():JsonGroupHitbox2D{
         return {
@@ -930,21 +930,21 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             v2.sub(max, size)
         );
     }
-    override encode(stream: NetStream): void {
-        stream.writeUint24(this.points.length)
+    override encode(stream: Stream): void {
+        stream.write_uint24(this.points.length)
         for (const p of this.points) {
-            stream.writePos2(p)
+            stream.write_pos2(p)
         }
-        stream.writePos2(this.position)
+        stream.write_pos2(this.position)
     }
 
-    static decode(stream: NetStream): PolygonHitbox2D {
-        const len = stream.readUint24();
+    static decode(stream: Stream): PolygonHitbox2D {
+        const len = stream.read_uint24();
         const pts: Vec2[] = [];
         for (let i = 0; i < len; i++) {
-            pts.push(stream.readPos2())
+            pts.push(stream.read_pos2())
         }
-        const center = stream.readPos2()
+        const center = stream.read_pos2()
         return new PolygonHitbox2D(pts, center);
     }
     override to_json():JsonPolygonHitbox2D{

@@ -1,4 +1,4 @@
-import { Client, cloneDeep, DefaultSignals, NetStream, RectHitbox2D, v2, ValidString } from "common/engine/core.ts";
+import { Client, cloneDeep, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, StaticStream } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -17,7 +17,7 @@ import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
-    override net_update(general_update:NetStream): void {
+    override net_update(general_update:Stream): void {
         if(this.ai){
             this.ai.net_update(general_update)
         }
@@ -70,7 +70,7 @@ export class PlayerClient extends PlayerConnManager{
             const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(26/scope_view,21/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
-            const o=this.human.game.scene_2d.objects.encode_list(objs,this.view_objects)
+            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects)
 
             this.view_objects=o.last
             up.objects=o.strm
@@ -95,7 +95,7 @@ export class PlayerClient extends PlayerConnManager{
             const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
-            const o=this.human.game.scene_2d.objects.encode_list(objs,this.view_objects)
+            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects)
 
             this.view_objects=o.last
             up.objects=o.strm
@@ -119,7 +119,7 @@ export class PlayerClient extends PlayerConnManager{
 
         this.client!.emit(p)
     }
-    net_update(general_update:NetStream){
+    net_update(general_update:Stream){
         if(this.client.opened){
             const packet=this.get_update_packet()
             if(packet.objects)this.client!.emit(packet)
@@ -137,8 +137,10 @@ export class PlayersManager{
     connected_players:Record<number,PlayerClient>={}
     connected_bots:BotClient[]=[]
     living_players:Player[]=[]
-    global_buffer_1?:NetStream
-    global_buffer_2?:NetStream
+
+    buffer:Stream=new StaticStream(new ArrayBuffer(5*1024))
+    global_buffer_1?:Stream
+    global_buffer_2?:Stream
 
     constructor(game:Game){
         this.game=game
@@ -237,21 +239,20 @@ export class PlayersManager{
         return client.human as Player
     }
     get_global_update_packet(full:boolean):UpdatePacket{
-        if(!this.global_buffer_1)this.global_buffer_1=new NetStream(new ArrayBuffer(1024*1024*2))
+        if(!this.global_buffer_1)this.global_buffer_1=new StaticStream(new ArrayBuffer(1024*1024*2))
         this.global_buffer_1.clear()
 
         const up=new UpdatePacket()
         up.priv.splashes=this.splashes
-        up.objects=this.game.scene_2d.objects.encode_all(full,this.global_buffer_1)
+        up.objects=this.game.scene_2d.objects.encode_all_net(full,this.global_buffer_1)
         return up
     }
     encode_frame(full:boolean){
-        if(!this.global_buffer_2)this.global_buffer_2=new NetStream(new ArrayBuffer(1024*1024*2.2))
+        if(!this.global_buffer_2)this.global_buffer_2=new StaticStream(new ArrayBuffer(1024*1024*2.2))
         this.global_buffer_2.clear()
 
         const up=this.get_global_update_packet(full)
         this.game.clients.packets_manager.encode(up,this.global_buffer_2)
-
         this.game.clients.packets_manager.encode(this.general_update,this.global_buffer_2)
         return this.global_buffer_2
     }
@@ -261,7 +262,8 @@ export class PlayersManager{
         }
     }
     net_update(){
-        const s=new NetStream(new ArrayBuffer(5*1024))
+        const s=this.buffer
+        s.clear()
 
         this.general_update.content.started=this.game.started
         this.general_update.content.deadzone=undefined
@@ -270,7 +272,7 @@ export class PlayersManager{
         this.general_update.content.deadzone=this.game.deadzone.state
 
         this.game.clients.packets_manager.encode(this.general_update,s)
-        this.general_update.encode(s)
+        //this.general_update.encode(s)
         for(const p of Object.values(this.connected_players)){
             p.net_update(s)
         }
@@ -290,6 +292,7 @@ export class PlayersManager{
         client.sendStream(this.game.map.map_packet_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
+            console.log(username,client.ID,packet)
             this.connected_players[client.ID].join_packet=packet
             if(this.game.modeManager.can_join()){
                 const p = this.connected_players[client.ID].add_player()

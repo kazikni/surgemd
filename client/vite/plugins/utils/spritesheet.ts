@@ -98,5 +98,5 @@ export async function buildKSPRGroup(base: string = "",dir: string,resolutions: 
         }
     }
     const stream = write_kspr(kspr)
-    return stream._u8Array.slice(0, stream.length)
+    return stream.data.slice(0, stream.length)
 }

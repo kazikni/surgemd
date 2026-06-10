@@ -21,7 +21,7 @@ import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
-import { LevelDefinition } from "common/scripts/config/level_definition.ts";
+import { GameOverScreenType, LevelDefinition } from "common/scripts/config/level_definition.ts";
 import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
@@ -473,7 +473,14 @@ export class Game extends ClientGame<GameObject>{
 
         this.ambient.music.set(undefined)
 
+        this.ui.game_over_screen={
+            type:GameOverScreenType.Normal
+        }
         if(this.level){
+            if(this.level.game_over)this.ui.game_over_screen=this.level.game_over
+            else this.ui.game_over_screen={
+                type:GameOverScreenType.Restart
+            }
             if(this.menu.cutscene){
                 await this.menu.show_history(this.menu.cutscene,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
             }
@@ -492,13 +499,6 @@ export class Game extends ClientGame<GameObject>{
         if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)
         await this.final_screen.hide_final_screen()
 
-    }
-    async end_level(game_over:GameOverStatus){
-        /*if(this.level?.end&&this.fs){
-            if(this.level?.end?.history){
-                await this.menu.show_history(this.level.end.history,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
-            }
-        }*/
     }
     make_green_light_death_message(status:HumanStatus):string[]{
         const messages: string[] = []
@@ -552,7 +552,7 @@ export class Game extends ClientGame<GameObject>{
         messages.push(this.language.get("gameover.messages.death-end"))
         return messages
     }
-    async on_die_level(p:GameOverPacket){
+    /*async on_die_level(p:GameOverPacket){
         if(!this.level)return
         this.add_timeout(()=>{
             this.local_server.reset_level()
@@ -564,7 +564,7 @@ export class Game extends ClientGame<GameObject>{
         })
         this.ui.hide_game_over()
         this.local_server.start()
-    }
+    }*/
     override clear(): void {
         super.clear()
         this.ui.clear()
@@ -576,20 +576,29 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.on_game_close()
         this.client=undefined
         this.cam_type=0
-
         this.language.clear("level")
     }
     soft_close_game(){
         this.clear()
         this.local_server.stop()
-        this.ui.hide_game_over()
 
+        this.ui.hide_game_over()
         this.cam2d.zoom=6
+        this.cam2d.stop_shake()
         this.happening=false
         this.started=false
         this.game_over=false
         this.active_entity=undefined
         this.active_entity_id=undefined
+    }
+    finish_game_over(){
+        if(this.level){
+            this.local_server.reset_level()
+            this.local_server.start()
+            this.ui.hide_game_over()
+        }else{
+            this.close_game()
+        }
     }
     override on_update(dt:number){
         super.on_update(dt)
@@ -748,7 +757,7 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("update",(p:UpdatePacket)=>{
             this.clock.profiler.start(100)
-            this.scene_2d.objects.proccess(p.objects!,true)
+            this.scene_2d.objects.proccess_net(p.objects!,true)
             this.process_private(p.priv)
             this.clock.profiler.end(100)
         })
@@ -770,13 +779,8 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.game_over = true
-            await this.show_final_screen(p.status)
-            if(this.level){
-                if(p.status.win){
-                    await this.end_level(p.status)
-                }else{
-                    await this.on_die_level(p)
-                }
+            if(p.status.win){
+                await this.show_final_screen(p.status)
             }
             this.ui.show_game_over(p)
         })

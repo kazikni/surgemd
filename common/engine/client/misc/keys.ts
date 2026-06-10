@@ -584,4 +584,7 @@ export class InputManager {
             this.actions[k]=structuredClone(config[k])
         }
     }
+    action_to_string(name:string):string{
+        return this.actions[name].keys.map(k=>Key[k]).join(", ")
+    }
 }

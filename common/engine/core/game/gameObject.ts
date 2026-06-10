@@ -1,5 +1,5 @@
-import { SignalManager, type ID } from "../math/utils.ts"
-import { NetStream } from "../net/stream.ts";
+import { type ID } from "../math/utils.ts"
+import { StaticStream, Stream } from "../net/stream.ts";
 import { random } from "../math/random.ts";
 import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
@@ -40,6 +40,7 @@ export abstract class BaseObject2D{
     allow_physics_update:boolean=false
     allow_net_update:boolean=false
     allow_render:boolean=false
+    allow_checkpoint:boolean=true
 
     net_sync_deletion:boolean=true
     net_sync_dirty:boolean=true
@@ -66,8 +67,11 @@ export abstract class BaseObject2D{
         return this.hitbox.to_rect()
     }
 
-    on_encode(stream:NetStream,full:boolean,options?:any):void{}
-    on_decode(stream:NetStream,full:boolean):void{}
+    on_encode_net(stream:Stream,full:boolean,options?:any):void{}
+    on_decode_net(stream:Stream,full:boolean):void{}
+
+    on_encode_checkpoint(stream: Stream): void {}
+    on_decode_checkpoint(stream: Stream): void {}
 
     on_create(_args:any):void{}
     on_registry():void{}
@@ -307,6 +311,9 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         return results
     }
 }
+export type CheckpointSettings={
+    save_id?:boolean
+}
 export interface Layer2D<GameObject extends BaseObject2D> {
     //objects:Record<GameObjectID,GameObject>
     orden:number[]
@@ -315,7 +322,8 @@ export interface Layer2D<GameObject extends BaseObject2D> {
     net_update:number[]
     render:number[]
 }
-export type MakeObjectCallback<GameObject extends BaseObject2D>=(_id:number,_layer:number,_type:number)=>GameObject|undefined
+export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
+export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number,layer:number,type:number)=>GameObject|undefined
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
 
@@ -328,12 +336,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     news_queue:Set<GameObject>=new Set()
     destroy_queue:GameObject[]=[]
 
-    make_object:MakeObjectCallback<GameObject>
+    make_object_net:MakeObjectCallback<GameObject>
+    make_object_checkpoint:MakeObjectCheckpointCallback<GameObject>
 
-    stream_cache?:NetStream
-    constructor(cell_size?:number,make_object:MakeObjectCallback<GameObject>=(_a,_b,_c)=>{return undefined}){
+    stream_cache?:Stream
+    constructor(cell_size?:number,make_object_net:MakeObjectCallback<GameObject>=(_a,_b,_c)=>{return undefined},make_object_checkpoint:MakeObjectCheckpointCallback<GameObject>=(_a,_b,_c,_d)=>{return undefined}){
         this.cells=new CellsManager2D(cell_size)
-        this.make_object=make_object
+        this.make_object_net=make_object_net
+        this.make_object_checkpoint=make_object_checkpoint
     }
     clear(){
         for(const obj in this.objects){
@@ -414,8 +424,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(!obj.registred)return
         obj.registred=false
         this.cells.unregistry(obj)
-        let idx=-1
-
+        let idx=this.layers[obj.layer].orden.indexOf(obj.id)
+        if(idx>=0)this.layers[obj.layer].orden.splice(idx,1)
         if(obj.allow_tick){
             idx=this.layers[obj.layer].ticks.indexOf(obj.id)
             if(idx>=0)this.layers[obj.layer].ticks.splice(idx,1)
@@ -455,18 +465,18 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         this.layers_orden.push(layer)
     }
-    proccess_object(stream:NetStream):GameObject|undefined{
-        const b=stream.readBooleanGroup()
+    proccess_object_net(stream:Stream):GameObject|undefined{
+        const b=stream.read_boolean_group()
         if(b[0]||b[1]||b[2]){
-            const oid=stream.readID()
-            const layer=stream.readInt8()
+            const oid=stream.read_id()
+            const layer=stream.read_int8()
             if(!this.layers[layer]){
                 this.add_layer(layer)
             }
-            const tp=stream.readUint8()
+            const tp=stream.read_uint8()
             let obj=this.objects[oid]
             if(b[3]&&!obj&&!b[2]){
-                const obb=this.make_object(oid,layer,tp)
+                const obb=this.make_object_net(oid,layer,tp)
                 if(!obb)return
                 obj=obb
                 this.add_object(obj,layer,oid)
@@ -478,7 +488,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                     this.set_layer(obj,layer)
                 }
                 if(b[0]||b[1]){
-                    obj.on_decode(stream,b[1])
+                    obj.on_decode_net(stream,b[1])
                 }
                 if(b[2]){
                     if(obj.net_sync_deletion)obj.destroy()
@@ -488,28 +498,28 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             }
         }
     }
-    proccess_all(stream:NetStream):GameObject[]{
+    proccess_all_net(stream:Stream):GameObject[]{
         const ret:GameObject[]=[]
 
-        const ls = stream.readID()
+        const ls = stream.read_id()
         for(let l=0;l<ls;l++){
-            const obj=this.proccess_object(stream)
+            const obj=this.proccess_object_net(stream)
             if(obj)ret.push(obj)
         }
 
         return ret
     }
-    proccess_list(stream:NetStream,process_deletion:boolean=false):GameObject[]{
+    proccess_list_net(stream:Stream,process_deletion:boolean=false):GameObject[]{
         const ret:GameObject[]=[]
 
-        let os=stream.readUint16()
+        let os=stream.read_uint16()
         for(let i=0;i<os;i++){
-            const obj=this.proccess_object(stream)
+            const obj=this.proccess_object_net(stream)
             if(obj)ret.push(obj)
         }
-        os=stream.readUint16()
+        os=stream.read_uint16()
         for(let i=0;i<os;i++){
-            const id=stream.readID()
+            const id=stream.read_id()
             if(process_deletion&&this.objects[id]){
                 const obj=this.objects[id]
                 if(obj.net_sync_deletion)obj.destroy()
@@ -518,15 +528,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         return ret
     }
-    proccess(stream:NetStream,process_deletion:boolean){
-        const tp=stream.readUint8()
+    proccess_net(stream:Stream,process_deletion:boolean){
+        const tp=stream.read_uint8()
         if(tp===100){
-            return this.proccess_all(stream)
+            return this.proccess_all_net(stream)
         }else if(tp===200){
-            return this.proccess_list(stream,process_deletion)
+            return this.proccess_list_net(stream,process_deletion)
         }
     }
-    encode_object(object:GameObject,full:boolean,stream:NetStream,options:any){
+    encode_object_net(object:GameObject,full:boolean,stream:Stream,options:any){
         const bools=[
             (full||this.part_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Part
             (full||this.full_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Full
@@ -534,37 +544,37 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             object.net_sync_creation, //Dirty Creation
             object.is_new
         ]
-        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3],bools[4])
+        stream.write_boolean_group(bools[0],bools[1],bools[2],bools[3],bools[4])
         if(bools[0]||bools[1]||bools[2]){
-            stream.writeID(object.id)
-            stream.writeInt8(object.layer)
-            stream.writeUint8(object.number_type)
+            stream.write_id(object.id)
+            stream.write_int8(object.layer)
+            stream.write_uint8(object.number_type)
             if(bools[0]||bools[1]){
-                object.on_encode(stream,bools[1],options)
+                object.on_encode_net(stream,bools[1],options)
             }
         }
     }
-    encode_all(full:boolean=false,stream?:NetStream):NetStream{
+    encode_all_net(full:boolean=false,stream?:Stream):Stream{
         if(!stream){
-            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
+            if(!this.stream_cache)this.stream_cache=new StaticStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
-        stream.writeUint8(100) // All Encode
+        stream.write_uint8(100) // All Encode
         const list:GameObject[]=full?Object.values(this.objects):[...Object.values(this.part_dirty_objects),...Object.values(this.full_dirty_objects)]
-        stream.writeID(list.length)
+        stream.write_id(list.length)
         for(const obj of list){
-            this.encode_object(obj,full,stream,null)
+            this.encode_object_net(obj,full,stream,null)
         }
         return stream
     }
-    encode_list(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,object_options?:(obj:GameObject)=>any,stream?:NetStream):{last:GameObject[],strm:NetStream}{
+    encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
         if(!stream){
-            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
+            if(!this.stream_cache)this.stream_cache=new StaticStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
-        stream.writeUint8(200) // List Encode
+        stream.write_uint8(200) // List Encode
 
         const list:[GameObject,boolean][]=[]
         objects.forEach((v)=>{
@@ -572,9 +582,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             if(full||this.part_dirty_objects[v.id])list.push([v,full])
         })
 
-        stream.writeUint16(list.length)
+        stream.write_uint16(list.length)
         for(const o of list){
-            this.encode_object(o[0],o[1],stream,object_options?object_options(o[0]):null)
+            this.encode_object_net(o[0],o[1],stream,object_options?object_options(o[0]):null)
         }
 
         // Destroy Queue
@@ -582,12 +592,55 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for (const obj of last_list){
             if (obj.net_sync_deletion && !objects.includes(obj))deletions.push(obj)
         }
-        stream.writeUint16(deletions.length)
+        stream.write_uint16(deletions.length)
         for(let i=0;i<deletions.length;i++){
-            stream.writeID(deletions[i].id)
+            stream.write_id(deletions[i].id)
         }
 
         return {strm:stream,last:objects}
+    }
+    encode_checkpoint(stream:Stream,settings:CheckpointSettings={}){
+        const save_id=settings.save_id??false
+        stream.write_boolean_group(save_id)
+        stream.write_uint8(this.layers_orden.length)
+        for(const l of this.layers_orden){
+            stream.write_uint8(l)
+            const objects:GameObject[]=[]
+            for(const o of this.layers[l].orden){
+                if(this.objects[o]?.allow_checkpoint)objects.push(this.objects[o])
+            }
+            stream.write_uint16(objects.length)
+            for(const obj of objects){
+                if(save_id)stream.write_id(obj.id)
+                stream.write_uint8(obj.number_type)
+                obj.on_encode_checkpoint(stream)
+            }
+        }
+    }
+    proccess_checkpoint_object(stream:Stream,layer:number,read_id:boolean):GameObject|undefined{
+        let id:number|undefined
+        if(read_id)id=stream.read_id()
+        const tp=stream.read_uint8()
+        const obb=this.make_object_checkpoint(stream,tp,layer,tp)
+        if(!obb)return
+        const obj=this.add_object(obb,layer,id)
+        obj.on_decode_checkpoint(stream)
+        return obj
+    }
+    proccess_checkpoint(stream:Stream):GameObject[]{
+        const ret:GameObject[]=[]
+        this.clear()
+        const boolgroup=stream.read_boolean_group()
+        const layers_count=stream.read_uint8()
+        for(let i=0;i<layers_count;i++){
+            const layer=stream.read_uint8()
+            const obj_len=stream.read_uint16()
+            for(let j=0;j<obj_len;j++){
+                const obj=this.proccess_checkpoint_object(stream,layer,boolgroup[0])
+                if(obj)ret.push(obj)
+            }
+        }
+        return ret
     }
     tick(dt:number){
         for(const l of this.layers_orden){

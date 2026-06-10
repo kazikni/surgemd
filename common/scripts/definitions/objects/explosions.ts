@@ -309,7 +309,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         explostion_factory.flare_explosion("blue_flare_explosion","#08b0ce"),
         explostion_factory.flare_explosion("red_flare_explosion","#ca0819"),
-        explostion_factory.flare_explosion("orange_flare_explosion","#ce4a08"),
+        explostion_factory.flare_explosion("yellow_flare_explosion","#f6dc1b"),
         {
             idString:"rocket_explosion",
             tint:"#9c3932",
@@ -415,7 +415,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
         },
         {
             idString:"mini_nuke_explosion",
-            tint:"#d38218",
+            tint:"#f6dc1b",
             size:{
                 begin:2,
                 end:6,

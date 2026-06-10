@@ -1,6 +1,6 @@
-import { GameObjectType, Layers, zIndexes } from "common/scripts/others/constants.ts"
+import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { AudioVoice, Container2D, NetStream, Sprite2D, v2 } from "common/engine/client.ts";
+import { AudioVoice, Container2D, Stream, Sprite2D, v2 } from "common/engine/client.ts";
 
 export interface PlanePhysicalData extends MovingBodyPhysicalData {}
 
@@ -44,9 +44,9 @@ export class Plane extends MovingBody {
         this.destroyed = true
         this.sound?.stop()
     }
-    override on_decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         this.decode_physical_data(stream, full)
-        const type = stream.readUint8()
+        const type = stream.read_uint8()
         if (this.initial) {
             this.plane_type = type
             switch (this.plane_type) {

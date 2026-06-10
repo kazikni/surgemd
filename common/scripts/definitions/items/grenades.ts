@@ -309,10 +309,10 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             rig_image:GrenadeRig,
         },
         {
-            idString:"orange_flare",
+            idString:"yellow_flare",
             rank:ItemRank.A,
             description:true,
-            explosion:"orange_flare_explosion",
+            explosion:"yellow_flare_explosion",
             call_airstrike:{
                 delay:2,
                 count:3,
@@ -325,7 +325,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             particles:{
                 spawn_delay:0.5,
-                tint:0xce4a08,
+                tint:0xf6dc1b,
                 delay:0.1,
                 spawn:v2(0.3,0),
                 lifetime:{
@@ -356,7 +356,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             throw_max_speed:20,
             frames:{
                 world:{
-                    image:"proj_orange_flare"
+                    image:"proj_yellow_flare"
                 }
             },
             speed_mod:1,

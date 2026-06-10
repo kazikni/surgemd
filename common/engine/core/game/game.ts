@@ -1,7 +1,8 @@
 import { Clock, SignalManager } from "../math/utils.ts"
-import { BaseObject2D, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
+import { BaseObject2D, type CellsManager2D, CheckpointSettings, GameObjectManager2D } from "./gameObject.ts"
 import { DefinitionsSimple } from "../definition/definitions.ts";
 import { v2, Vec2 } from "../math/vec2.ts";
+import { Stream } from "../net/stream.ts";
 export abstract class BaseGameObject2D extends BaseObject2D{
     // deno-lint-ignore no-explicit-any
     public game!:AbstractGame<any>
@@ -54,7 +55,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     reset(){
         this.objects.clear()
         this.objects.add_object = this._addObject.bind(this);
-        this.objects.make_object=(_id:number,_layer:number,t)=>{
+        this.objects.make_object_net=(_id:number,_layer:number,t)=>{
             if(!this.game.objects.getFromNumber(t))return undefined
             return new (this.game.objects.getFromNumber(t))()
         }
@@ -75,6 +76,13 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(destroy_queue){
             this.objects.apply_destroy_queue()
         }
+    }
+
+    make_checkpoint(stream:Stream,settings:CheckpointSettings){
+        this.objects.encode_checkpoint(stream,settings)
+    }
+    load_checkpoint(stream:Stream){
+        this.objects.proccess_checkpoint(stream)
     }
 }
 

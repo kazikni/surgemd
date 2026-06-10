@@ -1,4 +1,4 @@
-import { CircleHitbox2D,Hitbox2D, NetStream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, StaticStream } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
@@ -70,7 +70,7 @@ export class GameMap{
         this.size=v2(10,10)
         this.game=game
     }
-    map_packet_stream:NetStream=new NetStream(new ArrayBuffer(400*1024))
+    map_packet_stream:Stream=new StaticStream(new ArrayBuffer(400*1024))
     terrain:TerrainManager=new TerrainManager()
     random!:SeededRandom
 
@@ -318,12 +318,14 @@ export class GameMap{
 
         this.game.deadzone.reset()
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
+        ;(this.map_packet_stream as StaticStream).lock()
     }
     generate_with_algorithm(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
         const random=new SeededRandom(seed)
         this.random=random
         algorithm(this,random)
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
+        ;(this.map_packet_stream as StaticStream).lock()
     }
     soft_reset(){
         this.random.reset()

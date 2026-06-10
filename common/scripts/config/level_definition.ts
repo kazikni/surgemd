@@ -3,8 +3,6 @@ import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
-import { FinalScreenDef } from "./final_screen.ts"
-
 export type HumanDefinition={
     name?:string
     start_position?:Vec2
@@ -44,6 +42,18 @@ export type LevelMode={
 })|{
     type:"debug"
 }
+export enum GameOverScreenType{
+    Normal,
+    Restart,
+    Light
+}
+export type GameOverScreen={
+    type:GameOverScreenType.Normal
+}|{
+    type:GameOverScreenType.Restart
+}|{
+    type:GameOverScreenType.Light
+}
 export interface LevelDefinition{
     meta:{
         name: string
@@ -53,6 +63,7 @@ export interface LevelDefinition{
         location: string
         date:string
     }
+    game_over?:GameOverScreen
     cutscenes?:{
         begin?:string
     }

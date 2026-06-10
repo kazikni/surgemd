@@ -10,7 +10,7 @@ import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, NetStream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { Loot } from "./loot.ts";
@@ -246,6 +246,7 @@ export class Human extends MovingBody{
             score:0,
         }
         this.allow_net_update=true
+        this.allow_checkpoint=false
     }
 
     apply_score(type:number,amount:number,multiplier:number=1){
@@ -1247,8 +1248,8 @@ export class Human extends MovingBody{
         const idx=this.humans_manager.humans.indexOf(this)
         if(idx!==-1)this.humans_manager.humans.splice(idx,1)
     }
-    override on_encode(stream: NetStream, full: boolean,utils:any): void {
-        stream.writeBooleanGroup2(
+    override on_encode_net(stream: Stream, full: boolean,utils:any): void {
+        stream.write_boolean_group2(
             // Physical
             this.physical_data.dirty_part,this.physical_data.dirty, // 2
             // Equipment
@@ -1276,69 +1277,69 @@ export class Human extends MovingBody{
         if(full||this.physical_data.dirty_part||this.physical_data.dirty){
             this.physical_encode(stream)
             if(full||this.physical_data.dirty){
-                stream.writeFloat32(this.physical_data.scale)
+                stream.write_float32(this.physical_data.scale)
             }
         }
         // Equipment
         if(full||this.equipment_data.dirty||this.equipment_data.dirty_part){
-            stream.writeUint16(this.equipment_data.helmet_health??0)
-            stream.writeUint16(this.equipment_data.vest_health??0)
+            stream.write_uint16(this.equipment_data.helmet_health??0)
+            stream.write_uint16(this.equipment_data.vest_health??0)
             if(full||this.equipment_data.dirty){
-                stream.writeUint8(this.equipment_data.helmet?this.equipment_data.helmet.idNumber!+1:0)
-                .writeUint8(this.equipment_data.vest?this.equipment_data.vest.idNumber!+1:0)
-                .writeUint8(this.inventory.backpack.idNumber!)
+                stream.write_uint8(this.equipment_data.helmet?this.equipment_data.helmet.idNumber!+1:0)
+                .write_uint8(this.equipment_data.vest?this.equipment_data.vest.idNumber!+1:0)
+                .write_uint8(this.inventory.backpack.idNumber!)
             }
         }
         // Loadout  
         if(full||this.loadout.dirty){
-            stream.writeBooleanGroup(
+            stream.write_boolean_group(
                 this.loadout.hair!==undefined,
                 this.loadout.eyes!==undefined,
             )
-            stream.writeUint16(this.loadout.body.def.idNumber!)
+            stream.write_uint16(this.loadout.body.def.idNumber!)
             if(this.loadout.hair){
-                stream.writeUint16(this.loadout.hair.def.idNumber!)
-                .writeUint32(this.loadout.hair.tint)
+                stream.write_uint16(this.loadout.hair.def.idNumber!)
+                .write_uint32(this.loadout.hair.tint)
             }
             if(this.loadout.eyes){
-                stream.writeUint16(this.loadout.eyes.idNumber!)
+                stream.write_uint16(this.loadout.eyes.idNumber!)
             }
-            stream.writeUint16(this.loadout.shirt.idNumber!)
-            .writeUint16(this.loadout.legs.idNumber!)
-            .writeUint32(this.loadout.body.tint)
-            .writeArray(this.loadout.accessorys,(v)=>{
-                stream.writeUint16(v.idNumber!)
+            stream.write_uint16(this.loadout.shirt.idNumber!)
+            .write_uint16(this.loadout.legs.idNumber!)
+            .write_uint32(this.loadout.body.tint)
+            .write_array(this.loadout.accessorys,(v)=>{
+                stream.write_uint16(v.idNumber!)
             },1)
         }
         if(this.loadout.emote){
             const id=this.loadout.emote_is_item?
             this.game.definitions.game_items.keysString[this.loadout.emote.idString]:
             this.loadout.emote.idNumber!
-            stream.writeUint16(id)
+            stream.write_uint16(id)
         }
         if(full||this.effects_dirty){
-            stream.writeArray(Array.from(this.effects.values()),(e)=>{
-                stream.writeUint16(e.effect.idNumber!)
+            stream.write_array(Array.from(this.effects.values()),(e)=>{
+                stream.write_uint16(e.effect.idNumber!)
             },1)
         }
         if(full||this.inventory.net_sync.hand){
-            stream.writeInt16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
+            stream.write_int16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
         }
         if(full||this.inventory.net_sync.melee_world){
-            stream.writeUint16(this.inventory.weapons[0]?.def.idNumber??0)
+            stream.write_uint16(this.inventory.weapons[0]?.def.idNumber??0)
         }
         if(full||this.animation_data.dirty){
-            stream.writeArray(this.animation_data.current_animation,(v)=>{
-                stream.writeUint8(v.type)
+            stream.write_array(this.animation_data.current_animation,(v)=>{
+                stream.write_uint8(v.type)
                 switch(v.type){
                     case HumanAnimationType.Fire:
-                        stream.writeBooleanGroup(v.alt,v.last,v.alt_func)
+                        stream.write_boolean_group(v.alt,v.last,v.alt_func)
                         break
                     case HumanAnimationType.Reloading:
-                        stream.writeUint8(v.alt_reload?1:0)
+                        stream.write_uint8(v.alt_reload?1:0)
                         break
                     case HumanAnimationType.Consuming:
-                        stream.writeUint16(v.item)
+                        stream.write_uint16(v.item)
                         break
                     default:
                         break

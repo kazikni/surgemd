@@ -39,6 +39,8 @@ export class DamageSplashOBJ extends GameObject{
         this.sprite.scale.y=0
 
         this.sprite.zIndex=zIndexes.DamageSplashs
+
+        this.allow_tick=true
     }
     override async on_create(args: DamageSplash): Promise<void> {
         const color = args.shield

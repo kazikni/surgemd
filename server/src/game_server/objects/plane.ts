@@ -1,6 +1,6 @@
 import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { circle, CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { circle, CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
@@ -83,8 +83,8 @@ export class Plane extends MovingBody {
         }
 
     }
-    override on_encode(stream: NetStream,full: boolean): void {
+    override on_encode_net(stream: Stream,full: boolean): void {
         this.physical_encode(stream)
-        stream.writeUint8(this.type)
+        stream.write_uint8(this.type)
     }
 }

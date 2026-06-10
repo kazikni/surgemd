@@ -10,9 +10,9 @@ import { cloneDeep } from "common/engine/core.ts";
 export class NPC extends Human{
     ai?:BotAi
     override is_npc: boolean=true
-    override update(dt: number): void {
+    override on_tick(dt: number): void {
         if(this.ai)this.ai.AI(dt)
-        super.update(dt)
+        super.on_tick(dt)
     }
     override die(params: DamageParams): void {
         const idx=this.game.humans.living_npc.indexOf(this)

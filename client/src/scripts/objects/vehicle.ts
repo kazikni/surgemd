@@ -1,5 +1,5 @@
 import { VehicleDef, WheelDef } from "common/scripts/definitions/objects/vehicles.ts"
-import { Container2D, NetStream, Numeric, RectHitbox2D, Sprite2D, v2, v2m } from "common/engine/client.ts"
+import { Container2D, Stream, Numeric, RectHitbox2D, Sprite2D, v2, v2m } from "common/engine/client.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
@@ -121,16 +121,16 @@ export class Vehicle extends MovingBody {
     override on_destroy() {
         this.container.destroy()
     }
-    override on_decode(stream: NetStream, full: boolean) {
-        const [physical_data_dirty,dead]=stream.readBooleanGroup()
+    override on_decode_net(stream: Stream, full: boolean) {
+        const [physical_data_dirty,dead]=stream.read_boolean_group()
         if(physical_data_dirty||full)this.decode_physical_data(stream, full)
 
-        this.physical_data.speed=stream.readFloat32()
-        this.physical_data.direction=stream.readRad()
-        this.tire_stress=stream.readFloat32()
+        this.physical_data.speed=stream.read_float32()
+        this.physical_data.direction=stream.read_rad()
+        this.tire_stress=stream.read_float32()
 
         if (full) {
-            const defId = stream.readUint8()
+            const defId = stream.read_uint8()
             this.set_def(this.game.definitions.vehicles.getFromNumber(defId))
         }
     }

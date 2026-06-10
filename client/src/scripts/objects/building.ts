@@ -1,4 +1,4 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Stream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -179,18 +179,18 @@ export class Building extends StaticBody{
             this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
         }
     }
-    override on_decode(stream: NetStream, full: boolean): void {
-        const [physical_data]=stream.readBooleanGroup()
+    override on_decode_net(stream: Stream, full: boolean): void {
+        const [physical_data]=stream.read_boolean_group()
         if(physical_data||full){
-            this.position=stream.readPos2()
-            this.physical_data.side=stream.readUint8()
+            this.position=stream.read_pos2()
+            this.physical_data.side=stream.read_uint8()
         }
         if(full){
-            const def=this.game.definitions.buildings.getFromNumber(stream.readID())
+            const def=this.game.definitions.buildings.getFromNumber(stream.read_id())
             this.set_definition(def)
         }
-        const ceilings=stream.readArray(()=>{
-            const bg=stream.readBooleanGroup()
+        const ceilings=stream.read_array(()=>{
+            const bg=stream.read_boolean_group()
             return {
                 alive:bg[0]
             }

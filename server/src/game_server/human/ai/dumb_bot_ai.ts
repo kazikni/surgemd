@@ -1,7 +1,7 @@
 import { BotAi } from "./simple_bot_ai.ts";
 import { type Human } from "../../objects/human.ts";
 import { astar_path2d, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
-import { NetStream } from "common/engine/core/net/stream.ts";
+import { Stream } from "common/engine/core/net/stream.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { type ServerGameObject } from "../../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
@@ -341,7 +341,7 @@ export class DumbBotAI extends BotAi {
                 this.do_wander(dt)
         }
     }
-    override net_update(_general_update: NetStream): void {
+    override net_update(_general_update: Stream): void {
 
     }
 }

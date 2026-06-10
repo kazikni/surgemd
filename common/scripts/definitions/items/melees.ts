@@ -418,16 +418,16 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             switch_delay:0.5,
             damage_delays:[0.3],
             rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
                 right:{
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
                     zIndex:2,
                 },
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                }
             },
             rig_image:{
                 position:DefaultFistRig.left!.position,
@@ -451,18 +451,17 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             attack_delay:0.6,
             switch_delay:0.1,
             damage_delays:[0.4],
-
             rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
                 right:{ 
                     position:DefaultFistRig.right!.position,
                     rotation:DefaultFistRig.right!.rotation,
                     zIndex:2,
                 },
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                }
             },
             rig_image:{
                 position:DefaultFistRig.left!.position,

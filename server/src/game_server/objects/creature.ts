@@ -1,4 +1,4 @@
-import { Hitbox2D, LootTableItemRet, NetStream, NullHitbox2D, v2, Vec2 } from "common/engine/core.ts";
+import { Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, v2, Vec2 } from "common/engine/core.ts";
 import { type CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { DamageParams } from "../others/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
@@ -102,12 +102,12 @@ export class Creature extends MovingBody {
             this.set_dirty_part()
         }
     }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writeBooleanGroup(this.physical_data.dirty,this.dead)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_boolean_group(this.physical_data.dirty,this.dead)
 
         if(this.physical_data.dirty||full)this.physical_encode(stream)
         if (full) {
-            stream.writeUint16(this.def.idNumber!)
+            stream.write_uint16(this.def.idNumber!)
         }
 
         this.def.encode?.(this, stream, full)

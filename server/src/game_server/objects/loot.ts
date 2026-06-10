@@ -1,8 +1,8 @@
 import { GameConstants, GameObjectType } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { Floors, FloorType, rivers } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
@@ -149,18 +149,11 @@ export class Loot extends ServerGameObject{
         const a=v2.from_RadAngle(angle)
         v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
-
-    override on_destroy(): void {
-        const idx=this.game.loot.indexOf(this)
-        if(idx!==-1){
-            this.game.loot.splice(idx,1)
-        }
-    }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writePos2(this.position)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_pos2(this.position)
         if(full){
-            stream.writeUint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
-            .writeUint8(this.loot_data.count)
+            stream.write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
+            .write_uint8(this.loot_data.count)
         }
     }
 }

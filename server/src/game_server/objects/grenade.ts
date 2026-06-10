@@ -1,6 +1,6 @@
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { Projectile, ProjectileData, ProjectilePhysicalData } from "./projectile.ts";
-import { CircleHitbox2D, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type Human } from "./human.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
@@ -153,11 +153,11 @@ export class Grenade extends Projectile{
             },this.def.call_airstrike.delay)
         }
     }
-    override on_encode(stream: NetStream, full: boolean): void {
+    override on_encode_net(stream: Stream, full: boolean): void {
         this.physical_encode(stream)
-        stream.writeFloat(this.physical_data.zpos,0,1,1)
+        stream.write_float(this.physical_data.zpos,0,1,1)
         if(full){
-            stream.writeID(this.def.idNumber!)
+            stream.write_id(this.def.idNumber!)
         }
     }
 }

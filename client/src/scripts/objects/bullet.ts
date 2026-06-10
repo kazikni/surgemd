@@ -1,4 +1,4 @@
-import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, NetStream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, Stream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
@@ -213,47 +213,47 @@ export class Bullet extends GameObject{
         this.velocity.x=0
         this.velocity.y=0
     }
-    override on_decode(stream: NetStream, full: boolean): void {
-        this.position=stream.readPos2()
+    override on_decode_net(stream: Stream, full: boolean): void {
+        this.position=stream.read_pos2()
         this.old_position=v2.clone(this.position)
-        this.tticks=stream.readFloat(0,60,2)
+        this.tticks=stream.read_float(0,60,2)
         if(full){
-            this.initialPosition=stream.readPos2()
-            this.maxDistance=stream.readFloat32()
+            this.initialPosition=stream.read_pos2()
+            this.maxDistance=stream.read_float32()
 
-            this.speed=stream.readFloat32()
-            this.container.rotation=stream.readRad()
+            this.speed=stream.read_float32()
+            this.container.rotation=stream.read_rad()
 
             this.velocity=v2.from_RadAngle(this.container.rotation,this.speed)
 
-            this.maxLength=stream.readFloat(0,100,3)
-            this.sprite_trail.scale!.y=stream.readFloat(0,6,2)
-            const col=ColorM.number(stream.readUint32())
-            col.a=stream.readUint8()/255
+            this.maxLength=stream.read_float(0,100,3)
+            this.sprite_trail.scale!.y=stream.read_float(0,6,2)
+            const col=ColorM.number(stream.read_uint32())
+            col.a=stream.read_uint8()/255
             this.sprite_trail.tint=col
 
-            const proj=stream.readUint8()
+            const proj=stream.read_uint8()
             if(proj>0){
                 this.sprite_projectile=new Sprite2D()
                 this.sprite_projectile.hotspot=CenterHotspot
                 this.sprite_projectile.zIndex=2
                 this.sprite_projectile.position.x=0
                 this.sprite_projectile.position.y=0
-                this.sprite_projectile.scale.x=stream.readFloat(0,6,2)
-                this.sprite_projectile.scale.y=stream.readFloat(0,6,2)
+                this.sprite_projectile.scale.x=stream.read_float(0,6,2)
+                this.sprite_projectile.scale.y=stream.read_float(0,6,2)
 
-                this.sprite_projectile.tint=ColorM.number(stream.readUint32())
+                this.sprite_projectile.tint=ColorM.number(stream.read_uint32())
                 this.sprite_projectile.frame=this.game.resources.get_frame(images[proj-1])
 
                 this.container.add_child(this.sprite_projectile)
             }
-            this.particles=stream.readUint8()
+            this.particles=stream.read_uint8()
             this.container.visible=true
-            const bg=stream.readBooleanGroup()
+            const bg=stream.read_boolean_group()
             this.hit_owner=bg[0]
             this._critical=bg[1]
             this.pass_through_humans=bg[2]
-            this.owner_id=stream.readID()
+            this.owner_id=stream.read_id()
         }
     }
 }

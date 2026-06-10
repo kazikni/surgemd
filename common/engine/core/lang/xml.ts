@@ -1,6 +1,6 @@
 import { rect, Rect } from "../math/geometry.ts";
 import { v2, Vec2 } from "../math/vec2.ts";
-import { NetStream } from "../net/stream.ts";
+import { Stream } from "../net/stream.ts";
 
 export type XMLNode = {
     tag: string
@@ -51,46 +51,46 @@ export const kxml = Object.freeze({
             }
         },
     },
-    encode(node: XMLNode|string, stream: NetStream): NetStream {
+    encode(node: XMLNode|string, stream: Stream): Stream {
         if (typeof node === "string") {
-            stream.writeUint8(2)
-            stream.writeString(node, 2)
+            stream.write_uint8(2)
+            stream.write_string(node, 2)
             return stream
         }
 
-        stream.writeUint8(1)
-        stream.writeString(node.tag, 1)
+        stream.write_uint8(1)
+        stream.write_string(node.tag, 1)
 
         const keys = Object.keys(node.attrs)
-        stream.writeUint8(keys.length)
+        stream.write_uint8(keys.length)
         for (const k of keys) {
-            stream.writeString(k, 1)
-            stream.writeString(node.attrs[k], 2)
+            stream.write_string(k, 1)
+            stream.write_string(node.attrs[k], 2)
         }
 
-        stream.writeUint16(node.children.length)
+        stream.write_uint16(node.children.length)
         for (const c of node.children) {
             this.encode(c, stream)
         }
         return stream
     },
-    decode(stream: NetStream): XMLNode | string {
-        const type = stream.readUint8()
+    decode(stream: Stream): XMLNode | string {
+        const type = stream.read_uint8()
         if (type === 2) {
-            return stream.readString(2)
+            return stream.read_string(2)
         }
 
-        const tag = stream.readString(1)
-        const attrCount = stream.readUint8()
+        const tag = stream.read_string(1)
+        const attrCount = stream.read_uint8()
         const attrs: Record<string,string> = {}
 
         for (let i = 0; i < attrCount; i++) {
-            const k = stream.readString(1)
-            const v = stream.readString(2)
+            const k = stream.read_string(1)
+            const v = stream.read_string(2)
             attrs[k] = v
         }
 
-        const childCount = stream.readUint16()
+        const childCount = stream.read_uint16()
         const children: (XMLNode|string)[] = []
 
         for (let i = 0; i < childCount; i++) {

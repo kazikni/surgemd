@@ -1,7 +1,7 @@
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts"
 import {
     Hitbox2D,
-    NetStream,
+    Stream,
     Numeric,
     PolarMovement,
     v2,
@@ -396,8 +396,8 @@ export class Vehicle extends MovingBody {
         this.physical_data.dirty = false
     }
 
-    override on_encode(stream: NetStream, full: boolean) {
-        stream.writeBooleanGroup(
+    override on_encode_net(stream: Stream, full: boolean) {
+        stream.write_boolean_group(
             this.physical_data.dirty,
             this.dead
         )
@@ -406,12 +406,12 @@ export class Vehicle extends MovingBody {
             this.physical_encode(stream)
         }
 
-        stream.writeFloat32(this.speed)
-        stream.writeRad(this.direction)
-        stream.writeFloat32(this.tire_stress)
+        stream.write_float32(this.speed)
+        stream.write_rad(this.direction)
+        stream.write_float32(this.tire_stress)
 
         if (full) {
-            stream.writeUint8(this.def.idNumber!)
+            stream.write_uint8(this.def.idNumber!)
         }
     }
 }

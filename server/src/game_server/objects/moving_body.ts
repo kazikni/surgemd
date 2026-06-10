@@ -1,5 +1,5 @@
 import { ServerGameObject } from "../others/gameObject.ts";
-import { NetStream, v2, v2m, Vec2} from "common/engine/core.ts";
+import { Stream, v2, v2m, Vec2} from "common/engine/core.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -64,8 +64,8 @@ export abstract class MovingBody extends ServerGameObject{
             }
         }
     }
-    physical_encode(stream:NetStream){
-        stream.writePos2(this.position)
-        .writeRad(this.physical_data.rotation)
+    physical_encode(stream:Stream){
+        stream.write_pos2(this.position)
+        .write_rad(this.physical_data.rotation)
     }
 }

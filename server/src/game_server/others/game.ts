@@ -1,4 +1,4 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -95,8 +95,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     started_time:number=0
     
-    loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item)
-    loot:Loot[]=[]
+    loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item as (id: string, count: number, aditional: Aditional) => LootTableItemRet<GameItem>[])
 
     pings:PingData[]=[]
 
@@ -169,10 +168,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         //Gamemode
         this.map=new GameMap(this)
-        /*if(level){
-            this.level_player=new LevelPlayer(this)
-            this.level_player.begin(level)
-        }*/
 
         this.deadzone=new DeadZoneManager(this)
         if(main_config.database.statistic){
@@ -329,31 +324,18 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         }
         this.signals.emit("update_data",data)
     }
-    clear_loot(){
-        for(const l of this.loot){
-            l.destroy()
-        }
-        this.loot.length=0
-    }
     override on_run(): void {
         this.update_data()
     }
     override on_stop():void{
         super.on_stop()
-        /*for(const h of this.humans){
-            this.status.players.push({
-                kills:p.status.kills,
-                name:p.name,
-                username:p.name,
-            })
-        }*/
         this.update_data()
         console.log(`Game ${this.id} Stopped`)
     }
+    reset(){
+
+    }
     soft_reset(){
-        this.humans.clear_npcs()
-        this.players.clear_bots()
-        this.clear_loot()
         this.map.soft_reset()
         this.deadzone.reset()
         this.timeouts.length=0
@@ -436,8 +418,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(this.statistics){
             this.statistics.items.dropped[def.idString]=(this.statistics.items.dropped[def.idString]??0)+count
         }
-
-        this.loot.push(l)
         return l
     }
     add_vehicle(position:Vec2,def:VehicleDef,layer:number=Layers.Normal):Vehicle{

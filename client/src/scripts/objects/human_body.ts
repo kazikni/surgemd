@@ -1,4 +1,4 @@
-import { ColorM, Container2D, NetStream, NullHitbox2D, Sprite2D, v2 } from "common/engine/client.ts";
+import { ColorM, Container2D, Stream, NullHitbox2D, Sprite2D, v2 } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 //import { Badges } from "common/scripts/definitions/loadout/badges.ts";
@@ -38,17 +38,17 @@ export class HumanBody extends GameObject{
         this.sprite.frame=this.game.resources.get_frame("human_body")
     }
     override on_layer_set(): void {
-        this.sprite.layer=this.layer
+        this.container.layer=this.layer
     }
     override on_destroy(): void {
         this.container.destroy()
         this.sprite_text.frame?.free()
     }
-    override async on_decode(stream: NetStream, full: boolean): Promise<void> {
-        const pos=stream.readPos2()
+    override async on_decode_net(stream: Stream, full: boolean): Promise<void> {
+        const pos=stream.read_pos2()
         if(full){
-            const name=stream.readStringSized(30)
-            const badge=stream.readUint8()
+            const name=stream.read_string_sized(30)
+            const badge=stream.read_uint8()
             const color=this.game.save.get_variable("sv_ui_tertiary_color")
             this.sprite_text.frame=await this.game.resources.render_text(`${name}`,60,color)
             if(badge){

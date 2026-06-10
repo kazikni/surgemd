@@ -908,7 +908,7 @@
         font-size:100px;
         font-style: italic;
 
-        animation: text-score-float 1s alternate ease-in-out infinite;
+        animation: text-normal-float 1s alternate ease-in-out infinite;
     }
     .score-ap{
         display: flex;
@@ -929,14 +929,6 @@
             opacity: 0;
         }
         font-style: italic;
-    }
-    @keyframes text-score-float {
-        0%{
-            transform: translate(-5%,-5%) rotate(-1deg);
-        }
-        100%{
-            transform: translate(5%,5%) rotate(1deg);
-        }
     }
     .final-leaderboard{
         border-left:4px solid #ffffff22;

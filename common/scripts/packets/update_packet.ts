@@ -1,5 +1,5 @@
 import { Numeric, UpdatePacketBase, v2, Vec2 } from "../../engine/core.ts";
-import { NetStream } from "../../engine/core/net/stream.ts";
+import { Stream } from "../../engine/core/net/stream.ts";
 import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData } from "../definitions/utils.ts";
@@ -79,16 +79,16 @@ export interface SelfStateUpdate{
 
     group?:Record<number,GroupMemberState>
 }
-function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:GameDefinition){
-    stream.writeUint8(state.health)
-    .writeUint8(state.max_health)
-    .writeUint8(state.boost)
-    .writeUint8(state.max_boost)
-    .writeUint8(state.boost_type)
+function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameDefinition){
+    stream.write_uint8(state.health)
+    .write_uint8(state.max_health)
+    .write_uint8(state.boost)
+    .write_uint8(state.max_boost)
+    .write_uint8(state.boost_type)
 
-    .writeUint16(state.money)
+    .write_uint16(state.money)
 
-    .writeBooleanGroup2(
+    .write_boolean_group2(
         state.dirty.inventory.items,
         state.dirty.inventory.aitems,
         state.dirty.inventory.iitems,
@@ -107,64 +107,64 @@ function encode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         state.force_default_scope
     )
     if(state.dirty.inventory.items){
-        stream.writeArray<InventoryItemData>(state.inventory.items,(i)=>{
-            stream.writeUint16(i.idNumber)
-            .writeUint8(i.type)
-            .writeUint8(i.count)
+        stream.write_array<InventoryItemData>(state.inventory.items,(i)=>{
+            stream.write_uint16(i.idNumber)
+            .write_uint8(i.type)
+            .write_uint8(i.count)
         },1)
     }
     if(state.dirty.inventory.aitems){
-        stream.writeArray(Object.entries(state.inventory.aitems),(i)=>{
+        stream.write_array(Object.entries(state.inventory.aitems),(i)=>{
             const def=definitions.ammos.getFromString(i[0])
-            stream.writeUint8(def.idNumber!)
+            stream.write_uint8(def.idNumber!)
             if(def.liquid){
-                stream.writeFloat32(i[1])
+                stream.write_float32(i[1])
             }else{
-                stream.writeUint16(i[1] as unknown as number)
+                stream.write_uint16(i[1] as unknown as number)
             }
         },1)
     }
     if(state.dirty.inventory.iitems){
-        stream.writeArray(state.inventory.iitems,(i)=>{
-            stream.writeUint16(definitions.game_items.keysString[i.idString])
+        stream.write_array(state.inventory.iitems,(i)=>{
+            stream.write_uint16(definitions.game_items.keysString[i.idString])
         },1)
     }
     if(state.dirty.inventory.weapons){
-        stream.writeArray(state.inventory.weapons,(i)=>{
-            if(i)stream.writeUint16(definitions.game_items.keysString[i.idString]+1)
-            else stream.writeUint16(0)
+        stream.write_array(state.inventory.weapons,(i)=>{
+            if(i)stream.write_uint16(definitions.game_items.keysString[i.idString]+1)
+            else stream.write_uint16(0)
         },1)
     }
     if(state.dirty.inventory.hand){
         if(state.inventory.hand){
-            stream.writeInt8(state.inventory.hand.slot)
+            stream.write_int8(state.inventory.hand.slot)
             if(state.inventory.hand.liquid){
-                stream.writeFloat32(Numeric.maxDecimals(state.inventory.hand.ammo,1))
+                stream.write_float32(Numeric.maxDecimals(state.inventory.hand.ammo,1))
             }else{
-                stream.writeUint16(state.inventory.hand.ammo)
+                stream.write_uint16(state.inventory.hand.ammo)
             }
         }
     }
     if(state.dirty.action&&state.action){
-        stream.writeFloat(state.action.delay,0,20,3)
-        stream.writeUint8(state.action.type)
+        stream.write_float(state.action.delay,0,20,3)
+        stream.write_uint8(state.action.type)
     }
     if(state.dirty.group){
-        stream.writeNumberDict(state.group??{},(i)=>{
-            stream.writeFloat(i.health,0,1,1)
-            stream.writeFloat(i.boost,0,1,1)
-            stream.writeUint8(i.boost_type)
+        stream.write_number_dict(state.group??{},(i)=>{
+            stream.write_float(i.health,0,1,1)
+            stream.write_float(i.boost,0,1,1)
+            stream.write_uint8(i.boost_type)
         },3)
     }
-    stream.writeUint8(state.current_scope)
+    stream.write_uint8(state.current_scope)
 }
-function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:GameDefinition){
-    state.health=stream.readUint8()
-    state.max_health=stream.readUint8()
-    state.boost=stream.readUint8()
-    state.max_boost=stream.readUint8()
-    state.boost_type=stream.readUint8()
-    state.money=stream.readUint16()
+function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameDefinition){
+    state.health=stream.read_uint8()
+    state.max_health=stream.read_uint8()
+    state.boost=stream.read_uint8()
+    state.max_boost=stream.read_uint8()
+    state.boost_type=stream.read_uint8()
+    state.money=stream.read_uint16()
     const [
         dirtyItems,
         dirtyAItems,
@@ -181,7 +181,7 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         liquid,
 
         force_default_scope
-    ]=stream.readBooleanGroup2()
+    ]=stream.read_boolean_group2()
     state.dirty={
         inventory:{
             items:dirtyItems,
@@ -195,34 +195,34 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         team:dirtyTeam
     }
     if(dirtyItems){
-        state.inventory.items=stream.readArray<InventoryItemData>(()=>{
+        state.inventory.items=stream.read_array<InventoryItemData>(()=>{
             return {
-                idNumber:stream.readUint16(),
-                type:stream.readUint8(),
-                count:stream.readUint8()
+                idNumber:stream.read_uint16(),
+                type:stream.read_uint8(),
+                count:stream.read_uint8()
             }
         },1)
     }
     if(dirtyAItems){
-        const len=stream.readUint8()
+        const len=stream.read_uint8()
         state.inventory.aitems={}
         for(let i=0;i<len;i++){
-            const def=definitions.ammos.getFromNumber(stream.readUint8())
+            const def=definitions.ammos.getFromNumber(stream.read_uint8())
             if(def.liquid){
-                state.inventory.aitems[def.idNumber!]=Numeric.maxDecimals(stream.readFloat32(),1)
+                state.inventory.aitems[def.idNumber!]=Numeric.maxDecimals(stream.read_float32(),1)
             }else{
-                state.inventory.aitems[def.idNumber!]=stream.readUint16()
+                state.inventory.aitems[def.idNumber!]=stream.read_uint16()
             }
         }
     }
     if(dirtyIItems){
-        state.inventory.iitems=stream.readArray(()=>{
-            return definitions.game_items.valueNumber[stream.readUint16()]
+        state.inventory.iitems=stream.read_array(()=>{
+            return definitions.game_items.valueNumber[stream.read_uint16()]
         },1)
     }
     if(dirtyWeapons){
-        state.inventory.weapons=stream.readArray(()=>{
-            const id=stream.readUint16()
+        state.inventory.weapons=stream.read_array(()=>{
+            const id=stream.read_uint16()
             if(id==0){
                 return undefined
             }else{
@@ -234,8 +234,8 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         state.inventory.hand=undefined
         if(hasHand){
             state.inventory.hand={
-                slot:stream.readInt8(),
-                ammo:liquid?stream.readFloat32():stream.readUint16(),
+                slot:stream.read_int8(),
+                ammo:liquid?stream.read_float32():stream.read_uint16(),
                 liquid:liquid
             }
         }
@@ -244,22 +244,22 @@ function decode_self_state(state:SelfStateUpdate,stream:NetStream,definitions:Ga
         state.dirty.action=true
         if(hasAction){
             state.action={
-                delay:stream.readFloat(0,20,3),
-                type:stream.readUint8(),
+                delay:stream.read_float(0,20,3),
+                type:stream.read_uint8(),
             }
         }
     }
     if(dirtyGroup){
         state.dirty.group=true
-        state.group=stream.readNumberDict(()=>{
+        state.group=stream.read_number_dict(()=>{
             return {
-                health:stream.readFloat(0,1,1),
-                boost:stream.readFloat(0,1,1),
-                boost_type:stream.readUint8(),
+                health:stream.read_float(0,1,1),
+                boost:stream.read_float(0,1,1),
+                boost_type:stream.read_uint8(),
             }
         },3)
     }
-    state.current_scope=stream.readUint8()
+    state.current_scope=stream.read_uint8()
     state.force_default_scope=force_default_scope
 }
 export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
@@ -276,57 +276,57 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             pings:[]
         })
     }
-    override encode_private(stream: NetStream): void {
-        stream.writeBooleanGroup(
+    override encode_private(stream: Stream): void {
+        stream.write_boolean_group(
             this.priv.active_entity.dirty,
             this.priv.self_state!==undefined
         )
-        .writeArray(this.priv.splashes,(d)=>{
-            stream.writeBooleanGroup(d.critical,d.shield,d.shield_break)
-            .writeUint16(Math.ceil(d.count))
-            .writeID(d.taker)
-            .writeUint8(d.taker_layer)
-            .writePos2(d.position)
+        .write_array(this.priv.splashes,(d)=>{
+            stream.write_boolean_group(d.critical,d.shield,d.shield_break)
+            .write_uint16(Math.ceil(d.count))
+            .write_id(d.taker)
+            .write_uint8(d.taker_layer)
+            .write_pos2(d.position)
         },1)
-        .writeArray(this.priv.pings,(e)=>{
-            stream.writePos2(e.position)
-            .writeUint8(e.def)
-            .writeInt8(e.id)
-            .writeUint32(e.color)
+        .write_array(this.priv.pings,(e)=>{
+            stream.write_pos2(e.position)
+            .write_uint8(e.def)
+            .write_int8(e.id)
+            .write_uint32(e.color)
         },1)
         if(this.priv.active_entity.dirty){
-            stream.writeID(this.priv.active_entity.id)
+            stream.write_id(this.priv.active_entity.id)
         }
         if(this.priv.self_state){
             encode_self_state(this.priv.self_state,stream,this.definition)
         }
     }
-    override decode_private(stream: NetStream): void {
-        const bg=stream.readBooleanGroup()
-        this.priv.splashes=stream.readArray(()=>{
-            const bg=stream.readBooleanGroup()
+    override decode_private(stream: Stream): void {
+        const bg=stream.read_boolean_group()
+        this.priv.splashes=stream.read_array(()=>{
+            const bg=stream.read_boolean_group()
             return {
-               count:stream.readUint16(),
-               taker:stream.readID(),
-               taker_layer:stream.readUint8(),
-               position:stream.readPos2(),
+               count:stream.read_uint16(),
+               taker:stream.read_id(),
+               taker_layer:stream.read_uint8(),
+               position:stream.read_pos2(),
                critical:bg[0],
                shield:bg[1],
                shield_break:bg[2], 
             }
         },1)
-        this.priv.pings=stream.readArray(()=>{
+        this.priv.pings=stream.read_array(()=>{
             return {
-                position:stream.readPos2(),
-                def:stream.readUint8(),
-                id:stream.readUint8(),
-                color:stream.readUint32()
+                position:stream.read_pos2(),
+                def:stream.read_uint8(),
+                id:stream.read_uint8(),
+                color:stream.read_uint32()
             }
         },1)
         if(bg[0]){
             this.priv.active_entity={
                 dirty:true,
-                id:stream.readID(),
+                id:stream.read_id(),
             }
         }
         if(bg[1]){

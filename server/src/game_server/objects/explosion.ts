@@ -1,7 +1,7 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts"
 import { DamageReason } from "common/scripts/definitions/utils.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
-import { CircleHitbox2D, NetStream, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { StaticBody } from "./static_body.ts";
@@ -138,9 +138,9 @@ export class Explosion extends ServerGameObject{
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.size.end)
         this.position=args.position
     }
-    override on_encode(stream: NetStream, _full: boolean): void {
-        stream.writePos2(this.position)
-        .writeFloat((this.base_hitbox as CircleHitbox2D).radius,0,50,3)
-        .writeID(this.def.idNumber!)
+    override on_encode_net(stream: Stream, _full: boolean): void {
+        stream.write_pos2(this.position)
+        .write_float((this.base_hitbox as CircleHitbox2D).radius,0,50,3)
+        .write_id(this.def.idNumber!)
     }
 }

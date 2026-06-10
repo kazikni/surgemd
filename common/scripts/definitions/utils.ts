@@ -1,4 +1,4 @@
-import { Definition, NetStream, WeightDefinition } from "../../engine/core.ts";
+import { Definition, Stream, WeightDefinition } from "../../engine/core.ts";
 import { ItemRank } from "../others/item.ts";
 import { BoostType } from "./player/boosts.ts";
 export enum BulletReflection{
@@ -144,16 +144,16 @@ export interface InventoryPreset{
         boost_type:BoostType
     })[]
 }
-export function InventoryItemDataEncode(stream:NetStream,data:InventoryItemData){
-    stream.writeUint16(data.count)
-    stream.writeUint16(data.idNumber)
-    stream.writeUint8(data.type)
+export function InventoryItemDataEncode(stream:Stream,data:InventoryItemData){
+    stream.write_uint16(data.count)
+    stream.write_uint16(data.idNumber)
+    stream.write_uint8(data.type)
 }
-export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
+export function InventoryItemDataDecode(stream:Stream):InventoryItemData{
     return {
-        count:stream.readUint16(),
-        idNumber:stream.readUint16(),
-        type:stream.readUint8(),
+        count:stream.read_uint16(),
+        idNumber:stream.read_uint16(),
+        type:stream.read_uint8(),
     }
 }
 

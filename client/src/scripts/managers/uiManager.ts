@@ -28,6 +28,7 @@ import { MinimapModule } from "../uim/minimap.ts";
 import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
+import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -48,7 +49,8 @@ export class UiManager{
         helmet_slot:document.querySelector("#helmet-slot") as HTMLImageElement,
         vest_slot:document.querySelector("#vest-slot") as HTMLImageElement,
 
-        gameOver:document.querySelector("#gameover-container") as HTMLDivElement,
+        normal_gameOver:document.querySelector("#normal-gameover-container") as HTMLDivElement,
+        restart_gameOver:document.querySelector("#restart-gameover-container") as HTMLDivElement,
         
         gameover_status_container:document.querySelector("#gameover-status-container") as HTMLDivElement,
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
@@ -100,17 +102,21 @@ export class UiManager{
     money:number=0
 
     hover_objects:Set<GameObject|BuildingCeiling>=new Set()
+
+    game_over_screen:GameOverScreen={
+        type:GameOverScreenType.Normal
+    }
     constructor(game:Game){
         this.game=game
 
-        HideElement(this.content.gameOver)
+        HideElement(this.content.normal_gameOver)
         HideElement(this.content.emote_wheel.main)
 
         if(isMobile||Debug.force_mobile){
             this.mobile_init()
         }
 
-        this.content.gameOver_menu_btn.onclick=this.game.close_game.bind(this.game)
+        this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game)
 
         this.game.ui_manager.add(new HealthModule())
         this.game.ui_manager.add(new BoostModule())
@@ -141,7 +147,7 @@ export class UiManager{
         this.players_name={}
 
         HideElement(this.content.game_gui)
-        HideElement(this.content.gameOver)
+        HideElement(this.content.normal_gameOver)
 
         this.enableCrosshair()
 
@@ -634,18 +640,31 @@ export class UiManager{
         }
     }
     hide_game_over(){
-        HideElement(this.content.gameOver)
         ShowElement(this.content.game_gui)
-        this.enableCrosshair()
-        enableContextMenuPrevent()
+        HideElement(this.content.normal_gameOver)
+        this.content.restart_gameOver.classList.add("hidden")
     }
-    show_game_over(g:GameOverPacket){
-        ShowElement(this.content.gameOver)
+    async show_game_over(g:GameOverPacket){
+        switch(this.game_over_screen.type){
+            case GameOverScreenType.Normal:{
+                this.normal_game_over(g)
+                break
+            }
+            case GameOverScreenType.Restart:
+                HideElement(this.content.game_gui)
+                this.content.restart_gameOver.classList.remove("hidden")
+                await this.game.input_manager.wait_for_action("reload")
+                this.game.finish_game_over()
+                break
+            case GameOverScreenType.Light:
+                break
+        }
+    }
+    normal_game_over(g:GameOverPacket){
+        disableContextMenuPrevent()
+        ShowElement(this.content.normal_gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
-        disableContextMenuPrevent()
-
-        this.game.game_over=true
         if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
         }else{

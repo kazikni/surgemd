@@ -115,7 +115,7 @@ export const LootTables={
         {item:"molotov",count:1,weight:30},
         {item:"mirv_grenade",count:1,weight:20},
         {item:"blue_flare",count:1,weight:1},
-        {item:"orange_flare",count:2,weight:1},
+        {item:"yellow_flare",count:2,weight:1},
         {item:"red_flare",count:1,weight:1},
     ],
     //Scopes
@@ -199,6 +199,7 @@ export const LootTables={
         {weight:2,count:1,table:"normal_loot"},
         {weight:1,count:2,table:"normal_loot"},
         {weight:0.5,count:3,table:"normal_loot"},
+        {weight:0.2,count:4,table:"normal_loot"},
     ],
     campfire_crate:[
         [{weight:1,table:"ammos"}],
@@ -236,7 +237,7 @@ export const LootTables={
         [{weight:1,table:""},{weight:4,table:"military_melees"}],
     ],
     ammo_crate:[
-        {weight:1,count:5,table:"ammos"},
+        {weight:1,count:4,table:"ammos"},
     ],
     platinum_crate:[
         [{weight:1,table:"ammos",count:4}],

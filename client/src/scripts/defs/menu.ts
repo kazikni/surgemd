@@ -2,7 +2,7 @@
 import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
-import { BrowserFileManager, formatToHtml, GameSave, isMobile, Key } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
@@ -999,7 +999,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
 
                                 const current=document.createElement("span")
                                 current.className="span-text"
-                                current.textContent=" "+action.keys.map(k=>Key[k]).join(", ")
+                                current.textContent=" "+menu.input.action_to_string(name)
 
                                 const btn=document.createElement("button")
                                 btn.className="btn-blue"
@@ -1017,7 +1017,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                         ...action,
                                         keys:[key]
                                     })
-                                    current.textContent=" "+menu.input.actions[name].keys.map(k=>Key[k]).join(", ")
+                                    current.textContent=" "+menu.input.action_to_string(name)
                                 }
                                 row.append(btn,current)
                                 parent.appendChild(row)

@@ -5,7 +5,7 @@ import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
-import { v2m, Vec2 } from "common/engine/core.ts";
+import { StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
 import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 export type KillAllEnemiesSettings={
     map:{
@@ -88,8 +88,11 @@ export class LevelPlayer {
     level!: LevelDefinition
     started:boolean=false
 
+    checkpoint:Stream
+
     constructor(game: Game){
         this.game = game
+        this.checkpoint=new StaticStream(new ArrayBuffer(1))
     }
 
     begin(level: LevelDefinition){
@@ -126,6 +129,8 @@ export class LevelPlayer {
         })
 
         if(level.definitions?.enemies)this.game.humans.enemies=level.definitions?.enemies
+
+        this.checkpoint=new StaticStream(new ArrayBuffer(1024*100))
     }
     start(){
         const level = this.level
@@ -154,7 +159,7 @@ export class LevelPlayer {
                 }
             }
         }
-        this.game.soft_reset()
+        this.game.reset()
     }
     enable_all(){
         for(const h of this.game.humans.humans){

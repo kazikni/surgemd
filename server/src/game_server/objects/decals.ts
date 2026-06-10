@@ -1,6 +1,6 @@
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { CircleHitbox2D, NetStream, v2, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { DecalDef, DecalTint } from "common/scripts/definitions/objects/decals.ts";
 
 export class Decal extends ServerGameObject{
@@ -25,18 +25,18 @@ export class Decal extends ServerGameObject{
         this.tint=args.tint
         this.scale=args.scale
     }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writeBooleanGroup(this.tint!==undefined,this.scale!==undefined)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_boolean_group(this.tint!==undefined,this.scale!==undefined)
         if(full){
-            stream.writePos2(this.position)
-            .writeRad(this.rotation)
-            .writeUint16(this.def.idNumber!)
+            stream.write_pos2(this.position)
+            .write_rad(this.rotation)
+            .write_uint16(this.def.idNumber!)
             if(this.tint!==undefined){
-                stream.writeUint32(this.tint.color)
-                .writeUint8(this.tint.alpha)
+                stream.write_uint32(this.tint.color)
+                .write_uint8(this.tint.alpha)
             }
             if(this.scale!==undefined){
-                stream.writeFloat32(this.scale)
+                stream.write_float32(this.scale)
             }
         }
     }

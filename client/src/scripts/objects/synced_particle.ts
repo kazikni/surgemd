@@ -1,4 +1,4 @@
-import { CenterHotspot, CircleHitbox2D, NetStream, Sprite2D, type Tween, v2} from "common/engine/client.ts"
+import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, type Tween, v2} from "common/engine/client.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
@@ -113,11 +113,11 @@ export class SyncedParticle extends MovingBody{
             }
         }
     }
-    override on_decode(stream:NetStream,full: boolean):void{
+    override on_decode_net(stream:Stream,full: boolean):void{
         super.decode_physical_data(stream,full)
         if (full) {
-            this.time=stream.readFloat(0,60,2)
-            const id=stream.readUint8()
+            this.time=stream.read_float(0,60,2)
+            const id=stream.read_uint8()
             this.set_definition(this.game.definitions.synced_particle.getFromNumber(id))
         }
     }

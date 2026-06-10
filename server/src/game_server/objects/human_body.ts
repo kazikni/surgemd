@@ -1,6 +1,6 @@
 import { GameObjectType } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
-import { CircleHitbox2D, NetStream, v2, v2m, Vec2 } from "common/engine/core.ts"
+import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts"
 import { DecalTint } from "common/scripts/definitions/objects/decals.ts"
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts"
 
@@ -36,11 +36,11 @@ export class HumanBody extends ServerGameObject{
         this.position=args.position
         this.velocity=v2.from_RadAngle(args.angle+Math.PI,7)
     }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writePos2(this.position)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_pos2(this.position)
         if(full){
-            stream.writeStringSized(30,this.name)
-            .writeUint8(this.badge===undefined?0:this.badge.idNumber!+1)
+            stream.write_string_sized(this.name,30)
+            .write_uint8(this.badge===undefined?0:this.badge.idNumber!+1)
         }
     }
 }

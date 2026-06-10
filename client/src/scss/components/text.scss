@@ -1,4 +1,12 @@
 @use "common/engine/main.scss";
+@keyframes text-normal-float {
+    0%{
+        transform: translate(-5%,-5%) rotate(-1deg);
+    }
+    100%{
+        transform: translate(5%,5%) rotate(1deg);
+    }
+}
 .span-text-base{
     font-family: "Russo-One","Inter", sans-serif;
 }

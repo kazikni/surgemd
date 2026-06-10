@@ -1,5 +1,5 @@
 
-import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, NetStream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -131,11 +131,11 @@ export class Loot extends GameObject{
             count: this.count > 1 ? `(${this.count})` : ""
         })
     }
-    override on_decode(stream: NetStream, full: boolean): void {
-        const position=stream.readPos2()
+    override on_decode_net(stream: Stream, full: boolean): void {
+        const position=stream.read_pos2()
         if(full){
-            this.item=this.game.definitions.game_items.valueNumber[stream.readUint16()]
-            this.count=stream.readUint8()
+            this.item=this.game.definitions.game_items.valueNumber[stream.read_uint16()]
+            this.count=stream.read_uint8()
             let radius=0.3
             switch(this.item.item_type!){
                 case InventoryItemType.gun:

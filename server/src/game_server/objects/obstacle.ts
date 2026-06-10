@@ -1,7 +1,7 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, Hitbox2D, LootTableItemRet, NetStream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
@@ -440,10 +440,10 @@ export class Obstacle extends StaticBody{
             this.reset_scale()
         }
     }
-    override on_encode(stream: NetStream, full: boolean): void {
+    override on_encode_net(stream: Stream, full: boolean): void {
         const door_dirty=this.door_data&&(full||this.door_data.dirty)
 
-        stream.writeBooleanGroup(
+        stream.write_boolean_group(
             this.visual_data.dirty,
             this.physical_data.dirty,this.physical_data.dirty_part,
             this.health_data.dirty,
@@ -453,29 +453,29 @@ export class Obstacle extends StaticBody{
             this.transform_into_data?.activated
         )
         if(full||this.visual_data.dirty){
-            stream.writeUint8(this.visual_data.variation)
-            stream.writeUint8(this.visual_data.skin)
+            stream.write_uint8(this.visual_data.variation)
+            stream.write_uint8(this.visual_data.skin)
         }
         if(full){
-            stream.writeUint16(this.def.idNumber!)
+            stream.write_uint16(this.def.idNumber!)
         }
         if(full||this.physical_data.dirty||this.physical_data.dirty_part){
-            stream.writeFloat(this.physical_data.scale,0,10,2)
+            stream.write_float(this.physical_data.scale,0,10,2)
             if(this.physical_data.dirty||full){
-                stream.writePos2(this.position)
-                .writeRad(this.physical_data.rotation)
-                .writeUint8(this.physical_data.side)
+                stream.write_pos2(this.position)
+                .write_rad(this.physical_data.rotation)
+                .write_uint8(this.physical_data.side)
             }
         }
         if(full||this.health_data.dirty){
-            stream.writeFloat(this.health_data.health/this.health_data.max_health,0,1,1)
+            stream.write_float(this.health_data.health/this.health_data.max_health,0,1,1)
         }
 
         if(door_dirty){
-            stream.writeInt8(this.door_data!.open)
+            stream.write_int8(this.door_data!.open)
         }
         if(this.transform_into_data?.activated){
-            stream.writeUint8(this.transform_into_data.def)
+            stream.write_uint8(this.transform_into_data.def)
         }
     }
 }

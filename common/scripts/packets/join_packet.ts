@@ -1,4 +1,4 @@
-import { NetStream, Packet } from "../../engine/core.ts";
+import { Stream, Packet } from "../../engine/core.ts";
 
 export class JoinPacket extends Packet{
     ID=0
@@ -18,19 +18,21 @@ export class JoinPacket extends Packet{
     constructor(){
         super()
     }
-    encode(stream: NetStream): void {
-        stream.writeStringSized(30,this.player_name)
-        stream.writeBooleanGroup(this.skin!==undefined,this.skin?.female)
+    encode(stream: Stream): void {
+        console.log(stream.length,this.player_name)
+        stream.write_string_sized(this.player_name,30)
+        stream.write_boolean_group(this.skin!==undefined,this.skin?.female)
         if(this.skin!==undefined){
-            stream.writeUint16(this.skin.shirt)
-            stream.writeUint16(this.skin.hair)
-            stream.writeUint32(this.skin.body_tint)
-            stream.writeUint32(this.skin.hair_tint)
+            stream.write_uint16(this.skin.shirt)
+            stream.write_uint16(this.skin.hair)
+            stream.write_uint32(this.skin.body_tint)
+            stream.write_uint32(this.skin.hair_tint)
         }
     }
-    decode(stream: NetStream): void {
-        this.player_name=stream.readStringSized(30)
-        const bg=stream.readBooleanGroup()
+    decode(stream: Stream): void {
+        this.player_name=stream.read_string_sized(30)
+        console.log(this.player_name)
+        const bg=stream.read_boolean_group()
         if(bg[0]){
             this.skin={
                 body_tint:0,
@@ -39,10 +41,10 @@ export class JoinPacket extends Packet{
                 hair_tint:0,
                 shirt:0
             }
-            this.skin.shirt=stream.readUint16()
-            this.skin.hair=stream.readUint16()
-            this.skin.body_tint=stream.readUint32()
-            this.skin.hair_tint=stream.readUint32()
+            this.skin.shirt=stream.read_uint16()
+            this.skin.hair=stream.read_uint16()
+            this.skin.body_tint=stream.read_uint32()
+            this.skin.hair_tint=stream.read_uint32()
             this.skin.female=bg[1]
         }
     }

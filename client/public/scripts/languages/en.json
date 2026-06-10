@@ -115,8 +115,8 @@
             "molotov":"Molotov Cocktail",
             "mirv_grenade":"Mirv Grenade",
             "blue_flare":"Blue flare",
-            "orange_flare":"Orange flare",
-            "red_flare":"red_flare",
+            "yellow_flare":"Yellow flare",
+            "red_flare":"Red Flare",
 
             "description":{
                 "12g":"12 Gauge. Used in shotguns",
@@ -151,7 +151,7 @@
                 "black_soda":"This poison is strong enough to kill an elephant.<br>Despite being a poison, it behaves similarly to a bacterium.<br>Triggers Death.",
 
                 "blue_flare":"Call a airdrop",
-                "orange_flare":"Call a airstrike",
+                "yellow_flare":"Call a airstrike",
                 "red_flare":"Call a nuke",
 
                 "helmet":"Reduces incoming damage by ${reduction}%.",

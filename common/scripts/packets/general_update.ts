@@ -1,4 +1,4 @@
-import { KDate, NetStream, Packet, Vec2 } from "../../engine/core.ts";
+import { KDate, Stream, Packet, Vec2 } from "../../engine/core.ts";
 
 export enum DeadZoneState{
     Deenabled,
@@ -26,61 +26,61 @@ export interface GeneralUpdate{
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
 }
-function encode_general_update(stream:NetStream,up:GeneralUpdate){
-    stream.writeBooleanGroup(
+function encode_general_update(stream:Stream,up:GeneralUpdate){
+    stream.write_boolean_group(
         up.started,
         up.deadzone!==undefined,
         up.ambient!==undefined,
     )
     if(up.deadzone){
-        stream.writeUint8(up.deadzone.state)
-        .writeFloat(up.deadzone.radius,0,3000,3)
-        .writeFloat(up.deadzone.new_radius,0,3000,3)
-        .writePos2(up.deadzone.position)
-        .writePos2(up.deadzone.new_position)
-        .writeUint16(Math.floor(up.deadzone.timer))
+        stream.write_uint8(up.deadzone.state)
+        .write_float(up.deadzone.radius,0,3000,3)
+        .write_float(up.deadzone.new_radius,0,3000,3)
+        .write_pos2(up.deadzone.position)
+        .write_pos2(up.deadzone.new_position)
+        .write_uint16(Math.floor(up.deadzone.timer))
     }
     if(up.ambient!==undefined){
-        stream.writeKDate(up.ambient.date)
-        .writeFloat(up.ambient.rain,0,1,1)
-        .writeFloat(up.ambient.thunder_storm,0,1,1)
+        stream.write_kdate(up.ambient.date)
+        .write_float(up.ambient.rain,0,1,1)
+        .write_float(up.ambient.thunder_storm,0,1,1)
     }
-    stream.writeArray(up.living_count,(i,_s)=>{
-        stream.writeUint8(i)
+    stream.write_array(up.living_count,(i,_s)=>{
+        stream.write_uint8(i)
     },1)
 }
-function decode_general_update(stream:NetStream,up:GeneralUpdate){
+function decode_general_update(stream:Stream,up:GeneralUpdate){
     const [
         started,
         deadzone,
         ambient
-    ]=stream.readBooleanGroup()
+    ]=stream.read_boolean_group()
     up.started=started
     up.ambient=undefined
 
     if(deadzone){
         up.deadzone={
-            state:stream.readUint8(),
-            radius:stream.readFloat(0,3000,3),
-            new_radius:stream.readFloat(0,3000,3),
-            position:stream.readPos2(),
-            new_position:stream.readPos2(),
-            timer:stream.readUint16(),
+            state:stream.read_uint8(),
+            radius:stream.read_float(0,3000,3),
+            new_radius:stream.read_float(0,3000,3),
+            position:stream.read_pos2(),
+            new_position:stream.read_pos2(),
+            timer:stream.read_uint16(),
         }
     }
     if(ambient){
-        const date=stream.readKDate()
+        const date=stream.read_kdate()
         up.ambient={
             date:date,
             initial_date:date,
             rain:0,
             thunder_storm:0,
         }
-        up.ambient.rain=stream.readFloat(0,1,1)
-        up.ambient.thunder_storm=stream.readFloat(0,1,1)
+        up.ambient.rain=stream.read_float(0,1,1)
+        up.ambient.thunder_storm=stream.read_float(0,1,1)
     }
-    up.living_count=stream.readArray((_s)=>{
-        return stream.readUint8()
+    up.living_count=stream.read_array((_s)=>{
+        return stream.read_uint8()
     },1)
 }
 
@@ -92,10 +92,10 @@ export class GeneralUpdatePacket extends Packet{
         living_count:[],
         deadzone:undefined
     }
-    decode(stream: NetStream): void {
+    decode(stream: Stream): void {
         decode_general_update(stream,this.content)
     }
-    encode(stream: NetStream): void {
+    encode(stream: Stream): void {
         encode_general_update(stream,this.content)
     }
 }

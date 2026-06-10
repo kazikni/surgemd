@@ -1,4 +1,4 @@
-import { CircleHitbox2D, NetStream, v2, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
@@ -77,11 +77,11 @@ export class Parachute extends ServerGameObject{
             this.destroy()
         }
     }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writeFloat(this.time,0,30,2)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_float(this.time,0,30,2)
         if(full){
-            stream.writePos2(this.position)
-            stream.writeFloat(this.parachute_data.lifetime,0,30,2)
+            stream.write_pos2(this.position)
+            stream.write_float(this.parachute_data.lifetime,0,30,2)
         }
     }
 }

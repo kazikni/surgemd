@@ -28,6 +28,7 @@ __                                                                              
 * M4A1 - 556mm Assault
 * Bonesaw
 * Pan
+* Yellow Flare
 __                                                                                                                 __
 ### Others
 * Camera Shake On Explosions

@@ -1,5 +1,5 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
-import { NetStream, Numeric, v2 } from "common/engine/core.ts";
+import { Stream, Numeric, v2 } from "common/engine/core.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
@@ -49,7 +49,7 @@ export abstract class Projectile extends MovingBody{
         }
         this.physical_data.rotation+=this.physical_data.angular_velocity*dt
     }
-    override on_encode(stream: NetStream, full: boolean): void {
+    override on_encode_net(stream: Stream, full: boolean): void {
         this.physical_encode(stream)
     }
 }

@@ -40,6 +40,7 @@ export class Camera2D{
     _shake?:{
         intensity:number
         duration:number
+        priority:number
     }
 
     visible_callback?:(obj:Container2DObject)=>boolean
@@ -85,16 +86,21 @@ export class Camera2D{
         this.width = scaleX;
         this.height = scaleY;
     }
-    shake(intensity:number,duration:number){
+    stop_shake(){
+        this._shake=undefined
+    }
+    shake(intensity:number,duration:number,priority:number=0){
         if(this._shake){
-            if(this._shake.intensity<intensity)this._shake={
+            if(priority>=this._shake.priority&&this._shake.intensity<intensity)this._shake={
                 intensity:intensity,
-                duration:duration
+                duration:duration,
+                priority:priority
             }
         }else{
             this._shake={
                 intensity:intensity,
-                duration:duration
+                duration:duration,
+                priority:priority
             }
         }
     }
@@ -107,8 +113,10 @@ export class Camera2D{
 
             if(this._shake){
                 cameraPos=circle.random_point_inside(cameraPos,this._shake.intensity)
-                this._shake.duration-=dt
-                if(this._shake.duration<=0)this._shake=undefined
+                if(this._shake.duration!==-1){
+                    this._shake.duration-=dt
+                    if(this._shake.duration<=0)this._shake=undefined
+                }
             }
             this.visual_position=cameraPos
             this.projectionMatrix=this.SubMatrix

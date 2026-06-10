@@ -1,4 +1,4 @@
-import { CircleHitbox2D, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { MovingBody } from "./moving_body.ts";
@@ -117,11 +117,11 @@ export class SyncedParticle extends MovingBody {
         this.physical_data.rotation=Numeric.loop_rad(this.physical_data.rotation+this.angular_speed*dt)
         this.set_dirty_part()
     }
-    override on_encode(stream:NetStream,full:boolean){
+    override on_encode_net(stream:Stream,full:boolean){
         this.physical_encode(stream)
         if(full){
-            stream.writeFloat(this.time,0,120,2)
-            stream.writeUint8(this.def.idNumber!)
+            stream.write_float(this.time,0,120,2)
+            stream.write_uint8(this.def.idNumber!)
         }
     }
 }

@@ -1,7 +1,7 @@
 import { BulletDef, BulletReflection, DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { CircleHitbox2D, Collision, NetStream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Collision, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
@@ -235,27 +235,27 @@ export class Bullet extends ServerGameObject{
     clone(){
         return this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
     }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writePos2(this.position)
-        .writeFloat(this.tticks,0,100,2)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_pos2(this.position)
+        .write_float(this.tticks,0,100,2)
         if(full){
-            stream.writePos2(this.initial_position)
-            .writeFloat32(this.max_distance)
-            .writeFloat32(this.def.speed*this.modifiers.speed)
-            .writeRad(this.angle)
-            .writeFloat(this.def.tracer.width,0,100,3)
-            .writeFloat(this.def.tracer.height*this.modifiers.size,0,6,2)
-            .writeUint32(this.tracerColor)
-            .writeUint8(this.tracerAlpha)
-            .writeUint8(this.def.tracer.proj.img)
+            stream.write_pos2(this.initial_position)
+            .write_float32(this.max_distance)
+            .write_float32(this.def.speed*this.modifiers.speed)
+            .write_rad(this.angle)
+            .write_float(this.def.tracer.width,0,100,3)
+            .write_float(this.def.tracer.height*this.modifiers.size,0,6,2)
+            .write_uint32(this.tracerColor)
+            .write_uint8(this.tracerAlpha)
+            .write_uint8(this.def.tracer.proj.img)
             if(this.def.tracer.proj.img>0){
-                stream.writeFloat(this.def.tracer.proj.width,0,6,2)
-                .writeFloat(this.def.tracer.proj.height,0,6,2)
-                .writeUint32(this.projColor)
+                stream.write_float(this.def.tracer.proj.width,0,6,2)
+                .write_float(this.def.tracer.proj.height,0,6,2)
+                .write_uint32(this.projColor)
             }
-            stream.writeUint8(this.def.tracer.particles?.frame??0)
-            .writeBooleanGroup(this.hit_owner,this.critical,this.pass_through_humans)
-            .writeID(this.owner?.id??0)
+            stream.write_uint8(this.def.tracer.particles?.frame??0)
+            .write_boolean_group(this.hit_owner,this.critical,this.pass_through_humans)
+            .write_id(this.owner?.id??0)
         }
     }
 }

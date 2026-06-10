@@ -7,7 +7,7 @@ import { PlayersManager } from "../managers/players_manager.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { type Game } from "../others/game.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { NetStream, RectHitbox2D } from "common/engine/core.ts";
+import { Stream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
@@ -57,7 +57,7 @@ export abstract class PlayerConnManager{
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
         return objs
     }
-    abstract net_update(general_update:NetStream):void
+    abstract net_update(general_update:Stream):void
 }
 export class Player extends Human{
     username:string=""

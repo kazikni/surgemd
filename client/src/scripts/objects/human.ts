@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, NetStream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -1478,7 +1478,7 @@ export class Human extends MovingBody{
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
-    override on_decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         const [
             physical_dirty_part,physical_dirty,
             equipment_dirty_part,equipment_dirty,
@@ -1497,7 +1497,7 @@ export class Human extends MovingBody{
 
             controlling,
             seat,
-        ]=stream.readBooleanGroup2()
+        ]=stream.read_boolean_group2()
         this.controlling=controlling
         this.seat=seat
         this.shield=shield
@@ -1509,45 +1509,45 @@ export class Human extends MovingBody{
         if(full||physical_dirty_part||physical_dirty){
             this.decode_physical_data(stream,full)
             if(full||physical_dirty){
-                const scale=stream.readFloat32()
+                const scale=stream.read_float32()
                 this.update_scale(scale)
             }
         }
         if(full||equipment_dirty||equipment_dirty_part){
-            const helmet_health=stream.readUint16()
-            const vest_health=stream.readUint16()
+            const helmet_health=stream.read_uint16()
+            const vest_health=stream.read_uint16()
             this.helmet_health=helmet_health
             this.vest_health=vest_health
             if(full||equipment_dirty){
-                this.set_helmet(stream.readUint8())
-                this.set_vest(stream.readUint8())
-                this.set_backpack(stream.readUint8())
+                this.set_helmet(stream.read_uint8())
+                this.set_vest(stream.read_uint8())
+                this.set_backpack(stream.read_uint8())
             }
             //this.update_helmet_health()
         }
         if(loadout_dirty||full){
-            const [has_hair,has_eyes]=stream.readBooleanGroup()
-            const body_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutBodyDef
+            const [has_hair,has_eyes]=stream.read_boolean_group()
+            const body_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutBodyDef
             let hair_def:LoadoutHairDef|undefined
             let hair_tint:number=0
             let eyes_def:LoadoutEyesDef|undefined
             if(has_hair){
-                hair_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutHairDef
-                hair_tint=stream.readUint32()
+                hair_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutHairDef
+                hair_tint=stream.read_uint32()
             }
             if(has_eyes){
-                eyes_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutEyesDef
+                eyes_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutEyesDef
             }
-            const shirt_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutShirtDef
-            const legs_def=this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutLegDef
-            const body_tint=stream.readUint32()
-            const accessorys:LoadoutAccessoryDef[]=stream.readArray(()=>{
-                return this.game.definitions.loadout.getFromNumber(stream.readUint16()) as LoadoutAccessoryDef
+            const shirt_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutShirtDef
+            const legs_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutLegDef
+            const body_tint=stream.read_uint32()
+            const accessorys:LoadoutAccessoryDef[]=stream.read_array(()=>{
+                return this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef
             },1)
             this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
         }
         if(has_emote){
-            const id=stream.readUint16()
+            const id=stream.read_uint16()
             if(emote_is_item){
                 this.add_emote(this.game.definitions.game_items.valueNumber[id])
             }else{
@@ -1555,31 +1555,31 @@ export class Human extends MovingBody{
             }
         }
         if(full||effects_dirty){
-            const effects=stream.readArray(()=>{
-                return Effects.getFromNumber(stream.readUint16())
+            const effects=stream.read_array(()=>{
+                return Effects.getFromNumber(stream.read_uint16())
             },1)
             this.update_effects(effects)
         }
         if(full||hand_dirty){
-            const id = stream.readInt16()
+            const id = stream.read_int16()
             const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
             if(current_weapon!==this.current_weapon){
                 this.set_current_weapon(current_weapon)
             }
         }
         if(full||melee_wold_dirty){
-            const id=stream.readUint16()
+            const id=stream.read_uint16()
             if(this.melee?.idNumber!==id){
                 this.update_melee(this.game.definitions.melees.getFromNumber(id))
             }
         }
         if(full||animation_dirty){
-            const animations:HumanAnimation[]=stream.readArray(()=>{
+            const animations:HumanAnimation[]=stream.read_array(()=>{
                 let animation:HumanAnimation
-                const tp=stream.readUint8() as HumanAnimationType
+                const tp=stream.read_uint8() as HumanAnimationType
                 switch(tp){
                     case HumanAnimationType.Fire:{
-                        const bg=stream.readBooleanGroup()
+                        const bg=stream.read_boolean_group()
                         animation={
                             type:tp,
                             alt:bg[0],
@@ -1591,13 +1591,13 @@ export class Human extends MovingBody{
                     case HumanAnimationType.Reloading:
                         animation={
                             type:tp,
-                            alt_reload:!!stream.readUint8()
+                            alt_reload:!!stream.read_uint8()
                         }
                         break
                     case HumanAnimationType.Consuming:
                         animation={
                             type:tp,
-                            item:stream.readUint16()
+                            item:stream.read_uint16()
                         }
                         break
                     default:{

@@ -1,6 +1,6 @@
 import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
 import { type Human } from "./human.ts";
-import { Angle, Hitbox2D, NetStream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -177,17 +177,17 @@ export class Building extends StaticBody {
             }
         }
     }
-    override on_encode(stream: NetStream, full: boolean): void {
-        stream.writeBooleanGroup(this.physical_data.dirty)
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_boolean_group(this.physical_data.dirty)
         if(full||this.physical_data.dirty){
-            stream.writePos2(this.position)
-            .writeUint8(this.physical_data.side)
+            stream.write_pos2(this.position)
+            .write_uint8(this.physical_data.side)
         }
         if(full){
-            stream.writeID(this.def.idNumber!)
+            stream.write_id(this.def.idNumber!)
         }
-        stream.writeArray(this.children.filter((o)=>o.type===1),(v)=>{
-            stream.writeBooleanGroup(v.alive)
+        stream.write_array(this.children.filter((o)=>o.type===1),(v)=>{
+            stream.write_boolean_group(v.alive)
         },1)
     }
 }

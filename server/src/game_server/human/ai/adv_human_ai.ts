@@ -1,4 +1,4 @@
-import { Angle, astar_path2d, BTAction, BTCondition, BTNode, BTSelector, BTSequence, BTState, NetStream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, astar_path2d, BTAction, BTCondition, BTNode, BTSelector, BTSequence, BTState, Stream, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
@@ -420,7 +420,7 @@ export class AttackingController extends BotExecutor {
     quickswitable(weapon?:WeaponDef){
         return weapon && (
             weapon.item_type===InventoryItemType.melee ||
-            (weapon.item_type===InventoryItemType.gun && weapon.fireDelay>=0.6)
+            (weapon.item_type===InventoryItemType.gun && weapon.fire_delay>=0.6)
         )
     }
     choose_quickswitch(ctx:BotExecutionContext){
@@ -441,8 +441,8 @@ export class AttackingController extends BotExecutor {
                     secondary_weapon:2,
                     switch_delay:0.2,
                     cycle_delay:Math.max(
-                        (w1.def as GunDef).fireDelay,
-                        (w2.def as GunDef).fireDelay
+                        (w1.def as GunDef).fire_delay,
+                        (w2.def as GunDef).fire_delay
                     )
                 }
                 return
@@ -452,7 +452,7 @@ export class AttackingController extends BotExecutor {
                     main_weapon:1,
                     alt_weapon:2,
                     switch_delay:.2,
-                    burst_delay:(((w2.def as GunDef).reload?.capacity??0)*0.25*(w2.def as GunDef).fireDelay)+((w2.def as GunDef).switchDelay??0)
+                    burst_delay:(((w2.def as GunDef).reload?.capacity??0)*0.25*(w2.def as GunDef).fire_delay)+((w2.def as GunDef).switch_delay??0)
                 }
                 return
             }else if(!w1s&&w2s){
@@ -461,7 +461,7 @@ export class AttackingController extends BotExecutor {
                     main_weapon:2,
                     alt_weapon:1,
                     switch_delay:.2,
-                    burst_delay:(((w1.def as GunDef).reload?.capacity??0)*0.25*(w1.def as GunDef).fireDelay)+((w1.def as GunDef).switchDelay??0)
+                    burst_delay:(((w1.def as GunDef).reload?.capacity??0)*0.25*(w1.def as GunDef).fire_delay)+((w1.def as GunDef).switch_delay??0)
                 }
                 return
             }
@@ -645,7 +645,7 @@ export class ADVHumanAI extends BotAi{
             this.controller.movement.update(ctx)
         }
     }
-    override net_update(general_update: NetStream): void {
+    override net_update(general_update: Stream): void {
         //throw new Error("Method not implemented.");
     }
 }

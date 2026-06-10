@@ -1,4 +1,4 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, model2d, NetStream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, model2d, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -360,7 +360,7 @@ export class Obstacle extends StaticBody{
         return (this.def.interactDestroy===true)
     }
 
-    override on_decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         const [
             visual,
             physical_data,physical_data_part,
@@ -369,23 +369,23 @@ export class Obstacle extends StaticBody{
 
             door_dirty,
             transform_into_active
-        ]=stream.readBooleanGroup()
+        ]=stream.read_boolean_group()
         if(visual||full){
-            this.variation=stream.readUint8()
-            this.skin=stream.readUint8()
+            this.variation=stream.read_uint8()
+            this.skin=stream.read_uint8()
         }
         if(full){
-            const id=stream.readUint16()
+            const id=stream.read_uint16()
             this.set_definition(this.game.definitions.obstacles.getFromNumber(id))
             this.update_frame()
         }
         if(physical_data_part||physical_data||full){
-            this.physical_data.scale=stream.readFloat(0,10,2)
+            this.physical_data.scale=stream.read_float(0,10,2)
 
             if(full||physical_data){
-                this.position=stream.readPos2()
-                this.physical_data.rotation=stream.readRad()
-                this.physical_data.side=stream.readUint8()
+                this.position=stream.read_pos2()
+                this.physical_data.rotation=stream.read_rad()
+                this.physical_data.side=stream.read_uint8()
 
                 this.initialize_hitboxes()
                 if(Debug.hitbox){
@@ -403,7 +403,7 @@ export class Obstacle extends StaticBody{
             this.container.position=this.position
         }
         if(health_data||full){
-            this.health_data.health=stream.readFloat(0,1,1)
+            this.health_data.health=stream.read_float(0,1,1)
 
             if(dead){
                 this.die()
@@ -418,13 +418,13 @@ export class Obstacle extends StaticBody{
         }
 
         if(door_dirty){
-            this.update_door(stream.readInt8(),full)
+            this.update_door(stream.read_int8(),full)
         }
         if(this.transform_into_data){
             if(this.transform_into_data.activated&&!transform_into_active){
                 this.transform_into_data.activated=false
             }else if(transform_into_active){
-                this.transform_into_update(stream.readUint8())
+                this.transform_into_update(stream.read_uint8())
             }
         }
     }

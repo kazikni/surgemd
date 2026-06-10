@@ -2,7 +2,7 @@ import { FetchFileManager, FileManager } from "../definition/file.ts";
 import { random } from "../math/random.ts";
 import { ID, SignalManager } from "../math/utils.ts";
 import { ConnectPacket, DisconnectPacket, InvalidPacket, Packet, PacketsManager, PingPacket, PongPacket } from "./packets.ts";
-import { NetStream } from "./stream.ts";
+import { StaticStream, Stream } from "./stream.ts";
 
 export class BasicSocket{
     readyState = 1;
@@ -97,7 +97,7 @@ export class Client{
                     buf=await msg.data.arrayBuffer()
                 }
                 if (buf) {
-                    const stream=new NetStream(buf as ArrayBuffer)
+                    const stream=new StaticStream(buf as ArrayBuffer)
                     let packet = this.manager.decode(stream)
                     while(!(packet instanceof InvalidPacket)){
                         this.signals.emit(packet.Name, packet)
@@ -115,7 +115,7 @@ export class Client{
                     }
 
                     if (buf) {
-                        const packet = this.manager.decode(new NetStream(buf));
+                        const packet = this.manager.decode(new StaticStream(buf));
                         this.signals.emit(packet.Name, packet);
                     }
                 }catch(error){
@@ -142,7 +142,7 @@ export class Client{
             this.emit(new PongPacket(packet.time))
         })
     }
-    private static stream_cache:NetStream=new NetStream(new ArrayBuffer(1024 * 40))
+    private static stream_cache:Stream=new StaticStream(new ArrayBuffer(1024 * 40))
 
     /**
      * Send A `Packet` To `Server/Client`
@@ -152,7 +152,7 @@ export class Client{
         if (this.ws.readyState !== WebSocket.OPEN) return
         Client.stream_cache.clear()
         this.manager.encode(packet, Client.stream_cache)
-        if (this.ws.send) this.ws.send(Client.stream_cache._u8Array.subarray(0,Client.stream_cache.length))
+        if (this.ws.send) this.ws.send(Client.stream_cache.data.subarray(0,Client.stream_cache.length))
     }
 
     /**
@@ -164,9 +164,9 @@ export class Client{
     on(name:string,callback:Function){
         this.signals.on(name,callback)
     }
-    sendStream(stream:NetStream){
+    sendStream(stream:Stream){
         if (this.ws.readyState !== WebSocket.OPEN) return
-        if (this.ws.send) this.ws.send(stream._u8Array.subarray(0, stream.length))
+        if (this.ws.send) this.ws.send(stream.data.subarray(0, stream.length))
     }
     /**
      * Disconnect Websocket
@@ -226,7 +226,7 @@ export class OfflineClientsManager{
             }
         }
     }
-    sendStream(stream:NetStream){
+    sendStream(stream:Stream){
         for (const client of this.clients.values()) {
             client.sendStream(stream)
         }

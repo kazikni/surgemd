@@ -1,4 +1,4 @@
-import { CircleHitbox2D, ColorM, NetStream, v2, } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, Stream, v2, } from "common/engine/core.ts";
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { DecalDef } from "common/scripts/definitions/objects/decals.ts";
@@ -51,23 +51,23 @@ export class Decal extends GameObject{
     override on_destroy(): void {
         if(this.sprite)this.sprite.destroy()
     }
-    override on_decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         const [
             tint_dirty,
             scale
-        ]=stream.readBooleanGroup()
+        ]=stream.read_boolean_group()
         if(full){
-            this.position=stream.readPos2()
-            this.rotation=stream.readRad()
-            this.set_definition(this.game.definitions.decals.getFromNumber(stream.readUint16()))
+            this.position=stream.read_pos2()
+            this.rotation=stream.read_rad()
+            this.set_definition(this.game.definitions.decals.getFromNumber(stream.read_uint16()))
             if(tint_dirty){
                 if(this.sprite){
-                    this.sprite.tint=ColorM.number(stream.readUint32())
-                    this.sprite.tint.a=stream.readUint8()/255
+                    this.sprite.tint=ColorM.number(stream.read_uint32())
+                    this.sprite.tint.a=stream.read_uint8()/255
                 }
             }
             if(scale){
-                const scale=stream.readFloat32()
+                const scale=stream.read_float32()
                 this.sprite?._scale.set(scale,scale)
             }
         }

@@ -1,4 +1,4 @@
-import { CenterHotspot, CircleHitbox2D, NetStream, Sprite2D, v2, v2m } from "common/engine/client.ts"
+import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, v2, v2m } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 
@@ -50,11 +50,11 @@ export class Parachute extends GameObject{
         v2m.add(this.sprite.scale,s,v2(1,1))
         this.sprite.position=this.position
     }
-    override on_decode(stream:NetStream,full: boolean):void{
-        this.time=stream.readFloat(0,30,2)
+    override on_decode_net(stream:Stream,full: boolean):void{
+        this.time=stream.read_float(0,30,2)
         if(full){
-            this.position=stream.readPos2()
-            this.parachute_data.lifetime=stream.readFloat(0,30,2)
+            this.position=stream.read_pos2()
+            this.parachute_data.lifetime=stream.read_float(0,30,2)
         }
     }
 }

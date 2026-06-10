@@ -6,7 +6,7 @@ import { Angle, astar_path2d, random, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { type Obstacle } from "../../objects/obstacle.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
-import { NetStream } from "common/engine/core/net/stream.ts";
+import { Stream } from "common/engine/core/net/stream.ts";
 import { ServerGameObject } from "../../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 type EnemyState =
@@ -17,7 +17,7 @@ type EnemyState =
     | "go_last_seen"
 
 export class EnemyNPCAI extends StatedBotAi<EnemyState> {
-    override net_update(general_update: NetStream): void {
+    override net_update(general_update: Stream): void {
 
     }
     /* =======================
@@ -267,7 +267,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         }
     }
     enemy_not_founded(){
-        this.human.input.actions.push({type:InputActionType.emote,emote:this.human.game.definitions.emotes.getFromString("emote_neutral").idNumber!})
+        this.human.input.actions.push({type:InputActionType.emote_emote,emote:this.human.game.definitions.emotes.getFromString("emote_neutral").idNumber!})
         this.setState("idle")
     }
     /* =======================

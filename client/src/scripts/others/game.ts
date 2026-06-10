@@ -50,6 +50,7 @@ import { HumanBody } from "../objects/human_body.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
+    comunication_mode:boolean=false
 
     level?:LevelDefinition
     level_path:string=""
@@ -225,6 +226,9 @@ export class Game extends ClientGame<GameObject>{
                 case "emote_wheel":
                     this.ui.begin_emote_wheel(this.input_manager.mouse_position)
                     break
+                case "comunication_mode":
+                    this.comunication_mode=true
+                    break
                 case "reload":
                     this.input.reload=true
                     break
@@ -320,6 +324,9 @@ export class Game extends ClientGame<GameObject>{
                     break
                 case "emote_wheel":
                     this.ui.end_emote_wheel()
+                    break
+                case "comunication_mode":
+                    this.comunication_mode=false
                     break
             }
             this.ui_manager.signal("actionup",a)

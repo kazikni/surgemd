@@ -4,6 +4,7 @@ import { random } from "../math/random.ts";
 import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
+import { Rect } from "../math/geometry.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -50,15 +51,19 @@ export abstract class BaseObject2D{
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
 
-    update_hitbox():void{
-        this.hitbox=this.base_hitbox.transform(this._position)
-        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
-    }
 
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
         this._base_hitbox=new NullHitbox2D(v2(0,0))
         this.hitbox=this.base_hitbox.transform(this._position)
+    }
+
+    update_hitbox():void{
+        this.hitbox=this.base_hitbox.transform(this._position)
+        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
+    }
+    to_rect():Rect{
+        return this.hitbox.to_rect()
     }
 
     on_encode(stream:NetStream,full:boolean,options?:any):void{}
@@ -140,7 +145,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     update_object(obj: GameObject) {
         this.remove_object_from_cells(obj)
 
-        const rect = obj.hitbox.to_rect()
+        const rect = obj.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 
@@ -370,6 +375,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.id=id===undefined?this.generate_object_id():id
         obj.layer = layer
         obj.manager = this
+        obj.is_new=true
+        this.news_queue.push(obj)
         for (const key in sv) {
             // deno-lint-ignore ban-ts-comment
             // @ts-ignore
@@ -384,11 +391,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(obj.registred)return
         obj.registred=true
         obj.set_dirty_full()
-        obj.is_new=true
-        this.news_queue.push(obj)
 
         this.objects[obj.id]=obj
-        //this.layers[obj.layer].objects[obj.id] = obj
         this.layers[obj.layer].orden.push(obj.id)
         this.cells.registry(obj)
 
@@ -444,7 +448,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     add_layer(layer: number) {
         if (this.layers[layer]) return;
         this.layers[layer] = {
-            //objects: {},
             orden: [],
             ticks:[],
             render:[],
@@ -592,7 +595,11 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             for(const o of this.layers[l].ticks){
                 const obj=this.objects[o]
                 if(obj.destroyed)continue
-                obj.on_tick(dt)
+                try{
+                    obj.on_tick(dt)
+                }catch(err){
+                    console.error(err)
+                }
                 if(this.cells.dirty_objects.has(obj)){
                     this.cells.update_object(obj)
                 }

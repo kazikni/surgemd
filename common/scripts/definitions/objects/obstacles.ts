@@ -133,6 +133,7 @@ export const obstacles_factory={
                     image:gun.assets?.world??gun.idString+"_world",
                     tint:gun.assets?.world_tint,
                     hotspot:v2.half_one,
+                    scale:2,
                     zIndex:1,
                     position:v2.zero()
                 }],

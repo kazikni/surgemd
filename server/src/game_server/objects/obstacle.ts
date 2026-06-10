@@ -158,7 +158,7 @@ export class Obstacle extends StaticBody{
                         const valid=user.pathfind_to(pos,()=>{
                             user.physical_data.rotation=angle
                             this.game.add_timeout(()=>{
-                                user.set_layer(user.layer+(this.def.expanded_behavior as ObstacleBehaviorScalable).floor_walk)
+                                user.manager.set_layer(this,user.layer+(this.def.expanded_behavior as ObstacleBehaviorScalable).floor_walk)
 
                                 user.human_data.movement_enabled=old_m
                                 user.human_data.combat_enabled=old_c

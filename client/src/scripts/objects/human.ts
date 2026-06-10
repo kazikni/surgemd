@@ -19,6 +19,7 @@ import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { Boosts } from "common/scripts/definitions/player/boosts.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -1333,7 +1334,7 @@ export class Human extends MovingBody{
         }
     }
 
-    add_emote(emote:GameObjectDef){
+    add_emote(emote:EmoteDef|GameItem){
         this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
             position:this.position,
             max_distance: 50,
@@ -1342,7 +1343,22 @@ export class Human extends MovingBody{
         })
         this.animation.emote_time=0
         this.sprites.emote_container.visible=true
-        this.sprites.emote_sprite.frame=this.game.resources.get_frame(emote.idString)
+        let frame=emote.idString
+        this.sprites.emote_sprite.rotation=0
+        if((emote as GameItem).item_type!==undefined){
+            const item=(emote as GameItem)
+            if(item.item_type===InventoryItemType.ammo){
+                v2m.single(this.sprites.emote_sprite.scale,1)
+            }else{
+                v2m.single(this.sprites.emote_sprite.scale,1.75)
+            }
+            if(item.item_type===InventoryItemType.gun||item.item_type===InventoryItemType.melee){
+                this.sprites.emote_sprite.rotation=-0.523599
+            }
+        }else{
+            v2m.single(this.sprites.emote_sprite.scale,2.6)
+        }
+        this.sprites.emote_sprite.frame=this.game.resources.get_frame(frame)
         this.sprites.emote_container.scale=v2(0,0)
         this.game.add_tween({
             target:this.sprites.emote_container.scale,
@@ -1475,6 +1491,7 @@ export class Human extends MovingBody{
             melee_wold_dirty,
 
             has_emote,
+            emote_is_item,
 
             dead,downed,
 
@@ -1530,7 +1547,12 @@ export class Human extends MovingBody{
             this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
         }
         if(has_emote){
-            this.add_emote(this.game.definitions.game_objects.valueNumber[stream.readUint16()])
+            const id=stream.readUint16()
+            if(emote_is_item){
+                this.add_emote(this.game.definitions.game_items.valueNumber[id])
+            }else{
+                this.add_emote(this.game.definitions.emotes.getFromNumber(id))
+            }
         }
         if(full||effects_dirty){
             const effects=stream.readArray(()=>{

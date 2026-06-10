@@ -25,24 +25,24 @@ export class PacketsManager{
         this.add_packet(PongPacket)
     }
     encode(packet:Packet,stream:NetStream):NetStream{
-        stream.writeUint16(2314) // Passcode
         stream.writeUint16(packet.ID)
         packet.encode(stream)
+        stream.writeUint16(2314) // Passcode
         return stream
     }
     decode(stream:NetStream):Packet{
         if(stream.index>=stream._view.byteLength)return new InvalidPacket()
         try{
-            const passcode=stream.readUint16()
-            if(passcode!=2314){
-                return new InvalidPacket()
-            }
             const id:PacketID=stream.readUint16()
             if(this.packets.get(id)){
                 const pt:new () => Packet=this.packets.get(id)!
                 const p=new pt()
                 if(this.pre_packet)this.pre_packet(p)
                 p.decode(stream)
+                const passcode=stream.readUint16()
+                if(passcode!=2314){
+                    return new InvalidPacket()
+                }
                 p._size=stream.index
                 return p
             }

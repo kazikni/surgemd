@@ -5,7 +5,8 @@ export enum InputActionType{
     set_hand,
     debug_give,
     set_scope,
-    emote,
+    emote_emote,
+    emote_item,
     buy_on_shop,
     debug_spawn,
 }
@@ -26,8 +27,11 @@ export type InputAction=({
     type:InputActionType.set_scope,
     scope_id:number
 }|{
-    type:InputActionType.emote,
+    type:InputActionType.emote_emote,
     emote:number
+}|{
+    type:InputActionType.emote_item,
+    item:number
 }|{
     type:InputActionType.buy_on_shop,
     item_id:number
@@ -77,17 +81,20 @@ export class InputPacket extends Packet{
               case InputActionType.set_scope:
                     stream.writeUint8(i.scope_id)
                     break
-              case InputActionType.emote:
-                    stream.writeUint16(i.emote)
-                    break
+              case InputActionType.emote_emote:
+                stream.writeUint16(i.emote)
+                break
+              case InputActionType.emote_item:
+                stream.writeUint16(i.item)
+                break
               case InputActionType.buy_on_shop:
-                    stream.writeUint16(i.item_id)
-                    break
+                stream.writeUint16(i.item_id)
+                break
               case InputActionType.debug_give:
               case InputActionType.debug_spawn:
-                    stream.writeStringSized(32,i.item)
-                    .writeUint8(i.count)
-                    break
+                stream.writeStringSized(32,i.item)
+                .writeUint8(i.count)
+                break
             }
         },1)
     }
@@ -108,29 +115,32 @@ export class InputPacket extends Packet{
           } as InputAction
           switch(ret.type){
               case InputActionType.drop:
-                  ret["drop"]=stream.readUint8()
-                  ret["drop_kind"]=stream.readUint8()
-                  break
+                ret["drop"]=stream.readUint8()
+                ret["drop_kind"]=stream.readUint8()
+                break
               case InputActionType.use_item:
-                  ret["slot"]=stream.readUint8()
-                  break
+                ret["slot"]=stream.readUint8()
+                break
               case InputActionType.set_hand:
-                  ret["hand"]=stream.readUint8()
-                  break
+                ret["hand"]=stream.readUint8()
+                break
               case InputActionType.set_scope:
-                  ret["scope_id"]=stream.readUint8()
-                  break
-              case InputActionType.emote:
-                  ret["emote"]=stream.readUint16()
-                  break
+                ret["scope_id"]=stream.readUint8()
+                break
+              case InputActionType.emote_emote:
+                ret["emote"]=stream.readUint16()
+                break
+              case InputActionType.emote_item:
+                ret["item"]=stream.readUint16()
+                break
               case InputActionType.buy_on_shop:
-                  ret["item_id"]=stream.readUint16()
-                  break
+                ret["item_id"]=stream.readUint16()
+                break
               case InputActionType.debug_give:
               case InputActionType.debug_spawn:
-                  ret["item"]=stream.readStringSized(32)
-                  ret["count"]=stream.readUint8()
-                  break
+                ret["item"]=stream.readStringSized(32)
+                ret["count"]=stream.readUint8()
+                break
           }
           return ret
         },1)

@@ -129,6 +129,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.Y],
         keys:[Key.V]
     },
+    "comunication_mode":{
+        buttons:[GamepadButtonID.Y],
+        keys:[Key.C]
+    },
     "reload":{
         buttons:[GamepadButtonID.X],
         keys:[Key.R]

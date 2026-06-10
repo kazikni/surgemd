@@ -111,7 +111,8 @@ export class Human extends MovingBody{
     loadout!:HumanLoadoutData&{
         dirty:boolean
 
-        emote?:GameObjectDef
+        emote_is_item:boolean
+        emote?:GameItem|EmoteDef
         emotes:{
             die?:EmoteDef
         }
@@ -276,8 +277,9 @@ export class Human extends MovingBody{
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
             shirt:this.game.definitions.loadout.getFromString(random.choose(female?["white_dress","blue_dress","yellow_dress","red_dress","blue_shirt","white_shirt","red_shirt","yellow_shirt"]:["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
             legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
+            
+            emote_is_item:false,
             emotes:{
-
             },
             accessorys:female?[
                 this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
@@ -609,8 +611,13 @@ export class Human extends MovingBody{
                             this.equipment_data.scope=this.game.definitions.scopes.getFromNumber(a.scope_id)
                         }
                         break
-                    case InputActionType.emote:
+                    case InputActionType.emote_emote:
+                        this.loadout.emote_is_item=false
                         this.loadout.emote=this.game.definitions.emotes.getFromNumber(a.emote)
+                        break
+                    case InputActionType.emote_item:
+                        this.loadout.emote_is_item=true
+                        this.loadout.emote=this.game.definitions.game_items.valueNumber[a.item]
                         break
                     case InputActionType.buy_on_shop:
                         this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
@@ -656,7 +663,7 @@ export class Human extends MovingBody{
                 }
                 if((obj as Obstacle).physical_data.stairs.length>0){
                     for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.colliding_with(this.hitbox))this.set_layer(obj.layer+s.dest_layer)
+                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
                     }
                 }
                 break
@@ -1257,6 +1264,7 @@ export class Human extends MovingBody{
 
             // State
             this.loadout.emote!==undefined, // 1
+            this.loadout.emote_is_item,
 
             this.health_data.dead,
             this.health_data.downed,
@@ -1303,7 +1311,10 @@ export class Human extends MovingBody{
             },1)
         }
         if(this.loadout.emote){
-            stream.writeUint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])
+            const id=this.loadout.emote_is_item?
+            this.game.definitions.game_items.keysString[this.loadout.emote.idString]:
+            this.loadout.emote.idNumber!
+            stream.writeUint16(id)
         }
         if(full||this.effects_dirty){
             stream.writeArray(Array.from(this.effects.values()),(e)=>{

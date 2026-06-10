@@ -254,7 +254,7 @@ export class UiManager{
         }
         if(selected_emote){
             this.game.input.actions.push({
-                type:InputActionType.emote,
+                type:InputActionType.emote_emote,
                 emote:selected_emote.idNumber!
             })
         }
@@ -580,16 +580,36 @@ export class UiManager{
             if(!this.game.save.get_variable("sv_ui_interactive"))return
             switch(item_kind){
                 case 1:
-                    this.game.input.actions.push({
-                        type:InputActionType.set_hand,
-                        hand:item_value
-                    })
+                    if(this.game.comunication_mode){
+                        const def=this.game.inventory.weapons[item_value]?.def
+                        if(def)this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                    }else{
+                        this.game.input.actions.push({
+                            type:InputActionType.set_hand,
+                            hand:item_value
+                        })
+                    }
+                    break
+                case 2:
+                    if(this.game.comunication_mode){
+                        const def=this.game.definitions.ammos.getFromNumber(item_value)
+                        this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                    }
                     break
                 case 3:
-                    this.game.input.actions.push({type:InputActionType.use_item,slot:parseInt(t.dataset.item_value!)})
+                    if(this.game.comunication_mode){
+                        if(this.items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote_item,item:this.items[item_value].id})
+                    }else{
+                        this.game.input.actions.push({type:InputActionType.use_item,slot:item_value})
+                    }
                     break
                 case 5:
-                    this.game.input.actions.push({type:InputActionType.set_scope,scope_id:parseInt(t.dataset.item_value!)})
+                    if(this.game.comunication_mode){
+                        const def=this.game.definitions.scopes.getFromNumber(item_value)
+                        this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                    }else{
+                        this.game.input.actions.push({type:InputActionType.set_scope,scope_id:item_value})
+                    }
                     break
             }
         }

@@ -77,6 +77,7 @@ export interface ObstacleDef extends Definition{
             base?:string
             dead?:string
             transform?:FrameTransform
+            dead_transform?:FrameTransform
             variations?:number
             tint_variations?:number[]
             sprite_variations?:boolean
@@ -251,7 +252,11 @@ export const obstacles_factory={
             height:1,
             assets:{
                 frame:{
-                    dead:"wood_crate_dead"
+                    dead:"wood_residue_1x1",
+                    dead_transform:{
+                        tint:0x5f3d07,
+                        scale:2.3,
+                    }
                 }
             }
         },settings.o??{})
@@ -397,6 +402,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     particle:"metal_particle",
                     tint:0x484848
                 },
+                frame:{
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0x484848,
+                    }
+                },
                 sounds:hit_sounds.heavy_metal
             },
             rotation_mode:RotationMode.full,
@@ -523,6 +534,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         particle:"plank_particle",
                         tint:0x0a753d
                     },
+                    frame:{
+                        dead_transform:{
+                            tint:0x0a753d,
+                        }
+                    },
                     sounds:hit_sounds.wood
                 },
                 invisible_on_map:true,
@@ -535,6 +551,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     particles:{
                         particle:"plank_particle",
                         tint:0x7021d3
+                    },
+                    frame:{
+                        dead_transform:{
+                            tint:0x7021d3,
+                        }
                     },
                     sounds:hit_sounds.wood
                 },
@@ -549,6 +570,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         particle:"plank_particle",
                         tint:0x3e58c4,
                     },
+                    frame:{
+                        dead_transform:{
+                            tint:0x3e58c4,
+                        }
+                    },
                     sounds:hit_sounds.wood
                 },
                 invisible_on_map:true,
@@ -559,6 +585,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             o:{
                 health:130,
                 assets:{
+                    frame:{
+                        dead:"metal_residue_1x1",
+                        dead_transform:{
+                            tint:0xcc742d,
+                            scale:2.3
+                        }
+                    },
                     particles:{
                         particle:"metal_particle",
                         tint:0xcc742d,
@@ -573,6 +606,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             o:{
                 health:170,
                 assets:{
+                    frame:{
+                        dead:"metal_residue_1x1",
+                        dead_transform:{
+                            tint:0x656877,
+                            scale:2.3
+                        }
+                    },
                     particles:{
                         particle:"metal_particle",
                         tint:0x656877,
@@ -588,6 +628,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             o:{
                 health:170,
                 assets:{
+                    frame:{
+                        dead:"metal_residue_1x1",
+                        dead_transform:{
+                            tint:0xffd92b,
+                            scale:2.3
+                        }
+                    },
                     particles:{
                         particle:"metal_particle",
                         tint:0xffd92b,
@@ -610,7 +657,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     },
                     sounds:hit_sounds.metal,
                     frame:{
-                        dead:"ammo_crate_dead"
+                        dead:"metal_residue_1x1",
+                        dead_transform:{
+                            tint:0x0a753d
+                        }
                     }
                 },
                 decal:{
@@ -680,6 +730,9 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     particles:{
                         particle:"plank_particle",
                         tint:0x161616
+                    },
+                    frame:{
+                        dead:"wood_residue_1x21",
                     },
                     sounds:hit_sounds.wood
                 },
@@ -809,7 +862,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             hitbox:new RectHitbox2D(v2(-0.4,-0.4),v2(0.4,0.4)),
             reflect_bullets:true,
             assets:{
-                sounds:hit_sounds.light_metal
+                frame:{
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0x484848,
+                        scale:0.85
+                    }
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x484848,
+                },
+                sounds:hit_sounds.light_metal,
             },
             rotation_mode:RotationMode.limited,
             zIndex:{
@@ -844,6 +908,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 frame:{
                     transform:{
                         hotspot:v2(0.445,0.5)
+                    },
+                    dead:"wood_residue_1x2",
+                    dead_transform:{
+                        tint:0x5f3d07,
                     }
                 },
                 sounds:hit_sounds.wood
@@ -865,6 +933,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     transform:{
                         hotspot:v2(0.4495,0.5)
                     },
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0x484848,
+                    }
                 },
                 particles:{
                     particle:"metal_particle",
@@ -887,6 +959,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             assets:{
                 frame:{
                     variations:2,
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0x484848,
+                    }
                 },
                 particles:{
                     particle:"metal_particle",
@@ -911,6 +987,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     transform:{
                         hotspot:v2(0.4495,0.5)
                     },
+                    dead:"wood_residue_1x2",
+                    dead_transform:{
+                        tint:0x5f3d07,
+                    },
                 },
                 particles:{
                     particle:"plank_particle",
@@ -933,6 +1013,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 destroy:0.9
             },
             assets:{
+                frame:{
+                    dead:"wood_residue_1x2",
+                    dead_transform:{
+                        tint:0x5f3d07,
+                    }
+                },
                 particles:{
                     particle:"plank_particle",
                     tint:0x583b08
@@ -952,6 +1038,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 destroy:0.9
             },
             assets:{
+                frame:{
+                    dead:"wood_residue_1x1",
+                    dead_transform:{
+                        tint:0x5f3d07,
+                    },
+                },
                 particles:{
                     particle:"plank_particle",
                     tint:0x583b08
@@ -964,13 +1056,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         {
             idString:"small_bed",
             health:150,
-            hitbox:new RectHitbox2D(v2(-1.28,-0.77),v2(1.28,0.77)),
+            hitbox:new RectHitbox2D(v2(-0.77,-1.28),v2(0.77,1.28)),
             scale:{
                 destroy:0.8
             },
             assets:{
                 frame:{
-                    variations:2
+                    variations:2,
+                    dead:"wood_residue_1x2",
+                    dead_transform:{
+                        tint:0x5f3d07,
+                        scale:2.3
+                    },
                 },
                 particles:{
                     particle:"tissue_particle",

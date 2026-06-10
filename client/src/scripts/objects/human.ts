@@ -267,7 +267,7 @@ export class Human extends MovingBody{
                 frame:{
                     image:this.assets.consumible_particles,
                 },
-                position:this.hitbox.randomPoint(),
+                position:this.hitbox.random_point(),
                 life_time:random.float(1,2.5),
                 layer:this.layer,
                 zIndex:zIndexes.Particles,
@@ -875,7 +875,7 @@ export class Human extends MovingBody{
                         frame:f.def.particles.frame,
 
                         zIndex:zIndexes.Particles,
-                        position:this.hitbox.randomPoint(),
+                        position:this.hitbox.random_point(),
                         direction:-Math.PI/2,
                         angle:angle,
                         speed:random.float(1,3),

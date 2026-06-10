@@ -88,8 +88,8 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"weapon",
                     type:"tween",
                     to:{
-                        rotation:r-1,
-                        position:v2.add(DefaultFistRig.left!.position,v2(0,0))
+                        rotation:r-1.1,
+                        position:v2(DefaultFistRig.left!.position.x+0.05,DefaultFistRig.left!.position.y)
                     },
                     ease:ease.quadraticInOut
                 },
@@ -97,8 +97,8 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"left_arm",
                     type:"tween",
                     to:{
-                        rotation:DefaultFistRig.left!.rotation+0.1,
-                        position:v2.add(DefaultFistRig.left!.position,v2(-0.05,0.1))
+                        rotation:DefaultFistRig.left!.rotation-0.1,
+                        position:v2(DefaultFistRig.left!.position.x+0.05,DefaultFistRig.left!.position.y)
                     },
                     ease:ease.quadraticInOut
                 },
@@ -106,8 +106,8 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"right_arm",
                     type:"tween",
                     to:{
-                        rotation:DefaultFistRig.right!.rotation-0.3,
-                        position:v2.add(DefaultFistRig.right!.position,v2(0.15,-0.15))
+                        rotation:DefaultFistRig.right!.rotation-0.4,
+                        position:v2(DefaultFistRig.right!.position.x+0.3,DefaultFistRig.right!.position.y-0.3)
                     },
                     ease:ease.quadraticInOut
                 },
@@ -417,7 +417,6 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             attack_delay:0.4,
             switch_delay:0.5,
             damage_delays:[0.3],
-
             rig_arms:{
                 right:{
                     position:DefaultFistRig.right!.position,
@@ -469,7 +468,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
-                hotspot:v2(0.2,0.3)
+                hotspot:v2(0.1,0.5)
             },
             animation:AnimationSwing(0.55),
             assets:{
@@ -503,7 +502,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.left!.position,
                 rotation:Angle.deg2rad(90),
                 zIndex:1,
-                hotspot:v2(0.2,0.4)
+                hotspot:v2(0.1,0.6)
             },
             animation:AnimationSwing(0.3),
             assets:{

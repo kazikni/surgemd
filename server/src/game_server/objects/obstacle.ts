@@ -384,7 +384,7 @@ export class Obstacle extends StaticBody{
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
-            loots.push(this.game.add_loot(this.hitbox.randomPoint(),l.item,l.count,this.layer))
+            loots.push(this.game.add_loot(this.hitbox.random_point(),l.item,l.count,this.layer))
         }
 
         this.set_dirty_part()

@@ -17,7 +17,7 @@ export function AccessoryDropLootFromObstacle(table:string){
         const loot=e.human.game.loot_tables.get_loot(table,{withammo:true},e.human.game)
 
         for(const l of loot){
-            e.human.game.add_loot(e.obstacle.hitbox.randomPoint(),l.item,l.count,e.obstacle.layer)
+            e.human.game.add_loot(e.obstacle.hitbox.random_point(),l.item,l.count,e.obstacle.layer)
         }
     }
 }

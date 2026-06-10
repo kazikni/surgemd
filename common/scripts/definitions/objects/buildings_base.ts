@@ -683,7 +683,7 @@ export const buildings_factory={
 
                         {
                             def:"small_bed",
-                            rotation:0,
+                            rotation:3,
                             position:v2(5.95,-5.6),
                         },
 

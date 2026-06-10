@@ -430,7 +430,7 @@ export class CounterMD extends ModeManager {
             shb=1
         }
 
-        return this.settings.map.spawn[shb].randomPoint()
+        return this.settings.map.spawn[shb].random_point()
     }
     /* ---------------- ECONOMY ---------------- */
     give_start_weapon(p:Player){

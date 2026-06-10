@@ -264,7 +264,7 @@ export class GameMap{
         const circle_hb=new CircleHitbox2D(v2(0,0),def.radius)
         let attempts=100
         while(attempts>0&&position===undefined){
-            position=spawn.randomPoint()
+            position=spawn.random_point()
             circle_hb.position=position
             for(const o_s of this.structures){
                 if(o_s.circle_hb.colliding_with(circle_hb)){

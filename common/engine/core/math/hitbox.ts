@@ -79,7 +79,7 @@ export abstract class BaseHitbox2D{
 
     abstract center():Vec2
     abstract scale(scale:number):void
-    abstract randomPoint():Vec2
+    abstract random_point():Vec2
     abstract to_rect():Rect
     abstract transform(position?:Vec2,scale?:number,position_angle?:number,side?:number):Hitbox2D
     abstract clone():Hitbox2D
@@ -120,7 +120,7 @@ export class NullHitbox2D extends BaseHitbox2D{
     override center(): Vec2 {
         return this.position
     }
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
       return this.position
     }
     override to_rect():Rect{
@@ -263,7 +263,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override scale(scale: number): void {
         this.radius*=scale
     }
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
         const angle = random.float(0,Math.PI*2)
         const length = random.float(0,this.radius)
         return v2(this.position.x+(Math.cos(angle)*length),this.position.y+(Math.sin(angle)*length))
@@ -330,8 +330,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         return new RectHitbox2D(position,v2.add(position,size))
     }
     static centered(position:Vec2,size:Vec2):RectHitbox2D{
-        v2m.dscale(size,size,2)
-        return new RectHitbox2D(v2.sub(position,size),v2.add(position,size))
+        return new RectHitbox2D(v2(position.x-size.x/2,position.y-size.y/2),v2(position.x+size.x/2,position.y+size.y/2))
     }
     static wall_enabled(min:Vec2,max:Vec2,walls:{
         left:boolean
@@ -551,7 +550,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         };
     }
     override center(): Vec2 {
-        return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))
+        return v2(this.min.x+(this.max.x-this.min.x)/2,this.min.y+(this.max.y-this.min.y)/2)
     }
     override scale(scale: number): void {
         const centerX = (this.min.x + this.max.x) / 2
@@ -559,7 +558,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         v2m.set(this.min,(this.min.x - centerX) * scale + centerX, (this.min.y - centerY) * scale + centerY)
         v2m.set(this.max,(this.max.x - centerX) * scale + centerX, (this.max.y - centerY) * scale + centerY)
     }
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
         return v2.random2(this.min,this.max)
     }
     override to_rect():Rect{
@@ -694,8 +693,8 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override center(): Vec2 {
         return this.to_rect().min;
     }
-    override randomPoint(): Vec2 {
-        return this.hitboxes[random.int(0,this.hitboxes.length)].randomPoint()
+    override random_point(): Vec2 {
+        return this.hitboxes[random.int(0,this.hitboxes.length)].random_point()
     }
     override to_rect():Rect{
         const min = v2(Number.MAX_VALUE, Number.MAX_VALUE);
@@ -877,7 +876,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         }
     }
 
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
         const rect = this.to_rect();
         let p: Vec2;
         do {

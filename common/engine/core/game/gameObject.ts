@@ -325,7 +325,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     objects:Record<number,GameObject>={}
     full_dirty_objects:Record<number,GameObject>={}
     part_dirty_objects:Record<number,GameObject>={}
-    news_queue:GameObject[]=[]
+    news_queue:Set<GameObject>=new Set()
     destroy_queue:GameObject[]=[]
 
     make_object:MakeObjectCallback<GameObject>
@@ -346,7 +346,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects={}
         this.full_dirty_objects={}
         this.part_dirty_objects={}
-        this.news_queue.length=0
+        this.news_queue.clear()
         this.destroy_queue.length=0
         this.layers_orden.length=0
 
@@ -376,7 +376,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.layer = layer
         obj.manager = this
         obj.is_new=true
-        this.news_queue.push(obj)
         for (const key in sv) {
             // deno-lint-ignore ban-ts-comment
             // @ts-ignore
@@ -608,6 +607,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.cells.update()
     }
     update_to_net(){
+        for(const n of this.news_queue.values()){
+            n.is_new=false
+        }
+        this.news_queue.clear()
+        for(const id in this.full_dirty_objects){
+            if(this.full_dirty_objects[id].is_new){
+                if(this.objects[id])this.news_queue.add(this.objects[id])
+            }
+        }
         this.full_dirty_objects={}
         this.part_dirty_objects={}
         for(const l of this.layers_orden){
@@ -615,10 +623,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 this.objects[o].on_net_update()
             }
         }
-        for(const n of this.news_queue){
-            n.is_new=false
-        }
-        this.news_queue.length=0
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){

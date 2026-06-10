@@ -87,8 +87,6 @@ export class Obstacle extends StaticBody{
         super()
         this.container.visible=false
         this.container.add_child(this.sprite)
-        this.sprite.hotspot=v2.half_one
-        this.sprite.scale=v2(2,2)
     }
     override on_layer_set(): void {
         this.container.layer=this.layer
@@ -120,8 +118,12 @@ export class Obstacle extends StaticBody{
     }
 
     update_frame(){
+        this.sprite.transform_frame({
+            tint:0xffffff,
+            scale:2,
+            hotspot:v2.half_one
+        })
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
-
         if(this.health_data.dead){
             if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
@@ -131,6 +133,7 @@ export class Obstacle extends StaticBody{
             for(const spr of this.aditional_sprite){
                 spr.visible=false
             }
+            if(this.def.assets?.frame?.dead_transform)this.sprite.transform_frame(this.def.assets?.frame.dead_transform)
         }else{
             this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
             this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
@@ -155,7 +158,7 @@ export class Obstacle extends StaticBody{
         const ac=random.int(8,13)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
             for(let i=0;i<ac;i++){
-                this._add_own_particle(this.hitbox.randomPoint(),2)
+                this._add_own_particle(this.hitbox.random_point(),2)
             }
         }
         if(this.assets_data.sounds.break){

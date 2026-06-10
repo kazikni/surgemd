@@ -101,7 +101,7 @@ export class Building extends StaticBody{
                     }
                     if(this.ceilings[i].def.destroy!.particles?.count){
                         for(let j=0;j<this.ceilings[i].def.destroy!.particles!.count;j++){
-                            this._add_own_particle(this.ceilings[i].hitbox.randomPoint())
+                            this._add_own_particle(this.ceilings[i].hitbox.random_point())
                         }
                     }
                 }

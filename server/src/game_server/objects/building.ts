@@ -1,5 +1,5 @@
 import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
-import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2, CheckpointContext } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -74,9 +74,38 @@ export class Building extends StaticBody {
             this.physical_data.spawn_hitbox=this.physical_data.hitbox
         }
     }
-    generate(position: Vec2){
+    begin_generate(position:Vec2){
         this.position = position
         this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
+    }
+    after_generate(){
+        for(const child of this.children){
+            if(child.type!==0)continue
+            for(const conn of child.def.connections??[]){
+                child.obj.connections.push(this.objects_ids[conn])
+            }
+        }
+        for(const c of this.def.content.ceiling??[]){
+            const conns:Obstacle[]=[]
+            for(const conn of c.connections??[]){
+                conns.push(this.objects_ids[conn])
+            }
+            this.children.push({
+                type:1,
+                def:c,
+                alive:true,
+                connections:conns,
+            })
+            this.ceilings.push({
+                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
+                no_scope_block:!!c.no_scope_block
+            })
+        }
+
+        this.manager.cells.update_object(this)
+    }
+    generate(position: Vec2){
+        this.begin_generate(position)
 
         /*for(const f of this.def.floors??[]){
             const hb=f.hitbox.transform(this.position)
@@ -125,12 +154,6 @@ export class Building extends StaticBody {
 
             this.children.push({obj,def:o,type:0})
         }
-        for(const child of this.children){
-            if(child.type!==0)continue
-            for(const conn of child.def.connections??[]){
-                child.obj.connections.push(this.objects_ids[conn])
-            }
-        }
         for (const b of this.def.content.sub_building ?? []) {
             const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
             const side=this.physical_data.side
@@ -140,24 +163,7 @@ export class Building extends StaticBody {
             obj.init(Angle.add_orientation(side,b.rotation??0))
             obj.generate(p)
         }
-       for(const c of this.def.content.ceiling??[]){
-            const conns:Obstacle[]=[]
-            for(const conn of c.connections??[]){
-                conns.push(this.objects_ids[conn])
-            }
-            this.children.push({
-                type:1,
-                def:c,
-                alive:true,
-                connections:conns,
-            })
-            this.ceilings.push({
-                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
-                no_scope_block:!!c.no_scope_block
-            })
-        }
-
-        this.manager.cells.update_object(this)
+        this.after_generate()
     }
 
     verify_childrens(){
@@ -189,33 +195,45 @@ export class Building extends StaticBody {
             stream.write_boolean_group(v.alive)
         },1)
     }
-    override on_encode_checkpoint(stream: Stream): void {
+    override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         stream.write_uint16(this.def.idNumber!)
-        .write_pos2(this.position)
-        .write_uint8(this.physical_data.side)
-        const ceilings=this.children.filter(c => c.type === 1) as BuildingCeilingChild[]
+        stream.write_pos2(this.position)
+        stream.write_uint8(this.physical_data.side)
+
+        const ceilings = this.children.filter(
+            c => c.type === 1
+        ) as BuildingCeilingChild[]
+
         stream.write_uint8(ceilings.length)
         for (const c of ceilings) {
             stream.write_boolean_group(c.alive)
         }
     }
-    override on_decode_checkpoint(stream: Stream): void {
-        const def = this.game.definitions.buildings.valueNumber[stream.read_uint16()]
-        this.set_definition(def)
+    override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        const def = this.game.definitions.buildings.valueNumber[
+            stream.read_uint16()
+        ]
+
         const pos = stream.read_pos2()
         const side = stream.read_uint8() as Orientation
+
+        this.set_definition(def)
         this.init(side)
-        this.position = pos
-        this.spawn_hitbox = this.physical_data.spawn_hitbox.transform(pos)
-        this.update_hitbox()
+
+        this.begin_generate(pos)
+        this.after_generate()
+
+        const ceilings = this.children.filter(
+            c => c.type === 1
+        ) as BuildingCeilingChild[]
+
         const count = stream.read_uint8()
-        let idx = 0
-        for (const child of this.children) {
-            if (child.type !== 1) continue
-            if (idx >= count) break
+
+        for (let i = 0; i < count && i < ceilings.length; i++) {
             const [alive] = stream.read_boolean_group()
-            child.alive = alive
-            idx++
+            ceilings[i].alive = alive
         }
+
+        this.update_hitbox()
     }
 }

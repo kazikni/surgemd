@@ -484,6 +484,8 @@ export class Obstacle extends StaticBody{
         .write_float32(this.health_data.health)
         .write_float32(this.health_data.max_health)
         .write_boolean_group(this.health_data.dead,this.actived)
+        .write_uint8(this.visual_data.variation)
+        .write_uint8(this.visual_data.skin)
         if(this.door_data){
             stream.write_uint8(1)
             .write_int8(this.door_data.open)
@@ -513,6 +515,8 @@ export class Obstacle extends StaticBody{
         this.health_data.max_health = stream.read_float32()
         const [dead, actived] = stream.read_boolean_group()
         this.actived = actived
+        this.visual_data.variation=stream.read_uint8()
+        this.visual_data.skin=stream.read_uint8()
         if (dead) {
             this.health_data.dead = true
             this.physical_data.no_collision = true

@@ -365,6 +365,7 @@ export class Game extends ClientGame<GameObject>{
         if(!this.active_entity)return
         this.input.angle=angle
         this.input.distance_to_aim=dist
+        console.log(angle,dist,this.active_entity.downed,this.active_entity.controlling,this.active_entity.seat,this.save.get_variable("sv_game_client_rot"),this.game_over)
         if(!this.active_entity.downed&&this.active_entity.controlling&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")&&!this.game_over){
             this.active_entity.enable_auto_rot=false
             this.active_entity.physical_data.rotation=this.input.angle
@@ -571,7 +572,12 @@ export class Game extends ClientGame<GameObject>{
     }
     close_game(){
         if(this.client&&this.client.opened)this.client.disconnect()
+        this.cam2d.zoom=6
+        this.happening=false
+        this.started=false
         this.soft_close_game()
+        this.clear()
+        this.local_server.stop()
         this.menu.game_end()
         this.ambient.on_game_close()
         this.client=undefined
@@ -579,23 +585,17 @@ export class Game extends ClientGame<GameObject>{
         this.language.clear("level")
     }
     soft_close_game(){
-        this.clear()
-        this.local_server.stop()
-
         this.ui.hide_game_over()
-        this.cam2d.zoom=6
         this.cam2d.stop_shake()
-        this.happening=false
-        this.started=false
         this.game_over=false
         this.active_entity=undefined
         this.active_entity_id=undefined
     }
     finish_game_over(){
         if(this.level){
+            this.soft_close_game()
             this.local_server.reset_level()
             this.local_server.start()
-            this.ui.hide_game_over()
         }else{
             this.close_game()
         }

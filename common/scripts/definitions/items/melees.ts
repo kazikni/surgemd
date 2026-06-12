@@ -597,7 +597,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
         },
         {
             idString:"pan",
-            damage:20,
+            damage:25,
             offset:v2(0.8,0.1),
             radius:0.35,
             attack_delay:0.5,

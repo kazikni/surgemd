@@ -2,7 +2,7 @@ import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { Human } from "./human.ts";
 import { DamageParams } from "../others/utils.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
-import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { type Game } from "../others/game.ts";
@@ -135,7 +135,7 @@ export class Player extends Human{
     override down(params: DamageParams): void {
         super.down(params)
         if(params.owner&&params.owner instanceof Player){
-            this.player_manager.send_killfeed_message({
+            this.player_manager.send_feed_message({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
@@ -143,14 +143,14 @@ export class Player extends Human{
                 }:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
-                type:KillFeedMessageType.down,
+                type:FeedMessageType.down,
             })
         }else{
-            this.player_manager.send_killfeed_message({
+            this.player_manager.send_feed_message({
                 killer:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
-                type:KillFeedMessageType.down,
+                type:FeedMessageType.down,
             })
         }
         if(this.team_data.group)this.team_data.group.dirty=true
@@ -164,14 +164,14 @@ export class Player extends Human{
                 params.owner.earned.coins+=3
                 params.owner.earned.xp+=1
             }
-            this.player_manager.send_killfeed_message({
+            this.player_manager.send_feed_message({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
                     used:this.game.definitions.game_items.keysString[params.source!.idString]
                 }:undefined,
                 victimId:this.id,
-                type:KillFeedMessageType.kill,
+                type:FeedMessageType.kill,
                 damage_reason:params.reason,
             })
 
@@ -179,10 +179,10 @@ export class Player extends Human{
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
         }else{
-            this.player_manager.send_killfeed_message({
+            this.player_manager.send_feed_message({
                 killer:undefined,
                 victimId:this.id,
-                type:KillFeedMessageType.kill,
+                type:FeedMessageType.kill,
                 damage_reason:params.reason,
             })
         }

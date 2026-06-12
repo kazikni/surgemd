@@ -81,6 +81,45 @@
         ]
     },
     "player":{
-        "name":"mark"
+        "name":"maria",
+        "loadout":{
+            "hair":"hair_2",
+            "hair_tint":1122066,
+            "body":"body_1",
+            "body_tint":15771967,
+            "eyes":"eyes_2",
+            "shirt":"red_shirt",
+            "legs":"jeans_pants",
+            "accessorys":["hair_bow"]
+        },
+        "colors_replace":{
+            "primary":"#e71818",
+            "secondary":"#610a1c",
+            "tertiary":"#eeeeee",
+            "positive":"#00ccff",
+            "negative":"#ff3c00",
+            "special":"#fffb00"
+        }
+    },
+    "player2":{
+        "name":"mark",
+        "loadout":{
+            "hair":"hair_1",
+            "hair_tint":1122066,
+            "body":"body_1",
+            "body_tint":15771967,
+            "eyes":"eyes_1",
+            "shirt":"red_shirt",
+            "legs":"jeans_pants",
+            "accessorys":[]
+        },
+        "colors_replace":{
+            "primary":"#de1675",
+            "secondary":"#56102b",
+            "tertiary":"#eeeeee",
+            "positive":"#00ccff",
+            "negative":"#ff3c00",
+            "special":"#fffb00"
+        }
     }
 }

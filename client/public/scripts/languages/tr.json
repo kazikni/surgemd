@@ -51,7 +51,7 @@
             "yellow_laser_pistol_dual":"Çift Sarı Lazer Tabancası",
             "pfeifer_zeliska_dual":"Çift Pfeifer Zeliska"
         },
-        "killfeed":{
+        "feed":{
             "join":"${player} Katıldı",
             "kill":{
                 "abstinence":"${player} Yoksunluktan öldü.",

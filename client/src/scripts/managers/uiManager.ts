@@ -1,7 +1,7 @@
 import { Game } from "../others/game.ts";
 import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-import { KillFeedMessage, KillFeedMessageLeader, KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { FeedMessage, FeedMessageLeader, FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
@@ -56,7 +56,7 @@ export class UiManager{
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
 
-        killfeed:document.querySelector("#killfeed-container") as HTMLDivElement,
+        feed:document.querySelector("#feed-container") as HTMLDivElement,
 
         leader_span:document.querySelector("#leader-text") as HTMLSpanElement,
 
@@ -139,7 +139,7 @@ export class UiManager{
         ])
     }
     clear(){
-        this.content.killfeed.innerHTML=""
+        this.content.feed.innerHTML=""
         this.content.leader_span.innerText=""
         this.leader=undefined
         this.content.help_gui.innerText=""
@@ -155,6 +155,14 @@ export class UiManager{
         this.game.ui_manager.clear()
         this.hover_objects.clear()
         disableContextMenuPrevent()
+    }
+    update_theme(){
+        this.content.game_gui.style.setProperty("--ui-theme-primary",this.game.get_theme_color("primary"))
+        this.content.game_gui.style.setProperty("--ui-theme-secondary",this.game.get_theme_color("secondary"))
+        this.content.game_gui.style.setProperty("--ui-theme-tertiary",this.game.get_theme_color("tertiary"))
+        this.content.game_gui.style.setProperty("--ui-theme-positive",this.game.get_theme_color("positive"))
+        this.content.game_gui.style.setProperty("--ui-theme-negative",this.game.get_theme_color("negative"))
+        this.content.game_gui.style.setProperty("--ui-theme-special",this.game.get_theme_color("special"))
     }
     _makeHint(texts: string[]) {
         const div = document.createElement("div")
@@ -342,6 +350,7 @@ export class UiManager{
         this.enableCrosshair()
         enableContextMenuPrevent()
 
+        this.update_theme()
         ShowElement(this.content.game_gui)
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
@@ -353,7 +362,7 @@ export class UiManager{
         }
         if(jp.leader){
             this.assign_leader({
-                type:KillFeedMessageType.leader_assigned,
+                type:FeedMessageType.leader_assigned,
                 player:jp.leader
             })
         }
@@ -386,53 +395,57 @@ export class UiManager{
             HideElement(this.mobile_content.btn_interact)
         }
     }
-    assign_leader(msg:KillFeedMessageLeader){
+    assign_leader(msg:FeedMessageLeader){
         this.leader={
             id:msg.player.id,
             kills:msg.player.kills
         }
         this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
     }
-    killfeed_queue: HTMLDivElement[] = []
-    max_killfeed_messages = 7
-    add_killfeed_message(msg:KillFeedMessage){
+    feed_queue: HTMLDivElement[] = []
+    max_feed_messages = 7
+    add_feed_message(msg:FeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
-        elem.classList.add("killfeed-message")
-        this.content.killfeed.appendChild(elem)
-        this.killfeed_queue.push(elem)
-        while (this.killfeed_queue.length > this.max_killfeed_messages) {
-            const old = this.killfeed_queue.shift()
+        elem.classList.add("feed-message")
+        this.content.feed.appendChild(elem)
+        this.feed_queue.push(elem)
+        let block_message:boolean=false
+        while (this.feed_queue.length > this.max_feed_messages) {
+            const old = this.feed_queue.shift()
             if (old) {
                 old.remove()
             }
         }
         switch(msg.type){
-            case KillFeedMessageType.join:{
+            // deno-lint-ignore no-fallthrough
+            case FeedMessageType.set_name:
+                block_message=true
+            case FeedMessageType.join:{
                 const badge_frame=msg.playerBadge!==undefined?this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:""
                 const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
-                elem.innerHTML=this.game.language.get("killfeed.join",{"player":this.players_name[msg.playerId].full})
+                elem.innerHTML=this.game.language.get("feed.join",{"player":this.players_name[msg.playerId].full})
                 break
             }
-            case KillFeedMessageType.kill:{
+            case FeedMessageType.kill:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("killfeed.kill.abstinence",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.kill.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Explosion:
                     case DamageReason.Human:{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("killfeed.kill.player",{
+                        elem.innerHTML=this.game.language.get("feed.kill.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString),
                         })
                         if(msg.victimId===this.game.active_entity?.id){
-                            elem.classList.add("killfeed-message-negative")
+                            elem.classList.add("feed-message-negative")
                         }else if(msg.killer.id===this.game.active_entity?.id){
-                            elem.classList.add("killfeed-message-good")
+                            elem.classList.add("feed-message-good")
                             this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                         }
 
@@ -443,60 +456,60 @@ export class UiManager{
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("killfeed.kill.deadzone",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.kill.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("killfeed.kill.side-effect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.kill.side-effect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("killfeed.kill.disconnect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.kill.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("killfeed.kill.bleend",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.kill.bleend",{player:this.players_name[msg.victimId].full})
                         break
                 }
                 break
             }
-            case KillFeedMessageType.down:{
+            case FeedMessageType.down:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("killfeed.down.abstinence",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.down.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Human:
                     case DamageReason.Explosion:{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("killfeed.down.player",{
+                        elem.innerHTML=this.game.language.get("feed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString)
                         })
                         if(msg.victimId===this.game.active_entity?.id){
-                            elem.classList.add("killfeed-message-negative")
+                            elem.classList.add("feed-message-negative")
                         }else if(msg.killer.id===this.game.active_entity?.id){
-                            elem.classList.add("killfeed-message-good")
+                            elem.classList.add("feed-message-good")
                         }
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("killfeed.down.deadzone",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.down.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("killfeed.down.side-effect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.down.side-effect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("killfeed.down.disconnect",{player:this.players_name[msg.victimId].full})
+                        elem.innerHTML=this.game.language.get("feed.down.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("killfeed.down.bleend",{})
+                        elem.innerHTML=this.game.language.get("feed.down.bleend",{})
                         break
                 }
                 break
             }
-            case KillFeedMessageType.leader_assigned:{
+            case FeedMessageType.leader_assigned:{
                 if(!this.players_name[msg.player.id])break
-                elem.innerHTML=this.game.language.get("killfeed.leader.assigned",{"player":this.players_name[msg.player.id].full})
+                elem.innerHTML=this.game.language.get("feed.leader.assigned",{"player":this.players_name[msg.player.id].full})
                 this.assign_leader(msg)
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
                     volume:0.4,
@@ -504,9 +517,9 @@ export class UiManager{
                 })
                 break
             }
-            case KillFeedMessageType.leader_dead:{
+            case FeedMessageType.leader_dead:{
                 this.leader=undefined
-                elem.innerHTML=this.game.language.get("killfeed.leader.dead",{})
+                elem.innerHTML=this.game.language.get("feed.leader.dead",{})
                 this.content.leader_span.innerText=this.game.language.get("leader-wait",{})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
                     volume:0.6,
@@ -518,8 +531,7 @@ export class UiManager{
         this.game.add_timeout(()=>{
             elem.remove()
         },4)
-
-      this.game.signals.emit("killfeed_message",{obj:msg,text:elem.innerHTML})
+        if(!block_message)this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
     }
     crosshair=false
     crosshair_manager:CrosshairManager=new CrosshairManager(document.body)

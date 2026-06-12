@@ -31,6 +31,7 @@ import { ConsumibleCondition } from "common/scripts/definitions/items/consumible
 import { type Action, HelpupAction } from "../human/actions.ts";
 import { type SyncedParticle } from "./synced_particle.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
+import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -310,11 +311,55 @@ export class Human extends MovingBody{
 
     set_preset(preset:HumanDefinition|undefined){
         if(!preset)return
-        if(preset.name)this.name = preset.name
+        if(preset.loadout){
+            this.loadout.dirty=true
+            if(preset.loadout.badge!==undefined){
+                this.loadout.original.badge_id=preset.loadout.badge
+                if(preset.loadout.badge===""){
+                    this.loadout.badge=undefined
+                }else{
+                    this.loadout.badge=this.game.definitions.badges.getFromString(preset.loadout.badge)
+                }
+            }
+            if(preset.loadout.shirt)this.loadout.shirt=this.game.definitions.loadout.getFromString(preset.loadout.shirt) as LoadoutShirtDef
+            if(preset.loadout.legs)this.loadout.legs=this.game.definitions.loadout.getFromString(preset.loadout.legs) as LoadoutLegDef
+            if(preset.loadout.eyes)this.loadout.eyes=this.game.definitions.loadout.getFromString(preset.loadout.eyes) as LoadoutEyesDef
+            if(preset.loadout.hair!==undefined){
+                if(preset.loadout.hair===""){
+                    this.loadout.hair=undefined
+                }else{
+                    this.loadout.hair={
+                        def:this.game.definitions.loadout.getFromString(preset.loadout.hair) as LoadoutHairDef,
+                        tint:0
+                    }
+                }
+            }
+            if(preset.loadout.body)this.loadout.body={
+                def:this.game.definitions.loadout.getFromString(preset.loadout.body) as LoadoutBodyDef,
+                tint:0
+            }
+            if(preset.loadout.body_tint!==undefined)this.loadout.body.tint=preset.loadout.body_tint
+            if(preset.loadout.accessorys!==undefined){
+                this.loadout.accessorys.length=0
+                for(const a of preset.loadout.accessorys){
+                    this.loadout.accessorys.push(this.game.definitions.loadout.getFromString(a) as LoadoutAccessoryDef)
+                }
+            }
+        }
+        if(preset.name){
+            this.name = preset.name
+            if(this.is_player){
+                this.game.players.send_feed_message({
+                    type:FeedMessageType.set_name,
+                    playerId:this.id,
+                    playerName:this.name,
+                    playerBadge:this.loadout.badge?.idNumber!
+                })
+            }
+        }
         if(preset.modifiers)this.temp_modifiers=preset.modifiers
         if(preset.inventory)this.inventory.load_preset(preset.inventory)
-
-        if(preset.start_position)this.position=preset.start_position
+        if(preset.position)this.position=preset.position
 
         this.update_modifiers()
 

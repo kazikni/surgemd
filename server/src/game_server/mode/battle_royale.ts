@@ -9,7 +9,7 @@ import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { KillFeedMessageType } from "common/scripts/packets/killfeed_packet.ts";
+import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -122,8 +122,8 @@ export class BattleRoyaleSolo extends ModeManager{
     assign_leader(p:Human):boolean{
         if(this.can_be_leader(p)){
             this.leader=p as Player
-            this.game.players.send_killfeed_message({
-                type:KillFeedMessageType.leader_assigned,
+            this.game.players.send_feed_message({
+                type:FeedMessageType.leader_assigned,
                 player:{
                     id:p.id,
                     kills:p.status.kills
@@ -135,8 +135,8 @@ export class BattleRoyaleSolo extends ModeManager{
     }
     leader_die(p:Human){
         this.leader=undefined
-        this.game.players.send_killfeed_message({
-            type:KillFeedMessageType.leader_dead,
+        this.game.players.send_feed_message({
+            type:FeedMessageType.leader_dead,
             player:{
                 id:p.id,
                 kills:p.status.kills

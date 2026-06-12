@@ -12,7 +12,5 @@
             "def":"single_building"
         }
     },
-    "player":{
-        "name":"nick"
-    }
+    "player":{}
 }

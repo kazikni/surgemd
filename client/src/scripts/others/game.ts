@@ -28,7 +28,7 @@ import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { MapApp } from "../apps/map.ts";
 import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
-import { KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
+import { FeedPacket } from "common/scripts/packets/feed_packet.ts";
 import { GameOverPacket, GameOverStatus } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
@@ -193,6 +193,24 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.device.add_app(new MapApp)
+    }
+    get_theme_color(name:string):string{
+        if(this.level?.player.colors_replace?.[name])return this.level.player.colors_replace[name]
+        switch(name){
+            case "primary":
+                return this.save.get_variable("sv_ui_primary_color")
+            case "secondary":
+                return this.save.get_variable("sv_ui_secondary_color")
+            case "tertiary":
+                return this.save.get_variable("sv_ui_tertiary_color")
+            case "positive":
+                return this.save.get_variable("sv_ui_positive_color")
+            case "negative":
+                return this.save.get_variable("sv_ui_negative_color")
+            case "special":
+                return this.save.get_variable("sv_ui_special_color")
+        }
+        return "#ffffff"
     }
     add_damage_splash(d:DamageSplash){
         const dd=new DamageSplashOBJ()
@@ -786,8 +804,8 @@ export class Game extends ClientGame<GameObject>{
         client.on("disconnect",(_p:DisconnectPacket)=>{
             if(!this.game_over)this.close_game()
         })
-        client.on("killfeed",(p:KillFeedPacket)=>{
-            this.ui.add_killfeed_message(p.message)
+        client.on("feed",(p:FeedPacket)=>{
+            this.ui.add_feed_message(p.message)
         })
     }
 }

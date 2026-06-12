@@ -333,7 +333,7 @@ export class Human extends MovingBody{
                 d.sprite.set_frame({
                     image:`liquid_decal_${random.int(1,2)}`,
                     tint:random.choose([0xaa0a28,0xff0a28]),
-                    alpha:0.7,
+                    alpha:210,
                     scale:random.float(0.7,1.4),
                     rotation:random.rad(),
                     position:position,

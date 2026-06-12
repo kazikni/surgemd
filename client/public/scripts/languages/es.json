@@ -60,7 +60,7 @@
             "blue_flare":"Llamarada azul",
             "red_flare":"Llamarada roja"
         },
-        "killfeed":{
+        "feed":{
             "unirse":"${player} Entro",
             "muertes":{
                 "abstinence":"${player} murio de abstinencia",
@@ -77,7 +77,7 @@
                 "deadzone":" La zona ha derribado a ${player}",
                 "side-effect":"${player} Fue Derribado por Efectos Secundarios",
                 "disconnect":"${player} Se Desconecto",
-                "bleend":"essa menssagem no killfeed e um bug. report."
+                "bleend":"essa menssagem no feed e um bug. report."
             },
             "killleader":{
                 "assigned":"${player} Se Convirtio en el Lider De Asesinatos",

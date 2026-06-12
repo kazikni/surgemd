@@ -7,7 +7,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
-import { KillFeedMessage, KillFeedMessageType, KillFeedPacket } from "common/scripts/packets/killfeed_packet.ts";
+import { FeedMessage, FeedMessageType, FeedPacket } from "common/scripts/packets/feed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
@@ -195,8 +195,8 @@ export class PlayersManager{
             this.match_players_count=this.living_players.length
         }
 
-        this.send_killfeed_message({
-            type:KillFeedMessageType.join,
+        this.send_feed_message({
+            type:FeedMessageType.join,
             playerId:p.id,
             playerName:p.name,
             playerBadge:p.loadout.badge?.idNumber
@@ -285,8 +285,8 @@ export class PlayersManager{
         if(this.game.replay)this.game.replay.update()
         this.first_tick=false
     }
-    send_killfeed_message(msg:KillFeedMessage){
-        const p=new KillFeedPacket()
+    send_feed_message(msg:FeedMessage){
+        const p=new FeedPacket()
         p.message=msg
         this.game.clients.emit(p)
     }

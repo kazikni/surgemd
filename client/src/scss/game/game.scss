@@ -225,7 +225,7 @@
 
     }
 }
-#killfeed-container{
+#feed-container{
     @extend .span-text;
     font-size: 16px;
     pointer-events: none;
@@ -236,17 +236,17 @@
     flex-direction: column;
     gap: 5px;
     width: 400px;
-    .killfeed-message{
+    .feed-message{
         background: color-mix(in srgb, var(--ui-theme-secondary) 30%, #0000);
         border-radius: 4px;
         padding: 3px;
         color: var(--ui-theme-tertiary);
         img{align-self: center}
     }
-    .killfeed-message-good{
+    .feed-message-good{
         color:var(--ui-theme-positive);
     }
-    .killfeed-message-negative{
+    .feed-message-negative{
         color:var(--ui-theme-negative);
     }
     .badge-icon {
@@ -258,7 +258,7 @@
         width: 220px;
         right: 200px;
         gap: 3px;
-        .killfeed-message{
+        .feed-message{
             font-size: 10px;
         }
     }
@@ -266,7 +266,7 @@
         width: 150px;
         right: 150px;
         gap: 1px;
-        .killfeed-message{
+        .feed-message{
             font-size: 8px;
         }
     }

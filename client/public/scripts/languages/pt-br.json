@@ -104,7 +104,7 @@
             "shelly_mom":"(Mãe) Shelly",
             "shelly_dad":"(Pai) Shelly"
         },
-        "killfeed":{
+        "feed":{
             "join":"${player} Entrou",
             "kill":{
                 "abstinence":"${player} morreu de abistinecia",
@@ -121,7 +121,7 @@
                 "deadzone":"A zona morta retirou as forças de ${player}",
                 "side-effect":"${player} caiu para efeitos colaterais",
                 "disconnect":"${player} desistiu",
-                "bleend":"essa menssagem no killfeed e um bug. report."
+                "bleend":"essa menssagem no feed e um bug. report."
             },
             "leader":{
                 "assigned":"${player} se tornou o lider",

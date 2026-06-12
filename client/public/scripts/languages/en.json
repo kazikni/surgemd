@@ -171,7 +171,7 @@
             "shelly_mom":"Shelly (Mom)",
             "shelly_dad":"Shelly (Dad)"
         },
-        "killfeed":{
+        "feed":{
             "join":"${player} Joined",
             "kill":{
                 "abstinence":"${player} Died Of Abstinence",
@@ -188,7 +188,7 @@
                 "deadzone":"Deadzone Took ${player} Forces",
                 "side-effect":"${player} Knocked Out For SideEffect",
                 "disconnect":"${player} Give Up",
-                "bleend":"This Killfeed Message Are A Bug - Report"
+                "bleend":"This Feed Message Are A Bug - Report"
             },
             "leader":{
                 "assigned":"${player} Become The Leader",

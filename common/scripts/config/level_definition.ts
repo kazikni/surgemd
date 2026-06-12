@@ -3,9 +3,21 @@ import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { InventoryPreset } from "../definitions/utils.ts";
 import { HumanModifiers } from "../others/constants.ts";
+export interface LoadoutPreset{
+    badge?:string
+    hair?:string
+    hair_tint?:number
+    body?:string
+    body_tint?:number
+    eyes?:string
+    shirt?:string
+    legs?:string
+    accessorys?:string[]
+}
 export type HumanDefinition={
     name?:string
-    start_position?:Vec2
+    position?:Vec2
+    loadout?:LoadoutPreset
     inventory?:InventoryPreset
     team?:number
     group?:number
@@ -71,7 +83,9 @@ export interface LevelDefinition{
     deadzone?:{
         stage?:number
     }
-    player: HumanDefinition
+    player: HumanDefinition&{
+        colors_replace?:Record<string,string>
+    }
     assets?:{
         background_music?:string
         load?:{

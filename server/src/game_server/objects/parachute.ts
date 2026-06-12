@@ -40,8 +40,6 @@ export class Parachute extends ServerGameObject{
     override on_create(args?: {position:Vec2,obstacle:ObstacleDef}): void {
         if(args)this.set_configuration(args.position,args.obstacle)
     }
-    override on_net_update(): void {
-    }
     override on_tick(dt:number): void {
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){

@@ -365,7 +365,6 @@ export class Game extends ClientGame<GameObject>{
         if(!this.active_entity)return
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        console.log(angle,dist,this.active_entity.downed,this.active_entity.controlling,this.active_entity.seat,this.save.get_variable("sv_game_client_rot"),this.game_over)
         if(!this.active_entity.downed&&this.active_entity.controlling&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")&&!this.game_over){
             this.active_entity.enable_auto_rot=false
             this.active_entity.physical_data.rotation=this.input.angle

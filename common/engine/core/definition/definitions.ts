@@ -239,7 +239,7 @@ export class TranslationManager {
             value=this.get_value(this.default_layers,key)
         }
         if(typeof value!=="string"){
-            console.warn(`[TranslationManager] Missing translation "${key}"`)
+            console.error(`[TranslationManager] Missing translation "${key}"`)
             return key
         }
         return this._interpolate(value,replace)

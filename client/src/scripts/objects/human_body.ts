@@ -17,6 +17,8 @@ export class HumanBody extends GameObject{
     sprite_badge:Sprite2D=new Sprite2D()
     sprite:Sprite2D=new Sprite2D()
 
+    name:string=""
+
     constructor(){
         super()
         this.sprite_text.hotspot=v2(0.5,0)
@@ -42,24 +44,28 @@ export class HumanBody extends GameObject{
     }
     override on_destroy(): void {
         this.container.destroy()
-        this.sprite_text.frame?.free()
+        this.sprite_text.frame?.free?.()
     }
-    override async on_decode_net(stream: Stream, full: boolean): Promise<void> {
+    async set_name(name:string,badge:number){
+        if(this.sprite_text.frame)this.sprite.frame?.free()
+        const color=this.game.save.get_variable("sv_ui_tertiary_color")
+        this.sprite_text.frame=await this.game.resources.render_text(`${name}`,60,color)
+        if(badge){
+            this.sprite_badge.visible=true
+            this.sprite_badge.frame=this.game.resources.get_frame(`${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
+            this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.cam2d.meter_size*4))-0.1
+        }else{
+            this.sprite_badge.visible=false
+        }
+        this.sprite.tint=ColorM.hex(color)
+        this.container.visible=true
+    }
+    override on_decode_net(stream: Stream, full: boolean): void {
         const pos=stream.read_pos2()
         if(full){
             const name=stream.read_string_sized(30)
             const badge=stream.read_uint8()
-            const color=this.game.save.get_variable("sv_ui_tertiary_color")
-            this.sprite_text.frame=await this.game.resources.render_text(`${name}`,60,color)
-            if(badge){
-                this.sprite_badge.visible=true
-                this.sprite_badge.frame=this.game.resources.get_frame(`${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
-                this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.cam2d.meter_size*4))-0.1
-            }else{
-                this.sprite_badge.visible=false
-            }
-            this.sprite.tint=ColorM.hex(color)
-            this.container.visible=true
+            this.set_name(name,badge)
         }
         this.position=pos
         this.container.position=pos

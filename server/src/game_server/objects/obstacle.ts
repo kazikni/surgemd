@@ -1,7 +1,7 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2, CheckpointContext } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
@@ -85,6 +85,8 @@ export class Obstacle extends StaticBody{
 
     constructor(){
         super()
+
+        this.allow_net_update=true
     }
 
     choose_door_side(playerPos: Vec2): -1 | 1 {
@@ -475,7 +477,7 @@ export class Obstacle extends StaticBody{
             stream.write_uint8(this.transform_into_data.def)
         }
     }
-    override on_encode_checkpoint(stream: Stream): void {
+    override on_encode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
         stream.write_uint16(this.def.idNumber!)
         .write_pos2(this.position)
         .write_rad(this.physical_data.rotation)
@@ -486,6 +488,9 @@ export class Obstacle extends StaticBody{
         .write_boolean_group(this.health_data.dead,this.actived)
         .write_uint8(this.visual_data.variation)
         .write_uint8(this.visual_data.skin)
+        .write_array(this.connections,(i)=>{
+            stream.write_id(ctx.idco[i.id])
+        },1)
         if(this.door_data){
             stream.write_uint8(1)
             .write_int8(this.door_data.open)
@@ -500,7 +505,7 @@ export class Obstacle extends StaticBody{
             stream.write_uint8(0)
         }
     }
-    override on_decode_checkpoint(stream: Stream): void {
+    override on_decode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
         const def = this.game.definitions.obstacles.valueNumber[stream.read_uint16()]
         this.set_definition(def)
         const position = stream.read_pos2()
@@ -517,6 +522,12 @@ export class Obstacle extends StaticBody{
         this.actived = actived
         this.visual_data.variation=stream.read_uint8()
         this.visual_data.skin=stream.read_uint8()
+        const connections=stream.read_array(()=>{
+            return stream.read_id()
+        },1)
+        for(const c of connections){
+            this.connections.push(this.manager.objects[ctx.coid[c]])
+        }
         if (dead) {
             this.health_data.dead = true
             this.physical_data.no_collision = true

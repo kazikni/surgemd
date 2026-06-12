@@ -230,7 +230,10 @@ export class Obstacle extends StaticBody{
         }
         super.set_hit_sounds_def(sounds)
     }
+    initialized:boolean=false
     initialize_hitboxes(){
+        if(this.initialized)return
+        this.initialized=false
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
         this.base_hitbox=this.physical_data.hitbox
         if(this.def.expanded_behavior){

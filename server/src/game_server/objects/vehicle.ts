@@ -119,6 +119,10 @@ export class Vehicle extends MovingBody {
         throttle: 0,
         steer_input: 0,
     }
+    constructor(){
+        super()
+        this.allow_net_update=true
+    }
     set_configuration(position:Vec2,def:VehicleDef){
         this.position = v2.clone(position)
 

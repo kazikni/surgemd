@@ -30,7 +30,7 @@ export class PlayerClient extends PlayerConnManager{
     client:Client
 
     view_objects:ServerGameObject[]=[]
-    first_tick:boolean=true
+    first_tick:boolean=false
 
     constructor(game:Game,client:Client){
         super(game)
@@ -50,6 +50,7 @@ export class PlayerClient extends PlayerConnManager{
         const up=new UpdatePacket()
         up.definition=this.game.definitions
         up.priv.pings=[...this.game.pings]
+        const first_tick=this.first_tick||this.game.players.first_tick
         if(this.human&&!this.spectating){
             up.priv.active_entity={
                 dirty:true,
@@ -70,12 +71,10 @@ export class PlayerClient extends PlayerConnManager{
             const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(26/scope_view,21/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
-            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects)
+            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
 
             this.view_objects=o.last
             up.objects=o.strm
-
-            this.first_tick=false
         }else if(this.spectating&&this.human){
             up.priv.active_entity={
                 dirty:true,
@@ -95,13 +94,12 @@ export class PlayerClient extends PlayerConnManager{
             const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
-            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects)
+            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
 
             this.view_objects=o.last
             up.objects=o.strm
-
-            this.first_tick=false
         }
+        this.first_tick=false
         return up
     }
     send_game_over(status:PlayerStatus[]=[],win:boolean=false,eliminated_by:number=0){
@@ -142,6 +140,8 @@ export class PlayersManager{
     global_buffer_1?:Stream
     global_buffer_2?:Stream
 
+    first_tick:boolean=false
+
     constructor(game:Game){
         this.game=game
     }
@@ -149,6 +149,9 @@ export class PlayersManager{
         for(const p of this.living_players){
             p.apply_score(type,amount)
         }
+    }
+    clear(hard:boolean=true){
+        this.clear_bots()
     }
     clear_bots(){
         for(const b of this.connected_bots){
@@ -244,7 +247,7 @@ export class PlayersManager{
 
         const up=new UpdatePacket()
         up.priv.splashes=this.splashes
-        up.objects=this.game.scene_2d.objects.encode_all_net(full,this.global_buffer_1)
+        up.objects=this.game.scene_2d.objects.encode_all_net(full,undefined,this.global_buffer_1)
         return up
     }
     encode_frame(full:boolean){
@@ -272,7 +275,7 @@ export class PlayersManager{
         this.general_update.content.deadzone=this.game.deadzone.state
 
         this.game.clients.packets_manager.encode(this.general_update,s)
-        //this.general_update.encode(s)
+
         for(const p of Object.values(this.connected_players)){
             p.net_update(s)
         }
@@ -280,6 +283,7 @@ export class PlayersManager{
             p.net_update(s)
         }
         if(this.game.replay)this.game.replay.update()
+        this.first_tick=false
     }
     send_killfeed_message(msg:KillFeedMessage){
         const p=new KillFeedPacket()
@@ -292,11 +296,9 @@ export class PlayersManager{
         client.sendStream(this.game.map.map_packet_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
-            console.log(username,client.ID,packet)
             this.connected_players[client.ID].join_packet=packet
             if(this.game.modeManager.can_join()){
                 const p = this.connected_players[client.ID].add_player()
-
                 if(p!==undefined){
                     const jp=new JoinnedPacket()
                     for(const lp of this.living_players){

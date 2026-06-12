@@ -209,6 +209,11 @@ export class Obstacle extends StaticBody{
         this.health_data.dirty=false
         this.visual_data.dirty=false
     }
+    load_loot(){
+        if(this.def.lootTable){
+            this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true},this.game)
+        }
+    }
     set_definition(def:ObstacleDef){
         if(this.def)return
         this.def=def
@@ -236,13 +241,8 @@ export class Obstacle extends StaticBody{
             idx++
         }
     }
-    load_loot(){
-        if(this.def.lootTable){
-            this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true},this.game)
-        }
-    }
-    override on_create(args: {def:ObstacleDef}): void {
-        this.set_definition(args.def)
+    override on_create(args?: {def:ObstacleDef}): void {
+        if(args)this.set_definition(args.def)
     }
     initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0){
         this.physical_data.dirty=true
@@ -395,11 +395,8 @@ export class Obstacle extends StaticBody{
 
         for(let i=0;i<10;i++){
             for(const loot of loots){
-                loot.on_tick(1/30)
+                loot.tick(1/30)
             }
-        }
-        for(const loot of loots){
-            loot.is_new=true
         }
 
         if(params.owner)params.owner.inventory.accessorys.call_event("obstacle_destroy",{obstacle:this,human:params.owner})
@@ -477,5 +474,62 @@ export class Obstacle extends StaticBody{
         if(this.transform_into_data?.activated){
             stream.write_uint8(this.transform_into_data.def)
         }
+    }
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_uint16(this.def.idNumber!)
+        .write_pos2(this.position)
+        .write_rad(this.physical_data.rotation)
+        .write_uint8(this.physical_data.side)
+        .write_float32(this.max_scale)
+        .write_float32(this.health_data.health)
+        .write_float32(this.health_data.max_health)
+        .write_boolean_group(this.health_data.dead,this.actived)
+        if(this.door_data){
+            stream.write_uint8(1)
+            .write_int8(this.door_data.open)
+            .write_uint8(this.door_data.locked ? 1 : 0)
+        }else{
+            stream.write_uint8(0)
+        }
+        if(this.transform_into_data){
+            stream.write_uint8(1)
+            .write_uint8(this.transform_into_data.def)
+        } else {
+            stream.write_uint8(0)
+        }
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const def = this.game.definitions.obstacles.valueNumber[stream.read_uint16()]
+        this.set_definition(def)
+        const position = stream.read_pos2()
+        const rotation = stream.read_rad()
+        const side = stream.read_uint8() as Orientation
+        this.max_scale = stream.read_float32()
+        this.initialize(side)
+        this.position = position
+        this.physical_data.rotation = rotation
+        this.physical_data.side = side
+        this.health_data.health = stream.read_float32()
+        this.health_data.max_health = stream.read_float32()
+        const [dead, actived] = stream.read_boolean_group()
+        this.actived = actived
+        if (dead) {
+            this.health_data.dead = true
+            this.physical_data.no_collision = true
+            this.physical_data.no_bullets_collision = true
+        }
+        if (stream.read_uint8()) {
+            this.door_data!.open = stream.read_int8() as -1|0|1
+            this.door_data!.locked = stream.read_uint8() === 1
+            this.base_hitbox = this.door_data!.hitboxes[this.door_data!.open]
+        }
+        if (stream.read_uint8()) {
+            this.transform_into_data = {
+                activated: true,
+                def: stream.read_uint8()
+            }
+        }
+        this.reset_scale()
+        this.update_hitbox()
     }
 }

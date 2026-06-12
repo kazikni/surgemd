@@ -82,7 +82,7 @@ export const TundraMap:MapDef={
             {item:"ar15",weight:55},
             {item:"m1921",weight:55},
 
-            {item:"kar98k",weight:45},
+            {item:"kar98k",weight:50},
 
             // Rare Guns
             {item:"vector",weight:14},

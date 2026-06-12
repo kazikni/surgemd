@@ -5,6 +5,7 @@ import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
 import { Rect } from "../math/geometry.ts";
+import { GameObjectType } from "../../../scripts/others/constants.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -52,11 +53,18 @@ export abstract class BaseObject2D{
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
 
-
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
         this._base_hitbox=new NullHitbox2D(v2(0,0))
         this.hitbox=this.base_hitbox.transform(this._position)
+    }
+
+    tick(dt:number){
+        if(this.destroyed)return
+        this.on_tick(dt)
+        if(this.manager.cells.dirty_objects.has(this)){
+            this.manager.cells.update_object(this)
+        }
     }
 
     update_hitbox():void{
@@ -70,8 +78,8 @@ export abstract class BaseObject2D{
     on_encode_net(stream:Stream,full:boolean,options?:any):void{}
     on_decode_net(stream:Stream,full:boolean):void{}
 
-    on_encode_checkpoint(stream: Stream): void {}
-    on_decode_checkpoint(stream: Stream): void {}
+    on_encode_checkpoint(stream: Stream,ctx:CheckpointContext): void {}
+    on_decode_checkpoint(stream: Stream,ctx:CheckpointContext): void {}
 
     on_create(_args:any):void{}
     on_registry():void{}
@@ -313,6 +321,12 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 }
 export type CheckpointSettings={
     save_id?:boolean
+    blacklist?:(number|string)[]
+    orden?:(number|string)[]
+}
+export type CheckpointContext={
+    idco:Record<number,number> // Record<ObjectID, CheckpointObjectID>
+    coid:Record<number,number> // Record<CheckpointObjectID, ObjectID>
 }
 export interface Layer2D<GameObject extends BaseObject2D> {
     //objects:Record<GameObjectID,GameObject>
@@ -323,7 +337,7 @@ export interface Layer2D<GameObject extends BaseObject2D> {
     render:number[]
 }
 export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
-export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number,layer:number,type:number)=>GameObject|undefined
+export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number|undefined,layer:number,type:number)=>GameObject|undefined
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
 
@@ -378,7 +392,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         return ret
     }
     // deno-lint-ignore no-explicit-any
-    add_object(obj: GameObject,layer: number,id?: number,args: any={},sv: Record<string, any> = {}): GameObject {
+    add_object(obj: GameObject,layer: number,id?: number,args: any=undefined,sv: Record<string, any> = {}): GameObject {
         if (!this.layers[layer]) {
             this.add_layer(layer)
         }
@@ -394,6 +408,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.registry_object(obj)
         obj.on_create(args)
         obj.on_layer_set()
+        this.cells.update_object(obj)
         return obj
     }
     registry_object(obj: GameObject){
@@ -465,37 +480,56 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         this.layers_orden.push(layer)
     }
-    proccess_object_net(stream:Stream):GameObject|undefined{
-        const b=stream.read_boolean_group()
-        if(b[0]||b[1]||b[2]){
-            const oid=stream.read_id()
-            const layer=stream.read_int8()
-            if(!this.layers[layer]){
+    proccess_object_net(stream: Stream): GameObject | undefined {
+        const size = stream.read_uint24()
+        const start = stream.index
+        const end = start + size
+        try{
+            const b = stream.read_boolean_group()
+            if (!(b[0] || b[1] || b[2])) {
+                return
+            }
+            const oid = stream.read_id()
+            const layer = stream.read_int8()
+            if (!this.layers[layer]) {
                 this.add_layer(layer)
             }
-            const tp=stream.read_uint8()
-            let obj=this.objects[oid]
-            if(b[3]&&!obj&&!b[2]){
-                const obb=this.make_object_net(oid,layer,tp)
-                if(!obb)return
-                obj=obb
-                this.add_object(obj,layer,oid)
+            const tp = stream.read_uint8()
+            let obj:GameObject|undefined = this.objects[oid]
+            if (b[3] && !obj && !b[2]) {
+                const obb = this.make_object_net(oid, layer, tp)
+                if (obb) {
+                    obj = obb
+                    if(obj)this.add_object(obj, layer, oid)
+                }else{
+                    throw new Error(`Cannot create object type=${tp} id=${oid} layer=${layer}`)
+                }
             }
-            if(!obj)return
-            obj.is_new=b[4]
-            if(obj){
-                if(obj.layer!==layer){
-                    this.set_layer(obj,layer)
-                }
-                if(b[0]||b[1]){
-                    obj.on_decode_net(stream,b[1])
-                }
-                if(b[2]){
-                    if(obj.net_sync_deletion)obj.destroy()
-                    else obj.on_destroy()
-                }
-                return obj
+            if(!obj){
+                throw new Error(`Object ${oid} not found. type=${tp}`)
             }
+            obj.is_new = b[4]
+            if (obj.layer !== layer) {
+                this.set_layer(obj, layer)
+            }
+            if(b[0]||b[1]) {
+                obj.on_decode_net(stream, b[1])
+            }
+            if(b[2]) {
+                if (obj.net_sync_deletion) {
+                    obj.destroy()
+                } else {
+                    obj.on_destroy()
+                }
+            }
+            return obj
+        }catch(e){
+            console.error(e)
+        }finally{
+            if(stream.index !== end){
+                console.warn(`Size mismatch (${stream.index-start}/${size})`)
+            }
+            stream.index = start + size
         }
     }
     proccess_all_net(stream:Stream):GameObject[]{
@@ -528,8 +562,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         return ret
     }
-    proccess_net(stream:Stream,process_deletion:boolean){
+    proccess_net(stream:Stream,process_deletion:boolean,allow_deall:boolean=true){
         const tp=stream.read_uint8()
+        const bg=stream.read_boolean_group()
+        if(bg[1]&&allow_deall)this.clear()
         if(tp===100){
             return this.proccess_all_net(stream)
         }else if(tp===200){
@@ -537,6 +573,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
     }
     encode_object_net(object:GameObject,full:boolean,stream:Stream,options:any){
+        const sizePos = stream.index
+        stream.write_uint24(0)
+        const start = stream.index
+
         const bools=[
             (full||this.part_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Part
             (full||this.full_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Full
@@ -553,28 +593,36 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 object.on_encode_net(stream,bools[1],options)
             }
         }
+
+        const end = stream.index
+        stream.index = sizePos
+        stream.write_uint24(end - start)
+        stream.index = end
     }
-    encode_all_net(full:boolean=false,stream?:Stream):Stream{
+    encode_all_net(force_full:boolean=false,delete_all:boolean=false,stream?:Stream):Stream{
         if(!stream){
             if(!this.stream_cache)this.stream_cache=new StaticStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
         stream.write_uint8(100) // All Encode
-        const list:GameObject[]=full?Object.values(this.objects):[...Object.values(this.part_dirty_objects),...Object.values(this.full_dirty_objects)]
+        stream.write_boolean_group(force_full,delete_all)
+    
+        const list:GameObject[]=force_full?Object.values(this.objects):[...Object.values(this.part_dirty_objects),...Object.values(this.full_dirty_objects)]
         stream.write_id(list.length)
         for(const obj of list){
-            this.encode_object_net(obj,full,stream,null)
+            this.encode_object_net(obj,force_full,stream,null)
         }
         return stream
     }
-    encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
+    encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,delete_all:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
         if(!stream){
             if(!this.stream_cache)this.stream_cache=new StaticStream(new ArrayBuffer(1024*50))
             stream=this.stream_cache
             this.stream_cache.clear()
         }
         stream.write_uint8(200) // List Encode
+        stream.write_boolean_group(force_full,delete_all)
 
         const list:[GameObject,boolean][]=[]
         objects.forEach((v)=>{
@@ -601,59 +649,104 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     encode_checkpoint(stream:Stream,settings:CheckpointSettings={}){
         const save_id=settings.save_id??false
+        const blacklist=new Set(settings.blacklist??[])
+        const orderMap = new Map<number | string, number>()
+        for (const [i, value] of (settings.orden ?? []).entries()) {
+            orderMap.set(value, i)
+        }
         stream.write_boolean_group(save_id)
         stream.write_uint8(this.layers_orden.length)
+
+        let idx=0
+        const ctx:CheckpointContext={
+            coid:{},
+            idco:{}
+        }
+
+        const layers:GameObject[][]=[]
+
+        // Create Objects
         for(const l of this.layers_orden){
-            stream.write_uint8(l)
             const objects:GameObject[]=[]
+            stream.write_uint8(l)
             for(const o of this.layers[l].orden){
-                if(this.objects[o]?.allow_checkpoint)objects.push(this.objects[o])
+                if(this.objects[o]?.allow_checkpoint){
+                    if(!blacklist.has(this.objects[o].number_type)&&!blacklist.has(this.objects[o].string_type))objects.push(this.objects[o])
+                }
             }
+            objects.sort((a, b) => {
+                const pa=orderMap.get(a.number_type)??orderMap.get(a.string_type)??Number.MAX_SAFE_INTEGER
+                const pb=orderMap.get(b.number_type)??orderMap.get(b.string_type)??Number.MAX_SAFE_INTEGER
+                return pa - pb
+            })
             stream.write_uint16(objects.length)
             for(const obj of objects){
                 if(save_id)stream.write_id(obj.id)
+                stream.write_id(idx)
                 stream.write_uint8(obj.number_type)
-                obj.on_encode_checkpoint(stream)
+                //.write_boolean_group(obj.is_new)
+                ctx.coid[idx]=obj.id
+                ctx.idco[obj.id]=idx
+                idx++
+            }
+            layers.push(objects)
+        }
+        // Apply Object
+        for(const layer of layers){
+            for(const obj of layer){
+                obj.on_encode_checkpoint(stream,ctx)
             }
         }
     }
-    proccess_checkpoint_object(stream:Stream,layer:number,read_id:boolean):GameObject|undefined{
-        let id:number|undefined
-        if(read_id)id=stream.read_id()
-        const tp=stream.read_uint8()
-        const obb=this.make_object_checkpoint(stream,tp,layer,tp)
-        if(!obb)return
-        const obj=this.add_object(obb,layer,id)
-        obj.on_decode_checkpoint(stream)
-        return obj
-    }
-    proccess_checkpoint(stream:Stream):GameObject[]{
-        const ret:GameObject[]=[]
+    proccess_checkpoint(stream:Stream):GameObject[][]{
         this.clear()
+        const layers:GameObject[][]=[]
         const boolgroup=stream.read_boolean_group()
         const layers_count=stream.read_uint8()
+
+        const read_id=boolgroup[0]
+        const ctx:CheckpointContext={
+            coid:{},
+            idco:{}
+        }
+        
+
         for(let i=0;i<layers_count;i++){
+            const objects:GameObject[]=[]
             const layer=stream.read_uint8()
             const obj_len=stream.read_uint16()
             for(let j=0;j<obj_len;j++){
-                const obj=this.proccess_checkpoint_object(stream,layer,boolgroup[0])
-                if(obj)ret.push(obj)
+                let id:number|undefined
+                if(read_id)id=stream.read_id()
+                const co=stream.read_id()
+                const tp=stream.read_uint8()
+                //const bg=stream.read_boolean_group()
+                const obb=this.make_object_checkpoint(stream,id,layer,tp)
+                if(!obb)continue
+                const obj=this.add_object(obb,layer,id)
+                obj.is_new=false
+
+                ctx.coid[co]=obj.id
+                ctx.idco[obj.id]=co
+                if(obj)objects.push(obj)
+            }
+            layers.push(objects)
+        }
+        for(let j=0;j<layers.length;j++){
+            for(const obj of layers[j]){
+                obj.on_decode_checkpoint(stream,ctx)
             }
         }
-        return ret
+        return layers
     }
     tick(dt:number){
         for(const l of this.layers_orden){
             for(const o of this.layers[l].ticks){
                 const obj=this.objects[o]
-                if(obj.destroyed)continue
                 try{
-                    obj.on_tick(dt)
+                    obj.tick(dt)
                 }catch(err){
                     console.error(err)
-                }
-                if(this.cells.dirty_objects.has(obj)){
-                    this.cells.update_object(obj)
                 }
             }
         }

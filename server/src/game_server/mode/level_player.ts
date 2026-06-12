@@ -130,7 +130,14 @@ export class LevelPlayer {
 
         if(level.definitions?.enemies)this.game.humans.enemies=level.definitions?.enemies
 
+        this.save_checkpoint()
+
+        this.game.can_start=false
+    }
+    save_checkpoint(){
         this.checkpoint=new StaticStream(new ArrayBuffer(1024*100))
+        this.game.save_checkpoint(this.checkpoint)
+        ;(this.checkpoint as StaticStream).lock()
     }
     start(){
         const level = this.level
@@ -160,6 +167,9 @@ export class LevelPlayer {
             }
         }
         this.game.reset()
+        this.checkpoint.index=0
+        this.game.players.first_tick=true
+        this.game.scene_2d.load_checkpoint(this.checkpoint)
     }
     enable_all(){
         for(const h of this.game.humans.humans){

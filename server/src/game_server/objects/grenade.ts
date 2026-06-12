@@ -123,15 +123,14 @@ export class Grenade extends Projectile{
         }
         this.set_dirty_part()
     }
-    override on_create(args: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
-        this.def=args.def
+    set_configuration(def:GrenadeDef,position:Vec2,owner?:Human){
+        this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
-        this.position=args.position
+        this.position=position
         if(this.def.cook){
             this.fuse_delay=this.def.cook.fuse_time??0
         }
-        this.owner=args.owner
-
+        this.owner=owner
         if(this.def.explosion)this.projectile_data.explosion=this.game.definitions.explosions.getFromString(this.def.explosion)
 
         if(this.def.call_airdrop){
@@ -152,6 +151,9 @@ export class Grenade extends Projectile{
                 }
             },this.def.call_airstrike.delay)
         }
+    }
+    override on_create(args?: {def:GrenadeDef,position:Vec2,owner?:Human}): void {
+        if(args)this.set_configuration(args.def,args.position,args.owner)
     }
     override on_encode_net(stream: Stream, full: boolean): void {
         this.physical_encode(stream)

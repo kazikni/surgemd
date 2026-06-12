@@ -470,7 +470,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2,
                 capacity:15,
-                extended_capacity:20,
+                extended_capacity:25,
             },
             dual:{
                 dual_offset:0.2,
@@ -482,6 +482,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 },
                 reload:{
                     capacity:30,
+                    extended_capacity:50,
                     delay:3
                 }
             },
@@ -574,7 +575,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 },
                 reload:{
                     capacity:12,
-                    extended_capacity:24,
+                    extended_capacity:20,
                     delay:5
                 }
             },
@@ -616,6 +617,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 fire_delay:0.8,
                 reload:{
                     capacity:10,
+                    extended_capacity:14,
                     delay:6
                 }
             },
@@ -753,7 +755,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.5,
                 capacity:40,
-                extended_capacity:50,
+                extended_capacity:60,
             },
             recoil:{
                 duration:0.12,
@@ -785,7 +787,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.5,
                 capacity:24,
-                extended_capacity:30,
+                extended_capacity:33,
             },
             recoil:{
                 duration:0.4,
@@ -901,7 +903,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.7,
                 capacity:8,
-                extended_capacity:10,
+                extended_capacity:12,
             },
             recoil:{
                 duration:1.6,
@@ -935,7 +937,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:3.9,
                 capacity:5,
-                extended_capacity:6,
+                extended_capacity:7,
             },
             recoil:{
                 duration:1.85,
@@ -958,7 +960,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.5,
                 capacity:3,
-                extended_capacity:5
+                extended_capacity:6
             },
             recoil:{
                 duration:1,
@@ -1048,7 +1050,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.6,
                 capacity:8,
-                extended_capacity:11,
+                extended_capacity:13,
                 reload_count:1,
             },
             recoil:{
@@ -1085,7 +1087,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.8,
                 capacity:5,
-                extended_capacity:6,
+                extended_capacity:7,
                 reload_count:1,
             },
             recoil:{
@@ -1099,11 +1101,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.dmr("sr25","762mm",{
             fire_delay:0.3,
             spread:1,
-
             ammo_spawn:{
                 amount:60
             },
-
             bullet:{
                 def:{
                     damage:23,
@@ -1113,11 +1113,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     tracer:tracers.large
                 }
             },
-
             reload:{
                 delay:2.5,
                 capacity:20,
-                extended_capacity:25,
+                extended_capacity:35,
             },
             recoil:{
                 duration:0.4,
@@ -1149,7 +1148,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:2.5,
                 capacity:20,
-                extended_capacity:30,
+                extended_capacity:40,
             },
             recoil:{
                 duration:0.4,
@@ -1180,7 +1179,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:0.7,
                 capacity:9,
-                extended_capacity:15,
+                extended_capacity:18,
                 reload_count:1
             },
             recoil:{
@@ -1410,6 +1409,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             reload:{
                 delay:5,
                 capacity:5,
+                extended_capacity:7,
                 ammo_consume:0.05,
             },
             recoil:{

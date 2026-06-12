@@ -613,15 +613,14 @@ export class StaticStream extends Stream{
     }
 
     write_id(value: number): this {
-        this._view.setUint16(this.index, value >> 8)
+        this._view.setUint16(this.index, value)
         this.index += 2
-        this._view.setUint8(this.index++, value)
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_id(): number {
-        const val = (this._view.getUint16(this.index) << 8) + this._view.getUint8(this.index + 2)
-        this.index += 3
+        const val = this._view.getUint16(this.index)
+        this.index += 2
         return val
     }
 

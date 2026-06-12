@@ -1,5 +1,4 @@
 import { BuildingCeilingDef, BuildingDef, BuildingObstacles } from "common/scripts/definitions/objects/buildings_base.ts";
-import { type Human } from "./human.ts";
 import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMode, v2, Vec2 } from "common/engine/core.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
@@ -189,5 +188,34 @@ export class Building extends StaticBody {
         stream.write_array(this.children.filter((o)=>o.type===1),(v)=>{
             stream.write_boolean_group(v.alive)
         },1)
+    }
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_uint16(this.def.idNumber!)
+        .write_pos2(this.position)
+        .write_uint8(this.physical_data.side)
+        const ceilings=this.children.filter(c => c.type === 1) as BuildingCeilingChild[]
+        stream.write_uint8(ceilings.length)
+        for (const c of ceilings) {
+            stream.write_boolean_group(c.alive)
+        }
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const def = this.game.definitions.buildings.valueNumber[stream.read_uint16()]
+        this.set_definition(def)
+        const pos = stream.read_pos2()
+        const side = stream.read_uint8() as Orientation
+        this.init(side)
+        this.position = pos
+        this.spawn_hitbox = this.physical_data.spawn_hitbox.transform(pos)
+        this.update_hitbox()
+        const count = stream.read_uint8()
+        let idx = 0
+        for (const child of this.children) {
+            if (child.type !== 1) continue
+            if (idx >= count) break
+            const [alive] = stream.read_boolean_group()
+            child.alive = alive
+            idx++
+        }
     }
 }

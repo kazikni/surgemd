@@ -105,7 +105,7 @@ export class Obstacle extends StaticBody{
         if(this.alpha_tween)this.alpha_tween.kill()
         this.below=below
         this.alpha_tween=this.game.add_tween({
-            duration:this.def.below.duration??0.5,
+            duration:this.def.below.duration??0.25,
             target:this.container.tint,
             to:{
                 a:below?this.def.below.alpha:1

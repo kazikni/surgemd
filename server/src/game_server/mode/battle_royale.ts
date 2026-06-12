@@ -147,7 +147,7 @@ export class BattleRoyaleSolo extends ModeManager{
         this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward/this.game.players.match_players_count)
     }
     override on_player_connect(_p:Player){
-        if(!this.game.started&&this.can_start()){
+        if(!this.game.started&&this.game.can_start&&this.can_start()){
             this.game.add_timeout(()=>{
                 if(this.can_start())this.game.start()
             },3)

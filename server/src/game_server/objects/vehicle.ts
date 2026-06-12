@@ -119,10 +119,10 @@ export class Vehicle extends MovingBody {
         throttle: 0,
         steer_input: 0,
     }
-    override on_create(args: { position: Vec2; def: VehicleDef }) {
-        this.position = v2.clone(args.position)
+    set_configuration(position:Vec2,def:VehicleDef){
+        this.position = v2.clone(position)
 
-        this.def = args.def
+        this.def = def
 
         this.base_hitbox = this.def.hitbox.clone()
         this.physical_data.mass = this.def.physics.mass
@@ -161,6 +161,9 @@ export class Vehicle extends MovingBody {
         }
 
         this.interaction_hitbox = this.hitbox
+    }
+    override on_create(args?: { position: Vec2; def: VehicleDef }) {
+        if(args)this.set_configuration(args.position,args.def)
     }
     move(input: PolarMovement, backWalk: boolean, _alt = false) {
         const dir = v2.from_PolarMovement(input)
@@ -412,6 +415,53 @@ export class Vehicle extends MovingBody {
 
         if (full) {
             stream.write_uint8(this.def.idNumber!)
+        }
+    }
+
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_uint16(this.def.idNumber!)
+        .write_pos2(this.position)
+        .write_rad(this.physical_data.rotation)
+        stream.write_float32(this.speed)
+        .write_rad(this.direction)
+        .write_float32(this.tire_stress)
+        .write_boolean_group(this.dead,this.back_walk,this.can_leave)
+        .write_uint8(this.seats.length)
+        for (const seat of this.seats) {
+            stream.write_id(seat.human?.id ?? 0)
+        }
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const def = this.game.definitions.vehicles.valueNumber[
+            stream.read_uint16()
+        ]
+        const position = stream.read_pos2()
+        const rotation=stream.read_rad()
+        this.physical_data.rotation=rotation
+        this.set_configuration(position, def)
+
+        this.speed = stream.read_float32()
+        this.direction = stream.read_rad()
+        this.tire_stress = stream.read_float32()
+
+        const [dead, back_walk, can_leave] =
+            stream.read_boolean_group()
+
+        this.dead = dead
+        this.back_walk = back_walk
+        this.can_leave = can_leave
+
+        const seatCount = stream.read_uint8()
+
+        for (let i = 0; i < seatCount; i++) {
+            const id = stream.read_id()
+
+            if (id !== 0) {
+                const h = this.game.humans.humans[id]
+                if (h) {
+                    this.seats[i]?.set_human(h)
+                }
+            }
         }
     }
 }

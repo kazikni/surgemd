@@ -36,17 +36,21 @@ export class Plane extends MovingBody {
 
     }
 
-    override on_create(args: Record<string, any>): void {
+    set_configuration(position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef){
+        this.position = position
+        this.target_pos = target_pos
+        this.speed = speed
+        this.type = type
+        this.owner = owner
+        this.grenade_def = grenade
+        this.obstacle = obstacle
+        this.count=count
+        this.radius=radius
+    }
+
+    override on_create(args?: {position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,100)
-        this.position = args.position
-        this.target_pos = args.target_pos
-        this.speed = args.speed
-        this.type = args.type
-        this.owner = args.owner
-        this.grenade_def = args.grenade_def
-        this.obstacle = args.obstacle
-        this.count=args.count
-        this.radius=args.radius
+        if(args)this.set_configuration(args.position,args.target_pos,args.speed,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
     }
     override on_tick(dt: number): void {
         super.on_tick(dt)
@@ -86,5 +90,56 @@ export class Plane extends MovingBody {
     override on_encode_net(stream: Stream,full: boolean): void {
         this.physical_encode(stream)
         stream.write_uint8(this.type)
+    }
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_pos2(this.position)
+        .write_rad(this.physical_data.rotation)
+        .write_pos2(this.target_pos)
+        .write_uint8(this.type)
+        .write_float32(this.speed)
+        .write_uint16(this.count)
+        .write_float32(this.radius)
+        .write_boolean_group(this.called,this.owner !== undefined,this.grenade_def !== undefined,this.obstacle !== undefined)
+        if(this.owner){
+            stream.write_id(this.owner.id)
+        }
+        if(this.grenade_def){
+            stream.write_uint16(this.grenade_def.idNumber!)
+        }
+        if(this.obstacle){
+            stream.write_uint16(this.obstacle.idNumber!)
+        }
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        this.base_hitbox = new CircleHitbox2D(v2.zero(),100)
+
+        this.position=stream.read_pos2()
+        this.physical_data.rotation=stream.read_rad()
+        this.target_pos = stream.read_pos2()
+        this.type = stream.read_uint8()
+        this.speed = stream.read_float32()
+        this.count = stream.read_uint16()
+        this.radius = stream.read_float32()
+
+        const [
+            called,
+            hasOwner,
+            hasGrenade,
+            hasObstacle
+        ] = stream.read_boolean_group()
+
+        this.called = called
+
+        if (hasOwner) {
+            this.owner = this.game.humans.humans[
+                stream.read_id()
+            ]
+        }
+        if (hasGrenade) {
+            this.grenade_def = this.game.definitions.grenades.valueNumber[stream.read_uint16()]
+        }
+        if (hasObstacle) {
+            this.obstacle = this.game.definitions.obstacles.valueNumber[stream.read_uint16()]
+        }
     }
 }

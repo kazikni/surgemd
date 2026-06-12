@@ -1,9 +1,9 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-import { Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
+import { GameObjectType, Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
 import { ConfigType, GameConfig, GameDebugOptions } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
@@ -94,6 +94,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     deadzone:DeadZoneManager
 
     started_time:number=0
+    can_start:boolean=true
     
     loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item as (id: string, count: number, aditional: Aditional) => LootTableItemRet<GameItem>[])
 
@@ -155,7 +156,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Creature,
             Parachute,
             SyncedParticle,
-            Plane
+            Plane,
         ])
 
         this.ntps=30
@@ -333,10 +334,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         console.log(`Game ${this.id} Stopped`)
     }
     reset(){
-
-    }
-    soft_reset(){
-        this.map.soft_reset()
+        this.humans.clear_npcs()
+        this.players.clear(false)
         this.deadzone.reset()
         this.timeouts.length=0
         this.started = false
@@ -346,6 +345,16 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.fineshed=false
         this.closed=false
         super.mainloop(rqf,auto_mainloop)
+    }
+    save_checkpoint(stream:Stream){
+        this.scene_2d.make_checkpoint(stream,{
+            save_id:true,
+            orden:[
+                GameObjectType.Human,
+                GameObjectType.Obstacle,
+                GameObjectType.Building,
+            ]
+        })
     }
     start(){
         if(this.started)return
@@ -468,11 +477,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     add_airstrike(position:Vec2,grenade:GrenadeDef,count:number,radius:number,owner?:Human){
         this.add_plane(position,{
             speed: 130,
-            grenade_def: grenade,
+            grenade,
             count,
             radius,
             owner,
-            grenade,
             type: 1
         })
     }

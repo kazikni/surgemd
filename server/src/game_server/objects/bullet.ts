@@ -167,24 +167,27 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    override on_create(args: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
-        this.def=args.def
+    override on_create(args?: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
-        this.position=args.position
-        this.initial_position=v2.clone(this.position)
-        this.old_position=this.position
+        if(args)this.set_configuration(args.def,args.position,args.owner,args.ammo,args.critical,args.source,args.satured)
+    }
+    set_configuration(def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean){
+        this.def=def
+        this.position=position
+        this.initial_position=v2.clone(position)
+        this.old_position=v2.clone(this.position)
         this.max_distance=this.def.range/2.5
         if(this.def.tracer.alpha)this.tracerAlpha=255*this.def.tracer.alpha
 
-        const ad=args.ammo?this.game.definitions.ammos.getFromString(args.ammo):undefined
-        this.owner=args.owner
-        this.critical=args.critical??(Math.random()<=0.15)
-        this.source=args.source
+        const ad=ammo?this.game.definitions.ammos.getFromString(ammo):undefined
+        this.owner=owner
+        this.critical=critical??(Math.random()<=0.15)
+        this.source=source
         this.ammo=ad
 
         this.damage=this.def.damage
         this.pass_through_humans=this.def.pass_through_humans??false
-        this.set_color(args.satured)
+        this.set_color(satured)
     }
     set_color(satured:boolean=false){
         this.tracerColor=this.def.tracer.color??(satured?(this.ammo?.strongTrail??0xffffff):(this.ammo?.defaultTrail??0xffffff))

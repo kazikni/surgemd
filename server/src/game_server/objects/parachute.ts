@@ -22,13 +22,13 @@ export class Parachute extends ServerGameObject{
         this.allow_tick=true
     }
 
-    override on_create(args: {position:Vec2,obstacle:ObstacleDef}): void {
+    set_configuration(position:Vec2,obstacle:ObstacleDef):void{
         this.parachute_data={
             lifetime:10,
-            spawn_obstacle:args.obstacle
+            spawn_obstacle:obstacle
         }
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
-        this.position=args.position
+        this.position=position
 
         this.game.pings.push({
             position:this.position,
@@ -36,6 +36,9 @@ export class Parachute extends ServerGameObject{
             id:-1,
             color:0xffffff,
         })
+    }
+    override on_create(args?: {position:Vec2,obstacle:ObstacleDef}): void {
+        if(args)this.set_configuration(args.position,args.obstacle)
     }
     override on_net_update(): void {
     }
@@ -83,5 +86,20 @@ export class Parachute extends ServerGameObject{
             stream.write_pos2(this.position)
             stream.write_float(this.parachute_data.lifetime,0,30,2)
         }
+    }
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_pos2(this.position)
+        .write_float32(this.time)
+        .write_float32(this.parachute_data.lifetime)
+        .write_uint16(this.parachute_data.spawn_obstacle.idNumber!)
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const position = stream.read_pos2()
+        const time = stream.read_float32()
+        const lifetime = stream.read_float32()
+        const obstacle = this.game.definitions.obstacles.valueNumber[stream.read_uint16()]
+        this.set_configuration(position, obstacle)
+        this.time = time
+        this.parachute_data.lifetime = lifetime
     }
 }

@@ -48,15 +48,13 @@ export class Loot extends ServerGameObject{
         }
         return
     }
-    override on_create(args: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
-        this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
-
+    set_loot(position:Vec2,item:GameItem,count:number){
+        this.position=position
         this.loot_data={
-            count:args.count,
-            item:args.item,
+            item:item,
+            count:count,
             real_radius:0
         }
-
         switch(this.loot_data.item.item_type){
             case InventoryItemType.gun:
             case InventoryItemType.melee:
@@ -84,7 +82,10 @@ export class Loot extends ServerGameObject{
                 break
         }
         (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
-        this.position=args.position
+    }
+    override on_create(args?: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),1)
+        if(args)this.set_loot(args.position,args.item,args.count)
     }
     override on_tick(dt:number): void {
         const cf=Floors[this.current_floor]
@@ -132,7 +133,6 @@ export class Loot extends ServerGameObject{
                     break
                 }
             }
-            
         }
         if(this.velocity.x!=0||this.velocity.y!=0){
             v2m.scale(this.velocity,this.velocity,1/(1+dt*3))
@@ -155,5 +155,16 @@ export class Loot extends ServerGameObject{
             stream.write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
             .write_uint8(this.loot_data.count)
         }
+    }
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_pos2(this.position)
+        .write_pos2(this.velocity)
+        .write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
+        .write_float32(this.loot_data.count)
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const position=stream.read_pos2()
+        this.velocity=stream.read_pos2()
+        this.set_loot(position,this.game.definitions.game_items.valueNumber[stream.read_uint16()],stream.read_float32())
     }
 }

@@ -45,12 +45,13 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.objects=new GameObjectManager2D<DefaultGameObject>(scene.cellsSize)
         this.cells=this.objects.cells
         this.game=game
+        this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
         this.reset()
     }
 
     private _addObject(obj: DefaultGameObject, layer: number, id?: number, args?: Record<string, any>, sv?: Record<string, any>){
         obj.game = this.game;
-        return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args);
+        return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args,sv);
     }
     reset(){
         this.objects.clear()
@@ -78,7 +79,11 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 
-    make_checkpoint(stream:Stream,settings:CheckpointSettings){
+    make_object_checkpoint(_stream:Stream,_id:number,_layer:number,t:number){
+        if(!this.game.objects.getFromNumber(t))return undefined
+        return new (this.game.objects.getFromNumber(t))()
+    }
+    make_checkpoint(stream:Stream,settings?:CheckpointSettings){
         this.objects.encode_checkpoint(stream,settings)
     }
     load_checkpoint(stream:Stream){

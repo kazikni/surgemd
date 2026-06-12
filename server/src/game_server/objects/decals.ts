@@ -17,13 +17,17 @@ export class Decal extends ServerGameObject{
         super()
     }
 
-    override on_create(args: {position:Vec2,rotation:number,def:DecalDef,tint?:DecalTint,scale?:number}): void {
-        this.def=args.def
+    override on_create(args?: {position:Vec2,rotation:number,def:DecalDef,tint?:DecalTint,scale?:number}): void {
+        if(args)this.set_configuration(args.position,args.rotation,args.def,args.tint,args.scale)
+    }
+    set_configuration(position:Vec2,rotation:number,def:DecalDef,tint?:DecalTint,scale?:number){
+        this.def=def
         this.base_hitbox=this.def.hitbox??new CircleHitbox2D(v2.zero(),0.5)
-        this.position=args.position
-        this.rotation=args.rotation
-        this.tint=args.tint
-        this.scale=args.scale
+        this.position=position
+        this.rotation=rotation
+        this.tint=tint
+        this.scale=scale
+
     }
     override on_encode_net(stream: Stream, full: boolean): void {
         stream.write_boolean_group(this.tint!==undefined,this.scale!==undefined)

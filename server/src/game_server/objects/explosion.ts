@@ -131,12 +131,15 @@ export class Explosion extends ServerGameObject{
             this.delay-=dt
         }
     }
-    override on_create(args: {def:ExplosionDef,source?:DamageSourceDef,position:Vec2,owner?:Human}): void {
-        this.def=args.def
-        this.owner=args.owner
-        this.source=args.source
+    override on_create(args?: {def:ExplosionDef,source?:DamageSourceDef,position:Vec2,owner?:Human}): void {
+        if(args)this.set_configuration(args.def,args.position,args.source,args.owner)
+    }
+    set_configuration(def:ExplosionDef,position:Vec2,source?:DamageSourceDef,owner?:Human):void{
+        this.def=def
+        this.owner=owner
+        this.source=source
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.size.end)
-        this.position=args.position
+        this.position=position
     }
     override on_encode_net(stream: Stream, _full: boolean): void {
         stream.write_pos2(this.position)

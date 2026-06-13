@@ -791,7 +791,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             },
             assets:{
                 use_sound:"heavy_swing",
-                hit_sound:"axe_hit",
+                hit_sound:"pan_hit",
                 world:"pan_world"
             },
             character_frame:{

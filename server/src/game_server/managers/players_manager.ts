@@ -15,7 +15,7 @@ import { EnemyDef } from "common/scripts/config/level_definition.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
-import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
+import { StartPacket} from "common/scripts/packets/start_packet.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
@@ -167,12 +167,11 @@ export class PlayersManager{
     }
     add_bot(packet:JoinPacket,player?:Player):BotClient{
         const client=new BotClient(this.game)
+        this.game.modeManager.on_player_connect(client)
+        this.game.signals.emit("player_connect",{client:client})
         const p=this.add_player(player??new Player(),packet,undefined,true) as Player
         p.conn=client
         client.set_active_player(p)
-
-        this.game.modeManager.on_player_connect(p)
-        this.game.signals.emit("player_connect",{player:p,client:client})
         this.connected_bots.push(client)
         return client
     }
@@ -311,35 +310,32 @@ export class PlayersManager{
         client.send_stream(this.game.map.map_packet_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
+            if(this.game.closed)return
             this.connected_players[client.ID].join_packet=packet
-            if(this.game.modeManager.can_join()){
-                const p = this.connected_players[client.ID].add_player()
-                if(p!==undefined){
-                    const jp=new JoinnedPacket()
-                    for(const lp of this.living_players){
-                        if(lp.id===p.id)continue
-                        jp.players.push({
-                            id:lp.id,
-                            name:lp.name,
-                            badge:lp.loadout.badge?.idNumber
-                        })
-                    }
-                    jp.date=this.game.ambient.date
-                    const leader=this.game.modeManager.get_leader()
-                    if(leader){
-                        jp.leader={
-                            id:leader.id,
-                            kills:leader.status.kills,
-                        }
-                    }
-
-                    this.game.modeManager.manage_joinned_packet(jp)
-                    client.emit_packet(jp)
-                    console.log(`${p.name} Join`)
-
-                    this.game.modeManager.on_player_connect(p)
-                    this.game.signals.emit("player_connect",{player:p,client:client})
+            this.game.modeManager.on_player_connect(this.connected_players[client.ID])
+            this.game.signals.emit("player_connect",{client:client})
+            const p = this.connected_players[client.ID].add_player()
+            if(p!==undefined){
+                const jp=new JoinnedPacket()
+                for(const lp of this.living_players){
+                    if(lp.id===p.id)continue
+                    jp.players.push({
+                        id:lp.id,
+                        name:lp.name,
+                        badge:lp.loadout.badge?.idNumber
+                    })
                 }
+                jp.date=this.game.ambient.date
+                const leader=this.game.modeManager.get_leader()
+                if(leader){
+                    jp.leader={
+                        id:leader.id,
+                        kills:leader.status.kills,
+                    }
+                }
+                this.game.modeManager.manage_joinned_packet(jp)
+                client.emit_packet(jp)
+                console.log(`${p.name} Join`)
             }
         })
         client.on("input",(p:InputPacket)=>{

@@ -203,7 +203,6 @@ export class Human extends MovingBody{
 
     downed_time:number=0
     downed_by?:Human
-    downed_by_source?:DamageSourceDef
 
     modifiers:HumanModifiers={
         size:1,
@@ -253,6 +252,7 @@ export class Human extends MovingBody{
 
     apply_score(type:number,amount:number,multiplier:number=1){
         this.status.score+=amount*multiplier
+        if(this.status.score<0)this.status.score=0
     }
     get_reflect_segment(): Hitbox2D|undefined {
         if(!(this.inventory.weapons[0]?.def as MeleeDef).reflective)return undefined
@@ -944,15 +944,13 @@ export class Human extends MovingBody{
 
         if(this.health_data.downed){
             this.downed_time+=dt
-            if(this.downed_time>=2){
+            if(this.downed_time>=1){
                 this.downed_time=0
                 this.piercing_damage({
-                    amount:2,
+                    amount:1,
                     critical:false,
                     position:this.position,
                     reason:DamageReason.Bleend,
-                    owner:this.downed_by,
-                    source:this.downed_by_source,
                     direction:0,
                 })
             }
@@ -1172,7 +1170,7 @@ export class Human extends MovingBody{
             }
         }
         if (this.health_data.health === 0) {
-            if (!this.health_data.downed && (this.game.modeManager.can_down(this)||this.human_data.self_revive)) {
+            if (!this.health_data.downed&&((this.game.modeManager.can_down(this)||this.human_data.self_revive))) {
                 this.down(params)
             } else {
                 this.die(params)
@@ -1240,7 +1238,7 @@ export class Human extends MovingBody{
         if(this.health_data.downed)return
         this.health_data.downed=true
         this.downed_by=params.owner
-        this.downed_by_source=params.source
+        this.downed_time=0
 
         this.health_data.health=this.health_data.max_health
         this.clear_boost()
@@ -1256,7 +1254,6 @@ export class Human extends MovingBody{
 
         this.health_data.downed=false
         this.downed_by=undefined
-        this.downed_by_source=undefined
         this.killed_by=undefined
         this.health_data.health=this.health_data.max_health*0.3
         this.health_data.boost=0
@@ -1271,25 +1268,31 @@ export class Human extends MovingBody{
         if(this.loadout.emotes.die){
             this.game.add_timeout(()=>this.loadout.emote=this.loadout.emotes.die,0.5)
         }
-        
+
         this.inventory.drop_all()
         this.killed_by=params.owner
+        if(!this.downed_by||(params.owner&&this.downed_by===params.owner&&!this.game.modeManager.is_ally(this.downed_by!,params.owner))){
+            this.killed_by=params.owner
+        }else{
+            this.killed_by=this.downed_by
+        }
 
         this.destroy()
-        if(params.owner instanceof Human){
-            if(params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
-                params.owner.on_kill_enemy(this)
-                params.owner.inventory.accessorys.call_event("kill",params)
+        if(this.killed_by){
+            if(this.killed_by.id!==this.id&&!this.game.modeManager.is_ally(this,this.killed_by)){
+                this.killed_by.on_kill_enemy(this)
+                this.killed_by.inventory.accessorys.call_event("kill",params)
             }
         }
 
-        this.team_data.team?.on_human_die?.(this)
-        this.team_data.group?.on_human_die?.(this)
         this.game.modeManager.on_human_die(this)
         this.game.signals.emit("human_die",{human:this})
         if(this.game.modeManager.is_leader(this)){
             this.game.modeManager.leader_die(this)
         }
+
+        if(this.team_data.team)this.team_data.team.clear_downeds()
+        if(this.team_data.group)this.team_data.group.clear_downeds()
 
         if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
     }

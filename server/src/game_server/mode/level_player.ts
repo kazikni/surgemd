@@ -1,6 +1,6 @@
 import { Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition, LevelEnemys } from "common/scripts/config/level_definition.ts";
-import { BattleRoyaleDebug, BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
+import { BattleRoyale, BattleRoyaleDebug, BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
@@ -116,11 +116,7 @@ export class LevelPlayer {
                 this.game.init(new KillAllEnemiesMode(this.level.mode))
                 break
             case "battle_royale":
-                if((this.level.mode.teams??0)>=2){
-                    this.game.init(new BattleRoyaleTeam(this.level.mode.teams,this.level.mode.group_size??4,this.level.mode as unknown as BattleRoyaleSettings))
-                }else{
-                    this.game.init(new BattleRoyaleSolo(this.level.mode as unknown as BattleRoyaleSettings))
-                }
+                this.game.init(new BattleRoyale(this.level.mode as unknown as BattleRoyaleSettings,this.level.mode.group_size??1))
                 break
             case "debug":{
                 this.game.init(new BattleRoyaleDebug(this.level.mode as unknown as BattleRoyaleSettings))

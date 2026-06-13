@@ -21,6 +21,7 @@ __                                                                              
 * UI improvements
 * Ak-47 Translation
 * Drop Equipments
+* Tundra Map Loading Screen
 __                                                                                                                 __
 ### Items
 * VSS - 9mm DMR

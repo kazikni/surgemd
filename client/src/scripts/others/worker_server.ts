@@ -1,4 +1,4 @@
-import { BattleRoyaleSolo, LevelPlayer, OfflineGameServer } from "./offline.ts";
+import { BattleRoyale, LevelPlayer, OfflineGameServer } from "./offline.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { FetchFileManager, OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
@@ -42,7 +42,7 @@ self.onmessage = async(ev) => {
             break
         }
         case "load_mode":{
-            server.init(new BattleRoyaleSolo({
+            server.init(new BattleRoyale({
                 map:{
                     def:Maps["normal"]
                 },

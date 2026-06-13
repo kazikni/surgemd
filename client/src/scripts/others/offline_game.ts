@@ -27,7 +27,7 @@ export class LocalGameServer{
             type: "begin",
             config:config??ZeroConfig(),
             ping:ping_emulation,
-        });
+        })
     }
     start(){
         this.worker!.postMessage({type:"start"})

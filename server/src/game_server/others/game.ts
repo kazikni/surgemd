@@ -21,8 +21,7 @@ import { Grenade } from "../objects/grenade.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Building } from "../objects/building.ts";
 import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
-import { BattleRoyaleDebug, BattleRoyaleGroup, BattleRoyaleSolo } from "../mode/battle_royale.ts";
-import { CounterMD } from "../mode/counter_md.ts";
+import { BattleRoyale, BattleRoyaleDebug } from "../mode/battle_royale.ts";
 import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
@@ -230,17 +229,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(!has_mode){
             switch(game_config.mode){
                 case "normal":
-                    if((game_config.group_size??1)>1){
-                        this.init(new BattleRoyaleGroup(game_config.group_size??1,game_config.mode_settings))
-                    }else{
-                        this.init(new BattleRoyaleSolo(game_config.mode_settings))
-                    }
+                    this.init(new BattleRoyale(game_config.mode_settings,game_config.group_size??1))
                     break
                 case "counter_md":
-                    this.init(new CounterMD(game_config.mode_settings))
+                    //this.init(new CounterMD(game_config.mode_settings))
                     break
                 case "debug":
-                    this.init(new BattleRoyaleDebug(game_config.mode_settings))
+                    this.init(new BattleRoyaleDebug(game_config.mode_settings,game_config.group_size??1))
                     break
             }
         }
@@ -300,12 +295,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             ]
         })
     }
-    start(){
+    start(force:boolean=false){
         if(this.started)return
+        if(!force&&(!this.can_start||!this.modeManager.can_start()))return
         this.started=true
         this.modeManager.on_start()
         this.started_time=performance.now()
-
         if(!this.replay){
             this.replay=new ReplayRecorder(this,(r,full)=>{
                 return this.players.encode_frame(full)

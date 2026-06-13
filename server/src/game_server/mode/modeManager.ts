@@ -1,7 +1,7 @@
 import { type Game } from "../others/game.ts";
 import { Numeric, random, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
-import { Player } from "../objects/player.ts";
+import { Player, PlayerConnManager } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
@@ -110,7 +110,7 @@ export abstract class ModeManager{
             keep_inventory:false,
             help_up:{
                 time:7,
-                distance:1
+                distance:2
             }
         },
         ambient:{
@@ -217,6 +217,7 @@ export abstract class ModeManager{
     on_finish():void{}
 
     abstract can_join():boolean
+    abstract can_start():boolean
     abstract can_down(human:Human):boolean
     abstract is_ally(a:Human,b:Human):boolean
 
@@ -226,7 +227,7 @@ export abstract class ModeManager{
     abstract assign_leader(p:Human):boolean
     abstract leader_die(p:Human):void
 
-    on_player_connect(p:Player):void{}
+    on_player_connect(p:PlayerConnManager):void{}
     on_player_join(p:Player):void{}
     on_player_die(p:Player):void{}
 

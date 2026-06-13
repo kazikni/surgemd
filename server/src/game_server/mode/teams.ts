@@ -1,7 +1,7 @@
 import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
 import { Human } from "../objects/human.ts";
 import { random } from "common/engine/core.ts";
-import { HumanStatus } from "common/scripts/others/constants.ts";
+import { HumanStatus, PlayerStatus } from "common/scripts/others/constants.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 
 export class Team{
@@ -9,21 +9,20 @@ export class Team{
     humans:Human[]=[]
     id:number=0
 
-    on_human_die(h:Human){
-        if(!this.can_down(h)){
-            for(const p of this.get_downed_players()){
-                p.die({
-                    amount:1000,
-                    critical:false,
-                    direction:0,
-                    position:p.position,
-                    reason:DamageReason.Bleend,
-                })
-            }
+    clear_downeds(){
+        if(this.get_not_downed_humans().length>0)return
+        for(const p of this.get_downed_players()){
+            p.die({
+                amount:1000,
+                critical:false,
+                direction:0,
+                position:p.position,
+                reason:DamageReason.Bleend,
+            })
         }
     }
     can_down(h:Human){
-        return this.get_not_downed_humans().length>=1
+        return this.get_not_downed_humans().length>1
     }
     remove_human(h:Human){
         if(!h.team_data.team)return
@@ -45,10 +44,10 @@ export class Team{
         return this.humans.filter((p)=>!p.health_data.dead)
     }
     get_not_downed_humans():Human[]{
-        return this.humans.filter((p)=>!p.health_data.dead&&!p.health_data.downed)
+        return this.humans.filter((p)=>!p.health_data.dead&&(!p.health_data.downed||p.human_data.self_revive))
     }
     get_downed_players():Human[]{
-        return this.humans.filter((p)=>!p.health_data.dead&&p.health_data.downed)
+        return this.humans.filter((p)=>!p.health_data.dead&&p.health_data.downed&&!p.human_data.self_revive)
     }
     replace(o: Human, n: Human) {
         const index = this.humans.indexOf(o)
@@ -74,14 +73,14 @@ export class Team{
     choose_human(self: Human): Human | undefined {
         const candidates = this.humans.filter(h => h !== self && !h.health_data.dead)
         if (candidates.length === 0) return undefined
-        return candidates[random.int(0,candidates.length)]
+        return candidates[random.int(0,candidates.length-1)]
     }
-    get_status():(HumanStatus&{id:number})[]{
+    get_status():PlayerStatus[]{
         return this.humans.map((v)=>{
             return {
                 id:v.id,
                 ...v.status
-            }
+            } as PlayerStatus
         })
     }
     constructor(){

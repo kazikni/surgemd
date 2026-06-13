@@ -3,19 +3,16 @@ import { Spawn } from "../../others/constants.ts";
 import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { building_to_json, buildings_factory } from "../objects/buildings_base.ts";
-import { BiomeDef, CounterMapDef, type MapDef } from "./base.ts";
-export const NormalBiome:BiomeDef={
+import { MapBiomeDef, CounterMapDef, type MapDef } from "./base.ts";
+export const NormalBiome:MapBiomeDef={
     floors:{
 
     },
-    assets:[
+    textures:[
         "normal"
     ],
-    ambient:{
-        particles:["leaf_1_particle_1"],
-        particles_tint:0x2b7317,
-        rain:true,
-    },
+    particles:["leaf_1_particle_1"],
+    particles_tint:0x2b7317,
     musics:[
         "/sounds/musics/online/game_normal_music_1.mp3",
         "/sounds/musics/online/game_normal_music_2.mp3",
@@ -284,33 +281,24 @@ export const NormalCounterMD:CounterMapDef={
     },
     biome:NormalBiome,
 }
-export const SnowBiome:BiomeDef={
+export const SnowBiome:MapBiomeDef={
     floors:{
-        [FloorType.Sand]:{
-            color:0x505659
-        }
+        [FloorType.Sand]:0x505659
     },
-    biome_skin:"snow",
-    assets:["normal"],
-    ambient:{
-        particles:[],
-        rain:false,
-        snow:true,
-        sound:"snowstorm_ambience"
-    }
+    skin:"snow",
+    textures:["normal"],
+    ambient_sound:"snowstorm_ambience",
+    musics:[],
+    particles:[],
+    particles_tint:0
 }
-export const DesertBiome:BiomeDef={
+export const DesertBiome:MapBiomeDef={
     floors:{
-        [FloorType.Sand]:{
-            color:0xa1761a
-        }
+        [FloorType.Sand]:0xa1761a
     },
-    biome_skin:"desert",
-    assets:["normal"],
-    ambient:{
-        particles:[],
-        rain:false,
-    }
+    textures:["normal"],
+    musics:[],
+    particles:[],
 }
 export const river_layers={
     ice:[

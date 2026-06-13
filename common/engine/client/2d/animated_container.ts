@@ -113,7 +113,7 @@ export class AnimatedContainer2D extends Container2D{
                                     to:action.to.hotspot
                                 }))
                             }
-                            if(action.to.rotation){
+                            if(action.to.rotation!==undefined){
                                 a.tweens.push(this.game.add_tween({
                                     duration:kf.time,
                                     target:fuser,

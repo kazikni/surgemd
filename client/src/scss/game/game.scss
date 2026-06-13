@@ -147,6 +147,7 @@
     > div{
         position: relative;
         background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
+        backdrop-filter: var(--ui-backdrop-filter);
     }
 
     #action-info{
@@ -343,6 +344,7 @@
     box-shadow:0 0 3px var(--ui-theme-primary);
     border:1px solid var(--ui-theme-primary);
     color: var(--ui-theme-tertiary);
+    backdrop-filter: var(--ui-backdrop-filter);
 
     font-size: 20px;
     pointer-events:none;
@@ -407,6 +409,7 @@
         left: 0px;
         top: 0px;
         transform-origin:0 0;
+        backdrop-filter: var(--ui-backdrop-filter);
     }
     .map-tile{
         position:absolute;

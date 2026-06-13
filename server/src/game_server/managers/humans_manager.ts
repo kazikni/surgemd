@@ -36,11 +36,12 @@ export class HumansManager{
         human.humans_manager=this
 
         const h=this.game.scene_2d.objects.add_object(human,layer??Layers.Normal,id) as Human
-
+        return this._add_human(h)
+    }
+    _add_human(human:Human){
         this.humans.push(human)
-
-        this.game.modeManager.on_human_create(h)
-        return h
+        this.game.modeManager.on_human_create(human)
+        return human
     }
     add_npc(npc?:NPC,layer?:number):NPC{
         const ret=this.add_human(npc??new NPC(),undefined,layer) as NPC
@@ -50,7 +51,7 @@ export class HumansManager{
     clear_npcs(){
         for(const n of this.living_npc){
             const idx=this.humans.indexOf(n)
-            if(idx!==-1)this.humans.splice(idx)
+            if(idx!==-1)this.humans.splice(idx,1)
             n.destroy()
         }
         this.living_npc.length=0

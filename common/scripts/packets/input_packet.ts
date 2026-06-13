@@ -1,4 +1,5 @@
 import { Stream, Packet, PolarMovement } from "../../engine/core.ts";
+import { PacketType } from "../definitions/utils.ts";
 export enum InputActionType{
     drop,
     use_item,
@@ -41,7 +42,7 @@ export type InputAction=({
     count:number
 })
 export class InputPacket extends Packet{
-    ID=1
+    ID=PacketType.Input
     Name="input"
 
     movement:PolarMovement={dir:0,scale:0}

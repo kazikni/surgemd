@@ -64,6 +64,7 @@
     justify-content: center;
     overflow: hidden;
     pointer-events: all;
+    backdrop-filter: var(--ui-backdrop-filter);
 
     font-family: "Russo-One", serif;
 
@@ -145,6 +146,7 @@
         font-family: "Russo-One", serif;
         background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
         box-shadow: 0 0 3px var(--ui-theme-primary);
+        backdrop-filter: var(--ui-backdrop-filter);
         .weapon-slot-number {
             position: relative;
             top: 5px;
@@ -236,6 +238,7 @@
             width: 40px;
             height: 40px;
         }
+        backdrop-filter: var(--ui-backdrop-filter);
     }
     .scope-slot-selected{
         border: 2px solid var(--ui-theme-primary);
@@ -292,6 +295,7 @@
     pointer-events: none;
     .aitem-slot{
         color: var(--ui-theme-tertiary);
+        backdrop-filter: var(--ui-backdrop-filter);
         background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
         display: flex;
         flex-direction: column;
@@ -360,6 +364,7 @@
     .equipment-slot {
         background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
         box-shadow: 0 0 3px var(--ui-theme-primary);
+        backdrop-filter: var(--ui-backdrop-filter);
         width: 70px;
         height: 70px;
         position: relative;

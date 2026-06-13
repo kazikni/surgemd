@@ -6,8 +6,7 @@ export type PlayArgs={
     team_size:number
 }|{
     type: "campaign"
-    level:number
-    charpter:number
+    path:string
 }|{
     type: "join"
     url:string

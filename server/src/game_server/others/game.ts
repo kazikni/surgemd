@@ -37,6 +37,7 @@ import { Decal } from "../objects/decals.ts";
 import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { HumanBody } from "../objects/human_body.ts";
+import { StartSettings } from "common/scripts/packets/start_packet.ts";
 export interface GameData {
     living_count: number[]
 
@@ -142,6 +143,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     replay?:ReplayRecorder
 
     leaderboards:LeaderboardPlayer[]=[]
+
+    start_settings:StartSettings={
+        textures:[],
+        musics:[],
+        assets:{},
+        languages_path:"",
+    }
     constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
         super(100,id,clients,[
             Human,
@@ -202,6 +210,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.modeManager=mode
         mode.init(this)
         mode.generate_map()
+
+        this.players.encode_start_packet()
     }
     auto_init(game_config:GameConfig){
         this.game_config=game_config
@@ -234,72 +244,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                     break
             }
         }
-
-        /*for(let i=0;i<99;i++){
-            const b = this.players.add_bot(new JoinPacket())
-            if(b.human){
-                if(Math.random()<=0.1){
-                    b.human.set_preset({
-                        "inventory":{
-                            "infinity_ammo":true,
-                            "hand":1,
-                            "backpack":[
-                                {"item":"basic_pack","weight":10},
-                                {"item":"regular_pack","weight":15,"drop_chance":0.3},
-                                {"item":"military_pack","weight":10,"drop_chance":0.5}
-                            ],
-                            "vest":[
-                                {"item":"basic_vest","weight":10,"drop_chance":0.3},
-                                {"item":"regular_vest","weight":15,"drop_chance":0.5},
-                                {"item":"military_vest","weight":10,"drop_chance":0.75}
-                            ],
-                            "helmet":[
-                                {"item":"basic_helmet","weight":10,"drop_chance":0.3},
-                                {"item":"regular_helmet","weight":15,"drop_chance":0.5},
-                                {"item":"military_helmet","weight":10,"drop_chance":0.75}
-                            ],
-                            "gun1":[
-                                {"item":"blr81","weight":6},
-                                {"item":"model94","weight":6},
-                                {"item":"kar98k","weight":1.5},
-                                {"item":"awp","weight":0.5},
-                                {"item":"awms","weight":0.01}
-                            ],
-                            "gun2":[
-                                {"item":"mp5","weight":7},
-                                {"item":"ak47","weight":7},
-                                {"item":"model94","weight":5},
-                                {"item":"blr81","weight":5},
-                                {"item":"kar98k","weight":1},
-                                {"item":"awp","weight":0.5},
-                                {"item":"pkp","weight":0.1},
-                                {"item":"awms","weight":0.01}
-                            ],
-                            "boosts":[
-                                {"weight":8,"boost_type":0,"boost":0},
-                                {"weight":1,"boost_type":1,"boost":1},
-                                {"weight":1,"boost_type":2,"boost":1}
-                            ],
-                            "aitems":{
-                                "12g":30,
-                                "556mm":150,
-                                "762mm":150,
-                                "45acp":150,
-                                "9mm":200,
-                            },
-                            "iitems":[
-                                "scope_2",
-                                "scope_3",
-                                "scope_4",
-                            ]
-                        }
-                    })
-                    b.ai=new ADVHumanAI(b.human)
-                }else{
-                    b.ai=new DumbBotAI(b.human)
-                }
-            }
-        }*/
     }
     override net_update(full:boolean){
         this.players.net_update()
@@ -335,7 +279,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     reset(){
         this.humans.clear_npcs()
-        this.players.clear(false)
+        this.players.clear_bots()
         this.deadzone.reset()
         this.timeouts.length=0
         this.started = false
@@ -358,7 +302,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     start(){
         if(this.started)return
-
         this.started=true
         this.modeManager.on_start()
         this.started_time=performance.now()

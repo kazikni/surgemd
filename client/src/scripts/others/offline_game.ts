@@ -1,5 +1,4 @@
 import { ConfigType, ZeroConfig } from "common/scripts/config/config.ts";
-import { LevelDefinition } from "common/scripts/config/level_definition.ts";
 import { type Game } from "./game.ts";
 import { WorkerSocket } from "common/engine/core.ts";
 
@@ -23,6 +22,7 @@ export class LocalGameServer{
         this.worker=new Worker(new URL("./worker_server.ts", import.meta.url), {
             type: "module",
         })
+        this.worker.onmessage=(ev)=>this.handle_messages(ev.data)
         this.worker.postMessage({
             type: "begin",
             config:config??ZeroConfig(),
@@ -31,6 +31,9 @@ export class LocalGameServer{
     }
     start(){
         this.worker!.postMessage({type:"start"})
+    }
+    init(){
+        this.worker!.postMessage({type:"init"})
     }
     connect(){
         this.worker!.postMessage({type:"connect"})
@@ -43,8 +46,16 @@ export class LocalGameServer{
             type: "reset_level",
         });
     }
-    begin_campaign_level(level:LevelDefinition){
+    begin_level(path:string){
         this.run()
-        this.worker!.postMessage({type:"init_level",level:level})
+        this.worker!.postMessage({type:"load_level",level:path})
+    }
+
+    handle_messages(msg:any){
+        switch(msg.type){
+            case "server_created":
+                this.connect()
+                break
+        }
     }
 }

@@ -1,28 +1,7 @@
 import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
-import { InventoryPreset } from "../definitions/utils.ts";
-import { HumanModifiers } from "../others/constants.ts";
-export interface LoadoutPreset{
-    badge?:string
-    hair?:string
-    hair_tint?:number
-    body?:string
-    body_tint?:number
-    eyes?:string
-    shirt?:string
-    legs?:string
-    accessorys?:string[]
-}
-export type HumanDefinition={
-    name?:string
-    position?:Vec2
-    loadout?:LoadoutPreset
-    inventory?:InventoryPreset
-    team?:number
-    group?:number
-    modifiers?:Partial<HumanModifiers>
-}
+import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
 export type EnemyDef={
     ia:{
@@ -66,6 +45,9 @@ export type GameOverScreen={
 }|{
     type:GameOverScreenType.Light
 }
+export type LevelCharacter=CharacterDefinition&{
+    path?:string
+}
 export interface LevelDefinition{
     meta:{
         name: string
@@ -83,14 +65,14 @@ export interface LevelDefinition{
     deadzone?:{
         stage?:number
     }
-    player: HumanDefinition&{
-        colors_replace?:Record<string,string>
+    player: LevelCharacter
+    characters_selection?:{
+        characters:LevelCharacter[]
     }
     assets?:{
         background_music?:string
-        load?:{
-            sounds?:Record<string,string>
-        }
+        assets?:Record<string,string>
+        textures?:string[]
     }
     definitions?:{
         enemies?:Record<string,EnemyDef>

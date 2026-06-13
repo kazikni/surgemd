@@ -70,11 +70,9 @@ export class BattleRoyaleSolo extends ModeManager{
         if(!enemies) return
         for(const e of enemies){
             const count = e.count ?? 1
-
             for(let i = 0; i < count; i++){
                 const bot = this.game.players.add_enemy(e.def,new JoinPacket())
                 if(!bot) continue
-
                 if(e.position){
                     v2m.set(bot.position, e.position.x, e.position.y)
                 }else{

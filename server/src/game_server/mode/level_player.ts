@@ -1,12 +1,13 @@
 import { Game } from "../others/game.ts";
-import { LevelDefinition, LevelEnemys } from "common/scripts/config/level_definition.ts";
+import { LevelCharacter, LevelDefinition, LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { BattleRoyaleDebug, BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
-import { StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
+import { cloneDeep, FileManager, mergeDeep, StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
 import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 export type KillAllEnemiesSettings={
     map:{
         def:MapDef|string
@@ -87,40 +88,57 @@ export class LevelPlayer {
     game: Game
     level!: LevelDefinition
     started:boolean=false
+    fs:FileManager
 
     checkpoint:Stream
 
-    constructor(game: Game){
+    player_preset?:LevelCharacter
+
+    constructor(game: Game,fs:FileManager){
         this.game = game
         this.checkpoint=new StaticStream(new ArrayBuffer(1))
+        this.fs=fs
     }
 
-    begin(level: LevelDefinition){
-        this.level = level
+    async begin(path:string){
+        this.level = JSON.parse(await this.fs.read_file("level.json"))
 
-        switch(level.mode.type){
+        this.game.start_settings.background_music=this.level.assets?.background_music
+        this.game.start_settings.textures.push(...(this.level.assets?.textures??[]))
+        Object.assign(this.game.start_settings.assets,this.level.assets?.assets??{})
+
+        this.game.start_settings.languages_path=path+"/languages"
+
+        switch(this.level.mode.type){
             case "kill_all_enemies":
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                this.game.init(new KillAllEnemiesMode(level.mode))
+                this.game.init(new KillAllEnemiesMode(this.level.mode))
                 break
             case "battle_royale":
-                if((level.mode.teams??0)>=2){
-                    this.game.init(new BattleRoyaleTeam(level.mode.teams,level.mode.group_size??4,level.mode as unknown as BattleRoyaleSettings))
+                if((this.level.mode.teams??0)>=2){
+                    this.game.init(new BattleRoyaleTeam(this.level.mode.teams,this.level.mode.group_size??4,this.level.mode as unknown as BattleRoyaleSettings))
                 }else{
-                    this.game.init(new BattleRoyaleSolo(level.mode as unknown as BattleRoyaleSettings))
+                    this.game.init(new BattleRoyaleSolo(this.level.mode as unknown as BattleRoyaleSettings))
                 }
                 break
             case "debug":{
-                this.game.init(new BattleRoyaleDebug(level.mode as unknown as BattleRoyaleSettings))
+                this.game.init(new BattleRoyaleDebug(this.level.mode as unknown as BattleRoyaleSettings))
                 break
             }
         }
-        this.game.signals.on("player_join",(e:any)=>{
+        this.game.signals.on("player_join",async(e:any)=>{
             if(!e.player.is_bot){
                 if(this.level.player){
-                    e.player.set_preset(this.level.player)
-                    if(!this.level.player.start_position){
+                    let p:LevelCharacter
+                    if(this.level.player.path){
+                        p=mergeDeep(JSON.parse(await this.fs.read_file(this.level.player.path)),this.level.player)
+                    }else{
+                        p=this.level.player
+                    }
+                    this.player_preset=this.level.player
+                    e.player.set_preset(p)
+                    if(!this.level.player.position){
                         const pos = this.game.modeManager.get_human_spawn_position(e.player)
                         if(pos)e.player.position = pos
                     }
@@ -128,48 +146,88 @@ export class LevelPlayer {
             }
         })
 
-        if(level.definitions?.enemies)this.game.humans.enemies=level.definitions?.enemies
-
+        if(this.level.definitions?.enemies)this.game.humans.enemies=this.level.definitions?.enemies
         this.save_checkpoint()
-
         this.game.can_start=false
+
+        if(!this.game.running)this.game.mainloop()
+    }
+    async init(){
+        this.game.clock.timeScale=0
+        if(this.level.cutscenes?.begin){
+            const def=JSON.parse(await this.fs.read_file(this.level.cutscenes.begin))
+            this.game.clients.send({
+                type:OnlineMessageType.Cutscene,
+                cutscene:def
+            } satisfies OnlineMessage)
+            await this.game.clients.wait("_end")
+        }
+        if(this.level.characters_selection){
+            const characters:LevelCharacter[]=[]
+            for(const v of this.level.characters_selection.characters){
+                if(v.path){
+                    characters.push(mergeDeep(JSON.parse(await this.fs.read_file(v.path)),this.level.player))
+                }else{
+                    characters.push(v)
+                }
+            }
+            this.game.clients.send({
+                type:OnlineMessageType.CharacterSelector,
+                characters:characters.map((v)=>{
+                    return {
+                        name:v.name,
+                        description:v.description,
+                        icon:v.icon
+                    }
+                })
+            } satisfies OnlineMessage)
+            this.player_preset=mergeDeep({},this.player_preset??{},characters[Object.values(await this.game.clients.wait("_end"))[0]])
+            for(const p in this.game.players.living_players){
+                this.game.players.living_players[p].set_preset(this.player_preset)
+            }
+        }
+        this.game.clock.timeScale=1
+        this.start()
     }
     save_checkpoint(){
-        this.checkpoint=new StaticStream(new ArrayBuffer(1024*100))
+        this.checkpoint=new StaticStream(new ArrayBuffer(1024*1000))
         this.game.save_checkpoint(this.checkpoint)
         ;(this.checkpoint as StaticStream).lock()
     }
     start(){
         const level = this.level
         this.game.start()
-
         if(level.deadzone?.stage){
             this.game.deadzone.jump_stages(level.deadzone.stage)
         }
-
         this.spawn_players()
         this.enable_all()
     }
     spawn_players(){
-        for(const p of Object.values(this.game.players.connected_players)){
-            if(!p.human || p.human.health_data.dead){
-                p.add_player()
+        for(const conn of Object.values(this.game.players.connected_players)){
+            conn.view_objects.length=0
+            if(conn.real_human?.health_data.dead){
+                conn.revive()
+                const pos=this.game.modeManager.get_human_spawn_position(conn.real_human)
+                if(pos!==undefined){
+                    conn.real_human.position=pos
+                }
+                conn.real_human.set_preset(this.player_preset)
+            }else{
+                const p=conn.add_player()
+                if(p){
+                    p.set_preset(this.player_preset)
+                }
             }
         }
     }
     reset(){
         if(!this.game.running)this.game.mainloop()
-        for(const p of Object.values(this.game.players.connected_players)){
-            if(p.human){
-                if(p.human.is_player){
-                    (p.human as Player).reset_status()
-                }
-            }
-        }
         this.game.reset()
         this.checkpoint.index=0
         this.game.players.first_tick=true
         this.game.scene_2d.load_checkpoint(this.checkpoint)
+        this.start()
     }
     enable_all(){
         for(const h of this.game.humans.humans){

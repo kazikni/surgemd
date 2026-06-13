@@ -346,7 +346,7 @@ export function make_menu_campaign(campaign:Record<string,any>){
                 parent.appendChild(level_div)
                 const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
                 start_btn.onclick = () => {
-                    if(manager.play_callback)manager.play_callback({type:"campaign",level:l as unknown as number,charpter:c as unknown as number})
+                    if(manager.play_callback)manager.play_callback({type:"campaign",path:level.path})
                 }
             }
         }
@@ -471,13 +471,14 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 }
 
 export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,mods?:CModsManager){
-    const txt=await fs.read_file("scripts/campaign.json")
-    const campaign=JSON.parse(txt)
-    menu.campaign=cloneDeep(campaign)
+    const campaign_path="scripts/campaign"
+    const campaign=JSON.parse(await fs.read_file(campaign_path+"/main.json"))
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
-            const txt=await fs.read_file(campaign.charpters[c].levels[l]+"/level.json")
+            const path=campaign_path+"/"+campaign.charpters[c].levels[l]
+            const txt=await fs.read_file(path+"/level.json")
             campaign.charpters[c].levels[l]=JSON.parse(txt)
+            campaign.charpters[c].levels[l].path=path
         }
     }
     const play_subtabs={
@@ -968,6 +969,18 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.ui.interactive",
                             var:"sv_ui_interactive",
                         },
+                        {
+                            type:"toggle",
+                            name:"settings.ui.blur_backdrop",
+                            var:"sv_ui_blur_backdrop",
+                            on_set(v:boolean){
+                                if(v){
+                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","blur(10px)")
+                                }else{
+                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","none")
+                                }
+                            }
+                        }
                     ],translation),
                 },
                 "keybinds":{

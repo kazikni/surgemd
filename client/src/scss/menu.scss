@@ -1003,3 +1003,35 @@
         border-left-color:var(--fs-accent);
     }
 }
+
+.character-selector-list{
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    margin-bottom:25px;
+    text-align: center;
+}
+.character-selector-preview
+.character-selector-list{
+    .character-card{
+        width:180px;
+        padding:15px;
+        cursor:pointer;
+
+        transition:.15s;
+    }
+    .character-card:hover{
+        transform:translateY(-5px);
+    }
+    .character-card img{
+        width:100%;
+    }
+    .character-icon{
+        width:160px;
+    }
+}
+
+.character-preview{
+    padding:20px;
+    text-align:center;
+}

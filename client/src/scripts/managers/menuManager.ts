@@ -7,6 +7,9 @@ import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+import { LevelCharacter } from "common/scripts/config/level_definition.ts";
+import { CharacterDefinition } from "common/scripts/definitions/utils.ts";
+import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 type PhaseIntroConfig = {
     location: string
     name: string
@@ -64,7 +67,6 @@ export class MenuManager{
 
     play_callback?:(play_args:PlayArgs)=>void
 
-    campaign:Record<string,any>={}
     cutscene:HistoryCommand[]=[]
 
     params:URLSearchParams
@@ -537,7 +539,7 @@ export class MenuManager{
 
                     this.content.history_frame.style.opacity = "0"
                     await sleep(0.4)
-
+ 
                     const img = await this.history_buffer.load(cmd.frame)
                     this.content.history_frame.src = img.src
 
@@ -650,6 +652,67 @@ export class MenuManager{
             HideElement(this.content.phase_intro_overlay)
         },wait_time+1000)
         await new Promise(r => setTimeout(r, wait_time))
+    }
+    select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
+        return this.game_popup((ctx) => {
+            let selected = 0
+
+            ctx.parent.style.width = "95vw"
+            ctx.parent.style.height = "90vh"
+
+            ctx.parent.innerHTML = `
+                <h1 class="span-text">Character Selection</h1>
+                <div class="character-selector-list"></div>
+                <div class="character-preview background-menu-blue">
+                    <img class="character-icon">
+                    <h2 class="character-name"></h2>
+                    <p class="character-description"></p>
+
+                    <button class="btn-blue character-select-btn">
+                        Select Character
+                    </button>
+                </div>
+            `
+
+            const list = ctx.parent.querySelector(".character-selector-list") as HTMLDivElement
+            const childs:HTMLDivElement[]=[]
+            const previewIcon=ctx.parent.querySelector(".character-icon") as HTMLImageElement
+            const previewName=ctx.parent.querySelector(".character-name") as HTMLHeadingElement
+            const previewDesc=ctx.parent.querySelector(".character-description") as HTMLParagraphElement
+            const selectBtn=ctx.parent.querySelector(".character-select-btn") as HTMLButtonElement
+
+            const updatePreview = () => {
+                const char = characters[selected]
+                previewIcon.src = `/img/characters/${char.icon}.png`
+                previewName.innerText = char.name ?? "Unknown"
+                previewDesc.innerText = char.description ?? ""
+                for (const el of childs) {
+                    el.classList.remove("selected")
+                }
+                list.children[selected]?.classList.add("selected")
+            }
+
+            for (const idx in characters) {
+                const i = Number(idx)
+                const char = characters[i]
+                const card = document.createElement("div")
+                card.className = "character-card background-menu-blue"
+                card.innerHTML = `
+                    <img src="/img/characters/${char.icon}.png">
+                    <span>${char.name ?? "Unknown"}</span>
+                `
+                card.onclick = () => {
+                    selected = i
+                    updatePreview()
+                }
+                list.appendChild(card)
+                childs.push(card)
+            }
+            selectBtn.onclick = () => {
+                ctx.resolve(selected)
+            }
+            updatePreview()
+        })
     }
     game_start(){
         ShowElement(this.content.gameD)

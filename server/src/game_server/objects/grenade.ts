@@ -1,6 +1,6 @@
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { Projectile, ProjectileData, ProjectilePhysicalData } from "./projectile.ts";
-import { CircleHitbox2D, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, Numeric, v2, v2m, Vec2, CheckpointContext } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type Human } from "./human.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
@@ -161,5 +161,38 @@ export class Grenade extends Projectile{
         if(full){
             stream.write_id(this.def.idNumber!)
         }
+    }
+    override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        stream.write_uint16(this.def.idNumber!)
+        .write_pos2(this.position)
+        .write_pos2(this.physical_data.velocity)
+        .write_float32(this.physical_data.rotation)
+        .write_float32(this.physical_data.angular_velocity)
+        .write_float32(this.physical_data.zpos)
+        .write_float32(this.physical_data.zpos_speed)
+        .write_float32(this.fuse_delay)
+        .write_uint8(this.physical_data.current_floor)
+        .write_boolean_group(this.owner !== undefined)
+        if (this.owner) {
+            stream.write_id(ctx.idco[this.owner.id])
+        }
+    }override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        const def = this.game.definitions.grenades.valueNumber[stream.read_uint16()]
+        this.set_configuration(def, v2.zero())
+        this.position = stream.read_pos2()
+        this.physical_data.velocity=stream.read_pos2()
+        this.physical_data.rotation = stream.read_float32()
+        this.physical_data.angular_velocity = stream.read_float32()
+        this.physical_data.zpos = stream.read_float32()
+        this.physical_data.zpos_speed = stream.read_float32()
+        this.fuse_delay = stream.read_float32()
+        this.physical_data.current_floor = stream.read_uint8() as FloorType
+        const bg=stream.read_boolean_group()
+        if(bg[0]){
+            const id = stream.read_id()
+            this.owner = this.manager.objects[ctx.coid[id]] as Human
+        }
+
+        this.update_hitbox()
     }
 }

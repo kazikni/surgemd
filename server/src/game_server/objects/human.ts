@@ -1,7 +1,7 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
 import { DamageSplash, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
-import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { DamageReason, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
@@ -10,7 +10,7 @@ import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { Loot } from "./loot.ts";
@@ -20,8 +20,7 @@ import { GInventory, GunItem, LItem, MeleeItem } from "../human/inventory.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
-import { DamageSourceDef, GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
-import { HumanDefinition } from "common/scripts/config/level_definition.ts";
+import { DamageSourceDef, GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
@@ -111,6 +110,7 @@ export class Human extends MovingBody{
     }
     loadout!:HumanLoadoutData&{
         dirty:boolean
+        dirty_colors:boolean
 
         emote_is_item:boolean
         emote?:GameItem|EmoteDef
@@ -124,6 +124,7 @@ export class Human extends MovingBody{
                 die?:string
             }
         }
+        colors:Record<string,number>
     }
     animation_data:HumanAnimationData&{current_animation:HumanAnimation[]}={
         dirty:true,
@@ -263,6 +264,7 @@ export class Human extends MovingBody{
         const female=Math.random()<0.5
         this.loadout={
             dirty:true,
+            dirty_colors:false,
             original:{
                 emotes:{
 
@@ -286,7 +288,8 @@ export class Human extends MovingBody{
             accessorys:female?[
                 this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
             ]:[],
-            badge:this.game.definitions.badges.getFromString("stone_1_badge")
+            badge:this.game.definitions.badges.getFromString("stone_1_badge"),
+            colors:{}
         }
         const default_scope=this.game.definitions.scopes.getFromNumber(0)
         this.equipment_data={
@@ -309,43 +312,51 @@ export class Human extends MovingBody{
         user.actions.play(new HelpupAction(this))
     }
 
-    set_preset(preset:HumanDefinition|undefined){
+    set_loadout_preset(preset?:LoadoutPreset){
         if(!preset)return
-        if(preset.loadout){
-            this.loadout.dirty=true
-            if(preset.loadout.badge!==undefined){
-                this.loadout.original.badge_id=preset.loadout.badge
-                if(preset.loadout.badge===""){
-                    this.loadout.badge=undefined
-                }else{
-                    this.loadout.badge=this.game.definitions.badges.getFromString(preset.loadout.badge)
-                }
+        this.loadout.dirty=true
+        if(preset.badge!==undefined){
+            this.loadout.original.badge_id=preset.badge
+            if(preset.badge===""){
+                this.loadout.badge=undefined
+            }else{
+                this.loadout.badge=this.game.definitions.badges.getFromString(preset.badge)
             }
-            if(preset.loadout.shirt)this.loadout.shirt=this.game.definitions.loadout.getFromString(preset.loadout.shirt) as LoadoutShirtDef
-            if(preset.loadout.legs)this.loadout.legs=this.game.definitions.loadout.getFromString(preset.loadout.legs) as LoadoutLegDef
-            if(preset.loadout.eyes)this.loadout.eyes=this.game.definitions.loadout.getFromString(preset.loadout.eyes) as LoadoutEyesDef
-            if(preset.loadout.hair!==undefined){
-                if(preset.loadout.hair===""){
-                    this.loadout.hair=undefined
-                }else{
-                    this.loadout.hair={
-                        def:this.game.definitions.loadout.getFromString(preset.loadout.hair) as LoadoutHairDef,
-                        tint:0
-                    }
-                }
-            }
-            if(preset.loadout.body)this.loadout.body={
-                def:this.game.definitions.loadout.getFromString(preset.loadout.body) as LoadoutBodyDef,
-                tint:0
-            }
-            if(preset.loadout.body_tint!==undefined)this.loadout.body.tint=preset.loadout.body_tint
-            if(preset.loadout.accessorys!==undefined){
-                this.loadout.accessorys.length=0
-                for(const a of preset.loadout.accessorys){
-                    this.loadout.accessorys.push(this.game.definitions.loadout.getFromString(a) as LoadoutAccessoryDef)
+        }
+        if(preset.shirt)this.loadout.shirt=this.game.definitions.loadout.getFromString(preset.shirt) as LoadoutShirtDef
+        if(preset.legs)this.loadout.legs=this.game.definitions.loadout.getFromString(preset.legs) as LoadoutLegDef
+        if(preset.eyes)this.loadout.eyes=this.game.definitions.loadout.getFromString(preset.eyes) as LoadoutEyesDef
+        if(preset.hair!==undefined){
+            if(preset.hair===""){
+                this.loadout.hair=undefined
+            }else{
+                this.loadout.hair={
+                    def:this.game.definitions.loadout.getFromString(preset.hair) as LoadoutHairDef,
+                    tint:0
                 }
             }
         }
+        if(preset.body)this.loadout.body={
+            def:this.game.definitions.loadout.getFromString(preset.body) as LoadoutBodyDef,
+            tint:0
+        }
+        if(preset.body_tint!==undefined)this.loadout.body.tint=preset.body_tint
+        if(preset.accessorys!==undefined){
+            this.loadout.accessorys.length=0
+            for(const a of preset.accessorys){
+                this.loadout.accessorys.push(this.game.definitions.loadout.getFromString(a) as LoadoutAccessoryDef)
+            }
+        }
+        if(preset.colors!==undefined){
+            this.loadout.dirty_colors=true
+            for(const v of Object.entries(preset.colors)){
+                this.loadout.colors[v[0]]=ColorM.hex2number(v[1])
+            }
+        }
+    }
+    set_preset(preset:HumanDefinition|undefined){
+        if(!preset)return
+        this.set_loadout_preset(preset.loadout)
         if(preset.name){
             this.name = preset.name
             if(this.is_player){
@@ -762,8 +773,7 @@ export class Human extends MovingBody{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let acceleration=40*(current_floor.acceleration??1)
-            * (this.health_data.downed?0.4:1)
+        let acceleration=40 * (this.health_data.downed?0.1:(current_floor.acceleration??1))
         acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
@@ -984,6 +994,7 @@ export class Human extends MovingBody{
         this.animation_data.current_animation.length=0
 
         this.loadout.dirty=false
+        this.loadout.dirty_colors=false
         this.loadout.emote=undefined
 
         this.equipment_data.dirty=false
@@ -1035,6 +1046,7 @@ export class Human extends MovingBody{
                 team:false,
                 group:false
             },
+            colors:this.loadout.dirty_colors?this.loadout.colors:undefined
         }
         for(let i=0;i<this.inventory.slots.length;i++){
             const s=this.inventory.slots[i]
@@ -1237,7 +1249,7 @@ export class Human extends MovingBody{
 
         this.inventory.set_weapon_index(0)
 
-        this.push(-20,params.direction)
+        this.push(-10,params.direction)
     }
     help_up(){
         if(!this.health_data.downed)return
@@ -1280,6 +1292,16 @@ export class Human extends MovingBody{
         }
 
         if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
+    }
+    revive(){
+        if(!this.health_data.dead)return
+        this.health_data.dead=false
+        this.health_data.downed=false
+        this.health_data.health=this.health_data.max_health
+        this.health_data.boost=0
+        this.health_data.boost_def=Boosts[BoostType.Adrenaline]
+        if(!this.registred)this.manager.registry_object(this)
+        this.game.humans._add_human(this)
     }
     on_kill_enemy(victim:Human){
         if(this.game.modeManager.is_leader(victim)){

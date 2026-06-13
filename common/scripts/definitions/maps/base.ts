@@ -45,26 +45,9 @@ export function loot_table_get_item(item:string,count:number,_aditional:Aditiona
         ]
     }
 }
-export interface BiomeFloor{
-    color?:number
-}
-export interface BiomeDef{
-    biome_skin?:string
-    floors:Partial<Record<FloorType,BiomeFloor>>
-    assets:string[]
-    ambient:{
-        snow?:boolean
-        rain?:boolean
-        particles:string[]
-        particles_tint?:number
-        sound?:string
-    }
-    musics?:string[]
-}
 export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface TerrainLayerDef {
     type:FloorType
-
     tint?:number
     layer?:number
     padding:number
@@ -102,16 +85,24 @@ export interface IslandDef{
         }
     }&TerrainShapeDef,
 }
+export interface MapBiomeDef{
+    skin?:string
+    floors:Partial<Record<FloorType,number>>
+    particles:string[]
+    particles_tint?:number
+    ambient_sound?:string
+    musics:string[]
+    textures:string[]
+}
 export interface MapDef{
     loot_tables:Record<string,LootTable>
     default_floor?:FloorType
-    biome:BiomeDef
     generation:{
         island?:IslandDef
     }
-    assets?:string[]
     buildings?:JSONBuildingDef[]
     seed?:number
+    biome:MapBiomeDef
     gen_callback?:(map:GameMap)=>void
 }
 export interface CounterMapDef extends MapDef{

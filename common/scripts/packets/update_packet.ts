@@ -2,7 +2,7 @@ import { Numeric, UpdatePacketBase, v2, Vec2 } from "../../engine/core.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
-import { InventoryItemData } from "../definitions/utils.ts";
+import { InventoryItemData, PacketType } from "../definitions/utils.ts";
 import { ActionsType } from "../others/constants.ts";
 export interface PingData{
     position:Vec2
@@ -78,6 +78,7 @@ export interface SelfStateUpdate{
     force_default_scope:boolean
 
     group?:Record<number,GroupMemberState>
+    colors?:Record<string,number>
 }
 function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameDefinition){
     stream.write_uint8(state.health)
@@ -104,7 +105,9 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
 
         state.inventory.hand?.liquid, // Is Liquid
 
-        state.force_default_scope
+        state.force_default_scope,
+
+        state.colors!==undefined
     )
     if(state.dirty.inventory.items){
         stream.write_array<InventoryItemData>(state.inventory.items,(i)=>{
@@ -156,6 +159,9 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
             stream.write_uint8(i.boost_type)
         },3)
     }
+    if(state.colors!==undefined){
+        stream.write_string_dict(state.colors,(i)=>stream.write_uint32(i))
+    }
     stream.write_uint8(state.current_scope)
 }
 function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameDefinition){
@@ -180,7 +186,9 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         hasAction,
         liquid,
 
-        force_default_scope
+        force_default_scope,
+
+        dirtyColors
     ]=stream.read_boolean_group2()
     state.dirty={
         inventory:{
@@ -259,11 +267,14 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
             }
         },3)
     }
+    if(dirtyColors){
+        state.colors=stream.read_string_dict(()=>stream.read_uint32())
+    }
     state.current_scope=stream.read_uint8()
     state.force_default_scope=force_default_scope
 }
 export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
-    ID=2
+    ID=PacketType.Update
     Name="update"
     definition!:GameDefinition
     constructor(){

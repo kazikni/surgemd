@@ -23,6 +23,8 @@ export class PacketsManager{
         this.add_packet(SteamPacket)
         this.add_packet(PingPacket)
         this.add_packet(PongPacket)
+        this.add_packet(MessagePacket)
+        this.add_packet(SignalMessagePacket)
     }
     encode(packet:Packet,stream:Stream):Stream{
         stream.write_uint16(packet.ID)
@@ -160,7 +162,60 @@ export class PongPacket extends Packet {
         this.time = stream.read_float64()
     }
 }
+export class MessagePacket extends Packet {
+    readonly ID = 65530
+    readonly Name = "message"
+    msg:any
+    bytes1:number=1
+    bytes2:number=1
 
+    constructor() {
+        super()
+    }
+
+    encode(stream: Stream): void {
+        let header = 0
+        header |= (this.bytes1 - 1)       // bits 0-1
+        header |= (this.bytes2 - 1) << 2  // bits 2-3
+        stream.write_uint8(header)
+        stream.write_object(this.msg,this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+    }
+    decode(stream: Stream): void {
+        const header = stream.read_uint8()
+        this.bytes1 = ((header & 0b11) + 1)
+        this.bytes2 = (((header >> 2) & 0b11) + 1)
+        this.msg=stream.read_object(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+    }
+}
+export class SignalMessagePacket extends Packet {
+    readonly ID = 65529
+    readonly Name = "signal_message"
+
+    signal:string=""
+    msg:any
+    bytes1:number=1
+    bytes2:number=1
+
+    constructor() {
+        super()
+    }
+
+    encode(stream: Stream): void {
+        let header = 0
+        header |= (this.bytes1 - 1)       // bits 0-1
+        header |= (this.bytes2 - 1) << 2  // bits 2-3
+        stream.write_uint8(header)
+        stream.write_string(this.signal,1)
+        stream.write_object(this.msg,this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+    }
+    decode(stream: Stream): void {
+        const header = stream.read_uint8()
+        this.bytes1 = ((header & 0b11) + 1)
+        this.bytes2 = (((header >> 2) & 0b11) + 1)
+        this.signal=stream.read_string(1)
+        this.msg=stream.read_object(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+    }
+}
 export class InvalidPacket extends Packet {
     readonly ID = -1
     readonly Name = "invalid"

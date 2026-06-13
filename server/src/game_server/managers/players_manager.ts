@@ -15,6 +15,7 @@ import { EnemyDef } from "common/scripts/config/level_definition.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
+import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
@@ -115,13 +116,13 @@ export class PlayerClient extends PlayerConnManager{
             p.status.leaderboards=this.game.leaderboards
         }
 
-        this.client!.emit(p)
+        this.client!.emit_packet(p)
     }
     net_update(general_update:Stream){
         if(this.client.opened){
             const packet=this.get_update_packet()
-            if(packet.objects)this.client!.emit(packet)
-            this.client.sendStream(general_update)
+            if(packet.objects)this.client!.emit_packet(packet)
+            this.client.send_stream(general_update)
         }
     }
 }
@@ -142,6 +143,8 @@ export class PlayersManager{
 
     first_tick:boolean=false
 
+    start_packet_stream:Stream=new StaticStream(new ArrayBuffer(5*1024))
+
     constructor(game:Game){
         this.game=game
     }
@@ -149,9 +152,6 @@ export class PlayersManager{
         for(const p of this.living_players){
             p.apply_score(type,amount)
         }
-    }
-    clear(hard:boolean=true){
-        this.clear_bots()
     }
     clear_bots(){
         for(const b of this.connected_bots){
@@ -214,6 +214,13 @@ export class PlayersManager{
         if(pos)p.position=pos
         return p
     }
+    _add_player(player:Player){
+        this.living_players.push(player)
+        this.game.update_data()
+        if(this.living_players.length>this.match_players_count){
+            this.match_players_count=this.living_players.length
+        }
+    }
     add_enemy(def: EnemyDef | string, packet: JoinPacket,player?:Player): Player | undefined {
         if(typeof def === "string"){
             def = this.game.humans.enemies[def]
@@ -259,6 +266,13 @@ export class PlayersManager{
         this.game.clients.packets_manager.encode(this.general_update,this.global_buffer_2)
         return this.global_buffer_2
     }
+    encode_start_packet(){
+        this.start_packet_stream.clear()
+        const packet=new StartPacket()
+        packet.settings=this.game.start_settings
+        this.game.clients.packets_manager.encode(packet,this.start_packet_stream)
+        ;(this.start_packet_stream as StaticStream).lock()
+    }
     update(dt:number){
         for(const p of Object.values(this.connected_bots)){
             if(p.ai)p.ai.AI(dt)
@@ -288,12 +302,13 @@ export class PlayersManager{
     send_feed_message(msg:FeedMessage){
         const p=new FeedPacket()
         p.message=msg
-        this.game.clients.emit(p)
+        this.game.clients.emit_packet(p)
     }
     connection(client:Client,username:string){
         if(this.connected_players[client.ID])return
         this.connected_players[client.ID]=new PlayerClient(this.game,client)
-        client.sendStream(this.game.map.map_packet_stream)
+        client.send_stream(this.start_packet_stream)
+        client.send_stream(this.game.map.map_packet_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
             this.connected_players[client.ID].join_packet=packet
@@ -319,7 +334,7 @@ export class PlayersManager{
                     }
 
                     this.game.modeManager.manage_joinned_packet(jp)
-                    client.emit(jp)
+                    client.emit_packet(jp)
                     console.log(`${p.name} Join`)
 
                     this.game.modeManager.on_player_connect(p)

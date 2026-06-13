@@ -316,6 +316,9 @@ export class GameMap{
         if(definition.generation.island)generation.island(definition.generation.island)(this,random)
         if(definition.gen_callback)definition.gen_callback(this)
 
+        this.game.start_settings.textures.push(...definition.biome.textures)
+        this.game.start_settings.musics.push(...definition.biome.musics)
+
         this.game.deadzone.reset()
         this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
         ;(this.map_packet_stream as StaticStream).lock()
@@ -374,7 +377,6 @@ export class GameMap{
             objects,
             biome:this.def.biome,
             buildings:this.def.buildings,
-            assets:this.def.assets??[],
             regions:this.regions
         }
         return p

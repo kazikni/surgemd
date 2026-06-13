@@ -1,4 +1,5 @@
 import { KDate, Stream, Packet } from "../../engine/core.ts";
+import { PacketType } from "../definitions/utils.ts";
 export enum ShopItemType {
     tab,
     section,
@@ -32,7 +33,7 @@ export type ShopNode =
         icon?: string
     }
 export class JoinnedPacket extends Packet{
-    ID=5
+    ID=PacketType.Joinned
     Name="joinned"
     players:{id:number,name:string,badge?:number}[]=[]
     leader?:{id:number,kills:number}
@@ -56,7 +57,7 @@ export class JoinnedPacket extends Packet{
             stream.write_id(e.id)
         },1)
         stream.write_array(this.mode.shop??[],(n)=>{
-            stream.writeObject(n,1,1)
+            stream.write_object(n,1,1)
         },1)
         stream.write_kdate(this.date)
     }
@@ -77,7 +78,7 @@ export class JoinnedPacket extends Packet{
             }
         },1)
         this.mode.shop=stream.read_array(()=>{
-            return stream.readObject(1,1) as ShopNode
+            return stream.read_object(1,1) as ShopNode
         },1)
         this.date=stream.read_kdate()
     }

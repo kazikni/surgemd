@@ -1,6 +1,19 @@
-import { Definition, Stream, WeightDefinition } from "../../engine/core.ts";
+import { Definition, Stream, Vec2, WeightDefinition } from "../../engine/core.ts";
+import { type HumanModifiers } from "../others/constants.ts";
 import { ItemRank } from "../others/item.ts";
 import { BoostType } from "./player/boosts.ts";
+export enum PacketType{
+    Feed=1,
+    GameOver,
+    GeneralUpdate,
+    Input,
+    JMSG,
+    Join,
+    Joinned,
+    Map,
+    Start,
+    Update,
+}
 export enum BulletReflection{
     All=0,
     Only_Reflective=1,
@@ -143,6 +156,31 @@ export interface InventoryPreset{
         boost:number
         boost_type:BoostType
     })[]
+}
+export interface LoadoutPreset{
+    badge?:string
+    hair?:string
+    hair_tint?:number
+    body?:string
+    body_tint?:number
+    eyes?:string
+    shirt?:string
+    legs?:string
+    accessorys?:string[]
+    colors?:Record<string,string>
+}
+export type HumanDefinition={
+    name?:string
+    position?:Vec2
+    loadout?:LoadoutPreset
+    inventory?:InventoryPreset
+    team?:number
+    group?:number
+    modifiers?:Partial<HumanModifiers>
+}
+export type CharacterDefinition=HumanDefinition&{
+    description?:string
+    icon?:string
 }
 export function InventoryItemDataEncode(stream:Stream,data:InventoryItemData){
     stream.write_uint16(data.count)

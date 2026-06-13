@@ -16,6 +16,7 @@ __                                                                              
 * Final Screen
 * Tertiary Color Settings
 * Gameplay Music Settings
+* UI Blur Backdrop Settings
 * Document Body
 * UI improvements
 * Ak-47 Translation

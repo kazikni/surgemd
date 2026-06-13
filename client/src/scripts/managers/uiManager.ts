@@ -8,7 +8,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, Vec2 } from "common/engine/client.ts";
+import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, Vec2 } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -575,6 +575,13 @@ export class UiManager{
             for (let i = 0; i < state.inventory.items.length; i++) {
                 this.items.push({id:state.inventory.items[i].idNumber,count:state.inventory.items[i].count})
             }
+        }
+        if(state.colors!==undefined){
+            this.game.theme_colors={}
+            for(const c of Object.entries(state.colors)){
+                this.game.theme_colors[c[0]]=ColorM.number2hex(c[1])
+            }
+            this.update_theme()
         }
 
         this.money=state.money

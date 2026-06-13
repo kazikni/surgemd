@@ -1,32 +1,24 @@
 import { v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
-import { type BiomeDef, type MapDef } from "./base.ts";
+import { type MapBiomeDef, type MapDef } from "./base.ts";
 import { map_spawns, river_layers } from "./normal.ts";
 
-export const TundraBiome:BiomeDef={
+export const TundraBiome:MapBiomeDef={
     floors:{
-        [FloorType.Sand]:{
-            color:0x8a979e,
-        },
-        [FloorType.Water]:{
-            color:0x274763,
-        }
+        [FloorType.Sand]:0x8a979e,
+        [FloorType.Water]:0x274763
     },
-    biome_skin:"snow",
-    assets:["normal"],
+    skin:"snow",
+    textures:["normal"],
     musics:[
         "/sounds/musics/online/game_tundra_music_1.mp3",
         "/sounds/musics/online/game_tundra_music_2.mp3",
         "/sounds/musics/online/game_tundra_music_3.mp3",
         "/sounds/musics/online/game_tundra_music_4.mp3",
     ],
-    ambient:{
-        particles:[],
-        rain:false,
-        snow:true,
-        sound:"snowstorm_ambience"
-    }
+    particles:[],
+    ambient_sound:"snowstorm_ambience"
 }
 // No Shotguns And Pistols
 export const TundraMap:MapDef={

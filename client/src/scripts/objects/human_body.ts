@@ -47,7 +47,7 @@ export class HumanBody extends GameObject{
         this.sprite_text.frame?.free?.()
     }
     async set_name(name:string,badge:number){
-        if(this.sprite_text.frame)this.sprite.frame?.free()
+        if(this.sprite_text.frame)this.sprite_text.frame.free()
         const color=this.game.get_theme_color("tertiary")
         this.sprite_text.frame=await this.game.resources.render_text(`${name}`,60,color)
         if(badge){

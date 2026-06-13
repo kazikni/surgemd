@@ -173,9 +173,7 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                     break
                 }
                 case "campaign":{
-                    const path=this.menu_manager.campaign.charpters[play.charpter].levels[play.level]
-                    const js=JSON.parse(await this.file.read_file(path+"/level.json"))
-                    this.game.start_campaign_level(js,"/"+path)
+                    this.game.local_server.begin_level(play.path)
                     break
                 }
                 case "join":{

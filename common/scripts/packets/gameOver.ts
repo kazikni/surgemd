@@ -1,4 +1,5 @@
 import { Stream, Packet } from "../../engine/core.ts";
+import { PacketType } from "../definitions/utils.ts";
 import { PlayerStatus } from "../others/constants.ts";
 export interface LeaderboardPlayer{
     id:number
@@ -16,7 +17,7 @@ export type GameOverStatus={
     eliminator:number
 })
 export class GameOverPacket extends Packet{
-    ID=3
+    ID=PacketType.GameOver
     Name="gameover"
     status:GameOverStatus={
         status:[],

@@ -41,6 +41,7 @@ export enum GameObjectType{
     SyncedParticle,
     Plane,
 }
+
 export enum HumanAnimationType{
     Switch,
     Reloading,

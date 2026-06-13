@@ -1,3 +1,5 @@
+import { Path } from "../mod.ts";
+
 export abstract class FileHandle {
     abstract write(data: Uint8Array): Promise<void>
     abstract seek(position: number): Promise<void>
@@ -18,12 +20,12 @@ export abstract class FileManager{
 export class FetchFileManager extends FileManager {
     base:string="/"
     async read_file(path: string): Promise<string> {
-        const res = await fetch(this.base+path)
+        const res = await fetch(Path.join(this.base,path))
         if (!res.ok) throw new Error(`read_file failed: ${res.status}`)
         return await res.text()
     }
     async write_file(path: string, content: string): Promise<void> {
-        const res = await fetch(this.base+path, {
+        const res = await fetch(Path.join(this.base,path), {
             method: "PUT",
             body: content,
             headers: { "Content-Type": "text/plain" }
@@ -31,13 +33,13 @@ export class FetchFileManager extends FileManager {
         if (!res.ok) throw new Error(`write_file failed: ${res.status}`)
     }
     async read_fileb(path: string): Promise<Uint8Array> {
-        const res = await fetch(this.base+path)
+        const res = await fetch(Path.join(this.base,path))
         if (!res.ok) throw new Error(`read_fileb failed: ${res.status}`)
         const buf = await res.arrayBuffer()
         return new Uint8Array(buf)
     }
     async write_fileb(path: string, content: Uint8Array): Promise<void> {
-        const res = await fetch(this.base+path, {
+        const res = await fetch(Path.join(this.base,path), {
             method: "PUT",
             body: content,
             headers: { "Content-Type": "application/octet-stream" }

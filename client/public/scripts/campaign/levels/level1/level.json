@@ -8,13 +8,13 @@
     },
     "assets":{
         "load":{
-            "sounds":{
+            "assets":{
                 "history_music_1":"/sounds/musics/history_music_1.mp3"
             }
         }
     },
     "cutscenes":{
-        "begin":"begin.json"
+        "begin":"cutscenes/begin.json"
     },
     "mode":{
         "type":"battle_royale",
@@ -88,24 +88,6 @@
         ]
     },
     "player":{
-        "name":"nick",
-        "loadout":{
-            "hair":"hair_1",
-            "hair_tint":1122066,
-            "body":"body_1",
-            "body_tint":15771967,
-            "eyes":"eyes_1",
-            "shirt":"black_shirt",
-            "legs":"jeans_pants",
-            "accessorys":[]
-        },
-        "colors_replace":{
-            "primary":"#4f6ef7",
-            "secondary":"#1c2447",
-            "tertiary":"#eeeeee",
-            "positive":"#00ccff",
-            "negative":"#ff3c00",
-            "special":"#fffb00"
-        }
+        "path":"../../characters/nick.json"
     }
 }

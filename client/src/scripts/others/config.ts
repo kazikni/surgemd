@@ -61,6 +61,7 @@ export const ConfigCasters=Object.freeze({
     sv_ui_special_color:Casters.toString,
     sv_ui_translation:Casters.toString,
     sv_ui_interactive:Casters.toBoolean,
+    sv_ui_blur_backdrop:Casters.toBoolean,
 })
 export const ConfigDefaultValues={
     sv_loadout_name:"",
@@ -99,6 +100,7 @@ export const ConfigDefaultValues={
     sv_ui_special_color:"#fffb00",
     sv_ui_translation:"en",
     sv_ui_interactive:true,
+    sv_ui_blur_backdrop:true,
 }
 export const ConfigDefaultActions={
     "move_up":{

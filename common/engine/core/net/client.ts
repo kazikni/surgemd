@@ -1,7 +1,7 @@
 import { FetchFileManager, FileManager } from "../definition/file.ts";
 import { random } from "../math/random.ts";
 import { ID, SignalManager } from "../math/utils.ts";
-import { ConnectPacket, DisconnectPacket, InvalidPacket, Packet, PacketsManager, PingPacket, PongPacket } from "./packets.ts";
+import { ConnectPacket, DisconnectPacket, InvalidPacket, MessagePacket, Packet, PacketsManager, PingPacket, PongPacket, SignalMessagePacket } from "./packets.ts";
 import { StaticStream, Stream } from "./stream.ts";
 
 export class BasicSocket{
@@ -68,9 +68,8 @@ export class Client{
     opened:boolean // Client Is Connected
     ID:ID=0 // Client ID Sysed With Server And Client
     IP:string // Client IP
-    protected signals:SignalManager
+    signals:SignalManager
     onopen?:()=>void
-    show_errors:boolean=true
 
     ping:number=0
     lastPingTime:number=0
@@ -86,44 +85,34 @@ export class Client{
             this.opened=false
             this.signals.emit(DefaultSignals.DISCONNECT,new DisconnectPacket(this.ID))
         }
-        if(this.show_errors){
-            this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
-                let buf: ArrayBufferLike | null = null
-                if (msg.data instanceof ArrayBuffer){
-                    buf = msg.data
-                }else if(msg.data instanceof Uint8Array){
-                    buf=msg.data.buffer
-                }else if(msg.data instanceof Blob) {
-                    buf=await msg.data.arrayBuffer()
-                }
-                if (buf) {
-                    const stream=new StaticStream(buf as ArrayBuffer)
-                    let packet = this.manager.decode(stream)
-                    while(!(packet instanceof InvalidPacket)){
-                        this.signals.emit(packet.Name, packet)
-                        packet=this.manager.decode(stream)
-                    }
-                }
+        this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
+            let buf: ArrayBufferLike | null = null
+            if (msg.data instanceof ArrayBuffer){
+                buf = msg.data
+            }else if(msg.data instanceof Uint8Array){
+                buf=msg.data.buffer
+            }else if(msg.data instanceof Blob) {
+                buf=await msg.data.arrayBuffer()
             }
-        }else{
-            this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
-                try{
-                    let buf: ArrayBufferLike | null = null
-                    if (msg.data instanceof ArrayBuffer) buf = msg.data
-                    else if (msg.data instanceof Blob) {
-                        buf=await msg.data.arrayBuffer()
+            if (buf) {
+                const stream=new StaticStream(buf as ArrayBuffer)
+                let packet = this.manager.decode(stream)
+                while(!(packet instanceof InvalidPacket)){
+                    switch(packet.ID){
+                        case 65530:
+                            this.signals.emit(packet.Name, (packet as MessagePacket).msg)
+                            break
+                        case 65529:
+                            this.signals.emit((packet as SignalMessagePacket).signal,(packet as SignalMessagePacket).msg)
+                            break
+                        default:
+                            this.signals.emit(packet.Name, packet)
+                            break
                     }
-
-                    if (buf) {
-                        const packet = this.manager.decode(new StaticStream(buf));
-                        this.signals.emit(packet.Name, packet);
-                    }
-                }catch(error){
-                    console.error("decode Message Error:",error)
+                    packet=this.manager.decode(stream)
                 }
             }
         }
-        
         this.IP=ip
         if(ip==""){
             this.on(DefaultSignals.CONNECT,(packet:ConnectPacket)=>{
@@ -139,20 +128,27 @@ export class Client{
             this.ping = now - packet.time
         })
         this.on("ping", (packet: PingPacket) => {
-            this.emit(new PongPacket(packet.time))
+            this.emit_packet(new PongPacket(packet.time))
         })
     }
     private static stream_cache:Stream=new StaticStream(new ArrayBuffer(1024 * 40))
 
-    /**
-     * Send A `Packet` To `Server/Client`
-     * @param packet To Send
-     */
-    emit(packet: Packet): void {
+    emit(signal:string,msg?:any,bytes1:number=1,bytes2:number=2){
+        const p=new SignalMessagePacket()
+        p.signal=signal
+        p.msg=msg
+        p.bytes1=bytes1
+        p.bytes2=bytes2
+        this.emit_packet(p)
+    }
+    emit_packet(packet: Packet): void {
         if (this.ws.readyState !== WebSocket.OPEN) return
         Client.stream_cache.clear()
         this.manager.encode(packet, Client.stream_cache)
         if (this.ws.send) this.ws.send(Client.stream_cache.data.subarray(0,Client.stream_cache.length))
+    }
+    async wait(signal:string):Promise<any>{
+        return (await this.signals.wait(signal))[0]
     }
 
     /**
@@ -164,9 +160,16 @@ export class Client{
     on(name:string,callback:Function){
         this.signals.on(name,callback)
     }
-    sendStream(stream:Stream){
+    send_stream(stream:Stream){
         if (this.ws.readyState !== WebSocket.OPEN) return
         if (this.ws.send) this.ws.send(stream.data.subarray(0, stream.length))
+    }
+    send(msg:any,bytes1:number=1,bytes2:number=2){
+        const p=new MessagePacket()
+        p.msg=msg
+        p.bytes1=bytes1
+        p.bytes2=bytes2
+        this.emit_packet(p)
     }
     /**
      * Disconnect Websocket
@@ -176,11 +179,11 @@ export class Client{
     }
     send_ping(){
         this.lastPingTime = performance.now()
-        this.emit(new PingPacket(this.lastPingTime))
+        this.emit_packet(new PingPacket(this.lastPingTime))
     }
 
     emit_connect(){
-        this.emit(new ConnectPacket(this.ID))
+        this.emit_packet(new ConnectPacket(this.ID))
     }
 }
 export class OfflineClientsManager{
@@ -217,18 +220,39 @@ export class OfflineClientsManager{
 
         return client.ID
     }
-    emit(packet: Packet) {
+    emit_packet(packet: Packet) {
         for (const client of this.clients.values()) {
             try {
-                client.emit(packet);
+                client.emit_packet(packet)
             } catch (error) {
-                console.error("Error emitting packet to client:", error);
+                console.error("Error emitting packet to client:", error)
             }
         }
     }
-    sendStream(stream:Stream){
+    emit(signal:string,msg?:any,bytes1:number=1,bytes2:number=2) {
         for (const client of this.clients.values()) {
-            client.sendStream(stream)
+            try {
+                client.emit(signal,msg,bytes1,bytes2)
+            } catch (error) {
+                console.error("Error emitting packet to client:", error)
+            }
+        }
+    }
+    async wait(signal:string):Promise<Record<number,any>>{
+        const ret:Record<number,any>={}
+        for (const client of this.clients.values()) {
+            ret[client.ID]=(await client.signals.wait(signal))[0]
+        }
+        return ret
+    }
+    send_stream(stream:Stream){
+        for (const client of this.clients.values()) {
+            client.send_stream(stream)
+        }
+    }
+    send(msg:any,bytes1?:number,bytes2?:number){
+        for (const client of this.clients.values()) {
+            client.send(msg,bytes1,bytes2)
         }
     }
     fake_connect(lag:number):BasicSocket{

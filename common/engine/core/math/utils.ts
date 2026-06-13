@@ -22,7 +22,33 @@ export function splitPath(path:string):string[]{
     }
     return ret
 }
+export class Path {
+    static join(...parts: string[]): string {
+        const stack: string[] = []
 
+        const joined = parts
+            .join("/")
+            .replace(/\\/g, "/")
+            .split("/")
+
+        for (const part of joined) {
+            if (part === "" || part === ".") {
+                continue
+            }
+
+            if (part === "..") {
+                if (stack.length > 0) {
+                    stack.pop()
+                }
+                continue
+            }
+
+            stack.push(part)
+        }
+
+        return "/" + stack.join("/")
+    }
+}
 export type Tags=string[]
 export function hasTag(tags:Tags,tag:string):boolean{
     return tags.includes(tag)
@@ -84,6 +110,15 @@ export class SignalManager {
                 listener(...parameters)
             }
         }
+    }
+    wait(signal: string): Promise<any[]> {
+        return new Promise(resolve => {
+            const callback = (...args: any[]) => {
+                this.off(signal, callback)
+                resolve(args)
+            }
+            this.on(signal, callback)
+        })
     }
 
     clear(signal: string): void {

@@ -4,6 +4,7 @@ import { Floors,FloorType } from "common/scripts/others/terrain.ts"
 import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_packet.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
+import { MapBiomeDef } from "common/scripts/definitions/maps/base.ts";
 export interface MinimapTile {
     position:Vec2
     image:HTMLImageElement
@@ -19,6 +20,7 @@ export class MinimapManager {
     ctx:CanvasRenderingContext2D
     tiles=new Map<number,MinimapTile>()
     map_size:Vec2
+    biome!:MapBiomeDef
 
     constructor(game:Game){
         this.game=game
@@ -71,7 +73,7 @@ export class MinimapManager {
         for(const floor of this.config.terrain){
             const rect=floor.hb.to_rect()
             if(rect.max.x>=world_min.x&&rect.min.x<=world_max.x&&rect.max.y>=world_min.y&&rect.min.y<=world_max.y){
-                const color=ColorM.number2hex(floor.tint??this.game.terrain.biome?.floors[floor.type as FloorType]?.color??Floors[floor.type as FloorType].default_color)
+                const color=ColorM.number2hex(floor.tint??this.biome?.floors[floor.type as FloorType]??Floors[floor.type as FloorType].default_color)
                 this.draw_hitbox(color,floor.hb,minimap_min)
             }
         }

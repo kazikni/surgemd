@@ -1,7 +1,6 @@
 import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ParticlesEmitter2D, RainParticle2D, random, Sound, SoundController, Tween, v2 } from "common/engine/client.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
-import { BiomeDef } from "common/scripts/definitions/maps/base.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
 
 export class AmbientManager{
@@ -10,7 +9,6 @@ export class AmbientManager{
     ambient_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
     snow_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
 
-    biome!:BiomeDef
     music:SoundController
     ambience:SoundController
     deadzone_ambience:SoundController
@@ -98,10 +96,10 @@ export class AmbientManager{
                 const dir=random.rad()
                 const ret=new ABParticle2D({
                     frame:{
-                        image:random.choose(this.biome!.ambient.particles),
+                        image:random.choose(this.game.minimap.biome!.particles),
                         layer:this.game.cam2d.layer,
                     },
-                    tint:ColorM.number(this.biome.ambient.particles_tint??0),
+                    tint:ColorM.number(this.game.minimap.biome.particles_tint??0),
                     zIndex:zIndexes.Particles,
                     life_time:random.float(10,30),
                     direction:dir,
@@ -222,11 +220,11 @@ export class AmbientManager{
         this.global_ilumination = Math.max(light * (1 - rainDark),0.4)
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
-        if(!this.biome)return
+        if(!this.game.minimap.biome)return
         this.rain_value=value
         if(value===0||this.game.cam2d.layer<Layers.Normal){
-            if(this.biome.ambient.sound){
-                this.ambience.set(this.game.resources.get_sound(this.biome.ambient.sound),{
+            if(this.game.minimap.biome.ambient_sound){
+                this.ambience.set(this.game.resources.get_sound(this.game.minimap.biome.ambient_sound),{
                     loop:true,
                 })
             }else{
@@ -251,15 +249,14 @@ export class AmbientManager{
         }
     }
     reload(){
-        this.biome=this.game.terrain.biome!
-        this.musics=this.biome.musics??[]
+        this.musics=this.game.minimap.biome.musics??[]
 
-        if(this.biome.ambient.snow){
+        /*if(this.game.minimap.biome.ambient_snow){
             this.fog_enabled=true
             this.fog_color=5
             this.fog_saturate=0.8
             this.fog_constrast=0.75
-        }
+        }*/
 
         this.global_ilumination=1
 
@@ -291,7 +288,7 @@ export class AmbientManager{
                 this.date.hour+=1
             }
             
-            if(this.biome?.ambient?.rain&&this.thunders){
+            if(this.thunders){
                 if(Math.random()<=0.05){
                     this.bolt()
                 }

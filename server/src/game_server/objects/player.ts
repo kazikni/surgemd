@@ -1,7 +1,7 @@
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { Human } from "./human.ts";
 import { DamageParams } from "../others/utils.ts";
-import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { DamageReason, HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
@@ -9,13 +9,13 @@ import { type Game } from "../others/game.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Stream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
-import { HumanDefinition } from "common/scripts/config/level_definition.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
+    real_human?:Human|Player
     spectating:boolean=false
     connected:boolean=true
     join_packet?:JoinPacket
@@ -31,6 +31,7 @@ export abstract class PlayerConnManager{
     set_active_player(p:Player) {
         this.spectating=false
         this.human=p
+        this.real_human=p
         p.conn=this
     }
     add_player():Player|undefined{
@@ -51,6 +52,10 @@ export abstract class PlayerConnManager{
             this.set_active_player(p)
             return p
         }
+    }
+    revive(){
+        if(!this.real_human)return
+        this.real_human.revive()
     }
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
         const layers=[layer-2,layer-1,layer,layer+1,layer+2]
@@ -95,6 +100,12 @@ export class Player extends Human{
             score_applyer:[]
         }
         this.spawn_body=true
+    }
+    override reset_status(): void {
+        super.reset_status()
+        this.status.score_applyer.length=0
+        this.status.time_alive=0
+        this.status.id=this.id
     }
     override on_create(args: Record<string, void>): void {
         super.on_create(args)
@@ -195,6 +206,11 @@ export class Player extends Human{
         this.game.update_data()
 
         if(this.team_data.group)this.team_data.group.dirty=true
+    }
+    override revive(): void {
+        if(!this.health_data.dead)return
+        super.revive()
+        this.game.players._add_player(this)
     }
     override side_effect(sf:SideEffect){
         super.side_effect(sf)

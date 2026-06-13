@@ -1,4 +1,5 @@
 import { KDate, Stream, Packet, Vec2 } from "../../engine/core.ts";
+import { PacketType } from "../definitions/utils.ts";
 
 export enum DeadZoneState{
     Deenabled,
@@ -85,7 +86,7 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
 }
 
 export class GeneralUpdatePacket extends Packet{
-    ID=7
+    ID=PacketType.GeneralUpdate
     Name="general_update"
     content:GeneralUpdate={
         started:false,

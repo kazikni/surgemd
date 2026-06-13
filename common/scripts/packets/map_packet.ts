@@ -1,7 +1,8 @@
 import { Stream, Packet, v2, Vec2 } from "../../engine/core.ts";
-import { type BiomeDef, type BiomeFloor } from "../definitions/maps/base.ts";
+import { MapBiomeDef } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
+import { PacketType } from "../definitions/utils.ts";
 import { Floor } from "../others/terrain.ts";
 export interface MapRegion{
     name:string
@@ -21,66 +22,47 @@ export interface MapConfig{
     terrain:Floor[]
     size:Vec2
     seed:number
-    biome:BiomeDef
+    biome:MapBiomeDef
     objects:MapObjectEncode[]
     regions:MapRegion[]
     buildings?:JSONBuildingDef[]
-    assets:string[]
 }
-function write_biome(biome:BiomeDef,stream:Stream){
-    stream.write_string(biome.biome_skin??"",1)
-    .write_array(biome.assets,(i,_s)=>{
+function write_biome(biome:MapBiomeDef,stream:Stream){
+    stream.write_array(biome.musics??[],(i,_s)=>{
         stream.write_string(i,1)
     })
-    .write_array(biome.musics??[],(i,_s)=>{
+    .write_uint32(biome.particles_tint??0)
+    .write_array(biome.particles,(i,_s)=>{
         stream.write_string(i,1)
     })
-    .write_uint32(biome.ambient.particles_tint??0)
-    .write_array(biome.ambient.particles,(i,_s)=>{
-        stream.write_string(i,1)
-    })
-    .write_boolean_group(biome.ambient.rain===true,biome.ambient.snow===true)
-    .write_string(biome.ambient.sound??"",1)
-    .write_number_dict(biome.floors as Record<number,BiomeFloor>,(i,_s)=>{
-        stream.write_boolean_group(i.color!==undefined)
-        if(i.color!==undefined)stream.write_uint32(i.color??0)
+    .write_string(biome.ambient_sound??"",1)
+    .write_number_dict(biome.floors as Record<number,number>,(i)=>{
+        stream.write_uint32(i)
     },1)
 }
-function decode_biome(stream:Stream):BiomeDef{
-    const biome:BiomeDef={
-        ambient:{
-            particles:[]
-        },
-        assets:[],
+function decode_biome(stream:Stream):MapBiomeDef{
+    const biome:MapBiomeDef={
         floors:{},
+        skin:"",
+        musics:[],
+        particles:[],
+        spritesheets:[]
     }
-    biome.biome_skin=stream.read_string(1)
-    biome.assets=stream.read_array(()=>{
-        return stream.read_string(1)
-    },1)
     biome.musics=stream.read_array(()=>{
         return stream.read_string(1)
     },1)
-    biome.ambient.particles_tint=stream.read_uint32()
-    biome.ambient.particles=stream.read_array(()=>stream.read_string(1),1)
-    const bg1=stream.read_boolean_group()
-    biome.ambient.rain=bg1[0]
-    biome.ambient.snow=bg1[1]
-    biome.ambient.sound=stream.read_string(1)
+    biome.particles_tint=stream.read_uint32()
+    biome.particles=stream.read_array(()=>stream.read_string(1),1)
+    biome.ambient_sound=stream.read_string(1)
     biome.floors=stream.read_number_dict((_s)=>{
-        const [has_color]=stream.read_boolean_group()
-        const floor:BiomeFloor={}
-        if(has_color){
-            floor.color=stream.read_uint32()
-        }
-        return floor
+        return stream.read_uint32()
     },1)
     return biome
 }
 export class MapPacket extends Packet{
-    ID=6
+    ID=PacketType.Map
     Name="map"
-    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],assets:[],regions:[]}
+    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],regions:[]}
     constructor(){
         super()
     }
@@ -111,7 +93,6 @@ export class MapPacket extends Packet{
         .write_uint16(this.map.size.y)
         write_biome(this.map.biome,stream)
         stream.write_object_advanced(this.map.buildings)
-        .write_array(this.map.assets??[],(v)=>stream.write_string(v,1),1)
         .write_array(this.map.regions,(v)=>{
             stream.write_string(v.name,1)
             .write_pos2(v.position)
@@ -152,7 +133,6 @@ export class MapPacket extends Packet{
         this.map.size=v2(stream.read_uint16(),stream.read_uint16())
         this.map.biome=decode_biome(stream)
         this.map.buildings=stream.read_object_advanced()
-        this.map.assets=stream.read_array(()=>stream.read_string(1),1)
         this.map.regions=stream.read_array(()=>{
             return {
                 name:stream.read_string(1),

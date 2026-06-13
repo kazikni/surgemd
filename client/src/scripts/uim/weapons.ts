@@ -45,7 +45,7 @@ export class WeaponsModule extends UIModule<Game> {
                     this.elements[i].dataset.item_description=this.game.language.get(descriptionKey)
                 }
                 name_el.innerText = name
-                this.elements[i].dataset.item_name=name
+                this.elements[i].dataset.item_name="items."+item.def.idString
                 img_el.src = assets.item.src
                 img_el.style.display = "block"
             } else {

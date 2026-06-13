@@ -1,7 +1,8 @@
 import { Stream, Packet } from "../../engine/core.ts";
+import { PacketType } from "../definitions/utils.ts";
 
 export class JoinPacket extends Packet{
-    ID=0
+    ID=PacketType.Join
     Name="join"
 
     player_name:string=""

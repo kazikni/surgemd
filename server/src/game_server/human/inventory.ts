@@ -496,7 +496,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                     reason:DamageReason.Human,
                     owner:user,
                     source:this.def,
-                    direction:v2.lookTo(user.position,c.position)
+                    direction:v2.lookTo(c.position,user.position)
                 })
             }else if(c instanceof Human&&c.id!==user.id){
                 c.damage({
@@ -507,7 +507,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                     reason:DamageReason.Human,
                     owner:user,
                     source:this.def,
-                    direction:v2.lookTo(user.position,c.position)
+                    direction:v2.lookTo(c.position,user.position)
                 })
             }
         }
@@ -947,6 +947,7 @@ export class GInventory extends GInventoryBase<LItem>{
         for(const w of Object.keys(this.weapons)){
             l.push(...this.drop_weapon(w as unknown as number))
         }
+
         for(const s of Object.keys(this.aitems)){
             const def=this.owner.game.definitions.game_items.valueString[s]
             const dir=random.float(-3.141592,3.141592)
@@ -966,15 +967,23 @@ export class GInventory extends GInventoryBase<LItem>{
                 s.remove(s.quantity)
             }
         }
+
         this.drop_helmet(true)
         this.drop_vest(true)
         if(this.backpack&&this.backpack.level&&this.droppable.backpack){
             l.push(this.owner.game.add_loot(this.owner.position,this.backpack,1,layer))
             this.set_backpack()
         }
-        for(const i of this.iitems){
-            if((i as ScopeDef).droppable)l.push(this.owner.game.add_loot(this.owner.position,i,1,layer))
+
+        for(let i=0;i<this.iitems.length;i++){
+            if((this.iitems[i] as ScopeDef).droppable&&this.iitems[i].idNumber!==this.owner.equipment_data.default_scope.idNumber){
+                l.push(this.owner.game.add_loot(this.owner.position,this.iitems[i],1,layer))
+                this.iitems.splice(i,1)
+                i--
+            }
         }
+        this.owner.equipment_data.scope=this.owner.equipment_data.default_scope
+
         for(const s of this.accessorys.slots){
             if(s.item&&s.droppable){
                 l.push(this.owner.game.add_loot(this.owner.position,s.item,1,layer))
@@ -991,6 +1000,7 @@ export class GInventory extends GInventoryBase<LItem>{
         this.net_sync.items=true
         this.net_sync.aitems=true
         this.net_sync.iitems=true
+        this.owner.equipment_data.dirty=true
     }
 
     net_update(){

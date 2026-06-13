@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputKeyEvent, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputKeyEvent, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, sleep, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -47,13 +47,13 @@ import { Decal } from "../objects/decals.ts";
 import { FinalScreenManager } from "../managers/final_screen.ts";
 import { island_final } from "common/scripts/config/final_screen.ts";
 import { HumanBody } from "../objects/human_body.ts";
+import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
+import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
     comunication_mode:boolean=false
 
-    level?:LevelDefinition
-    level_path:string=""
     offline:boolean=false
     can_act:boolean=true
     get play_sounds():boolean{
@@ -61,6 +61,7 @@ export class Game extends ClientGame<GameObject>{
     }
     game_over:boolean=false
     started:boolean=false
+    map_started:boolean=false
 
     local_server:LocalGameServer
 
@@ -131,6 +132,8 @@ export class Game extends ClientGame<GameObject>{
         color:{r:1,g:1,b:1,a:0.9}
     }
 
+    theme_colors:Record<string,string>={}
+
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
@@ -195,7 +198,7 @@ export class Game extends ClientGame<GameObject>{
         this.device.add_app(new MapApp)
     }
     get_theme_color(name:string):string{
-        if(this.level?.player.colors_replace?.[name])return this.level.player.colors_replace[name]
+        if(this.theme_colors[name])return this.theme_colors[name]
         switch(name){
             case "primary":
                 return this.save.get_variable("sv_ui_primary_color")
@@ -408,7 +411,7 @@ export class Game extends ClientGame<GameObject>{
         this.scope_zoom=force_default?this.default_scope.scope_view:scope.scope_view
         this.ui_manager.signal("current_scope_dirty",scope)
     }
-    async load_resources(textures:string[]=["main"]){
+    async load_resources(textures:string[]=["main"],assets:Record<string,string>,languages_path:string=""){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
         this.loaded=false
 
@@ -447,39 +450,32 @@ export class Game extends ClientGame<GameObject>{
         await this.resources.load_sound("thunder_2",{src:"/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
         await this.resources.load_sound("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
-        if(this.level){
-            if(this.level?.assets?.background_music){
-                await this.resources.load_sound("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
-            }
-            if(this.level?.assets?.load?.sounds){
-                for(const s of Object.keys(this.level.assets.load.sounds)){
-                    await this.resources.load_sound(s,{src:this.level.assets.load.sounds[s],volume:1},"level",this.menu.set_loading_current)
-                }
-            }
-
+        for(const s in assets){
+            await this.resources.load_sound(s,{src:assets[s],volume:1},"ingame",this.menu.set_loading_current)
+        }
+        
+        if(languages_path!=""){
             try{
-                this.language.load_default_language(await this.resources.load_json(`${this.level_path}/languages/en.json`),"level")
-                this.language.load_language(await this.resources.load_json(`${this.level_path}/languages/${this.save.get_variable("sv_ui_translation")}.json`),"level")
+                this.language.load_default_language(await this.resources.load_json(`${languages_path}/en.json`),"ingame")
+                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.get_variable("sv_ui_translation")}.json`),"ingame")
             }catch(e){
                 console.log(e)
             }
-
+        }
+        /*if(this.level){
+            if(this.level?.assets?.background_music){
+                await this.resources.load_sound("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
+            }
             if(this.level.cutscenes?.begin){
                 await this.menu.preload_cutscene(this.level_path+"/cutscenes/"+this.level.cutscenes.begin)
             }
-        }
+        }*/
 
         this.menu.hide_loading_screen()
         this.loaded=true
     }
-    start_campaign_level(level:LevelDefinition,path:string){
-        this.local_server.begin_campaign_level(level)
-        this.local_server.connect()
-        this.level=level
-        this.level_path=path
-    }
-    async start(assets:string[]){
-        await this.load_resources(assets)
+    async start(settings:StartSettings){
+        await this.load_resources(settings.textures,settings.assets,settings.languages_path)
         this.menu.game_start()
 
         this.happening=true
@@ -494,21 +490,15 @@ export class Game extends ClientGame<GameObject>{
         this.ui.game_over_screen={
             type:GameOverScreenType.Normal
         }
-        if(this.level){
-            if(this.level.game_over)this.ui.game_over_screen=this.level.game_over
-            else this.ui.game_over_screen={
-                type:GameOverScreenType.Restart
-            }
-            if(this.menu.cutscene){
-                await this.menu.show_history(this.menu.cutscene,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
-            }
-            this.local_server.start()
-        }
-
         this.ui.start()
         this.join()
-
         this.watcher?.play?.()
+        if(this.offline){
+            this.ui.game_over_screen={
+                type:GameOverScreenType.Restart
+            }
+            this.local_server.init()
+        }
     }
     async show_final_screen(game_over:GameOverStatus){
         this.final_screen.set_final_screen(island_final)
@@ -583,36 +573,34 @@ export class Game extends ClientGame<GameObject>{
         this.ui.hide_game_over()
         this.local_server.start()
     }*/
-    override clear(): void {
-        super.clear()
-        this.ui.clear()
-    }
     close_game(){
         if(this.client&&this.client.opened)this.client.disconnect()
         this.cam2d.zoom=6
         this.happening=false
         this.started=false
         this.soft_close_game()
-        this.clear()
         this.local_server.stop()
         this.menu.game_end()
         this.ambient.on_game_close()
         this.client=undefined
+        this.map_started=false
         this.cam_type=0
-        this.language.clear("level")
+        this.language.clear("ingame")
     }
     soft_close_game(){
-        this.ui.hide_game_over()
+        this.clear()
+        this.ui.clear()
         this.cam2d.stop_shake()
         this.game_over=false
         this.active_entity=undefined
         this.active_entity_id=undefined
+        this.ui.hide_game_over()
     }
     finish_game_over(){
-        if(this.level){
+        if(this.offline){
             this.soft_close_game()
             this.local_server.reset_level()
-            this.local_server.start()
+            //this.local_server.start()
         }else{
             this.close_game()
         }
@@ -665,7 +653,7 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
             this.input.auto_fire=this.ui.mobile_enabled
-            this.client.emit(this.input)
+            this.client.emit_packet(this.input)
             this.reset_input()
         }
     }
@@ -749,7 +737,7 @@ export class Game extends ClientGame<GameObject>{
             hair_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint")),
             shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
         }
-        this.client.emit(packet)
+        this.client.emit_packet(packet)
     }
     connect(url:string){
         this.set_socket(new WebSocket(url) as unknown as BasicSocket)
@@ -757,7 +745,6 @@ export class Game extends ClientGame<GameObject>{
     }
     set_socket(socket:BasicSocket){
         if(this.client)return
-        this.level=undefined
         const client=new Client(socket,PacketManager)
         client.onopen=this.set_client.bind(this,client)
     }
@@ -781,15 +768,22 @@ export class Game extends ClientGame<GameObject>{
         client.on("connect",(_p:ConnectPacket)=>{
         })
         client.on("map",async(mp:MapPacket)=>{
+            if(!this.map_started){
+                await this.signals.wait("_map_start")
+            }
             if(mp.map.buildings){
                 this.definitions.reset()
                 this.definitions.buildings.insert(...((mp.map.buildings??[]).map(v=>building_from_json(v))))
             }
             await this.terrain.process_map(mp.map)
-            await this.start([...mp.map.assets,...this.terrain.biome!.assets])
             this.terrain.last_layer=0
             this.minimap.init(mp.map)
             this.ambient.on_game_start()
+        })
+        client.on("start",async(s:StartPacket)=>{
+            await this.start(s.settings)
+            this.map_started=true
+            this.signals.emit("_map_start")
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
@@ -806,6 +800,20 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("feed",(p:FeedPacket)=>{
             this.ui.add_feed_message(p.message)
+        })
+        client.on("message",async(msg:OnlineMessage)=>{
+            switch(msg.type){
+                case OnlineMessageType.Cutscene:{
+                    await this.menu.show_history(msg.cutscene,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+                    client.emit("_end")
+                    break
+                }
+                case OnlineMessageType.CharacterSelector:{
+                    const r=await this.menu.select_character_screen(msg.characters)
+                    client.emit("_end",r)
+                    break
+                }
+            }
         })
     }
 }

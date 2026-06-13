@@ -261,7 +261,7 @@ export class Obstacle extends StaticBody{
         if(skin){
             this.visual_data.skin=skin
         }else if(this.def.assets?.frame?.biome_skins){
-            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.biome_skin??"")+1
+            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.skin??"")+1
         }
         if(rotation===undefined){
             if(this.def.rotation_mode===RotationMode.limited){

@@ -5,7 +5,6 @@ import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
 import { Rect } from "../math/geometry.ts";
-import { GameObjectType } from "../../../scripts/others/constants.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -31,6 +30,7 @@ export abstract class BaseObject2D{
     }
 
     public destroyed:boolean=false
+    public deleted:boolean=false
     public registred:boolean=false
 
     public id!:GameObjectID
@@ -412,6 +412,12 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         return obj
     }
     registry_object(obj: GameObject){
+        obj.destroyed=false
+        obj.deleted=false
+        const idx=this.destroy_queue.indexOf(obj)
+        if(idx!==-1){
+            this.destroy_queue.splice(idx,1)
+        }
         if(obj.registred)return
         obj.registred=true
         obj.set_dirty_full()
@@ -460,6 +466,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         delete this.objects[obj.id]
     }
     delete_object(obj:GameObject){
+        if(!obj.deleted)
+        obj.deleted=true
         this.unregister_object(obj)
         obj.on_destroy()
     }

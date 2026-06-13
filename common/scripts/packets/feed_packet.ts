@@ -1,5 +1,5 @@
 import { Stream, Packet } from "../../engine/core.ts";
-import { DamageReason } from "../definitions/utils.ts"
+import { DamageReason, PacketType } from "../definitions/utils.ts"
 export enum FeedMessageType{
     kill,
     down,
@@ -33,7 +33,7 @@ export interface FeedMessageSP{
 }
 export type FeedMessage=FeedMessageKill|FeedMessageSP|FeedMessageLeader
 export class FeedPacket extends Packet{
-    ID=4
+    ID=PacketType.Feed
     Name="feed"
     message!:FeedMessage
     constructor(){

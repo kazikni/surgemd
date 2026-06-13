@@ -7,8 +7,6 @@ import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
-import { LevelCharacter } from "common/scripts/config/level_definition.ts";
-import { CharacterDefinition } from "common/scripts/definitions/utils.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 type PhaseIntroConfig = {
     location: string
@@ -109,6 +107,9 @@ export class MenuManager{
         ShowElement(this.content.menuD)
 
         HideElement(this.content.loading_screen)
+        this.content.loading_screen.style.background=`url("/img/menu/background/${
+            random.choose(["normal_background","tundra_background_1"])
+        }.png")`
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
         this.start_intro()

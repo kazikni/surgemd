@@ -154,7 +154,7 @@ export const obstacles_factory={
         o?:DeepPartial<ObstacleDef>
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
-            health:170,
+            health:190,
             hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.82),
             spawnHitbox:settings.spawn_hitbox,
             scale:{
@@ -391,11 +391,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
     obstacles.insert(
         {
             idString:"barrel",
-            health:100,
+            health:110,
             height:1,
             hitbox:new CircleHitbox2D(v2(0,0),0.65),
             scale:{
-                destroy:0.6
+                destroy:0.5
             },
             assets:{
                 particles:{
@@ -416,6 +416,17 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             spawnMode:Spawn.grass,
         },
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
+        obstacles_factory.rock("giant_rock",{
+            tint:0x4e4f50,
+            spawn_hitbox:new CircleHitbox2D(v2.zero,5),
+            o:{
+                scale:{
+                    min:2.9,
+                    max:3
+                },
+                health:400,
+            },
+        }),
         obstacles_factory.rock("river_rock",{
             spawn_hitbox:new CircleHitbox2D(v2.zero,1.2),
             o:{
@@ -455,7 +466,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"oak_tree",
-            health:120,
+            health:130,
             hitbox:new CircleHitbox2D(v2(0,0),0.4),
             spawnHitbox:new CircleHitbox2D(v2(0,0),1.5),
             scale:{
@@ -492,7 +503,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         obstacles_factory.bush("squared_bush",{
             hitbox:new RectHitbox2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
             o:{
-                health:150,
+                health:130,
                 scale:{
                     min:1,
                     max:1.1,
@@ -604,7 +615,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         }),
         obstacles_factory.crate("iron_crate",{
             o:{
-                health:170,
+                health:180,
                 assets:{
                     frame:{
                         dead:"metal_residue_1x1",
@@ -626,7 +637,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         }),
         obstacles_factory.crate("gold_crate",{
             o:{
-                health:170,
+                health:180,
                 assets:{
                     frame:{
                         dead:"metal_residue_1x1",
@@ -648,7 +659,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         }),
         obstacles_factory.crate("ammo_crate",{
             o:{
-                health:150,
+                health:200,
                 resistence:1,
                 assets:{
                     particles:{
@@ -858,7 +869,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         //Furnitunes
         {
             idString:"normal_tv",
-            health:200,
+            health:150,
             hitbox:new RectHitbox2D(v2(-0.4,-0.4),v2(0.4,0.4)),
             reflect_bullets:true,
             assets:{
@@ -882,7 +893,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"couch_3x1",
-            health:130,
+            health:100,
             hitbox:new RectHitbox2D(v2(-0.55,-1.4),v2(0.55,1.4)),
             scale:{
                 destroy:0.8
@@ -899,7 +910,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"large_drawer",
-            health:60,
+            health:65,
             hitbox:new RectHitbox2D(v2(-0.475,-1.15),v2(0.475,1.15)),
             scale:{
                 destroy:0.75
@@ -922,7 +933,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"small_stove",
-            health:90,
+            health:85,
             hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
             scale:{
                 destroy:0.9
@@ -951,7 +962,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"sink",
-            health:90,
+            health:85,
             hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
             scale:{
                 destroy:0.9
@@ -976,7 +987,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"large_kitchen_drawer",
-            health:100,
+            health:70,
             hitbox:new RectHitbox2D(v2(-0.56,-1.12),v2(0.56,1.12)),
             scale:{
                 destroy:0.9
@@ -1005,7 +1016,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
 
         {
             idString:"wood_table",
-            health:110,
+            health:100,
             no_collision:true,
             passable_by_bullets:true,
             hitbox:new RectHitbox2D(v2(-0.75,-1.12),v2(0.75,1.12)),
@@ -1032,7 +1043,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"wood_chair",
-            health:70,
+            health:65,
             hitbox:new RectHitbox2D(v2(-0.49,-0.47),v2(0.49,0.47)),
             scale:{
                 destroy:0.9
@@ -1055,7 +1066,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"small_bed",
-            health:150,
+            health:100,
             hitbox:new RectHitbox2D(v2(-0.77,-1.28),v2(0.77,1.28)),
             scale:{
                 destroy:0.8

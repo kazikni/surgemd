@@ -141,7 +141,7 @@ export class Game extends ClientGame<GameObject>{
             [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody],
         )
 
-        this.set_meter_size(77)
+        this.set_meter_size(85)
         this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
 
         this.local_server=new LocalGameServer(this)
@@ -600,7 +600,6 @@ export class Game extends ClientGame<GameObject>{
         if(this.offline){
             this.soft_close_game()
             this.local_server.reset_level()
-            //this.local_server.start()
         }else{
             this.close_game()
         }

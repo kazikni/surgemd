@@ -495,9 +495,7 @@
             height:50px;
 
             z-index:2;
-            svg path {
-                fill: var(--ping-color);
-            }
+            color: var(--ping-color);
         }
         .map-ping-pulse{
             position:absolute;
@@ -510,13 +508,42 @@
 
             border-radius:50%;
 
-            border:3px solid var(--ping-color);
+            border:4px solid var(--ping-color);
 
             transform:translate(-50%,-50%);
 
             z-index:1;
         }
     }
+    .map-humans{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        z-index: 41;
+        
+        .map-human{
+            position:absolute;
+            width:28px;
+            height:28px;
+            .human-border{
+                position: absolute;
+                width:24px;
+                height:24px;
+                border-radius:50%;
+                border:3px solid #fff;
+            }
+            .human-icon{
+                position: absolute;
+                width:18px;
+                height:18px;
+                top: 6px;
+                left: 6px;
+                border-radius:50%;
+                background:#00ff00;
+            }
+        }
+    }
+
     @include main.medium_screen {
         width: 200px;
         height: 200px;

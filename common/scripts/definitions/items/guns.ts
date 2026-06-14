@@ -1297,7 +1297,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:5,
-                    range:80,
+                    range:70,
                     falloff:0.5,
                     on_hit_explosion:"rocket_explosion",
                     speed:22,

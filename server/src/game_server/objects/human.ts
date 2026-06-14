@@ -1,6 +1,6 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
-import { DamageSplash, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
+import { DamageSplash, MapHumanData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -68,14 +68,14 @@ export class Human extends MovingBody{
         substeps:2,
     }
 
+    dead:boolean=false
+    downed:boolean=false
     health_data:HumanHealthData&{boost_time:number,imortal:boolean}={
         imortal:false,
         invensibility_time:0,
 
-        dead:false,
         health:100,
         max_health:100,
-        downed:false,
 
         boost:0,
         max_boost:100,
@@ -306,7 +306,7 @@ export class Human extends MovingBody{
         })
     }
     override can_interact(user: Human): boolean {
-        return this.health_data.downed&&this.game.modeManager.is_ally(this,user)
+        return this.downed&&this.game.modeManager.is_ally(this,user)
     }
     override on_interact(user: Human): void {
         user.actions.play(new HelpupAction(this))
@@ -611,11 +611,11 @@ export class Human extends MovingBody{
             if(this.seat){
                 this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
                 this.seat.clear_human()
-            }else if(this.health_data.downed&&this.human_data.self_revive){
+            }else if(this.downed&&this.human_data.self_revive){
                 this.on_interact(this)
             }
         }
-        if(!this.health_data.downed&&!this.parachute){
+        if(!this.downed&&!this.parachute){
             const executed:InputActionType[]=[]
             for(const a of this.input.actions){
                 if(executed.includes(a.type))continue
@@ -767,19 +767,19 @@ export class Human extends MovingBody{
         }
     }
     override on_tick(dt:number): void {
-        if(this.health_data.dead){
+        if(this.dead){
             return
         }
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let acceleration=40 * (this.health_data.downed?0.1:(current_floor.acceleration??1))
+        let acceleration=40 * (this.downed?0.1:(current_floor.acceleration??1))
         acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
             * this.modifiers.speed
-            * (this.health_data.downed?0.25:1)
+            * (this.downed?0.25:1)
             * (this.parachute?1:((current_floor.speed_mult??1)))
             * (this.grenade_holding?0.7:1)
         if(this.recoil){
@@ -884,7 +884,7 @@ export class Human extends MovingBody{
                 const move=v2.from_PolarMovement(this.input.movement)
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
-                if(this.health_data.downed){
+                if(this.downed){
                     this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
                 }else{
                     this.physical_data.rotation=this.input.rotation
@@ -898,7 +898,7 @@ export class Human extends MovingBody{
             if(!this.parachute){
                 //Hand Use
                 this.animation_data.attacking=false
-                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.health_data.downed){
+                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.downed){
                     if(this.input.using_item){
                         this.inventory.hand_item.on_fire(this)
                         this.input.using_item_down=false
@@ -936,13 +936,13 @@ export class Human extends MovingBody{
         this.physical_data.dirty_part=true
         this.set_dirty_part()
 
-        this._can_interact=this.human_data.movement_enabled&&!this.health_data.downed
+        this._can_interact=this.human_data.movement_enabled&&!this.downed
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
         }
 
-        if(this.health_data.downed){
+        if(this.downed){
             this.downed_time+=dt
             if(this.downed_time>=1){
                 this.downed_time=0
@@ -1096,7 +1096,7 @@ export class Human extends MovingBody{
         this.set_dirty_full()
     }
     damage(params:DamageParams){
-        if(this.health_data.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
+        if(this.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
         let damage=params.amount
         let mod=1
         if(params.owner instanceof Human){
@@ -1112,7 +1112,7 @@ export class Human extends MovingBody{
             mod-=this.equipment_data.helmet.reduction
             damage-=this.equipment_data.helmet.defence
         }
-        if(this.health_data.downed){
+        if(this.downed){
             mod+=0.2
         }
         if(params.critical){
@@ -1164,13 +1164,13 @@ export class Human extends MovingBody{
                 params.owner.status.damage+=damage
                 params.owner.apply_score(ScoreApplyerType.DamageDealth,damage*this.game.modeManager.rules.score.damage_reward)
             }
-            if(!this.health_data.downed){
+            if(!this.downed){
                 this.status.damage_taken+=damage
                 this.apply_score(ScoreApplyerType.DamageTaken,damage*-this.game.modeManager.rules.score.damage_taken_penalty)
             }
         }
         if (this.health_data.health === 0) {
-            if (!this.health_data.downed&&((this.game.modeManager.can_down(this)||this.human_data.self_revive))) {
+            if (!this.downed&&((this.game.modeManager.can_down(this)||this.human_data.self_revive))) {
                 this.down(params)
             } else {
                 this.die(params)
@@ -1235,8 +1235,8 @@ export class Human extends MovingBody{
         this.status.score=0
     }
     down(params:DamageParams){
-        if(this.health_data.downed)return
-        this.health_data.downed=true
+        if(this.downed)return
+        this.downed=true
         this.downed_by=params.owner
         this.downed_time=0
 
@@ -1250,19 +1250,19 @@ export class Human extends MovingBody{
         this.push(-10,params.direction)
     }
     help_up(){
-        if(!this.health_data.downed)return
+        if(!this.downed)return
 
-        this.health_data.downed=false
+        this.downed=false
         this.downed_by=undefined
         this.killed_by=undefined
         this.health_data.health=this.health_data.max_health*0.3
         this.health_data.boost=0
     }
     die(params:DamageParams){
-        if(this.health_data.dead)return
+        if(this.dead)return
 
         this.net_sync_deletion=false
-        this.health_data.dead=true
+        this.dead=true
         this.set_dirty_part()
 
         if(this.loadout.emotes.die){
@@ -1297,9 +1297,9 @@ export class Human extends MovingBody{
         if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
     }
     revive(){
-        if(!this.health_data.dead)return
-        this.health_data.dead=false
-        this.health_data.downed=false
+        if(!this.dead)return
+        this.dead=false
+        this.downed=false
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Adrenaline]
@@ -1313,6 +1313,9 @@ export class Human extends MovingBody{
         this.status.kills++
         this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
         this.game.modeManager.assign_leader(this)
+    }
+    map_humans():MapHumanData[]{
+        return this.team_data.team?.humans??this.team_data.group?.humans??[this]
     }
     override on_destroy(): void {
         const idx=this.humans_manager.humans.indexOf(this)
@@ -1337,8 +1340,8 @@ export class Human extends MovingBody{
             this.loadout.emote!==undefined, // 1
             this.loadout.emote_is_item,
 
-            this.health_data.dead,
-            this.health_data.downed,
+            this.dead,
+            this.downed,
 
             this.input.path===undefined,
             this.seat!==undefined

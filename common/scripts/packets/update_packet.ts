@@ -21,8 +21,15 @@ export interface DamageSplash{
     critical:boolean
     shield_break:boolean
 }
+export interface MapHumanData{
+    dead:boolean
+    downed:boolean
+    id:number
+    position:Vec2
+}
 export interface PrivateUpdate{
     splashes:DamageSplash[]
+    map_humans:MapHumanData[]
 
     active_entity:{
         dirty:boolean
@@ -280,6 +287,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     constructor(){
         super({
             splashes:[],
+            map_humans:[],
             active_entity:{
                 dirty:false,
                 id:0,
@@ -299,10 +307,14 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             .write_uint8(d.taker_layer)
             .write_pos2(d.position)
         },1)
+        .write_array(this.priv.map_humans,(d)=>{
+            stream.write_id(d.id)
+            .write_pos2(d.position)
+        })
         .write_array(this.priv.pings,(e)=>{
-            stream.write_pos2(e.position)
+            stream.write_int8(e.id)
+            .write_pos2(e.position)
             .write_uint8(e.def)
-            .write_int8(e.id)
             .write_uint32(e.color)
         },1)
         if(this.priv.active_entity.dirty){
@@ -326,11 +338,19 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                shield_break:bg[2], 
             }
         },1)
+        this.priv.map_humans=stream.read_array(()=>{
+            return {
+                id:stream.read_id(),
+                position:stream.read_pos2(),
+                dead:false,
+                downed:false
+            }
+        })
         this.priv.pings=stream.read_array(()=>{
             return {
+                id:stream.read_uint8(),
                 position:stream.read_pos2(),
                 def:stream.read_uint8(),
-                id:stream.read_uint8(),
                 color:stream.read_uint32()
             }
         },1)

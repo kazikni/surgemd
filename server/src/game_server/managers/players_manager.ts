@@ -57,6 +57,7 @@ export class PlayerClient extends PlayerConnManager{
                 dirty:true,
                 id:this.human.id,
             }
+            up.priv.map_humans=this.human.map_humans()
 
             up.priv.self_state=this.human.self_state(this.human.is_new)
             if(this.human instanceof Player){

@@ -35,7 +35,7 @@ export abstract class PlayerConnManager{
         p.conn=this
     }
     add_player():Player|undefined{
-        if(this.join_packet&&!this.game.fineshed&&!(this.human&&!this.human.health_data.dead)&&this.connected){
+        if(this.join_packet&&!this.game.fineshed&&!(this.human&&!this.human.dead)&&this.connected){
             let p=new Player()
             if(this.human){
                 p.status=(this.human as Player).status
@@ -167,7 +167,7 @@ export class Player extends Human{
         if(this.team_data.group)this.team_data.group.dirty=true
     }
     override die(params: DamageParams): void {
-        if(this.health_data.dead)return
+        if(this.dead)return
         super.die(params)
 
         if(params.owner&&params.owner instanceof Player){
@@ -208,7 +208,7 @@ export class Player extends Human{
         if(this.team_data.group)this.team_data.group.dirty=true
     }
     override revive(): void {
-        if(!this.health_data.dead)return
+        if(!this.dead)return
         super.revive()
         this.game.players._add_player(this)
     }

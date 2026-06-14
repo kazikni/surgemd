@@ -15,6 +15,7 @@ export type ExplosionDef={
     }
     tint:string
     damage:number
+    obstacle_mult?:number
     push_force?:number
     bullet?:{
         def:BulletDef
@@ -109,9 +110,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#9c3932",
             size:{
                 begin:2,
-                end:4.5
+                end:5
             },
             damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -149,9 +151,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#9c3932",
             size:{
                 begin:2,
-                end:4.5
+                end:5
             },
             damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -227,7 +230,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:2,
                 end:4.5
             },
-            damage:120,
+            damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -274,7 +278,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:1,
                 end:4
             },
-            damage:30,
+            damage:40,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -315,9 +320,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#9c3932",
             size:{
                 begin:2,
-                end:4
+                end:5
             },
-            damage:60,
+            damage:70,
+            obstacle_mult:2,
             bullet:{
                 def:{
                     damage:4,
@@ -355,9 +361,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#9c3932",
             size:{
                 begin:2,
-                end:4.5
+                end:5
             },
-            damage:60,
+            damage:70,
+            obstacle_mult:1.5,
             bullet:{
                 def:{
                     damage:4,
@@ -422,6 +429,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 visual:1.5
             },
             damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,

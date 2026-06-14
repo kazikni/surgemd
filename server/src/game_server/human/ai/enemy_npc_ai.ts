@@ -85,7 +85,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     }
     protected isPlayerVisible(self: Human, other: Human): boolean {
         const dist=v2.distance(self.position, other.position)
-        if(other.health_data.dead || !other.is_player) return false
+        if(other.dead || !other.is_player) return false
         if(dist>this.params.vision_distance) return false
 
         //const angleToPlayer = v2.lookTo(self.position, other.position)

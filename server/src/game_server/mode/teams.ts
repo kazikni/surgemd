@@ -1,7 +1,7 @@
-import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
+import { GroupMemberState, MapHumanData } from "common/scripts/packets/update_packet.ts";
 import { Human } from "../objects/human.ts";
 import { random } from "common/engine/core.ts";
-import { HumanStatus, PlayerStatus } from "common/scripts/others/constants.ts";
+import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 
 export class Team{
@@ -41,13 +41,13 @@ export class Team{
         this.humans.push(h)
     }
     get_living_humans():Human[]{
-        return this.humans.filter((p)=>!p.health_data.dead)
+        return this.humans.filter((p)=>!p.dead)
     }
     get_not_downed_humans():Human[]{
-        return this.humans.filter((p)=>!p.health_data.dead&&(!p.health_data.downed||p.human_data.self_revive))
+        return this.humans.filter((p)=>!p.dead&&(!p.downed||p.human_data.self_revive))
     }
     get_downed_players():Human[]{
-        return this.humans.filter((p)=>!p.health_data.dead&&p.health_data.downed&&!p.human_data.self_revive)
+        return this.humans.filter((p)=>!p.dead&&p.downed&&!p.human_data.self_revive)
     }
     replace(o: Human, n: Human) {
         const index = this.humans.indexOf(o)
@@ -71,7 +71,7 @@ export class Team{
         return ret
     }
     choose_human(self: Human): Human | undefined {
-        const candidates = this.humans.filter(h => h !== self && !h.health_data.dead)
+        const candidates = this.humans.filter(h => h !== self && !h.dead)
         if (candidates.length === 0) return undefined
         return candidates[random.int(0,candidates.length-1)]
     }

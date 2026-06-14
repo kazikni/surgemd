@@ -1,6 +1,6 @@
-import { ColorM,HideElement,ShowElement,UIModule,v2,Vec2 } from "common/engine/client.ts"
+import { ColorM,HideElement,ShowElement,UIModule,v2,v2m,Vec2 } from "common/engine/client.ts"
 import { Game } from "../others/game.ts"
-import { PrivateUpdate } from "common/scripts/packets/update_packet.ts"
+import { MapHumanData, PrivateUpdate } from "common/scripts/packets/update_packet.ts"
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
 type MinimapPing = {
     id:number
@@ -41,6 +41,11 @@ export class MinimapModule extends UIModule<Game>{
     deadzoneDestEl!:HTMLDivElement
     deadzoneLineEl!:HTMLDivElement
 
+    humansLayer!:HTMLDivElement
+    humans_ins = new Map<number, {e:HTMLDivElement,pos:Vec2}>()
+
+    humans:MapHumanData[]=[]
+
     mapWidth=0
     mapHeight=0
 
@@ -51,6 +56,7 @@ export class MinimapModule extends UIModule<Game>{
         this.viewport=this.container.querySelector(".map-viewport") as HTMLDivElement
         this.tilesLayer=this.container.querySelector(".map-tiles") as HTMLDivElement
         this.pingsLayer=this.container.querySelector(".map-pings") as HTMLDivElement
+        this.humansLayer=this.container.querySelector(".map-humans") as HTMLDivElement
         this.deadzoneEl=this.container.querySelector(".map-deadzone") as HTMLDivElement
         this.deadzoneDestEl=this.container.querySelector(".map-deadzone-dest") as HTMLDivElement
         this.deadzoneLineEl=this.container.querySelector(".map-deadzone-safe-line") as HTMLDivElement
@@ -136,7 +142,7 @@ export class MinimapModule extends UIModule<Game>{
             this.centerOnPlayer()
         }
     }
-    add_ping(position:Vec2,def:PingDef,color:string,id?:number){
+    async add_ping(position:Vec2,def:PingDef,color:string,id?:number){
         const ping:MinimapPing={
             id:id??Math.random(),
             pos:v2.clone(position),
@@ -150,10 +156,7 @@ export class MinimapModule extends UIModule<Game>{
         el.className="map-ping"
         el.innerHTML=`
             <div class="map-ping-pulse"></div>
-            <img
-                class="map-ping-icon"
-                src="/img/menu/gui/pings/${def.idString}.svg"
-            >
+            <div class="map-ping-icon">${await(await fetch(`/img/menu/gui/pings/${def.idString}.svg`)).text()}</div>
         `
         ping.el=el
         ping.pulse=el.querySelector(".map-ping-pulse") as HTMLDivElement
@@ -190,6 +193,32 @@ export class MinimapModule extends UIModule<Game>{
                 }
             }
             this.updatePingVisual(p)
+        }
+    }
+    updateHumans(){
+        const alive = new Set<number>()
+        for(const human of this.humans){
+            alive.add(human.id)
+            let h = this.humans_ins.get(human.id)
+            if(!h){
+                const el = document.createElement("div")
+                el.className = "map-human"
+                el.innerHTML="<div class='human-border'></div><div class='human-icon'></div>"
+                this.humansLayer.appendChild(el)
+                h={e:el,pos:human.position}
+                this.humans_ins.set(human.id, h)
+            }
+            v2m.lerp(h.pos,human.position,this.game.global_interpolation)
+            const pos = this.worldToMap(h.pos.x,h.pos.y)
+            h.e.style.left = pos.x + "px"
+            h.e.style.top = pos.y + "px"
+            h.e.style.transform=`translate(-50%, -50%) scale(${1/this.scale})`
+        }
+        for(const [id,h] of this.humans_ins){
+            if(!alive.has(id)){
+                h.e.remove()
+                this.humans_ins.delete(id)
+            }
         }
     }
     updateDeadzone(){
@@ -250,6 +279,7 @@ export class MinimapModule extends UIModule<Game>{
                 for(const p of (data as PrivateUpdate).pings){
                     this.add_ping(p.position,this.game.definitions.ping.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
                 }
+                this.humans=(data as PrivateUpdate).map_humans
                 break
             case "actiondown":
                 switch(data.action){
@@ -278,6 +308,7 @@ export class MinimapModule extends UIModule<Game>{
             this.updateTransform()
             this.updateDeadzone()
             this.updatePings(dt)
+            this.updateHumans()
         }else{
             HideElement(this.container)
         }
@@ -286,5 +317,6 @@ export class MinimapModule extends UIModule<Game>{
     override on_clear():void{
         this.pingsLayer.innerHTML=""
         this.pings.length=0
+        this.humans.length=0
     }
 }

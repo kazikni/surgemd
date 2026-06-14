@@ -71,7 +71,7 @@ export class Bullet extends ServerGameObject{
             if(this.destroyed)break
             switch(obj.number_type){
                 case GameObjectType.Human:{
-                    if((obj as Human).health_data.dead||this.collided_with.has(obj)||(obj as Human).parachute||(this.owner&&obj.id===this.owner.id&&!this.hit_owner))break
+                    if((obj as Human).dead||this.collided_with.has(obj)||(obj as Human).parachute||(this.owner&&obj.id===this.owner.id&&!this.hit_owner))break
                     const colBody = obj.hitbox.overlap_line(this.old_position, this.position)
                     const reflectSeg = (obj as Human).get_reflect_segment()
                     let colReflect = null

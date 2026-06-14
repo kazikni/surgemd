@@ -5,6 +5,7 @@ import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapBiomeDef } from "common/scripts/definitions/maps/base.ts";
+import { MapHumanData, PrivateUpdate } from "common/scripts/packets/update_packet.ts";
 export interface MinimapTile {
     position:Vec2
     image:HTMLImageElement
@@ -143,7 +144,6 @@ export class MinimapManager {
     }
     draw_hitbox(color:string,hb:Hitbox2D,cam_position:Vec2){
         const ctx=this.ctx
-
         switch(hb.type){
             case HitboxType2D.circle:{
                 ctx.fillStyle=color

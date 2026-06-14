@@ -1,11 +1,11 @@
 import { Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition, LevelEnemys } from "common/scripts/config/level_definition.ts";
-import { BattleRoyale, BattleRoyaleDebug, BattleRoyaleSettings, BattleRoyaleSolo, BattleRoyaleTeam } from "./battle_royale.ts";
+import { BattleRoyale, BattleRoyaleDebug, BattleRoyaleSettings } from "./battle_royale.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
-import { cloneDeep, FileManager, mergeDeep, StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
+import { FileManager, mergeDeep, StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
 import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 export type KillAllEnemiesSettings={
@@ -202,7 +202,7 @@ export class LevelPlayer {
     spawn_players(){
         for(const conn of Object.values(this.game.players.connected_players)){
             conn.view_objects.length=0
-            if(conn.real_human?.health_data.dead){
+            if(conn.real_human?.dead){
                 conn.revive()
                 const pos=this.game.modeManager.get_human_spawn_position(conn.real_human)
                 if(pos!==undefined){

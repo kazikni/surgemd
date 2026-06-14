@@ -75,7 +75,7 @@ export class Explosion extends ServerGameObject{
                     case GameObjectType.Building:
                     case GameObjectType.Human: {
                         (obj as Human | StaticBody).damage({
-                            amount: damage,
+                            amount: damage*(this.def.obstacle_mult??1),
                             reason: DamageReason.Explosion,
                             source: this.source ?? this.def,
                             owner: this.owner,

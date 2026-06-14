@@ -609,7 +609,7 @@ export class ADVHumanAI extends BotAi{
     }
     protected isPlayerVisible(other: Human): boolean {
         const dist=v2.distance(this.human.position, other.position)
-        if(other.health_data.dead || !other.is_player) return false
+        if(other.dead || !other.is_player) return false
         return dist<=12
     }
     override AI(dt: number): void {

@@ -87,7 +87,7 @@ export class GunItem extends GunItemBase implements LItem{
         return (this.ammo>0||!this.def.reload)//&&(!this.def.man||this.has_mana(user))
     }
     reload(user:Human){
-        if(!this.def.reload||user.health_data.downed)return
+        if(!this.def.reload||user.downed)return
         if(this.ammo>=this.get_capacity()||(!this.infinity_ammo()&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
             this.reloading=false
             return

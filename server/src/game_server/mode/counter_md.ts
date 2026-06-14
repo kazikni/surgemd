@@ -292,7 +292,7 @@ export class CounterMD extends ModeManager {
         this.game.deadzone.reset()
         for (const p of Object.values(this.game.players.connected_players)) {
             if(!first_round){
-                if(p.human&&!p.human.health_data.dead){
+                if(p.human&&!p.human.dead){
                     p.human.clear_boost()
                     p.human.health_data.health=p.human.health_data.max_health
 
@@ -303,14 +303,13 @@ export class CounterMD extends ModeManager {
 
                     const spawn=this.get_human_spawn_position(p.human)
                     if(spawn)p.human.position=spawn
-                }else if(p.human&&p.human.health_data.dead){
+                }else if(p.human&&p.human.dead){
                     p.add_player()
                 }
             }
 
         }
         this.game.map.soft_reset()
-        this.game.clear_loot()
 
         this.game.add_timeout(() => {
             this.start_round()

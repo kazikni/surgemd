@@ -191,14 +191,12 @@ export const Spawn={
 export interface HumanHealthData{
     health:number
     max_health:number
-    dead:boolean
 
     boost:number
     max_boost:number
     boost_def:BoostDef
 
     invensibility_time:number
-    downed:boolean
 }
 export interface HumanLoadoutData {
     body:{

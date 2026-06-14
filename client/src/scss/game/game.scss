@@ -523,24 +523,6 @@
         
         .map-human{
             position:absolute;
-            width:28px;
-            height:28px;
-            .human-border{
-                position: absolute;
-                width:24px;
-                height:24px;
-                border-radius:50%;
-                border:3px solid #fff;
-            }
-            .human-icon{
-                position: absolute;
-                width:18px;
-                height:18px;
-                top: 6px;
-                left: 6px;
-                border-radius:50%;
-                background:#00ff00;
-            }
         }
     }
 
@@ -597,5 +579,89 @@
             width: 20px;
             height: 20px;
         }
+    }
+}
+#groups-info{
+    position:absolute;
+    left:10px;
+    top:10px;
+
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+
+    width:300px;
+
+    .group-human{
+        padding:8px;
+        height: fit-content;
+
+        background:color-mix(in srgb,var(--ui-theme-secondary) 30%,#0000);
+        backdrop-filter:var(--ui-backdrop-filter);
+
+        border:1px solid var(--ui-theme-primary);
+        box-shadow:0 0 3px var(--ui-theme-primary);
+
+        display:flex;
+        flex-direction:column;
+    }
+
+    .group-info{
+        display:flex;
+        align-items:center;
+        gap:6px;
+
+        span{
+            font-family:"Russo-One";
+            color:var(--ui-theme-tertiary);
+        }
+        .badge-icon {
+            width: 20px;
+            margin-bottom: -3px;
+            margin-left: 3px;
+        }
+    }
+
+    .member-color{
+        width:14px;
+        height:14px;
+        border-radius:50%;
+        background:#00ff00;
+        flex-shrink:0;
+    }
+
+    .health-bar-container,
+    .boost-bar-container{
+        position:relative;
+        width:100%;
+        overflow:hidden;
+        border-radius:3px;
+    }
+    .health-bar-bg,
+    .boost-bar-bg{
+        position:absolute;
+        inset:0;
+        background:#0008;
+    }
+    .health-bar,
+    .boost-bar{
+        position:absolute;
+        left:0;
+        top:0;
+        height:100%;
+        width:100%;
+        transition:width .15s linear;
+    }
+
+    .health-bar-container{
+        height:15px;
+        margin-top: 5px;
+    }
+    .health-bar{
+        background: linear-gradient(90deg, #fff,#dfdfdf);
+    }
+    .boost-bar-container{
+        height:7px;
+        margin-top: 5px;
     }
 }

@@ -1,7 +1,7 @@
 import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
-import { Player, type PlayerConnManager } from "../objects/player.ts";
+import { Player } from "../objects/player.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GroupsManager} from "./teams.ts";

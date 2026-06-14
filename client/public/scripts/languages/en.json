@@ -374,7 +374,8 @@
                 "negative_color":"Negative Color",
                 "special_color":"Special Color",
                 "translation":"Translation",
-                "interactive":"Interactive UI"
+                "interactive":"Interactive UI",
+                "blur_backdrop":"Blur Backdrop"
             }
         },
         "keybinds":{

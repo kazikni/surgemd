@@ -20,7 +20,7 @@ import { GInventory, GunItem, LItem, MeleeItem } from "../human/inventory.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
-import { DamageSourceDef, GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
+import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
@@ -70,7 +70,7 @@ export class Human extends MovingBody{
 
     dead:boolean=false
     downed:boolean=false
-    health_data:HumanHealthData&{boost_time:number,imortal:boolean}={
+    health_data:HumanHealthData&{boost_time:number,imortal:boolean,old_health:number,old_boost:number,old_boost_type:number}={
         imortal:false,
         invensibility_time:0,
 
@@ -81,6 +81,10 @@ export class Human extends MovingBody{
         max_boost:100,
         boost_def:Boosts[BoostType.Adrenaline],
         boost_time:0,
+
+        old_health:-1,
+        old_boost:-1,
+        old_boost_type:-1
     }
     team_data:{
         team?:Team
@@ -88,8 +92,9 @@ export class Human extends MovingBody{
 
         group?:Group
         group_id?:number
+        color:number
     }={
-
+        color:0x11aa55
     }
     
     equipment_data!:{
@@ -974,11 +979,12 @@ export class Human extends MovingBody{
             })
         }
 
-        //Fall
-        if(this.physical_data.current_floor===FloorType.Void){
-            /*if(this.layer>Layers.Normal&&this.human_data.movement_enabled){
-                this.set_layer(this.layer-1)
-            }*/
+        if(this.health_data.health!==this.health_data.old_health||this.health_data.boost!==this.health_data.old_boost||this.health_data.boost_def.type!==this.health_data.old_boost_type){
+            this.health_data.old_health=this.health_data.health
+            this.health_data.old_boost=this.health_data.boost
+            this.health_data.old_boost_type=this.health_data.boost_def.type
+            if(this.team_data.group)this.team_data.group.dirty=true
+            if(this.team_data.team)this.team_data.team.dirty=true
         }
 
     }
@@ -1030,7 +1036,6 @@ export class Human extends MovingBody{
             dirty:full?{
                 action:true,
                 group:true,
-                team:true,
                 inventory:{
                     items:true,
                     aitems:true,
@@ -1041,10 +1046,13 @@ export class Human extends MovingBody{
             }:{
                 inventory:this.inventory.net_sync,
                 action:this.actions.dirty,
-                team:false,
                 group:false
             },
             colors:this.loadout.dirty_colors?this.loadout.colors:undefined
+        }
+        if(this.team_data.group?.dirty){
+            ret.dirty.group=true
+            ret.group=this.team_data.group.get_state()
         }
         for(let i=0;i<this.inventory.slots.length;i++){
             const s=this.inventory.slots[i]

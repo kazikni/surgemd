@@ -43,6 +43,7 @@ export interface GameRules{
             time:number
             distance:number
         }
+        group_colors:number[]
     }
     ambient:{
         day_night_cycle:number
@@ -111,7 +112,13 @@ export abstract class ModeManager{
             help_up:{
                 time:7,
                 distance:2
-            }
+            },
+            group_colors:[
+                0x11aa55,
+                0xd61cab,
+                0x146aba,
+                0xffcc00,
+            ]
         },
         ambient:{
             day_night_cycle:1,

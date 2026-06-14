@@ -160,6 +160,26 @@ export const ColorM={
             Numeric.clamp(hsv.a * aMul, 0, 1)
         )
     },
+    number_mul_hsv(
+        color:number,
+        hAdd:number=0,
+        sMul:number=1,
+        vMul:number=1
+    ):number{
+        const hsv = this.rgb2hsv(this.number(color))
+
+        const c = this.hsv(
+            (hsv.h + hAdd + 360) % 360,
+            Numeric.clamp(hsv.s * sMul,0,1),
+            Numeric.clamp(hsv.v * vMul,0,1)
+        )
+
+        return (
+            (Math.round(c.r * 255) << 16) |
+            (Math.round(c.g * 255) << 8) |
+            Math.round(c.b * 255)
+        )
+    },
 
     set1(dst:Color,val:Color){
         dst.r=val.r

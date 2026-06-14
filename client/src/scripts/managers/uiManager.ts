@@ -3,7 +3,7 @@ import { DamageReason, InventoryItemType } from "common/scripts/definitions/util
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { FeedMessage, FeedMessageLeader, FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
-import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
+import { GroupMemberState, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
@@ -29,6 +29,7 @@ import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
+import { GroupMembersModule } from "../uim/groups.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -106,6 +107,8 @@ export class UiManager{
     game_over_screen:GameOverScreen={
         type:GameOverScreenType.Normal
     }
+
+    group_members:Record<number,GroupMemberState>={}
     constructor(game:Game){
         this.game=game
 
@@ -130,6 +133,7 @@ export class UiManager{
         this.game.ui_manager.add(new MinimapModule())
         this.game.ui_manager.add(new InformationBoxModule())
         this.game.ui_manager.add(new AdditionalInfoModule())
+        this.game.ui_manager.add(new GroupMembersModule())
 
         this.update_content_creators([
             {
@@ -145,6 +149,7 @@ export class UiManager{
         this.content.help_gui.innerText=""
 
         this.players_name={}
+        this.group_members={}
 
         HideElement(this.content.game_gui)
         HideElement(this.content.normal_gameOver)
@@ -575,6 +580,10 @@ export class UiManager{
             for (let i = 0; i < state.inventory.items.length; i++) {
                 this.items.push({id:state.inventory.items[i].idNumber,count:state.inventory.items[i].count})
             }
+        }
+        if(state.dirty.group){
+            this.group_members=state.group??{}
+            this.game.ui_manager.signal("update_group_members",null)
         }
         if(state.colors!==undefined){
             this.game.theme_colors={}

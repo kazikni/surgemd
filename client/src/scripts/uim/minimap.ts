@@ -18,6 +18,12 @@ type MinimapPing = {
     el?:HTMLDivElement
     pulse?:HTMLDivElement
 }
+interface MapHumansInstance{
+    e:HTMLDivElement
+    pos:Vec2
+    old_tint:number
+    old_icon:string
+}
 export class MinimapModule extends UIModule<Game>{
     enabled=true
     fullscreen=false
@@ -42,7 +48,7 @@ export class MinimapModule extends UIModule<Game>{
     deadzoneLineEl!:HTMLDivElement
 
     humansLayer!:HTMLDivElement
-    humans_ins = new Map<number, {e:HTMLDivElement,pos:Vec2}>()
+    humans_ins = new Map<number, MapHumansInstance>()
 
     humans:MapHumanData[]=[]
 
@@ -50,6 +56,8 @@ export class MinimapModule extends UIModule<Game>{
     mapHeight=0
 
     pings:MinimapPing[]=[]
+
+    map_icons:Record<string,string>={}
 
     override on_init(): void {
         this.container=document.querySelector("#ui-map") as HTMLDivElement
@@ -60,6 +68,13 @@ export class MinimapModule extends UIModule<Game>{
         this.deadzoneEl=this.container.querySelector(".map-deadzone") as HTMLDivElement
         this.deadzoneDestEl=this.container.querySelector(".map-deadzone-dest") as HTMLDivElement
         this.deadzoneLineEl=this.container.querySelector(".map-deadzone-safe-line") as HTMLDivElement
+
+        this.load_map_icon("normal","/img/menu/gui/map/map_icon_normal.svg")
+        this.load_map_icon("downed","/img/menu/gui/map/map_icon_downed.svg")
+    }
+
+    async load_map_icon(id:string,path:string){
+        this.map_icons[id]=await (await fetch(path)).text()
     }
 
     build_tiles(){
@@ -199,20 +214,47 @@ export class MinimapModule extends UIModule<Game>{
         const alive = new Set<number>()
         for(const human of this.humans){
             alive.add(human.id)
-            let h = this.humans_ins.get(human.id)
-            if(!h){
+            let hi = this.humans_ins.get(human.id)
+            if(!hi){
                 const el = document.createElement("div")
                 el.className = "map-human"
-                el.innerHTML="<div class='human-border'></div><div class='human-icon'></div>"
                 this.humansLayer.appendChild(el)
-                h={e:el,pos:human.position}
-                this.humans_ins.set(human.id, h)
+                hi={
+                    e:el,
+                    pos:human.position,
+                    old_tint:-1,
+                    old_icon:""
+                }
+                this.humans_ins.set(human.id, hi)
             }
-            v2m.lerp(h.pos,human.position,this.game.global_interpolation)
-            const pos = this.worldToMap(h.pos.x,h.pos.y)
-            h.e.style.left = pos.x + "px"
-            h.e.style.top = pos.y + "px"
-            h.e.style.transform=`translate(-50%, -50%) scale(${1/this.scale})`
+            let size=0.5
+            let icon="normal"
+            let color=0
+            const member=this.game.ui.group_members[human.id]
+            if(member){
+                color=member.color
+                size=1
+            }else if(human.id===this.game.active_entity_id){
+                size=1
+                color=0x2233aa
+            }
+            if(human.downed){
+                icon="downed"
+            }
+            if(icon!==hi.old_icon&&this.map_icons[icon]){
+                hi.e.innerHTML=this.map_icons[icon]
+            }
+            if(color!==hi.old_tint){
+                hi.old_tint=color
+                hi.e.style.setProperty("--icon-fill",ColorM.number2hex(color))
+                hi.e.style.setProperty("--icon-stroke",ColorM.number2hex(ColorM.number_mul_hsv(color,-3,undefined,0.5)))
+            }
+
+            v2m.lerp(hi.pos,human.position,this.game.global_interpolation)
+            const pos = this.worldToMap(hi.pos.x,hi.pos.y)
+            hi.e.style.left = pos.x + "px"
+            hi.e.style.top = pos.y + "px"
+            hi.e.style.transform=`translate(-50%, -50%) scale(${size/this.scale})`
         }
         for(const [id,h] of this.humans_ins){
             if(!alive.has(id)){

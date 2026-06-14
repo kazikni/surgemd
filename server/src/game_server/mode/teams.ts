@@ -1,4 +1,4 @@
-import { GroupMemberState, MapHumanData } from "common/scripts/packets/update_packet.ts";
+import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
 import { Human } from "../objects/human.ts";
 import { random } from "common/engine/core.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
@@ -6,6 +6,7 @@ import { DamageReason } from "common/scripts/definitions/utils.ts";
 
 export class Team{
     dirty:boolean=true
+    state?:Record<number,GroupMemberState>
     humans:Human[]=[]
     id:number=0
 
@@ -60,14 +61,17 @@ export class Team{
         return true
     }
     get_state():Record<number,GroupMemberState>{
+        if(this.state)return this.state
         const ret:Record<number,GroupMemberState>={}
         for(const m of this.humans){
             ret[m.id]={
+                color:m.team_data.color,
                 boost:m.health_data.boost/m.health_data.max_boost,
                 boost_type:m.health_data.boost_def.type,
                 health:m.health_data.health/m.health_data.max_health,
             }
         }
+        this.state=ret
         return ret
     }
     choose_human(self: Human): Human | undefined {
@@ -105,6 +109,8 @@ export class Group extends Team{
         if(h.team_data.team_id)this.team=h.team_data.team_id
         h.team_data.group=this
         h.team_data.group_id=this.id
+        const colors=h.game.modeManager.rules.humans.group_colors
+        h.team_data.color=colors[Math.min(this.humans.length,colors.length)]
         this.dirty=true
         this.humans.push(h)
     }
@@ -162,7 +168,10 @@ export class GroupsManager{
     }
     net_update(){
         for(const g of Object.values(this.groups)){
-            if(g)g.dirty=false
+            if(g){
+                g.dirty=false
+                g.state=undefined
+            }
         }
     }
 }

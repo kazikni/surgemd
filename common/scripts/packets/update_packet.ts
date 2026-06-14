@@ -1,4 +1,4 @@
-import { Numeric, UpdatePacketBase, v2, Vec2 } from "../../engine/core.ts";
+import { Numeric, UpdatePacketBase, Vec2 } from "../../engine/core.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
 import { BoostType } from "../definitions/player/boosts.ts";
@@ -40,6 +40,7 @@ export interface PrivateUpdate{
     self_state?:SelfStateUpdate
 }
 export interface GroupMemberState{
+    color:number
     boost_type:BoostType
     boost:number
     health:number
@@ -54,7 +55,6 @@ export interface SelfStateUpdate{
             hand:boolean
         }
         action:boolean
-        team:boolean
         group:boolean
     }
 
@@ -105,7 +105,6 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
 
         state.dirty.action,
         state.dirty.group,
-        state.dirty.team,
 
         state.inventory.hand!==undefined, //has Hand
         state.action!==undefined, //has Action
@@ -161,6 +160,7 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
     }
     if(state.dirty.group){
         stream.write_number_dict(state.group??{},(i)=>{
+            stream.write_uint32(i.color)
             stream.write_float(i.health,0,1,1)
             stream.write_float(i.boost,0,1,1)
             stream.write_uint8(i.boost_type)
@@ -187,7 +187,6 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
 
         dirtyAction,
         dirtyGroup,
-        dirtyTeam,
 
         hasHand,
         hasAction,
@@ -207,7 +206,6 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         },
         action:dirtyAction,
         group:dirtyGroup,
-        team:dirtyTeam
     }
     if(dirtyItems){
         state.inventory.items=stream.read_array<InventoryItemData>(()=>{
@@ -268,6 +266,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         state.dirty.group=true
         state.group=stream.read_number_dict(()=>{
             return {
+                color:stream.read_uint32(),
                 health:stream.read_float(0,1,1),
                 boost:stream.read_float(0,1,1),
                 boost_type:stream.read_uint8(),
@@ -308,6 +307,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             .write_pos2(d.position)
         },1)
         .write_array(this.priv.map_humans,(d)=>{
+            stream.write_boolean_group(d.dead,d.downed)
             stream.write_id(d.id)
             .write_pos2(d.position)
         })
@@ -339,11 +339,12 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             }
         },1)
         this.priv.map_humans=stream.read_array(()=>{
+            const bg=stream.read_boolean_group()
             return {
                 id:stream.read_id(),
                 position:stream.read_pos2(),
-                dead:false,
-                downed:false
+                dead:bg[0],
+                downed:bg[1],
             }
         })
         this.priv.pings=stream.read_array(()=>{
@@ -381,7 +382,6 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                     },
                     action:false,
                     group:false,
-                    team:false,
                 },
                 action:undefined,
                 inventory:{

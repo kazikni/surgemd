@@ -9,9 +9,8 @@ import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { ClientDecal } from "./client_decal.ts";
-import { Camera2D } from "common/engine/client/2d/camera.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { GameItem, GameObjectDef, WeaponDef } from "common/scripts/definitions/game_defs.ts";
+import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
@@ -93,6 +92,8 @@ export class Human extends MovingBody{
         melee_world:Sprite2D
 
         accessorys:Sprite2D[]
+
+        name?:Sprite2D
     }
     consumible_particles!:ParticlesEmitter2D<ClientParticle2D>
     animation={
@@ -311,6 +312,7 @@ export class Human extends MovingBody{
         this.consumible_particles.destroyed=true
         this.container.destroy()
         this.sprites.emote_container.destroy()
+        if(this.sprites.name)this.sprites.name.destroy()
     }
     override on_layer_set(): void {
         this.container.layer=this.layer
@@ -773,6 +775,11 @@ export class Human extends MovingBody{
         super.on_tick(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
+        if(this.sprites.name){
+            this.sprites.name.position.x=this.position.x
+            this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
+            this.sprites.name.layer=this.layer
+        }
         if(!this.seat&&this.distance_walked>0.01){
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
             if(f!==this.current_floor){
@@ -1425,6 +1432,21 @@ export class Human extends MovingBody{
             this.sprites!.backpack.frame=this.game.resources.get_frame(this.backpack.idString+"_world")
         }
     }
+    
+    set_name(name:string){
+        if(!this.sprites.name){
+            this.sprites.name=new Sprite2D()
+            this.sprites.name.zIndex=zIndexes.UI
+            this.sprites.name.hotspot=v2.half_one()
+            this.game.cam2d.addObject(this.sprites.name)
+        }
+        const color=this.game.get_theme_color("primary")
+        this.game.resources.render_text(name,60,color).then((frame)=>{
+            if(this.sprites.name!.frame)this.sprites.name!.frame.free()
+            this.sprites.name!.frame=frame
+        })
+        this.sprites.name!.tint=ColorM.hex(color)
+    }
     on_effect_added(effect:EffectDef){
         if(effect.assets?.sounds?.when_take){
             this.game.sounds.play(this.game.resources.get_sound(effect.assets.sounds.when_take),{
@@ -1617,6 +1639,9 @@ export class Human extends MovingBody{
             this.on_downed()
         }else if(this.downed&&!downed){
             this.on_help_up()
+        }
+        if(full){
+            if(this.id!==this.game.active_entity_id&&this.game.ui.group_members[this.id])this.set_name(this.game.ui.players_name[this.id].name)
         }
     }
 }

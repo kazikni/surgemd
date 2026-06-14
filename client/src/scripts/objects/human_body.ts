@@ -23,8 +23,9 @@ export class HumanBody extends GameObject{
         super()
         this.sprite_text.hotspot=v2(0.5,0)
         this.sprite_text.position.y=0.65
-        this.sprite_badge.position.y=0.65
-        this.sprite_badge.hotspot=v2(1,0)
+        this.sprite_badge.position.y=0.78
+        this.sprite_badge.hotspot=v2(1,0.5)
+        this.sprite_badge.scale=v2(2,2)
         this.sprite.hotspot=v2(0.5,0.5)
         this.container.zIndex=zIndexes.PlayersBody
         this.container.add_child(this.sprite_text)
@@ -49,11 +50,11 @@ export class HumanBody extends GameObject{
     async set_name(name:string,badge:number){
         if(this.sprite_text.frame)this.sprite_text.frame.free()
         const color=this.game.get_theme_color("tertiary")
-        this.sprite_text.frame=await this.game.resources.render_text(`${name}`,60,color)
+        this.sprite_text.frame=await this.game.resources.render_text(name,60,color)
         if(badge){
             this.sprite_badge.visible=true
             this.sprite_badge.frame=this.game.resources.get_frame(`${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
-            this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.cam2d.meter_size*4))-0.1
+            this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.cam2d.meter_size*4))-0.05
         }else{
             this.sprite_badge.visible=false
         }

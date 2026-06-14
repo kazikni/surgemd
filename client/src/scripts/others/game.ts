@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputKeyEvent, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, sleep, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputKeyEvent, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -21,7 +21,7 @@ import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
-import { GameOverScreenType, LevelDefinition } from "common/scripts/config/level_definition.ts";
+import { GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
@@ -760,8 +760,8 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("update",(p:UpdatePacket)=>{
             this.clock.profiler.start(100)
-            this.scene_2d.objects.proccess_net(p.objects!,true)
             this.process_private(p.priv)
+            this.scene_2d.objects.proccess_net(p.objects!,true)
             this.clock.profiler.end(100)
         })
         client.on("connect",(_p:ConnectPacket)=>{

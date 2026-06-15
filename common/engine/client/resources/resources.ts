@@ -1,7 +1,7 @@
 import { FrameData, KSPR } from "../../core/lang/kspx.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { Material, WebglRenderer } from "../rendering/renderer.ts"
+import { Material, Texture, WebglRenderer } from "../rendering/renderer.ts"
 import { AudioEngine } from "./sounds.ts";
 export interface SpritesheetJSON{
     meta:{
@@ -27,16 +27,13 @@ export interface Sound {
 }
 export class Frame {
     id:string=""
-
     src:string=""
     group:string=""
 
-    image!:HTMLImageElement
-    texture!:WebGLTexture
-    batch_mat:Material
+    texture!:Texture
+    batch_mat!:Material
 
     frame_rect?:Rect
-    frame_size:Vec2=v2(1,1)
 
     texcoords:Float32Array
 
@@ -89,7 +86,6 @@ export class TextureUtils {
 export class ResourcesManager {
     frames:Record<string,Frame>={}
     sounds:Record<string,Sound>={}
-    materials:Record<string,Material>={}
 
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
@@ -141,7 +137,6 @@ export class ResourcesManager {
             frame.src="default"
             frame.group="internal"
 
-            frame.image=image
             frame.texture=TextureUtils.create(
                 this.gl,
                 image
@@ -180,7 +175,7 @@ export class ResourcesManager {
             img.src=src
         })
     }
-    create_frame(image:HTMLImageElement,texture:WebGLTexture,rect:Rect,src:string=""){
+    create_frame(texture:WebGLTexture,rect:Rect,src:string=""){
         const frame=new Frame(this.gl,[
             rect.min.x,rect.max.y,
             rect.max.x,rect.max.y,
@@ -191,7 +186,6 @@ export class ResourcesManager {
             rect.max.x,rect.min.y
         ])
 
-        frame.image=image
         frame.texture=texture
         frame.src=src
 
@@ -207,7 +201,7 @@ export class ResourcesManager {
             this.gl,
             image
         )
-        const frame=this.create_frame(image,texture,{min:v2.zero(),max:v2.one()},src)
+        const frame=this.create_frame(texture,{min:v2.zero(),max:v2.one()},src)
         frame.id=id
         frame.group=group
         frame.frame_size=v2(
@@ -231,7 +225,7 @@ export class ResourcesManager {
                 min:v2(data.x/iw,1-((data.y+data.h)/ih)),
                 max:v2((data.x+data.w)/iw,1-(data.y/ih)),
             }
-            const frame=this.create_frame(image,texture,rect,data.src??id)
+            const frame=this.create_frame(texture,rect,data.src??id)
             frame.id=prefix+id
             frame.group=group
             frame.frame_rect={
@@ -265,7 +259,7 @@ export class ResourcesManager {
                     max:v2((data.x+data.w)/iw,1-(data.y/ih)),
                 }
 
-                const frame=this.create_frame(image,texture,rect,data.src??id)
+                const frame=this.create_frame(texture,rect,data.src??id)
                 frame.batch_mat=this.renderer.factorys2D.texture_batch.create({
                     texture
                 })
@@ -311,9 +305,6 @@ export class ResourcesManager {
 
         return sound
     }
-    load_material(id:string,material:Material){
-        this.materials[id]=material
-    }
     async render_text(text:string,size=32,color="white",font="Arial"){
         const canvas=this.canvas
         const ctx=this.ctx
@@ -334,7 +325,7 @@ export class ResourcesManager {
         return new Promise<Frame>((resolve)=>{
             image.onload=()=>{
                 const texture=TextureUtils.create(this.gl,image)
-                const frame=this.create_frame(image,texture,{min:v2.zero(),max:v2.one()})
+                const frame=this.create_frame(texture,{min:v2.zero(),max:v2.one()})
                 frame.batch_mat=this.renderer.factorys2D.texture_batch.create({texture})
                 frame.frame_size=v2(image.width,image.height)
                 resolve(frame)
@@ -354,10 +345,6 @@ export class ResourcesManager {
         const sound=this.sounds[id]
         return sound
     }
-    get_material(id:string):Material{
-        const material=this.materials[id]
-        return material
-    }
 
     unload_frame(id:string){
         const frame=this.frames[id]
@@ -368,9 +355,6 @@ export class ResourcesManager {
     unload_sound(id:string){
         delete this.sounds[id]
     }
-    unload_material(id:string){
-        delete this.materials[id]
-    }
     unload_group(group:string){
         for(const id in this.frames){
             if(this.frames[id].group===group){
@@ -380,11 +364,6 @@ export class ResourcesManager {
         for(const id in this.sounds){
             if(this.sounds[id].group===group){
                 this.unload_sound(id)
-            }
-        }
-        for(const id in this.materials){
-            if(this.materials[id].group===group){
-                this.unload_material(id)
             }
         }
     }

@@ -204,11 +204,11 @@ export const GasParticles={
 }
 
 export const bullets_factory={
-    ar(power:number):BulletDef{
+    assault(power:number):BulletDef{
         return {
             damage:8*power,
-            range: 130*(1+(power-1)*0.2),
-            speed: 45*(1+(power-1) * 0.3),
+            range: 130*(1+(power-1)*0.3),
+            speed: 45*(1+(power-1) * 0.5),
             criticalMult: 1.25,
             obstacleMult: 1,
             falloff:0.75,
@@ -632,7 +632,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.ar(1)
+                def:bullets_factory.assault(1)
             },
             reload:{
                 delay:2.5,
@@ -653,7 +653,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.ar(1)
+                def:bullets_factory.assault(1)
             },
             reload:{
                 delay:2.5,
@@ -674,7 +674,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.ar(1.1)
+                def:bullets_factory.assault(1.1)
             },
             reload:{
                 delay:2.7,
@@ -709,7 +709,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.ar(1)
+                def:bullets_factory.assault(1)
             },
             reload:{
                 delay:2.5,
@@ -731,7 +731,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.ar(0.8)
+                def:bullets_factory.assault(0.8)
             },
             reload:{
                 delay:2,
@@ -762,7 +762,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
             bullet:{
-                def:bullets_factory.ar(0.95)
+                def:bullets_factory.assault(0.95)
             },
         }),
         guns_factory.assault("famas","556mm",{
@@ -782,7 +782,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.ar(1.15)
+                def:bullets_factory.assault(1.15)
             },
             reload:{
                 delay:2.5,

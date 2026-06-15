@@ -296,7 +296,7 @@ export const TundraMap:MapDef={
                 {def:map_spawns.containers,count:20},
 
                 {def:"bunker_1",count:3},
-                {def:"shed",count:5},
+                {def:"shed",count:7},
                 {def:"sillo",count:3},
 
                 {def:"jeep",count:5},
@@ -305,7 +305,7 @@ export const TundraMap:MapDef={
                 {def:"tundra_crate",count:5},
                 {def:"copper_crate",count:20},
                 {def:map_spawns.crates,count:90},
-                {def:"oak_tree",count:150},
+                {def:"oak_tree",count:140},
                 {def:map_spawns.rocks,count:100},
                 {def:"river_rock",count:50},
                 {def:"bush",count:100},

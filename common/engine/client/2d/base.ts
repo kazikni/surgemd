@@ -115,14 +115,9 @@ export abstract class Container2DObject {
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
-        this.visible = false; 
+        this.visible = false
         if(this.parent){
-            let i=this.parent.children.indexOf(this)
-            if(i!==-1)this.parent.children.splice(i,1)
-            i=this.parent.update_children.indexOf(this)
-            if(i!==-1)this.parent.update_children.splice(i,1)
-            i=this.parent.visible_children.indexOf(this)
-            if(i!==-1)this.parent.visible_children.splice(i,1)
+            this.parent.dirty_children=true
         }
     }
 

@@ -25,6 +25,11 @@ export class Container2D extends Container2DObject{
         this.visible_children.length = 0;
         this.update_children.length = 0;
         for (let i = 0; i < this.children.length; i++) {
+            if(this.children[i].destroyed){
+                this.children.splice(i,1)
+                i--
+                continue
+            }
             if(this.children[i].visible&&(!cama.visible_function||cama.visible_function(this.children[i]))) {
                 this.visible_children.push(this.children[i]);
             }
@@ -39,7 +44,10 @@ export class Container2D extends Container2DObject{
     }
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources);
-        for (const c of this.update_children)c.update(dt,resources);
+        for (const c of this.update_children){
+            if(c.destroyed||!c._has_update)continue
+            c.update(dt,resources);
+        }
     }
     override update_real(): void {
         super.update_real()
@@ -70,6 +78,7 @@ export class Container2D extends Container2DObject{
 
         for (let o = 0; o < this.visible_children.length; o++) {
             const c=this.visible_children[o]
+            if(c.destroyed||!c._visible)continue
             const rect=c.get_rect()
             if(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y)c.draw(cam)
         }
@@ -110,6 +119,11 @@ export class Container2D extends Container2DObject{
         const s=new Container2D()
         this.add_child(s)
         return s
+    }
+    clear(){
+        this.visible_children.length=0
+        this.children.length=0
+        this.update_children.length=0
     }
     override get_rect(): Rect {
         return this._rect

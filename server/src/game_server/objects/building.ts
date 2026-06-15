@@ -79,12 +79,6 @@ export class Building extends StaticBody {
         this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
     }
     after_generate(){
-        for(const child of this.children){
-            if(child.type!==0)continue
-            for(const conn of child.def.connections??[]){
-                child.obj.connections.push(this.objects_ids[conn])
-            }
-        }
         for(const c of this.def.content.ceiling??[]){
             const conns:Obstacle[]=[]
             for(const conn of c.connections??[]){
@@ -126,7 +120,7 @@ export class Building extends StaticBody {
             const rotation=(d.rotation??0)+Angle.side_rad(this.physical_data.side)
             this.game.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
         }
-        for (const o of this.def.content.obstacles ?? []) {
+        for(const o of this.def.content.obstacles ?? []) {
             const def_name=typeof o.def==="string"?o.def:random.weight2(o.def)!.def
             if(!def_name||def_name==="")continue
             const def=this.game.definitions.obstacles.getFromString(def_name)
@@ -138,6 +132,7 @@ export class Building extends StaticBody {
                     break
                 case RotationMode.limited:
                     rotation=Angle.add_orientation(rotation as Orientation,side)
+                    break
             }
             const p = v2.add_with_orientation(this.position, o.position, side)
             const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
@@ -145,13 +140,11 @@ export class Building extends StaticBody {
             if(o.id)this.objects_ids[o.id]=obj
             obj.initialize(rotation,o.variation,o.skin)
             obj.set_position(p)
-
             if(o.stairs_dest){
                 for(const s in o.stairs_dest){
                     obj.physical_data.stairs[s].dest_layer=o.stairs_dest[s]
                 }
             }
-
             this.children.push({obj,def:o,type:0})
         }
         for (const b of this.def.content.sub_building ?? []) {
@@ -162,6 +155,12 @@ export class Building extends StaticBody {
             const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
             obj.init(Angle.add_orientation(side,b.rotation??0))
             obj.generate(p)
+        }
+        for(const child of this.children){
+            if(child.type!==0)continue
+            for(const conn of child.def.connections??[]){
+                child.obj.connections.push(this.objects_ids[conn])
+            }
         }
         this.after_generate()
     }
@@ -199,23 +198,25 @@ export class Building extends StaticBody {
         stream.write_uint16(this.def.idNumber!)
         stream.write_pos2(this.position)
         stream.write_uint8(this.physical_data.side)
-
-        const ceilings = this.children.filter(
+        stream.write_number_dict(this.objects_ids,(i)=>{
+            stream.write_id(ctx.idco[i.id])
+        },1)
+        stream.write_array(this.children.filter(
             c => c.type === 1
-        ) as BuildingCeilingChild[]
-
-        stream.write_uint8(ceilings.length)
-        for (const c of ceilings) {
+        ) as BuildingCeilingChild[],(c)=>{
             stream.write_boolean_group(c.alive)
-        }
+        },1)
     }
     override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
-        const def = this.game.definitions.buildings.valueNumber[
-            stream.read_uint16()
-        ]
-
+        const def = this.game.definitions.buildings.valueNumber[stream.read_uint16()]
         const pos = stream.read_pos2()
         const side = stream.read_uint8() as Orientation
+
+        this.objects_ids=stream.read_number_dict(()=>{
+            const obj=this.manager.objects[ctx.coid[stream.read_id()]] as Obstacle
+            obj.parent=this
+            return obj
+        },1)
 
         this.set_definition(def)
         this.init(side)
@@ -227,12 +228,10 @@ export class Building extends StaticBody {
             c => c.type === 1
         ) as BuildingCeilingChild[]
 
-        const count = stream.read_uint8()
-
-        for (let i = 0; i < count && i < ceilings.length; i++) {
+        stream.read_array((i)=>{
             const [alive] = stream.read_boolean_group()
             ceilings[i].alive = alive
-        }
+        },1)
 
         this.update_hitbox()
     }

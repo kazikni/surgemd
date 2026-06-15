@@ -4,17 +4,44 @@ import { Color, ColorM } from "../../core/math/color.ts";
 import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
 import { Matrix } from "../../core/math/matrix.ts";
 
-export type Material=GLMaterial
+export interface Material{
+    draw(material:Material,matrix:Matrix,attr:any):void
+    free():void
+}
+export interface Texture{
+    size:Vec2
+    free():void
+}
 
+export class GLTexture implements Texture{
+    size:Vec2
+
+    gl:WebGLRenderingContext
+    texture?:WebGLTexture
+    material:Material
+
+    constructor(size: Vec2,texture:WebGLTexture,gl:WebGLRenderingContext,material:Material){
+        this.gl=gl
+        this.size=size
+        this.texture=texture
+        this.material=material
+    }
+    free(): void {
+        if(this.texture){
+            this.gl.deleteTexture(this.texture)
+            this.texture=undefined
+        }
+    }
+}
 export abstract class Renderer {
     canvas: HTMLCanvasElement
-    background: Color = ColorM.default.white;
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
     }
     abstract draw(material:Material,matrix:Matrix,attr:any):void
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
     abstract clear(): void
+    abstract create_texture(): void
 }
 export class GLDynamicBuffer {
     buffer: WebGLBuffer
@@ -77,9 +104,10 @@ export class WebglRenderer extends Renderer {
     readonly factorys3D:{
         simple:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatAttr>,
     }
-
-    readonly isWebGL2: boolean;
+    readonly isWebGL2: boolean
+    
     current_program?:WebGLProgram
+    background:Color
 
     proccess_factory<A,B>(fac_def:GLMaterialFactoryCall<A,B>):GLMaterialFactory<A,B>{
         const prog=this.createProgram(fac_def.vertex,fac_def.frag)
@@ -96,7 +124,8 @@ export class WebglRenderer extends Renderer {
 
     quadVBO:WebGLBuffer
     quadTBO:WebGLBuffer
-    constructor(canvas: HTMLCanvasElement, background: Color = ColorM.default.white, version: 1 | 2 = 2,antialias: boolean = true) {
+    
+    constructor(canvas: HTMLCanvasElement, version: 1 | 2 = 2,antialias: boolean = true) {
         super(canvas);
         const gl =
             version === 2
@@ -107,8 +136,7 @@ export class WebglRenderer extends Renderer {
         // deno-lint-ignore no-explicit-any
         this.gl = gl as any
         this.isWebGL2 = version === 2
-
-        this.background = background;
+        this.background=ColorM.default.white
 
         this.factorys2D={
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
@@ -148,6 +176,8 @@ export class WebglRenderer extends Renderer {
 
         this.quadVBO = gl.createBuffer()
         this.quadTBO = gl.createBuffer()
+    }
+    override create_texture(): void {
     }
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
@@ -196,48 +226,14 @@ export class WebglRenderer extends Renderer {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
     }
 }
-export function createCanvas(size: Vec2, pixelated: boolean = true, center: boolean = true): HTMLCanvasElement {
-    const canvas = document.createElement("canvas");
-    canvas.width = size.x;
-    canvas.height = size.y;
 
-    canvas.tabIndex = 0
-    canvas.focus()
-    if (pixelated) {
-        canvas.style.imageRendering = "pixelated"
-        canvas.style.imageRendering = "crisp-edges"
-        canvas.style.imageRendering = "-moz-crisp-edges"
-    }
-    if (center) {
-        canvas.style.position = "absolute"
-        canvas.style.left = "0px"
-        canvas.style.right = "0px"
-        canvas.style.top = "0px"
-        canvas.style.bottom = "0px"
-        canvas.style.margin = "auto"
-    }
-    return canvas;
-}
-
-export function applyBorder(elem: HTMLElement) {
-    elem.style.border = "1px solid #000";
-}
-
-export function applyShadow(elem: HTMLElement) {
-    elem.style.boxShadow = "0px 4px 17px 0px rgba(0,0,0,0.19)";
-}
 
 export function fullCanvas(elem: HTMLCanvasElement) {
-    const ratio = self.devicePixelRatio || 1;
+    const ratio = self.devicePixelRatio || 1
 
-    elem.width  = self.innerWidth  * ratio;
-    elem.height = self.innerHeight * ratio;
+    elem.width  = self.innerWidth  * ratio
+    elem.height = self.innerHeight * ratio
 
-    elem.style.width  = `${self.innerWidth}px`;
-    elem.style.height = `${self.innerHeight}px`;
-
-    const ctx = elem.getContext("2d");
-    if (ctx) {
-        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    }
+    elem.style.width  = `${self.innerWidth}px`
+    elem.style.height = `${self.innerHeight}px`
 }

@@ -226,18 +226,18 @@ export abstract class Stream{
         return this.read_string_sized(this.read_uint(bytes))
     }
 
-    write_array<T>(source: ArrayLike<T>, elementWriter: (item: T, stream: this) => void, bytes: 1|2|3|4 = 1): this {
+    write_array<T>(source: ArrayLike<T>, elementWriter: (item: T,idx:number, stream: this) => void, bytes: 1|2|3|4 = 1): this {
         const length = Math.min(source.length, 2 ** (8 * bytes) - 1);
         this.write_uint(length,bytes)
         for (let i = 0; i < length; i++) {
-            elementWriter(source[i], this);
+            elementWriter(source[i],i, this)
         }
         return this;
     }
-    read_array<T>(elementReader: (stream: this) => T, bytes: 1|2|3|4 = 1): T[] {
+    read_array<T>(elementReader: (idx:number, stream: this) => T, bytes: 1|2|3|4 = 1): T[] {
         const len = this.read_uint(bytes)
         const arr = new Array<T>(len)
-        for (let i = 0; i < len; i++) arr[i] = elementReader(this)
+        for (let i = 0; i < len; i++) arr[i] = elementReader(i,this)
         return arr
     }
 
@@ -304,11 +304,11 @@ export abstract class Stream{
             case "object":
                 if (Array.isArray(obj)) {
                     this.write_uint8(4)
-                    this.write_array(obj, (v, s) => s.write_object(v,bytes1,bytes2), bytes1)
+                    this.write_array(obj, (v) => this.write_object(v,bytes1,bytes2), bytes1)
                     return this
                 }
                 this.write_uint8(5)
-                this.write_string_dict(obj, (v,s) => s.write_object(v,bytes1,bytes2), bytes1, bytes2)
+                this.write_string_dict(obj, (v) => this.write_object(v,bytes1,bytes2), bytes1, bytes2)
                 return this
         }
 
@@ -325,9 +325,9 @@ export abstract class Stream{
             case 3:
                 return this.read_string(bytes2)
             case 4:
-                return this.read_array(s => s.read_object(bytes1,bytes2),bytes1)
+                return this.read_array(_s => this.read_object(bytes1,bytes2),bytes1)
             case 5:
-                return this.read_string_dict(s => s.read_object(bytes1,bytes2),bytes1,bytes2)
+                return this.read_string_dict(_s => this.read_object(bytes1,bytes2),bytes1,bytes2)
         }
         throw new Error("Invalid type in readObject")
     }
@@ -395,9 +395,9 @@ export abstract class Stream{
                     this.read_float32()
                 )
             case 6:
-                return this.read_array(s => s.read_object_advanced(bytes1,bytes2),bytes1)
+                return this.read_array(_s => this.read_object_advanced(bytes1,bytes2),bytes1)
             case 7:
-                return this.read_string_dict(s => s.read_object_advanced(bytes1,bytes2),bytes1,bytes2)
+                return this.read_string_dict(_s => this.read_object_advanced(bytes1,bytes2),bytes1,bytes2)
         }
         throw new Error("Invalid type in readObject")
     }

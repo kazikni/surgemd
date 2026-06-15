@@ -172,6 +172,9 @@ export class Camera2D{
         }
     }
 
+    clear(){
+        this.container.clear()
+    }
     fullCanvas(){
         const sx=this.renderer.canvas.width
         const sy=this.renderer.canvas.height

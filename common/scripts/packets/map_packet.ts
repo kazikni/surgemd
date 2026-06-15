@@ -46,7 +46,7 @@ function decode_biome(stream:Stream):MapBiomeDef{
         skin:"",
         musics:[],
         particles:[],
-        spritesheets:[]
+        textures:[]
     }
     biome.musics=stream.read_array(()=>{
         return stream.read_string(1)

@@ -192,7 +192,7 @@ export class LevelPlayer {
     }
     start(){
         const level = this.level
-        this.game.start()
+        this.game.start(true)
         if(level.deadzone?.stage){
             this.game.deadzone.jump_stages(level.deadzone.stage)
         }

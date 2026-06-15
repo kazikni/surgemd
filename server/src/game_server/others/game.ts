@@ -301,6 +301,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.started=true
         this.modeManager.on_start()
         this.started_time=performance.now()
+        this.leaderboards.length=0
         if(!this.replay){
             this.replay=new ReplayRecorder(this,(r,full)=>{
                 return this.players.encode_frame(full)

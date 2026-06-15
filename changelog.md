@@ -30,6 +30,7 @@ __                                                                              
 * M4A1 - 556mm Assault
 * Bonesaw
 * Pan
+* M16 With Grenade Launcher
 * Yellow Flare
 __                                                                                                                 __
 ### Others
@@ -50,6 +51,7 @@ __                                                                              
 * Change Loot Tables
 * Some Balance Changes
 * Change Equipment Sprites
+* Katana Animations
 __                                                                                                                 __
 ### Menu
 * Rework Minimap System

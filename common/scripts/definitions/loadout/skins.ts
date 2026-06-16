@@ -277,7 +277,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 },
                 foot:{
                     image:"human_leg_1_2",
-                    tint:0x353c7e,
+                    tint:0x222233,
                 },
             }
         },

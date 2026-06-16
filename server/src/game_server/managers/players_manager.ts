@@ -318,6 +318,7 @@ export class PlayersManager{
             const p = this.connected_players[client.ID].add_player()
             if(p!==undefined){
                 const jp=new JoinnedPacket()
+                jp.ntps=this.game.ntps
                 for(const lp of this.living_players){
                     if(lp.id===p.id)continue
                     jp.players.push({

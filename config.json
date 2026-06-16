@@ -2,38 +2,42 @@
     "api": {
         "host": {
             "port": 8000,
-            "https":false,
-            "cert":"./private/certificate.crt",
-            "key":"./private/private.key",
+            "https": false,
+            "cert": "./private/certificate.crt",
+            "key": "./private/private.key",
             "ca": "./private/ca_bundle.crt"
         },
-        "files":{
-            "news":"files/news"
+        "files": {
+            "news": "files/news"
         },
         "global": "http://localhost:8000",
         "key": "your_api_key"
     },
     "game": {
         "max_games": 5,
-        "debug":{
-            "deenable_lobby":true,
-            "debug_menu":true
+        "tps": 100,
+        "ntps": 32,
+        "debug": {
+            "deenable_lobby": true,
+            "debug_menu": true
         },
-        "modes":[
+        "modes": [
             {
-                "team_size":[1],
-                "gamemode":"normal",
-                "enabled":true
+                "team_size": [
+                    1
+                ],
+                "gamemode": "normal",
+                "enabled": true
             }
         ],
         "host": {
             "port": 8080
         }
     },
-    "this_region":"local",
-    "vite":{
-        "port":3000,
-        "allowed_hosts":true
+    "this_region": "local",
+    "vite": {
+        "port": 3000,
+        "allowed_hosts": true
     },
     "regions": {
         "local": {
@@ -43,16 +47,16 @@
         "na": {
             "host": "na.surgemd.io",
             "port": 443,
-            "ssh":true
+            "ssh": true
         }
     },
     "database": {
         "enabled": false,
-        "statistic":true,
+        "statistic": true,
         "files": {
             "accounts": "database/accounts.db",
-            "forum":"database/forum.db",
-            "statistic":"database/statistic.json"
+            "forum": "database/forum.db",
+            "statistic": "database/statistic.json"
         }
     },
     "shop": {

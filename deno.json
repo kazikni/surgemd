@@ -2,6 +2,14 @@
     "lock": true,
     "importMap": "./common/deps.json",
     "compilerOptions": {
-        "lib": ["dom", "deno.ns"]
+        "lib": [
+            "dom",
+            "deno.ns"
+        ]
+    },
+    "tasks": {
+        "dev:game": "cd server && deno run --watch -A ./src/game_server/main.ts",
+        "dev:api": "cd server && deno run --watch -A ./src/api/main.ts",
+        "dev:client": "cd client && npx vite ."
     }
 }

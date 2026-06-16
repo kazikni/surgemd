@@ -45,12 +45,6 @@ export class MenuManager{
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
         history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
-
-        phase_intro_overlay: document.querySelector("#phase-intro-overlay") as HTMLDivElement,
-        phase_intro_location: document.querySelector("#phase-intro-location") as HTMLDivElement,
-        phase_intro_name: document.querySelector("#phase-intro-name") as HTMLDivElement,
-        phase_intro_date: document.querySelector("#phase-intro-date") as HTMLDivElement,
-        phase_intro_description: document.querySelector("#phase-intro-description") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
     }
 
@@ -100,7 +94,7 @@ export class MenuManager{
                 skins:{
 
                 }
-            }
+            },
         }
 
         HideElement(this.content.gameD)
@@ -616,43 +610,6 @@ export class MenuManager{
         }
         HideElement(this.content.history_overlay,true)
         if (music_player) music_player.set(undefined)
-    }
-    open_phase_intro(){
-        // reset
-        this.content.phase_intro_location.innerText = ""
-        this.content.phase_intro_name.innerText = ""
-        this.content.phase_intro_date.innerText = ""
-        this.content.phase_intro_description.innerText = ""
-        ShowElement(this.content.phase_intro_overlay)
-    }
-    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[]): Promise<void> {
-        const play_type_sound=(_a:string)=>{
-            this.sounds.play(random.choose(type_sounds),{
-                volume:0.15,
-                bus:"ui"
-            })
-        }
-        const text_speed=config.text_speed??1
-        const wait_time=(config.wait_time??2)*1000
-        this.open_phase_intro()
-        // TYPEWRITER
-        const rand_delay={
-            min:40*text_speed,
-            max:200*text_speed
-        }
-
-        await typewriter(this.content.phase_intro_name, config.name, rand_delay,play_type_sound)
-        await typewriter(this.content.phase_intro_location, config.location, rand_delay,play_type_sound)
-        if (config.date) {
-            await typewriter(this.content.phase_intro_date, config.date, rand_delay,play_type_sound)
-        }
-        if (config.description) {
-            await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
-        }
-        setTimeout(()=>{
-            HideElement(this.content.phase_intro_overlay)
-        },wait_time+1000)
-        await new Promise(r => setTimeout(r, wait_time))
     }
     select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
         return this.game_popup((ctx) => {

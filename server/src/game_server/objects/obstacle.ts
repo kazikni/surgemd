@@ -1,7 +1,7 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, v2m, Vec2, CheckpointContext } from "common/engine/core.ts";
+import { Angle, Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, Vec2, CheckpointContext } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
@@ -491,18 +491,16 @@ export class Obstacle extends StaticBody{
         .write_array(this.connections,(i)=>{
             stream.write_id(ctx.idco[i.id])
         },1)
+        .write_array(this.physical_data.stairs,(i)=>{
+            stream.write_uint8(i.index)
+            stream.write_int8(i.dest_layer)
+        })
+        stream.write_boolean_group(this.door_data!==undefined,this.transform_into_data!==undefined)
         if(this.door_data){
-            stream.write_uint8(1)
-            .write_int8(this.door_data.open)
-            .write_uint8(this.door_data.locked ? 1 : 0)
-        }else{
-            stream.write_uint8(0)
+            stream.write_boolean_group(this.door_data.open===1,this.door_data.open===0,this.door_data.locked)
         }
         if(this.transform_into_data){
-            stream.write_uint8(1)
-            .write_uint8(this.transform_into_data.def)
-        } else {
-            stream.write_uint8(0)
+            stream.write_uint8(this.transform_into_data.def)
         }
     }
     override on_decode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
@@ -528,17 +526,19 @@ export class Obstacle extends StaticBody{
         for(const c of connections){
             this.connections.push(this.manager.objects[ctx.coid[c]])
         }
-        if (dead) {
-            this.health_data.dead = true
-            this.physical_data.no_collision = true
-            this.physical_data.no_bullets_collision = true
-        }
-        if (stream.read_uint8()) {
-            this.door_data!.open = stream.read_int8() as -1|0|1
-            this.door_data!.locked = stream.read_uint8() === 1
+        stream.read_array(()=>{
+            const idx=stream.read_uint8()
+            this.physical_data.stairs[idx].dest_layer=stream.read_int8()
+        })
+        const [door_data,transform_into_data]=stream.read_boolean_group()
+
+        if(door_data){
+            const [open_negative,open_positive,locked]=stream.read_boolean_group()
+            this.door_data!.open = open_positive?1:open_negative?-1:0
+            this.door_data!.locked = locked
             this.base_hitbox = this.door_data!.hitboxes[this.door_data!.open]
         }
-        if (stream.read_uint8()) {
+        if(transform_into_data){
             this.transform_into_data = {
                 activated: true,
                 def: stream.read_uint8()
@@ -546,5 +546,10 @@ export class Obstacle extends StaticBody{
         }
         this.reset_scale()
         this.update_hitbox()
+        if (dead) {
+            this.health_data.dead = true
+            this.physical_data.no_collision = true
+            this.physical_data.no_bullets_collision = true
+        }
     }
 }

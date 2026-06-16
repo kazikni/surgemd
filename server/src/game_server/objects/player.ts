@@ -211,6 +211,10 @@ export class Player extends Human{
         if(!this.dead)return
         super.revive()
         this.game.players._add_player(this)
+        if(this.conn&&this.conn.real_human===this){
+            this.conn.spectating=false
+            this.conn.human=this
+        }
     }
     override side_effect(sf:SideEffect){
         super.side_effect(sf)

@@ -145,6 +145,7 @@ export class LevelPlayer {
         if(this.level.definitions?.enemies)this.game.humans.enemies=this.level.definitions?.enemies
         this.save_checkpoint()
         this.game.can_start=false
+        this.game.can_finish=false
 
         if(!this.game.running)this.game.mainloop()
     }
@@ -191,13 +192,11 @@ export class LevelPlayer {
         ;(this.checkpoint as StaticStream).lock()
     }
     start(){
-        const level = this.level
         this.game.start(true)
-        if(level.deadzone?.stage){
-            this.game.deadzone.jump_stages(level.deadzone.stage)
+        if(this.level.deadzone?.stage){
+            this.game.deadzone.jump_stages(this.level.deadzone.stage)
         }
         this.spawn_players()
-        this.enable_all()
     }
     spawn_players(){
         for(const conn of Object.values(this.game.players.connected_players)){
@@ -224,11 +223,5 @@ export class LevelPlayer {
         this.game.players.first_tick=true
         this.game.scene_2d.load_checkpoint(this.checkpoint)
         this.start()
-    }
-    enable_all(){
-        for(const h of this.game.humans.humans){
-            h.human_data.movement_enabled = true
-            h.human_data.combat_enabled = true
-        }
     }
 }

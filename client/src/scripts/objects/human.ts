@@ -508,6 +508,16 @@ export class Human extends MovingBody{
         this.sprites.right_leg.position=v2(-0.8,0.22)
         this.sprites.left_leg.rotation=0.1
         this.sprites.right_leg.rotation=-0.1
+        this.sprites.left_leg_foot.position=v2(0.05,0)
+        this.sprites.right_leg_foot.position=v2(0.05,0)
+
+        this.sprites.left_arm.position=DefaultFistRig.left!.position
+        this.sprites.right_arm.position=DefaultFistRig.right!.position
+        this.sprites.left_arm.rotation=DefaultFistRig.left!.rotation
+        this.sprites.right_arm.rotation=DefaultFistRig.right!.rotation
+
+        this.sprites.weapon.visible=false
+        this.sprites.weapon2.visible=false
     }
     on_help_up(){
         if(!this.downed)return
@@ -516,6 +526,7 @@ export class Human extends MovingBody{
         this.sprites.backpack.visible=true
         this.sprites.left_leg.visible=false
         this.sprites.right_leg.visible=false
+        this.update_weapon(this.current_weapon)
     }
 
     // Weapon And Arm Rig
@@ -838,7 +849,7 @@ export class Human extends MovingBody{
                     }))
                 }
             }
-            this.animation.walk_speed=this.distance_walked*65
+            this.animation.walk_speed=this.distance_walked
             if(this.animation.walk_cycle===0){
                 this.animation.walk_cycle=1
                 this.animation.walk_time=0
@@ -976,7 +987,7 @@ export class Human extends MovingBody{
         }
         if(!this.downed){
             if(this.animation.walk_cycle){
-                this.animation.walk_time+=dt*this.animation.walk_speed
+                this.animation.walk_time+=this.animation.walk_speed
                 this.sprites.left_leg.visible=true
                 this.sprites.right_leg.visible=true
                 switch(this.animation.walk_cycle){
@@ -985,24 +996,32 @@ export class Human extends MovingBody{
                         this.sprites.right_leg.rotation=3.19
                         this.sprites.left_leg.position.x=Numeric.lerp(-0.3,-0.5,this.animation.walk_time)
                         this.sprites.right_leg.position.x=Numeric.lerp(0.3,0.5,this.animation.walk_time)
+                        this.sprites.left_leg_foot.position.x=Numeric.lerp(0.05,0.04,this.animation.walk_time)
+                        this.sprites.right_leg_foot.position.x=Numeric.lerp(0.05,0,this.animation.walk_time)
                         break
                     case 2:
                         this.sprites.left_leg.rotation=0.05
                         this.sprites.right_leg.rotation=3.19
                         this.sprites.left_leg.position.x=Numeric.lerp(-0.5,-0.3,this.animation.walk_time)
                         this.sprites.right_leg.position.x=Numeric.lerp(0.5,0.3,this.animation.walk_time)
+                        this.sprites.left_leg_foot.position.x=Numeric.lerp(0.04,0.05,this.animation.walk_time)
+                        this.sprites.right_leg_foot.position.x=Numeric.lerp(0,0.05,this.animation.walk_time)
                         break
                     case 3:
                         this.sprites.left_leg.rotation=3.09
                         this.sprites.right_leg.rotation=-0.05
                         this.sprites.left_leg.position.x=Numeric.lerp(0.3,0.5,this.animation.walk_time)
                         this.sprites.right_leg.position.x=Numeric.lerp(-0.3,-0.5,this.animation.walk_time)
+                        this.sprites.left_leg_foot.position.x=Numeric.lerp(0.05,0,this.animation.walk_time)
+                        this.sprites.right_leg_foot.position.x=Numeric.lerp(0.05,0.04,this.animation.walk_time)
                         break
                     case 4:
                         this.sprites.left_leg.rotation=3.09
                         this.sprites.right_leg.rotation=-0.05
                         this.sprites.left_leg.position.x=Numeric.lerp(0.5,0.3,this.animation.walk_time)
                         this.sprites.right_leg.position.x=Numeric.lerp(-0.5,-0.3,this.animation.walk_time)
+                        this.sprites.left_leg_foot.position.x=Numeric.lerp(0,0.05,this.animation.walk_time)
+                        this.sprites.right_leg_foot.position.x=Numeric.lerp(0.04,0.05,this.animation.walk_time)
                         break
                 }
                 if(this.animation.walk_time>=1){

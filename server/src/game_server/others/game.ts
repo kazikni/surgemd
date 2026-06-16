@@ -95,6 +95,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     started_time:number=0
     can_start:boolean=true
+    can_finish:boolean=true
     
     loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item as (id: string, count: number, aditional: Aditional) => LootTableItemRet<GameItem>[])
 
@@ -150,7 +151,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         languages_path:"",
     }
     constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
-        super(100,id,clients,[
+        super(main_config.game.tps,id,clients,[
             Human,
             Loot,
             Grenade,
@@ -166,7 +167,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Plane,
         ])
 
-        this.ntps=30
+        this.ntps=main_config.game.ntps
         this.main_config=main_config
 
         for(const i of LayersL){
@@ -279,10 +280,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.timeouts.length=0
         this.started = false
         this.closed = false
+        this.fineshed=false
+        this.pings.length=0
     }
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.fineshed=false
-        this.closed=false
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
@@ -323,16 +325,17 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     finish(){
         if(this.fineshed)return
+        console.log(`Game ${this.id} Fineshed`)
         this.fineshed=true
         this.update_data()
-        this.stop()
 
         this.modeManager.on_finish()
         this.signals.emit("finish",{})
 
+        if(!this.can_finish)return
+        this.stop()
         if(this.replay)this.replay.stopRecording()
 
-        console.log(`Game ${this.id} Fineshed`)
     }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured:boolean=false):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{

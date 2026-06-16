@@ -45,6 +45,8 @@ export interface ConfigType{
         max_games: number
         debug:GameDebugOptions
         host: HostConfig
+        ntps:number
+        tps:number
         modes: GamemodeConfig[]
     }
     this_region:string
@@ -92,6 +94,8 @@ export function ZeroConfig():ConfigType{
             host:{
                 port:-1,
             },
+            tps:100,
+            ntps:32,
             max_games:1,
             modes:[],
         },

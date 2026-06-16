@@ -34,9 +34,6 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     }
     override on_stop(): void {
         super.on_stop()
-        for(const c of this.clients.clients.values()){
-            c.disconnect()
-        }
 
         //clearInterval(this.net_update_interval)
         //this.net_update_interval=undefined
@@ -66,6 +63,12 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     net_update(full:boolean){
         this.scene_2d.objects.apply_destroy_queue()
         this.scene_2d.objects.update_to_net()
+    }
+    override stop(): void {
+        super.stop()
+        for(const c of this.clients.clients.values()){
+            c.disconnect()
+        }
     }
     override mainloop(rqf?: boolean,auto_mainloop?:boolean): void {
         super.mainloop(rqf,auto_mainloop)

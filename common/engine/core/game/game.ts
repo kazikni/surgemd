@@ -79,7 +79,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 
-    make_object_checkpoint(_stream:Stream,_id:number,_layer:number,t:number){
+    make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
         if(!this.game.objects.getFromNumber(t))return undefined
         return new (this.game.objects.getFromNumber(t))()
     }

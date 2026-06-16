@@ -133,6 +133,7 @@ export class Game extends ClientGame<GameObject>{
     }
 
     theme_colors:Record<string,string>={}
+    ntps:number=30
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
@@ -147,7 +148,7 @@ export class Game extends ClientGame<GameObject>{
         this.local_server=new LocalGameServer(this)
 
         this.definitions=definitions
-        this.renderer.background=ColorM.number(Floors[FloorType.Void].default_color)
+        this.renderer.set_background_color(ColorM.number(Floors[FloorType.Void].default_color))
 
         this.sounds.create_bus("music")
         this.sounds.create_bus("ambience")
@@ -608,7 +609,7 @@ export class Game extends ClientGame<GameObject>{
         super.on_update(dt)
 
         if(this.save.get_variable("sv_game_interpolation")){
-            this.global_interpolation=Numeric.get_interpolation_t(32,dt)
+            this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
             this.global_interpolation=1
         }
@@ -786,6 +787,7 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
+            this.ntps=jp.ntps
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.game_over = true

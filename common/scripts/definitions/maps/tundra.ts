@@ -300,7 +300,7 @@ export const TundraMap:MapDef={
                 {def:"sillo",count:3},
 
                 {def:"jeep",count:5},
-                {def:"bike",count:5},
+                //{def:"bike",count:5},
 
                 {def:"tundra_crate",count:5},
                 {def:"copper_crate",count:20},

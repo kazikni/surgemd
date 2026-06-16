@@ -109,9 +109,12 @@ export class Human extends MovingBody{
         dirty:boolean
         dirty_part:boolean
     }
+    get force_default_scope():boolean{
+        return this.equipment_data.force_default_scope||this.downed
+    }
 
     get scope_zoom():number{
-        return 20/(this.equipment_data.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
+        return 20/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
     loadout!:HumanLoadoutData&{
         dirty:boolean
@@ -1039,7 +1042,7 @@ export class Human extends MovingBody{
             }:undefined,
 
             current_scope:this.equipment_data.scope.idNumber!,
-            force_default_scope:this.equipment_data.force_default_scope,
+            force_default_scope:this.force_default_scope,
 
             dirty:full?{
                 action:true,

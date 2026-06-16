@@ -183,7 +183,7 @@ export const LootTables={
     normal_loot:[
         {weight:1,table:"ammos"},
         {weight:1,table:"consumibles"},
-        {weight:0.85,table:"guns"},
+        {weight:0.8,table:"guns"},
         {weight:0.6,table:"equipments"},
         {weight:0.6,table:"scopes"},
         {weight:0.55,table:"throwables"},

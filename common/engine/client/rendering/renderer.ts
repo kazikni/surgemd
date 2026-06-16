@@ -42,6 +42,7 @@ export abstract class Renderer {
     }
     abstract draw(material:Material,matrix:Matrix,attr:any):void
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
+    abstract set_background_color(color:Color):void
     abstract clear(): void
     abstract create_texture(): Texture
     abstract load_texture(img:HTMLImageElement,smooth?:boolean):Texture
@@ -263,6 +264,9 @@ export class WebglRenderer extends Renderer {
         this.gl.depthFunc(this.gl.LEQUAL)
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+    }
+    override set_background_color(color: Color): void {
+        this.background=color
     }
 }
 

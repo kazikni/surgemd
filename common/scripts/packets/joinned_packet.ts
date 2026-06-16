@@ -37,6 +37,7 @@ export class JoinnedPacket extends Packet{
     Name="joinned"
     players:{id:number,name:string,badge?:number}[]=[]
     leader?:{id:number,kills:number}
+    ntps:number=0
 
     date!:KDate
     mode:{
@@ -47,6 +48,7 @@ export class JoinnedPacket extends Packet{
     }
     encode(stream: Stream): void {
         stream.write_boolean_group(this.leader!==undefined)
+        stream.write_uint8(this.ntps)
         if(this.leader){
             stream.write_id(this.leader.id)
             stream.write_uint8(this.leader.kills)
@@ -63,6 +65,7 @@ export class JoinnedPacket extends Packet{
     }
     decode(stream: Stream): void {
         const [leader]=stream.read_boolean_group()
+        this.ntps=stream.read_uint8()
         if(leader){
             this.leader={
               id:stream.read_id(),

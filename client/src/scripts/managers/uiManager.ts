@@ -8,7 +8,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, Vec2 } from "common/engine/client.ts";
+import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -30,6 +30,7 @@ import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { GroupMembersModule } from "../uim/groups.ts";
+import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -244,9 +245,9 @@ export class UiManager{
         active:false,
         up_enable:true,
         current_side:-1,
-        emote:[] as EmoteDef[],
+        emotes:[] as (EmoteDef|PingDef)[],
     }
-    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:EmoteDef[]){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef)[]){
         ShowElement(this.content.emote_wheel.main)
         HideElement(this.mobile_content.btn_emotes)
         this.content.emote_wheel.main.style.left=`${position.x}px`
@@ -255,27 +256,47 @@ export class UiManager{
         this.emote_wheel.active=true
         this.emote_wheel.up_enable=up_enable
 
-        this.emote_wheel_set_emotes(emotes??[
-            this.game.definitions.emotes.getFromString("emote_neutral"), //Right
-            this.game.definitions.emotes.getFromString("emote_md_logo"), //Bottom
-            this.game.definitions.emotes.getFromString("emote_sad"), //Left
-            this.game.definitions.emotes.getFromString("emote_happy"), //Top
-        ])
+        if(!emotes){
+            if(this.game.comunication_mode){
+                emotes=[
+                    this.game.definitions.ping.getFromString("ping_danger"), //Right
+                ]
+            }else{
+                emotes=[
+                    this.game.definitions.emotes.getFromString("emote_neutral"), //Right
+                    this.game.definitions.emotes.getFromString("emote_md_logo"), //Bottom
+                    this.game.definitions.emotes.getFromString("emote_sad"), //Left
+                    this.game.definitions.emotes.getFromString("emote_happy"), //Top
+                ]
+            }
+            
+        }
+        this.emote_wheel_set_emotes(emotes)
     }
     end_emote_wheel(force:boolean=false){
         if(!this.emote_wheel.up_enable&&!force)return
         HideElement(this.content.emote_wheel.main)
         ShowElement(this.mobile_content.btn_emotes)
         this.emote_wheel.active=false
-        let selected_emote:EmoteDef|undefined=undefined
+        let selected_emote:EmoteDef|PingDef|undefined=undefined
         if(this.emote_wheel.current_side!==-1){
-            selected_emote=this.emote_wheel.emote[this.emote_wheel.current_side]
+            selected_emote=this.emote_wheel.emotes[this.emote_wheel.current_side]
         }
         if(selected_emote){
-            this.game.input.actions.push({
-                type:InputActionType.emote_emote,
-                emote:selected_emote.idNumber!
-            })
+            if(this.game.definitions.ping.exist(selected_emote.idString)){
+                const pos=v2.dscale(this.emote_wheel.positon,this.game.cam2d.meter_size*this.game.cam2d.zoom)
+                v2m.add(pos,pos,this.game.cam2d.visual_position)
+                this.game.input.actions.push({
+                    type:InputActionType.ping,
+                    ping:selected_emote.idNumber!,
+                    position:pos
+                })
+            }else{
+                this.game.input.actions.push({
+                    type:InputActionType.emote_emote,
+                    emote:selected_emote.idNumber!
+                })
+            }
         }
     }
     update_emote_wheel(){
@@ -320,14 +341,20 @@ export class UiManager{
             }
         }
     }
-    emote_wheel_set_emotes(emotes:EmoteDef[]){
+    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef)[]){
         for(const ev in this.content.emote_wheel.emotes){
             const emote=emotes[ev]
-            this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote.idString).src
-            this.content.emote_wheel.emotes[ev].draggable=false
+            if(emote){
+                ShowElement(this.content.emote_wheel.emotes[ev])
+                this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
+                this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote.idString).src
+                this.content.emote_wheel.emotes[ev].draggable=false
+            }else{
+                HideElement(this.content.emote_wheel.emotes[ev])
+            }
         }
         this.content.emote_wheel.main.onclick=(e)=>this.end_emote_wheel(true)
-        this.emote_wheel.emote=emotes
+        this.emote_wheel.emotes=emotes
     }
     mobile_enabled:boolean=isMobile||Debug.force_mobile
     mobile_close(){

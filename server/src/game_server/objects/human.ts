@@ -681,6 +681,14 @@ export class Human extends MovingBody{
                         this.loadout.emote_is_item=true
                         this.loadout.emote=this.game.definitions.game_items.valueNumber[a.item]
                         break
+                    case InputActionType.ping:
+                        /*this.game.pings.push({
+                            color:this.team_data.color,
+                            def:a.ping,
+                            id:this.id,
+                            position:a.position,
+                        })*/
+                        break
                     case InputActionType.buy_on_shop:
                         this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
                         break

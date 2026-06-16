@@ -3,6 +3,7 @@ import { type Game } from "../others/game.ts";
 import { type SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { InputActionType } from "common/scripts/packets/input_packet.ts";
 
 export class HandInfoModule extends UIModule<Game>{
     container!:HTMLDivElement
@@ -19,6 +20,13 @@ export class HandInfoModule extends UIModule<Game>{
         this.count=document.querySelector("#hand-info-count") as HTMLDivElement
         this.consume_type=document.querySelector("#hand-info-consume-type") as HTMLImageElement
 
+
+        this.consume_type.onclick=(e)=>{
+            const def=this.game.definitions.game_items.keysString[this.consume_type.dataset.item_id as string]
+            if(!def)return
+            this.game.input.actions.push({type:InputActionType.emote_item,item:def})
+        }
+
         this.render()
     }
     override on_update(dt: number): void {
@@ -33,6 +41,7 @@ export class HandInfoModule extends UIModule<Game>{
             this.count.innerText=`${this.game.inventory.hand_settings.ammo}/${(weapon.def as GunDef).reload?.capacity}`
             this.consume_type.src=this.game.resources.get_frame((weapon.def as GunDef).ammo_type).src
             this.consume_type.style.display=""
+            this.consume_type.dataset.item_id=(weapon.def as GunDef).ammo_type
         }else{
             this.container.style.visibility="hidden"
             this.container.style.display="none"

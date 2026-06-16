@@ -182,7 +182,9 @@
         img{
             position: static;
             width: 28px;
+            margin-left: 5px;
             height: auto;
+            pointer-events: all;
         }
     }
     @include main.medium_screen {

@@ -169,11 +169,13 @@ export class MinimapModule extends UIModule<Game>{
         }
         const el=document.createElement("div")
         el.className="map-ping"
+        const frame=this.game.resources.get_frame(def.idString)
         el.innerHTML=`
             <div class="map-ping-pulse"></div>
-            <div class="map-ping-icon">${await(await fetch(`/img/menu/gui/pings/${def.idString}.svg`)).text()}</div>
+            <div class="map-ping-icon">${await(await fetch(frame.src)).text()}</div>
         `
         ping.el=el
+        ping.el.style.setProperty("--ping-color",ping.color)
         ping.pulse=el.querySelector(".map-ping-pulse") as HTMLDivElement
         this.pingsLayer.appendChild(el)
         this.pings.push(ping)
@@ -182,7 +184,6 @@ export class MinimapModule extends UIModule<Game>{
     updatePingVisual(p:MinimapPing){
         if(!p.el)return
         const pos=this.worldToMap(p.pos.x,p.pos.y)
-        p.el.style.setProperty("--ping-color",p.color)
         p.el.style.setProperty("--px",`${pos.x}px`)
         p.el.style.setProperty("--py",`${pos.y}px`)
         p.el.style.scale=`${(1/this.scale)*100}%`

@@ -1,7 +1,7 @@
 import { FrameData, KSPR } from "../../core/lang/kspx.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { Material, Texture, WebglRenderer } from "../rendering/renderer.ts"
+import { Material, Renderer, Texture } from "../rendering/renderer.ts"
 import { AudioEngine } from "./sounds.ts";
 export interface SpritesheetJSON{
     meta:{
@@ -30,59 +30,27 @@ export class Frame {
     src:string=""
     group:string=""
 
-    texture!:Texture
-    batch_mat!:Material
+    texture?:Texture
 
     frame_rect?:Rect
+    frame_size:Vec2
 
     texcoords:Float32Array
 
-    constructor(public gl:WebGLRenderingContext,texcoords:number[]){
+    constructor(texture:Texture,texcoords:number[]){
+        this.texture=texture
+        this.frame_size=this.texture.size
         this.texcoords=new Float32Array(texcoords)
     }
     free(){
         if(this.texture){
-            this.gl.deleteTexture(this.texture)
+            this.texture.free()
+            this.texture=undefined
         }
     }
 }
 
 export type Source=Frame|Sound
-export class TextureUtils {
-    static create(gl:WebGLRenderingContext,image:HTMLImageElement,smooth=true){
-        const texture=gl.createTexture()!
-        gl.bindTexture(gl.TEXTURE_2D,texture)
-        gl.texParameteri(
-            gl.TEXTURE_2D,
-            gl.TEXTURE_WRAP_S,
-            gl.CLAMP_TO_EDGE
-        )
-        gl.texParameteri(
-            gl.TEXTURE_2D,
-            gl.TEXTURE_WRAP_T,
-            gl.CLAMP_TO_EDGE
-        )
-        gl.texParameteri(
-            gl.TEXTURE_2D,
-            gl.TEXTURE_MIN_FILTER,
-            smooth?gl.LINEAR:gl.NEAREST
-        )
-        gl.texParameteri(
-            gl.TEXTURE_2D,
-            gl.TEXTURE_MAG_FILTER,
-            smooth?gl.LINEAR:gl.NEAREST
-        )
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            image
-        )
-        return texture
-    }
-}
 export class ResourcesManager {
     frames:Record<string,Frame>={}
     sounds:Record<string,Sound>={}
@@ -90,14 +58,13 @@ export class ResourcesManager {
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
 
-    gl:WebGLRenderingContext
-    renderer:WebglRenderer
+    renderer:Renderer
 
     default_frame!:Frame
+    default_frame_enabled:boolean=false
 
-    constructor(renderer:WebglRenderer,public audio:AudioEngine){
+    constructor(renderer:Renderer,public audio:AudioEngine){
         this.renderer=renderer
-        this.gl=renderer.gl
 
         this.canvas=document.createElement("canvas")
         this.ctx=this.canvas.getContext("2d")!
@@ -123,7 +90,7 @@ export class ResourcesManager {
         const image=new Image()
 
         image.onload=()=>{
-            const frame=new Frame(this.gl,[
+            const frame=new Frame(this.renderer.load_texture(image),[
                 0,1,
                 1,1,
                 0,0,
@@ -132,21 +99,9 @@ export class ResourcesManager {
                 1,1,
                 1,0
             ])
-
             frame.id="default"
             frame.src="default"
             frame.group="internal"
-
-            frame.texture=TextureUtils.create(
-                this.gl,
-                image
-            )
-
-            frame.frame_size=v2(
-                image.width,
-                image.height
-            )
-
             this.default_frame=frame
         }
 
@@ -175,8 +130,8 @@ export class ResourcesManager {
             img.src=src
         })
     }
-    create_frame(texture:WebGLTexture,rect:Rect,src:string=""){
-        const frame=new Frame(this.gl,[
+    create_frame(texture:Texture,rect:Rect,src:string=""){
+        const frame=new Frame(texture,[
             rect.min.x,rect.max.y,
             rect.max.x,rect.max.y,
             rect.min.x,rect.min.y,
@@ -186,7 +141,6 @@ export class ResourcesManager {
             rect.max.x,rect.min.y
         ])
 
-        frame.texture=texture
         frame.src=src
 
         return frame
@@ -197,24 +151,15 @@ export class ResourcesManager {
             return this.frames[id]
         }
         const image=await this.load_image(src)
-        const texture=TextureUtils.create(
-            this.gl,
-            image
-        )
-        const frame=this.create_frame(texture,{min:v2.zero(),max:v2.one()},src)
+        const frame=this.create_frame(this.renderer.load_texture(image),{min:v2.zero(),max:v2.one()},src)
         frame.id=id
         frame.group=group
-        frame.frame_size=v2(
-            image.width,
-            image.height
-        )
         this.frames[id]=frame
         return frame
     }
     async load_spritesheet(prefix:string,json:SpritesheetJSON,image_override?:string,group:string="",callback?:(item:string)=>void){
         const image=await this.load_image(image_override??json.meta.image)
-
-        const texture=TextureUtils.create(this.gl,image)
+        const texture=this.renderer.load_texture(image)
 
         const iw=image.width
         const ih=image.height
@@ -232,10 +177,7 @@ export class ResourcesManager {
                 min:v2(data.x,data.y),
                 max:v2(data.x+data.w,data.y+data.h)
             }
-            frame.frame_size=v2(
-                data.w/json.meta.scale,
-                data.h/json.meta.scale
-            )
+            frame.frame_size=v2(data.w/json.meta.scale,data.h/json.meta.scale)
             this.frames[frame.id]=frame
         }
     }
@@ -246,10 +188,7 @@ export class ResourcesManager {
             const url=URL.createObjectURL(blob)
             const image=await this.load_image(url)
             URL.revokeObjectURL(url)
-            const texture=TextureUtils.create(
-                this.gl,
-                image
-            )
+            const texture=this.renderer.load_texture(image)
             const iw=image.width
             const ih=image.height
             for(const [id,data] of Object.entries(atlas.frames)){
@@ -260,10 +199,6 @@ export class ResourcesManager {
                 }
 
                 const frame=this.create_frame(texture,rect,data.src??id)
-                frame.batch_mat=this.renderer.factorys2D.texture_batch.create({
-                    texture
-                })
-
                 frame.id=prefix+id
                 frame.group=group
 
@@ -324,18 +259,16 @@ export class ResourcesManager {
         const src=canvas.toDataURL()
         return new Promise<Frame>((resolve)=>{
             image.onload=()=>{
-                const texture=TextureUtils.create(this.gl,image)
+                const texture=this.renderer.load_texture(image)
                 const frame=this.create_frame(texture,{min:v2.zero(),max:v2.one()})
-                frame.batch_mat=this.renderer.factorys2D.texture_batch.create({texture})
-                frame.frame_size=v2(image.width,image.height)
                 resolve(frame)
             }
             image.src=src
         })
     }
-    get_frame(id:string,allow_default=true):Frame{
+    get_frame(id:string):Frame{
         if(!this.frames[id]){
-            if(allow_default){
+            if(this.default_frame_enabled){
                 return this.default_frame
             }
         }

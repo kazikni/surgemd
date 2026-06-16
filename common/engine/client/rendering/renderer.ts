@@ -3,6 +3,7 @@ import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_GridMatArgs, GL2
 import { Color, ColorM } from "../../core/math/color.ts";
 import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
 import { Matrix } from "../../core/math/matrix.ts";
+import { v2 } from "../mod.ts";
 
 export interface Material{
     draw(material:Material,matrix:Matrix,attr:any):void
@@ -10,6 +11,7 @@ export interface Material{
 }
 export interface Texture{
     size:Vec2
+    material:Material
     free():void
 }
 
@@ -41,7 +43,8 @@ export abstract class Renderer {
     abstract draw(material:Material,matrix:Matrix,attr:any):void
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
     abstract clear(): void
-    abstract create_texture(): void
+    abstract create_texture(): Texture
+    abstract load_texture(img:HTMLImageElement,smooth?:boolean):Texture
 }
 export class GLDynamicBuffer {
     buffer: WebGLBuffer
@@ -177,7 +180,43 @@ export class WebglRenderer extends Renderer {
         this.quadVBO = gl.createBuffer()
         this.quadTBO = gl.createBuffer()
     }
-    override create_texture(): void {
+    override create_texture(): GLTexture {
+        const te=this.gl.createTexture()!
+        return new GLTexture(v2.zero(),te,this.gl,this.factorys2D.texture_batch.create({texture:te}))
+    }
+    override load_texture(img:HTMLImageElement,smooth:boolean=true):Texture{
+        const texture=this.gl.createTexture()!
+        this.gl.bindTexture(this.gl.TEXTURE_2D,texture)
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_WRAP_S,
+            this.gl.CLAMP_TO_EDGE
+        )
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_WRAP_T,
+            this.gl.CLAMP_TO_EDGE
+        )
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_MIN_FILTER,
+            smooth?this.gl.LINEAR:this.gl.NEAREST
+        )
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_MAG_FILTER,
+            smooth?this.gl.LINEAR:this.gl.NEAREST
+        )
+        this.gl.texImage2D(
+            this.gl.TEXTURE_2D,
+            0,
+            this.gl.RGBA,
+            this.gl.RGBA,
+            this.gl.UNSIGNED_BYTE,
+            img
+        )
+        const tex=new GLTexture(v2(img.width,img.height),texture,this.gl,this.factorys2D.texture_batch.create({texture}))
+        return tex
     }
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);

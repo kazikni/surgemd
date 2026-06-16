@@ -34,7 +34,7 @@ export class Parachute extends ServerGameObject{
             position:this.position,
             def:this.game.definitions.ping.getFromString("ping_airdrop").idNumber!,
             id:-1,
-            color:0xaaccff,
+            color:0xffffff,
         })
     }
     override on_create(args?: {position:Vec2,obstacle:ObstacleDef}): void {

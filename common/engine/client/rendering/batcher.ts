@@ -139,8 +139,8 @@ export class Batcher {
         matrix?:Matrix
     ){
         const vertexCount = model.length / 2
-        if (vertexCount < 2||!frame||!frame.batch_mat) return
-        const cmd = this.ensure(frame.batch_mat,matrix)
+        if (vertexCount < 2||!frame||!frame.texture?.material) return
+        const cmd = this.ensure(frame.texture.material,matrix)
 
         this.push_array(cmd, "vertices", model, vertexCount)
         this.push_array(cmd, "tex_coord", frame.texcoords, vertexCount)

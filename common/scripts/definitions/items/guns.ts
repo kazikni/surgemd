@@ -207,8 +207,8 @@ export const bullets_factory={
     assault(power:number):BulletDef{
         return {
             damage:8*power,
-            range: 130*(1+(power-1)*0.3),
-            speed: 45*(1+(power-1) * 0.5),
+            range: 130*(1+(power-1) * 0.3),
+            speed: 43*(1+(power-1) * 1),
             criticalMult: 1.25,
             obstacleMult: 1,
             falloff:0.75,

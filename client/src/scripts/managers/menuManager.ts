@@ -84,17 +84,7 @@ export class MenuManager{
             database:{
                 enabled:false,
             },
-            regions:{
-                "local":{
-                    host:"localhost",
-                    port:8080
-                }
-            },
-            shop:{
-                skins:{
-
-                }
-            },
+            regions:["local"],
         }
 
         HideElement(this.content.gameD)

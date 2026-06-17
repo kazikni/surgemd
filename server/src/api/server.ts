@@ -1,10 +1,12 @@
-import { ApiSettingsS, ConfigType, GameConfig } from "common/scripts/config/config.ts";
+import { ApiSettingsS, ConfigType } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
 import { Server } from "common/engine/server.ts";
+import { RegionManager } from "./game/regions.ts";
 
 export class ApiServer {
     server: Server
     groups = new GroupManager(this)
+    regions = new RegionManager(this)
     constructor(public config: ConfigType){
         this.server = new Server(
             config.api.host.port,
@@ -14,21 +16,22 @@ export class ApiServer {
         )
         this.routes()
     }
+    get api_settings():ApiSettingsS{
+        return {
+            modes: this.config.game.modes,
+            debug: {
+                debug_menu: this.config.game.debug.debug_menu
+            },
+            regions:this.regions.regions,
+            database: {
+                enabled: this.config.database.enabled
+            }
+        }
+    }
     routes(){
         this.server.route("/get-settings", () => {
-            const settings: ApiSettingsS = {
-                regions: this.config.regions,
-                modes: this.config.game.modes,
-                shop: this.config.shop,
-                debug: {
-                    debug_menu: this.config.game.debug.debug_menu
-                },
-                database: {
-                    enabled: this.config.database.enabled
-                }
-            }
             return this.server.default_handlers.cors(
-                Response.json(settings)
+                Response.json(this.api_settings)
             )
         })
         this.server.route("/find-game", async (req) => {
@@ -36,45 +39,13 @@ export class ApiServer {
                 return new Response(null,{status:204})
             }
             const body = await req.json()
+            const game=await this.regions.find_game(body)
             return this.server.default_handlers.cors(
-                Response.json(
-                    await this.find_game(body)
-                )
+                Response.json(game)
             )
         })
-        this.groups.routes(this.server)
-    }
-    async find_game(body:{region:string,mode:string,group?:string[],config?:GameConfig}){
-        const region = this.config.regions[body.region]
-        if(!region){
-            return {
-                success:false,
-                error:"invalid_region"
-            }
-        }
-        try{
-            const req = await fetch(
-                `http${region.ssh?"s":""}://${region.host}:${region.port}/api/get-game`,
-                {
-                    method:"POST",
-                    headers:{
-                        "content-type":"application/json"
-                    },
-                    body:JSON.stringify({
-                        mode:body.mode,
-                        group:body.group,
-                        config:body.config
-                    })
-                }
-            )
-            return await req.json()
-        }catch(err){
-            console.error(err)
-            return {
-                success:false,
-                error:"region_offline"
-            }
-        }
+        this.groups.routes(this.server.router("groups"))
+        this.regions.routes(this.server.router("regions"))
     }
     run(){
         this.server.run()

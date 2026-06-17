@@ -11,7 +11,14 @@
             "news": "files/news"
         },
         "global": "http://localhost:8000",
-        "key": "your_api_key"
+        "users": {
+            "region": {
+                "password": "region",
+                "permitions": {
+                    "allow_region": true
+                }
+            }
+        }
     },
     "game": {
         "max_games": 5,
@@ -34,21 +41,18 @@
             "port": 8080
         }
     },
-    "this_region": "local",
+    "region": {
+        "name": "local",
+        "host": "localhost",
+        "port": 8080,
+        "user": {
+            "name": "region",
+            "password": "region"
+        }
+    },
     "vite": {
         "port": 3000,
         "allowed_hosts": true
-    },
-    "regions": {
-        "local": {
-            "host": "localhost",
-            "port": 8080
-        },
-        "na": {
-            "host": "na.surgemd.io",
-            "port": 443,
-            "ssh": true
-        }
     },
     "database": {
         "enabled": false,

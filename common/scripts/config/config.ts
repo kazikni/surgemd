@@ -16,18 +16,18 @@ export interface GameDebugOptions{
         time_speed:number
     }
 }
-export interface RegionDef{
+export interface RegionConfig{
+    name:string
     host:string
-    port:number
-    ssh?:boolean
-}
-export interface ShopConfig{
-    skins: Partial<Record<number, number>>
+    https?:boolean
+    user:{
+        name:string
+        password:string
+    }
 }
 export interface ApiSettingsS{
-    regions:Record<string,RegionDef>
+    regions:string[]
     modes:GamemodeConfig[]
-    shop:ShopConfig
     debug:{
         debug_menu:boolean
     }
@@ -35,11 +35,23 @@ export interface ApiSettingsS{
         enabled:boolean
     }
 }
+export interface FindGameData{
+    region:string
+    mode:string
+    group_size?:number
+}
 export interface ConfigType{
     api: {
         host: HostConfig
         global:string
-        key:string
+        users?: Record<string,{
+            password:string
+            permitions?:{
+                allow_moderate?:boolean // Ban, Unban, Kick
+                allow_region?:boolean // Give Region Access
+                allow_database?:boolean // Give Access To Database
+            }
+        }>
     };
     game: {
         max_games: number
@@ -49,12 +61,11 @@ export interface ConfigType{
         tps:number
         modes: GamemodeConfig[]
     }
-    this_region:string
+    region?:RegionConfig
     vite:{
         port:number
         allowed_hosts?:true|string[]
     }
-    regions: Record<string, RegionDef>
     database: {
         enabled: boolean
         statistic:boolean
@@ -63,9 +74,7 @@ export interface ConfigType{
             forum: string
             statistic:string
         }
-        api_key: string
     }
-    shop: ShopConfig
 }
 
 export function ZeroConfig():ConfigType{
@@ -75,11 +84,9 @@ export function ZeroConfig():ConfigType{
                 port:-1
             },
             global:"",
-            key:""
         },
         database:{
             enabled:false,
-            api_key:"",
             files:{
                 accounts:"",
                 forum:"",
@@ -99,13 +106,6 @@ export function ZeroConfig():ConfigType{
             max_games:1,
             modes:[],
         },
-        regions:{
-
-        },
-        shop:{
-            skins:[]
-        },
-        this_region:"local",
         vite:{
             port:3000,
             allowed_hosts:true

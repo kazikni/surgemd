@@ -1,4 +1,4 @@
-import { Server } from "common/engine/server.ts";
+import { Router, Server } from "common/engine/server.ts";
 import { random } from "common/engine/core.ts";
 import { type ApiServer } from "../server.ts";
 
@@ -98,9 +98,9 @@ export class GroupManager {
         this.groups.set(g.code,g)
         return g
     }
-    routes(server:Server){
-        server.route("/group/create",(req)=>{
-            const ws=server.default_handlers.websocket(req)
+    routes(router:Router){
+        router.route("/create",(req)=>{
+            const ws=this.api.server.default_handlers.websocket(req)
             if(!ws.socket){
                 return ws.response
             }
@@ -111,7 +111,7 @@ export class GroupManager {
             }
             return ws.response
         })
-        server.route("/group/join",async (req)=>{
+        router.route("/join",async (req)=>{
             const url = new URL(req.url)
             const code = url.searchParams.get("code")
             if(!code){
@@ -130,7 +130,7 @@ export class GroupManager {
                     status:403
                 })
             }
-            const ws=server.default_handlers.websocket(req)
+            const ws=this.api.server.default_handlers.websocket(req)
             if(!ws.socket){
                 return ws.response
             }

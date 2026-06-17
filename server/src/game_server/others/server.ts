@@ -2,45 +2,78 @@ import { Server, AbstractGameContainer, AbstractGameServer} from "common/engine/
 import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
 import { GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
+export class ApiConnection {
+    socket?: WebSocket
+    logged:boolean=false
+
+    constructor(public game: GameServer,public config: ConfigType) {}
+    connect(attempts=5) {
+        if(attempts<=0)return
+        this.logged=false
+        const region = this.config.region
+        if (!region) return
+        const ws = new WebSocket(`${this.config.api.global}/regions/ws`)
+        ws.onopen = () => {
+            console.log("[API] Connected")
+            ws.send(JSON.stringify({
+                type: "login",
+                region
+            }))
+        }
+        ws.onmessage = (e) => {
+            this.handle_message(e.data)
+        }
+        ws.onclose = () => {
+            console.log("[API] Disconnected")
+            setTimeout(() => {
+                this.connect(this.logged?undefined:attempts-1)
+            }, 5000)
+            if (this.socket === ws) {
+                this.socket = undefined
+            }
+        }
+        ws.onerror = () => {
+            ws.close()
+        }
+        this.socket = ws
+    }
+    handle_message(data: string) {
+        const msg = JSON.parse(data)
+        switch (msg.type) {
+            case "find_game": {
+                const game = this.game.get_game(msg.config)
+                const addr=game?.get_address?.()
+                this.send({
+                    type: "find_game_response",
+                    request_id: msg.request_id,
+                    status: game ? 0 : 1,
+                    address: addr
+                })
+                break
+            }
+            case "logged":{
+                this.logged=true
+                console.log("[API] Logged")
+            }
+        }
+    }
+    send(data: unknown) {
+        if(!this.socket || this.socket.readyState !== WebSocket.OPEN){
+            return
+        }
+        this.socket.send(JSON.stringify(data))
+    }
+}
 export class GameServer extends AbstractGameServer<GameData,GameConfig>{
-    api_socket?:WebSocket
+    api_conn:ApiConnection
     constructor(server: Server,config:ConfigType){
         super(server,config)
 
+        this.api_conn=new ApiConnection(this,config)
+        this.api_conn.connect()
+
         this.add_container(new GameContainer())
 
-        this.server.route("/api/connect-ws",(req)=>{
-            const apiKey=req.headers.get("x-api-key")
-            if(apiKey!==config.api.key){
-                return new Response("Forbidden",{
-                    status:403
-                })
-            }
-            if(this.api_socket &&this.api_socket.readyState===WebSocket.OPEN){
-                return new Response("Already connected",{
-                    status:409
-                })
-            }
-            const res=this.server.default_handlers.websocket(req)
-            if(res.socket){
-                this.api_socket=res.socket
-                res.socket.onclose=()=>{
-                    if(this.api_socket===res.socket){
-                        this.api_socket=undefined
-                    }
-                }
-                res.socket.onerror=()=>{
-                    if(this.api_socket===res.socket){
-                        this.api_socket=undefined
-                    }
-                }
-                res.socket.onmessage=(e)=>{
-                    //this.handle_api_message(e.data)
-                }
-            }
-
-            return res.response
-        })
         this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
             const game=this.get_game()
             const msg=game===undefined
@@ -64,18 +97,21 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     make_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
             if(!g.data.running){
-                g.new_game(config??{
-                    mode:"normal",
-                    //mode:"debug",
-                    //group_size:4,
-                    mode_settings:{
-                        map:{
-                            //def:"tundra"
-                            //def:"single_building"
-                            //def:"lobby"
+                if(!config||!config.mode){
+                    config={
+                        mode:"normal",
+                        //mode:"debug",
+                        //group_size:4,
+                        mode_settings:{
+                            map:{
+                                //def:"tundra"
+                                //def:"single_building"
+                                //def:"lobby"
+                            }
                         }
                     }
-                })
+                }
+                g.new_game(config)
                 return g as GameContainer
             }
         }
@@ -92,7 +128,7 @@ export class GameContainer extends AbstractGameContainer<GameData,GameConfig,Con
         this.worker_path=new URL(worker_path, import.meta.url)
     }
     override get_address():string{
-        return `ws${this.server.config.regions[this.server.config.this_region].ssh?"s":""}://${super.get_address(this.server.config.regions[this.server.config.this_region].host)}/api/ws`
+        return `ws${this.server.config.region!.https?"s":""}://${super.get_address(this.server.config.region!.host)}/api/ws`
     }
     override begin(): void {
         this.port=this.server.config.game!.host.port+this.id+1

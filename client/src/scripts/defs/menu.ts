@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
+import { deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
 import { type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
@@ -798,7 +798,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             type:"choose",
                             name:"settings.game.region",
                             var:"sv_game_region",
-                            options:Object.keys(menu.api_settings.regions).map((v)=>{
+                            options:menu.api_settings.regions.map((v)=>{
                                 return {
                                     name:menu.translation.get("region."+v),
                                     value:v

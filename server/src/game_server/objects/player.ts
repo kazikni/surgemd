@@ -215,6 +215,11 @@ export class Player extends Human{
             this.conn.spectating=false
             this.conn.human=this
         }
+        this.game.players.send_feed_message({
+            type:FeedMessageType.set_name,
+            playerId:this.id,
+            playerName:this.name
+        })
     }
     override side_effect(sf:SideEffect){
         super.side_effect(sf)

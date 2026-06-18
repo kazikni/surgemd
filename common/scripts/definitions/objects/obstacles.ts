@@ -370,18 +370,18 @@ export const obstacles_factory={
             return [
                 this.column_1(id+"_column",tint,settings.particle,settings.o),
 
-                this.wall(id+"_wall_2x1","wall_size_2x1",tint,health*(1+(2-1)*0.3),undefined,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_4x1","wall_size_4x1",tint,health*(1+(4-1)*0.3),0.4933,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_6x1","wall_size_6x1",tint,health*(1+(6-1)*0.3),0.739998,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_8x1","wall_size_8x1",tint,health*(1+(8-1)*0.3),0.986664,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_10x1","wall_size_10x1",tint,health*(1+(10-1)*0.3),1.23333,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_12x1","wall_size_12x1",tint,health*(1+(12-1)*0.3),1.47999,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_14x1","wall_size_14x1",tint,health*(1+(14-1)*0.3),1.72666,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_16x1","wall_size_16x1",tint,health*(1+(16-1)*0.3),1.97332,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_18x1","wall_size_18x1",tint,health*(1+(18-1)*0.3),2.21992,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_20x1","wall_size_20x1",tint,health*(1+(20-1)*0.3),2.46666,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_24x1","wall_size_24x1",tint,health*(1+(24-1)*0.3),2.95999,undefined,settings.particle,settings.o),
-                this.wall(id+"_wall_28x1","wall_size_28x1",tint,health*(1+(28-1)*0.3),3.45332,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_2x1","wall_size_2x1",tint,health*(1+(2-1)*0.2),undefined,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_4x1","wall_size_4x1",tint,health*(1+(4-1)*0.2),0.4933,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_6x1","wall_size_6x1",tint,health*(1+(6-1)*0.2),0.739998,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_8x1","wall_size_8x1",tint,health*(1+(8-1)*0.2),0.986664,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_10x1","wall_size_10x1",tint,health*(1+(10-1)*0.2),1.23333,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_12x1","wall_size_12x1",tint,health*(1+(12-1)*0.2),1.47999,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_14x1","wall_size_14x1",tint,health*(1+(14-1)*0.2),1.72666,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_16x1","wall_size_16x1",tint,health*(1+(16-1)*0.2),1.97332,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_18x1","wall_size_18x1",tint,health*(1+(18-1)*0.2),2.21992,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_20x1","wall_size_20x1",tint,health*(1+(20-1)*0.2),2.46666,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_24x1","wall_size_24x1",tint,health*(1+(24-1)*0.2),2.95999,undefined,settings.particle,settings.o),
+                this.wall(id+"_wall_28x1","wall_size_28x1",tint,health*(1+(28-1)*0.2),3.45332,undefined,settings.particle,settings.o),
             ]
         }
     }

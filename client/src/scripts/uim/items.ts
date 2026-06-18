@@ -45,7 +45,7 @@ export class ItemsModule extends UIModule<Game> {
         el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
         el.onmouseenter=(e)=>{
-            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description??"")
+            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description??"",el)
         }
         el.onmouseleave=()=>{
             this.game.ui.tooltip_hide()
@@ -91,6 +91,10 @@ export class ItemsModule extends UIModule<Game> {
             el.classList.add("slot-empty")
             count.classList.remove("item-maximized")
             el.dataset.item_name=""
+
+            if(this.game.ui.tooltip_element===el){
+                this.game.ui.hide_game_over()
+            }
         }
     }
 

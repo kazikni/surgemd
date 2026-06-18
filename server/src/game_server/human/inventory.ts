@@ -322,6 +322,7 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     use_delay:number=0
     constructor(def:ConsumibleDef){
         super(def)
+        if(this.def.allow_merge!==undefined)this.allow_merge=this.def.allow_merge
     }
     on_use(user: Human,slot?:Slot<LItem>): void {
         if(user.actions.current_action)return
@@ -391,6 +392,8 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
                     }
                 }
                 this.use_delay=this.def.consuming.delay
+                this.slot!.remove(1)
+                this.inventory.net_sync.items=true
             }
         }
     }
@@ -422,7 +425,6 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
             time:this.def.cook?.fuse_time??10,
             slot:this.slot
         }
-
         user.animation_data.dirty=true
         user.animation_data.current_animation.push(
             {
@@ -557,7 +559,6 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.hand_item!==this.weapons[idx]||force){
             this.owner.recoil=undefined
             this.owner.actions.cancel()
-
             this.owner.throw_using_projectile()
             this.owner.animation_data.dirty=true
         }
@@ -845,7 +846,6 @@ export class GInventory extends GInventoryBase<LItem>{
             const c=Math.min(count,s.quantity)
             this.owner.game.add_loot(this.owner.position,s.item.def as GameItem,c,this.owner.layer)
             s.remove(c)
-
             this.net_sync.items=true
         }
     }

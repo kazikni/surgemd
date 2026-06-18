@@ -7,6 +7,7 @@ export interface SyncedParticleDef extends Definition{
     action_time?:number
     side_effect?:SideEffect[]
     no_hit_owner?:boolean
+    single_use?:boolean
     hitbox?:Hitbox2D
     force_default_scope?:boolean
     movement?:({
@@ -58,6 +59,7 @@ export const synsed_particle_factory={
             idString:id,
             lifetime:1,
             no_hit_owner:true,
+            single_use:true,
             hitbox:new CircleHitbox2D(v2.zero,0.5),
             side_effect:side_effect,
             frame:{
@@ -285,7 +287,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             {
                 type:SideEffectType.Heal,
                 health:{
-                    amount:0.25,
+                    amount:1,
                 }
             }
         ])

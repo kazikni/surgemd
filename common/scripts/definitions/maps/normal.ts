@@ -55,12 +55,12 @@ export const map_spawns={
 export const NormalMap:MapDef={
     loot_tables:LootTables,
     biome:NormalBiome,
-    buildings:[
+    /*buildings:[
         building_to_json(buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,
             doors_tint:2,
         }))
-    ],
+    ],*/
     generation:{
         island:{
             size:v2(600,600),

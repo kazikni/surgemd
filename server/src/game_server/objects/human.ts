@@ -116,6 +116,7 @@ export class Human extends MovingBody{
     get scope_zoom():number{
         return 20/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
+    emote_time:number=0
     loadout!:HumanLoadoutData&{
         dirty:boolean
         dirty_colors:boolean
@@ -676,14 +677,21 @@ export class Human extends MovingBody{
                             this.equipment_data.scope=this.game.definitions.scopes.getFromNumber(a.scope_id)
                         }
                         break
-                    case InputActionType.emote_emote:
+                    case InputActionType.emote_emote:{
+                        if(this.emote_time>=0)break
+                        const def=this.game.definitions.emotes.getFromNumber(a.emote)
                         this.loadout.emote_is_item=false
-                        this.loadout.emote=this.game.definitions.emotes.getFromNumber(a.emote)
+                        this.loadout.emote=def
                         break
-                    case InputActionType.emote_item:
+                    }
+                    case InputActionType.emote_item:{
+                        if(this.emote_time>=0)break
+                        const def=this.game.definitions.game_items.valueNumber[a.item]
                         this.loadout.emote_is_item=true
-                        this.loadout.emote=this.game.definitions.game_items.valueNumber[a.item]
+                        this.loadout.emote=def
+                        this.emote_time=2
                         break
+                    }
                     case InputActionType.ping:
                         /*this.game.pings.push({
                             color:this.team_data.color,
@@ -744,7 +752,7 @@ export class Human extends MovingBody{
             case GameObjectType.Building:{
                 if(!this.equipment_data.force_default_scope){
                     for(const c of (obj as Building).ceilings){
-                        if(!c.no_scope_block&&this.hitbox.overlap_collision(c.hitbox)){
+                        if(c.can_below(this.hitbox)){
                             this.equipment_data.force_default_scope=true
                         }
                     }
@@ -970,6 +978,10 @@ export class Human extends MovingBody{
                     direction:0,
                 })
             }
+        }
+
+        if(this.emote_time>=0){
+            this.emote_time-=dt
         }
         //Update Inventory
         this.inventory.update(dt)

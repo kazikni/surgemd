@@ -820,6 +820,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.game.friendly_fire",
                             var:"sv_game_friendly_fire",
                         },
+                        {
+                            type:"toggle",
+                            name:"settings.game.ammo_outline",
+                            var:"sv_game_ammo_outline",
+                        },
                     ],translation)
                 },
                 "graphics":{

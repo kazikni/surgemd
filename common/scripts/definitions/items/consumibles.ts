@@ -29,6 +29,7 @@ export interface ConsumibleDef extends Definition{
     rank:ItemRank
     consuming:ConsumingAction
     condition?:ConsumibleCondition[]
+    allow_merge?:boolean
     assets?:{
         using_particle?:string
         using_sound?:string
@@ -111,7 +112,7 @@ export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:
                     }
                 }
             ],
-            use_delay:2.65,
+            use_delay:3,
             animation:ConsumiblesAnimations.drinking(color+"_soda",2.5),
             drink:true,
             drop:true,

@@ -4,7 +4,23 @@ import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
 export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
-export type BuildingCeilingChild={type:1,def:BuildingCeilingDef,alive:boolean,connections:Obstacle[]}
+export class BuildingCeiling{
+    def:BuildingCeilingDef
+    hitbox:Hitbox2D
+    alive:boolean
+    connections:Obstacle[]
+    no_scope_block:boolean
+    constructor(def:BuildingCeilingDef,hitbox:Hitbox2D,connections:Obstacle[]){
+        this.def=def
+        this.hitbox=hitbox
+        this.alive=true
+        this.connections=connections
+        this.no_scope_block=!!def.no_scope_block
+    }
+    can_below(hb:Hitbox2D){
+        return this.alive&&hb.colliding_with(this.hitbox)
+    }
+}
 export class Building extends StaticBody {
     override string_type = "building"
     override number_type = GameObjectType.Building
@@ -30,9 +46,9 @@ export class Building extends StaticBody {
         no_bullets_collision:true,
         passable_by_bullets:false,
     }
-    children:(BuildingObstacleChild|BuildingCeilingChild)[]=[]
+    children:BuildingObstacleChild[]=[]
     objects_ids:Record<number,Obstacle>={}
-    ceilings:{hitbox:Hitbox2D,no_scope_block:boolean}[]=[]
+    ceilings:BuildingCeiling[]=[]
 
     constructor() {
         super()
@@ -84,16 +100,7 @@ export class Building extends StaticBody {
             for(const conn of c.connections??[]){
                 conns.push(this.objects_ids[conn])
             }
-            this.children.push({
-                type:1,
-                def:c,
-                alive:true,
-                connections:conns,
-            })
-            this.ceilings.push({
-                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
-                no_scope_block:!!c.no_scope_block
-            })
+            this.ceilings.push(new BuildingCeiling(c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),conns))
         }
 
         this.manager.cells.update_object(this)
@@ -166,17 +173,15 @@ export class Building extends StaticBody {
     }
 
     verify_childrens(){
-        for(const child of this.children){
-            if(child.type===1){
-                if(child.alive&&child.def.destroy){
-                    let alive_count:number=0
-                    for(const c of child.connections){
-                        if(!c.health_data.dead)alive_count++
-                    }
-                    if(alive_count<=child.def.destroy.count){
-                        child.alive=false
-                        this.set_dirty_part()
-                    }
+        for(const child of this.ceilings){
+            if(child.alive&&child.def.destroy){
+                let alive_count:number=0
+                for(const c of child.connections){
+                    if(!c.health_data.dead)alive_count++
+                }
+                if(alive_count<=child.def.destroy.count){
+                    child.alive=false
+                    this.set_dirty_part()
                 }
             }
         }
@@ -190,7 +195,7 @@ export class Building extends StaticBody {
         if(full){
             stream.write_id(this.def.idNumber!)
         }
-        stream.write_array(this.children.filter((o)=>o.type===1),(v)=>{
+        stream.write_array(this.ceilings,(v)=>{
             stream.write_boolean_group(v.alive)
         },1)
     }
@@ -201,9 +206,7 @@ export class Building extends StaticBody {
         stream.write_number_dict(this.objects_ids,(i)=>{
             stream.write_id(ctx.idco[i.id])
         },1)
-        stream.write_array(this.children.filter(
-            c => c.type === 1
-        ) as BuildingCeilingChild[],(c)=>{
+        stream.write_array(this.ceilings,(c)=>{
             stream.write_boolean_group(c.alive)
         },1)
     }
@@ -224,13 +227,9 @@ export class Building extends StaticBody {
         this.begin_generate(pos)
         this.after_generate()
 
-        const ceilings = this.children.filter(
-            c => c.type === 1
-        ) as BuildingCeilingChild[]
-
         stream.read_array((i)=>{
             const [alive] = stream.read_boolean_group()
-            ceilings[i].alive = alive
+            this.ceilings[i].alive = alive
         },1)
 
         this.update_hitbox()

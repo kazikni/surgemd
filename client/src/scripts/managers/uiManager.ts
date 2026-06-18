@@ -88,6 +88,7 @@ export class UiManager{
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
     }
+    tooltip_element?:HTMLElement
     mobile_content={
         gui:document.querySelector("#game-mobile-gui") as HTMLDivElement,
         left_joystick:document.querySelector("#left-joystick") as HTMLDivElement,
@@ -156,11 +157,11 @@ export class UiManager{
         HideElement(this.content.normal_gameOver)
 
         this.enableCrosshair()
+        enableContextMenuPrevent()
 
         this.game.inventory.clear()
         this.game.ui_manager.clear()
         this.hover_objects.clear()
-        disableContextMenuPrevent()
     }
     update_theme(){
         this.content.game_gui.style.setProperty("--ui-theme-primary",this.game.get_theme_color("primary"))
@@ -716,10 +717,10 @@ export class UiManager{
         }
     }
     normal_game_over(g:GameOverPacket){
-        disableContextMenuPrevent()
         ShowElement(this.content.normal_gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
+        disableContextMenuPrevent()
         if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
         }else{
@@ -862,13 +863,15 @@ export class UiManager{
         return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
     }
 
-    tooltip_show(title:string|null|undefined,description:string){
+    tooltip_show(title:string|null|undefined,description:string,element?:HTMLElement){
         if(!title)return
         this.content.tooltip_title.innerText=this.game.language.get(title)
         this.content.tooltip_description.innerHTML=description
+        this.tooltip_element=element
         this.content.tooltip.classList.add("tooltip-visible")
     }
     tooltip_hide(){
         this.content.tooltip.classList.remove("tooltip-visible")
+        this.tooltip_element=undefined
     }
 }

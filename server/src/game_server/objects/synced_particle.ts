@@ -24,6 +24,8 @@ export class SyncedParticle extends MovingBody {
     time=0
     spiral_origin=v2.zero()
 
+    hitted:boolean=false
+    single_hit:boolean=false
     no_hit_owner:boolean=false
     just_owner:boolean=false
 
@@ -46,16 +48,17 @@ export class SyncedParticle extends MovingBody {
                 break
             }
             case GameObjectType.Human:{
+                if(this.single_hit&&this.hitted)break
                 const ov=this.hitbox.overlap_collision((obj as StaticBody).hitbox)
                 if(this.def.movement?.type==="direction"){
                     if(ov){
                         v2m.sub(this.physical_data.velocity,this.physical_data.velocity,v2.scale((ov.dir.x===1&&ov.dir.y===0)?v2.random(-1,1):ov.dir,4*dt))
                     }
                 }
-
                 if(ov&&this.def.side_effect&&this.action_tick>=this.action_time){
                     if(this.no_hit_owner&&obj.id===this.owner?.id)break
                     if(this.just_owner&&obj.id!==this.owner?.id)break
+                    this.hitted=true
                     for(const s of this.def.side_effect){
                         (obj as Human).side_effect(s,this.owner)
                     }
@@ -74,6 +77,7 @@ export class SyncedParticle extends MovingBody {
         this.physical_data.rotation=random.rad()
         this.action_time=this.def.action_time??0.1
         this.no_hit_owner=this.def.no_hit_owner??false
+        this.single_hit=this.def.single_use??false
 
         if(this.def.movement){
             if(this.def.movement.angular){

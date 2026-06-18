@@ -2,7 +2,7 @@
 import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { InventoryItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { Human } from "./human.ts";
@@ -143,7 +143,14 @@ export class Loot extends GameObject{
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.frame=this.game.resources.get_frame(`${(this.item as unknown as GunDef).ammo_type}_outline`)
+                    if(this.game.save.get_variable("sv_game_ammo_outline")){
+                        this.sprite_outline.frame=this.game.resources.get_frame(`${(this.item as unknown as GunDef).ammo_type}_outline`)
+                    }else{
+                        this.sprite_outline.frame=this.game.resources.get_frame("rarity_outline")
+                        this.sprite_outline.transform_frame({
+                            tint:ItemQualitySettings[this.item.rank].tint
+                        })
+                    }
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2(2,2);
                     this.pickup_sound=this.game.resources.get_sound("gun_pickup")

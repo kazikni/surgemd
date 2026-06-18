@@ -36,6 +36,9 @@ export class AItemsModule extends UIModule<Game> {
         })
         for (const k of this.cache.keys()) {
             if (!keys.includes(k)) {
+                if(this.game.ui.tooltip_element===this.cache.get(k)!){
+                    this.game.ui.tooltip_hide()
+                }
                 this.cache.get(k)!.remove()
                 this.cache.delete(k)
             }
@@ -73,7 +76,7 @@ export class AItemsModule extends UIModule<Game> {
         el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
         el.onmouseenter = (e) => {
-            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description ?? "")
+            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description ?? "",el)
         }
         el.onmouseleave = () => {
             this.game.ui.tooltip_hide()

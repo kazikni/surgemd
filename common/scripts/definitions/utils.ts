@@ -50,42 +50,50 @@ export type ItemRankSetting={
     name:string
     color1:string
     color2:string
+    tint:number
 }
 export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
     [ItemRank.E]:{
         name:"common",
         color1:"#eeeeee",
-        color2:"#a0a0a0"
+        color2:"#a0a0a0",
+        tint:0xeeeeee
     },
     [ItemRank.D]:{
         name:"uncommon",
         color1:"#11ef45",
         color2:"#0c913a",
+        tint:0x11ef45
     },
     [ItemRank.C]:{
         name:"rare",
         color1:"#3533ee",
-        color2:"#15118a"
+        color2:"#15118a",
+        tint:0x2222ef
     },
     [ItemRank.B]:{
         name:"epic",
         color1:"#9309de",
-        color2:"#3b0b7d"
+        color2:"#3b0b7d",
+        tint:0x9309de
     },
     [ItemRank.A]:{
         name:"mythic",
         color1:"#f0d107",
-        color2:"#ab8c0f"
+        color2:"#ab8c0f",
+        tint:0xf0d907
     },
     [ItemRank.S]:{
         name:"legendary",
         color1:"#ed092c",
-        color2:"#a3050a"
+        color2:"#a3050a",
+        tint:0xee2244
     },
     [ItemRank.Developer]:{
         name:"developer",
         color1:"#eeeeee",
-        color2:"#eeeeee"
+        color2:"#eeeeee",
+        tint:0x11ef45
     },
 }
 export enum InventoryItemType{

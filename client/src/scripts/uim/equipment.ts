@@ -77,7 +77,7 @@ export class EquipmentModule extends UIModule<Game> {
             return
         }
         el.onmousedown=this.game.ui.handle_slot_click.bind(this.game.ui)
-        const sprite = this.game.resources.get_frame(id, false)
+        const sprite = this.game.resources.get_frame(id)
         if (!sprite?.src) {
             HideElement(el)
             return
@@ -88,7 +88,7 @@ export class EquipmentModule extends UIModule<Game> {
 
         const description=this.game.language.get(description_def,replace)
         el.onmouseenter=(e)=>{
-            this.game.ui.tooltip_show("items."+id,description,e.clientX,e.clientY)
+            this.game.ui.tooltip_show("items."+id,description,el)
         }
         el.onmouseleave=()=>{
             this.game.ui.tooltip_hide()

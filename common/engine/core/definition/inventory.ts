@@ -5,6 +5,7 @@ import { Numeric, Tags, hasTag, hasTags } from "../math/utils.ts"
 export abstract class Item{
     limit_per_slot:number=1
     tags:Tags=[]
+    allow_merge:boolean=true
     abstract is(other:Item):boolean
 }
 
@@ -31,6 +32,9 @@ export class Slot<ItemBase extends Item = Item>{
                 return quantity
             }
         }else if(!this.item.is(item)){
+            return quantity
+        }
+        if(!this.item.allow_merge){
             return quantity
         }
         const add=this.quantity+quantity

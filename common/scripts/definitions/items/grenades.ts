@@ -185,9 +185,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"submirv_grenade",
             rank:ItemRank.E,
-
             explosion:"submirv_grenade_explosion",
-
             gravity:3,
             radius:0.1,
             zBaseScale:1,

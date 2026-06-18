@@ -87,7 +87,6 @@ export class RegionManager{
                 type: "find_game",
                 config: config
             })
-            console.log(msg)
             return msg
         } catch {
             return {

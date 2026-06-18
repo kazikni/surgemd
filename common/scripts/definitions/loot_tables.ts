@@ -38,9 +38,9 @@ export const LootTables={
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:150},
-        {table:"mythic_guns",weight:15},
-        {table:"legendary_guns",weight:1}
+        {table:"common_guns",weight:100},
+        {table:"mythic_guns",weight:5},
+        {table:"legendary_guns",weight:0.25}
     ],
     melees:[
         {item:"survival_knife",weight:15},
@@ -187,12 +187,13 @@ export const LootTables={
         {weight:0.6,table:"equipments"},
         {weight:0.6,table:"scopes"},
         {weight:0.55,table:"throwables"},
-        {weight:0.05,table:"melees"},
+        {weight:0.04,table:"melees"},
     ],
     loot_drawer:[
         {weight:2,count:2,table:"normal_loot"},
         {weight:1,count:3,table:"normal_loot"},
         {weight:0.5,count:4,table:"normal_loot"},
+        {weight:0.5,count:1,table:"normal_loot"},
     ],
     //Crates
     wood_crate:[

@@ -978,7 +978,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.75)
+                def:bullets_factory.sniper(0.73)
             },
             reload:{
                 delay:0.6,
@@ -1199,7 +1199,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.sniper(0.75)
+                def:bullets_factory.sniper(0.73)
             },
 
             reload:{

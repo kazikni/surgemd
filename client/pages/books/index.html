@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Book</title>
+        <style>
+            *{
+                box-sizing:border-box;
+            }
+            body{
+                margin:0;
+                width:100vw;
+                height:100vh;
+
+                display:flex;
+                justify-content:center;
+                align-items:center;
+
+                overflow:hidden;
+
+                background:#15120d;
+                font-family:Georgia, serif;
+            }
+            .book-container{
+                perspective:4000px;
+            }
+            .book{
+                position:relative;
+                transform-style:preserve-3d;
+
+                width:1100px;
+                height:700px;
+
+                display:flex;
+
+                background:#8f6339;
+
+                border-radius:10px;
+
+                box-shadow:
+                    0 20px 80px rgba(0,0,0,.5);
+            }
+            .page{
+                flex:1;
+                background:#f4e5c1;
+                padding:30px;
+                position:relative;
+                overflow:hidden;
+                text-align: center;
+                border:1px solid rgba(0,0,0,.1);
+            }
+            .page-left{
+                left:0;
+            }
+            .page-right{
+                right:0;
+            }
+            .page img{
+                width:100%;
+                height:320px;
+
+                object-fit:contain;
+            }
+            .page h1{
+                margin-top:20px;
+                margin-bottom:10px;
+            }
+            .page p{
+                line-height:1.6;
+                font-size:18px;
+            }
+            .controls{
+                position:absolute;
+                bottom:20px;
+                left:50%;
+                transform:translateX(-50%);
+
+                display:flex;
+                gap:20px;
+            }
+            button{
+                border:none;
+                background:#6d4325;
+                color:white;
+                padding:12px 20px;
+                border-radius:6px;
+                cursor:pointer;
+            }
+            .flip-page{
+                position:absolute;
+                width:50%;
+                height:100%;
+                right:0;
+                transform-origin:left center;
+                transform-style:preserve-3d;
+                display:none;
+                z-index:100;
+            }
+            .flip-page.active{
+                display:block;
+                animation:bookFlipNext 1s ease forwards;
+            }
+            .flip-page.prev{
+                left:0;
+                right:auto;
+                transform-origin:right center;
+            }
+            .flip-page.prev.active{
+                animation:bookFlipPrev 1s ease forwards;
+            }
+            .flip-front,
+            .flip-back{
+                position:absolute;
+                width:100%;
+                height:100%;
+                background:#f4e5c1;
+                backface-visibility:hidden;
+                overflow:hidden;
+                padding:30px;
+            }
+            .flip-front{
+                transform:rotateY(0deg);
+            }
+            .flip-back{
+                transform:rotateY(180deg);
+            }
+            @keyframes bookFlipNext{
+                from{
+                    transform:rotateY(0deg);
+                }
+                to{
+                    transform:rotateY(-180deg);
+                }
+            }
+            @keyframes bookFlipPrev{
+                from{
+                    transform:rotateY(0deg);
+                }
+                to{
+                    transform:rotateY(180deg);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="book-container">
+            <div class="book">
+                <div class="page page-left" id="leftPage">
+                    <h1 class="title"></h1>
+                    <img class="image">
+                    <p class="text"></p>
+                </div>
+                <div class="page page-right" id="rightPage">
+                    <h1 class="title"></h1>
+                    <img class="image">
+                    <p class="text"></p>
+                </div>
+                <div class="flip-page" id="flipPage">
+                    <div class="flip-front page" id="flip-front">
+                        <h1 class="title"></h1>
+                        <img class="image">
+                        <p class="text"></p>
+                    </div>
+                    <div class="flip-back page" id="flip-back">
+                        <h1 class="title"></h1>
+                        <img class="image">
+                        <p class="text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="prev">◀ Previous</button>
+            <button id="next">Next ▶</button>
+        </div>
+        <script type="module">
+            const params = new URLSearchParams(location.search);
+            const bookName = params.get("book")
+            if(!bookName){
+                document.body.innerHTML = "Book not found"
+                throw ""
+            }
+            const language="en"
+            const base = `/scripts/books/${bookName}`
+            const book = await (await fetch(`${base}/book.json`)).json()
+            let pageIndex = 0;
+            function renderPage(page,element){
+                const p_img=element.querySelector(".image")
+                const p_title=element.querySelector(".title")
+                const p_text=element.querySelector(".text")
+
+                if(!page){
+                    p_img.style.display = "none"
+                    p_title.innerText = ""
+                    p_text.innerText = ""
+                    return
+                }
+
+                p_img.style.display = ""
+                if(page.image){
+                    const src=page.image.replaceAll("${base}",base)
+                    p_img.src = src
+                }
+                if(page.title){
+                    p_title.innerHTML=page.title
+                }else{
+                    p_title.innerHTML=""
+                }
+                if(page.text){
+                    p_text.innerHTML=page.text
+                }else{
+                    p_text.innerHTML=""
+                }
+            }
+            function renderInstant(){
+                renderPage(book.pages[pageIndex],document.querySelector("#leftPage"))
+                renderPage(book.pages[pageIndex+1],document.querySelector("#rightPage"))
+            }
+            let flipping = false;
+            function nextPage(){
+                if(flipping)return
+                if(pageIndex + 2 >= book.pages.length)return
+                flipping = true
+                renderPage(book.pages[pageIndex+1],document.querySelector("#flip-front"))
+                renderPage(book.pages[pageIndex+2],document.querySelector("#flip-back"))
+                const flip = document.getElementById("flipPage")
+                flip.classList.add("active")
+                pageIndex += 2
+                renderInstant()
+                setTimeout(()=>{
+                    flip.classList.remove("active")
+                    flipping = false
+                },900)
+            }
+            function previousPage(){
+                if(flipping)return
+                if(pageIndex - 2 < 0)return
+                renderPage(book.pages[pageIndex],document.querySelector("#flip-front"))
+                renderPage(book.pages[pageIndex-1],document.querySelector("#flip-back"))
+                flipping = true
+                const flip = document.getElementById("flipPage")
+                flip.classList.add("prev")
+                flip.classList.add("active")
+                pageIndex -= 2
+                renderInstant()
+                setTimeout(()=>{
+                    flip.classList.remove("active")
+                    flip.classList.remove("prev")
+                    flipping = false
+                },1000)
+            }
+            renderInstant()
+            document.getElementById("next").onclick = ()=>{
+                if(flipping)return
+                if(pageIndex + 2 < book.pages.length){
+                    nextPage()
+                }
+            }
+            document.getElementById("prev").onclick = ()=>{
+                if(flipping)return
+                previousPage()
+            }
+            window.addEventListener("keydown",(e)=>{
+                if(e.key === "ArrowRight"){
+                    document.getElementById("next").click()
+                }
+                if(e.key === "ArrowLeft"){
+                    document.getElementById("prev").click()
+                }
+            })
+        </script>
+    </body>
+</html>

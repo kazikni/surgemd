@@ -157,18 +157,22 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
         }
         async play_game(play:PlayArgs){
             if(this.game.happening)return
-            this.menu_manager.show_loading_screen()
             switch(play.type){
                 case "online":{
-                    const ghost=await(await fetch(API_BASE+"/find-game",{
-                        method:"post",
-                        body:JSON.stringify({
-                            ...play,
-                            region:this.game.save.get_variable("sv_game_region"),
-                        })
-                    })).json()
-                    if(ghost.status===0){
-                        this.game.connect(ghost.address)
+                    try{
+                        const ghost=await(await fetch(API_BASE+"/find-game",{
+                            method:"post",
+                            body:JSON.stringify({
+                                ...play,
+                                region:this.game.save.get_variable("sv_game_region"),
+                            })
+                        })).json()
+                        if(ghost.status===0){
+                            this.menu_manager.show_loading_screen()
+                            this.game.connect(ghost.address)
+                        }
+                    }catch{
+                        alert("Error")
                     }
                     break
                 }

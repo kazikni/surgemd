@@ -99,9 +99,9 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             if(!g.data.running){
                 //if(!config||!config.mode){
                     config={
-                        //mode:"normal",
-                        mode:"debug",
-                        group_size:4,
+                        mode:"normal",
+                        //mode:"debug",
+                        //group_size:4,
                         mode_settings:{
                             map:{
                                 //def:"tundra"

@@ -208,7 +208,7 @@ export const bullets_factory={
         return {
             damage:8*power,
             range: 130*(1+(power-1) * 0.3),
-            speed: 43*(1+(power-1) * 1),
+            speed: 38*(1+(power-1) * 0.7),
             criticalMult: 1.25,
             obstacleMult: 1,
             falloff:0.75,
@@ -217,9 +217,9 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 47 * power,
+            damage: 45 * power,
             range: 140 * (1 + (power - 1) * 0.5),
-            speed: 55 * (1 + (power - 1) * 0.15),
+            speed: 55 * (1 + (power - 1) * 0.3),
             criticalMult: 1.1,
             obstacleMult: 1.25,
             falloff: 0.75,
@@ -230,7 +230,7 @@ export const bullets_factory={
         return {
             damage:5 * power,
             range:46 * (1 + (power - 1) * 0.4),
-            speed:30 * (1 + (power - 1) * 0.4),
+            speed:29 * (1 + (power - 1) * 0.7),
             falloff:0.7,
             criticalMult:1.2,
             tracer:tracer

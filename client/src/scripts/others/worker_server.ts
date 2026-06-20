@@ -31,7 +31,7 @@ self.onmessage = async(ev) => {
             break
         }
         case "load_level":{
-            const path="/"+msg.level
+            const path="/"+msg.path
             const fs=new FetchFileManager()
             fs.base=path+"/"
             level=new LevelPlayer(server,fs)
@@ -57,7 +57,7 @@ self.onmessage = async(ev) => {
             break
         }
         case "init":{
-            level.init()
+            level.init(msg.start_with_intro)
             break
         }
         case "start_game":{

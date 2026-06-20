@@ -97,11 +97,11 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     make_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
             if(!g.data.running){
-                if(!config||!config.mode){
+                //if(!config||!config.mode){
                     config={
-                        mode:"normal",
-                        //mode:"debug",
-                        //group_size:4,
+                        //mode:"normal",
+                        mode:"debug",
+                        group_size:4,
                         mode_settings:{
                             map:{
                                 //def:"tundra"
@@ -110,7 +110,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                             }
                         }
                     }
-                }
+                //}
                 g.new_game(config)
                 return g as GameContainer
             }

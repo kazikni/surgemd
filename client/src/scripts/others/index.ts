@@ -1,7 +1,7 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { BasicSocket, FetchFileManager, FileManager, isMobile, OfflineClientsManager, random, ReplayWatcher, sleep, TranslationManager } from "common/engine/client.ts";
+import { BasicSocket, FetchFileManager, FileManager, isMobile, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
 import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
@@ -173,6 +173,7 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                     break
                 }
                 case "campaign":{
+                    this.game.start_with_intro=play.start_with_intro
                     this.game.local_server.begin_level(play.path)
                     break
                 }

@@ -32,8 +32,8 @@ export class LocalGameServer{
     start(){
         this.worker!.postMessage({type:"start"})
     }
-    init(){
-        this.worker!.postMessage({type:"init"})
+    init(start_with_intro:boolean=false){
+        this.worker!.postMessage({type:"init",start_with_intro})
     }
     connect(){
         this.worker!.postMessage({type:"connect"})
@@ -48,7 +48,8 @@ export class LocalGameServer{
     }
     begin_level(path:string){
         this.run()
-        this.worker!.postMessage({type:"load_level",level:path})
+        console.log(path)
+        this.worker!.postMessage({type:"load_level",path})
     }
 
     handle_messages(msg:any){

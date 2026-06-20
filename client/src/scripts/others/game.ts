@@ -64,6 +64,7 @@ export class Game extends ClientGame<GameObject>{
     map_started:boolean=false
 
     local_server:LocalGameServer
+    start_with_intro:boolean=false
 
     cursors={
         default:"url('/img/menu/icons/mouse.svg') 0 0, default",
@@ -498,7 +499,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui.game_over_screen={
                 type:GameOverScreenType.Restart
             }
-            this.local_server.init()
+            this.local_server.init(this.start_with_intro)
         }
     }
     async show_final_screen(game_over:GameOverStatus){

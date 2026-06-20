@@ -8,6 +8,7 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
+export type PopupFunction=(ctx:GamePopupCTX)=>void
 type PhaseIntroConfig = {
     location: string
     name: string
@@ -439,7 +440,7 @@ export class MenuManager{
             requestAnimationFrame(()=>next(0))
         })
     }
-    game_popup(content:(ctx:GamePopupCTX)=>void):Promise<any>{
+    game_popup(content:PopupFunction):Promise<any>{
         return new Promise((resolve)=>{
             const overlay=document.createElement("div")
             overlay.className="game-popup-overlay"

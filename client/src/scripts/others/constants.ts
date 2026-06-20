@@ -7,6 +7,7 @@ export type PlayArgs={
 }|{
     type: "campaign"
     path:string
+    start_with_intro:boolean
 }|{
     type: "join"
     url:string

@@ -149,15 +149,17 @@ export class LevelPlayer {
 
         if(!this.game.running)this.game.mainloop()
     }
-    async init(){
+    async init(start_with_intro:boolean=true){
         this.game.clock.timeScale=0
-        if(this.level.cutscenes?.begin){
-            const def=JSON.parse(await this.fs.read_file(this.level.cutscenes.begin))
-            this.game.clients.send({
-                type:OnlineMessageType.Cutscene,
-                cutscene:def
-            } satisfies OnlineMessage)
-            await this.game.clients.wait("_end")
+        if(start_with_intro){
+            if(this.level.cutscenes?.begin){
+                const def=JSON.parse(await this.fs.read_file(this.level.cutscenes.begin))
+                this.game.clients.send({
+                    type:OnlineMessageType.Cutscene,
+                    cutscene:def
+                } satisfies OnlineMessage)
+                await this.game.clients.wait("_end")
+            }
         }
         if(this.level.characters_selection){
             const characters:LevelCharacter[]=[]
@@ -203,6 +205,7 @@ export class LevelPlayer {
             conn.view_objects.length=0
             if(conn.real_human?.dead){
                 conn.revive()
+                conn.human!.reset_status()
                 const pos=this.game.modeManager.get_human_spawn_position(conn.real_human)
                 if(pos!==undefined){
                     conn.real_human.position=pos

@@ -1311,8 +1311,7 @@ export class Human extends MovingBody{
         this.destroy()
         if(this.killed_by){
             if(this.killed_by.id!==this.id&&!this.game.modeManager.is_ally(this,this.killed_by)){
-                this.killed_by.on_kill_enemy(this)
-                this.killed_by.inventory.accessorys.call_event("kill",params)
+                this.killed_by.on_kill_enemy(this,params)
             }
         }
 
@@ -1337,13 +1336,17 @@ export class Human extends MovingBody{
         if(!this.registred)this.manager.registry_object(this)
         this.game.humans._add_human(this)
     }
-    on_kill_enemy(victim:Human){
+    on_kill_enemy(victim:Human,params:DamageParams){
         if(this.game.modeManager.is_leader(victim)){
             this.apply_score(ScoreApplyerType.KillLeader,this.game.modeManager.rules.score.kill_leader)
         }
         this.status.kills++
         this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
         this.game.modeManager.assign_leader(this)
+        this.inventory.accessorys.call_event("kill",{
+            ...params,
+            owner:this
+        })
     }
     map_humans():MapHumanData[]{
         return this.team_data.team?.humans??this.team_data.group?.humans??[this]

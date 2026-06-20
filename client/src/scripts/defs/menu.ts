@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
-import { type MenuManager } from "../managers/menuManager.ts";
+import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
@@ -305,6 +305,24 @@ export function game_mode_settings_manager_popup(settings:any,translation:Transl
         parent.appendChild(buttons)
     }
 }
+export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupFunction {
+    return (popup) => {
+        popup.parent.innerHTML=`
+<p class="span-text">${msg}</p>
+<div style="display:flex;flex-direction:column;gap:3px">
+    <button id="popup-yes" class="btn-green">${yes_text}</button>
+    <button id="popup-no" class="btn-red">${no_text}</button>
+</div>`
+        const yes = popup.parent.querySelector("#popup-yes") as HTMLButtonElement
+        const no = popup.parent.querySelector("#popup-no") as HTMLButtonElement
+        yes.onclick = () => {
+            popup.resolve(true)
+        }
+        no.onclick = () => {
+            popup.resolve(false)
+        }
+    }
+}
 export function make_menu_settings(save: GameSave, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
         parent.innerHTML=""
@@ -345,8 +363,9 @@ export function make_menu_campaign(campaign:Record<string,any>){
 <button class="btn-green">Start Level</button>`
                 parent.appendChild(level_div)
                 const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
-                start_btn.onclick = () => {
-                    if(manager.play_callback)manager.play_callback({type:"campaign",path:level.path})
+                start_btn.onclick = async() => {
+                    const si=await manager.game_popup(yes_no_popup("Start With Intro?"))
+                    if(manager.play_callback)manager.play_callback({type:"campaign",path:level.path,start_with_intro:si})
                 }
             }
         }

@@ -59,6 +59,8 @@
             "m9_dual": "Dual M9",
             "colt1873": "Colt 1873",
             "colt1873_dual": "Dual Colt 1873",
+            "desert_eagle": "Desert Eagle",
+            "desert_eagle_dual": "Dual Desert Eagle",
             "taurustx": "Taurus TX 22",
             "taurustx_dual": "Dual Taurus TX 22",
             "yellow_laser_pistol": "Yellow Laser Pistol",
@@ -418,6 +420,7 @@
             "5": "Kill Leader"
         },
         "modes": {
+            "tundra": "Tundra",
             "group_size": {
                 "1": "Solo",
                 "2": "Duo",

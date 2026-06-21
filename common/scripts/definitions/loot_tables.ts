@@ -25,6 +25,7 @@ export const LootTables={
         {item:"vector",weight:13},
         {item:"p90",weight:10},
         {item:"m4a1",weight:10},
+        {item:"desert_eagle",weight:7},
         {item:"kar98k",weight:7},
         {item:"m2_2",weight:5},
         {item:"m79",weight:2},
@@ -32,9 +33,11 @@ export const LootTables={
     ],
     legendary_guns:[
         {item:"m1_garand",weight:15},
+        {item:"desert_eagle_dual",weight:10},
         {item:"pfeifer_zeliska",weight:10},
-        {item:"awms",weight:6},
-        {item:"rpg7",weight:1},
+        {item:"pkp",weight:10},
+        {item:"awms",weight:7},
+        {item:"rpg7",weight:2},
     ],
     //Guns Spawn
     guns:[

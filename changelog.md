@@ -10,6 +10,7 @@ __                                                                              
 * Vehicles Rework
 * Boat
 * Vehicles Tire Marks
+* Groups
 __                                                                                                                 __
 ### Menu
 * Keybind Settings
@@ -31,6 +32,7 @@ __                                                                              
 * Rifle CBC - 22lr DMR
 * P90 - 45acp SMG
 * M4A1 - 556mm Assault
+* Desert Eagle - 50Cal Pistol
 * Bonesaw
 * Pan
 * M16 With Grenade Launcher

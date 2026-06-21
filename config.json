@@ -39,6 +39,21 @@
                     "mode": "normal"
                 },
                 "enabled": true
+            },
+            {
+                "group_size": [
+                    1
+                ],
+                "mode": {
+                    "mode": "normal",
+                    "name": "modes.tundra",
+                    "settings": {
+                        "map": {
+                            "def": "tundra"
+                        }
+                    }
+                },
+                "enabled": true
             }
         ],
         "host": {

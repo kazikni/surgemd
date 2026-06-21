@@ -82,6 +82,7 @@ export const TundraMap:MapDef={
             {item:"m4a1",weight:14},
 
             // Mythic Guns
+            {item:"desert_eagle",weight:9},
             {item:"awp",weight:9},
             {item:"m1_garand",weight:9},
             {item:"m2_2",weight:9},
@@ -90,6 +91,8 @@ export const TundraMap:MapDef={
             // Legendary Guns
             {item:"pfeifer_zeliska",weight:4},
             {item:"awms",weight:4},
+            {item:"desert_eagle_dual",weight:4},
+            {item:"rpg7",weight:2},
         ],
         legendary_guns:[
             {item:"m1_garand",weight:15},

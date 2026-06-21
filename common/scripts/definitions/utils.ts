@@ -184,6 +184,7 @@ export type HumanDefinition={
     inventory?:InventoryPreset
     team?:number
     group?:number
+    group_color?:number
     modifiers?:Partial<HumanModifiers>
 }
 export type CharacterDefinition=HumanDefinition&{

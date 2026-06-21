@@ -30,7 +30,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
-                    const spread=0.018
+                    const spread=0.022
 
                     let b=e.bullet.clone()
                     b.damage*=0.2

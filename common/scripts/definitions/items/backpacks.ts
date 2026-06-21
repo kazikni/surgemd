@@ -24,9 +24,9 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "45acp":80,
                 "22lr":120,
 
-                "50cal":50,
+                "50cal":40,
                 "308sub":15,
-                "explosive_ammo":7,
+                "explosive_ammo":5,
                 "gasoline":5,
 
                 "frag_grenade":9,
@@ -76,7 +76,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
 
                 "50cal":80,
                 "308sub":30,
-                "explosive_ammo":14,
+                "explosive_ammo":10,
                 "gasoline":10,
             },
             rank:ItemRank.E,
@@ -94,8 +94,8 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "22lr":360,
 
                 "308sub":45,
-                "50cal":130,
-                "explosive_ammo":21,
+                "50cal":120,
+                "explosive_ammo":15,
                 "gasoline":15,
             },
             rank:ItemRank.D,
@@ -115,7 +115,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
 
                 "308sub":60,
                 "50cal":160,
-                "explosive_ammo":28,
+                "explosive_ammo":20,
                 "gasoline":20,
             },
             rank:ItemRank.C,

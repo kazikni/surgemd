@@ -580,6 +580,52 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
         }),
+        guns_factory.pistol("desert_eagle","50cal",{
+            fire_delay:0.3,
+            fire_mode:FireMode.Single,
+            rank:ItemRank.A,
+            spread:2,
+
+            ammo_spawn:{
+                amount:47,
+            },
+
+            bullet:{
+                def:{
+                    damage:21,
+                    range:150,
+                    falloff:0.8,
+                    speed:50,
+                    tracer:{
+                        ...tracers.large,
+                        color:0xd8b818
+                    }
+                }
+            },
+            recoil:{
+                duration:0.3,
+                speed:0.75
+            },
+            reload:{
+                delay:2.1,
+                capacity:7,
+                extended_capacity:15,
+            },
+            dual:{
+                rank:ItemRank.S,
+                dual_offset:0.2,
+                fire_delay:0.15,
+                spread:4,
+                ammo_spawn:{
+                    amount:94,
+                },
+                reload:{
+                    capacity:14,
+                    extended_capacity:30,
+                    delay:3.5
+                }
+            },
+        }),
         guns_factory.pistol("pfeifer_zeliska","308sub",{
             rank:ItemRank.S,
 
@@ -597,7 +643,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:55,
                     range:160,
                     falloff:0.7,
-                    speed:50,
+                    speed:45,
                     obstacleMult:1.7,
                     tracer:tracers.large
                 }
@@ -1222,7 +1268,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             barrel_length:0.9,
 
-            fire_delay:0.1,
+            fire_delay:0.12,
             switch_delay:1,
             spread:4,
 

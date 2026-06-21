@@ -378,7 +378,7 @@ export function make_menu_modes(modes:ModeConfig[]){
             const mb=document.createElement("div")
             mb.className="background-menu-ss background-menu-blue"
             mb.innerHTML=`
-<h1>${mode.mode.mode}</h1>`
+<h1>${mode.mode.name==undefined?mode.mode.mode:manager.translation.get(mode.mode.name)}</h1>`
             for(const t in mode.group_size){
                 const btn=document.createElement("button")
                 btn.className="btn-green"

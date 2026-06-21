@@ -249,6 +249,9 @@ export abstract class ModeManager{
     get_team(team:number):Team|undefined{
         return undefined
     }
+    set_group_for_human(h:Human):void{
+
+    }
 
     abstract generate_map():void
 

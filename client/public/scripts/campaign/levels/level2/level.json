@@ -1,92 +1,186 @@
 {
-    "meta":{
+    "meta": {
         "name": "Battle Royale Tundra",
         "location": "South America - Southeast - MD Island",
         "description": "Tundra Map Test Level",
-        "size":"medium",
-        "dificulty":"easy"
+        "size": "medium",
+        "dificulty": "easy"
     },
-    "mode":{
-        "type":"battle_royale",
-        "map":{
-            "def":"tundra"
+    "mode": {
+        "type": "battle_royale",
+        "group_size": 2,
+        "map": {
+            "def": "tundra"
         },
-        "enemies":[
+        "enemies": [
             {
-                "def":{
-                    "ia":{
-                        "kind":"advanced"
+                "def": {
+                    "ia": {
+                        "kind": "advanced"
                     },
-                    "inventory":{
-                        "infinity_ammo":true,
-                        "hand":1,
-                        "backpack":[
-                            {"item":"basic_pack","weight":10},
-                            {"item":"regular_pack","weight":15,"drop_chance":0.3},
-                            {"item":"military_pack","weight":10,"drop_chance":0.5}
+                    "inventory": {
+                        "infinity_ammo": true,
+                        "hand": 1,
+                        "backpack": [
+                            {
+                                "item": "basic_pack",
+                                "weight": 10
+                            },
+                            {
+                                "item": "regular_pack",
+                                "weight": 15,
+                                "drop_chance": 0.3
+                            },
+                            {
+                                "item": "military_pack",
+                                "weight": 10,
+                                "drop_chance": 0.5
+                            }
                         ],
-                        "vest":[
-                            {"item":"basic_vest","weight":10,"drop_chance":0.3},
-                            {"item":"regular_vest","weight":15,"drop_chance":0.5},
-                            {"item":"military_vest","weight":10,"drop_chance":0.75}
+                        "vest": [
+                            {
+                                "item": "basic_vest",
+                                "weight": 10,
+                                "drop_chance": 0.3
+                            },
+                            {
+                                "item": "regular_vest",
+                                "weight": 15,
+                                "drop_chance": 0.5
+                            },
+                            {
+                                "item": "military_vest",
+                                "weight": 10,
+                                "drop_chance": 0.75
+                            }
                         ],
-                        "helmet":[
-                            {"item":"basic_helmet","weight":10,"drop_chance":0.3},
-                            {"item":"regular_helmet","weight":15,"drop_chance":0.5},
-                            {"item":"military_helmet","weight":10,"drop_chance":0.75}
+                        "helmet": [
+                            {
+                                "item": "basic_helmet",
+                                "weight": 10,
+                                "drop_chance": 0.3
+                            },
+                            {
+                                "item": "regular_helmet",
+                                "weight": 15,
+                                "drop_chance": 0.5
+                            },
+                            {
+                                "item": "military_helmet",
+                                "weight": 10,
+                                "drop_chance": 0.75
+                            }
                         ],
-                        "gun1":[
-                            {"item":"m9","weight":6},
-                            {"item":"model94","weight":6},
-                            {"item":"blr81","weight":4},
-                            {"item":"kar98k","weight":1.5},
-                            {"item":"awp","weight":0.5},
-                            {"item":"awms","weight":0.1}
+                        "gun1": [
+                            {
+                                "item": "m9",
+                                "weight": 6
+                            },
+                            {
+                                "item": "model94",
+                                "weight": 6
+                            },
+                            {
+                                "item": "blr81",
+                                "weight": 4
+                            },
+                            {
+                                "item": "kar98k",
+                                "weight": 1.5
+                            },
+                            {
+                                "item": "awp",
+                                "weight": 0.5
+                            },
+                            {
+                                "item": "awms",
+                                "weight": 0.1
+                            }
                         ],
-                        "gun2":[
-                            {"item":"model94","weight":6},
-                            {"item":"mp5","weight":4},
-                            {"item":"ak47","weight":4},
-                            {"item":"blr81","weight":4},
-                            {"item":"sr25","weight":1},
-                            {"item":"kar98k","weight":1},
-                            {"item":"awp","weight":0.5},
-                            {"item":"pkp","weight":0.1},
-                            {"item":"awms","weight":0.1}
+                        "gun2": [
+                            {
+                                "item": "model94",
+                                "weight": 6
+                            },
+                            {
+                                "item": "mp5",
+                                "weight": 4
+                            },
+                            {
+                                "item": "ak47",
+                                "weight": 4
+                            },
+                            {
+                                "item": "blr81",
+                                "weight": 4
+                            },
+                            {
+                                "item": "sr25",
+                                "weight": 1
+                            },
+                            {
+                                "item": "kar98k",
+                                "weight": 1
+                            },
+                            {
+                                "item": "awp",
+                                "weight": 0.5
+                            },
+                            {
+                                "item": "pkp",
+                                "weight": 0.1
+                            },
+                            {
+                                "item": "awms",
+                                "weight": 0.1
+                            }
                         ],
-                        "boosts":[
-                            {"weight":8,"boost_type":0,"boost":0},
-                            {"weight":1,"boost_type":1,"boost":1},
-                            {"weight":1,"boost_type":2,"boost":1}
+                        "boosts": [
+                            {
+                                "weight": 8,
+                                "boost_type": 0,
+                                "boost": 0
+                            },
+                            {
+                                "weight": 1,
+                                "boost_type": 1,
+                                "boost": 1
+                            },
+                            {
+                                "weight": 1,
+                                "boost_type": 2,
+                                "boost": 1
+                            }
                         ],
-                        "aitems":{
-                            "556mm":140,
-                            "762mm":140,
-                            "45acp":140,
-                            "9mm":20,
-                            "22lr":200
+                        "aitems": {
+                            "556mm": 140,
+                            "762mm": 140,
+                            "45acp": 140,
+                            "9mm": 20,
+                            "22lr": 200
                         }
                     }
                 },
-                "count":19
+                "count": 29
             },
             {
-                "def":{
-                    "ia":{
-                        "kind":"dumb"
+                "def": {
+                    "ia": {
+                        "kind": "dumb"
                     }
                 },
-                "count":80
+                "count": 69
             }
         ]
     },
-    "characters_selection":{
-        "characters":[
+    "characters_selection": {
+        "spawn_other": true,
+        "characters": [
             {
-                "path":"../../characters/maria.json"
+                "path": "../../characters/maria.json"
             },
             {
-                "path":"../../characters/mark.json"
+                "path": "../../characters/mark.json"
             }
         ]
     }

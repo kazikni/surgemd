@@ -378,10 +378,9 @@ export function make_menu_modes(modes:ModeConfig[]){
             const mb=document.createElement("div")
             mb.className="background-menu-ss background-menu-blue"
             mb.innerHTML=`
-<h1>${mode.mode}</h1>`
+<h1>${mode.mode.mode}</h1>`
             for(const t in mode.group_size){
                 const btn=document.createElement("button")
-                btn.id=`btn-join-${mode.mode}`
                 btn.className="btn-green"
                 btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+mode.group_size[t])})
                 btn.onclick=()=>{

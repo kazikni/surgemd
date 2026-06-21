@@ -87,6 +87,13 @@ export class Team{
             } as PlayerStatus
         })
     }
+    clear(){
+        for(const h of this.humans){
+            h.team_data.team=undefined
+            h.team_data.team_id=undefined
+        }
+        this.humans.length=0
+    }
     constructor(){
 
     }
@@ -123,6 +130,13 @@ export class Group extends Team{
 
         this.humans[index] = n
         return true
+    }
+    override clear(){
+        for(const h of this.humans){
+            h.team_data.group=undefined
+            h.team_data.group_id=undefined
+        }
+        this.humans.length=0
     }
 }
 export class TeamsManager{
@@ -173,5 +187,11 @@ export class GroupsManager{
                 g.state=undefined
             }
         }
+    }
+    reset(){
+        for(const g of Object.values(this.groups)){
+            if(g)g.clear()
+        }
+        this.groups={}
     }
 }

@@ -35,7 +35,9 @@
                     2,
                     4
                 ],
-                "mode": "normal",
+                "mode": {
+                    "mode": "normal"
+                },
                 "enabled": true
             }
         ],

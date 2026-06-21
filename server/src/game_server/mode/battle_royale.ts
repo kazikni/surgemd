@@ -91,16 +91,17 @@ export class BattleRoyale extends ModeManager{
     override on_start(){
         this.add_enemies()
         this.game.deadzone.start()
-
         for(const p of this.settings.airdrops.spawn){
             this.game.add_timeout(()=>{
                 this.game.add_airdrop()
             },p)
         }
-
         this.game.add_timeout(()=>{
             this.game.close()
         },120)
+    }
+    override reset(): void {
+        if(this.groups_manager)this.groups_manager.reset()
     }
     override can_down(human: Human): boolean {
         if (!this.groups_manager) {
@@ -210,7 +211,7 @@ export class BattleRoyale extends ModeManager{
             p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
         }
     }
-    set_group_for_human(p: Human){
+    override set_group_for_human(p: Human){
         if(!this.groups_manager) return
         if(p.team_data.group === undefined){
             let g = this.groups_manager.find_group(this.group_size,p.team_data.team_id)

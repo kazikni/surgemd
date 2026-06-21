@@ -1,4 +1,4 @@
-import { ApiSettingsS, ConfigType, ModeConfig } from "common/scripts/config/config.ts";
+import { ApiSettingsS, ConfigType, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
 import { Server } from "common/engine/server.ts";
 import { RegionManager } from "./game/regions.ts";
@@ -8,6 +8,12 @@ export class ApiServer {
     groups = new GroupManager(this)
     regions = new RegionManager(this)
     modes:ModeConfig[]=[]
+    get_config(mode:number,group_size:number):GameConfig{
+        return {
+            mode: this.modes[mode].mode! as GameModeConfig,
+            group_size: (this.modes[mode].group_size as unknown as number[])[group_size],
+        }
+    }
     constructor(public config: ConfigType){
         this.server = new Server(
             config.api.host.port,

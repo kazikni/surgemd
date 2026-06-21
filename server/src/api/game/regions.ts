@@ -75,17 +75,9 @@ export class RegionManager{
             }
         }
         try {
-            let config=undefined
-            const mode=this.api.modes[data.mode]
-            const group_size=mode.group_size[data.group_size??0]
-            config={
-                mode: mode.mode,
-                group_size: group_size,
-                mode_settings:mode.mode_settings
-            }
             const msg=await region.request({
                 type: "find_game",
-                config: config
+                config: this.api.get_config(data.mode,data.group_size??0)
             })
             return msg as GameResult
         }catch{

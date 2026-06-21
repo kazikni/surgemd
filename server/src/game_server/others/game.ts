@@ -46,8 +46,7 @@ export interface GameData {
     started_time: number
     started:boolean
 
-    mode:string
-    group_size:number
+    config:GameConfig
 }
 export interface GameStatus{
     players:{
@@ -231,15 +230,15 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             }
         }
         if(!has_mode){
-            switch(game_config.mode){
+            switch(game_config.mode.mode){
                 case "normal":
-                    this.init(new BattleRoyale(game_config.mode_settings,game_config.group_size??1))
+                    this.init(new BattleRoyale(game_config.mode.settings,game_config.group_size??1))
                     break
                 case "counter_md":
                     //this.init(new CounterMD(game_config.mode_settings))
                     break
                 case "debug":
-                    this.init(new BattleRoyaleDebug(game_config.mode_settings,game_config.group_size??1))
+                    this.init(new BattleRoyaleDebug(game_config.mode.settings,game_config.group_size??1))
                     break
             }
         }
@@ -266,8 +265,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             started_time:this.started_time,
             started:this.started,
 
-            group_size:this.game_config?.group_size??1,
-            mode:this.game_config?.mode
+            config:this.game_config??{},
         }
         this.signals.emit("update_data",data)
     }

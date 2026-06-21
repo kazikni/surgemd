@@ -3,12 +3,13 @@ import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
+export type LevelCharacterAI={
+    kind?:string
+    action?:string
+    params?:Record<string,any>
+}
 export type EnemyDef={
-    ia:{
-        kind?:string
-        action?:string
-        params?:Record<string,any>
-    }
+    ia?:LevelCharacterAI
 }&HumanDefinition
 export type LevelEnemys={
     def:EnemyDef|string
@@ -47,6 +48,7 @@ export type GameOverScreen={
 }
 export type LevelCharacter=CharacterDefinition&{
     path?:string
+    ia?:LevelCharacterAI
 }
 export interface LevelDefinition{
     meta:{
@@ -67,6 +69,7 @@ export interface LevelDefinition{
     }
     player: LevelCharacter
     characters_selection?:{
+        spawn_other?:boolean
         characters:LevelCharacter[]
     }
     assets?:{

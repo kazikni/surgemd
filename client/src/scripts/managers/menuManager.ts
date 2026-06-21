@@ -76,7 +76,9 @@ export class MenuManager{
         this.api_settings={
             modes:[
                 {
-                    mode:"normal",
+                    mode:{
+                        mode:"normal"
+                    },
                     group_size:[1]
                 },
             ],

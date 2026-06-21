@@ -1,21 +1,21 @@
 {
-    "name":"Mark",
-    "loadout":{
-        "hair":"hair_1",
-        "hair_tint":1122066,
-        "body":"body_1",
-        "body_tint":15771967,
-        "eyes":"eyes_1",
-        "shirt":"red_shirt",
-        "legs":"jeans_pants",
-        "accessorys":[],
-        "colors":{
-            "primary":"#de1675",
-            "secondary":"#1c0210",
-            "tertiary":"#eeeeee",
-            "positive":"#00ccff",
-            "negative":"#ff3c00",
-            "special":"#fffb00"
+    "name": "Mark",
+    "loadout": {
+        "hair": "hair_1",
+        "hair_tint": 1122066,
+        "body": "body_1",
+        "body_tint": 15771967,
+        "eyes": "eyes_1",
+        "shirt": "black_shirt",
+        "legs": "jeans_pants",
+        "accessorys": [],
+        "colors": {
+            "primary": "#de1675",
+            "secondary": "#1c0210",
+            "tertiary": "#eeeeee",
+            "positive": "#00ccff",
+            "negative": "#ff3c00",
+            "special": "#fffb00"
         }
     }
 }

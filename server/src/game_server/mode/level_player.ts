@@ -8,6 +8,7 @@ import { type Player } from "../objects/player.ts"
 import { FileManager, mergeDeep, StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
 import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 export type KillAllEnemiesSettings={
     map:{
         def:MapDef|string
@@ -93,6 +94,7 @@ export class LevelPlayer {
     checkpoint:Stream
 
     player_preset?:LevelCharacter
+    allies:LevelCharacter[]=[]
 
     constructor(game: Game,fs:FileManager){
         this.game = game
@@ -180,7 +182,10 @@ export class LevelPlayer {
                     }
                 })
             } satisfies OnlineMessage)
-            this.player_preset=mergeDeep({},this.player_preset??{},characters[Object.values(await this.game.clients.wait("_end"))[0]])
+            const idx=Object.values(await this.game.clients.wait("_end"))[0]
+            this.player_preset=mergeDeep({},this.player_preset??{},characters[idx])
+            characters.splice(idx,1)
+            this.allies=characters
             for(const p in this.game.players.living_players){
                 this.game.players.living_players[p].set_preset(this.player_preset)
             }
@@ -194,11 +199,17 @@ export class LevelPlayer {
         ;(this.checkpoint as StaticStream).lock()
     }
     start(){
+        if(this.allies){
+            for(const a of this.allies){
+                const bot = this.game.players.add_enemy(a,new JoinPacket())
+                if(!bot) continue
+            }
+        }
+        this.spawn_players()
         this.game.start(true)
         if(this.level.deadzone?.stage){
             this.game.deadzone.jump_stages(this.level.deadzone.stage)
         }
-        this.spawn_players()
     }
     spawn_players(){
         for(const conn of Object.values(this.game.players.connected_players)){
@@ -206,6 +217,7 @@ export class LevelPlayer {
             if(conn.real_human?.dead){
                 conn.revive()
                 conn.human!.reset_status()
+                this.game.modeManager.set_group_for_human(conn.real_human)
                 const pos=this.game.modeManager.get_human_spawn_position(conn.real_human)
                 if(pos!==undefined){
                     conn.real_human.position=pos

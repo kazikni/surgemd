@@ -1,14 +1,16 @@
 import { HostConfig } from "../../engine/core.ts";
 
-export interface GameConfig{
+export interface GameModeConfig{
     mode:string
+    settings?:any
+}
+export interface GameConfig{
     group_size?:number
-    mode_settings?:any
+    mode:GameModeConfig
 }
 export interface ModeConfig{
-    group_size:number[]
-    mode:string
-    mode_settings?:any
+    group_size:(number[])|{time:number,index:number,value:number[]}
+    mode:GameModeConfig|{time:number,index:number,value:GameModeConfig[]}
 }
 export interface GameDebugOptions{
     deenable_lobby?:boolean

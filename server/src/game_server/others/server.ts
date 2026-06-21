@@ -2,6 +2,7 @@ import { Server, AbstractGameContainer, AbstractGameServer} from "common/engine/
 import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
 import { GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
+import { deepEqual } from "common/engine/core.ts";
 export class ApiConnection {
     socket?: WebSocket
     logged:boolean=false
@@ -71,11 +72,13 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         this.api_conn=new ApiConnection(this,config)
         this.api_conn.connect()
 
-        this.add_container(new GameContainer())
+        for(let i=0;i<6;i++){
+            this.add_container(new GameContainer())
+        }
     }
     get_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
-            if(g.data.running&&g.data.can_join&&g.data.mode===config?.mode&&g.data.group_size===config?.group_size){
+            if(g.data.running&&g.data.can_join&&g.data.config.mode.mode===config?.mode?.mode&&g.data.config.group_size===config?.group_size&&deepEqual(g.data.config.mode.settings,config.mode.settings)){
                 return g as GameContainer
             }
         }
@@ -86,16 +89,18 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             if(!g.data.running){
                 if(!config||!config.mode){
                     config={
-                        mode:"normal",
-                        //mode:"debug",
-                        //group_size:4,
-                        mode_settings:{
-                            map:{
-                                //def:"tundra"
-                                //def:"single_building"
-                                //def:"lobby"
+                        mode:{
+                            mode:"normal",
+                            //mode:"debug",
+                            settings:{
+                                map:{
+                                    //def:"tundra"
+                                    //def:"single_building"
+                                    //def:"lobby"
+                                }
                             }
-                        }
+                        },
+                        //group_size:4,
                     }
                 }
                 g.new_game(config)

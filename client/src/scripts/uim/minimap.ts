@@ -71,6 +71,7 @@ export class MinimapModule extends UIModule<Game>{
 
         this.load_map_icon("normal","/img/menu/gui/map/map_icon_normal.svg")
         this.load_map_icon("downed","/img/menu/gui/map/map_icon_downed.svg")
+        this.load_map_icon("dead","/img/menu/gui/map/map_icon_dead.svg")
     }
 
     async load_map_icon(id:string,path:string){
@@ -241,6 +242,9 @@ export class MinimapModule extends UIModule<Game>{
             }
             if(human.downed){
                 icon="downed"
+            }
+            if(human.dead){
+                icon="dead"
             }
             if(icon!==hi.old_icon&&this.map_icons[icon]){
                 hi.e.innerHTML=this.map_icons[icon]

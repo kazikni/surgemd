@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputKeyEvent, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -65,6 +65,8 @@ export class Game extends ClientGame<GameObject>{
 
     local_server:LocalGameServer
     start_with_intro:boolean=false
+
+    group_token:string=""
 
     cursors={
         default:"url('/img/menu/icons/mouse.svg') 0 0, default",
@@ -416,7 +418,6 @@ export class Game extends ClientGame<GameObject>{
     async load_resources(textures:string[]=["main"],assets:Record<string,string>,languages_path:string=""){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
         this.loaded=false
-
         this.menu.show_loading_screen()
         this.menu.set_loading_current("Somethings",true)
 
@@ -738,6 +739,7 @@ export class Game extends ClientGame<GameObject>{
             hair_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint")),
             shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
         }
+        packet.group_token=this.group_token
         this.client.emit_packet(packet)
     }
     connect(url:string){

@@ -56,17 +56,17 @@ export class EquipmentModule extends UIModule<Game> {
         this.vest=player.vest
         this.backpack=player.backpack
         if(this.helmet){
-            this.render_slot(this.helmet_el,this.helmet.idString,`<span class="span-text-base">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
+            this.render_slot(this.helmet_el,this.helmet.idString,`<span class="span-text-base${this.helmet.special?" item-maximized":""}">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
         }else{
             this.render_slot(this.helmet_el,undefined,"")
         }
         if(this.vest){
-            this.render_slot(this.vest_el,this.vest.idString,`<span class="span-text-base">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
+            this.render_slot(this.vest_el,this.vest.idString,`<span class="span-text-base${this.vest.special?" item-maximized":""}">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
         }else{
             this.render_slot(this.vest_el,undefined,"")
         }
         if(this.backpack){
-            this.render_slot(this.backpack_el,this.backpack.idString,`<span class="span-text-base">Level ${this.backpack.level}</span>`,"items.description.backpack")
+            this.render_slot(this.backpack_el,this.backpack.idString,`<span class="span-text-base${this.backpack.special?" item-maximized":""}">Level ${this.backpack.level}</span>`,"items.description.backpack")
         }else{
             this.render_slot(this.backpack_el,undefined,"")
         }

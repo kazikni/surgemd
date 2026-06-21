@@ -9,6 +9,7 @@ import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { GameResult } from "common/scripts/config/config.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -64,6 +65,7 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
         }
         async init(){
             this.menu_manager.play_callback=this.play_game.bind(this)
+            this.menu_manager.play_callback_hard=this.play_game_hard.bind(this)
             if(mods){
                 mods.stateFile="save/mods_state.json"
                 await mods.loadManifests()
@@ -155,21 +157,34 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                 }
             }
         }
+        play_game_hard(result:GameResult){
+            if(result.success){
+                this.game.group_token=result.token??""
+                this.game.connect(result.address)
+            }
+        }
         async play_game(play:PlayArgs){
             if(this.game.happening)return
             switch(play.type){
                 case "online":{
+                    const args={
+                        ...play,
+                        region:this.game.save.get_variable("sv_game_region"),
+                    }
                     try{
-                        const ghost=await(await fetch(API_BASE+"/find-game",{
-                            method:"post",
-                            body:JSON.stringify({
-                                ...play,
-                                region:this.game.save.get_variable("sv_game_region"),
-                            })
-                        })).json()
-                        if(ghost.status===0){
-                            this.menu_manager.show_loading_screen()
-                            this.game.connect(ghost.address)
+                        if(this.game.menu.group_state){
+                            this.game.menu.team_ws!.send(JSON.stringify({
+                                ...args,
+                                type:"play"
+                            }))
+                        }else{
+                            const ghost:GameResult=await(await fetch(API_BASE+"/find-game",{
+                                method:"post",
+                                body:JSON.stringify(args)
+                            })).json()
+                            if(ghost.success){
+                                this.game.connect(ghost.address)
+                            }
                         }
                     }catch{
                         alert("Error")

@@ -6,6 +6,7 @@ export class JoinPacket extends Packet{
     Name="join"
 
     player_name:string=""
+    group_token:string=""
 
     skin?:{
         female:boolean
@@ -21,6 +22,7 @@ export class JoinPacket extends Packet{
     }
     encode(stream: Stream): void {
         stream.write_string_sized(this.player_name,30)
+        stream.write_string_sized(this.group_token,20)
         stream.write_boolean_group(this.skin!==undefined,this.skin?.female)
         if(this.skin!==undefined){
             stream.write_uint16(this.skin.shirt)
@@ -31,6 +33,7 @@ export class JoinPacket extends Packet{
     }
     decode(stream: Stream): void {
         this.player_name=stream.read_string_sized(30)
+        this.group_token=stream.read_string_sized(20)
         const bg=stream.read_boolean_group()
         if(bg[0]){
             this.skin={

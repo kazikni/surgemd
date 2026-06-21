@@ -5,7 +5,6 @@ import { WorkerMessage } from "./game_worker.ts";
 export class ApiConnection {
     socket?: WebSocket
     logged:boolean=false
-
     constructor(public game: GameServer,public config: ConfigType) {}
     connect(attempts=5) {
         if(attempts<=0)return
@@ -46,7 +45,7 @@ export class ApiConnection {
                 this.send({
                     type: "find_game_response",
                     request_id: msg.request_id,
-                    status: game ? 0 : 1,
+                    success: game ? true : false,
                     address: addr
                 })
                 break
@@ -73,22 +72,10 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         this.api_conn.connect()
 
         this.add_container(new GameContainer())
-
-        this.server.route("/api/get-game",(_req:Request,_url:string[], _info: Deno.ServeHandlerInfo)=>{
-            const game=this.get_game()
-            const msg=game===undefined
-            ?{
-                status:1,
-            }:{
-                status:0,
-                address:game.get_address()
-            }
-            return this.server.default_handlers.cors(new Response(JSON.stringify(msg),{status:200}))
-        })
     }
     get_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
-            if(g.data.running&&g.data.can_join){
+            if(g.data.running&&g.data.can_join&&g.data.mode===config?.mode&&g.data.group_size===config?.group_size){
                 return g as GameContainer
             }
         }
@@ -97,7 +84,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     make_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
             if(!g.data.running){
-                //if(!config||!config.mode){
+                if(!config||!config.mode){
                     config={
                         mode:"normal",
                         //mode:"debug",
@@ -110,7 +97,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                             }
                         }
                     }
-                //}
+                }
                 g.new_game(config)
                 return g as GameContainer
             }
@@ -118,7 +105,6 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         return undefined
     }
 }
-
 export class GameContainer extends AbstractGameContainer<GameData,GameConfig,ConfigType,WorkerMessage>{
     override worker_path: URL
     constructor(){

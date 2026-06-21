@@ -7,6 +7,7 @@ export interface BackpackDef extends Definition{
     item_type?:InventoryItemType.backpack
     rank:ItemRank
     level:number
+    special?:boolean
     no_world_image?:boolean
     slots:number
 }
@@ -37,18 +38,18 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "yellow_flare":6,
 
                 "gauze":15,
-                "yellow_soda":5,
-                "blue_soda":5,
-                "purple_soda":5,
-                "red_soda":5,
-                "green_soda":5,
-                "black_soda":5,
-                "small_red_crystal":5,
+                "yellow_soda":6,
+                "blue_soda":6,
+                "purple_soda":6,
+                "red_soda":6,
+                "green_soda":6,
+                "black_soda":6,
+                "small_red_crystal":6,
 
-                "inhaler":4,
-                "blue_potion":4,
-                "purple_potion":4,
-                "red_crystal":4,
+                "inhaler":3,
+                "blue_potion":3,
+                "purple_potion":3,
+                "red_crystal":3,
 
                 "medikit":4,
                 "blue_pills":2,
@@ -103,6 +104,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
         {
             idString:"military_pack",
             level:3,
+            special:true,
             max:{
                 "12g":80,
                 "9mm":400,

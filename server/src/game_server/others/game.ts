@@ -45,6 +45,9 @@ export interface GameData {
 
     started_time: number
     started:boolean
+
+    mode:string
+    group_size:number
 }
 export interface GameStatus{
     players:{
@@ -261,7 +264,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             running:this.running,
 
             started_time:this.started_time,
-            started:this.started
+            started:this.started,
+
+            group_size:this.game_config?.group_size??1,
+            mode:this.game_config?.mode
         }
         this.signals.emit("update_data",data)
     }
@@ -276,6 +282,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     reset(){
         this.humans.clear_npcs()
         this.players.clear_bots()
+        this.modeManager.reset()
         this.deadzone.reset()
         this.timeouts.length=0
         this.started = false

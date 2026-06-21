@@ -1,5 +1,5 @@
 import { api, API_BASE, api_server } from "../others/config.ts";
-import { ApiSettingsS } from "common/scripts/config/config.ts";
+import { ApiSettingsS, GameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
 import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
@@ -59,6 +59,7 @@ export class MenuManager{
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
+    play_callback_hard?:(play:GameResult)=>void
 
     cutscene:HistoryCommand[]=[]
 
@@ -75,8 +76,8 @@ export class MenuManager{
         this.api_settings={
             modes:[
                 {
-                    gamemode:"normal",
-                    team_size:[1]
+                    mode:"normal",
+                    group_size:[1]
                 },
             ],
             debug:{
@@ -327,6 +328,12 @@ export class MenuManager{
 
                 this.reload_group_ui()
                 break
+            case "start_game":{
+                if(this.play_callback_hard)this.play_callback_hard({
+                    ...msg,
+                })
+                break
+            }
             case "kicked":
                 this.leave_group()
                 break

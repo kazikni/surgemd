@@ -1,13 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { GamemodeConfig } from "common/scripts/config/config.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
+import { ModeConfig } from "common/scripts/config/config.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -371,18 +371,23 @@ export function make_menu_campaign(campaign:Record<string,any>){
         }
     }
 }
-export function make_menu_modes(modes:GamemodeConfig[]){
+export function make_menu_modes(modes:ModeConfig[]){
     return (parent:HTMLDivElement,manager:MenuManager)=>{
-        for(const mode of modes){
+        for(const m in modes){
+            const mode=modes[m]
             const mb=document.createElement("div")
+            mb.className="background-menu-ss background-menu-blue"
             mb.innerHTML=`
-<div class="background-menu-ss background-menu-blue">
-<h1>${mode.gamemode}</h1>
-<button id="btn-join-${mode.gamemode}" class="btn-green">Play</button>
-</div>`
-            const join_btn=mb.querySelector(`#btn-join-${mode.gamemode}`) as HTMLButtonElement
-            join_btn.onclick=()=>{
-                if(manager.play_callback)manager.play_callback({type:"online",mode:mode.gamemode,team_size:1})
+<h1>${mode.mode}</h1>`
+            for(const t in mode.group_size){
+                const btn=document.createElement("button")
+                btn.id=`btn-join-${mode.mode}`
+                btn.className="btn-green"
+                btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+mode.group_size[t])})
+                btn.onclick=()=>{
+                    if(manager.play_callback)manager.play_callback({type:"online",mode:parseInt(m),group_size:parseInt(t)})
+                }
+                mb.appendChild(btn)
             }
             parent.appendChild(mb)
         }

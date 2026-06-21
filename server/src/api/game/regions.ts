@@ -1,7 +1,7 @@
 import { Router } from "common/engine/server.ts";
 import { type ApiServer } from "../server.ts";
 import { random } from "common/engine/core.ts";
-import { FindGameData } from "common/scripts/config/config.ts";
+import { FindGameData, GameResult } from "common/scripts/config/config.ts";
 
 export class RegionConnection {
     sockets: WebSocket[] = []
@@ -66,7 +66,7 @@ export class RegionManager{
     constructor(api:ApiServer){
         this.api=api
     }
-    async find_game(data: FindGameData) {
+    async find_game(data: FindGameData):Promise<GameResult>{
         const region = this.regions_ws[data.region]
         if (!region) {
             return {
@@ -76,19 +76,19 @@ export class RegionManager{
         }
         try {
             let config=undefined
-            if(data.mode){
-                config={
-                    mode: data.mode,
-                    group_size: data.group_size,
-                    mode_settings:{}
-                }
+            const mode=this.api.modes[data.mode]
+            const group_size=mode.group_size[data.group_size??0]
+            config={
+                mode: mode.mode,
+                group_size: group_size,
+                mode_settings:mode.mode_settings
             }
             const msg=await region.request({
                 type: "find_game",
                 config: config
             })
-            return msg
-        } catch {
+            return msg as GameResult
+        }catch{
             return {
                 success: false,
                 error: "region_offline"

@@ -22,6 +22,9 @@ __                                                                              
 * Ak-47 Translation
 * Drop Equipments
 * Tundra Map Loading Screen
+* Skip Intro Screen
+* Failed To Join Alert
+* Maximized Equipments Show In UI
 __                                                                                                                 __
 ### Items
 * VSS - 9mm DMR

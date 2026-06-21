@@ -312,6 +312,9 @@ export class PlayersManager{
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
             if(this.game.closed)return
+            if(packet.group_token.length>0){
+                this.game.modeManager.proccess_group_token(client,packet.group_token)
+            }
             this.connected_players[client.ID].join_packet=packet
             this.game.modeManager.on_player_connect(this.connected_players[client.ID])
             this.game.signals.emit("player_connect",{client:client})

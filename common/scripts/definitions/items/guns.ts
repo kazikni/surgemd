@@ -1235,7 +1235,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:14,
                     obstacleMult:1.5,
                     range:125,
-                    speed:50,
+                    speed:45,
                     tracer:tracers.large
                 }
             },

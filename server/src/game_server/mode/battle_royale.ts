@@ -45,7 +45,7 @@ export class BattleRoyale extends ModeManager{
     groups_manager?:GroupsManager
     group_size:number
 
-    constructor(settings:BattleRoyaleSettings,group_size:number=1){
+    constructor(settings:BattleRoyaleSettings={},group_size:number=1){
         super()
         this.settings={
             players:{

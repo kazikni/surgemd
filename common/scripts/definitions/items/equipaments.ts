@@ -8,6 +8,7 @@ export interface VestDef extends Definition{
     reduction:number
     health?:number
     level:number
+    special?:boolean
     tint:number
     rank:ItemRank
     reflect_bullets?:boolean
@@ -23,6 +24,7 @@ export interface HelmetDef extends Definition{
     health?:number
     health_frames?:{frame:string,health:number}[]
     level:number
+    special?:boolean
     position?:Vec2
     rank:ItemRank
     item_type?:InventoryItemType.helmet
@@ -65,6 +67,7 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             idString:"military_helmet",
             defence:0,
             level:3,
+            special:true,
             health:1600,
             reduction:0.2,
             position:v2(0,0),
@@ -75,6 +78,7 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             idString:"lastman_helmet",
             defence:0,
             level:5,
+            special:true,
             reduction:0.3,
             position:v2(0,0),
             rank:ItemRank.S,
@@ -130,6 +134,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             idString:"military_vest",
             defence:0,
             level:3,
+            special:true,
             health:2600,
             reduction:0.2,
             tint:0x010011,
@@ -139,6 +144,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             idString:"elite_vest",
             defence:0,
             level:4,
+            special:true,
             reflect_bullets:true,
             reduction:0.25,
             tint:0x5C322E,

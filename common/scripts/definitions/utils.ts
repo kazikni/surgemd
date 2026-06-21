@@ -57,7 +57,7 @@ export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
         name:"common",
         color1:"#eeeeee",
         color2:"#a0a0a0",
-        tint:0xeeeeee
+        tint:0xffffff
     },
     [ItemRank.D]:{
         name:"uncommon",
@@ -69,19 +69,19 @@ export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
         name:"rare",
         color1:"#3533ee",
         color2:"#15118a",
-        tint:0x2222ef
+        tint:0x2a5eeb
     },
     [ItemRank.B]:{
         name:"epic",
         color1:"#9309de",
         color2:"#3b0b7d",
-        tint:0x9309de
+        tint:0xa743de
     },
     [ItemRank.A]:{
         name:"mythic",
         color1:"#f0d107",
         color2:"#ab8c0f",
-        tint:0xf0d907
+        tint:0xf0ba07
     },
     [ItemRank.S]:{
         name:"legendary",

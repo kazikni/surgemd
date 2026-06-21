@@ -2,8 +2,9 @@ import { type FileHandle } from "common/engine/core.ts";
 
 export type PlayArgs={
     type: "online"
-    mode:string
-    team_size:number
+    mode:number
+    group_size:number
+    token?:string
 }|{
     type: "campaign"
     path:string

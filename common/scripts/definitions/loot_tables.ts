@@ -66,7 +66,7 @@ export const LootTables={
         {table:"death_consumibles",count:1,weight:0.04},
     ],
     health_consumibles:[
-        {item:"bandage",count:5,weight:8},
+        {item:"bandage",count:5,weight:6},
         {item:"medikit",weight:1},
     ],
     adrenaline_consumibles:[

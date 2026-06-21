@@ -1,6 +1,7 @@
-import { Router, Server } from "common/engine/server.ts";
+import { Router } from "common/engine/server.ts";
 import { random } from "common/engine/core.ts";
 import { type ApiServer } from "../server.ts";
+import { GameResult } from "common/scripts/config/config.ts";
 
 export class GroupPlayer {
     group:Group
@@ -29,6 +30,10 @@ export class Group {
     code = random.code(5)
     players: GroupPlayer[]=[]
     players_ids: string[]=[]
+    current_match?: {
+        address: string
+        token: string
+    }
     locked = false
     autofill = true
     constructor(public manager:GroupManager){}
@@ -65,7 +70,12 @@ export class Group {
             p.send_snapshot()
         }
     }
-    on_message(player:GroupPlayer,msg:any){
+    send(msg:any){
+        for(const p of this.players){
+            p.send(msg)
+        }
+    }
+    async on_message(player:GroupPlayer,msg:any){
         switch(msg.type){
             case "lock":{
                 if(player!==this.leader)return
@@ -85,6 +95,31 @@ export class Group {
                 if(!target)return
                 if(target===this.leader)return
                 target.socket.close()
+                break
+            }
+            case "play": {
+                if (player !== this.leader) return
+                const res:GameResult = await this.manager.api.regions.find_game({
+                    region: msg.region,
+                    mode: msg.mode,
+                    token:random.code(20),
+                    group_size: msg.group_size
+                })
+                if (!res.success) {
+                    player.send({
+                        type: "play_failed"
+                    })
+                    return
+                }
+                this.current_match = {
+                    address: res.address,
+                    token: res.token!
+                }
+                this.send({
+                    ...res,
+                    type: "start_game",
+                    token: res.token,
+                })
                 break
             }
         }

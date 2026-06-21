@@ -30,10 +30,12 @@
         },
         "modes": [
             {
-                "team_size": [
-                    1
+                "group_size": [
+                    1,
+                    2,
+                    4
                 ],
-                "gamemode": "normal",
+                "mode": "normal",
                 "enabled": true
             }
         ],

@@ -802,6 +802,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     visible:true,
                     position:v2(-0.4,0.25),
                     rotation:Angle.deg2rad(45),
+                    hotspot:v2(0.5,0.5),
                     scale:2,
                     image:"pan_world"
                 }

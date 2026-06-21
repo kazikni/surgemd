@@ -3,11 +3,12 @@ import { HostConfig } from "../../engine/core.ts";
 export interface GameConfig{
     mode:string
     group_size?:number
-    mode_settings:any
+    mode_settings?:any
 }
-export interface GamemodeConfig{
-    team_size:number[]
-    gamemode:string
+export interface ModeConfig{
+    group_size:number[]
+    mode:string
+    mode_settings?:any
 }
 export interface GameDebugOptions{
     deenable_lobby?:boolean
@@ -27,7 +28,7 @@ export interface RegionConfig{
 }
 export interface ApiSettingsS{
     regions:string[]
-    modes:GamemodeConfig[]
+    modes:ModeConfig[]
     debug:{
         debug_menu:boolean
     }
@@ -37,8 +38,17 @@ export interface ApiSettingsS{
 }
 export interface FindGameData{
     region:string
-    mode:string
+    mode:number
+    token?:string
     group_size?:number
+}
+export type GameResult={
+    success:true
+    address:string
+    token?:string
+}|{
+    success:false
+    error:string
 }
 export interface ConfigType{
     api: {
@@ -59,7 +69,7 @@ export interface ConfigType{
         host: HostConfig
         ntps:number
         tps:number
-        modes: GamemodeConfig[]
+        modes: ModeConfig[]
     }
     region?:RegionConfig
     vite:{

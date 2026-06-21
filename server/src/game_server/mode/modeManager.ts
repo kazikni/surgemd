@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts";
-import { Numeric, random, v2, Vec2 } from "common/engine/core.ts";
+import { Client, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -237,6 +237,8 @@ export abstract class ModeManager{
     on_player_connect(p:PlayerConnManager):void{}
     on_player_join(p:Player):void{}
     on_player_die(p:Player):void{}
+    proccess_group_token(client:Client,token:string):void{}
+    reset():void{}
 
     on_human_create(human:Human):void{}
     on_human_die(human:Human):void{}

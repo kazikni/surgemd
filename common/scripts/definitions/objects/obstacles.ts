@@ -486,7 +486,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2),
+                hitbox:new CircleHitbox2D(v2(0,0),2.2),
                 alpha:0.5
             },
             spawnMode:Spawn.grass,

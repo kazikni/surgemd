@@ -299,6 +299,7 @@
                 "host-game": "Host Game",
                 "join-game": "Join Game",
                 "play-online": "Play Online",
+                "play-btn": "Play ${group_size}",
                 "group": "Group",
                 "label-files": "Files",
                 "replay": "Replay"
@@ -415,6 +416,14 @@
             "3": "Damage taken",
             "4": "Damage Dealth",
             "5": "Kill Leader"
+        },
+        "modes": {
+            "group_size": {
+                "1": "Solo",
+                "2": "Duo",
+                "3": "Trio",
+                "4": "Squad"
+            }
         }
     }
 }

@@ -3,11 +3,13 @@ import { Human } from "../objects/human.ts";
 import { random } from "common/engine/core.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { type Loot } from "../objects/loot.ts";
 
 export class Team{
     dirty:boolean=true
     state?:Record<number,GroupMemberState>
     humans:Human[]=[]
+    already_gifted:Record<number,Loot>={}
     id:number=0
 
     clear_downeds(){

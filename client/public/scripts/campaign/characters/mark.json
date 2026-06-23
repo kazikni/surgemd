@@ -11,30 +11,12 @@
             "game_notion": 100,
             "bravery": 10,
             "team_work": 100,
-            "team_work_dominance": 0
+            "team_dominance": 0
         }
     },
     "inventory": {
         "infinity_ammo": true,
         "hand": 1,
-        "backpack": [
-            {
-                "item": "military_pack",
-                "weight": 10
-            }
-        ],
-        "vest": [
-            {
-                "item": "military_vest",
-                "weight": 10
-            }
-        ],
-        "helmet": [
-            {
-                "item": "military_helmet",
-                "weight": 10
-            }
-        ],
         "gun1": [
             {
                 "item": "kar98k",
@@ -55,13 +37,6 @@
                 "weight": 0.5
             }
         ],
-        "aitems": {
-            "556mm": 140,
-            "762mm": 140,
-            "45acp": 140,
-            "9mm": 80,
-            "22lr": 100
-        },
         "items": [
             [
                 {
@@ -81,11 +56,6 @@
                     "weight": 1
                 }
             ]
-        ],
-        "iitems": [
-            "scope_2",
-            "scope_3",
-            "scope_4"
         ]
     },
     "loadout": {

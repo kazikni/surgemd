@@ -1,4 +1,4 @@
-import { Angle, astar_path2d, BTAction, BTSelector, BTSequence, BTState, Stream, Numeric, random, v2, Vec2, CircleHitbox2D } from "common/engine/core.ts";
+import { Angle, astar_path2d, BTState, Stream, Numeric, random, v2, Vec2, CircleHitbox2D, GoalNode, BTGoalPlanner } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
@@ -10,6 +10,8 @@ import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "../../objects/obstacle.ts";
 import { type ServerGameObject } from "../../others/gameObject.ts";
 import { type Loot } from "../../objects/loot.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 export type BotExecutionContext = {
     human: Human
     target?: Human|Obstacle
@@ -32,11 +34,12 @@ export abstract class BotExecutor{
 }
 export class MovementController extends BotExecutor {
     target?: Vec2
+    last_target?: Vec2
     path_finding:boolean=false
     path?: Vec2[]
     path_index = 0
     follow_path = false
-    rotate_to = false
+    rotate_to = true
 
     repath_timer = 0
     repath_delay = 1
@@ -51,12 +54,13 @@ export class MovementController extends BotExecutor {
         this.path = undefined
         this.path_index = 0
     }
-    set_target(target:Vec2,path_finding:boolean){
-        if(!this.target){
-            this.path_finding=path_finding
-            this.repath_timer=0
+    set_target(target: Vec2, path_finding: boolean){
+        if(!this.last_target||v2.distance(this.last_target,target) > 1){
+            this.repath_timer = 0
+            this.path_finding = path_finding
+            this.last_target = v2.clone(target)
         }
-        this.target=target
+        this.target = v2.clone(target)
     }
     calculate_path(ctx: BotExecutionContext) {
         if(!this.target)return
@@ -66,10 +70,10 @@ export class MovementController extends BotExecutor {
             this.target!,
             ctx.human.isBlockedForPath.bind(self),
             {
-                cellSize:0.25,
+                cellSize:0.2,
                 dirs:[
                     [1,0],[0,1],[-1,0],[0,-1],
-                    [1,1],[-1,-1],[-1,1],[1,-1]
+                    [1,1],[1,-1],[-1,-1],[-1,1]
                 ]
             },
         )
@@ -90,16 +94,14 @@ export class MovementController extends BotExecutor {
             return
         }
         const node = this.path[this.path_index]
-        if (v2.distance(ctx.human.position, node) < 0.01) {
+        if (v2.distance(ctx.human.position, node) < 0.05) {
             this.path_index++
             return
         }
 
         const dir=v2.lookTo(ctx.human.position, node)
-        ctx.human.input.movement = {
-            dir,
-            scale: 1
-        }
+        ctx.human.input.movement.dir=dir
+        ctx.human.input.movement.scale=1
 
         if(this.rotate_to){
             ctx.human.input.rotation = dir
@@ -423,202 +425,144 @@ export class AttackingController extends BotExecutor {
         }
     }
 }
-type ADVHumanAICurrentState = {
-    timer?: number
-}&({
-    type: 0
-    stage: 0 | 1 | 2
-    timer: number
-    item:GameItem
-    sender:Human
-}|{
-    type: 1
-    target: Vec2
-    ideal_distance: number
-    urgency: number
-}|{
-    type: 2
-    loot_type: number
-    obj: ServerGameObject
-    timer: number
-})
-export const tree_action_functions={
-    // Team
-    proccess_allies(ctx){
-        if(ctx.ai.current_state?.type===0)return BTState.Running
-        for(const a of ctx.nearby_allies){
-            if(a.loadout.emote_is_item&&a.loadout.emote){
-                const item=(a.loadout.emote as GameItem)
-                switch(item.item_type!){
-                    case InventoryItemType.ammo:{
-                        const percentAmmo = ((ctx.human.inventory.aitems[item.idString]??0)/ctx.human.inventory.item_limit(item))*100
-                        if(percentAmmo==0||percentAmmo>ctx.ai.params.team_work)continue
-                        ctx.ai.current_state={
-                            type:0,
-                            item:item,
-                            sender:a,
-                            stage:0,
-                            timer:0
-                        }
-                        return BTState.Running
-                    }
-                }
-            }
-        }
-        return BTState.Failure
-    },
-    support_request(ctx){
-        if(ctx.ai.current_state?.type!==0)return BTState.Failure
-        const req=ctx.ai.current_state
-        switch(req.stage){
-            case 0:{
-                ctx.ai.controller.movement.activated = true
-                ctx.ai.controller.movement.set_target(req.sender.position,true)
-                const dist = v2.distance(ctx.human.position,req.sender.position)
-                if(dist <= 4){
-                    req.stage = 1
-                    req.timer = random.float(0.5,1.5)
-                    ctx.ai.controller.movement.clear()
-                }
-                break
-            }
-            case 1:
-                ctx.ai.controller.aim.activated = true
-                ctx.target_pos = req.sender.position
-                if(req.timer <= 0){
-                    req.stage = 2
-                }
-                break
-            case 2:
-                ctx.human.inventory.drop_aitem(req.item.idNumber)
-                ctx.ai.current_state = undefined
-                return BTState.Success
-        }
-        return BTState.Running
-    },
-    process_group(ctx: BotExecutionContext) {
-        if(ctx.ai.current_state)return BTState.Failure
-        const ally=ctx.ai.get_follow_target()
-        if(!ally)return BTState.Failure
-        const t=ctx.ai.params.team_work_dominance/100
-        const maxDistance=4+Math.pow(t,2)*30
-        const idealDistance = Numeric.lerp(2,50,t)
-        const dist = v2.distance(ctx.human.position,ally.position)
-        const urgency = Numeric.clamp((dist - maxDistance) / maxDistance,0,1)
+export class LootGoal extends GoalNode<BotExecutionContext> {
+    target?: Loot
 
-        if(urgency <= 0)return BTState.Failure
-        if(Math.random() > urgency)return BTState.Failure
-
-        ctx.ai.current_state = {
-            type:1,
-            target:v2.clone(ally.position),
-            ideal_distance:idealDistance,
-            urgency
-        }
-
-        return BTState.Running
-    },
-    get_close(ctx: BotExecutionContext) {
-        if(ctx.ai.current_state?.type !== 1) return BTState.Failure
-        const state = ctx.ai.current_state
-        const dist = v2.distance(ctx.human.position,state.target)
-        if(dist <= state.ideal_distance){
-            ctx.ai.current_state = undefined
-            ctx.ai.controller.movement.clear()
-            return BTState.Success
-        }
-        ctx.ai.controller.movement.activated = true
-        if(!ctx.ai.controller.movement.target || v2.distance(ctx.ai.controller.movement.target,state.target) > 2){
-            ctx.ai.controller.movement.set_target(state.target,true)
-        }
-        return BTState.Running
-    },
-
-    //General
-    process_loot(ctx){
-        if(ctx.ai.current_state){
-            return ctx.ai.current_state.type !== 2?BTState.Success:BTState.Failure
-        }
-        let bestScore = 0
-        let bestTarget:Loot|Obstacle|undefined = undefined
-        let bestLootType=0
+    override score(ctx: BotExecutionContext): number {
+        let bestScore=0
+        let bestTarget:Loot|undefined
         for(const obj of ctx.visible_objects){
-            if(obj.number_type===GameObjectType.Loot){
-                const dist=v2.distance(obj.position,ctx.human.position)
-                const score=ctx.ai.get_item_score((obj as Loot).loot_data.item)-dist*3
-                if(score > bestScore){
-                    bestScore = score
-                    bestTarget = obj as Loot
-                    bestLootType=0
-                }
+            if(obj.number_type!==GameObjectType.Loot)continue
+            if(ctx.ai.gifts[obj.id])continue
+            const loot=obj as Loot
+            const itemScore = ctx.ai.get_item_score(loot.loot_data.item)
+            if(itemScore<=0)continue
+
+            const dist = v2.distance(ctx.human.position,loot.position)
+
+            const maxLootDistance = Numeric.lerp(10,50,ctx.ai.params.game_notion / 100)
+            const distanceFactor = 1 - Numeric.clamp(dist / maxLootDistance,0,1)
+            const score=(itemScore * 60)+(distanceFactor * 40)
+
+            if (score > bestScore) {
+                bestScore = score
+                bestTarget = loot
             }
         }
-        if(bestScore < 20||!bestTarget){
-            return BTState.Failure
+        if (!bestTarget || bestScore < 20){
+            this.target=undefined
+            return 0
         }
-        ctx.ai.current_state = {
-            type:2,
-            loot_type:bestLootType,
-            obj:bestTarget,
-            timer:random.float(2,6)
-        }
-        return BTState.Success
-    },
-    loot(ctx){
-        if(ctx.ai.current_state?.type !== 2) return BTState.Failure
-        const state = ctx.ai.current_state
-        state.timer -= ctx.dt
-        if(state.timer <= 0){
-            ctx.ai.current_state = undefined
+        this.target = bestTarget
+        return bestScore
+    }
+    override tick(ctx: BotExecutionContext): BTState {
+        if(!this.target||this.target.destroyed)return BTState.Failure
+
+        ctx.ai.controller.movement.activated=true
+        ctx.ai.controller.movement.set_target(this.target.position,true)
+
+        const dist = v2.distance(ctx.human.position,this.target.position)
+        if (dist <= 0.1) {
+            ctx.human.input.interaction = true
             return BTState.Success
         }
-
-        ctx.ai.controller.movement.activated = true
-        ctx.ai.controller.movement.set_target(state.obj.position,true)
-
-        const dist = v2.distance(ctx.human.position,state.obj.position)
-
-        switch(state.loot_type){
-            case 0:
-                if(dist < 0.1){
-                    ctx.human.input.interaction = true
-                    ctx.ai.controller.movement.clear()
-                    ctx.ai.current_state = undefined
-                }
-                break
-            case 1:
-                if(dist < 2){
-                    ctx.ai.current_state = undefined
-                }
-                break
-        }
-        return BTState.Running
-    },
-    reset(ctx){
-        ctx.ai.controller.aim.activated=false
-        ctx.ai.controller.attacking.activated=false
-        ctx.ai.controller.movement.activated=false
         return BTState.Running
     }
-} satisfies Record<string,(ctx: BotExecutionContext) => BTState>
-export function make_adv_human_ai_tree(allow_group_mode:boolean=true):BTSelector<BotExecutionContext>|undefined{
-    if(allow_group_mode){
-        return new BTSelector([
-            new BTSequence([
-                new BTAction(tree_action_functions.process_group),
-            ]),
-            /*new BTSequence([
-                new BTAction(tree_action_functions.process_loot),
-            ]),*/
-            new BTSequence([
-                new BTAction(tree_action_functions.proccess_allies),
-            ]),
 
-            new BTAction(tree_action_functions.support_request),
-            new BTAction(tree_action_functions.get_close),
-            new BTAction(tree_action_functions.loot),
-            new BTAction(tree_action_functions.reset)
-        ])
+    override exit(ctx: BotExecutionContext) {
+        this.target = undefined
+        ctx.ai.controller.movement.clear()
+        ctx.ai.controller.movement.activated = false
+    }
+}
+export class SupportAllyGoal extends GoalNode<BotExecutionContext> {
+    requester?: Human
+    item?: GameItem
+    timer:number=0
+    override score(ctx: BotExecutionContext): number {
+        if(this.requester)return 80
+        for(const ally of ctx.nearby_allies){
+            if(!ally.loadout.emote_is_item||!ally.loadout.emote)continue
+
+            const item = ally.loadout.emote as GameItem
+            if(item.item_type !== InventoryItemType.ammo)continue
+            const percent = ((ctx.human.inventory.aitems[item.idString] ?? 0)/ctx.human.inventory.item_limit(item))*100
+            if(percent===0||percent>ctx.ai.params.team_work)continue
+
+            this.requester = ally
+            this.item = item
+            this.timer=2
+            return 80
+        }
+        return 0
+    }
+    override tick(ctx: BotExecutionContext): BTState {
+        if(!this.requester || !this.item)return BTState.Failure
+
+        ctx.ai.controller.movement.set_target(this.requester.position,true)
+        const dist = v2.distance(ctx.human.position,this.requester.position)
+        if(dist < 4){
+            this.timer-=ctx.dt
+            ctx.ai.controller.movement.activated=false
+            if(this.timer<=0){
+                const loot=ctx.human.inventory.drop_aitem(this.item.idNumber)
+                if(ctx.ai.group_mode&&loot)ctx.ai.gifts[loot.id]={
+                    loot,
+                    expire_timer:6
+                }
+                return BTState.Success
+            }
+        }else{
+            ctx.ai.controller.movement.activated=true
+            this.timer=1
+        }
+        return BTState.Running
+
+    }
+    override exit(ctx: BotExecutionContext) {
+        this.requester = undefined
+        this.item = undefined
+        ctx.ai.controller.movement.activated=false
+        ctx.ai.controller.movement.clear()
+    }
+}
+export class StayWithGroupGoal extends GoalNode<BotExecutionContext> {
+    ally?: Human
+
+    private get_urgency(ctx: BotExecutionContext): number {
+        if (!this.ally)return 0
+
+        const dominance = ctx.ai.params.team_dominance / 100
+        if (dominance >= 1)return 0
+
+        const minDistance = 10 + (100 * dominance)
+        const maxDistance = minDistance * 2
+
+        const dist = v2.distance(ctx.human.position,this.ally.position)
+
+        return Numeric.clamp((dist - minDistance) / (maxDistance - minDistance),0,1)
+    }
+    override score(ctx: BotExecutionContext): number {
+        this.ally = ctx.ai.get_follow_target()
+        if (!this.ally) return 0
+
+        const urgency = this.get_urgency(ctx)
+        return urgency >= 0.2 ?urgency*150:0
+    }
+    override tick(ctx: BotExecutionContext): BTState {
+        if (!this.ally)return BTState.Failure
+
+        const urgency = this.get_urgency(ctx)
+        if (urgency <= 0)return BTState.Success
+
+        ctx.ai.controller.movement.activated = true
+        ctx.ai.controller.movement.set_target(this.ally.position,true)
+        return BTState.Running
+    }
+    override exit(ctx: BotExecutionContext){
+        ctx.ai.controller.movement.clear()
+        ctx.ai.controller.movement.activated=true
     }
 }
 export class ADVHumanAI extends BotAi{
@@ -629,96 +573,119 @@ export class ADVHumanAI extends BotAi{
     }
 
     first_tick:boolean=true
-    current_state?: ADVHumanAICurrentState
 
-    tree:BTSelector<BotExecutionContext>
-    constructor(human:Human){
+    planner:BTGoalPlanner<BotExecutionContext>
+
+    group_mode:boolean
+    gifts:Record<number,{
+        loot: Loot
+        expire_timer: number
+    }>={}
+
+    ctx:BotExecutionContext
+    constructor(human:Human,allow_group_mode:boolean=true){
         super(human)
-        this.tree = make_adv_human_ai_tree()!
+        this.group_mode=allow_group_mode
         this.params={
             aim_skills:random.float(0,100),
             quick_switch_skills:random.float(0,100),
             game_notion:random.float(0,100),
             bravery:random.float(0,100),
             team_work:random.float(0,100),
-            team_work_dominance:random.float(0,100),
+            team_dominance:random.float(0,100),
+        }
+        this.planner=new BTGoalPlanner([
+            ...(allow_group_mode?[
+                new LootGoal(),
+                new StayWithGroupGoal(),
+                new SupportAllyGoal(),
+            ]:[])
+        ].filter(Boolean))
+
+        this.ctx={
+            ai:this,
+            dt:0,
+            human:this.human,
+            nearby_allies:[],
+            nearby_enemies:[],
+            visible_objects:[],
+            vision_hitbox:new CircleHitbox2D(v2.zero(),0),
+            spin:this.controller.aim.startSpin.bind(this.controller.aim.startSpin),
         }
     }
     override AI(dt: number): void {
         this.reset_inputs()
 
-        let target:Human|undefined
-
-        for(const p of this.human.game.humans.humans){
-            if(p.id===this.human.id) continue
-            if(!p.game.modeManager.is_ally(p,this.human) && this.isPlayerVisible(p)){
-                target = p
-                break
-            }
+        if(this.human!==this.ctx.human){
+            this.gifts={}
+        }
+        for(const g in this.gifts){
+            const gift=this.gifts[g]
+            gift.expire_timer-=dt
+            if(gift.expire_timer<=0)delete this.gifts[g]
         }
 
-        const ctx:BotExecutionContext={
-            dt,
-            human:this.human,
-            target,
-            target_pos:target?.position,
-            nearby_allies:[],
-            nearby_enemies:[],
-            visible_objects:[],
-            vision_hitbox:new CircleHitbox2D(this.human.position,this.human.scope_zoom),
-            ai:this,
-            spin:this.controller.aim.startSpin.bind(this.controller.aim)
-        }
+        this.ctx.dt=dt
+        this.ctx.vision_hitbox.position=this.human.position
+        this.ctx.vision_hitbox.radius=this.human.scope_zoom
+        this.ctx.nearby_allies.length=0
+        this.ctx.nearby_enemies.length=0
+        this.ctx.visible_objects.length=0
 
-        if(this.current_state&&this.current_state.timer!==undefined&&this.current_state.timer>0){
-            this.current_state.timer -= ctx.dt
-        }
 
-        const objects:ServerGameObject[]=this.human.manager.cells.get_objects(ctx.vision_hitbox,this.human.layer)
+
+        const objects:ServerGameObject[]=this.human.manager.cells.get_objects(this.ctx.vision_hitbox,this.human.layer)
         for(const obj of objects){
-            if(!obj.hitbox.colliding_with(ctx.vision_hitbox))continue
-            ctx.visible_objects.push(obj)
+            if(!obj.hitbox.colliding_with(this.ctx.vision_hitbox))continue
+            this.ctx.visible_objects.push(obj)
             if(obj.number_type===GameObjectType.Human){
-                if(obj.id===this.human.id)continue
+                if(obj.id===this.human.id||(obj as Human).dead)continue
                 if(this.human.game.modeManager.is_ally((obj as Human),this.human)){
-                    ctx.nearby_allies.push((obj as Human))
+                    this.ctx.nearby_allies.push((obj as Human))
                 }else{
-                    ctx.nearby_enemies.push((obj as Human))
+                    this.ctx.nearby_enemies.push((obj as Human))
                 }
             }
         }
-        this.tree.tick(ctx)
+
+        this.planner.tick(this.ctx,dt)
 
         if(this.controller.aim.activated){
-            this.controller.aim.update(ctx)
+            this.controller.aim.update(this.ctx)
         }
         if(this.controller.attacking.activated){
-            this.controller.attacking.update(ctx)
+            this.controller.attacking.update(this.ctx)
         }
         if(this.controller.movement.activated){
-            this.controller.movement.update(ctx)
+            this.controller.movement.update(this.ctx)
         }
     }
-    override net_update(general_update: Stream): void {
-        //throw new Error("Method not implemented.");
+    override net_update(_general_update: Stream): void {
+        this.planner.next_node(this.ctx)
     }
     get_item_score(item:GameItem):number{
         switch(item.item_type!){
             case InventoryItemType.gun:
                 break
             case InventoryItemType.ammo:{
-                const percent=((this.human.inventory.aitems[item.idString]??0)/this.human.inventory.item_limit(item))*100
-                if(percent===100)return 0
-                return 100-percent
+                const percent=(this.human.inventory.aitems[item.idString]??0)/this.human.inventory.item_limit(item)
+                if(percent===1)return 0
+                return 1-percent
             }
             case InventoryItemType.consumible:
+                break
             case InventoryItemType.helmet:
+                return (this.human.equipment_data.helmet?.level??0)<(item as HelmetDef).level?1:0
             case InventoryItemType.vest:
+                return (this.human.equipment_data.vest?.level??0)<(item as VestDef).level?1:0
+            case InventoryItemType.backpack:
+                return (this.human.equipment_data.vest?.level??0)<(item as BackpackDef).level?1:0
             case InventoryItemType.grenade:
             case InventoryItemType.melee:
             case InventoryItemType.accessory:
-            case InventoryItemType.backpack:
+                break
             case InventoryItemType.scope:
+                return this.human.inventory.iitems.includes(item)?0:1
         }
         return 0
     }

@@ -63,14 +63,14 @@ export class BTAction<Context> implements BTNode<Context> {
 }
 
 export abstract class GoalNode<Ctx> {
-    priority = 0
     interruptible = true
     reevaluateInterval = 0.2
-    timeout = 10
-    cooldown = 0
+    timeout = 0
     elapsed = 0
 
-    abstract score(ctx: Ctx): number
+    score(ctx: Ctx): number{
+        return 0
+    }
     condition(ctx: Ctx): boolean {
         return true
     }
@@ -86,38 +86,29 @@ export abstract class GoalNode<Ctx> {
     }
 }
 export class BTGoalPlanner<Ctx> implements BTNode<Ctx> {
-
     current?: GoalNode<Ctx>
-
-    timer = 0
-    delay = 0.25
-
-    switchThreshold = 15
 
     constructor(public goals: GoalNode<Ctx>[]) {}
 
-    tick(ctx: Ctx, dt = 0.01): BTState {
-        this.timer -= dt
-        if(this.timer <= 0){
-            this.timer = this.delay
-            let best: GoalNode<Ctx> | undefined
-            let bestScore = -Infinity
-            for(const goal of this.goals){
-                if(goal.cooldown > 0)continue
-                if(!goal.condition(ctx))continue
-                const score = goal.score(ctx)
-                if(score > bestScore){
-                    bestScore = score
-                    best = goal
-                }
+    next_node(ctx: Ctx){
+        let best: GoalNode<Ctx> | undefined
+        let bestScore = -Infinity
+        for(const goal of this.goals){
+            if(!goal.condition(ctx))continue
+            const score = goal.score(ctx)
+            if(score > bestScore){
+                bestScore = score
+                best = goal
             }
-            if(best){
-                if(!this.current){
-                    this.current = best
-                    this.current.enter(ctx)
-                }else{
+        }
+        if(best&&best!==this.current){
+            if(!this.current){
+                this.current = best
+                this.current.enter(ctx)
+            }else if(this.current.interruptible){
+                if(this.current.interruptible){
                     const currentScore = this.current.score(ctx)
-                    const shouldSwitch =this.current.interruptible && best !== this.current && bestScore > currentScore + this.switchThreshold
+                    const shouldSwitch = bestScore > currentScore
                     if(shouldSwitch){
                         this.current.exit(ctx)
                         this.current.reset()
@@ -128,21 +119,27 @@ export class BTGoalPlanner<Ctx> implements BTNode<Ctx> {
                 }
             }
         }
+    }
+    close_node(ctx:Ctx){
+        if(!this.current)return
+        this.current.exit(ctx)
+        this.current.reset()
+        this.current = undefined
+    }
+    tick(ctx: Ctx, dt = 0.01): BTState {
         if(!this.current)return BTState.Failure
-        this.current.elapsed += dt
-        if(this.current.elapsed > this.current.timeout){
-            this.current.exit(ctx)
-            this.current.reset()
-            this.current.cooldown = 2
-            this.current = undefined
 
-            return BTState.Failure
+        if(this.current.timeout){
+            this.current.elapsed += dt
+            if(this.current.elapsed > this.current.timeout){
+                this.close_node(ctx)
+                return BTState.Failure
+            }
         }
+
         const state = this.current.tick(ctx)
         if(state !== BTState.Running){
-            this.current.exit?.(ctx)
-            this.current.reset()
-            this.current = undefined
+            this.close_node(ctx)
         }
         return state
     }

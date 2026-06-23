@@ -117,7 +117,7 @@ export class Human extends MovingBody{
     }
 
     get scope_zoom():number{
-        return 15/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
+        return 11/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
     emote_time:number=0
     loadout!:HumanLoadoutData&{
@@ -396,8 +396,8 @@ export class Human extends MovingBody{
             default:
                 ai = new EnemyNPCAI(this)
         }
-        if(ai.params){
-            ai.params = cloneDeep(ai.params)
+        if(def.params){
+            ai.params = cloneDeep(def.params)
         }
         return ai
     }

@@ -639,12 +639,12 @@ export class GInventory extends GInventoryBase<LItem>{
         this.net_sync.hand=true
         this.net_sync.weapons=true
     }
-    drop_aitem(id:number=0,drop_count:number=80){
+    drop_aitem(id:number=0,drop_count:number=80):Loot|undefined{
         const a=this.owner.game.definitions.ammos.getFromNumber(id)
         const res=this.consume_aitems(a.idString,drop_count)
         if(res){
             this.net_sync.iitems=true
-            this.owner.game.add_loot(this.owner.position,a,res,this.owner.layer)
+            return this.owner.game.add_loot(this.owner.position,a,res,this.owner.layer)
         }
     }
     drop_iitem(item:number):Loot|undefined{

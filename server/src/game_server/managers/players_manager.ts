@@ -283,6 +283,7 @@ export class PlayersManager{
         for(const p of Object.values(this.connected_bots)){
             p.net_update(s)
         }
+
         if(this.game.replay)this.game.replay.update()
         this.first_tick=false
     }

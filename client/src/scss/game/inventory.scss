@@ -285,7 +285,7 @@
     display: flex;
     flex-direction: column;
     flex-wrap:wrap-reverse;
-    max-height: 35vh;
+    max-height: 200px;
     gap: 5px;
     position: absolute;
     right: 10px;
@@ -293,35 +293,50 @@
     transform: translate(0%, -50%);
     justify-items: end;
     pointer-events: none;
-    .aitem-slot{
+    .aitem-slot {
         color: var(--ui-theme-tertiary);
         backdrop-filter: var(--ui-backdrop-filter);
-        background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
+        background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
+
         display: flex;
-        flex-direction: column;
+        flex-direction: row-reverse;
+        align-items: center;
+        justify-content: space-between;
+
         border-radius: 4px;
+        width: 70px;
+        height: 34px;
+        gap: 5px;
+
+        padding: 0 6px;
+
         pointer-events: auto;
+
+        box-shadow: 0 0 3px var(--ui-theme-primary);
+
         .count {
             font-family: "Russo-One", sans-serif;
-            text-align: center;
             font-size: 15px;
-            text-anchor: middle;
+
+            flex: 1;
+            text-align: left;
         }
-        .icon{
-            width: 30px;
-            height: 30px;
-            margin: auto;
-            padding-top: 5px;
-            padding-left: 5px;
-            padding-right: 5px;
+
+        .icon {
+            width: 28px;
+            height: 28px;
+
+            flex-shrink: 0;
+            object-fit: contain;
         }
-        box-shadow: 0 0 3px var(--ui-theme-primary);
     }
     .aitem-slot:hover{
         border: 2px solid var(--ui-theme-primary);
     }
     @include main.medium_screen{
         .aitem-slot{
+            width: 50px;
+            height: 22px;
             .count{
                 font-size: 12px;
             }
@@ -330,11 +345,14 @@
                 height: 20px;
             }
         }
+        max-height: 130px;
         gap: 3px;
         right: 7px;
     }
     @include main.small_screen{
         .aitem-slot{
+            width: 30px;
+            height: 14px;
             .count{
                 font-size: 10px;
             }
@@ -343,6 +361,7 @@
                 height: 12px;
             }
         }
+        max-height: 80px;
         gap: 2px;
         right: 5px;
     }

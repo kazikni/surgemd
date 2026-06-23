@@ -20,6 +20,18 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
     ammos.insert(
         //Main
         {
+            idString:"12g",
+            ammoType:"12g",
+            description:true,
+            defaultTrail:0xcfada0,
+            strongTrail:0xdb2218,
+            defaultProj:0xcfada0,
+            strongProj:0xdb2218,
+            tint:0xff0000,
+            drop_count:15,
+            rank:ItemRank.E
+        },
+        {
             idString:"762mm",
             ammoType:"762mm",
             description:true,
@@ -42,17 +54,6 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             rank:ItemRank.E
         },
         {
-            idString:"9mm",
-            ammoType:"9mm",
-            description:true,
-            defaultTrail:0xefef9f,
-            strongTrail:0xefef33,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
-            tint:0xffff00,
-            rank:ItemRank.E
-        },
-        {
             idString:"45acp",
             ammoType:"45acp",
             description:true,
@@ -64,6 +65,17 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             rank:ItemRank.E
         },
         {
+            idString:"9mm",
+            ammoType:"9mm",
+            description:true,
+            defaultTrail:0xefef9f,
+            strongTrail:0xefef33,
+            defaultProj:0xefef9f,
+            strongProj:0xefef33,
+            tint:0xffff00,
+            rank:ItemRank.E
+        },
+        {
             idString:"22lr",
             ammoType:"22lr",
             description:true,
@@ -72,18 +84,6 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             defaultProj:0xefef9f,
             strongProj:0xefef33,
             tint:0xffffff,
-            rank:ItemRank.E
-        },
-        {
-            idString:"12g",
-            ammoType:"12g",
-            description:true,
-            defaultTrail:0xcfada0,
-            strongTrail:0xdb2218,
-            defaultProj:0xcfada0,
-            strongProj:0xdb2218,
-            tint:0xff0000,
-            drop_count:15,
             rank:ItemRank.E
         },
 

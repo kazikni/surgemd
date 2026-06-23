@@ -1,6 +1,93 @@
 {
     "name": "Mark",
     "group_color": 14554741,
+    "icon": "/img/menu/gui/character/mark_character_selector.png",
+    "description": "Shy And Without Much Combat Experience - Recomended",
+    "ai": {
+        "kind": "advanced",
+        "params": {
+            "aim_skills": 20,
+            "quick_switch_skills": 30,
+            "game_notion": 100,
+            "bravery": 10,
+            "team_work": 100,
+            "team_work_dominance": 0
+        }
+    },
+    "inventory": {
+        "infinity_ammo": true,
+        "hand": 1,
+        "backpack": [
+            {
+                "item": "military_pack",
+                "weight": 10
+            }
+        ],
+        "vest": [
+            {
+                "item": "military_vest",
+                "weight": 10
+            }
+        ],
+        "helmet": [
+            {
+                "item": "military_helmet",
+                "weight": 10
+            }
+        ],
+        "gun1": [
+            {
+                "item": "kar98k",
+                "weight": 1.5
+            },
+            {
+                "item": "awp",
+                "weight": 0.5
+            }
+        ],
+        "gun2": [
+            {
+                "item": "kar98k",
+                "weight": 1
+            },
+            {
+                "item": "awp",
+                "weight": 0.5
+            }
+        ],
+        "aitems": {
+            "556mm": 140,
+            "762mm": 140,
+            "45acp": 140,
+            "9mm": 80,
+            "22lr": 100
+        },
+        "items": [
+            [
+                {
+                    "item": "bandage",
+                    "weight": 1
+                }
+            ],
+            [
+                {
+                    "item": "medikit",
+                    "weight": 1
+                }
+            ],
+            [
+                {
+                    "item": "yellow_soda",
+                    "weight": 1
+                }
+            ]
+        ],
+        "iitems": [
+            "scope_2",
+            "scope_3",
+            "scope_4"
+        ]
+    },
     "loadout": {
         "hair": "hair_1",
         "hair_tint": 1122066,

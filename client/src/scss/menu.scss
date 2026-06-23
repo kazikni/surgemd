@@ -902,34 +902,75 @@
     }
 }
 
-.character-selector-list{
+.character-selector-screen{
     display:flex;
-    gap:20px;
-    justify-content:center;
-    margin-bottom:25px;
-    text-align: center;
-}
-.character-selector-preview
-.character-selector-list{
-    .character-card{
-        width:180px;
-        padding:15px;
-        cursor:pointer;
-
-        transition:.15s;
-    }
-    .character-card:hover{
-        transform:translateY(-5px);
-    }
-    .character-card img{
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    padding: 10px;
+    .character-main{
         width:100%;
+        flex:1;
+
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        padding: 10px;
+
+        text-align:center;
+    }
+    .character-name{
+        font-size:42px;
+        font-family:"Russo-One";
+    }
+    .character-image-wrapper{
+        flex:1;
+        display:flex;
+        align-items:center;
+        justify-content:center;
     }
     .character-icon{
-        width:160px;
+        max-width:350px;
+        max-height:420px;
+        filter:
+            drop-shadow(0 0 20px rgba(255,255,255,.1))
+            drop-shadow(0 0 40px rgba(0,0,0,.6));
     }
-}
+    .character-description{
+        max-width:650px;
 
-.character-preview{
-    padding:20px;
-    text-align:center;
+        font-size:18px;
+        line-height:1.6;
+
+        opacity:.85;
+    }
+    .character-selector-list{
+        margin-top: 20px;
+        display:flex;
+        gap:15px;
+        justify-content:center;
+    }
+    .character-card{
+        width:90px;
+        height:90px;
+        cursor:pointer;
+        border:2px solid transparent;
+        transition:.15s;
+        background:rgba(255,255,255,.03);
+        img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+        }
+        &:hover{
+            transform:translateY(-4px);
+            border-color:rgba(255,255,255,.2);
+        }
+        &.selected{
+            border-color:var(--ui-theme-primary);
+            box-shadow:
+                0 0 10px var(--ui-theme-primary),
+                0 0 30px rgba(0,0,0,.4);
+        }
+    }
 }

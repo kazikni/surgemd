@@ -177,10 +177,10 @@
         "spawn_other": true,
         "characters": [
             {
-                "path": "../../characters/maria.json"
+                "path": "../../characters/mark.json"
             },
             {
-                "path": "../../characters/mark.json"
+                "path": "../../characters/maria.json"
             }
         ]
     }

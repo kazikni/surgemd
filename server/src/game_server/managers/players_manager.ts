@@ -1,4 +1,4 @@
-import { Client, cloneDeep, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, StaticStream } from "common/engine/core.ts";
+import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, StaticStream } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -11,11 +11,9 @@ import { FeedMessage, FeedMessageType, FeedPacket } from "common/scripts/packets
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
-import { EnemyDef } from "common/scripts/config/level_definition.ts";
-import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
-import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
-import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 import { StartPacket} from "common/scripts/packets/start_packet.ts";
+import { HumanDefinition } from "common/scripts/definitions/utils.ts";
+import { Human } from "../objects/human.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
@@ -25,6 +23,12 @@ export class BotClient extends PlayerConnManager{
     }
     override send_game_over(status:(HumanStatus&{id:number})[],win?: boolean, eliminated_by?: number): void {
         //
+    }
+    override on_revive(human: Human): void {
+        super.on_revive(human)
+        if(this.ai){
+            this.ai.human=human
+        }
     }
 }
 export class PlayerClient extends PlayerConnManager{
@@ -221,31 +225,14 @@ export class PlayersManager{
             this.match_players_count=this.living_players.length
         }
     }
-    add_enemy(def: EnemyDef | string, packet: JoinPacket,player?:Player): Player | undefined {
+    add_enemy(def: HumanDefinition | string, packet: JoinPacket,player?:Player): Player | undefined {
         if(typeof def === "string"){
             def = this.game.humans.enemies[def]
         }
         if(!def) return
         const client=this.add_bot(packet,player)
         if(!client.human)return
-
-        // AI
-        switch(def.ia?.kind){
-            case "advanced":
-                client.ai = new ADVHumanAI(client.human)
-                break
-            case "dumb":
-                client.ai = new DumbBotAI(client.human)
-                break
-            default:
-                client.ai = new EnemyNPCAI(client.human)
-        }
-
-        if(def.ia?.params){
-            client.ai!.params = cloneDeep(def.ia.params)
-        }
         client.human?.set_preset(def)
-
         return client.human as Player
     }
     get_global_update_packet(full:boolean):UpdatePacket{

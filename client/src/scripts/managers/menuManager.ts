@@ -615,61 +615,68 @@ export class MenuManager{
         return this.game_popup((ctx) => {
             let selected = 0
 
-            ctx.parent.style.width = "95vw"
-            ctx.parent.style.height = "90vh"
-
             ctx.parent.innerHTML = `
-                <h1 class="span-text">Character Selection</h1>
-                <div class="character-selector-list"></div>
-                <div class="character-preview background-menu-blue">
-                    <img class="character-icon">
-                    <h2 class="character-name"></h2>
-                    <p class="character-description"></p>
-
-                    <button class="btn-blue character-select-btn">
-                        Select Character
-                    </button>
+                <div class="character-selector-screen">
+                    <div class="character-main background-menu-blue">
+                        <h1 class="character-name"></h1>
+                        <div class="character-image-wrapper">
+                            <img class="character-icon">
+                        </div>
+                        <div class="character-description"></div>
+                        <button class="btn-blue character-select-btn">
+                            Select Character
+                        </button>
+                    </div>
+                    <div class="character-selector-list"></div>
                 </div>
             `
 
             const list = ctx.parent.querySelector(".character-selector-list") as HTMLDivElement
-            const childs:HTMLDivElement[]=[]
-            const previewIcon=ctx.parent.querySelector(".character-icon") as HTMLImageElement
-            const previewName=ctx.parent.querySelector(".character-name") as HTMLHeadingElement
-            const previewDesc=ctx.parent.querySelector(".character-description") as HTMLParagraphElement
-            const selectBtn=ctx.parent.querySelector(".character-select-btn") as HTMLButtonElement
+            const icon = ctx.parent.querySelector(".character-icon") as HTMLImageElement
+            const name = ctx.parent.querySelector(".character-name") as HTMLHeadingElement
+            const desc = ctx.parent.querySelector(".character-description") as HTMLDivElement
+            const button = ctx.parent.querySelector(".character-select-btn") as HTMLButtonElement
 
-            const updatePreview = () => {
+            const cards: HTMLDivElement[] = []
+
+            const update = () => {
                 const char = characters[selected]
-                previewIcon.src = `/img/characters/${char.icon}.png`
-                previewName.innerText = char.name ?? "Unknown"
-                previewDesc.innerText = char.description ?? ""
-                for (const el of childs) {
-                    el.classList.remove("selected")
+
+                icon.src = char.icon!
+                name.innerText = char.name ?? "Unknown"
+                desc.innerText = char.description ?? ""
+
+                for (const c of cards) {
+                    c.classList.remove("selected")
                 }
-                list.children[selected]?.classList.add("selected")
+
+                cards[selected]?.classList.add("selected")
             }
 
-            for (const idx in characters) {
-                const i = Number(idx)
+            for (let i = 0; i < characters.length; i++) {
                 const char = characters[i]
+
                 const card = document.createElement("div")
-                card.className = "character-card background-menu-blue"
+                card.className = "character-card"
+
                 card.innerHTML = `
-                    <img src="/img/characters/${char.icon}.png">
-                    <span>${char.name ?? "Unknown"}</span>
+                    <img src="${char.icon}">
                 `
+
                 card.onclick = () => {
                     selected = i
-                    updatePreview()
+                    update()
                 }
+
                 list.appendChild(card)
-                childs.push(card)
+                cards.push(card)
             }
-            selectBtn.onclick = () => {
+
+            button.onclick = () => {
                 ctx.resolve(selected)
             }
-            updatePreview()
+
+            update()
         })
     }
     game_start(){

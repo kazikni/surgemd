@@ -177,6 +177,11 @@ export interface LoadoutPreset{
     accessorys?:string[]
     colors?:Record<string,string>
 }
+export type HumanAIDef={
+    kind?:string
+    action?:string
+    params?:Record<string,any>
+}
 export type HumanDefinition={
     name?:string
     position?:Vec2
@@ -185,6 +190,7 @@ export type HumanDefinition={
     team?:number
     group?:number
     group_color?:number
+    ai?:HumanAIDef
     modifiers?:Partial<HumanModifiers>
 }
 export type CharacterDefinition=HumanDefinition&{

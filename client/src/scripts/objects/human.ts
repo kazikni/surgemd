@@ -1601,19 +1601,6 @@ export class Human extends MovingBody{
             },1)
             this.update_effects(effects)
         }
-        if(full||hand_dirty){
-            const id = stream.read_int16()
-            const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
-            if(current_weapon!==this.current_weapon){
-                this.set_current_weapon(current_weapon)
-            }
-        }
-        if(full||melee_wold_dirty){
-            const id=stream.read_uint16()
-            if(this.melee?.idNumber!==id){
-                this.update_melee(this.game.definitions.melees.getFromNumber(id))
-            }
-        }
         if(full||animation_dirty){
             const animations:HumanAnimation[]=stream.read_array(()=>{
                 let animation:HumanAnimation
@@ -1653,6 +1640,19 @@ export class Human extends MovingBody{
                 return animation
             },1)
             this.set_animations(animations)
+        }
+        if(full||hand_dirty){
+            const id = stream.read_int16()
+            const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
+            if(current_weapon!==this.current_weapon){
+                this.set_current_weapon(current_weapon)
+            }
+        }
+        if(full||melee_wold_dirty){
+            const id=stream.read_uint16()
+            if(this.melee?.idNumber!==id){
+                this.update_melee(this.game.definitions.melees.getFromNumber(id))
+            }
         }
         if(downed){
             this.on_downed()

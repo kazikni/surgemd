@@ -17,6 +17,7 @@ export type GunDef={
     fire_delay:number
     switch_delay?:number
     switch_multiply?:number
+    class_switch_multiply?:Partial<Record<GunClasses,number>>
 
     spread?:number
     jitter_radius?:number
@@ -222,7 +223,7 @@ export const bullets_factory={
             speed: 55 * (1 + (power - 1) * 0.3),
             criticalMult: 1.1,
             obstacleMult: 1.25,
-            falloff: 0.75,
+            falloff: 0.7,
             tracer: tracer
         }
     },
@@ -417,7 +418,9 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_delay:0.1,
             switch_delay:0.1,
-            switch_multiply:1.5,
+            class_switch_multiply:{
+                [GunClasses.Shotgun]:8
+            },
 
             gas_particles:GasParticles.shotgun,
             case_particle:{
@@ -936,7 +939,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.sniper("awp","762mm",{
-            fire_delay:1.5,
+            fire_delay:1.4,
             spread:0.3,
 
             ammo_spawn:{
@@ -962,8 +965,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.sniper("awms","308sub",{
             rank:ItemRank.S,
 
-            fire_delay:1.75,
-            spread:0.5,
+            fire_delay:1.5,
+            spread:1,
 
             ammo_spawn:{
                 amount:25

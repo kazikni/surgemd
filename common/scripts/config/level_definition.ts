@@ -3,16 +3,9 @@ import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
-export type LevelCharacterAI={
-    kind?:string
-    action?:string
-    params?:Record<string,any>
-}
-export type EnemyDef={
-    ia?:LevelCharacterAI
-}&HumanDefinition
+
 export type LevelEnemys={
-    def:EnemyDef|string
+    def:HumanDefinition|string
     team?:number
     name?:string
     position?:Vec2

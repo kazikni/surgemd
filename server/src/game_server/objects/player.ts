@@ -53,6 +53,10 @@ export abstract class PlayerConnManager{
             return p
         }
     }
+    on_revive(human:Human){
+        this.spectating=false
+        this.human=human
+    }
     revive(){
         if(!this.real_human)return
         this.real_human.revive()
@@ -133,6 +137,12 @@ export class Player extends Human{
         if(preset.group){
             this.game.modeManager.get_team(preset.group)?.add_human(this)
         }
+        if(preset.ai){
+            if(this.is_bot&&this.conn){
+                //@ts-ignore
+                this.conn.ai=this.make_ai_from_def(preset.ai)
+            }
+        }
     }
     override on_tick(dt: number): void {
         super.on_tick(dt)
@@ -212,8 +222,7 @@ export class Player extends Human{
         super.revive()
         this.game.players._add_player(this)
         if(this.conn&&this.conn.real_human===this){
-            this.conn.spectating=false
-            this.conn.human=this
+            this.conn.on_revive(this)
         }
         this.game.players.send_feed_message({
             type:FeedMessageType.set_name,

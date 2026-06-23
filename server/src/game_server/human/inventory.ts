@@ -16,7 +16,7 @@ import { Human } from "../objects/human.ts";
 import { type Loot } from "../objects/loot.ts";
 import { StaticBody } from "../objects/static_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
-import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { AccessorysManager } from "./accessorys.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { FireMode } from "common/scripts/others/item.ts";
@@ -272,9 +272,12 @@ export class GunItem extends GunItemBase implements LItem{
             }
         }
     }
-    override load(): void {
+    override load(def?:WeaponDef): void {
         if(this.def.switch_delay&&this.use_delay<=this.def.switch_delay){
             this.use_delay=this.def.switch_delay
+            if(def?.item_type===InventoryItemType.gun&&this.def.class_switch_multiply){
+                this.use_delay*=(this.def.class_switch_multiply)[def.class]??1
+            }
         }else if(this.def.switch_multiply){
             this.use_delay=Math.min(this.def.fire_delay,this.use_delay*this.def.switch_multiply)
         }

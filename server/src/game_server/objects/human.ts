@@ -1,7 +1,7 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
-import { DamageReason, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
+import { DamageReason, HumanAIDef, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
@@ -10,7 +10,7 @@ import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM } from "common/engine/core.ts";
+import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { Loot } from "./loot.ts";
@@ -31,6 +31,9 @@ import { type Action, HelpupAction } from "../human/actions.ts";
 import { type SyncedParticle } from "./synced_particle.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
+import { BotAi } from "../human/ai/simple_bot_ai.ts";
+import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
+import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -114,7 +117,7 @@ export class Human extends MovingBody{
     }
 
     get scope_zoom():number{
-        return 20/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
+        return 15/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
     emote_time:number=0
     loadout!:HumanLoadoutData&{
@@ -381,10 +384,22 @@ export class Human extends MovingBody{
         if(preset.inventory)this.inventory.load_preset(preset.inventory)
         if(preset.position)this.position=preset.position
         if(preset.group_color)this.team_data.color=preset.group_color
-
         this.update_modifiers()
-
         this.health_data.health=this.health_data.max_health
+    }
+    make_ai_from_def(def:HumanAIDef):BotAi|undefined{
+        let ai:BotAi|undefined
+        switch(def.kind){
+            case "advanced":
+                ai = new ADVHumanAI(this)
+                break
+            default:
+                ai = new EnemyNPCAI(this)
+        }
+        if(ai.params){
+            ai.params = cloneDeep(ai.params)
+        }
+        return ai
     }
     apply_modifiers(mods:Partial<HumanModifiers>){
         this.modifiers.size*=mods.size??1
@@ -1430,12 +1445,6 @@ export class Human extends MovingBody{
                 stream.write_uint16(e.effect.idNumber!)
             },1)
         }
-        if(full||this.inventory.net_sync.hand){
-            stream.write_int16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
-        }
-        if(full||this.inventory.net_sync.melee_world){
-            stream.write_uint16(this.inventory.weapons[0]?.def.idNumber??0)
-        }
         if(full||this.animation_data.dirty){
             stream.write_array(this.animation_data.current_animation,(v)=>{
                 stream.write_uint8(v.type)
@@ -1453,6 +1462,12 @@ export class Human extends MovingBody{
                         break
                 }
             },1)
+        }
+        if(full||this.inventory.net_sync.hand){
+            stream.write_int16(this.game.definitions.game_items.keysString[this.inventory.hand_item?.def.idString??""]??-1)
+        }
+        if(full||this.inventory.net_sync.melee_world){
+            stream.write_uint16(this.inventory.weapons[0]?.def.idNumber??0)
         }
     }
 }

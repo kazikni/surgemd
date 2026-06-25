@@ -130,6 +130,10 @@ export class NullHitbox2D extends BaseHitbox2D{
             max:pos
         }
     }
+    copy_from(hb:Hitbox2D){
+        if(hb.type!==this.type)return
+        this.position=hb.position
+    }
     override scale(_scale: number): void {}
     override is_null():boolean{
         return true
@@ -274,6 +278,12 @@ export class CircleHitbox2D extends BaseHitbox2D{
             min:v2.sub(this.position,size),
             max:v2.add(this.position,size)
         }
+    }
+    copy_from(hb:Hitbox2D){
+        if(hb.type!==this.type)return
+        this.position.x=hb.position.x
+        this.position.y=hb.position.y
+        this.radius=hb.radius
     }
     override transform(position?:Vec2,scale?:number,position_angle?:number,_side?:number):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D
@@ -567,6 +577,13 @@ export class RectHitbox2D extends BaseHitbox2D{
             max:v2.clone(this.max)
         }
     }
+    copy_from(hb:Hitbox2D){
+        if(hb.type!==this.type)return
+        this.min.x=hb.min.x
+        this.min.y=hb.min.y
+        this.max.x=hb.max.x
+        this.max.y=hb.max.y
+    }
     override transform(position: Vec2 = v2(0, 0),scale: number=1,position_angle?:number,side?:number): RectHitbox2D {
         const min = v2.scale(this.min, scale)
         const max = v2.scale(this.max, scale)
@@ -709,6 +726,23 @@ export class HitboxGroup2D extends BaseHitbox2D{
         return {
             min:min,
             max:max
+        }
+    }
+    copy_from(hb: Hitbox2D) {
+        if (hb.type !== this.type) return
+        const len = hb.hitboxes.length
+        while (this.hitboxes.length < len) {
+            this.hitboxes.push(hb.hitboxes[this.hitboxes.length].clone())
+        }
+        this.hitboxes.length = len
+        for (let i = 0; i < len; i++) {
+            const src = hb.hitboxes[i]
+            const dst = this.hitboxes[i]
+            if (src.type !== dst.type) {
+                this.hitboxes[i] = src.clone()
+                continue
+            }
+            this.hitboxes[i].copy_from(src)
         }
     }
     override scale(scale: number): void {
@@ -897,6 +931,25 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         return {
             min:min,
             max:max
+        }
+    }
+    copy_from(hb: Hitbox2D) {
+        if (hb.type !== this.type) return
+
+        this.position.x = hb.position.x
+        this.position.y = hb.position.y
+
+        const len = hb.points.length
+
+        while (this.points.length < len) {
+            this.points.push(v2.zero)
+        }
+
+        this.points.length = len
+
+        for (let i = 0; i < len; i++) {
+            this.points[i].x = hb.points[i].x
+            this.points[i].y = hb.points[i].y
         }
     }
 

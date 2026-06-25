@@ -25,7 +25,6 @@ export class Obstacle extends StaticBody{
     actived:boolean=false
     visual_data:ObstacleVisualData&{dirty:boolean}={
         dirty:true,
-
         skin:0,
         variation:0
     }
@@ -77,7 +76,7 @@ export class Obstacle extends StaticBody{
     }
 
     loot:LootTableItemRet<GameItem>[]=[]
-    door_data?:ObstacleDoorData&{dirty:boolean}
+    door_data?:ObstacleDoorData&{dirty:boolean,only_side?:number}
     transform_into_data?:{
         activated:boolean
         def:number
@@ -90,6 +89,7 @@ export class Obstacle extends StaticBody{
     }
 
     choose_door_side(playerPos: Vec2): -1 | 1 {
+        if(this.door_data!.only_side)return this.door_data!.only_side as -1|1
         const toPlayer = v2.sub(playerPos, this.position)
         const local = v2.rotate_RadAngle(toPlayer, -this.physical_data.rotation)
         return local.y >= 0 ? 1 : -1
@@ -497,7 +497,8 @@ export class Obstacle extends StaticBody{
         })
         stream.write_boolean_group(this.door_data!==undefined,this.transform_into_data!==undefined)
         if(this.door_data){
-            stream.write_boolean_group(this.door_data.open===1,this.door_data.open===0,this.door_data.locked)
+            stream.write_boolean_group(this.door_data.open===1,this.door_data.open===0,this.door_data.locked,this.door_data.only_side!==undefined)
+            if(this.door_data.only_side!==undefined)stream.write_int8(this.door_data.only_side)
         }
         if(this.transform_into_data){
             stream.write_uint8(this.transform_into_data.def)
@@ -533,9 +534,10 @@ export class Obstacle extends StaticBody{
         const [door_data,transform_into_data]=stream.read_boolean_group()
 
         if(door_data){
-            const [open_negative,open_positive,locked]=stream.read_boolean_group()
+            const [open_negative,open_positive,locked,only_side]=stream.read_boolean_group()
             this.door_data!.open = open_positive?1:open_negative?-1:0
             this.door_data!.locked = locked
+            if(only_side)this.door_data!.only_side=stream.read_int8()
             this.base_hitbox = this.door_data!.hitboxes[this.door_data!.open]
         }
         if(transform_into_data){

@@ -34,6 +34,7 @@ import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
+import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -393,8 +394,12 @@ export class Human extends MovingBody{
             case "advanced":
                 ai = new ADVHumanAI(this)
                 break
+            case "dumb":
+                ai = new DumbBotAI(this)
+                break
             default:
                 ai = new EnemyNPCAI(this)
+                break
         }
         if(def.params){
             ai.params = cloneDeep(def.params)
@@ -749,6 +754,11 @@ export class Human extends MovingBody{
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
+                if((obj as Obstacle).physical_data.stairs.length>0){
+                    for(const s of (obj as Obstacle).physical_data.stairs){
+                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
+                    }
+                }
                 if((obj as StaticBody).physical_data.no_collision)break
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
@@ -758,14 +768,14 @@ export class Human extends MovingBody{
                 for(const col of collision){
                     v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
                 }
-                if((obj as Obstacle).physical_data.stairs.length>0){
-                    for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
-                    }
-                }
                 break
             }
             case GameObjectType.Building:{
+                if((obj as StaticBody).physical_data.stairs.length>0){
+                    for(const s of (obj as StaticBody).physical_data.stairs){
+                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
+                    }
+                }
                 if(!this.equipment_data.force_default_scope){
                     for(const c of (obj as Building).ceilings){
                         if(c.can_below(this.hitbox)){

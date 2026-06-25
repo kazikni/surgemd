@@ -15,7 +15,7 @@
         "enemies": [
             {
                 "def": {
-                    "ia": {
+                    "ai": {
                         "kind": "advanced"
                     }
                 },
@@ -23,7 +23,7 @@
             },
             {
                 "def": {
-                    "ia": {
+                    "ai": {
                         "kind": "dumb"
                     }
                 },

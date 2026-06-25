@@ -43,6 +43,9 @@ export class Team{
         this.dirty=true
         this.humans.push(h)
     }
+    add_already_gift(l:Loot){
+        this.already_gifted[l.id]=l
+    }
     get_living_humans():Human[]{
         return this.humans.filter((p)=>!p.dead)
     }
@@ -96,13 +99,18 @@ export class Team{
         }
         this.humans.length=0
     }
+    tick(dt:number){
+        for(const id in this.already_gifted){
+            const loot=this.already_gifted[id]
+            if(loot.destroyed)delete this.already_gifted[id]
+        }
+    }
     constructor(){
 
     }
 }
 export class Group extends Team{
     team:number=0
-
     override remove_human(h:Human){
         if(!h.team_data.group)return
         const idx=this.humans.indexOf(h)
@@ -146,6 +154,11 @@ export class TeamsManager{
     constructor(){
 
     }
+    tick(dt:number){
+        for(const t of this.teams){
+            t.tick(dt)
+        }
+    }
     get_living_teams():Team[]{
         return this.teams.filter((t)=>(t&&t!.get_living_humans().length>0))
     }
@@ -164,6 +177,11 @@ export class GroupsManager{
     groups:Partial<Record<number,Group>>={}
     constructor(){
 
+    }
+    tick(dt:number){
+        for(const g in this.groups){
+            if(this.groups[g])this.groups[g].tick(dt)
+        }
     }
     find_group(max_group_size:number,team=0):Group|undefined{
         for(const g of Object.values(this.groups)){

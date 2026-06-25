@@ -33,6 +33,11 @@ export class SyncedParticle extends MovingBody {
         switch(obj.number_type){
             case GameObjectType.Obstacle:
             case GameObjectType.Building:{
+                if((obj as StaticBody).physical_data.stairs.length>0){
+                    for(const s of (obj as StaticBody).physical_data.stairs){
+                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
+                    }
+                }
                 const collisions=this.hitbox.overlap_collisions((obj as StaticBody).hitbox)
                 if(collisions.length>0&&this.def.side_effect&&this.action_tick>=this.action_time){
                     for(const s of this.def.side_effect){

@@ -87,6 +87,7 @@ export abstract class GoalNode<Ctx> {
 }
 export class BTGoalPlanner<Ctx> implements BTNode<Ctx> {
     current?: GoalNode<Ctx>
+    score_to_change:number=20
 
     constructor(public goals: GoalNode<Ctx>[]) {}
 
@@ -108,8 +109,7 @@ export class BTGoalPlanner<Ctx> implements BTNode<Ctx> {
             }else if(this.current.interruptible){
                 if(this.current.interruptible){
                     const currentScore = this.current.score(ctx)
-                    const shouldSwitch = bestScore > currentScore
-                    if(shouldSwitch){
+                    if(bestScore > currentScore+this.score_to_change){
                         this.current.exit(ctx)
                         this.current.reset()
 

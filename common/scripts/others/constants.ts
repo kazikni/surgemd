@@ -86,7 +86,8 @@ export enum zIndexes{
     //Ground
     Terrain,
     Grid,
-    BuildingsFloor,
+    BuildingFloor1,
+    BuildingsFloor2,
     Decals,
     DeadObstacles,
     DeadCeilings,

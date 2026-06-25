@@ -2,7 +2,6 @@ import { RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { Spawn } from "../../others/constants.ts";
 import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
-import { building_to_json, buildings_factory } from "../objects/buildings_base.ts";
 import { MapBiomeDef, CounterMapDef, type MapDef } from "./base.ts";
 export const NormalBiome:MapBiomeDef={
     floors:{
@@ -47,7 +46,7 @@ export const map_spawns={
         {def:"gold_crate",weight:0.05},
     ],
     rocks:[
-        {def:"rock",weight:150},
+        {def:"rock",weight:200},
         {def:"golden_rock",weight:1},
         {def:"platinum_rock",weight:0.01},
     ]
@@ -71,9 +70,7 @@ export const NormalMap:MapDef={
                 {def:"shed",count:20},
                 {def:map_spawns.containers,count:20},
 
-                {def:"jeep",count:5},
-                {def:"bike",count:5},
-                {def:"boat",count:5},
+                {def:"golden_stone",count:1},
 
                 {def:"sillo",count:10},
                 {def:map_spawns.crates,count:450},
@@ -83,7 +80,10 @@ export const NormalMap:MapDef={
                 {def:"bush",count:300},
                 {def:"barrel",count:150},
 
-                {def:"normal_loot",count:100}
+                {def:"normal_loot",count:100},
+                {def:"jeep",count:5},
+                {def:"bike",count:5},
+                {def:"boat",count:5},
             ],
             structures:[
                 {

@@ -810,3 +810,47 @@ export function format_time(time:number):string{
     }
     return `${seconds}s`
 }
+export class MinHeap<T> {
+    private data:T[]=[]
+    constructor(private score:(v:T)=>number){}
+    get length(){
+        return this.data.length
+    }
+
+    push(value:T){
+        const data=this.data
+        data.push(value)
+        let i=data.length-1
+        while(i>0){
+            const parent=(i-1)>>1
+            if(this.score(data[parent])<=this.score(data[i])){
+                break
+            }
+            ;[data[parent],data[i]]=[data[i],data[parent]]
+            i=parent
+        }
+    }
+    pop():T|undefined{
+        const data=this.data
+        if(data.length===0)return undefined
+        if(data.length===1)return data.pop()
+        const root=data[0]
+        data[0]=data.pop()!
+        let i=0
+        while(true){
+            const left=i*2+1
+            const right=i*2+2
+            let smallest=i
+            if(left<data.length&&this.score(data[left])<this.score(data[smallest])){
+                smallest=left
+            }
+            if(right<data.length&&this.score(data[right])<this.score(data[smallest])){
+                smallest=right
+            }
+            if(smallest===i)break
+            ;[data[i],data[smallest]]=[data[smallest],data[i]]
+            i=smallest
+        }
+        return root
+    }
+}

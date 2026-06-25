@@ -134,12 +134,13 @@ export class GameMap{
         if(!gp){
             gp=this.random_point_inside
         }
-        const hb=hitbox
+        const hb=hitbox.clone()
         while(!pos){
             if(attempt>=maxAttempts)break
             pos=gp!(hb,this,random)
-            const hh=hb.transform(pos)
-            if(!valid!(hh,id,layer,mode,this)){
+            hb.copy_from(hitbox)
+            hb.translate(pos)
+            if(!valid!(hb,id,layer,mode,this)){
                 pos=undefined
             }
             attempt++

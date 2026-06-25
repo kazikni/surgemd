@@ -828,30 +828,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 floor_walk:-1,
             }
         },
-        {
-            idString:"small_iron_stairs_part",
-            imortal:true,
-            hitbox:RectHitbox2D.wall_enabled(v2(-0.83,-0.83),v2(0.83,0.83),{
-                bottom:true,
-                top:true,
-                left:false,
-                right:true
-            },0.14),
-            assets:{
-                frame:{
-                    base:"small_iron_stairs_floor_1",
-                },
-                particles:{
-                    particle:"metal_particle",
-                    tint:0x656877,
-                },
-            },
-            rotation_mode:RotationMode.limited,
-            reflect_bullets:true,
-            stair_data:[{
-                hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
-            }]
-        },
         /*
         obstacles_factory.crate("platinum_crate",0x468edb,{
             health:500,

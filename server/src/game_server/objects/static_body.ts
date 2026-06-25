@@ -4,6 +4,12 @@ import { GameObjectType } from "common/scripts/others/constants.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Human } from "./human.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
+export interface StairData{
+    index:number
+    hitbox:Hitbox2D
+    base_hitbox:Hitbox2D
+    dest_layer:number
+}
 export type StaticBodyPhysicalData={
     spawn_hitbox:Hitbox2D
     hitbox:Hitbox2D
@@ -12,6 +18,8 @@ export type StaticBodyPhysicalData={
     no_collision:boolean
     no_bullets_collision:boolean
     passable_by_bullets:boolean
+
+    stairs:StairData[]
 }
 export abstract class StaticBody extends ServerGameObject{
     string_type:string="static_body"

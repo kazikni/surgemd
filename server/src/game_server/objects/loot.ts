@@ -117,13 +117,13 @@ export class Loot extends ServerGameObject{
                 }
                 // deno-lint-ignore no-fallthrough
                 case GameObjectType.Obstacle:
-                    if((other as Obstacle).physical_data.stairs.length>0){
-                        for(const s of (other as Obstacle).physical_data.stairs){
+                case GameObjectType.StaticBody:
+                case GameObjectType.Building:{
+                    if((other as StaticBody).physical_data.stairs.length>0){
+                        for(const s of (other as StaticBody).physical_data.stairs){
                             if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,other.layer+s.dest_layer)
                         }
                     }
-                case GameObjectType.StaticBody:
-                case GameObjectType.Building:{
                     if((other as StaticBody).physical_data.no_collision)break
                     const collisions=this.hitbox.overlap_collisions(other.hitbox)
                     for(const col of collisions){

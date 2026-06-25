@@ -1,7 +1,7 @@
 {
     "meta":{
-        "name": "Debug",
-        "location": "Debug Island",
+        "name": "Debug Single Building",
+        "location": "Debug Single Building Island",
         "description": "Debug",
         "size":"medium",
         "dificulty":"easy"

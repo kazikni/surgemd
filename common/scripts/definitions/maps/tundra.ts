@@ -302,10 +302,9 @@ export const TundraMap:MapDef={
                 {def:"shed",count:7},
                 {def:"sillo",count:3},
 
-                {def:"jeep",count:5},
-                //{def:"bike",count:5},
+                {def:"golden_stone",count:1},
 
-                {def:"tundra_crate",count:5},
+                {def:"tundra_crate",count:7},
                 {def:"copper_crate",count:20},
                 {def:map_spawns.crates,count:90},
                 {def:"oak_tree",count:140},
@@ -313,8 +312,10 @@ export const TundraMap:MapDef={
                 {def:"river_rock",count:50},
                 {def:"bush",count:100},
                 {def:"barrel",count:50},
-                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:20},
+                {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:15},
 
+                {def:"jeep",count:5},
+                //{def:"bike",count:5},
                 {def:"normal_loot",count:150}
             ],
             terrain:{

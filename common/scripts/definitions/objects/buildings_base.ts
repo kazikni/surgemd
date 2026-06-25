@@ -1,5 +1,5 @@
 import { DeepPartial, Definition, Definitions, FrameDef, Hitbox2D, hitbox_from_json, HitboxGroup2D, JsonHitbox2D, mergeDeep, RectHitbox2D, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
-import { Spawn, SpawnMode } from "../../others/constants.ts";
+import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 import { DecalTint } from "./decals.ts";
@@ -36,6 +36,7 @@ export type BuildingObstacles={
     rotation?:number
     scale?:number
     stairs_dest?:Record<number,number>
+    only_side?:number
 }
 export type BuildingDecal={
     def:string
@@ -67,6 +68,10 @@ export interface BuildingDef extends Definition{
         loots?:BuildingLoot[]
         floors?:{hitbox:Hitbox2D,type:FloorType,layer?:number}[]
         floor_image?:(FrameDef&{layer?:number})[]
+        stair_data?:{
+            hitbox:Hitbox2D
+            dest:number
+        }[]
     }
     spawnHitbox?:Hitbox2D
     hitbox?:Hitbox2D
@@ -297,42 +302,53 @@ export const buildings_factory={
     stairs(id:string,settings:{
         width?:number
         height?:number
+        wall_size?:number
         ceiling?:string
+        floor?:string
+        both?:DeepPartial<BuildingDef>
         top?:DeepPartial<BuildingDef>
         bottom?:DeepPartial<BuildingDef>
     }={}):BuildingDef[]{
         const width=settings.width??0.83
         const height=settings.height??0.83
-        const ceiling=settings.ceiling??"small_iron_stairs_ceiling_1"
-        const hb=new RectHitbox2D(v2(-width,-height),v2(width,height))
-        const base={
-            no_bullet_collision:true,
-            no_collisions:true,
-            hitbox:hb,
-        }
+        const wall_size=settings.wall_size??0.14
+        const ceiling=settings.ceiling??id+"_ceiling_1"
+        const floor=settings.floor??id+"_floor"
+        const spawn_hb=new RectHitbox2D(v2(-width,-height),v2(width,height))
         return [
             mergeDeep({
                 idString:id+"_down",
+                hitbox:RectHitbox2D.wall_enabled(v2(-width,-height),v2(width,height),{
+                    bottom:true,
+                    top:true,
+                    left:false,
+                    right:true
+                },wall_size),
                 content:{
                     ceiling:[{
                         frame:{
                             image:ceiling,
                             position:v2(0,0),
                         },
-                        hitbox:hb,
+                        hitbox:spawn_hb,
                     }],
-                    obstacles:[
-                        {
-                            def:id+"_part",
-                            position:v2(0,0),
-                            rotation:0,
-                            stairs_dest:{0:-1},
-                        },
+                    floor_image:[
+                        {image:floor+"_1"}
                     ],
+                    stair_data:[{
+                        hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
+                        dest:-1,
+                    }]
                 }
-            },base,settings.bottom??{}),
+            },settings.bottom??{},settings.both??{}),
             mergeDeep({
                 idString:id+"_up",
+                hitbox:RectHitbox2D.wall_enabled(v2(-width,-height),v2(width,height),{
+                    bottom:true,
+                    top:true,
+                    left:false,
+                    right:true
+                },wall_size),
                 content:{
                     ceiling:[{
                         frame:{
@@ -340,18 +356,18 @@ export const buildings_factory={
                             position:v2(0,0),
                             rotation:Math.PI
                         },
-                        hitbox:hb,
+                        hitbox:spawn_hb,
                     }],
-                    obstacles:[
-                        {
-                            def:id+"_part",
-                            position:v2(0,0),
-                            rotation:0,
-                            stairs_dest:{0:1},
-                        },
+                    floor_image:[
+                        {image:floor+"_1"},
+                        {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
                     ],
+                    stair_data:[{
+                        hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
+                        dest:1,
+                    }]
                 }
-            },base,settings.top??{})
+            },settings.top??{},settings.both??{})
         ]
     },
     small_bunker(id:string,settings:{
@@ -366,7 +382,7 @@ export const buildings_factory={
                     sub_building:[
                         {
                             def:"small_iron_stairs_down",
-                            position:v2.new(-3.47,0),
+                            position:v2.new(-3.28,0),
                             rotation:0,
                         },
                         {
@@ -388,15 +404,13 @@ export const buildings_factory={
                     sub_building:[
                         {
                             def:"small_iron_stairs_up",
-                            position:v2.new(-3.47,0),
+                            position:v2.new(-3.28,0),
                             rotation:2,
                         },
                     ],
                     floor_image:[
-                        {
-                            image:"small_bunker_floor_1",
-                            position:v2(-0.84,0)
-                        }
+                        {image:"small_bunker_floor_2",scale:4,zIndex:zIndexes.BuildingFloor1},
+                        {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingFloor1},
                     ],
                     ceiling:[
                         {
@@ -420,12 +434,12 @@ export const buildings_factory={
                     sounds:hit_sounds,
                 },
                 hitbox:new HitboxGroup2D(
-                    RectHitbox2D.wall_enabled(v2(-2.65,-2.65),v2(2.65,2.65),{
+                    ...RectHitbox2D.wall_enabled_list(v2(-2.65,-2.65),v2(2.65,2.65),{
                         bottom:true,
                         top:true,
                         left:false,
                         right:true
-                    },0.2),
+                    },0.22),
                     new RectHitbox2D(v2(-2.65,-2.65),v2(-2.45,-0.85)),
                     new RectHitbox2D(v2(-2.65,0.85),v2(-2.45,2.65))
                 ),
@@ -791,14 +805,24 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             }
         }),
 
-        ...buildings_factory.stairs("small_iron_stairs"),
+        ...buildings_factory.stairs("small_iron_stairs",{
+            both:{
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x656877,
+                    },
+                    sounds:hit_sounds.heavy_metal
+                }
+            }
+        }),
         ...buildings_factory.small_bunker("bunker_1",{
             content:[
                 //{def:"md_crate",position:v2.zero},
                 {def:"airdrop_locked",position:v2.zero},
 
                 //{def:"barrel",position:v2(1.7,1.7)},
-                //{def:"metal_door",position:v2(-2.5,-0.7),rotation:1,variation:7}
+                {def:"metal_door",position:v2(-2.55,-0.7),rotation:1,variation:7}
             ]
         }),
 

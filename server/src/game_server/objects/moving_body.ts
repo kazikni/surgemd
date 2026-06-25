@@ -25,12 +25,12 @@ export abstract class MovingBody extends ServerGameObject{
         switch(obj.number_type){
             // deno-lint-ignore no-fallthrough
             case GameObjectType.Obstacle:
-                if((obj as Obstacle).physical_data.stairs.length>0){
-                    for(const s of (obj as Obstacle).physical_data.stairs){
+            case GameObjectType.Building:{
+                if((obj as StaticBody).physical_data.stairs.length>0){
+                    for(const s of (obj as StaticBody).physical_data.stairs){
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
                     }
                 }
-            case GameObjectType.Building:{
                 if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
                 for(const col of collision){

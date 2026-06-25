@@ -45,6 +45,7 @@ export class Building extends StaticBody {
         no_collision:true,
         no_bullets_collision:true,
         passable_by_bullets:false,
+        stairs:[]
     }
     children:BuildingObstacleChild[]=[]
     objects_ids:Record<number,Obstacle>={}
@@ -103,6 +104,17 @@ export class Building extends StaticBody {
             this.ceilings.push(new BuildingCeiling(c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),conns))
         }
 
+        let idx=0
+        for(const s of this.def.content.stair_data??[]){
+            const base_hb=s.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+            this.physical_data.stairs.push({
+                index:idx,
+                dest_layer:s.dest,
+                hitbox:base_hb.transform(this.position),
+                base_hitbox:base_hb,
+            })
+            idx++
+        }
         this.manager.cells.update_object(this)
     }
     generate(position: Vec2){
@@ -151,6 +163,10 @@ export class Building extends StaticBody {
                 for(const s in o.stairs_dest){
                     obj.physical_data.stairs[s].dest_layer=o.stairs_dest[s]
                 }
+            }
+
+            if(obj.door_data&&o.only_side){
+                obj.door_data.only_side=o.only_side
             }
             this.children.push({obj,def:o,type:0})
         }

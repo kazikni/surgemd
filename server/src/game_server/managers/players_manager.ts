@@ -232,7 +232,7 @@ export class PlayersManager{
         if(!def) return
         const client=this.add_bot(packet,player)
         if(!client.human)return
-        client.human?.set_preset(def)
+        client.human.set_preset(def)
         return client.human as Player
     }
     get_global_update_packet(full:boolean):UpdatePacket{

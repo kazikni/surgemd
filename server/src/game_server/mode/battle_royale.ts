@@ -70,7 +70,6 @@ export class BattleRoyale extends ModeManager{
             this.groups_manager = new GroupsManager()
         }
     }
-
     add_enemies(enemies:LevelEnemys|undefined=this.settings.enemies){
         if(!enemies) return
         for(const e of enemies){
@@ -99,6 +98,9 @@ export class BattleRoyale extends ModeManager{
         this.game.add_timeout(()=>{
             this.game.close()
         },120)
+    }
+    override on_tick(dt: number): void {
+        if(this.groups_manager)this.groups_manager.tick(dt)
     }
     override reset(): void {
         if(this.groups_manager)this.groups_manager.reset()
@@ -189,7 +191,11 @@ export class BattleRoyale extends ModeManager{
         },2)
         if(this.game.started){
             this.give_rank_score()
-            if(this.game.players.living_players.length<=1){
+            if(this.groups_manager&&this.groups_manager.get_living_groups().length<=1){
+                this.game.add_timeout(()=>{
+                    this.game.finish()
+                },3)
+            }else if(this.game.players.living_players.length<=1){
                 this.game.add_timeout(()=>{
                     this.game.finish()
                 },3)

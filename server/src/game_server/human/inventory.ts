@@ -639,8 +639,9 @@ export class GInventory extends GInventoryBase<LItem>{
         this.net_sync.hand=true
         this.net_sync.weapons=true
     }
-    drop_aitem(id:number=0,drop_count:number=80):Loot|undefined{
+    drop_aitem(id:number=0,drop_count?:number):Loot|undefined{
         const a=this.owner.game.definitions.ammos.getFromNumber(id)
+        if(drop_count===undefined)drop_count=Math.ceil((this.aitems[a.idString]??2)/2)
         const res=this.consume_aitems(a.idString,drop_count)
         if(res){
             this.net_sync.iitems=true

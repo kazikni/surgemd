@@ -496,7 +496,7 @@ export class LootGoal extends GoalNode<BotExecutionContext> {
             this.target=undefined
             return 0
         }
-        if(ctx.ai.group_mode){
+        if(ctx.ai.group_mode&&!ctx.ai.simple_mode){
             if(!ctx.human.team_data.group?.already_gifted?.[bestTarget.id]&&Math.random()<=this.gift_chance(ctx,bestTarget.loot_data.item,bestScore)){
                 ctx.ai.gifts[bestTarget.id]={
                     loot:bestTarget,
@@ -534,6 +534,7 @@ export class SupportAllyGoal extends GoalNode<BotExecutionContext> {
     item?: GameItem
     timer:number=0
     override score(ctx: BotExecutionContext): number {
+        if(ctx.ai.simple_mode)return 0
         if(this.requester)return 80
         for(const p of ctx.emotes.keys()){
             const emote=ctx.emotes.get(p)
@@ -654,6 +655,7 @@ export class ADVHumanAI extends BotAi{
 
     planner:BTGoalPlanner<BotExecutionContext>
 
+    simple_mode:boolean=false
     group_mode:boolean
     gifts:Record<number,{
         loot: Loot
@@ -661,6 +663,17 @@ export class ADVHumanAI extends BotAi{
     }>={}
 
     ctx:BotExecutionContext
+
+    enable_simple_mode(){
+        this.simple_mode=true
+        this.planner_timer=3
+        this.controller.movement.simple_path_distance=7
+    }
+    deenable_simple_mode(){
+        this.simple_mode=false
+        this.planner_timer=0.5
+        this.controller.movement.simple_path_distance=3
+    }
 
     constructor(human:Human,allow_group_mode:boolean=true){
         super(human)
@@ -695,6 +708,8 @@ export class ADVHumanAI extends BotAi{
             visible_objects:[],
             visible_loots:[]
         }
+
+        this.enable_simple_mode()
     }
     override AI(dt: number): void {
         this.reset_inputs()

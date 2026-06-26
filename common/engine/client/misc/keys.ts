@@ -40,6 +40,7 @@ export enum Key {
     Number_8,
     Number_9,
 
+    Escape,
     Enter,
     Backspace,
     Space,
@@ -68,7 +69,7 @@ export enum Key {
     Mouse_Wheel_Down,
 
     Mouse_Option1,
-    Mouse_Option2
+    Mouse_Option2,
 }
 export const KeyNames: Record<number, Key> = {
     65: Key.A,
@@ -109,6 +110,7 @@ export const KeyNames: Record<number, Key> = {
     56: Key.Number_8,
     57: Key.Number_9,
 
+    27: Key.Escape,
     13: Key.Enter,
     8: Key.Backspace,
     32: Key.Space,

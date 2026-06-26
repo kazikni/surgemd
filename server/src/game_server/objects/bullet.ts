@@ -45,6 +45,7 @@ export class Bullet extends ServerGameObject{
     collided_with:Set<ServerGameObject>=new Set()
 
     pass_through_humans=false
+    pass_through_everthing=false
     constructor(){
         super()
         this.velocity=v2(0,0)
@@ -129,7 +130,7 @@ export class Bullet extends ServerGameObject{
                         if((obj as Human).equipment_data.vest&&(obj as Human).equipment_data.vest?.reflect_bullets){
                             this.reflect(chosen.dir,chosen.point)
                             this.on_hit()
-                        }else if(!this.pass_through_humans){
+                        }else if(!(this.pass_through_humans||this.pass_through_everthing)){
                             this.on_hit()
                         }  
                     }
@@ -142,7 +143,7 @@ export class Bullet extends ServerGameObject{
                     if(!col1)continue
 
                     this.collided_with.add(obj)
-                    if(!(obj as StaticBody).physical_data.passable_by_bullets){
+                    if(!((obj as StaticBody).physical_data.passable_by_bullets||this.pass_through_everthing)){
                         if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&!this.def.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)
                         }
@@ -257,7 +258,7 @@ export class Bullet extends ServerGameObject{
                 .write_uint32(this.projColor)
             }
             stream.write_uint8(this.def.tracer.particles?.frame??0)
-            .write_boolean_group(this.hit_owner,this.critical,this.pass_through_humans)
+            .write_boolean_group(this.hit_owner,this.critical,this.pass_through_humans,this.pass_through_everthing)
             .write_id(this.owner?.id??0)
         }
     }

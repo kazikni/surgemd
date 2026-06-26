@@ -64,6 +64,7 @@ export class Bullet extends GameObject{
 
     hit_owner:boolean=false
     pass_through_humans:boolean=false
+    pass_through_everthing:boolean=false
     constructor(){
         super()
 
@@ -151,7 +152,7 @@ export class Bullet extends GameObject{
                         if(chosen){
                             this.collided_with.add(obj);
                             (obj as Human).on_hitted(this.position,this._critical,undefined,isReflect)
-                            if(!this.pass_through_humans||isReflect)this.die()
+                            if(!(this.pass_through_humans||this.pass_through_everthing)||isReflect)this.die()
                         }
                         break
                     }
@@ -162,7 +163,7 @@ export class Bullet extends GameObject{
                             if(col){
                                 this.collided_with.add(obj);
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
-                                if(!(obj as StaticBody).physical_data.passable_by_bullets)this.die()
+                                if(!((obj as StaticBody).physical_data.passable_by_bullets||this.pass_through_everthing))this.die()
                             }
                         }
                         break
@@ -253,6 +254,7 @@ export class Bullet extends GameObject{
             this.hit_owner=bg[0]
             this._critical=bg[1]
             this.pass_through_humans=bg[2]
+            this.pass_through_everthing=bg[3]
             this.owner_id=stream.read_id()
         }
     }

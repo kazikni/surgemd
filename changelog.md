@@ -26,12 +26,14 @@ __                                                                              
 * Skip Intro Screen
 * Failed To Join Alert
 * Maximized Equipments Show In UI
+* Escape Menu
 __                                                                                                                 __
 ### Items
 * VSS - 9mm DMR
 * Rifle CBC - 22lr DMR
 * P90 - 45acp SMG
 * M4A1 - 556mm Assault
+* Ghost Bullets - A Accessory When Do Your Bullets Go Through Everything
 * Desert Eagle - 50Cal Pistol
 * Bonesaw
 * Pan

@@ -1,95 +1,30 @@
 import { CircleHitbox2D, cloneDeep, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Game } from "./game.ts";
-import { DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
+import { DeadZoneStage, DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
-export interface MakeDeadZoneSettings{
-    wait_time:{
-        initial:number
-        min:number
-        decay:number
-    }
-    advancing_time:{
-        initial:number
-        min:number
-        decay:number
-    }
-    radius:{
-        initial:number
-        decay:number
-    }
-    damage:{
-        add:number
-    }
-    count:number
-}
-export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStage[] {
-    const stages: DeadZoneStage[] = []
+import { MakeDeadZoneStages } from "common/scripts/others/functions.ts";
 
-    let radius = settings.radius.initial
-    let wait_time = settings.wait_time.initial
-    let adv_time = settings.advancing_time.initial
-    let damage=0
-    for (let i = 0; i < settings.count-1; i++){
-        stages.push({
-            state: DeadZoneState.Waiting,
-            damage: damage,
-            radius: radius,
-            time: wait_time
-        })
-        stages.push({
-            state: DeadZoneState.Advancing,
-            damage: damage,
-            radius: radius,
-            time: adv_time
-        })
-        damage+=settings.damage.add
-        radius*=settings.radius.decay
-        wait_time=Math.max(wait_time*settings.wait_time.decay,settings.wait_time.min)
-        adv_time=Math.max(adv_time*settings.advancing_time.decay,settings.advancing_time.min)
-    }
-    stages.push({
-        state: DeadZoneState.Waiting,
-        damage: damage,
-        radius: 0,
-        time: settings.wait_time.min
-    })
-    stages.push({
-        state: DeadZoneState.Advancing,
-        damage: damage,
-        radius: 0,
-        time: settings.advancing_time.min
-    })
-
-    return stages
-}
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
-    count:10,
+    count:8,
     radius:{
-        decay:0.65,
-        initial:37
+        decay:0.58,
+        initial:33
     },
     damage:{
         add:2,
     },
     wait_time:{
         initial:80,
-        decay:0.8,
-        min:20,
+        decay:0.88,
+        min:40,
     },
     advancing_time:{
         initial:60,
-        decay:0.8,
-        min:10,
+        decay:0.88,
+        min:30,
     },
 })
-
-export interface DeadZoneStage {
-    state: DeadZoneState
-    radius: number
-    time: number
-    damage: number
-}
 
 export enum DeadZoneMode {
     Disabled,
@@ -108,8 +43,8 @@ export interface DeadZoneConfig {
 export const DefaultDeadzone:DeadZoneConfig={
     mode:DeadZoneMode.Staged,
     stages:DeadZoneDefinition,
-    timeSpeed: 1,
-    damage: 1
+    timeSpeed: 6,
+    damage: 0.1
 }
 export class DeadZoneManager {
     readonly game: Game

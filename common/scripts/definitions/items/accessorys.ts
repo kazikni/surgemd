@@ -24,7 +24,7 @@ export function AccessoryDropLootFromObstacle(table:string){
 export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
     accessorys.insert(
         {
-            idString:"bullet_breaker_barrel",
+            idString:"rip_ammo",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -63,7 +63,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             }
         },
         {
-            idString:"rare_projectile",
+            idString:"first_last_great",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
@@ -134,7 +134,16 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
         },
 
         {
-            idString:"ghost_ammo",
+            idString:"ghost_bullets",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.pass_through_everthing=true
+                }
+            }
+        },
+        {
+            idString:"sprite_ammo",
             rank:ItemRank.A,
             property:["infinity_ammo"],
             events:{

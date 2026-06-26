@@ -164,14 +164,15 @@ export const LootTables={
         {weight:5,item:"lucky_coin"},
         {weight:5,item:"pygmy_necklace"},
         {weight:5,item:"liquid_insanity"},
-        {weight:5,item:"ghost_ammo"},
+        {weight:5,item:"sprite_ammo"},
         {weight:5,item:"biggest_magazine"},
         {weight:5,item:"self_revive"},
         {weight:4,item:"nature_leaf"},
-        {weight:4,item:"bullet_breaker_barrel"},
-        {weight:4,item:"rare_projectile"},
+        {weight:4,item:"rip_ammo"},
+        {weight:4,item:"first_last_great"},
         {weight:4,item:"high_quality_projectiles"},
         {weight:4,item:"good_reflective_bullet"},
+        {weight:4,item:"ghost_bullets"},
     ],
     //Loot Tables
     civil_loot:[

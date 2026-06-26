@@ -1,7 +1,7 @@
 import { type Game } from "../others/game.ts"
 import { zIndexes } from "common/scripts/others/constants.ts"
 import { DeadZoneUpdate } from "common/scripts/packets/general_update.ts"
-import { ABParticle2D, CircleHitbox2D, ClientParticle2D, Color, ColorM, Graphics2D, model2d, Numeric, ParticlesEmitter2D, random, v2, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, CircleHitbox2D, ClientParticle2D, Color, ColorM, ease, Graphics2D, model2d, Numeric, ParticlesEmitter2D, random, v2, Vec2 } from "common/engine/client.ts";
 export class DeadZoneManager{
     radius:number=-1
     position:Vec2=v2(0,0)
@@ -84,14 +84,14 @@ export class DeadZoneManager{
         this.hitbox.radius=radius
 
         if(!this.game.terrain.map)return
-        const rm=Numeric.clamp(1-((radius*1.4)/this.game.terrain.map.size.x),0,1)
-        const color=ColorM.lerp(ColorM.hex("#00a2ff"),ColorM.hex("#ff006a"),rm)
+        const rm=ease.quadraticIn(Numeric.clamp(1-((radius*1.4)/this.game.terrain.map.size.x),0,1))
+        const color=ColorM.lerp(ColorM.hex("#00a2ff"),ColorM.hex("#ff0055"),rm)
 
         this.sprite.clear()
         const model=model2d.outlineCircle(radius,1000*this.game.cam2d.meter_size,200)
 
         const col=ColorM.clone(color)
-        col.a=0.4+0.4*rm
+        col.a=0.3+0.4*rm
         this.color=col
         this.sprite.fill_color(col)
         this.sprite.drawModel(model)

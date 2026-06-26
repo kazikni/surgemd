@@ -217,6 +217,10 @@ export const ConfigDefaultActions={
         buttons:[],
         keys:[Key.E,Key.Space,Key.Enter]
     },
+    "escape":{
+        buttons:[],
+        keys:[Key.Escape]
+    },
     "debug_menu":{
         buttons:[GamepadButtonID.R3],
         keys:[Key.Delete,Key.Backspace]

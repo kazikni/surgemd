@@ -27,6 +27,32 @@ export interface GeneralUpdate{
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
 }
+export interface MakeDeadZoneSettings{
+    wait_time:{
+        initial:number
+        min:number
+        decay:number
+    }
+    advancing_time:{
+        initial:number
+        min:number
+        decay:number
+    }
+    radius:{
+        initial:number
+        decay:number
+    }
+    damage:{
+        add:number
+    }
+    count:number
+}
+export interface DeadZoneStage {
+    state: DeadZoneState
+    radius: number
+    time: number
+    damage: number
+}
 function encode_general_update(stream:Stream,up:GeneralUpdate){
     stream.write_boolean_group(
         up.started,

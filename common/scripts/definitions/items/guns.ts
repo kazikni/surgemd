@@ -738,6 +738,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("m16_gl","556mm",{
             fire_delay:0.07,
             spread:5,
+            rank:ItemRank.S,
 
             alt_func:{
                 type:0,

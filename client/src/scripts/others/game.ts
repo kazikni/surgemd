@@ -49,6 +49,7 @@ import { island_final } from "common/scripts/config/final_screen.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
+import { yes_no_popup } from "../defs/menu.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -334,6 +335,15 @@ export class Game extends ClientGame<GameObject>{
                     if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
                     if(!this.device.apps.some((a)=>a instanceof DebugApp)){
                         this.device.add_app(new DebugApp)
+                    }
+                    break
+                case "escape":
+                    if(this.happening){
+                        this.menu.game_popup(yes_no_popup("Exit?")).then((v)=>{
+                            if(v){
+                                this.close_game()
+                            }
+                        })
                     }
                     break
             }

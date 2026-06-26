@@ -568,6 +568,7 @@ export class Human extends MovingBody{
         proj.physical_data.zpos_speed=1.8
         const limit=(this.grenade_holding.def.throw_max_speed??0)
         proj.push(Numeric.clamp(this.input.dist_to_pointer*limit,0,limit),this.physical_data.rotation,10)
+        v2m.add(proj.physical_data.velocity,proj.physical_data.velocity,this.physical_data.velocity)
         proj.fuse_delay=this.grenade_holding.time
         if(this.grenade_holding.slot){
             this.grenade_holding.slot.remove(1)
@@ -1017,7 +1018,7 @@ export class Human extends MovingBody{
 
         this.actions.update(dt)
 
-        if(this.game.deadzone.do_damage&&this.game.deadzone.is_on_deadzone(this.position)&&this.game.deadzone.damage>0){
+        if(this.game.deadzone.do_damage&&this.game.deadzone.damage>0&&this.game.deadzone.is_on_deadzone(this.position)){
             this.piercing_damage({
                 amount:this.game.deadzone.damageAt(this.position),
                 critical:false,

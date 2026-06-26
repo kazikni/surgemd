@@ -36,7 +36,7 @@ export const LootTables={
         {item:"desert_eagle_dual",weight:10},
         {item:"pfeifer_zeliska",weight:10},
         {item:"pkp",weight:10},
-        {item:"awms",weight:7},
+        {item:"awm",weight:7},
         {item:"rpg7",weight:2},
     ],
     //Guns Spawn

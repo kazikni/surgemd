@@ -39,7 +39,7 @@ export abstract class Projectile extends MovingBody{
     override on_collided(obj: ServerGameObject,dt:number): void {
         super.on_collided(obj,dt)
         if(this.projectile_data.collision_damage&&[GameObjectType.Human,GameObjectType.Obstacle].includes(obj.number_type)){
-            (obj as Human|Obstacle).damage({amount:this.projectile_data.collision_damage,direction:0,critical:false,position:this.position,reason:DamageReason.Human,owner:this.owner,resistence:this.projectile_data.collision_damage_resistence})
+            (obj as Human|Obstacle).damage({amount:this.projectile_data.collision_damage,direction:0,critical:false,position:this.position,reason:DamageReason.Human,owner:this.owner,resistence:this.projectile_data.collision_damage_resistence,penetration:1})
         }
     }
     override on_tick(dt:number): void {

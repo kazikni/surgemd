@@ -137,7 +137,7 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             special:true,
             health:2600,
             reduction:0.2,
-            tint:0x010011,
+            tint:0x111122,
             rank:ItemRank.C
         },
         {

@@ -1,6 +1,6 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
-import { DamageSplash, MapHumanData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
+import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -127,6 +127,7 @@ export class Human extends MovingBody{
 
         emote_is_item:boolean
         emote?:GameItem|EmoteDef
+        ping?:PingData
         emotes:{
             die?:EmoteDef
         }
@@ -488,6 +489,7 @@ export class Human extends MovingBody{
                     position:this.position,
                     reason:DamageReason.SideEffect,
                     direction:0,
+                    penetration:1,
                     owner:owner
                 })
                 else this.damage({
@@ -496,6 +498,7 @@ export class Human extends MovingBody{
                     position:this.position,
                     reason:DamageReason.SideEffect,
                     direction:0,
+                    penetration:1,
                     owner:owner
                 })
                 break
@@ -715,12 +718,21 @@ export class Human extends MovingBody{
                         break
                     }
                     case InputActionType.ping:
-                        /*this.game.pings.push({
-                            color:this.team_data.color,
-                            def:a.ping,
-                            id:this.id,
-                            position:a.position,
-                        })*/
+                        if(this.team_data.group?.pings){
+                            this.team_data.group.pings.push({
+                                color:this.team_data.color,
+                                def:a.ping,
+                                id:this.id,
+                                position:a.position,
+                            })
+                        }else{
+                            this.loadout.ping={
+                                color:this.team_data.color,
+                                def:a.ping,
+                                id:this.id,
+                                position:a.position,
+                            }
+                        }
                         break
                     case InputActionType.buy_on_shop:
                         this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
@@ -862,6 +874,7 @@ export class Human extends MovingBody{
                         position:this.position,
                         critical:false,
                         direction:0,
+                        penetration:1,
                     })
                 }else{
                     this.health_data.boost_time-=dt
@@ -881,6 +894,7 @@ export class Human extends MovingBody{
                         position:this.position,
                         reason:DamageReason.Abstinence,
                         direction:0,
+                        penetration:1,
                     })
                 }
                 if(this.health_data.boost_time<=0){
@@ -1003,6 +1017,7 @@ export class Human extends MovingBody{
                     position:this.position,
                     reason:DamageReason.Bleend,
                     direction:0,
+                    penetration:1,
                 })
             }
         }
@@ -1026,6 +1041,7 @@ export class Human extends MovingBody{
                 owner:undefined,
                 reason:DamageReason.DeadZone,
                 direction:0,
+                penetration:1,
             })
         }
 
@@ -1050,6 +1066,7 @@ export class Human extends MovingBody{
         this.loadout.dirty=false
         this.loadout.dirty_colors=false
         this.loadout.emote=undefined
+        this.loadout.ping=undefined
 
         this.equipment_data.dirty=false
 
@@ -1155,6 +1172,7 @@ export class Human extends MovingBody{
     }
     damage(params:DamageParams){
         if(this.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
+        const penetration=params.penetration
         let damage=params.amount
         let mod=1
         if(params.owner instanceof Human){
@@ -1163,15 +1181,12 @@ export class Human extends MovingBody{
             mod*=params.owner.modifiers.damage
         }
         if(this.equipment_data.vest){
-            mod-=this.equipment_data.vest.reduction
-            damage-=this.equipment_data.vest.defence
+            mod-=this.equipment_data.vest.reduction*penetration
+            damage-=this.equipment_data.vest.defence*penetration
         }
         if(this.equipment_data.helmet){
-            mod-=this.equipment_data.helmet.reduction
-            damage-=this.equipment_data.helmet.defence
-        }
-        if(this.downed){
-            mod+=0.2
+            mod-=this.equipment_data.helmet.reduction*penetration
+            damage-=this.equipment_data.helmet.defence*penetration
         }
         if(params.critical){
             mod+=this.modifiers.critical_mult-1

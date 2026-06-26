@@ -215,7 +215,7 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(1.5,1.5);
+                    this.sprite_main.scale=v2(1.8,1.8);
                     this.sprite_outline.scale=v2(1.4,1.4);
                     radius=GameConstants.loot.radius.scopes
                     this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)

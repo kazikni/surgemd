@@ -260,7 +260,7 @@ export class UiManager{
         if(!emotes){
             if(this.game.comunication_mode){
                 emotes=[
-                    this.game.definitions.ping.getFromString("ping_danger"), //Right
+                    this.game.definitions.ping.getFromString("ping_alert"), //Right
                 ]
             }else{
                 emotes=[

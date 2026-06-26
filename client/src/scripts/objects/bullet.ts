@@ -1,12 +1,8 @@
-import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, Stream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
-const images=[
-    "bullet_normal",
-    "bullet_rocket"
-]
 const particles=[
     "gas_smoke_particle"
 ]
@@ -36,8 +32,6 @@ export class Bullet extends GameObject{
     // Visual                 //
     ////////////////////////////
     sprite_trail:Sprite2D=new Sprite2D()
-    sprite_projectile?:Sprite2D=new Sprite2D()
-    container:Container2D=new Container2D()
 
     ////////////////////////////
     // Sound                  //
@@ -68,29 +62,26 @@ export class Bullet extends GameObject{
     constructor(){
         super()
 
-        this.sprite_trail.hotspot=v2(0.965,.5)
+        this.sprite_trail.hotspot=v2(1,.5)
         this.sprite_trail.zIndex=1
         this.sprite_trail.position.x=0
         this.sprite_trail.position.y=0
-
-        this.container.visible=false
-
-        this.container.add_child(this.sprite_trail)
-        this.container.zIndex=zIndexes.Bullets
+        this.sprite_trail.visible=false
+        this.sprite_trail.zIndex=zIndexes.Bullets
 
         this.allow_tick=true
     }
     override on_layer_set(): void {
-        this.container.layer=this.layer
+        this.sprite_trail.layer=this.layer
     }
     override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
         this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,55) // Metter Size * 2
-        this.game.cam2d.addObject(this.container)
+        this.game.cam2d.addObject(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
     override on_destroy(): void {
-        this.container.destroy()
+        this.sprite_trail.destroy()
     }
     override render(_camera: Camera2D, _dt: number): void {
 
@@ -100,7 +91,6 @@ export class Bullet extends GameObject{
         if(this.dying){
             this.dying=true
             this.tticks-=dt
-            this.sprite_projectile?.destroy()
             if(this.tticks<=0){
                 this.destroy()
             }
@@ -196,7 +186,7 @@ export class Bullet extends GameObject{
             }
 
             // Update Visual Position
-            this.container.position=this.position
+            this.sprite_trail.position=this.position
         }
 
         // Update Visual
@@ -223,9 +213,9 @@ export class Bullet extends GameObject{
             this.maxDistance=stream.read_float32()
 
             this.speed=stream.read_float32()
-            this.container.rotation=stream.read_rad()
+            this.sprite_trail.rotation=stream.read_rad()
 
-            this.velocity=v2.from_RadAngle(this.container.rotation,this.speed)
+            this.velocity=v2.from_RadAngle(this.sprite_trail.rotation,this.speed)
 
             this.maxLength=stream.read_float(0,100,3)
             this.sprite_trail.scale!.y=stream.read_float(0,6,2)
@@ -233,23 +223,8 @@ export class Bullet extends GameObject{
             col.a=stream.read_uint8()/255
             this.sprite_trail.tint=col
 
-            const proj=stream.read_uint8()
-            if(proj>0){
-                this.sprite_projectile=new Sprite2D()
-                this.sprite_projectile.hotspot=CenterHotspot
-                this.sprite_projectile.zIndex=2
-                this.sprite_projectile.position.x=0
-                this.sprite_projectile.position.y=0
-                this.sprite_projectile.scale.x=stream.read_float(0,6,2)
-                this.sprite_projectile.scale.y=stream.read_float(0,6,2)
-
-                this.sprite_projectile.tint=ColorM.number(stream.read_uint32())
-                this.sprite_projectile.frame=this.game.resources.get_frame(images[proj-1])
-
-                this.container.add_child(this.sprite_projectile)
-            }
             this.particles=stream.read_uint8()
-            this.container.visible=true
+            this.sprite_trail.visible=true
             const bg=stream.read_boolean_group()
             this.hit_owner=bg[0]
             this._critical=bg[1]

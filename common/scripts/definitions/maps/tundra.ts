@@ -90,14 +90,14 @@ export const TundraMap:MapDef={
 
             // Legendary Guns
             {item:"pfeifer_zeliska",weight:4},
-            {item:"awms",weight:4},
+            {item:"awm",weight:4},
             {item:"desert_eagle_dual",weight:4},
             {item:"rpg7",weight:2},
         ],
         legendary_guns:[
             {item:"m1_garand",weight:15},
             {item:"pfeifer_zeliska",weight:10},
-            {item:"awms",weight:6},
+            {item:"awm",weight:6},
             {item:"rpg7",weight:1},
         ],
         tundra_crate:[

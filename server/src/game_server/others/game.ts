@@ -342,7 +342,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(this.replay)this.replay.stopRecording()
 
     }
-    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured:boolean=false):Bullet{
+    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
             def,
             position:v2.clone(position),

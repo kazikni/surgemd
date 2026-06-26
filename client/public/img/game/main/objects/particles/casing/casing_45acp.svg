@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="17.891922"
-   height="10.374516"
+   width="18.092255"
+   height="12.795283"
    fill="none"
    version="1.1"
    id="svg3"
-   sodipodi:docname="casing_9mm.svg"
+   sodipodi:docname="casing_45acp.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -23,7 +23,7 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="21.236842"
-     inkscape:cx="1.8364312"
+     inkscape:cx="0.65923173"
      inkscape:cy="8.5700124"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
@@ -35,7 +35,7 @@
      showguides="false" />
   <path
      id="rect236"
-     style="fill:#f8db00;stroke:#8f7200;stroke-width:1.42651;stroke-linecap:round"
-     d="M 0.71325499,0.71335798 H 3.2656666 V 1.2582601 h 0.189 V 0.71335798 l 13.7240004,-9.79e-5 V 9.6612601 H 3.4546666 v -0.637 h -0.189 v 0.637 H 0.71325499 Z"
+     style="fill:#d9c31f;stroke:#7d5912;stroke-width:1.42651;stroke-linecap:round;fill-opacity:1;stroke-opacity:1"
+     d="M 0.71325499,0.72355469 H 3.2656666 V 1.2684568 h 0.189 V 0.72355469 L 17.379,0.92319671 V 11.871437 l -13.9243334,0.20026 v -0.637 h -0.189 v 0.637 H 0.71325499 Z"
      sodipodi:nodetypes="ccccccccccccc" />
 </svg>

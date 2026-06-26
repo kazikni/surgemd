@@ -501,7 +501,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                     reason:DamageReason.Human,
                     owner:user,
                     source:this.def,
-                    direction:v2.lookTo(c.position,user.position)
+                    direction:v2.lookTo(c.position,user.position),
+                    penetration:1,
                 })
             }else if(c instanceof Human&&c.id!==user.id){
                 c.damage({
@@ -512,7 +513,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                     reason:DamageReason.Human,
                     owner:user,
                     source:this.def,
-                    direction:v2.lookTo(c.position,user.position)
+                    direction:v2.lookTo(c.position,user.position),
+                    penetration:1,
                 })
             }
         }

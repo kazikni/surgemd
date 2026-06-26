@@ -256,7 +256,7 @@
                             "weight": 0.1
                         },
                         {
-                            "item": "awms",
+                            "item": "awm",
                             "weight": 0.1
                         }
                     ],
@@ -365,7 +365,7 @@
                             "weight": 0.5
                         },
                         {
-                            "item": "awms",
+                            "item": "awm",
                             "weight": 0.1
                         }
                     ],
@@ -391,7 +391,7 @@
                             "weight": 0.1
                         },
                         {
-                            "item": "awms",
+                            "item": "",
                             "weight": 0.1
                         }
                     ],
@@ -473,7 +473,7 @@
                     "weight": 10
                 },
                 {
-                    "item": "awms",
+                    "item": "awm",
                     "weight": 10
                 },
                 {

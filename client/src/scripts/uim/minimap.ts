@@ -3,7 +3,7 @@ import { Game } from "../others/game.ts"
 import { MapHumanData, PrivateUpdate } from "common/scripts/packets/update_packet.ts"
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
 type MinimapPing = {
-    id:number
+    id?:number
 
     pos:Vec2
     def:PingDef
@@ -159,8 +159,17 @@ export class MinimapModule extends UIModule<Game>{
         }
     }
     async add_ping(position:Vec2,def:PingDef,color:string,id?:number){
+        if(id!==undefined){
+            for(let i=0;i<this.pings.length;i++){
+                if(this.pings[i].id===id){
+                    this.pings[i].el?.remove?.()
+                    this.pings.splice(i,1)
+                    i--
+                }
+            }
+        }
         const ping:MinimapPing={
-            id:id??Math.random(),
+            id:id,
             pos:v2.clone(position),
             def,
             color,
@@ -238,7 +247,7 @@ export class MinimapModule extends UIModule<Game>{
                 size=1
             }else if(human.id===this.game.active_entity_id){
                 size=1
-                color=0x2233aa
+                color=0x11aa55
             }
             if(human.downed){
                 icon="downed"

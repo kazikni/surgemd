@@ -119,7 +119,7 @@ export class CounterMD extends ModeManager {
 
                 {id:"kar98k",cost:1100},
                 {id:"awp",cost:2000},
-                {id:"awms",cost:3300},
+                {id:"awm",cost:3300},
 
                 {id:"hp18",cost:160},
                 {id:"m870",cost:340},

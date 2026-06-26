@@ -16,7 +16,7 @@ export function Ping_Default_Init(pings:Definitions<PingDef,{}>){
             lifetime:13
         },
         {
-            idString:"danger",
+            idString:"alert",
         },
     )
 }

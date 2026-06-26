@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="80.455063"
+   width="80.79393"
    height="37.750294"
-   viewBox="0 0 21.286863 9.9881952"
+   viewBox="0 0 21.376521 9.9881952"
    version="1.1"
    id="svg8"
-   sodipodi:docname="leg_1_1.svg"
+   sodipodi:docname="human_leg_1_1.svg"
    xml:space="preserve"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -22,14 +22,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="4.9010586"
-     inkscape:cx="55.192157"
-     inkscape:cy="38.053003"
+     inkscape:cx="17.139154"
+     inkscape:cy="37.950985"
      inkscape:window-width="1920"
-     inkscape:window-height="1009"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg8" /><defs
+     inkscape:current-layer="svg8"
+     showgrid="false" /><defs
      id="defs4"><linearGradient
        x1="256.384"
        y1="188.49899"
@@ -121,9 +122,9 @@
        y1="176.243"
        x2="256.384"
        y2="214.923" /></defs><g
-     transform="matrix(-0.05002212,0.57175542,-0.57175542,-0.05002212,135.68025,-131.46048)"
+     transform="matrix(-0.05002212,0.57175542,-0.57175542,-0.05002212,135.76994,-131.46048)"
      id="g13"><path
-       d="m 249.62932,211.49716 -2.78373,-31.81826 14.95211,-1.30815 2.74721,31.40079 c -3.77137,6.02197 -13.6107,3.62087 -14.91559,1.72562 z"
+       d="m 249.62932,211.49716 -2.78373,-31.81826 14.95211,-1.30815 2.74721,31.40079 c -4.68017,5.02088 -9.74656,5.01925 -14.91559,1.72562 z"
        fill="url(#a)"
        style="fill:url(#linearGradient13);stroke:#7f7f7f;stroke-width:2.39364;stroke-dasharray:none;stroke-opacity:1"
        id="path13"

@@ -43,8 +43,8 @@ export interface DeadZoneConfig {
 export const DefaultDeadzone:DeadZoneConfig={
     mode:DeadZoneMode.Staged,
     stages:DeadZoneDefinition,
-    timeSpeed: 6,
-    damage: 0.1
+    timeSpeed: 1,
+    damage: 1
 }
 export class DeadZoneManager {
     readonly game: Game

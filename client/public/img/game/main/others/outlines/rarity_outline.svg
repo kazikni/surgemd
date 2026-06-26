@@ -22,7 +22,7 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="2.2970642"
-     inkscape:cx="-117.97668"
+     inkscape:cx="-40.051123"
      inkscape:cy="108.39923"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
@@ -45,7 +45,7 @@
          style="stop-color:#ffffff;stop-opacity:0.5;"
          offset="0"
          id="stop1" /><stop
-         style="stop-color:#919191;stop-opacity:0.80000001;"
+         style="stop-color:#999999;stop-opacity:0.80000001;"
          offset="1"
          id="stop2" /></linearGradient><radialGradient
        xlink:href="#a-8"
@@ -64,7 +64,7 @@
          style="stop-color:#8f181d;stop-opacity:.80000001"
          offset=".999"
          id="stop2-4" /></linearGradient></defs><circle
-     style="fill:url(#b);stroke:#919191;stroke-width:1.99998;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:url(#b);stroke:#7a8385;stroke-width:1.99998;stroke-dasharray:none;stroke-opacity:1"
      cx="17.303492"
      cy="17.303492"
      r="16.303501"

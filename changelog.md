@@ -34,6 +34,7 @@ __                                                                              
 * P90 - 45acp SMG
 * M4A1 - 556mm Assault
 * Ghost Bullets - A Accessory When Do Your Bullets Go Through Everything
+* HP Bullets - A Accessory when give 80% of armor penetration
 * Desert Eagle - 50Cal Pistol
 * Bonesaw
 * Pan

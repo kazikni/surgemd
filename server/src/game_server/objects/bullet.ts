@@ -23,7 +23,7 @@ export class Bullet extends ServerGameObject{
     dir:Vec2
     critical!:boolean
 
-    satured:boolean=false
+    satured?:number
     ammo?:AmmoDef
 
     modifiers={
@@ -34,13 +34,13 @@ export class Bullet extends ServerGameObject{
     source?:DamageSourceDef
 
     damage:number=0
+    penetration:number=1
     tticks:number=0
 
     reflectionCount:number=0
 
     tracerColor:number=0
     tracerAlpha:number=255
-    projColor:number=0
 
     collided_with:Set<ServerGameObject>=new Set()
 
@@ -104,16 +104,17 @@ export class Bullet extends ServerGameObject{
                         }
                         const dmg:number=this.damage
                             *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
-                            *(this.critical?(this.def.criticalMult??1.25):1);
+                            *(this.critical?(this.def.criticalMult??1.25):1)
 
-                        (obj as Human).damage({
+                        ;(obj as Human).damage({
                             amount:dmg,
                             owner:this.owner,
                             reason:DamageReason.Human,
                             position:v2.clone(chosen.point),
                             critical:this.critical,
                             source:this.source as unknown as DamageSourceDef,
-                            direction:this.angle+3.1415
+                            direction:this.angle+3.1415,
+                            penetration:this.penetration
                         })
 
                         if(this.def.effect){
@@ -158,7 +159,8 @@ export class Bullet extends ServerGameObject{
                         position:v2.clone(this.position),
                         critical:this.critical,
                         source:this.source as unknown as DamageSourceDef,
-                        direction:Math.atan2(col1.dir.y,col1.dir.x)
+                        direction:Math.atan2(col1.dir.y,col1.dir.x),
+                        penetration:this.penetration
                     })
                     break
                 }
@@ -168,11 +170,11 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    override on_create(args?: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean}): void {
+    override on_create(args?: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
         if(args)this.set_configuration(args.def,args.position,args.owner,args.ammo,args.critical,args.source,args.satured)
     }
-    set_configuration(def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:boolean){
+    set_configuration(def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:number){
         this.def=def
         this.position=position
         this.initial_position=v2.clone(position)
@@ -190,9 +192,16 @@ export class Bullet extends ServerGameObject{
         this.pass_through_humans=this.def.pass_through_humans??false
         this.set_color(satured)
     }
-    set_color(satured:boolean=false){
-        this.tracerColor=this.def.tracer.color??(satured?(this.ammo?.strongTrail??0xffffff):(this.ammo?.defaultTrail??0xffffff))
-        this.projColor=this.def.tracer.proj.color??(satured?(this.ammo?.strongProj??0xffffff):(this.ammo?.defaultProj??0xffffff))
+    set_color(satured?:number){
+        if(this.def.tracer.color){
+            this.tracerColor=this.def.tracer.color
+        }else{
+            if(satured!==undefined&&this.ammo?.strongTrail?.[satured]){
+                this.tracerColor=this.ammo.strongTrail[satured]
+            }else{
+                this.tracerColor=this.ammo?.defaultTrail===undefined?0xffffff:this.ammo.defaultTrail
+            }
+        }
         this.satured=satured
     }
     set_direction(angle:number){
@@ -230,6 +239,7 @@ export class Bullet extends ServerGameObject{
         b.tracerAlpha=this.tracerAlpha/2
         b.damage=this.damage/2
         b.reflectionCount = this.reflectionCount + 1
+        b.penetration=this.penetration
         if(this.owner){
             this.owner.inventory.accessorys.call_event("bullet_reflect",{user:this.owner,item:this,bullet:b,angle:b.angle,position:pos})
         }
@@ -237,7 +247,9 @@ export class Bullet extends ServerGameObject{
         return b
     }
     clone(){
-        return this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
+        const b=this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
+        b.penetration=this.penetration
+        return b
     }
     override on_encode_net(stream: Stream, full: boolean): void {
         stream.write_pos2(this.position)
@@ -251,13 +263,7 @@ export class Bullet extends ServerGameObject{
             .write_float(this.def.tracer.height*this.modifiers.size,0,6,2)
             .write_uint32(this.tracerColor)
             .write_uint8(this.tracerAlpha)
-            .write_uint8(this.def.tracer.proj.img)
-            if(this.def.tracer.proj.img>0){
-                stream.write_float(this.def.tracer.proj.width,0,6,2)
-                .write_float(this.def.tracer.proj.height,0,6,2)
-                .write_uint32(this.projColor)
-            }
-            stream.write_uint8(this.def.tracer.particles?.frame??0)
+            .write_uint8(this.def.tracer.particles?.frame??0)
             .write_boolean_group(this.hit_owner,this.critical,this.pass_through_humans,this.pass_through_everthing)
             .write_id(this.owner?.id??0)
         }

@@ -5,6 +5,7 @@ import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 
 export interface DamageParams{
     amount:number
+    penetration:number
     resistence?:number
     critical:boolean
 

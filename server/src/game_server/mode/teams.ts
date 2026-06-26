@@ -1,4 +1,4 @@
-import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
+import { GroupMemberState, PingData } from "common/scripts/packets/update_packet.ts";
 import { Human } from "../objects/human.ts";
 import { random } from "common/engine/core.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
@@ -9,6 +9,7 @@ export class Team{
     dirty:boolean=true
     state?:Record<number,GroupMemberState>
     humans:Human[]=[]
+    pings:PingData[]=[]
     already_gifted:Record<number,Loot>={}
     id:number=0
 
@@ -105,6 +106,11 @@ export class Team{
             if(loot.destroyed)delete this.already_gifted[id]
         }
     }
+    net_update(){
+        this.pings.length=0
+        this.dirty=false
+        this.state=undefined
+    }
     constructor(){
 
     }
@@ -169,7 +175,7 @@ export class TeamsManager{
     }
     net_update(){
         for(const t of this.teams){
-            t.dirty=false
+            t.net_update()
         }
     }
 }
@@ -181,6 +187,13 @@ export class GroupsManager{
     tick(dt:number){
         for(const g in this.groups){
             if(this.groups[g])this.groups[g].tick(dt)
+        }
+    }
+    net_update(){
+        for(const g in this.groups){
+            if(this.groups[g]){
+                this.groups[g].net_update()
+            }
         }
     }
     find_group(max_group_size:number,team=0):Group|undefined{
@@ -199,14 +212,6 @@ export class GroupsManager{
         this.groups[id]=group
         this.groups[id]!.id=id
         return this.groups[id]!
-    }
-    net_update(){
-        for(const g of Object.values(this.groups)){
-            if(g){
-                g.dirty=false
-                g.state=undefined
-            }
-        }
     }
     reset(){
         for(const g of Object.values(this.groups)){

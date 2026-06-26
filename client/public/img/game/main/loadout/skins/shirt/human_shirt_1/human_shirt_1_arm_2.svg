@@ -5,8 +5,8 @@
    viewBox="0 0 27.623685 10.433618"
    version="1.1"
    id="svg2"
-   sodipodi:docname="human_shirt_1_arm.svg"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="human_shirt_1_arm_2.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -22,14 +22,15 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="3.784521"
-     inkscape:cx="38.974549"
-     inkscape:cy="26.55554"
+     inkscape:cx="11.626306"
+     inkscape:cy="26.687657"
      inkscape:window-width="1920"
-     inkscape:window-height="1009"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="svg2"
+     showgrid="false" />
   <defs
      id="defs2">
     <linearGradient
@@ -64,11 +65,11 @@
   <g
      transform="matrix(0,-0.74833,0.74833,0,-135.19044,197.22669)"
      id="g2"
-     style="stroke:#656a6a;stroke-opacity:1">
+     style="stroke:#7a8385;stroke-opacity:1">
     <path
        d="M 250.81,214.0512 V 181.853 h 11.549 v 32.1982 c -1.47022,3.05988 -9.6079,3.13169 -11.549,0 z"
        fill="url(#a)"
-       style="fill:url(#b);stroke:#656a6a;stroke-width:2.39364;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#b);stroke:#7a8385;stroke-width:2.39364;stroke-dasharray:none;stroke-opacity:1"
        id="path2"
        sodipodi:nodetypes="ccccc" />
   </g>

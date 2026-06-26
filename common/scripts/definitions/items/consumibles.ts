@@ -223,6 +223,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         CreateSoda("yellow",BoostType.Adrenaline),
         {
             idString:"inhaler",
+            description:true,
             consuming:{
                 type:0,
                 side_effects:[

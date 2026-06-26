@@ -81,7 +81,8 @@ export class Explosion extends ServerGameObject{
                             owner: this.owner,
                             position: v2.clone(obj.position),
                             critical: false,
-                            direction: v2.lookTo(obj.position, this.position)
+                            direction: v2.lookTo(obj.position, this.position),
+                            penetration:1
                         })
                         break
                     }

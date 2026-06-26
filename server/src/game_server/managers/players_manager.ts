@@ -61,6 +61,8 @@ export class PlayerClient extends PlayerConnManager{
                 dirty:true,
                 id:this.human.id,
             }
+            if(this.human.loadout.ping)up.priv.pings.push(this.human.loadout.ping)
+            if(this.human.team_data.group?.pings)up.priv.pings.push(...this.human.team_data.group.pings)
             up.priv.map_humans=this.human.map_humans()
 
             up.priv.self_state=this.human.self_state(this.human.is_new)

@@ -31,12 +31,6 @@ export interface BulletDef{
         particles?:{
             frame:number
         }
-        proj:{
-            img:number
-            width:number
-            height:number
-            color?:number
-        }
         alpha?:number
         color?:number
     }

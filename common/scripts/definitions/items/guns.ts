@@ -209,7 +209,7 @@ export const bullets_factory={
         return {
             damage:8*power,
             range: 130*(1+(power-1) * 0.3),
-            speed: 38*(1+(power-1) * 0.7),
+            speed: 37*(1+(power-1) * 0.7),
             criticalMult: 1.25,
             obstacleMult: 1,
             falloff:0.75,
@@ -220,7 +220,7 @@ export const bullets_factory={
         return {
             damage: 45 * power,
             range: 140 * (1 + (power - 1) * 0.5),
-            speed: 55 * (1 + (power - 1) * 0.3),
+            speed: 53 * (1 + (power - 1) * 0.3),
             criticalMult: 1.1,
             obstacleMult: 1.25,
             falloff: 0.7,
@@ -231,12 +231,12 @@ export const bullets_factory={
         return {
             damage:5 * power,
             range:46 * (1 + (power - 1) * 0.4),
-            speed:29 * (1 + (power - 1) * 0.7),
+            speed:27 * (1 + (power - 1) * 0.7),
             falloff:0.7,
             criticalMult:1.2,
             tracer:tracer
         }
-    }
+    },
 }
 export const guns_factory={
     simple(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -291,15 +291,15 @@ export const guns_factory={
 
             gas_particles:GasParticles.automatic,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.6,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             rig_image:{
-                position:v2.new(0.6,0.0),
+                position:v2.new(0.7,0.0),
             },
             assets:{
                 world:"weapon_medium_world",
@@ -321,15 +321,15 @@ export const guns_factory={
 
             gas_particles:GasParticles.automatic,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.6,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
     
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             rig_image:{
-                position:v2.new(0.6,0.0),
+                position:v2.new(0.7,0.0),
             },
             assets:{
                 world:"weapon_medium_world",
@@ -353,15 +353,15 @@ export const guns_factory={
 
             gas_particles:GasParticles.dmr,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.6,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             rig_image:{
-                position:v2.new(0.6,0.0),
+                position:v2.new(0.7,0.0),
                 rotation:0,
             },
             assets:{
@@ -378,7 +378,7 @@ export const guns_factory={
             class:GunClasses.Sniper,
             rank:ItemRank.A,
 
-            barrel_length:0.9,
+            barrel_length:1,
 
             fire_mode:FireMode.Single,
             fire_on_release:true,
@@ -387,7 +387,7 @@ export const guns_factory={
 
             gas_particles:GasParticles.sniper,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.7,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
 
@@ -395,7 +395,7 @@ export const guns_factory={
 
             rig_arms:WeaponsArmRig[2],
             rig_image:{
-                position:v2.new(0.7,0.0),
+                position:v2.new(0.75,0.0),
                 rotation:0,
             },
             assets:{
@@ -430,9 +430,9 @@ export const guns_factory={
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             rig_image:{
-                position:v2.new(0.6,0.0),
+                position:v2.new(0.7,0.0),
                 rotation:0,
             },
             assets:{
@@ -461,7 +461,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:11,
                     range:110,
                     falloff:0.8,
-                    speed:45,
+                    speed:40,
                     obstacleMult:1.2,
                     tracer:tracers.small,
                 }
@@ -507,7 +507,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:7,
                     range:70,
                     falloff:0.5,
-                    speed:27,
+                    speed:22,
                     tracer:tracers.tiny
                 }
             },
@@ -556,7 +556,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:17,
                     range:130,
                     falloff:0.8,
-                    speed:50,
+                    speed:43,
                     tracer:tracers.large
                 }
             },
@@ -582,6 +582,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     delay:5
                 }
             },
+            assets:{
+                world_tint:0xb7c1c3
+            }
         }),
         guns_factory.pistol("desert_eagle","50cal",{
             fire_delay:0.3,
@@ -598,7 +601,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:21,
                     range:150,
                     falloff:0.8,
-                    speed:50,
+                    speed:45,
                     tracer:{
                         ...tracers.large,
                         color:0xd8b818
@@ -628,6 +631,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     delay:3.5
                 }
             },
+            assets:{
+                world_tint:0xd8b818
+            }
         }),
         guns_factory.pistol("pfeifer_zeliska","308sub",{
             rank:ItemRank.S,
@@ -692,6 +698,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:0.12,
                 speed:0.75
             },
+            assets:{
+                world_tint:0x573c05
+            }
         }),
         guns_factory.assault("ar15","556mm",{
             fire_delay:0.07,
@@ -814,6 +823,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:bullets_factory.assault(0.95)
             },
+            assets:{
+                world_tint:0x573c05
+            }
         }),
         guns_factory.assault("famas","556mm",{
             rank:ItemRank.B,
@@ -936,7 +948,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             assets:{
-                cycle_sound:true
+                cycle_sound:true,
+                world_tint:0x573c05
             }
         }),
         guns_factory.sniper("awp","762mm",{
@@ -963,7 +976,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 world_tint:0x040c29
             }
         }),
-        guns_factory.sniper("awms","308sub",{
+        guns_factory.sniper("awm","308sub",{
             rank:ItemRank.S,
 
             fire_delay:1.5,
@@ -993,6 +1006,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:1.85,
                 speed:0.3
             },
+            assets:{
+                world_tint:0x334736
+            }
         }),
         guns_factory.sniper("blr81","556mm",{
             rank:ItemRank.B,
@@ -1053,7 +1069,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:7,
-                    speed:25,
+                    speed:24,
                     range:30,
                     falloff:0.7,
                     criticalMult:1.2,
@@ -1072,7 +1088,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.6
             },
             assets:{
-                world_tint:0x30150e
+                world_tint:0x573c05
             }
         }),
         guns_factory.shotgun("spas12","12g",{
@@ -1089,7 +1105,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:5.6,
-                    speed:30,
+                    speed:28,
                     range:50,
                     falloff:0.7,
                     criticalMult:1.2,
@@ -1126,7 +1142,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:3,
-                    speed:25,
+                    speed:24,
                     falloff:0.5,
                     range:30,
                     criticalMult:1.2,
@@ -1186,7 +1202,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:14,
                     falloff:0.7,
                     range:130,
-                    speed:47,
+                    speed:45,
                     pass_through_humans:true,
                     tracer:{
                         ...tracers.medium,
@@ -1263,6 +1279,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             assets:{
                 use_last:true,
+                world_tint:0x573c05
             }
         }),
         {
@@ -1274,7 +1291,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.12,
             switch_delay:1,
-            spread:4,
+            spread:3.5,
 
             ammo_type:"762mm",
             ammo_spawn:{
@@ -1284,8 +1301,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:14,
                     obstacleMult:1.5,
-                    range:125,
-                    speed:45,
+                    range:130,
+                    speed:39,
                     tracer:tracers.large
                 }
             },
@@ -1305,7 +1322,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             muzzle_flash:MuzzleFlash.normal,
 
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             rig_image:{
                 position:v2.new(0.6,0.0),
                 rotation:0
@@ -1358,11 +1375,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                         width:2,
                         particles:{
                             frame:1
-                        },
-                        proj:{
-                            img:2,
-                            width:4,
-                            height:4,
                         },
                     }
                 }
@@ -1421,7 +1433,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.6
             },
             speed_mod:0.75,
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             assets:{
                 world:"weapon_medium_world",
                 world_tint:0x22222f

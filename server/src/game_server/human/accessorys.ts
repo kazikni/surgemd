@@ -87,10 +87,17 @@ export class AccessorysManager{
         }
     }
     clear(){
+        const items:AccessoryDef[]=[]
         for(const s of this.slots){
+            if(s.item)items.push(s.item)
             s.item=undefined
             s.droppable=true
             s.changable=true
+        }
+        for(const s of items){
+            if(s.events?.["drop"]){
+                s.events["drop"]({def:s,user:this.user})
+            }
         }
     }
 }

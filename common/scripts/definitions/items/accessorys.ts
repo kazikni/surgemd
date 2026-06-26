@@ -30,7 +30,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
-                    const spread=0.022
+                    const spread=Math.max((e.bullet.source?.spread??0)*0.008,0.013)
 
                     let b=e.bullet.clone()
                     b.damage*=0.2
@@ -57,8 +57,8 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
-                    e.bullet.damage*=1.1
-                    e.bullet.set_color(true)
+                    e.bullet.damage*=1.05
+                    e.bullet.set_color(0)
                 }
             }
         },
@@ -68,10 +68,10 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     if(e.item.ammo===0||e.item.ammo===e.item.get_capacity()-1){
-                        e.bullet.damage*=1.25
-                        e.bullet.modifiers.speed*=1.25
+                        e.bullet.damage*=1.2
+                        e.bullet.modifiers.speed*=1.2
                         e.bullet.modifiers.size*=1.75
-                        e.bullet.set_color(true)
+                        e.bullet.set_color(1)
                     }
                 }
             }
@@ -81,11 +81,21 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "bullet_reflect":(e)=>{
-                    e.bullet.damage*=2.5
+                    e.bullet.damage*=2*1.2
                     e.bullet.tracerAlpha*=2
-                    e.bullet.modifiers.speed*=1.25
+                    e.bullet.modifiers.speed*=1.2
                     e.bullet.modifiers.size*=1.75
-                    e.bullet.set_color(true)
+                    e.bullet.set_color(1)
+                }
+            }
+        },
+        {
+            idString:"hp_bullets",
+            rank:ItemRank.S,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.penetration*=0.2
+                    e.bullet.set_color(1)
                 }
             }
         },

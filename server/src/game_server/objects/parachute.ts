@@ -57,6 +57,7 @@ export class Parachute extends ServerGameObject{
                         direction:v2.lookTo(this.position,o.position),
                         position:this.position,
                         reason:DamageReason.Airdrop,
+                        penetration:1,
                     })
                 }
                 if(o.number_type===GameObjectType.Obstacle){
@@ -67,7 +68,8 @@ export class Parachute extends ServerGameObject{
                         direction:v2.lookTo(this.position,o.position),
                         position:this.position,
                         reason:DamageReason.Airdrop,
-                        resistence:10
+                        resistence:10,
+                        penetration:1
                     })
                 }
             }

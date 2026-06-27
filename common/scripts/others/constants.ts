@@ -123,7 +123,8 @@ export enum zIndexes{
 export enum ActionsType{
     Reload,
     Consuming,
-    Helpup
+    Helpup,
+    BeingHelpup
 }
 
 export type HumanModifiers={

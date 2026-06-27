@@ -3,7 +3,7 @@ import { DamageReason, InventoryItemType } from "common/scripts/definitions/util
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { FeedMessage, FeedMessageLeader, FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
-import { GroupMemberState, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
+import { GroupMemberState, MapHumanData, PrivateUpdate, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
@@ -111,6 +111,7 @@ export class UiManager{
     }
 
     group_members:Record<number,GroupMemberState>={}
+    map_humans:MapHumanData[]=[]
     constructor(game:Game){
         this.game=game
 
@@ -152,6 +153,7 @@ export class UiManager{
 
         this.players_name={}
         this.group_members={}
+        this.map_humans.length=0
 
         HideElement(this.content.game_gui)
         HideElement(this.content.normal_gameOver)
@@ -581,6 +583,13 @@ export class UiManager{
     update_crosshair(dt:number){
         if(!this.crosshair)return
         this.crosshair_manager.tick(dt)
+    }
+    proccess_private(priv:PrivateUpdate){
+        this.game.ui.map_humans=priv.map_humans
+        if(priv.self_state){
+            this.update_self_state(priv.self_state)
+            this.game.device.update_self_state(priv.self_state)
+        }
     }
     update_self_state(state:SelfStateUpdate){
         if (state.dirty.inventory.aitems) {

@@ -83,6 +83,13 @@ export class HelpupAction extends Action<Human>{
         this.delay=human.game.modeManager.rules.humans.help_up.time
         this.action_speed=0.35
     }
+    override on_begin(user: Human): void {
+        this.human.being_helpup_by=user
+        this.human.actions.play(new BeingHelpupAction(user))
+    }
+    override on_cancel(user: Human): void {
+        this.human.actions.cancel()
+    }
     on_execute(user:Human){
         this.human.help_up()
     }
@@ -91,4 +98,20 @@ export class HelpupAction extends Action<Human>{
             user.actions.cancel()
         }
     }
+}
+export class BeingHelpupAction extends Action<Human>{
+    override type: number=ActionsType.BeingHelpup;
+    delay:number
+    constructor(human:Human){
+        super()
+        this.delay=human.game.modeManager.rules.humans.help_up.time
+    }
+    override on_begin(user: Human): void {}
+    override on_cancel(user: Human): void {
+        if(user.being_helpup_by){
+            user.being_helpup_by.actions.cancel()
+            user.being_helpup_by=undefined
+        }
+    }
+    on_execute(user:Human){}
 }

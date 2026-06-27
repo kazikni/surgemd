@@ -9,7 +9,7 @@ type GroupElement = {
     boost: HTMLDivElement
     name: HTMLSpanElement
     color: HTMLDivElement
-
+    downed:boolean
     boost_type:number
 }
 
@@ -50,6 +50,7 @@ export class GroupMembersModule extends UIModule<Game>{
             boost: el.querySelector(".boost-bar")!,
             health: el.querySelector(".health-bar")!,
             boost_type:-1,
+            downed:false,
         }
 
         data.name.innerHTML=this.game.ui.players_name[id]?.full??"unknown"
@@ -67,9 +68,16 @@ export class GroupMembersModule extends UIModule<Game>{
             if(!member){
                 member = this.create_member(id,state)
             }
+            
+            const mh=this.game.ui.map_humans.find((v)=>v.id===id)
+            if(mh){
+                if(mh.downed!==member.downed){
+                    member.downed=mh.downed
+                    member.health.style.background=mh.downed?"#e33":"#fff"
+                }
+            }
             member.health.style.width = `${state.health*100}%`
             member.boost.style.width = `${state.boost*100}%`
-
             if(member.boost_type!==state.boost_type){
                 member.boost_type=state.boost_type
                 member.boost.style.backgroundColor=Boosts[member.boost_type as BoostType].color

@@ -218,6 +218,8 @@ export class Human extends MovingBody{
     downed_time:number=0
     downed_by?:Human
 
+    being_helpup_by?:Human
+
     modifiers:HumanModifiers={
         size:1,
         boost:1,
@@ -323,6 +325,7 @@ export class Human extends MovingBody{
         return this.downed&&this.game.modeManager.is_ally(this,user)
     }
     override on_interact(user: Human): void {
+        if(this.being_helpup_by)return
         user.actions.play(new HelpupAction(this))
     }
 
@@ -1007,7 +1010,7 @@ export class Human extends MovingBody{
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
         }
 
-        if(this.downed){
+        if(this.downed&&!this.being_helpup_by){
             this.downed_time+=dt
             if(this.downed_time>=1){
                 this.downed_time=0
@@ -1313,6 +1316,7 @@ export class Human extends MovingBody{
         this.downed_by=params.owner
         this.downed_time=0
 
+        this.actions.cancel()
         this.health_data.health=this.health_data.max_health
         this.clear_boost()
 
@@ -1330,6 +1334,8 @@ export class Human extends MovingBody{
         this.killed_by=undefined
         this.health_data.health=this.health_data.max_health*0.3
         this.health_data.boost=0
+        this.being_helpup_by=undefined
+        this.actions.cancel()
     }
     die(params:DamageParams){
         if(this.dead)return

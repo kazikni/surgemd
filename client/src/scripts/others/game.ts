@@ -261,6 +261,9 @@ export class Game extends ClientGame<GameObject>{
                 case "interact":
                     this.interact()
                     break
+                case "cancel":
+                    this.input.cancel=true
+                    break
                 case "swamp_guns":
                     this.input.swamp_guns=true
                     break
@@ -672,6 +675,7 @@ export class Game extends ClientGame<GameObject>{
     reset_input(){
         this.input.reload=false
         this.input.interact=false
+        this.input.cancel=false
         this.input.swamp_guns=false
         this.input.actions.length=0
     }
@@ -731,10 +735,7 @@ export class Game extends ClientGame<GameObject>{
                 this.add_damage_splash(s)
             }
         }
-        if(priv.self_state){
-            this.ui.update_self_state(priv.self_state)
-            this.device.update_self_state(priv.self_state)
-        }
+        this.ui.proccess_private(priv)
         this.device.update_private(priv)
         this.ui_manager.signal("private",priv)
     }

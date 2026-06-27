@@ -145,6 +145,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.A],
         keys:[Key.E]
     },
+    "cancel":{
+        buttons:[GamepadButtonID.A],
+        keys:[Key.X]
+    },
     "swamp_guns":{
         buttons:[GamepadButtonID.L3],
         keys:[Key.F]

@@ -50,8 +50,6 @@ export class MinimapModule extends UIModule<Game>{
     humansLayer!:HTMLDivElement
     humans_ins = new Map<number, MapHumansInstance>()
 
-    humans:MapHumanData[]=[]
-
     mapWidth=0
     mapHeight=0
 
@@ -223,7 +221,7 @@ export class MinimapModule extends UIModule<Game>{
     }
     updateHumans(){
         const alive = new Set<number>()
-        for(const human of this.humans){
+        for(const human of this.game.ui.map_humans){
             alive.add(human.id)
             let hi = this.humans_ins.get(human.id)
             if(!hi){
@@ -335,7 +333,6 @@ export class MinimapModule extends UIModule<Game>{
                 for(const p of (data as PrivateUpdate).pings){
                     this.add_ping(p.position,this.game.definitions.ping.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
                 }
-                this.humans=(data as PrivateUpdate).map_humans
                 break
             case "actiondown":
                 switch(data.action){
@@ -373,6 +370,5 @@ export class MinimapModule extends UIModule<Game>{
     override on_clear():void{
         this.pingsLayer.innerHTML=""
         this.pings.length=0
-        this.humans.length=0
     }
 }

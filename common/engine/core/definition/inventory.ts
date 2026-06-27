@@ -429,6 +429,12 @@ export abstract class BaseAction<User>{
     abstract delay:number
     abstract type:number
     abstract on_execute(user:User):void
+    on_begin(user:User){
+        
+    }
+    on_cancel(user:User){
+
+    }
     update(user:User,dt:number){}
     constructor(){}
 }
@@ -443,15 +449,18 @@ export class ActionsManager<User,Action extends BaseAction<User>>{
     }
     cancel(){
         if(this.current_action){
+            const action=this.current_action
             this.current_action=undefined
             this.current_delay=0
             this.dirty=true
+            action.on_cancel(this.user)
         }
     }
     play(action:Action):void{
         if(this.current_action)return
         this.current_action=action
         this.current_delay=action.delay
+        this.current_action.on_begin(this.user)
         this.dirty=true
     }
     update(deltaTime:number){

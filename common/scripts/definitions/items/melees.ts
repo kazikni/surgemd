@@ -1,4 +1,4 @@
-import { AKeyFrame, Angle, CircleHitbox2D, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, Vec2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, Vec2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{

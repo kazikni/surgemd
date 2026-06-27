@@ -63,6 +63,9 @@ export abstract class MovingBody extends ServerGameObject{
                 this.on_collided(obj, dt)
             }
         }
+        if(v2.len(this.physical_data.velocity)<=0.000001){
+            v2m.zero(this.physical_data.velocity)
+        }
     }
     physical_encode(stream:Stream){
         stream.write_pos2(this.position)

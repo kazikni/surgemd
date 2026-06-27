@@ -73,10 +73,21 @@ export class EquipmentModule extends UIModule<Game> {
     }
     private render_slot(el: HTMLDivElement, id?: string,span="",description_def:string="items.description.vest",replace?:Record<string,string>) {
         if (!id) {
+            el.onmousedown = null
+            el.onmouseenter = null
+            el.onmouseleave = null
+            el.innerHTML = ""
             HideElement(el)
             return
         }
+        const description=this.game.language.get(description_def,replace)
         el.onmousedown=this.game.ui.handle_slot_click.bind(this.game.ui)
+        el.onmouseenter=(e)=>{
+            this.game.ui.tooltip_show("items."+id,description,el)
+        }
+        el.onmouseleave=()=>{
+            this.game.ui.tooltip_hide()
+        }
         const sprite = this.game.resources.get_frame(id)
         if (!sprite?.src) {
             HideElement(el)
@@ -84,26 +95,21 @@ export class EquipmentModule extends UIModule<Game> {
         }
         ShowElement(el)
         el.style.display = ""
-        el.innerHTML = `${span}<img class="slot-image" src="${sprite.src}">`
-
-        const description=this.game.language.get(description_def,replace)
-        el.onmouseenter=(e)=>{
-            this.game.ui.tooltip_show("items."+id,description,el)
-        }
-        el.onmouseleave=()=>{
-            this.game.ui.tooltip_hide()
-        }
+        el.innerHTML = `${span}<img class="slot-image" draggable="false" src="${sprite.src}">`
     }
 
     override on_update(_dt: number): void {}
     override on_destroy(): void {}
 
     override on_clear(): void {
-        this.render_slot(this.helmet_el)
-        this.render_slot(this.vest_el)
-        this.render_slot(this.backpack_el)
+        this.backpack=undefined
+        this.vest=undefined
+        this.helmet=undefined
         this.accessories_container.innerHTML = ""
         this.cache = []
+        this.render_slot(this.helmet_el,undefined,"")
+        this.render_slot(this.vest_el,undefined,"")
+        this.render_slot(this.backpack_el,undefined,"")
         HideElement(this.container)
     }
 }

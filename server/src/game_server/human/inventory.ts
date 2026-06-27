@@ -159,13 +159,16 @@ export class GunItem extends GunItemBase implements LItem{
 
         if(this.def.dual_from)this.dual_d=!this.dual_d
 
+        let spread=this.def.spread??0
+        if(this.def.move_spread!==undefined&&v2.len(user.physical_data.velocity)>=0.1)spread*=this.def.move_spread
+
         if(this.def.bullet){
             const bullets_count=this.def.bullet.count??1
             const patternPoint = getPatterningShape(bullets_count, this.def.jitter_radius??1)
             for(let i=0;i<bullets_count;i++){
                 let ang=user.physical_data.rotation
-                if(this.def.spread){
-                    ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
+                if(spread){
+                    ang+=Angle.deg2rad(random.float(-spread,spread))
                 }
                 const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
                 const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammo_type,this.def,user.layer)
@@ -173,7 +176,7 @@ export class GunItem extends GunItemBase implements LItem{
                     speed:user.modifiers.bullet_speed,
                     size:user.modifiers.bullet_size,
                 }
-                user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,position:pos})
+                user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,spread,position:pos})
                 b.set_direction(ang)
             }
         }

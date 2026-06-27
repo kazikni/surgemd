@@ -76,7 +76,7 @@ export class Bullet extends GameObject{
     }
     override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
-        this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,55) // Metter Size * 2
+        this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,16) // Metter Size * 2
         this.game.cam2d.addObject(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }

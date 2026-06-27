@@ -48,13 +48,6 @@ export interface GameData {
 
     config:GameConfig
 }
-export interface GameStatus{
-    players:{
-        name:string
-        username:string
-        kills:number
-    }[]
-}
 export type GameStatistic={
     player:{
         players:number
@@ -338,7 +331,9 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.signals.emit("finish",{})
 
         if(!this.can_finish)return
-        this.stop()
+        this.add_timeout(()=>{ 
+            this.stop()
+        },1)
         if(this.replay)this.replay.stopRecording()
 
     }

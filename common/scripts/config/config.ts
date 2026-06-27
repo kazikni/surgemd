@@ -45,7 +45,7 @@ export interface FindGameData{
     token?:string
     group_size?:number
 }
-export type GameResult={
+export type FindGameResult={
     success:true
     address:string
     token?:string
@@ -100,12 +100,12 @@ export function ZeroConfig():ConfigType{
         },
         database:{
             enabled:false,
+            statistic:false,
             files:{
                 accounts:"",
                 forum:"",
-                statistic:""
+                statistic:"",
             },
-            statistic:false
         },
         game:{
             debug:{

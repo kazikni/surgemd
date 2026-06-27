@@ -1,7 +1,7 @@
 import { Router } from "common/engine/server.ts";
 import { random } from "common/engine/core.ts";
 import { type ApiServer } from "../server.ts";
-import { GameResult } from "common/scripts/config/config.ts";
+import { FindGameResult } from "common/scripts/config/config.ts";
 
 export class GroupPlayer {
     group:Group
@@ -99,7 +99,7 @@ export class Group {
             }
             case "play": {
                 if (player !== this.leader) return
-                const res:GameResult = await this.manager.api.regions.find_game({
+                const res:FindGameResult = await this.manager.api.regions.find_game({
                     region: msg.region,
                     mode: msg.mode,
                     token:random.code(20),

@@ -40,6 +40,7 @@ __                                                                              
 * Pan
 * M16 With Grenade Launcher
 * Yellow Flare
+* Guns Move Spread
 __                                                                                                                 __
 ### Others
 * Camera Shake On Explosions

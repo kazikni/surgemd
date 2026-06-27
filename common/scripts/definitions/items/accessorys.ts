@@ -30,7 +30,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
-                    const spread=Math.max((e.bullet.source?.spread??0)*0.008,0.013)
+                    const spread=Math.max(e.spread*0.004,0.01)
 
                     let b=e.bullet.clone()
                     b.damage*=0.2

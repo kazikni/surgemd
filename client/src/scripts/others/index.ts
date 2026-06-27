@@ -9,7 +9,7 @@ import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
-import { GameResult } from "common/scripts/config/config.ts";
+import { FindGameResult } from "common/scripts/config/config.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -157,7 +157,7 @@ import { GameResult } from "common/scripts/config/config.ts";
                 }
             }
         }
-        play_game_hard(result:GameResult){
+        play_game_hard(result:FindGameResult){
             if(result.success){
                 this.game.group_token=result.token??""
                 this.game.connect(result.address)
@@ -178,7 +178,7 @@ import { GameResult } from "common/scripts/config/config.ts";
                                 type:"play"
                             }))
                         }else{
-                            const ghost:GameResult=await(await fetch(API_BASE+"/find-game",{
+                            const ghost:FindGameResult=await(await fetch(API_BASE+"/find-game",{
                                 method:"post",
                                 body:JSON.stringify(args)
                             })).json()

@@ -3,24 +3,8 @@ import { Game, GameData } from "./game.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { ConnectionLimiter, SelfGameWorker } from "common/engine/server/worker.ts";
 import { WorkerMessageBase } from "common/engine/server.ts";
-/*let game:Game|undefined
-let begin:{
-    id:number
-    config:ConfigType
-    clients:ClientsManager
-    server:Server
-}
-
-const td:TextDecoder=new TextDecoder("utf-8")
-const te:TextEncoder=new TextEncoder()
-function DataUpdated(data:GameData){
-    // deno-lint-ignore ban-ts-comment
-    //@ts-ignore
-    self.postMessage({
-        type:WorkerMessages.SetData,
-        data:data
-    })
-}
+import { random, Stream } from "common/engine/core.ts";
+/*
 self.addEventListener("message",(e)=>{
     // deno-lint-ignore ban-ts-comment
     //@ts-ignore
@@ -158,42 +142,8 @@ class App extends SelfGameWorker<Game,GameData,GameConfig,ConfigType>{
     }
     protected override createGame(config?: GameConfig): Game {
         const game=new Game(this.config,this.clients_manager,this.id)
+        game.string_id=random.code(20)
         game.auto_init(config!)
-        /*game.init(new CounterMD({
-            map:NormalCounterMD,
-            players:{
-
-            },
-            team_need_win:10,
-        }))*/
-
-        /*for(let i=0;i<99;i++){
-            const p=new JoinPacket()
-            p.player_name=`BOT-${i+1}`
-            const conn=game.players.add_bot(p)
-
-            const ai=new NeuralBotAi(conn)
-            conn.ai=ai
-        }*/
-
-        /*loadPopulation("./population.json").then((population)=>{
-            for(let i=0;i<99;i++){
-                const p=new JoinPacket()
-                p.player_name=`BOT-${i+1}`
-
-                const conn=game.players.add_bot(p)
-
-                const ai=new NeuralBotAi(conn)
-
-                if(population[i]){
-                    applyGenome(ai, population[i])
-                }
-
-                conn.ai=ai
-            }
-        })*/
-
-
         return game
     }
 }

@@ -145,6 +145,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         if(!this.running){
             this.clock.stop()
             this.on_stop()
+            this.signals.emit("stop",{game:this})
         }
         this.clock.profiler.end(1)
     }

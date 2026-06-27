@@ -1,5 +1,5 @@
 import { api, API_BASE, api_server } from "../others/config.ts";
-import { ApiSettingsS, GameResult } from "common/scripts/config/config.ts";
+import { ApiSettingsS, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
 import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
@@ -59,7 +59,7 @@ export class MenuManager{
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
-    play_callback_hard?:(play:GameResult)=>void
+    play_callback_hard?:(play:FindGameResult)=>void
 
     cutscene:HistoryCommand[]=[]
 

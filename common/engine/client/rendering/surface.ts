@@ -108,7 +108,5 @@ export class Surface2D{
             texture:src.texture,
             tint:{r:255,g:255,b:255,a:255}
         })
-
-        this.ctx.draw_model2d(mat,model,{})
     }
 }

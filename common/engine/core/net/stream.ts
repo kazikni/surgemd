@@ -495,7 +495,9 @@ export abstract class Stream{
         stream.write_uint16((x*65535+0.5)|0)
         stream.write_uint16((y*65535+0.5)|0)
     }
-    abstract push(arr:Uint8Array):void
+
+    abstract write_bytes(bytes:Uint8Array):void
+    abstract read_bytes(count:number):void
     abstract lock():void
 }
 export class StaticStream extends Stream{
@@ -764,12 +766,14 @@ export class StaticStream extends Stream{
         return stream
     }
 
-    override push(buf:Uint8Array): void {
-        this._u8Array.set(buf, this.index)
-        this.index += buf.length
-        if (this.index > this.length) {
-            this.length = this.index
-        }
+    override write_bytes(data: Uint8Array): void {
+        this._u8Array.set(data, this.index)
+        this.index += data.length
+    }
+    override read_bytes(size: number): Uint8Array {
+        const out = this._u8Array.subarray(this.index, this.index + size)
+        this.index += size
+        return out
     }
 }
 export class DynamicStream extends Stream{
@@ -1076,10 +1080,14 @@ export class DynamicStream extends Stream{
         return stream
     }
 
-    override push(buf: Uint8Array): void {
-        this.ensure(buf.length)
-        this._u8Array.set(buf, this.index)
-        this.index += buf.length
-        if (this.index > this.length) this.length = this.index
+    override write_bytes(data: Uint8Array): void {
+        this.ensure(data.length)
+        this._u8Array.set(data, this.index)
+        if(this.index>this.length)this.length=this.index
+    }
+    override read_bytes(size: number): Uint8Array {
+        const out = this._u8Array.subarray(this.index, this.index + size)
+        this.index += size
+        return out
     }
 }

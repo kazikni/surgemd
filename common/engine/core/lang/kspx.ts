@@ -42,7 +42,8 @@ export function write_kspr(data: KSPR, stream?: Stream): Stream {
             s.write_uint8(atlas.format)
             s.write_uint16(atlas.width)
             s.write_uint16(atlas.height)
-            s.write_uint32(atlas.image.length)
+            s.write_uint24(atlas.image.length)
+            s.write_bytes(atlas.image)
             s.data.set(atlas.image,s.index)
             s.index += atlas.image.length
             // frames
@@ -80,9 +81,8 @@ export function load_kspr(buffer: ArrayBuffer): KSPR {
             const format = stream.read_uint8()
             const width = stream.read_uint16()
             const height = stream.read_uint16()
-            const imgSize = stream.read_uint32()
-            const image = new Uint8Array(buffer,stream.index,imgSize)
-            stream.index += imgSize
+            const imgSize = stream.read_uint24()
+            const image = stream.read_bytes(imgSize)
             // frames
             const frameCount = stream.read_uint16()
             const frames: Record<string, any> = {}

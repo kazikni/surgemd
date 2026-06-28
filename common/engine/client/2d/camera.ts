@@ -163,8 +163,8 @@ export class Camera2D{
             this.old_layer=this.layer
             this.container.dirty_zindex=true
         }
-        this.container.draw(cam)
         this.ctx.base_matrix=this.projectionMatrix
+        this.container.draw(cam)
         this.ctx.render(this.renderer)
         this.ctx.clear()
 

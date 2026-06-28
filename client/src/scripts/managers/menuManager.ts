@@ -95,7 +95,7 @@ export class MenuManager{
         ShowElement(this.content.menuD)
 
         HideElement(this.content.loading_screen)
-        this.content.loading_screen.style.background=`url("/img/menu/background/${
+        this.content.loading_screen.style.backgroundImage=`url("/img/menu/background/${
             random.choose(["normal_background","tundra_background_1"])
         }.png")`
         this.content.loading_screen.style.opacity="0"

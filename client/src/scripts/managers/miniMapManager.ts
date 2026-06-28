@@ -5,7 +5,6 @@ import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapBiomeDef } from "common/scripts/definitions/maps/base.ts";
-import { MapHumanData, PrivateUpdate } from "common/scripts/packets/update_packet.ts";
 export interface MinimapTile {
     position:Vec2
     image:HTMLImageElement
@@ -123,8 +122,8 @@ export class MinimapManager {
         const step=this.game.grid.size*this.meter_size
 
         ctx.save()
-        ctx.strokeStyle=ColorM.rgba2hex(this.game.grid.tint)
-        ctx.lineWidth=this.game.grid.line_size*this.meter_size
+        ctx.strokeStyle=ColorM.rgba2hex(this.game.grid.stroke!)
+        ctx.lineWidth=this.game.grid.line_width*this.meter_size
         ctx.beginPath()
 
         const start_x=(-(cam_position.x*this.meter_size))%step

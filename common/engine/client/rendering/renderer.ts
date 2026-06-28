@@ -1,10 +1,9 @@
-import { Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_GridMatArgs, GL2D_GridMatAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Grid, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
+import { v2, Vec2 } from "../../core/math/vec2.ts";
+import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
 import { Matrix } from "../../core/math/matrix.ts";
-import { v2 } from "../mod.ts";
-
+import { Context2D, GLContext2D } from "./context.ts";
 export interface Material{
     draw(material:Material,matrix:Matrix,attr:any):void
     free():void
@@ -37,24 +36,42 @@ export class GLTexture implements Texture{
 }
 export abstract class Renderer {
     canvas: HTMLCanvasElement
+    draw_calls:number=0
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
     }
-    abstract draw(material:Material,matrix:Matrix,attr:any):void
+    abstract make_context():Context2D
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
     abstract set_background_color(color:Color):void
     abstract clear(): void
     abstract create_texture(): Texture
     abstract load_texture(img:HTMLImageElement,smooth?:boolean):Texture
+    full_canvas(max_ration?:number,roundPixels?:boolean){
+        fullCanvas(this.canvas,max_ration,roundPixels)
+    }
 }
 export class GLDynamicBuffer {
     buffer: WebGLBuffer
     size = 0
+    draw_calls:number=0
     private disposed = false
     constructor(private gl: WebGLRenderingContext) {
         this.buffer = gl.createBuffer()!
     }
-    upload(target: number, data: Float32Array, usage: number = 35048) {
+    upload_f32(target: number, data: Float32Array, usage: number = 35048) {
+        if (this.disposed) return
+
+        const gl = this.gl
+        gl.bindBuffer(target, this.buffer)
+
+        if (data.length > this.size) {
+            this.size = data.length
+            gl.bufferData(target, data, usage)
+        } else {
+            gl.bufferSubData(target, 0, data)
+        }
+    }
+    upload_u8(target: number, data: Uint8Array, usage: number = 35048) {
         if (this.disposed) return
 
         const gl = this.gl
@@ -100,7 +117,6 @@ export class WebglRenderer extends Renderer {
         simple_batch:GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
         ctx_simple_batch:GLMaterialFactory<GL2D_CTXSimpleBatchArgs,GL2D_CTXSimpleBatchAttr>,
         simple:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>,
-        grid:GLMaterialFactory<GL2D_GridMatArgs,GL2D_GridMatAttr>,
         texture:GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
         //light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
@@ -128,7 +144,7 @@ export class WebglRenderer extends Renderer {
 
     quadVBO:WebGLBuffer
     quadTBO:WebGLBuffer
-    
+
     constructor(canvas: HTMLCanvasElement, version: 1 | 2 = 2,antialias: boolean = true) {
         super(canvas);
         const gl =
@@ -146,7 +162,6 @@ export class WebglRenderer extends Renderer {
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
             ctx_simple_batch:this.proccess_factory(GLF_CTXSimpleBatch),
             simple:this.proccess_factory(GLF_Simple),
-            grid:this.proccess_factory(GLF_Grid),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
             texture:this.proccess_factory(GLF_Texture),
             //light:this.proccess_factory(GLF_Light),
@@ -180,6 +195,10 @@ export class WebglRenderer extends Renderer {
 
         this.quadVBO = gl.createBuffer()
         this.quadTBO = gl.createBuffer()
+        this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
+    }
+    make_context():GLContext2D{
+        return new GLContext2D(this)
     }
     override create_texture(): GLTexture {
         const te=this.gl.createTexture()!
@@ -238,9 +257,6 @@ export class WebglRenderer extends Renderer {
         this.gl.linkProgram(p!)
         return p!
     }
-    override draw(material:Material,matrix:Matrix,attr:any):void{
-        material.draw(material,matrix,attr)
-    }
     create_single_mat_batcher(mat:Material):SingleMatBatching2DGL{
         return new SingleMatBatching2DGL(this,mat)
     }
@@ -256,14 +272,13 @@ export class WebglRenderer extends Renderer {
 
     clear() {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-        this.gl.clearColor(this.background.r, this.background.g, this.background.b, 1)
-        this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
+        this.gl.clearColor(this.background.r/255, this.background.g/255, this.background.b/255, 1)
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
-        
         this.gl.depthMask(true)
         this.gl.depthFunc(this.gl.LEQUAL)
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+        this.draw_calls=0
     }
     override set_background_color(color: Color): void {
         this.background=color
@@ -271,12 +286,21 @@ export class WebglRenderer extends Renderer {
 }
 
 
-export function fullCanvas(elem: HTMLCanvasElement) {
-    const ratio = self.devicePixelRatio || 1
+export function fullCanvas(canvas: HTMLCanvasElement,maxRatio: number = 2,roundPixels: boolean = true): boolean {
+    const cssWidth=self.innerWidth;
+    const cssHeight=self.innerHeight;
 
-    elem.width  = self.innerWidth  * ratio
-    elem.height = self.innerHeight * ratio
+    const ratio = Math.min(self.devicePixelRatio || 1, maxRatio);
+    const width = roundPixels?Math.round(cssWidth*ratio):cssWidth*ratio;
+    const height = roundPixels?Math.round(cssHeight*ratio):cssHeight*ratio;
 
-    elem.style.width  = `${self.innerWidth}px`
-    elem.style.height = `${self.innerHeight}px`
+    const resized = canvas.width !== width || canvas.height !== height;
+    if (resized) {
+        canvas.width = width;
+        canvas.height = height;
+
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = `${cssHeight}px`;
+    }
+    return resized;
 }

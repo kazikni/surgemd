@@ -376,6 +376,7 @@
             "comunication_mode": "Comunication Mode",
             "reload": "Reload",
             "interact": "Interact",
+            "cancel": "Cancel",
             "swamp_guns": "Swamp Guns Slot",
             "toggle_full_device": "Minimap Toggle Full",
             "toggle_hide_device": "Hide/Show Minimap",

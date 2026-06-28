@@ -84,7 +84,7 @@ export abstract class Container2DObject {
         return this._tint as Color
     }
     set tint(val: Color) {
-        this._tint.set(val.r,val.g,val.b,val.a)
+        this._tint.set(Math.floor(val.r),Math.floor(val.g),Math.floor(val.b),Math.floor(val.a))
     }
 
     _real_position: Vec2 = v2(0, 0)
@@ -103,6 +103,7 @@ export abstract class Container2DObject {
         if(this.parent)this.parent.dirty_children=true
     }
 
+    full:boolean=false
     _visible:boolean=true
     get visible():boolean{
         return this._visible
@@ -120,14 +121,15 @@ export abstract class Container2DObject {
             this.parent.dirty_children=true
         }
     }
+    _bid(){
+        this.dirty_reals=true
+    }
 
     constructor(){
-        const bid=()=>{
-            this.dirty_reals=true
-        }
-        this._position=new Vec2M(0,0,bid)
-        this._scale=new Vec2M(1,1,bid)
-        this._tint=new Vec4M(1,1,1,1,bid)
+        this._bid=this._bid.bind(this)
+        this._position=new Vec2M(0,0,this._bid)
+        this._scale=new Vec2M(1,1,this._bid)
+        this._tint=new Vec4M(255,255,255,255,this._bid)
     }
 
     dirty_reals=true
@@ -150,7 +152,7 @@ export abstract class Container2DObject {
             v2m.set(this._real_scale,this._scale._x,this._scale._y)
             this._real_rotation = this._rotation
 
-            if (this.parent)
+            if(this.parent)
                 ColorM.mult(this._real_tint,this._tint,this.parent._tint)
             else
                 ColorM.set1(this._real_tint,this._tint)

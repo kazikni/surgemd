@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -54,6 +54,7 @@ export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
     comunication_mode:boolean=false
+    escape_menu:boolean=false
 
     offline:boolean=false
     can_act:boolean=true
@@ -96,13 +97,7 @@ export class Game extends ClientGame<GameObject>{
     global_interpolation:number=1
 
     terrain_gfx=new Graphics2D()
-    grid_gfx=new Graphics2D()
-
-    grid={
-        size:5,
-        tint:{r:0,g:0,b:0,a:0.1},
-        line_size:0.05
-    }
+    grid=new Grid2D()
 
     loaded=false
     loaded_textures:string[]=[]
@@ -133,7 +128,7 @@ export class Game extends ClientGame<GameObject>{
         enabled:false,
         width:1000,
         height:0.1,
-        color:{r:1,g:1,b:1,a:0.9}
+        color:{r:255,g:255,b:255,a:229}
     }
 
     theme_colors:Record<string,string>={}
@@ -177,13 +172,13 @@ export class Game extends ClientGame<GameObject>{
         this.final_screen=new FinalScreenManager(this)
 
         this.cam2d.addObject(this.terrain_gfx)
-        this.cam2d.addObject(this.grid_gfx)
+        this.cam2d.addObject(this.grid)
         this.cam2d.addObject(this.ui_gfx)
 
         this.dead_zone.append()
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
-        this.grid_gfx.zIndex=zIndexes.Grid
+        this.grid.zIndex=zIndexes.Grid
         this.ui_gfx.zIndex=zIndexes.UI
         this.hitboxes_gfx.zIndex=zIndexes.UI
 
@@ -201,6 +196,12 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.device.add_app(new MapApp)
+
+        this.grid.size=0.05
+        this.grid.size=5
+        this.grid.stroke=ColorM.rgba(0,0,0,25)
+
+        this.terrain_gfx.initialize(this.cam2d.ctx)
     }
     get_theme_color(name:string):string{
         if(this.theme_colors[name])return this.theme_colors[name]
@@ -341,12 +342,14 @@ export class Game extends ClientGame<GameObject>{
                     }
                     break
                 case "escape":
-                    if(this.happening){
+                    if(this.happening&&!this.escape_menu){
+                        this.escape_menu=true
                         this.menu.game_popup(yes_no_popup("Exit?")).then((v)=>{
                             if(v){
                                 this.close_game()
                             }
                         })
+                        this.escape_menu=false
                     }
                     break
             }
@@ -655,16 +658,16 @@ export class Game extends ClientGame<GameObject>{
                 this.sounds.set_listener_position(this.active_entity.position)
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
                 this.cam2d.layer=this.active_entity.layer
-                this.ui_gfx.clear()
+                /*this.ui_gfx.ctx.clear()
                 if(this.aim_line.enabled){
-                    this.ui_gfx.fill_color(this.aim_line.color)
-                    this.ui_gfx.drawLine(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,this.aim_line.width)),this.aim_line.height/this.cam2d.zoom)
-                }
+                    this.ui_gfx.ctx.fill_color=this.aim_line.color
+                    this.ui_gfx.ctx.dr(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,this.aim_line.width)),this.aim_line.height/this.cam2d.zoom)
+                }*/
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
         this.terrain.draw(this.terrain_gfx,this.cam2d.layer)
-        this.update_grid(this.grid_gfx,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height))
+        this.update_grid(this.grid,this.cam2d.position,v2(this.cam2d.width,this.cam2d.height))
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
             this.input.auto_fire=this.ui.mobile_enabled
@@ -679,25 +682,28 @@ export class Game extends ClientGame<GameObject>{
         this.input.swamp_guns=false
         this.input.actions.length=0
     }
-    update_grid(grid_gfx:Graphics2D,camera_position:Vec2,camera_size:Vec2){
-        this.grid_gfx.position=v2(0,0)
-        grid_gfx.clear()
-        grid_gfx.layer=this.terrain_gfx.layer
-        this.dead_zone.sprite.layer=grid_gfx.layer
-        this.ui_gfx.layer=grid_gfx.layer
-        this.hitboxes_gfx.layer=grid_gfx.layer
-        if(this.cam2d.layer<Layers.Normal)return
+    update_grid(grid:Grid2D,camera_position:Vec2,camera_size:Vec2){
+        grid.layer=this.terrain_gfx.layer
+        this.dead_zone.sprite.layer=grid.layer
+        this.ui_gfx.layer=grid.layer
+        this.hitboxes_gfx.layer=grid.layer
+        if(this.cam2d.layer<Layers.Normal){
+            this.grid.visible=false
+            return
+        }
+        this.grid.visible=true
 
         const begin=v2(camera_size.x/2,camera_size.y/2)
         v2m.sub(begin,camera_position,begin)
-        v2m.dscale(begin,begin,this.grid.size)
+        v2m.dscale(begin,begin,grid.size)
         v2m.floor(begin)
         v2m.sub_component(begin,1,1)
 
-        const size=v2(camera_size.x/this.grid.size+2,camera_size.y/this.grid.size+2)
-        v2m.ceil(size)
-        grid_gfx.fill_color(this.grid.tint)
-        grid_gfx.drawGrid(begin,size,this.grid.size,this.grid.line_size)
+        const end=v2(camera_size.x/grid.size+2,camera_size.y/grid.size+2)
+        v2m.ceil(end)
+        v2m.add(end,end,begin)
+        grid.begin=begin
+        grid.end=end
     }
     override on_render(_dt: number): void {
         this.ambient.render()

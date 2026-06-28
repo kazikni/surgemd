@@ -1,4 +1,4 @@
-import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, StaticStream } from "common/engine/core.ts";
+import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -144,13 +144,13 @@ export class PlayersManager{
     connected_bots:BotClient[]=[]
     living_players:Player[]=[]
 
-    buffer:Stream=new StaticStream(new ArrayBuffer(5*1024))
+    buffer:Stream=new DynamicStream()
     global_buffer_1?:Stream
     global_buffer_2?:Stream
 
     first_tick:boolean=false
 
-    start_packet_stream:Stream=new StaticStream(new ArrayBuffer(5*1024))
+    start_packet_stream:Stream=new DynamicStream()
 
     constructor(game:Game){
         this.game=game
@@ -238,7 +238,7 @@ export class PlayersManager{
         return client.human as Player
     }
     get_global_update_packet(full:boolean):UpdatePacket{
-        if(!this.global_buffer_1)this.global_buffer_1=new StaticStream(new ArrayBuffer(1024*1024*2))
+        if(!this.global_buffer_1)this.global_buffer_1=new DynamicStream()
         this.global_buffer_1.clear()
 
         const up=new UpdatePacket()
@@ -247,7 +247,7 @@ export class PlayersManager{
         return up
     }
     encode_frame(full:boolean){
-        if(!this.global_buffer_2)this.global_buffer_2=new StaticStream(new ArrayBuffer(1024*1024*2.2))
+        if(!this.global_buffer_2)this.global_buffer_2=new DynamicStream()
         this.global_buffer_2.clear()
 
         const up=this.get_global_update_packet(full)
@@ -260,7 +260,7 @@ export class PlayersManager{
         const packet=new StartPacket()
         packet.settings=this.game.start_settings
         this.game.clients.packets_manager.encode(packet,this.start_packet_stream)
-        ;(this.start_packet_stream as StaticStream).lock()
+        ;(this.start_packet_stream as DynamicStream).lock()
     }
     update(dt:number){
         for(const p of Object.values(this.connected_bots)){

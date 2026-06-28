@@ -133,7 +133,7 @@ export class RainParticle2D extends ClientParticle2D{
             this.sprite.zIndex=config.zindex.main
         }
         this.lifetime=config.lifetime??1
-        this.sprite.tint={r:1,b:1,g:1,a:0}
+        this.sprite.tint={r:255,b:255,g:255,a:0}
     }
     vel:Vec2=v2(0,0)
     override update(dt: number): void {

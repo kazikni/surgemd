@@ -154,6 +154,8 @@ export class AmbientManager{
         this.ambience=this.game.sounds.create_controller("ambience")
         this.deadzone_ambience=this.game.sounds.create_controller("ambience")
 
+        this.music.set_volume(0.5)
+
         this.game.sounds.signals.on("unlock",async()=>{
             await this.game.resources.load_sound("menu_music",{src:`/sounds/musics/menu_music.mp3`,volume:1},"essentials")
             this.game.resources.load_sound("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")

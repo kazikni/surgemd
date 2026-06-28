@@ -272,8 +272,8 @@ export class Loot extends GameObject{
             this.container.visible=true
             this.position=position
             if(Debug.hitbox){
-                this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
-                this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
+                this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+                this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
             }
         }else{
             if(this.game.save.get_variable("sv_game_interpolation")){

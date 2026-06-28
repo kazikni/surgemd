@@ -13,6 +13,10 @@ export interface Color {
     b: number; // Blue
     a: number; // Alpha
 }
+export interface STint{
+    color:number
+    alpha:number
+}
 export const ColorM={
     /**
      * Create The Color RGBA, limit=`(0 To 255)`
@@ -23,7 +27,7 @@ export const ColorM={
      * @returns A New Color
      */
     rgba(r: number, g: number, b: number, a: number = 255): Color {
-        return { r: r / 255, g: g / 255, b: b / 255, a: a / 255 };
+        return { r: r, g: g, b: b, a: a };
     },
     hex(hex: string): Color {
         hex = hex.replace("#", "").replace("0x","")
@@ -54,10 +58,10 @@ export const ColorM={
         }
 
         return {
-            r: r / 255,
-            g: g / 255,
-            b: b / 255,
-            a: a / 255
+            r: r,
+            g: g,
+            b: b,
+            a: a
         }
     },
     number(color:number):Color{
@@ -65,9 +69,9 @@ export const ColorM={
         const r = (color >> 16) & 0xFF
         const g = (color >> 8) & 0xFF
         const b = color & 0xFF
-        return { r:r/255, g:g/255, b:b/255, a: 1 }
+        return { r:r, g:g, b:b, a: 255 }
     },
-    hsv(h: number, s: number, v: number, a: number = 1): Color {
+    hsv(h: number, s: number, v: number, a: number = 255): Color {
         h = ((h % 360) + 360) % 360
         s = Numeric.clamp(s, 0, 1)
         v = Numeric.clamp(v, 0, 1)
@@ -86,17 +90,17 @@ export const ColorM={
         else             { r = c; g = 0; b = x }
 
         return {
-            r: r + m,
-            g: g + m,
-            b: b + m,
+            r: Math.floor(r + m),
+            g: Math.floor(g + m),
+            b: Math.floor(b + m),
             a
         }
     },
     rgba2hex(color: Color): string {
-        const r = Numeric.clamp(Math.round(color.r * 255), 0, 255)
-        const g = Numeric.clamp(Math.round(color.g * 255), 0, 255)
-        const b = Numeric.clamp(Math.round(color.b * 255), 0, 255)
-        const a = Numeric.clamp(Math.round(color.a * 255), 0, 255)
+        const r = Numeric.clamp(Math.round(color.r), 0, 255)
+        const g = Numeric.clamp(Math.round(color.g), 0, 255)
+        const b = Numeric.clamp(Math.round(color.b), 0, 255)
+        const a = Numeric.clamp(Math.round(color.a), 0, 255)
 
         const red   = r.toString(16).padStart(2, "0")
         const green = g.toString(16).padStart(2, "0")
@@ -140,10 +144,10 @@ export const ColorM={
         return parseInt(color.replace(/^#/, ''), 16)
     },
     mult(dst:Color,x:Color,y:Color){
-        dst.r=x.r*y.r
-        dst.g=x.g*y.g
-        dst.b=x.b*y.b
-        dst.a=x.a*y.a
+        dst.r=Math.floor(x.r*(y.r/255))
+        dst.g=Math.floor(x.g*(y.g/255))
+        dst.b=Math.floor(x.b*(y.b/255))
+        dst.a=Math.floor(x.a*(y.a/255))
     },
     mul_hsv(
         color: Color,
@@ -155,9 +159,9 @@ export const ColorM={
         const hsv = this.rgb2hsv(color)
         return this.hsv(
             hsv.h * hMul,
-            Numeric.clamp(hsv.s * sMul, 0, 1),
-            Numeric.clamp(hsv.v * vMul, 0, 1),
-            Numeric.clamp(hsv.a * aMul, 0, 1)
+            hsv.s * sMul,
+            hsv.v * vMul,
+            hsv.a * aMul
         )
     },
     number_mul_hsv(
@@ -175,60 +179,60 @@ export const ColorM={
         )
 
         return (
-            (Math.round(c.r * 255) << 16) |
-            (Math.round(c.g * 255) << 8) |
-            Math.round(c.b * 255)
+            (Math.round(c.r) << 16) |
+            (Math.round(c.g) << 8) |
+            Math.round(c.b)
         )
     },
 
     set1(dst:Color,val:Color){
-        dst.r=val.r
-        dst.g=val.g
-        dst.b=val.b
-        dst.a=val.a
+        dst.r=Math.floor(val.r)
+        dst.g=Math.floor(val.g)
+        dst.b=Math.floor(val.b)
+        dst.a=Math.floor(val.a)
     },
     default:{
         black:{
             r:0,
             g:0,
             b:0,
-            a:1
+            a:255
         },
         white:{
-            r:1,
-            g:1,
-            b:1,
-            a:1
+            r:255,
+            g:255,
+            b:255,
+            a:255
         },
         transparent:{
-            r:0,
-            g:0,
-            b:0,
+            r:255,
+            g:255,
+            b:255,
             a:0,
         },
         red:{
-            r:1,
+            r:255,
             g:0,
             b:0,
-            a:1
+            a:255
         },
         green:{
             r:0,
-            g:1,
+            g:255,
             b:0,
-            a:1
+            a:255
         },
         blue:{
             r:0,
             g:0,
-            b:1,
-            a:1
+            b:255,
+            a:255
         },
         yellow:{
-            r:1,
-            g:1,
+            r:255,
+            g:255,
             b:0,
-            a:1
+            a:255
         }
     },
     lerp(a:Color, b: Color,i:number): Color {

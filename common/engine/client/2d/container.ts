@@ -1,5 +1,5 @@
 import { Rect } from "../../core/math/geometry.ts";
-import { v2 } from "../mod.ts";
+import { v2 } from "../../core/math/vec2.ts";
 import { type ResourcesManager } from "../resources/resources.ts";
 import { type CamA, Container2DObject } from "./base.ts";
 import { Sprite2D } from "./sprite.ts";
@@ -19,6 +19,7 @@ export class Container2D extends Container2DObject{
         max:v2.new(0,0),
     }
 
+    full_request:boolean=false
     object_group:boolean=false
 
     update_visibility(cama:CamA){
@@ -80,7 +81,7 @@ export class Container2D extends Container2DObject{
             const c=this.visible_children[o]
             if(c.destroyed||!c._visible)continue
             const rect=c.get_rect()
-            if(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y)c.draw(cam)
+            if(this.full||!this.full_request||(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y))c.draw(cam)
         }
     }
     add_child(c:Container2DObject){

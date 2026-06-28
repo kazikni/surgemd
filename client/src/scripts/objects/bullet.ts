@@ -220,7 +220,7 @@ export class Bullet extends GameObject{
             this.maxLength=stream.read_float(0,100,3)
             this.sprite_trail.scale!.y=stream.read_float(0,6,2)
             const col=ColorM.number(stream.read_uint32())
-            col.a=stream.read_uint8()/255
+            col.a=stream.read_uint8()
             this.sprite_trail.tint=col
 
             this.particles=stream.read_uint8()

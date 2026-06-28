@@ -16,6 +16,7 @@ export const NormalBiome:MapBiomeDef={
         "/sounds/musics/online/game_normal_music_1.mp3",
         "/sounds/musics/online/game_normal_music_2.mp3",
         "/sounds/musics/online/game_normal_music_3.mp3",
+        "/sounds/musics/online/game_normal_music_4.mp3",
     ]
 }
 export const map_spawns={

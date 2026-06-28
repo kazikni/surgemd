@@ -63,7 +63,7 @@ export class Decal extends GameObject{
             if(tint_dirty){
                 if(this.sprite){
                     this.sprite.tint=ColorM.number(stream.read_uint32())
-                    this.sprite.tint.a=stream.read_uint8()/255
+                    this.sprite.tint.a=stream.read_uint8()
                 }
             }
             if(scale){

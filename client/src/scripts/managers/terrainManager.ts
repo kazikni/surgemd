@@ -27,19 +27,16 @@ export class TerrainM extends TerrainManager{
         if(this.last_layer!==layer){
             this.last_layer=layer
             graphic.layer=layer
-            graphic.clear()
+            graphic.ctx.clear()
             for(const f of this.floors){
                 if(layer<f.layer)continue
                 const flb=this.game.minimap.biome.floors[f.type as FloorType]
-                graphic.beginPath()
-                graphic.set_hitbox(f.hb)
-                graphic.repeat_size=3
-                graphic.endPath()
-                const col=f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color)
-                graphic.fill_color(ColorM.number(col))
-                graphic.fill()
+                graphic.ctx.begin_path()
+                graphic.ctx.set_hitbox(f.hb)
+                graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
+                graphic.ctx.fill()
             }
-            if(Debug.hitbox){
+            /*if(Debug.hitbox){
                 for(const f of this.floors){
                     graphic.fill_color(ColorM.hex("#ff0"))
                     if(f.hb.type===HitboxType2D.polygon)
@@ -47,7 +44,7 @@ export class TerrainM extends TerrainManager{
                         graphic.drawModel(model2d.circle(0.1,8,p))
                     }
                 }
-            }
+            }*/
         }
     }
 }

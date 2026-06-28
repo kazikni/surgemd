@@ -1,4 +1,4 @@
-import { Packet } from "../../engine/client.ts";
+import { Packet } from "../../engine/core/net/packets.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { PacketType } from "../definitions/utils.ts";
 

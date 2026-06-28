@@ -209,7 +209,7 @@ export const obstacles_factory={
             rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
             below:{
-                alpha:0.25
+                alpha:60
             },
             height:2
         },settings.o??{})
@@ -487,7 +487,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             rotation_mode:RotationMode.full,
             below:{
                 hitbox:new CircleHitbox2D(v2(0,0),2.2),
-                alpha:0.25
+                alpha:60
             },
             spawnMode:Spawn.grass,
         },

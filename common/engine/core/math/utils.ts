@@ -538,6 +538,16 @@ export function Classes<T extends new (...args: any[]) => any>(
     // deno-lint-ignore no-explicit-any
     return Bases as any;
 }
+export function apply_mixins(derivedCtor: any, baseCtors: any[]) {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+             if (name !== 'constructor') {
+                derivedCtor.prototype[name] = baseCtor.prototype[name];
+            }
+        });
+    }); 
+}
+
 export class WebPath{
     IP:string
     Port:number

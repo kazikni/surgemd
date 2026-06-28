@@ -108,7 +108,7 @@ export class Obstacle extends StaticBody{
             duration:this.def.below.duration??0.25,
             target:this.container.tint,
             to:{
-                a:below?this.def.below.alpha:1
+                a:below?this.def.below.alpha:255
             }
         })
     }
@@ -392,8 +392,8 @@ export class Obstacle extends StaticBody{
 
                 this.initialize_hitboxes()
                 if(Debug.hitbox){
-                    this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
-                    this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
+                    this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+                    this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
                 }
             }
 

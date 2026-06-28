@@ -1,7 +1,7 @@
 import { FrameData, KSPR } from "../../core/lang/kspx.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { Material, Renderer, Texture } from "../rendering/renderer.ts"
+import { Renderer, Texture } from "../rendering/renderer.ts"
 import { AudioEngine } from "./sounds.ts";
 export interface SpritesheetJSON{
     meta:{

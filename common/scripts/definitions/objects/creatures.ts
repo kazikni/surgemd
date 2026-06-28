@@ -1,4 +1,3 @@
-import { CenterHotspot } from "../../../engine/client.ts";
 import { CircleHitbox2D, Definition, Definitions, Hitbox2D, LootTable, Stream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
 import { SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
@@ -31,7 +30,7 @@ export const SpriteEntity={
         if(!cs)return
 
         c.main_sprite=c.container.create_sprite()
-        c.main_sprite.hotspot = CenterHotspot
+        c.main_sprite.hotspot = v2.half_one
         c.main_sprite.zIndex = 2
         c.main_sprite.set_frame(c.def.assets.frames.main,c.game.resources)
     }

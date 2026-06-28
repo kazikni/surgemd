@@ -31,7 +31,7 @@ export class BuildingCeiling{
             duration:this.def.below?.duration??0.5,
             target:this.container.tint,
             to:{
-                a:below?(this.def.below?.alpha??0):1,
+                a:below?(this.def.below?.alpha??0):255,
             }
         })
     }
@@ -175,8 +175,8 @@ export class Building extends StaticBody{
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,0,this.def.assets.particles)
 
         if(Debug.hitbox){
-            this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
-            this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
         }
     }
     override on_decode_net(stream: Stream, full: boolean): void {

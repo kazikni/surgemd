@@ -2,7 +2,7 @@ import { FetchFileManager, FileManager } from "../definition/file.ts";
 import { random } from "../math/random.ts";
 import { ID, SignalManager } from "../math/utils.ts";
 import { ConnectPacket, DisconnectPacket, InvalidPacket, MessagePacket, Packet, PacketsManager, PingPacket, PongPacket, SignalMessagePacket } from "./packets.ts";
-import { StaticStream, Stream } from "./stream.ts";
+import { DynamicStream, StaticStream, Stream } from "./stream.ts";
 
 export class BasicSocket{
     readyState = 1;
@@ -131,7 +131,7 @@ export class Client{
             this.emit_packet(new PongPacket(packet.time))
         })
     }
-    private static stream_cache:Stream=new StaticStream(new ArrayBuffer(1024 * 40))
+    private static stream_cache:Stream=new DynamicStream()
 
     emit(signal:string,msg?:any,bytes1:number=1,bytes2:number=2){
         const p=new SignalMessagePacket()

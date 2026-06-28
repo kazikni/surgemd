@@ -1,8 +1,8 @@
-import { fullCanvas, Renderer, WebglRenderer } from "../rendering/renderer.ts"
+import { Renderer, WebglRenderer } from "../rendering/renderer.ts"
 import { CamA, Container2DObject } from "./base.ts"
 import { v2, v2m } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
-import { Context2D, GLContext2D } from "../rendering/context.ts";
+import { BatcherContext2D, Context2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { Rect } from "../../core/math/geometry.ts";
@@ -48,8 +48,8 @@ export class Camera2D{
     constructor(renderer:Renderer){
         this.renderer=renderer
         this.zoom=1
-        this.container.object_group=true
-        this.ctx=new GLContext2D(renderer as WebglRenderer)
+        this.container.full_request=true
+        this.ctx=renderer.make_context()
     }
 
     get_rect():Rect{
@@ -165,7 +165,8 @@ export class Camera2D{
         }
         this.container.draw(cam)
         this.ctx.base_matrix=this.projectionMatrix
-        this.ctx.render()
+        this.ctx.render(this.renderer)
+        this.ctx.clear()
 
         for(const a of this.after_draw){
             a(cam)
@@ -175,10 +176,10 @@ export class Camera2D{
     clear(){
         this.container.clear()
     }
-    fullCanvas(){
+    full_canvas(){
         const sx=this.renderer.canvas.width
         const sy=this.renderer.canvas.height
-        fullCanvas(this.renderer.canvas)
+        this.renderer.full_canvas()
         if(sx!=this.renderer.canvas.width||sy!=this.renderer.canvas.height){
             this.resize()
         }

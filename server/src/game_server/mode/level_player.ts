@@ -5,7 +5,7 @@ import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
-import { FileManager, mergeDeep, StaticStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
+import { FileManager, mergeDeep, DynamicStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
 import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -98,7 +98,7 @@ export class LevelPlayer {
 
     constructor(game: Game,fs:FileManager){
         this.game = game
-        this.checkpoint=new StaticStream(new ArrayBuffer(1))
+        this.checkpoint=new DynamicStream()
         this.fs=fs
     }
 
@@ -194,9 +194,9 @@ export class LevelPlayer {
         this.start()
     }
     save_checkpoint(){
-        this.checkpoint=new StaticStream(new ArrayBuffer(1024*1000))
+        this.checkpoint.clear()
         this.game.save_checkpoint(this.checkpoint)
-        ;(this.checkpoint as StaticStream).lock()
+        this.checkpoint.lock()
     }
     start(){
         if(this.allies){

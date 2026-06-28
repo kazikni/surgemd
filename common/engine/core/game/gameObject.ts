@@ -1,5 +1,5 @@
 import { type ID } from "../math/utils.ts"
-import { StaticStream, Stream } from "../net/stream.ts";
+import { DynamicStream, Stream } from "../net/stream.ts";
 import { random } from "../math/random.ts";
 import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
@@ -609,7 +609,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     encode_all_net(force_full:boolean=false,delete_all:boolean=false,stream?:Stream):Stream{
         if(!stream){
-            if(!this.stream_cache)this.stream_cache=new StaticStream(new ArrayBuffer(1024*50))
+            if(!this.stream_cache)this.stream_cache=new DynamicStream()
             stream=this.stream_cache
             this.stream_cache.clear()
         }
@@ -625,7 +625,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,delete_all:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
         if(!stream){
-            if(!this.stream_cache)this.stream_cache=new StaticStream(new ArrayBuffer(1024*50))
+            if(!this.stream_cache)this.stream_cache=new DynamicStream()
             stream=this.stream_cache
             this.stream_cache.clear()
         }

@@ -1,4 +1,4 @@
-import { StaticStream, Stream } from "../net/stream.ts";
+import { DynamicStream, StaticStream, Stream } from "../net/stream.ts";
 export enum KSPRImageFormat {
     RawRGBA = 0,
     PNG = 1,
@@ -27,7 +27,7 @@ export interface KSPR {
     resolutions: Record<string, KSPRResolution>
 }
 export function write_kspr(data: KSPR, stream?: Stream): Stream {
-    const s = stream ?? new StaticStream(new ArrayBuffer(10_000_000))
+    const s = stream ?? new DynamicStream()
     // HEADER
     s.write_string_sized(".KSPR",5)
     s.write_uint8(2)

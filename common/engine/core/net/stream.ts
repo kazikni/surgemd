@@ -7,6 +7,7 @@ import { v3 } from "../math/vec3.ts"
 export abstract class Stream{
     static readonly decoder = new TextDecoder();
     static readonly encoder = new TextEncoder();
+    protected static _tmpU8 = new Uint8Array(4096)
 
     abstract get length():number
     abstract get index():number
@@ -72,7 +73,6 @@ export abstract class Stream{
             case 4: return this.read_uint32()
         }
     }
-
     write_float(value: number, min: number, max: number, bytes: 1 | 2 | 3 | 4): this {
         const range = (2 ** (8 * bytes)) - 1;
         const val = ((value - min) / (max - min)) * range + 0.5;
@@ -490,12 +490,18 @@ export abstract class Stream{
             year:   this.read_uint16()
         };
     }
-}
 
+    static write_uv(stream:Stream,x:number,y:number){
+        stream.write_uint16((x*65535+0.5)|0)
+        stream.write_uint16((y*65535+0.5)|0)
+    }
+    abstract push(arr:Uint8Array):void
+    abstract lock():void
+}
 export class StaticStream extends Stream{
     _view: DataView;
     _u8Array: Uint8Array;
-    private static _tmpU8 = new Uint8Array(4096)
+    little_endian:boolean=true
 
     constructor(source: ArrayBuffer,byteOffset?: number,byteLength?: number) {
         super()
@@ -564,62 +570,62 @@ export class StaticStream extends Stream{
     }
 
     write_uint16(value: number): this {
-        this._view.setUint16(this.index, value)
+        this._view.setUint16(this.index, value,this.little_endian)
         this.index += 2
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_uint16(): number {
-        const val = this._view.getUint16(this.index)
+        const val = this._view.getUint16(this.index,this.little_endian)
         this.index += 2
         return val
     }
 
     write_uint24(value:number): this {
-        this._view.setUint16(this.index, value >> 8)
+        this._view.setUint16(this.index, value >> 8,this.little_endian)
         this.index += 2
         this._view.setUint8(this.index++, value)
         if (this.index > this.length)this.length = this.index
         return this
     }
     read_uint24(): number {
-        const val = (this._view.getUint16(this.index) << 8) + this._view.getUint8(this.index + 2)
+        const val = (this._view.getUint16(this.index,this.little_endian) << 8) + this._view.getUint8(this.index + 2)
         this.index += 3
         return val
     }
 
     write_uint32(value: number): this {
-        this._view.setUint32(this.index, value)
+        this._view.setUint32(this.index, value,this.little_endian)
         this.index += 4
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_uint32(): number {
-        const val = this._view.getUint32(this.index)
+        const val = this._view.getUint32(this.index,this.little_endian)
         this.index += 4
         return val
     }
 
     write_uint64(value: bigint): this {
-        this._view.setBigUint64(this.index, value)
+        this._view.setBigUint64(this.index, value,this.little_endian)
         this.index += 8
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_uint64(): bigint {
-        const val = this._view.getBigUint64(this.index)
+        const val = this._view.getBigUint64(this.index,this.little_endian)
         this.index += 8
         return val
     }
 
     write_id(value: number): this {
-        this._view.setUint16(this.index, value)
+        this._view.setUint16(this.index, value,this.little_endian)
         this.index += 2
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_id(): number {
-        const val = this._view.getUint16(this.index)
+        const val = this._view.getUint16(this.index,this.little_endian)
         this.index += 2
         return val
     }
@@ -637,74 +643,74 @@ export class StaticStream extends Stream{
     }
 
     write_int16(value: number): this {
-        this._view.setInt16(this.index, value)
+        this._view.setInt16(this.index, value,this.little_endian)
         this.index += 2
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_int16(): number {
-        const val = this._view.getInt16(this.index)
+        const val = this._view.getInt16(this.index,this.little_endian)
         this.index += 2
         return val
     }
 
     write_int24(value: number): this {
-        this._view.setUint16(this.index, value >> 8)
+        this._view.setUint16(this.index, value >> 8,this.little_endian)
         this.index += 2
         this._view.setUint8(this.index++, value)
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_int24(): number {
-        const val = (this._view.getInt16(this.index) << 8) + this._view.getInt8(this.index + 2)
+        const val = (this._view.getInt16(this.index,this.little_endian) << 8) + this._view.getInt8(this.index + 2)
         this.index += 3
         return val
     }
 
     write_int32(value: number): this {
-        this._view.setInt32(this.index, value)
+        this._view.setInt32(this.index, value,this.little_endian)
         this.index += 4
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_int32(): number {
-        const val = this._view.getInt32(this.index)
+        const val = this._view.getInt32(this.index,this.little_endian)
         this.index += 4
         return val
     }
 
     write_int64(value: bigint): this { 
-        this._view.setBigInt64(this.index, value)
+        this._view.setBigInt64(this.index, value, this.little_endian)
         this.index += 8
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_int64(): bigint {
-        const val = this._view.getBigInt64(this.index)
+        const val = this._view.getBigInt64(this.index, this.little_endian)
         this.index += 8
         return val
     }
 
     write_float32(value: number): this {
-        this._view.setFloat32(this.index, value)
+        this._view.setFloat32(this.index, value,this.little_endian)
         this.index += 4
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_float32(): number {
-        const val = this._view.getFloat32(this.index)
+        const val = this._view.getFloat32(this.index,this.little_endian)
         this.index += 4
         return val
     }
 
     write_float64(value: number): this {
-        this._view.setFloat64(this.index, value)
+        this._view.setFloat64(this.index, value,this.little_endian)
         this.index += 8
         if(this.index>this.length)this.length=this.index
         return this
     }
     read_float64(): number {
-        const val = this._view.getFloat64(this.index)
+        const val = this._view.getFloat64(this.index,this.little_endian)
         this.index += 8
         if(this.index>this.length)this.length=this.index
         return val
@@ -722,7 +728,7 @@ export class StaticStream extends Stream{
         return this
     }
     read_string_sized(bytes: number): string {
-        const buf = StaticStream._tmpU8
+        const buf = Stream._tmpU8
         let i=0
         while(i<bytes) {
             buf[i] = this._view.getUint8(this.index+i)
@@ -756,5 +762,324 @@ export class StaticStream extends Stream{
         stream.length = len
         this.index += len
         return stream
+    }
+
+    override push(buf:Uint8Array): void {
+        this._u8Array.set(buf, this.index)
+        this.index += buf.length
+        if (this.index > this.length) {
+            this.length = this.index
+        }
+    }
+}
+export class DynamicStream extends Stream{
+    _view: DataView;
+    _u8Array: Uint8Array;
+    little_endian:boolean=true
+
+    constructor(initialSize=10) {
+        super()
+        const b=new ArrayBuffer(initialSize)
+        this._view = new DataView(b)
+        this._u8Array = new Uint8Array(b)
+    }
+
+    clear(){
+        this.index=0
+        this.length=0
+    }
+
+    ensure(extra: number): void {
+        const required = this.index + extra
+        if (required <= this._u8Array.length) return
+
+        let newSize = this._u8Array.length
+        while (newSize < required) {
+            newSize *= 2
+        }
+
+        const newBuffer = new ArrayBuffer(newSize)
+        const newArray = new Uint8Array(newBuffer)
+
+        newArray.set(this._u8Array.subarray(0, this.length))
+
+        this._u8Array = newArray
+        this._view = new DataView(newBuffer)
+    }
+    _index = 0
+    override get index(): number {
+        return this._index
+    }
+    override set index(val: number) {
+        this._index=val
+    }
+    _length = 0
+    override get length(): number {
+        return this._length
+    }
+    override set length(val:number){
+        this._length=val
+    }
+    override get data(): Uint8Array<ArrayBufferLike> {
+        return this._u8Array
+    }
+    get buffer(): ArrayBufferLike { return this._view.buffer }
+
+    lock(): this {
+        if (this.length === this._u8Array.length) return this
+        const newBuffer = new ArrayBuffer(this.length)
+        const newArray = new Uint8Array(newBuffer)
+        newArray.set(this._u8Array.subarray(0, this.length))
+        this._u8Array = newArray
+        this._view = new DataView(newBuffer)
+        if (this.index > this.length) {
+            this.index = this.length
+        }
+        return this
+    }
+
+    write_uint8(value: number): this {
+        this.ensure(1)
+        this._view.setUint8(this.index, value)
+        this.index += 1
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_uint8(): number {
+        if(this._index+1>this.length)return 0
+        const val = this._view.getUint8(this.index);
+        this.index += 1
+        return val
+    }
+
+    write_uint16(value: number): this {
+        this.ensure(2)
+        this._view.setUint16(this.index, value,this.little_endian)
+        this.index += 2
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_uint16(): number {
+        if(this._index+2>this.length)return 0
+        const val = this._view.getUint16(this.index,this.little_endian)
+        this.index += 2
+        return val
+    }
+
+    write_uint24(value:number): this {
+        this.ensure(3)
+        this._view.setUint16(this.index, value >> 8,this.little_endian)
+        this.index += 2
+        this._view.setUint8(this.index++, value)
+        if (this.index > this.length)this.length = this.index
+        return this
+    }
+    read_uint24(): number {
+        if(this._index+3>this.length)return 0
+        const val = (this._view.getUint16(this.index,this.little_endian) << 8) + this._view.getUint8(this.index + 2)
+        this.index += 3
+        return val
+    }
+
+    write_uint32(value: number): this {
+        this.ensure(4)
+        this._view.setUint32(this.index, value,this.little_endian)
+        this.index += 4
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_uint32(): number {
+        if(this._index+4>this.length)return 0
+        const val = this._view.getUint32(this.index,this.little_endian)
+        this.index += 4
+        return val
+    }
+
+    write_uint64(value: bigint): this {
+        this.ensure(8)
+        this._view.setBigUint64(this.index, value,this.little_endian)
+        this.index += 8
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_uint64(): bigint {
+        if(this._index+8>this.length)return BigInt(0)
+        const val = this._view.getBigUint64(this.index,this.little_endian)
+        this.index += 8
+        return val
+    }
+
+    write_id(value: number): this {
+        this.ensure(2)
+        this._view.setUint16(this.index, value,this.little_endian)
+        this.index += 2
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_id(): number {
+        if(this._index+2>this.length)return 0
+        const val = this._view.getUint16(this.index,this.little_endian)
+        this.index += 2
+        return val
+    }
+
+    write_int8(value: number): this {
+        this.ensure(1)
+        this._view.setInt8(this.index, value)
+        this.index += 1
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_int8(): number {
+        if(this._index+1>this.length)return 0
+        const val = this._view.getInt8(this.index)
+        this.index += 1
+        return val
+    }
+
+    write_int16(value: number): this {
+        this.ensure(2)
+        this._view.setInt16(this.index, value,this.little_endian)
+        this.index += 2
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_int16(): number {
+        if(this._index+2>this.length)return 0
+        const val = this._view.getInt16(this.index,this.little_endian)
+        this.index += 2
+        return val
+    }
+
+    write_int24(value: number): this {
+        this.ensure(3)
+        this._view.setUint16(this.index, value >> 8,this.little_endian)
+        this.index += 2
+        this._view.setUint8(this.index++, value)
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_int24(): number {
+        if(this._index+3>this.length)return 0
+        const val = (this._view.getInt16(this.index,this.little_endian) << 8) + this._view.getInt8(this.index + 2)
+        this.index += 3
+        return val
+    }
+
+    write_int32(value: number): this {
+        this.ensure(4)
+        this._view.setInt32(this.index, value,this.little_endian)
+        this.index += 4
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_int32(): number {
+        if(this._index+4>this.length)return 0
+        const val = this._view.getInt32(this.index,this.little_endian)
+        this.index += 4
+        return val
+    }
+
+    write_int64(value: bigint): this {
+        this.ensure(8)
+        this._view.setBigInt64(this.index, value,this.little_endian)
+        this.index += 8
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_int64(): bigint {
+        if(this._index+8>this.length)return BigInt(0)
+        const val = this._view.getBigInt64(this.index,this.little_endian)
+        this.index += 8
+        return val
+    }
+
+    write_float32(value: number): this {
+        this.ensure(4)
+        this._view.setFloat32(this.index, value,this.little_endian)
+        this.index += 4
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_float32(): number {
+        if(this._index+4>this.length)return 0
+        const val = this._view.getFloat32(this.index,this.little_endian)
+        this.index += 4
+        return val
+    }
+
+    write_float64(value: number): this {
+        this.ensure(8)
+        this._view.setFloat64(this.index, value,this.little_endian)
+        this.index += 8
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_float64(): number {
+        if(this._index+8>this.length)return 0
+        const val = this._view.getFloat64(this.index,this.little_endian)
+        this.index += 8
+        if(this.index>this.length)this.length=this.index
+        return val
+    }
+
+    write_string_sized(string: string,bytes: number): this {
+        this.ensure(bytes)
+        const byteArray = Stream.encoder.encode(string)
+        for (let i = 0; i < bytes; i++) {
+            const val = byteArray[i] ?? 0
+            this._view.setUint8(this.index+i, val)
+            if(val===0)break
+        }
+        this.index+=bytes
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_string_sized(bytes: number): string {
+        if(this._index+bytes>this.length)return ""
+        const buf = StaticStream._tmpU8
+        let i=0
+        while(i<bytes) {
+            buf[i] = this._view.getUint8(this.index+i)
+            if(buf[i]===0)break
+            i++
+        }
+        this.index+=bytes
+        return Stream.decoder.decode(buf.subarray(0, i))
+    }
+    write_stream(src: Stream,offset = 0,length = src.length - offset): this{
+        this.ensure(length)
+        this._u8Array.set(src.data.subarray(offset, offset + length), this.index)
+        this.index += length
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+
+    write_stream_dynamic(src: Stream): this {
+        this.write_uint24(src.length)
+        this.ensure(src.length)
+        this._u8Array.set(src.data.subarray(0, src.length), this.index)
+        this.index += src.length
+        if(this.index>this.length)this.length=this.index
+        return this
+    }
+    read_stream_dynamic(): Stream {
+        const len = this.read_uint24()
+        const stream = new StaticStream(
+            this._view.buffer as ArrayBuffer,
+            this.index,
+            len
+        )
+        if(this._index+len>this.length)return stream
+        stream.length = len
+        this.index += len
+        return stream
+    }
+
+    override push(buf: Uint8Array): void {
+        this.ensure(buf.length)
+        this._u8Array.set(buf, this.index)
+        this.index += buf.length
+        if (this.index > this.length) this.length = this.index
     }
 }

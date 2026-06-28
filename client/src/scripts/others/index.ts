@@ -79,9 +79,9 @@ import { FindGameResult } from "common/scripts/config/config.ts";
             this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
             this.game.load_resources(["main"],{})
 
-            /*this.game.final_screen.set_final_screen(island_final)
-            this.game.final_screen.show_final_screen()
-            sleep(10).then(async()=>{
+            /*sleep(10).then(async()=>{
+                this.game.final_screen.set_final_screen(island_final)
+                this.game.final_screen.show_final_screen()
                 const app:ScoreApplyer[]=[]
                 const leaderboard:LeaderboardPlayer[]=[]
                 for(let i=0;i<5;i++){

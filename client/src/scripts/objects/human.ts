@@ -275,7 +275,7 @@ export class Human extends MovingBody{
                 speed:1,
                 scale:2,
                 to:{
-                    tint:{r:1,g:1,b:1,a:0}
+                    tint:ColorM.default.transparent
                 }
             }),
             enabled:false
@@ -839,12 +839,7 @@ export class Human extends MovingBody{
                         speed:0,
                         to:{
                             scale:3,
-                            tint:{
-                                r:1,
-                                g:1,
-                                b:1,
-                                a:0
-                            }
+                            tint:ColorM.default.transparent
                         }
                     }))
                 }

@@ -242,10 +242,11 @@ export class BattleRoyale extends ModeManager{
 }
 export class BattleRoyaleDebug extends BattleRoyale{
     constructor(settings:BattleRoyaleSettings,group_size?:number) {
-        if(!settings.map?.def){
-            settings.map={def:Maps["debug"]}
+        const s={...settings}
+        if(!s.map?.def){
+            s.map={def:Maps["debug"]}
         }
-        super(settings,group_size)
+        super(s,group_size)
     }
     override on_start(){
     }

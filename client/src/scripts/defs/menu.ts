@@ -1080,6 +1080,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "character":{
                     generate:make_menu_settings(menu.save,[
                         {
+                            type:"input",
+                            name:"loadout.character.name",
+                            var:"sv_loadout_name",
+                        },
+                        {
                             type:"color",
                             name:"loadout.character.hair_tint",
                             var:"sv_loadout_hair_tint",

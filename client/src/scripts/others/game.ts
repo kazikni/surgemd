@@ -173,9 +173,8 @@ export class Game extends ClientGame<GameObject>{
 
         this.cam2d.addObject(this.terrain_gfx)
         this.cam2d.addObject(this.grid)
-        this.cam2d.addObject(this.ui_gfx)
-
-        this.dead_zone.append()
+        //this.cam2d.addObject(this.ui_gfx)
+        //this.cam2d.addObject(this.hitboxes_gfx)
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid.zIndex=zIndexes.Grid
@@ -187,7 +186,6 @@ export class Game extends ClientGame<GameObject>{
             radius:1,
             offset:v2(0.1,0.1)
         }
-        this.cam2d.addObject(this.hitboxes_gfx)
 
         this.inventory.initialize(this.definitions,{
             0:MeleeItem as (new(item:GameItem)=>LItem),
@@ -202,6 +200,7 @@ export class Game extends ClientGame<GameObject>{
         this.grid.stroke=ColorM.rgba(0,0,0,25)
 
         this.terrain_gfx.initialize(this.cam2d.ctx)
+        this.dead_zone.append()
     }
     get_theme_color(name:string):string{
         if(this.theme_colors[name])return this.theme_colors[name]
@@ -748,7 +747,7 @@ export class Game extends ClientGame<GameObject>{
     join(){
         if(!this.client)return
         const packet=new JoinPacket()
-        packet.player_name=this.save.get_variable("sv_game_name")
+        packet.player_name=this.save.get_variable("sv_loadout_name")
         packet.skin={
             female:this.save.get_variable("sv_loadout_female"),
             body_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint")),

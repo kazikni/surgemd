@@ -31,6 +31,7 @@ export abstract class Context2D{
     protected state: ContextState
     protected stack: ContextState[] = []
     protected path: Vec2[] = []
+    protected current_model?: Model2D
 
     default_advanced_material?:Material
     default_material?:Material
@@ -196,6 +197,9 @@ export abstract class Context2D{
     begin_path() {
         this.path.length = 0
     }
+    end_path() {
+        this.current_model=model2d.triangulateConvex(this.path)
+    }
     move_to(x: number, y: number) {
         this.path.push({ x, y })
     }
@@ -230,7 +234,6 @@ export abstract class Context2D{
     }
 
     set_hitbox(hb: Hitbox2D, segments = 32) {
-        this.begin_path()
         switch (hb.type) {
             case HitboxType2D.null:
                 break
@@ -254,6 +257,9 @@ export abstract class Context2D{
                 this.line_to(hb.points[0].x, hb.points[0].y)
                 break
         }
+    }
+    model(model:Model2D){
+        this.current_model=model
     }
 
     abstract fill():void
@@ -304,14 +310,14 @@ export class BatcherContext2D extends Context2D{
         this.fill_rect(x + w - lw, y, lw, h)
     }
     fill() {
-        if (this.path.length < 3||!this.state.current_material) return
+        if(!this.state.current_material||!this.current_model) return
 
-        const model = model2d.triangulateConvex(this.path)
+        const model = this.current_model
         const c = this.apply_color(this.state.fill_color as Color)
 
         const vertexCount = model.vertices.length / 2
         if (vertexCount < 2) return
-        const cmd = this.batcher.ensure(this.state.current_material)
+        const cmd = this.batcher.ensure(this.state.current_material,this.transform_matrix)
 
         for(let i=0;i<vertexCount;i++){
             cmd.stream.write_float32(model.vertices[i*2]) // 4
@@ -324,9 +330,9 @@ export class BatcherContext2D extends Context2D{
         }
     }
     stroke() {
-        if (this.path.length < 2||!this.state.current_material) return
+        if(!this.state.current_material) return
         const c = this.apply_color(this.state.stroke_color as Color)
-        const cmd = this.batcher.ensure(this.state.current_material)
+        const cmd = this.batcher.ensure(this.state.current_material,this.transform_matrix)
         for (let i = 0; i < this.path.length - 1; i++) {
             const a = this.path[i]
             const b = this.path[i + 1]
@@ -369,7 +375,7 @@ export class BatcherContext2D extends Context2D{
 
         const vertexCount = model.vertices.length / 2
         if (vertexCount < 2) return
-        const cmd = this.batcher.ensure(this.advanced_material)
+        const cmd = this.batcher.ensure(this.advanced_material,this.transform_matrix)
 
         for(let i=0;i<vertexCount;i++){
             cmd.stream.write_float32(model.vertices[i*2]) // 4

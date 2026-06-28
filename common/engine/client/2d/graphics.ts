@@ -18,7 +18,11 @@ export class Graphics2D extends Container2DObject {
 
     override update_real(): void {
         super.update_real()
-        this._main_matrix=matrix4.translation_2d(this._real_position)
+
+        let m = matrix4.identity()
+        m = matrix4.mult(m, matrix4.translation_2d(v2(this._real_position.x,this._real_position.y)))
+        m = matrix4.mult(m, matrix4.scale_2d(this._real_scale))
+        this._main_matrix=m
     }
 
     override get_rect(): Rect {

@@ -1,8 +1,6 @@
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Model2D } from "../../core/definition/models.ts";
-import { Color } from "../../core/math/color.ts";
 import { Vec2 } from "../../core/math/vec2.ts";
-import { Frame } from "../resources/resources.ts";
 import { Material, Renderer, WebglRenderer } from "./renderer.ts";
 import { DynamicStream, Stream } from "../../core/net/stream.ts";
 export abstract class SingleMatBatchingBase{
@@ -113,8 +111,8 @@ export class Batcher {
         this.commands.push(this.current)
     }
     render(renderer:Renderer,matrix: Matrix=matrix4.identity()) {
-        for (const cmd of this.commands) {
-            const m=cmd.matrix?matrix4.mult(cmd.matrix,matrix):matrix
+        for(const cmd of this.commands) {
+            const m=cmd.matrix?matrix4.mult(matrix,cmd.matrix):matrix
             if(cmd.type===0){
                 const params={data:cmd.stream.data.subarray(0,cmd.stream.length),data_count:cmd.vertex_count,...cmd.params}
                 cmd.material.draw(cmd.material,m,params)

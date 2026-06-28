@@ -1,6 +1,6 @@
 import { ColorM,HideElement,ShowElement,UIModule,v2,v2m,Vec2 } from "common/engine/client.ts"
 import { Game } from "../others/game.ts"
-import { MapHumanData, PrivateUpdate } from "common/scripts/packets/update_packet.ts"
+import { PrivateUpdate } from "common/scripts/packets/update_packet.ts"
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
 type MinimapPing = {
     id?:number

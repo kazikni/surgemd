@@ -145,7 +145,7 @@ export class RainParticle2D extends ClientParticle2D{
                 }
                 v2m.add_component(this.sprite.position,this.vel.x*dt,this.vel.y*dt)
                 this.ticks+=dt
-                this.sprite.tint.a=Numeric.clamp(this.ticks*3,0,1)
+                this.sprite.tint.a=Numeric.clamp(this.ticks*765,0,255)
                 break
             }
             case 1:{
@@ -168,7 +168,7 @@ export class RainParticle2D extends ClientParticle2D{
                     this.destroyed=true
                 }
                 this.ticks+=2*dt
-                this.sprite.tint.a=1-this.ticks
+                this.sprite.tint.a=(1-this.ticks)*255
                 this.sprite.scale=v2.add(this.sprite.scale,v2(6*dt,6*dt))
                 break
             }

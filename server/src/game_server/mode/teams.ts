@@ -22,6 +22,7 @@ export class Team{
                 direction:0,
                 position:p.position,
                 reason:DamageReason.Bleend,
+                penetration:1,
             })
         }
     }

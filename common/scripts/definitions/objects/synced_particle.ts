@@ -81,7 +81,7 @@ export const synsed_particle_factory={
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.7,
+                        to:178,
                         duration:0.2,
                     },
                     scale:{
@@ -126,7 +126,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.9,
+                        to:230,
                         duration:2,
                     },
                     scale:{
@@ -211,7 +211,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.7,
+                        to:178,
                         duration:0.2,
                     },
                     scale:{
@@ -266,7 +266,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.5,
+                        to:127,
                         duration:0.2,
                     },
                     scale:{

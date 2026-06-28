@@ -61,6 +61,7 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
 
         gl.gl.enableVertexAttribArray(aPosition)
         gl.gl.enableVertexAttribArray(aTrans)
+        gl.gl.enableVertexAttribArray(aScale)
         gl.gl.enableVertexAttribArray(aRotation)
         gl.gl.enableVertexAttribArray(aColor)
 

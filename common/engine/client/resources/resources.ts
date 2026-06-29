@@ -30,6 +30,7 @@ export class Frame {
     src:string=""
     group:string=""
 
+    image?:HTMLImageElement
     texture?:Texture
 
     frame_rect?:Rect
@@ -184,7 +185,7 @@ export class ResourcesManager {
     async load_kspr(kspr:KSPR,resolution:string,group:string="",prefix:string="",callback?:(item:string)=>void){
         const res=kspr.resolutions[resolution]
         for(const atlas of res.atlases){
-            const blob=new Blob([atlas.image])
+            const blob=new Blob([atlas.image as BlobPart])
             const url=URL.createObjectURL(blob)
             const image=await this.load_image(url)
             URL.revokeObjectURL(url)
@@ -199,6 +200,7 @@ export class ResourcesManager {
                 }
 
                 const frame=this.create_frame(texture,rect,data.src??id)
+                frame.image=image
                 frame.id=prefix+id
                 frame.group=group
 

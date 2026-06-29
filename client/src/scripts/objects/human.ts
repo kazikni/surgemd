@@ -257,7 +257,7 @@ export class Human extends MovingBody{
 
         this.container.zIndex=zIndexes.Players
 
-        this.game.cam2d.addObject(this.container)
+        this.game.cam2d.add_object(this.container)
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
         this.sprites.vest._frame=this.game.resources.get_frame("human_vest")
         this.sprites.vest.sync_rotation=false
@@ -296,7 +296,7 @@ export class Human extends MovingBody{
         this.sprites.emote_container.position=v2(0,-1.5)
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
-        this.game.cam2d.addObject(this.sprites.emote_container)
+        this.game.cam2d.add_object(this.sprites.emote_container)
         this.sprites.emote_container.visible=false
 
         this.set_skin(
@@ -358,7 +358,7 @@ export class Human extends MovingBody{
                 tint:tint,
                 to:{
                     scale:1.5,
-                    tint:ColorM.mul_hsv(tint,undefined,undefined,undefined,0)
+                    tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0)
                 },
                 zIndex:zIndexes.Particles
             }))
@@ -1452,7 +1452,7 @@ export class Human extends MovingBody{
             this.sprites.name=new Sprite2D()
             this.sprites.name.zIndex=zIndexes.UI
             this.sprites.name.hotspot=v2.half_one()
-            this.game.cam2d.addObject(this.sprites.name)
+            this.game.cam2d.add_object(this.sprites.name)
         }
         const color=this.game.get_theme_color("primary")
         this.game.resources.render_text(name,60,color).then((frame)=>{

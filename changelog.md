@@ -1,4 +1,4 @@
-# Surgemd Beta 1.0
+# Surgemd Pre-Beta-8
 ## News
 __                                                                                                                 __
 ### Mains
@@ -12,13 +12,16 @@ __                                                                              
 * Vehicles Tire Marks
 * Groups
 * Cancel Action Input
+* Rework Rendering Engine
+* Rework Enemys AI
 __                                                                                                                 __
 ### Menu
-* Keybind Settings
+* Keybind Settings!
 * Final Screen
 * Tertiary Color Settings
 * Gameplay Music Settings
 * UI Blur Backdrop Settings
+* Loadout Set Character Name
 * Document Body
 * UI improvements
 * Ak-47 Translation

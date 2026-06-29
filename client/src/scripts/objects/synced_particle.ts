@@ -25,7 +25,7 @@ export class SyncedParticle extends MovingBody{
     }
     override on_create(_args: Record<string,any>): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
-        this.game.cam2d.addObject(this.sprite)
+        this.game.cam2d.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer

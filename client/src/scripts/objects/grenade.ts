@@ -22,7 +22,7 @@ export class Grenade extends MovingBody{
         super()
     }
     override on_create(_args: Record<string, void>): void {
-        this.game.cam2d.addObject(this.sprite)
+        this.game.cam2d.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer

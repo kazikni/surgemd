@@ -35,7 +35,7 @@ export class Explosion extends GameObject{
     override on_create(_args: Record<string, void>): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
         this.sprite.frame=this.game.resources.get_frame("base_explosion")
-        this.game.cam2d.addObject(this.sprite)
+        this.game.cam2d.add_object(this.sprite)
     }
     override on_tick(dt:number): void {
         if(this.def){

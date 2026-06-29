@@ -190,7 +190,7 @@ export class Camera3D{
         this.resize()
     }
 
-    addObject(...objects: Container3DObject[]): void {
+    add_object(...objects: Container3DObject[]): void {
         for(const o of objects){
             this.container.add_child(o);
         }

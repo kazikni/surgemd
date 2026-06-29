@@ -6,10 +6,10 @@ import { FloorType } from "common/scripts/others/terrain.ts";
 import { MakeDeadZoneStages } from "common/scripts/others/functions.ts";
 
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
-    count:8,
+    count:9,
     radius:{
-        decay:0.58,
-        initial:33
+        decay:0.61,
+        initial:35
     },
     damage:{
         add:2,
@@ -22,7 +22,7 @@ export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     advancing_time:{
         initial:60,
         decay:0.88,
-        min:30,
+        min:20,
     },
 })
 

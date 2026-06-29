@@ -27,7 +27,12 @@ export const ColorM={
      * @returns A New Color
      */
     rgba(r: number, g: number, b: number, a: number = 255): Color {
-        return { r: r, g: g, b: b, a: a };
+        return {
+            r: Numeric.clamp(Math.round(r),0,255),
+            g: Numeric.clamp(Math.round(g),0,255),
+            b: Numeric.clamp(Math.round(b),0,255),
+            a: Numeric.clamp(Math.round(a),0,255),
+        }
     },
     hex(hex: string): Color {
         hex = hex.replace("#", "").replace("0x","")
@@ -65,7 +70,7 @@ export const ColorM={
         }
     },
     number(color:number):Color{
-        color=Math.min(0xffffff,color)
+        color = Numeric.clamp(color,0,0xffffff)|0
         const r = (color >> 16) & 0xFF
         const g = (color >> 8) & 0xFF
         const b = color & 0xFF
@@ -90,10 +95,10 @@ export const ColorM={
         else             { r = c; g = 0; b = x }
 
         return {
-            r: Math.floor(r + m),
-            g: Math.floor(g + m),
-            b: Math.floor(b + m),
-            a
+            r: Math.round((r + m) * 255),
+            g: Math.round((g + m) * 255),
+            b: Math.round((b + m) * 255),
+            a: Math.round(a)
         }
     },
     rgba2hex(color: Color): string {
@@ -114,9 +119,9 @@ export const ColorM={
         return `#${red}${green}${blue}${alpha}`
     },
     rgb2hsv(color: Color): { h: number; s: number; v: number; a: number } {
-        const r = color.r
-        const g = color.g
-        const b = color.b
+        const r = color.r / 255
+        const g = color.g / 255
+        const b = color.b / 255
 
         const max = Math.max(r, g, b)
         const min = Math.min(r, g, b)
@@ -149,7 +154,7 @@ export const ColorM={
         dst.b=Math.floor(x.b*(y.b/255))
         dst.a=Math.floor(x.a*(y.a/255))
     },
-    mul_hsv(
+    mult_hsv(
         color: Color,
         hMul: number = 1,
         sMul: number = 1,
@@ -236,7 +241,12 @@ export const ColorM={
         }
     },
     lerp(a:Color, b: Color,i:number): Color {
-        return { r: Numeric.lerp(a.r,b.r,i), g: Numeric.lerp(a.g,b.g,i), b: Numeric.lerp(a.b,b.b,i), a: Numeric.lerp(a.a,b.a,i) };
+        return {
+            r: Math.round(Numeric.lerp(a.r,b.r,i)),
+            g: Math.round(Numeric.lerp(a.g,b.g,i)),
+            b: Math.round(Numeric.lerp(a.b,b.b,i)),
+            a: Math.round(Numeric.lerp(a.a,b.a,i)),
+        }
     },
     clone(a:Color): Color {
         return { r: a.r,g: a.g,b: a.b,a: a.a};

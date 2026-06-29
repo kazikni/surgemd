@@ -171,10 +171,10 @@ export class Game extends ClientGame<GameObject>{
         this.minimap=new MinimapManager(this)
         this.final_screen=new FinalScreenManager(this)
 
-        this.cam2d.addObject(this.terrain_gfx)
-        this.cam2d.addObject(this.grid)
-        //this.cam2d.addObject(this.ui_gfx)
-        //this.cam2d.addObject(this.hitboxes_gfx)
+        this.cam2d.add_object(this.terrain_gfx)
+        this.cam2d.add_object(this.grid)
+        //this.cam2d.add_object(this.ui_gfx)
+        //this.cam2d.add_object(this.hitboxes_gfx)
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid.zIndex=zIndexes.Grid
@@ -347,8 +347,8 @@ export class Game extends ClientGame<GameObject>{
                             if(v){
                                 this.close_game()
                             }
+                            this.escape_menu=false
                         })
-                        this.escape_menu=false
                     }
                     break
             }

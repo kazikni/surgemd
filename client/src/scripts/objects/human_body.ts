@@ -37,7 +37,7 @@ export class HumanBody extends GameObject{
     }
     override on_create(_args: any) {
         this.base_hitbox=new NullHitbox2D(v2(0,0))
-        this.game.cam2d.addObject(this.container)
+        this.game.cam2d.add_object(this.container)
         this.sprite.frame=this.game.resources.get_frame("human_body")
     }
     override on_layer_set(): void {

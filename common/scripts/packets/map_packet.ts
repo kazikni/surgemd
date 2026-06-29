@@ -85,7 +85,7 @@ export class MapPacket extends Packet{
                     .write_uint8(i.variation)
                     .write_uint8(i.skin)
                     .write_pos2(i.position)
-                    .write_float(i.scale,0.1,2,1)
+                    .write_float(i.scale,0,10,2)
             }
         },2)
         .write_uint32(this.map.seed)
@@ -125,7 +125,7 @@ export class MapPacket extends Packet{
                         variation:stream.read_uint8(),
                         skin:stream.read_uint8(),
                         position:stream.read_pos2(),
-                        scale:stream.read_float(0.1,2,1),
+                        scale:stream.read_float(0,10,2),
                     }
             }
         },2)

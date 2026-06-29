@@ -176,7 +176,7 @@ export class AmbientManager{
         this.light_map.layer=1000
         this.light_map.ambient = 0
         this.light_map.quality=2
-        this.game.cam2d.addObject(this.light_map)*/
+        this.game.cam2d.add_object(this.light_map)*/
     }
     on_game_close(){
         this.end_game=false

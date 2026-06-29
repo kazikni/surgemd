@@ -143,7 +143,7 @@ export class Building extends StaticBody{
                 tint:f.tint,
             },this.game.resources)
 
-            this.game.cam2d.addObject(sprite)
+            this.game.cam2d.add_object(sprite)
             this.objects.push(sprite)
         }
         for(const c of def.content.ceiling??[]){
@@ -164,7 +164,7 @@ export class Building extends StaticBody{
                 zIndex:zIndexes.DeadCeilings,
                 tint:c.frame.tint
             },this.game.resources)
-            this.game.cam2d.addObject(sprite)
+            this.game.cam2d.add_object(sprite)
             this.objects.push(sprite)
 
             const ceiling=new BuildingCeiling(this,c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),sprite,sprite)

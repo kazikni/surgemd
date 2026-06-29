@@ -293,7 +293,7 @@ export const TundraMap:MapDef={
     ],
     generation:{
         island:{
-            size:v2(600,600),
+            size:v2(575,575),
             spawn:[
                 {def:"storehouse_1",count:4},
                 {def:map_spawns.containers,count:20},
@@ -306,12 +306,12 @@ export const TundraMap:MapDef={
 
                 {def:"tundra_crate",count:7},
                 {def:"copper_crate",count:20},
-                {def:map_spawns.crates,count:90},
-                {def:"oak_tree",count:140},
+                {def:map_spawns.crates,count:80},
+                {def:"oak_tree",count:130},
                 {def:map_spawns.rocks,count:100},
-                {def:"river_rock",count:50},
-                {def:"bush",count:100},
-                {def:"barrel",count:50},
+                {def:"river_rock",count:20},
+                {def:"bush",count:70},
+                {def:"barrel",count:40},
                 {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:15},
 
                 {def:"jeep",count:5},
@@ -320,7 +320,7 @@ export const TundraMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Ice,
-                radius:265,
+                radius:250,
                 passes:3,
                 points:6,
                 variation:60,

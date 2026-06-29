@@ -154,7 +154,9 @@
             "nick_mom": "Nick (Mom)",
             "nick_dad": "Nick (Dad)",
             "shelly_mom": "Shelly (Mom)",
-            "shelly_dad": "Shelly (Dad)"
+            "shelly_dad": "Shelly (Dad)",
+            "boy": "Boy",
+            "girl": "Girl"
         },
         "feed": {
             "join": "${player} Joined",
@@ -400,6 +402,7 @@
         },
         "loadout": {
             "character": {
+                "name": "Character Name",
                 "hair_tint": "Hair Color",
                 "hair_type": "Hair Type",
                 "body_tint": "Body Color",

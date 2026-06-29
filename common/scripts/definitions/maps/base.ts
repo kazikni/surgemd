@@ -103,6 +103,7 @@ export interface MapDef{
     buildings?:JSONBuildingDef[]
     seed?:number
     biome:MapBiomeDef
+    deadzone_initial_size?:number
     gen_callback?:(map:GameMap)=>void
 }
 export interface CounterMapDef extends MapDef{

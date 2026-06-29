@@ -34,7 +34,7 @@ export class ClientDecal extends GameObject{
         this.allow_tick=true
     }
     override on_create(_args: any) {
-        this.game.cam2d.addObject(this.sprite)
+        this.game.cam2d.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer

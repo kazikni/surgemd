@@ -1,12 +1,11 @@
-import { Renderer, WebglRenderer } from "../rendering/renderer.ts"
+import { Renderer } from "../rendering/renderer.ts"
 import { CamA, Container2DObject } from "./base.ts"
 import { v2, v2m } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
-import { BatcherContext2D, Context2D } from "../rendering/context.ts";
+import {  Context2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
-import { Rect } from "../../core/math/geometry.ts";
-import { circle } from "../mod.ts";
+import { circle, Rect } from "../../core/math/geometry.ts";
 
 export class Camera2D{
     renderer:Renderer
@@ -68,7 +67,7 @@ export class Camera2D{
         }
     }
 
-    addObject(...objects: Container2DObject[]): void {
+    add_object(...objects: Container2DObject[]): void {
         for(const o of objects){
             this.container.add_child(o);
         }
@@ -125,7 +124,6 @@ export class Camera2D{
         }else{
             this.visual_position=this.position
             this.projectionMatrix=this.SubMatrix
-
             this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
         this.container.update(dt,resources)

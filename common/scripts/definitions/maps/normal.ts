@@ -63,7 +63,7 @@ export const NormalMap:MapDef={
     ],*/
     generation:{
         island:{
-            size:v2(600,600),
+            size:v2(575,575),
             spawn:[
                 {def:"small_house_1",count:4},
                 {def:"storehouse_1",count:4},
@@ -73,9 +73,9 @@ export const NormalMap:MapDef={
 
                 {def:"golden_stone",count:1},
 
-                {def:"sillo",count:10},
-                {def:map_spawns.crates,count:450},
-                {def:"oak_tree",count:900},
+                {def:"sillo",count:7},
+                {def:map_spawns.crates,count:430},
+                {def:"oak_tree",count:700},
                 {def:"river_rock",count:50},
                 {def:map_spawns.rocks,count:500},
                 {def:"bush",count:300},
@@ -135,7 +135,7 @@ export const NormalMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Water,
-                radius:265,
+                radius:250,
                 passes:3,
                 points:6,
                 variation:60,

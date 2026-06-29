@@ -32,7 +32,7 @@ export class Decal extends GameObject{
         }else{
             this.sprite=new Sprite2D()
         }
-        this.game.cam2d.addObject(this.sprite)
+        this.game.cam2d.add_object(this.sprite)
         this.sprite.set_frame({
             image:def.idString,
             zIndex:zIndexes.Decals,

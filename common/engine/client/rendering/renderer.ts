@@ -11,25 +11,48 @@ export interface Material{
 export interface Texture{
     size:Vec2
     material:Material
+
+    to_blob(canvas:HTMLCanvasElement,ctx:CanvasRenderingContext2D,type?:string):Promise<Blob|undefined>
     free():void
 }
 
 export class GLTexture implements Texture{
     size:Vec2
 
-    gl:WebGLRenderingContext
+    renderer:WebglRenderer
     texture?:WebGLTexture
+    framebuffer?:WebGLFramebuffer
     material:Material
 
-    constructor(size: Vec2,texture:WebGLTexture,gl:WebGLRenderingContext,material:Material){
-        this.gl=gl
+    constructor(size: Vec2,texture:WebGLTexture,renderer:WebglRenderer,material:Material){
+        this.renderer=renderer
         this.size=size
         this.texture=texture
         this.material=material
     }
+
+    to_blob(canvas:HTMLCanvasElement,ctx: CanvasRenderingContext2D, type: string="image/png"): Promise<Blob|undefined>{
+        if(!this.framebuffer)return new Promise(resolve=>resolve(undefined))
+
+        const pixels = new Uint8Array(this.size.x*this.size.y*4)
+        this.renderer.gl.bindFramebuffer(this.renderer.gl.FRAMEBUFFER,this.framebuffer)
+        this.renderer.gl.readPixels(0,0,this.size.x,this.size.y,this.renderer.gl.RGBA,this.renderer.gl.UNSIGNED_BYTE,pixels)
+        
+        
+        canvas.width = this.size.x;
+        canvas.height = this.size.y;
+
+        ctx.putImageData(new ImageData(new Uint8ClampedArray(pixels),this.size.x,this.size.y),0,0)
+
+        return new Promise(resolve=>{
+            canvas.toBlob(blob=>resolve(blob!),type)
+        })
+    }
+
     free(): void {
         if(this.texture){
-            this.gl.deleteTexture(this.texture)
+            if(this.framebuffer)this.renderer.gl.deleteFramebuffer(this.framebuffer)
+            this.renderer.gl.deleteTexture(this.texture)
             this.texture=undefined
         }
     }
@@ -40,12 +63,20 @@ export abstract class Renderer {
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
     }
+
+    abstract empty_texture(): Texture
+    abstract create_texture(width:number,height:number,smooth?:boolean):Texture
+    abstract load_texture(img:HTMLImageElement,smooth?:boolean):Texture
+
+    abstract bind_texture(texture:Texture):void
+    abstract unbind_texture():void
+
     abstract make_context():Context2D
+
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
     abstract set_background_color(color:Color):void
     abstract clear(): void
-    abstract create_texture(): Texture
-    abstract load_texture(img:HTMLImageElement,smooth?:boolean):Texture
+
     full_canvas(max_ration?:number,roundPixels?:boolean){
         fullCanvas(this.canvas,max_ration,roundPixels)
     }
@@ -125,9 +156,11 @@ export class WebglRenderer extends Renderer {
         simple:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatAttr>,
     }
     readonly isWebGL2: boolean
-    
+
     current_program?:WebGLProgram
     background:Color
+
+    current_texture?:GLTexture
 
     proccess_factory<A,B>(fac_def:GLMaterialFactoryCall<A,B>):GLMaterialFactory<A,B>{
         const prog=this.createProgram(fac_def.vertex,fac_def.frag)
@@ -200,9 +233,54 @@ export class WebglRenderer extends Renderer {
     make_context():GLContext2D{
         return new GLContext2D(this)
     }
-    override create_texture(): GLTexture {
+
+    override bind_texture(texture: GLTexture): void {
+        if(this.current_texture)return
+        const gl=this.gl
+
+        if(texture.framebuffer){
+            gl.bindFramebuffer(gl.FRAMEBUFFER,texture.framebuffer)
+        }else{
+            texture.framebuffer=gl.createFramebuffer()!
+            gl.bindFramebuffer(gl.FRAMEBUFFER,texture.framebuffer)
+            gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texture.texture!,0)
+        }
+
+        this.current_texture=texture
+        gl.viewport(0,0,texture.size.x,texture.size.y)
+    }
+    unbind_texture(){
+        if(!this.current_texture?.framebuffer)return
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER,null)
+        this.gl.viewport(0,0,this.canvas.width,this.canvas.height)
+        this.current_texture=undefined
+    }
+    override empty_texture(): GLTexture {
         const te=this.gl.createTexture()!
-        return new GLTexture(v2.zero(),te,this.gl,this.factorys2D.texture_batch.create({texture:te}))
+        return new GLTexture(v2.zero(),te,this,this.factorys2D.texture_batch.create({texture:te}))
+    }
+    override create_texture(width:number,height:number,smooth:boolean=false):GLTexture{
+        const gl=this.gl;
+        const tex=gl.createTexture()!;
+        gl.bindTexture(gl.TEXTURE_2D,tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            width,
+            height,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            null
+        );
+
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,smooth?this.gl.LINEAR:this.gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,smooth?this.gl.LINEAR:this.gl.NEAREST);
+
+        return new GLTexture(v2(width,height),tex,this,this.factorys2D.texture_batch.create({texture:tex}))
     }
     override load_texture(img:HTMLImageElement,smooth:boolean=true):Texture{
         const texture=this.gl.createTexture()!
@@ -235,9 +313,11 @@ export class WebglRenderer extends Renderer {
             this.gl.UNSIGNED_BYTE,
             img
         )
-        const tex=new GLTexture(v2(img.width,img.height),texture,this.gl,this.factorys2D.texture_batch.create({texture}))
+        const tex=new GLTexture(v2(img.width,img.height),texture,this,this.factorys2D.texture_batch.create({texture}))
         return tex
     }
+
+
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
         if (shader) {

@@ -23,7 +23,7 @@ export class Plane extends MovingBody {
 
     override on_create(args: Record<string, any>): void {
         this.container.add_child(this.sprite)
-        this.game.cam2d.addObject(this.container)
+        this.game.cam2d.add_object(this.container)
         this.container.zIndex = zIndexes.Planes
         this.position = this.container.position
     }

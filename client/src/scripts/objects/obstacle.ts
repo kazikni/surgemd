@@ -93,7 +93,7 @@ export class Obstacle extends StaticBody{
     }
     // deno-lint-ignore no-explicit-any
     override on_create(_args: Record<string,any>): void {
-        this.game.cam2d.addObject(this.container)
+        this.game.cam2d.add_object(this.container)
     }
 
     // Below
@@ -397,7 +397,6 @@ export class Obstacle extends StaticBody{
                 }
             }
 
-            
             this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
             this.container.scale.x=this.physical_data.scale
             this.container.scale.y=this.physical_data.scale

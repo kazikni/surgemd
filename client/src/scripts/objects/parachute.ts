@@ -30,7 +30,7 @@ export class Parachute extends GameObject{
             hotspot:CenterHotspot,
             zIndex:zIndexes.Parachute
         },this.game.resources)
-        this.game.cam2d.addObject(this.sprite)
+        this.game.cam2d.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer

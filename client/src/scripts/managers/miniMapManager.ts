@@ -194,17 +194,23 @@ export class MinimapManager {
         const sw=(frame.frame_rect?.max.x ?? frame.image.width)-sx
         const sh=(frame.frame_rect?.max.y ?? frame.image.height)-sy
 
-        const base_scale=def.assets?.frame?.transform?.scale ?? 2
-        const w=(sw/(this.game.cam2d.meter_size*2))*obj.scale*base_scale*this.meter_size
-        const h=(sh/(this.game.cam2d.meter_size*2))*obj.scale*base_scale*this.meter_size
+        const base_scale=(def.assets?.frame?.transform?.scale ?? 2)*obj.scale*this.meter_size
+        const w=(sw/(this.game.cam2d.meter_size*2))*base_scale
+        const h=(sh/(this.game.cam2d.meter_size*2))*base_scale
 
         const pos=v2.scale(obj.position,this.meter_size)
         v2m.sub(pos,pos,cam_position)
 
         this.ctx.save()
+
         this.ctx.translate(pos.x,pos.y)
         this.ctx.rotate(obj.rotation ?? 0)
+
         this.ctx.drawImage(frame.image,sx,sy,sw,sh,-w/2,-h/2,w,h)
+
         this.ctx.restore()
+    }
+    clear(){
+        
     }
 }

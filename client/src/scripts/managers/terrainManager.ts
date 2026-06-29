@@ -1,8 +1,7 @@
 import { Floors, FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { type Game } from "../others/game.ts";
-import { Debug } from "../others/config.ts";
-import { ColorM, Graphics2D, HitboxType2D, model2d, PolygonHitbox2D } from "common/engine/client.ts";
+import { ColorM, Graphics2D } from "common/engine/client.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 export class TerrainM extends TerrainManager{
     map!:MapConfig

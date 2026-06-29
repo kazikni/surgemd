@@ -1,8 +1,8 @@
 import { Model2D, model2d } from "../../core/definition/models.ts"
 import { Color, ColorM } from "../../core/math/color.ts"
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { Batcher, BatcherMaterialCommand } from "./batcher.ts"
-import { type Material, type Renderer, type WebglRenderer } from "./renderer.ts"
+import { Batcher, BatcherCommand, BatcherMaterialCommand } from "./batcher.ts"
+import { type Texture, type Material, type Renderer, type WebglRenderer, type GLTexture } from "./renderer.ts"
 import { Frame } from "../resources/resources.ts"
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
@@ -274,6 +274,10 @@ export abstract class Context2D{
     abstract sub_context():Context2D
     abstract render(renderer:Renderer):void
     abstract clear():void
+
+    abstract bind_texture(texture:Texture):void
+    abstract finish_texture(matrix?:Matrix):void
+    abstract create_texture(width:number,height:number,smooth?:boolean):Texture|undefined
 }
 export class BatcherContext2D extends Context2D{
     batcher: Batcher
@@ -444,9 +448,21 @@ export class BatcherContext2D extends Context2D{
         
         return ctx
     }
+
+    override bind_texture(texture:Texture):void{
+        return
+    }
+    override finish_texture(matrix?:Matrix):void{
+        return
+    }
+    override create_texture(width:number,height:number,smooth?:boolean):Texture|undefined{
+        return
+    }
 }
 export class GLContext2D extends BatcherContext2D{
     renderer:WebglRenderer
+
+    commands:BatcherCommand[]=[]
     constructor(renderer:WebglRenderer) {
         super()
         this.renderer=renderer
@@ -460,5 +476,19 @@ export class GLContext2D extends BatcherContext2D{
     override render(renderer: WebglRenderer): void {
         super.render(renderer)
         this.batcher.render(renderer,this.base_matrix)
+    }
+
+    override bind_texture(texture:GLTexture):void{
+        this.commands=this.batcher.commands
+        this.batcher.commands=[]
+        this.renderer.bind_texture(texture)
+    }
+    override finish_texture(matrix:Matrix):void{
+        this.batcher.render(this.renderer,matrix??this.base_matrix)
+        this.batcher.clear()
+        this.batcher.commands=this.commands
+    }
+    override create_texture(width:number,height:number,smooth?:boolean):GLTexture|undefined{
+        return this.renderer.create_texture(width,height,smooth)
     }
 }

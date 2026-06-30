@@ -263,23 +263,23 @@ export class Router {
 
 export class Server extends Router {
     port: number;
-    https: boolean = false;
+    ssl: boolean = false;
     certFile: string;
     keyFile: string;
     server: Deno.HttpServer | null;
 
     default_handlers:typeof default_handlers
-    constructor(port: number = 5000, https: boolean = false, certFile: string = "", keyFile: string = "") {
+    constructor(port: number = 5000, ssl: boolean = false, certFile: string = "", keyFile: string = "") {
         super();
-        this.port = port;
-        this.https = https;
-        this.certFile = certFile;
-        this.keyFile = keyFile;
-        this.server = null;
+        this.port = port
+        this.ssl = ssl
+        this.certFile = certFile
+        this.keyFile = keyFile
+        this.server = null
         this.default_handlers=default_handlers
     }
     run() {
-        if (this.https) {
+        if (this.ssl) {
             this.server = Deno.serve({
                 port: this.port,
                 hostname:"0.0.0.0",

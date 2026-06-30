@@ -1,17 +1,17 @@
 {
-    "name":"client",
-    "version":"1.0",
-    "task":{
-        "dev":{
-            "childs":{
-                "test":{
-                    "task":"deno run --watch -A ./src/test/stress_test.ts"
+    "name": "client",
+    "version": "1.0",
+    "task": {
+        "dev": {
+            "childs": {
+                "test": {
+                    "task": "deno run --watch -A ./src/test/stress_test.ts"
                 },
-                "game":{
-                    "task":"deno run --watch -A ./src/game_server/others/main.ts"
+                "game": {
+                    "task": "deno run --watch -A ./src/game/others/main.ts"
                 },
-                "api":{
-                    "task":"deno run --watch -A ./src/api/main.ts"
+                "api": {
+                    "task": "deno run --watch -A ./src/api/main.ts"
                 }
             }
         },
@@ -19,17 +19,17 @@
             "task": "smde task run",
             "childs": {
                 "api": {
-                    "task":"deno run --watch -A ./src/api/main.ts"
+                    "task": "deno run --watch -A ./src/api/main.ts"
                 },
                 "game": {
-                    "task": "deno run --watch -A ./src/game_server/main.ts"
+                    "task": "deno run --watch -A ./src/game/main.ts"
                 }
             }
         },
         "build": {
             "windows": [
                 "mkdir dist",
-                "deno compile  --no-check --output dist/server.exe --allow-net --allow-read --allow-write ./src/game_server/cli.ts"
+                "deno compile  --no-check --output dist/server.exe --allow-net --allow-read --allow-write ./src/game/cli.ts"
             ]
         }
     }

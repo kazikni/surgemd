@@ -1,5 +1,5 @@
 import { api, API_BASE, api_server } from "../others/config.ts";
-import { ApiSettingsS, FindGameResult } from "common/scripts/config/config.ts";
+import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
 import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
@@ -19,7 +19,7 @@ type PhaseIntroConfig = {
     wait_time?:number
 }
 export class MenuManager{
-    api_settings:ApiSettingsS
+    api_settings:ApiSettings
     account:AccountManager
     tabs:Record<string,MenuTab>={}
     tabs_html:Record<string,HTMLDivElement>={}
@@ -82,9 +82,6 @@ export class MenuManager{
                     group_size:[1]
                 },
             ],
-            debug:{
-                debug_menu:true,
-            },
             database:{
                 enabled:false,
             },

@@ -1,36 +1,36 @@
 {
-    "name":"surgemd",
-    "version":"1.0",
+    "name": "surgemd",
+    "version": "1.0",
     "engine": {
         "version": "@latest",
         "path": "common/scripts/engine",
         "source": "https://smde.io/files/smde"
     },
-    "task":{
-        "dev":{
-            "childs":{
-                "game":{
-                    "task":"cd server & deno run --watch -A ./src/game_server/main.ts"
+    "task": {
+        "dev": {
+            "childs": {
+                "game": {
+                    "task": "cd server & deno run --watch -A ./src/game/main.ts"
                 },
-                "api":{
-                    "task":"cd server & deno run --watch -A ./src/api/main.ts"
+                "api": {
+                    "task": "cd server & deno run --watch -A ./src/api/main.ts"
                 },
-                "client":{
-                    "task":"cd client & smde run vite"
+                "client": {
+                    "task": "cd client & smde run vite"
                 }
             }
         },
         "run": {
-            "task":"smde run",
-            "childs":{
-                "game":{
-                    "task":"cd server & deno run --watch -A ./src/game_server/main.ts"
+            "task": "smde run",
+            "childs": {
+                "game": {
+                    "task": "cd server & deno run --watch -A ./src/game/main.ts"
                 },
-                "api":{
-                    "task":"cd server & deno run --watch -A ./src/api/main.ts"
+                "api": {
+                    "task": "cd server & deno run --watch -A ./src/api/main.ts"
                 },
-                "client":{
-                    "task":"cd client & smde run vite"
+                "client": {
+                    "task": "cd client & smde run vite"
                 }
             }
         }

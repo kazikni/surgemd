@@ -335,10 +335,10 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "debug_menu":
-                    if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
+                    /*if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
                     if(!this.device.apps.some((a)=>a instanceof DebugApp)){
                         this.device.add_app(new DebugApp)
-                    }
+                    }*/
                     break
                 case "escape":
                     if(this.happening&&!this.escape_menu){

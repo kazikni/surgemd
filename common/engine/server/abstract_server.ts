@@ -8,7 +8,7 @@ export type WorkerMessageBase<GameConfig, GameData, MainConfig> =
 
         id: number
         port: number
-        https?: boolean
+        ssl?: boolean
         certFile?: string
         keyFile?: string
 
@@ -82,6 +82,7 @@ export abstract class AbstractGameContainer<
 > {
     id = 0
     data!: GameData
+    config?:GameConfig
     worker!: Worker
     abstract worker_path: URL
 
@@ -98,15 +99,17 @@ export abstract class AbstractGameContainer<
         this.reset_worker()
     }
     protected reset_worker() {
+        this.config=undefined
         if (this.worker) {
             this.worker.onerror = null
             this.worker.onmessage = null
-
             try {
                 this.worker.terminate()
             } catch {}
         }
+
         console.log(`[GAME ${this.id}] Starting worker`)
+
         const worker=new Worker(this.worker_path.href, {
             type: "module"
         })
@@ -115,7 +118,7 @@ export abstract class AbstractGameContainer<
             type: WorkerMsg.Begin,
             id: this.id,
             port: this.port,
-            https: this.server.server.https,
+            ssl: this.server.server.ssl,
             certFile: this.server.server.certFile,
             keyFile: this.server.server.keyFile,
             config: this.server.config
@@ -145,8 +148,10 @@ export abstract class AbstractGameContainer<
             type: 1,
             config:config
         })
+        this.config=config
     }
     stop() {
         this.worker.postMessage({ type: 3 })
+        this.config=undefined
     }
 }

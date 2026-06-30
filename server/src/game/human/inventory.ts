@@ -160,7 +160,10 @@ export class GunItem extends GunItemBase implements LItem{
         if(this.def.dual_from)this.dual_d=!this.dual_d
 
         let spread=this.def.spread??0
-        if(this.def.move_spread!==undefined&&v2.len(user.physical_data.velocity)>=0.1)spread*=this.def.move_spread
+        const is_moving=v2.len(user.physical_data.velocity)>=0.1
+        if(is_moving&&this.def.move_spread!==undefined){
+            spread*=this.def.move_spread
+        }
 
         if(this.def.bullet){
             const bullets_count=this.def.bullet.count??1
@@ -171,7 +174,7 @@ export class GunItem extends GunItemBase implements LItem{
                     ang+=Angle.deg2rad(random.float(-spread,spread))
                 }
                 const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
-                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammo_type,this.def,user.layer)
+                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammo_type,this.def,user.layer,undefined,is_moving?0.2:undefined)
                 b.modifiers={
                     speed:user.modifiers.bullet_speed,
                     size:user.modifiers.bullet_size,

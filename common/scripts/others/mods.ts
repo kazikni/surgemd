@@ -1,4 +1,4 @@
-import { type GameMap } from "../../../server/src/game_server/others/map.ts";
+import { type GameMap } from "../../../server/src/game/others/map.ts";
 import { type AbstractGame, type ModContext, ModModule } from "../../engine/core.ts";
 import { GameConfig } from "../config/config.ts";
 import { GameADefinitions } from "../definitions/game_defs.ts";

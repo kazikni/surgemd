@@ -6,7 +6,7 @@ import { Client, OfflineClientsManager } from "./client.ts";
 export interface HostConfig {
     port: number
     name?: string
-    https?: boolean
+    ssl?: boolean
     cert?: string
     key?: string
     ca?: string

@@ -1,10 +1,10 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
 import { GameObjectType, Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
-import { ConfigType, GameConfig, GameDebugOptions } from "common/scripts/config/config.ts";
+import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
 import { HumansManager } from "../managers/humans_manager.ts";
@@ -45,8 +45,6 @@ export interface GameData {
 
     started_time: number
     started:boolean
-
-    config:GameConfig
 }
 export type GameStatistic={
     player:{
@@ -62,7 +60,7 @@ export type GameStatistic={
     }
 }
 export class Game extends AbstractServerGame<ServerGameObject>{
-    main_config:ConfigType
+    main_config:GameServerConfig
     game_config!:GameConfig
     string_id=""
 
@@ -145,8 +143,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         assets:{},
         languages_path:"",
     }
-    constructor(main_config:ConfigType,clients:OfflineClientsManager,id:ID){
-        super(main_config.game.tps,id,clients,[
+    constructor(main_config:GameServerConfig,clients:OfflineClientsManager,id:ID){
+        super(main_config.tps,id,clients,[
             Human,
             Loot,
             Grenade,
@@ -162,33 +160,18 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Plane,
         ])
 
-        this.ntps=main_config.game.ntps
+        this.ntps=main_config.ntps
         this.main_config=main_config
 
         for(const i of LayersL){
             this.scene_2d.objects.add_layer(i)
         }
-        this.debug=main_config.game.debug
+        this.debug=main_config.debug
 
         //Gamemode
         this.map=new GameMap(this)
 
         this.deadzone=new DeadZoneManager(this)
-        if(main_config.database.statistic){
-            this.statistics={
-                items:{
-                    dropped:{},
-                    kills:{}
-                },
-                player:{
-                    disconnection:0,
-                    players:0
-                },
-                loadout:{
-                    uses:{}
-                }
-            }
-        }
     }
     init(mode:ModeManager){
         this.definitions.init_default()
@@ -257,8 +240,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
             started_time:this.started_time,
             started:this.started,
-
-            config:this.game_config??{},
         }
         this.signals.emit("update_data",data)
     }
@@ -335,15 +316,15 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             this.stop()
         },1)
         if(this.replay)this.replay.stopRecording()
-
     }
-    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number):Bullet{
+    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
             def,
             position:v2.clone(position),
             owner:owner,
             ammo:ammo,
             source,
+            critical_chance,
             satured
         })as Bullet
         return b

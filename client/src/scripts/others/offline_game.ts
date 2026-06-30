@@ -1,4 +1,4 @@
-import { ConfigType, ZeroConfig } from "common/scripts/config/config.ts";
+import { GameServerConfig, ZeroGameServerConfig } from "common/scripts/config/config.ts";
 import { type Game } from "./game.ts";
 import { WorkerSocket } from "common/engine/core.ts";
 
@@ -16,7 +16,7 @@ export class LocalGameServer{
             this.worker=undefined
         }
     }
-    run(ping_emulation:number=0,config?:ConfigType){
+    run(ping_emulation:number=0,config?:GameServerConfig){
         if(this.running||this.worker)this.stop()
         this.running=true
         this.worker=new Worker(new URL("./worker_server.ts", import.meta.url), {
@@ -25,7 +25,7 @@ export class LocalGameServer{
         this.worker.onmessage=(ev)=>this.handle_messages(ev.data)
         this.worker.postMessage({
             type: "begin",
-            config:config??ZeroConfig(),
+            config:config??ZeroGameServerConfig(),
             ping:ping_emulation,
         })
     }
@@ -48,7 +48,6 @@ export class LocalGameServer{
     }
     begin_level(path:string){
         this.run()
-        console.log(path)
         this.worker!.postMessage({type:"load_level",path})
     }
 

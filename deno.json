@@ -8,7 +8,7 @@
         ]
     },
     "tasks": {
-        "dev:game": "cd server && deno run --watch -A ./src/game_server/main.ts",
+        "dev:game": "cd server && deno run --watch -A ./src/game/main.ts",
         "dev:api": "cd server && deno run --watch -A ./src/api/main.ts",
         "dev:client": "cd client && npx vite ."
     }

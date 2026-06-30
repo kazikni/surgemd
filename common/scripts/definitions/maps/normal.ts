@@ -47,8 +47,8 @@ export const map_spawns={
         {def:"gold_crate",weight:0.05},
     ],
     rocks:[
-        {def:"rock",weight:200},
-        {def:"golden_rock",weight:1},
+        {def:"rock",weight:130},
+        {def:"golden_rock",weight:0.1},
         {def:"platinum_rock",weight:0.01},
     ]
 }

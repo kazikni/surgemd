@@ -282,7 +282,7 @@ export class ImageBuffer {
     tick = 0
     max = 6
 
-    async load(src:string){
+    async load(src:string):Promise<HTMLImageElement>{
         this.tick++
         if(this.cache.has(src)){
             this.lastUsed.set(src,this.tick)

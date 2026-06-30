@@ -170,11 +170,11 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    override on_create(args?: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
+    override on_create(args?: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical_chance?:number,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
-        if(args)this.set_configuration(args.def,args.position,args.owner,args.ammo,args.critical,args.source,args.satured)
+        if(args)this.set_configuration(args.def,args.position,args.owner,args.ammo,args.critical_chance,args.critical,args.source,args.satured)
     }
-    set_configuration(def:BulletDef,position:Vec2,owner:Human,ammo:string,critical?:boolean,source?:DamageSourceDef,satured?:number){
+    set_configuration(def:BulletDef,position:Vec2,owner:Human,ammo:string,critical_chance:number=0.15,critical?:boolean,source?:DamageSourceDef,satured?:number){
         this.def=def
         this.position=position
         this.initial_position=v2.clone(position)
@@ -184,7 +184,7 @@ export class Bullet extends ServerGameObject{
 
         const ad=ammo?this.game.definitions.ammos.getFromString(ammo):undefined
         this.owner=owner
-        this.critical=critical??(Math.random()<=0.15)
+        this.critical=critical===undefined?(Math.random()<=critical_chance):critical
         this.source=source
         this.ammo=ad
 

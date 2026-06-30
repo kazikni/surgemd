@@ -1,23 +1,27 @@
 import { Server, AbstractGameContainer, AbstractGameServer} from "common/engine/server.ts"
-import { ConfigType, GameConfig } from "common/scripts/config/config.ts";
+import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
 import { GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
 import { deepEqual } from "common/engine/core.ts";
 export class ApiConnection {
     socket?: WebSocket
     logged:boolean=false
-    constructor(public game: GameServer,public config: ConfigType) {}
+    constructor(public game: GameServer,public config: GameServerConfig) {}
     connect(attempts=5) {
         if(attempts<=0)return
         this.logged=false
-        const region = this.config.region
-        if (!region) return
-        const ws = new WebSocket(`${this.config.api.global}/regions/ws`)
+        const ws = new WebSocket(this.config.authentication!.server)
         ws.onopen = () => {
             console.log("[API] Connected")
             ws.send(JSON.stringify({
                 type: "login",
-                region
+                authentication:this.config.authentication!,
+                region:{
+                    name: this.config.region!.name,
+                    ip: this.config.region!.ip,
+                    port: this.config.region!.port===undefined?this.config.host.port:this.config.region!.port,
+                    ssl: this.config.region!.ssl===undefined?this.config.host.ssl:this.config.region!.ssl
+                }
             }))
         }
         ws.onmessage = (e) => {
@@ -65,12 +69,14 @@ export class ApiConnection {
     }
 }
 export class GameServer extends AbstractGameServer<GameData,GameConfig>{
-    api_conn:ApiConnection
-    constructor(server: Server,config:ConfigType){
+    api_conn?:ApiConnection
+    constructor(server: Server,config:GameServerConfig){
         super(server,config)
 
-        this.api_conn=new ApiConnection(this,config)
-        this.api_conn.connect()
+        if(config.authentication&&config.region){
+            this.api_conn=new ApiConnection(this,config)
+            this.api_conn.connect()
+        }
 
         for(let i=0;i<6;i++){
             this.add_container(new GameContainer())
@@ -78,7 +84,10 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     }
     get_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
-            if(g.data.running&&g.data.can_join&&g.data.config.mode.mode===config?.mode?.mode&&g.data.config.group_size===config?.group_size&&deepEqual(g.data.config.mode.settings,config.mode.settings)){
+            if(
+                g.data.running&&g.data.can_join&&
+                (!g.config||g.config.mode.mode===config?.mode?.mode&&g.config.group_size===config.group_size&&deepEqual(g.config.mode.settings,config.mode.settings))
+            ){
                 return g as GameContainer
             }
         }
@@ -91,16 +100,11 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                     config={
                         mode:{
                             mode:"normal",
-                            //mode:"debug",
                             settings:{
                                 map:{
-                                    //def:"tundra"
-                                    //def:"single_building"
-                                    //def:"lobby"
                                 }
                             }
                         },
-                        //group_size:4,
                     }
                 }
                 g.new_game(config)
@@ -110,7 +114,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         return undefined
     }
 }
-export class GameContainer extends AbstractGameContainer<GameData,GameConfig,ConfigType,WorkerMessage>{
+export class GameContainer extends AbstractGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>{
     override worker_path: URL
     constructor(){
         super()
@@ -119,10 +123,11 @@ export class GameContainer extends AbstractGameContainer<GameData,GameConfig,Con
         this.worker_path=new URL(worker_path, import.meta.url)
     }
     override get_address():string{
-        return `ws${this.server.config.region!.https?"s":""}://${super.get_address(this.server.config.region!.host)}/api/ws`
+        const ssl=this.server.config.region?.ssl===undefined?this.server.config.host.ssl:this.server.config.region.ssl
+        return `ws${ssl?"s":""}://${super.get_address(this.server.config.region?.ip??"localhost")}/api/ws`
     }
     override begin(): void {
-        this.port=this.server.config.game!.host.port+this.id+1
+        this.port=this.server.config.host.port+this.id+1
         super.begin()
     }
 }

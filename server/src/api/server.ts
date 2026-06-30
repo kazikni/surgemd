@@ -1,39 +1,39 @@
-import { ApiSettingsS, ConfigType, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
+import { ApiServerConfig, ApiSettings, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
 import { Server } from "common/engine/server.ts";
 import { RegionManager } from "./game/regions.ts";
-
 export class ApiServer {
     server: Server
     groups = new GroupManager(this)
     regions = new RegionManager(this)
     modes:ModeConfig[]=[]
-    get_config(mode:number,group_size:number):GameConfig{
+
+    api_settings!:ApiSettings
+    constructor(public config: ApiServerConfig){
+        this.server = new Server(
+            config.host.port,
+            config.host.ssl,
+            config.host.cert,
+            config.host.key
+        )
+
+        this.modes=config.game.modes
+        this.update_settings()
+        this.routes()
+    }
+    update_settings(){
+        this.api_settings={
+            database:{
+                enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
+            },
+            modes:this.modes,
+            regions:this.regions.regions
+        }
+    }
+    get_game_config(mode:number,group_size:number):GameConfig{
         return {
             mode: this.modes[mode].mode! as GameModeConfig,
             group_size: (this.modes[mode].group_size as unknown as number[])[group_size],
-        }
-    }
-    constructor(public config: ConfigType){
-        this.server = new Server(
-            config.api.host.port,
-            config.api.host.https,
-            config.api.host.cert,
-            config.api.host.key
-        )
-        this.modes=config.game.modes
-        this.routes()
-    }
-    get api_settings():ApiSettingsS{
-        return {
-            modes: this.config.game.modes,
-            debug: {
-                debug_menu: this.config.game.debug.debug_menu
-            },
-            regions:this.regions.regions,
-            database: {
-                enabled: this.config.database.enabled
-            }
         }
     }
     routes(){
@@ -55,7 +55,12 @@ export class ApiServer {
         this.groups.routes(this.server.router("group"))
         this.regions.routes(this.server.router("regions"))
     }
+    tick(dt:number){
+        this.update_settings()
+    }
     run(){
         this.server.run()
+
+        setInterval(this.tick.bind(this,1),1000)
     }
 }

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Loot Table Calculator</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: "Segoe UI", Arial, sans-serif;
+                background: #0f172a;
+                color: #e2e8f0;
+                display: flex;
+                justify-content: center;
+            }
+
+            .container {
+                width: 900px;
+                padding: 30px;
+            }
+
+            h1 {
+                margin-bottom: 20px;
+            }
+
+            .controls {
+                margin-bottom: 20px;
+            }
+
+            button {
+                background: #2563eb;
+                border: none;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                margin-right: 5px;
+            }
+
+            button:hover {
+                background: #1d4ed8;
+            }
+
+            textarea {
+                width: 100%;
+                min-height: 220px;
+                resize: vertical;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #334155;
+                background: #020617;
+                color: white;
+                font-family: monospace;
+                margin-bottom: 15px;
+            }
+
+            .item {
+                display: grid;
+                grid-template-columns: 1fr 120px 40px;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+
+            input {
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #334155;
+                background: #020617;
+                color: white;
+            }
+
+            .remove {
+                background: #dc2626;
+            }
+
+            .remove:hover {
+                background: #b91c1c;
+            }
+
+            .card {
+                background: #020617;
+                border: 1px solid #1e293b;
+                border-radius: 10px;
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .result-line {
+                display: flex;
+                justify-content: space-between;
+                padding: 4px 0;
+                border-bottom: 1px solid #1e293b;
+            }
+
+            .result-line:last-child {
+                border-bottom: none;
+            }
+
+            .small {
+                opacity: 0.7;
+                font-size: 13px;
+                margin-bottom: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Loot Table Calculator</h1>
+            <div class="small">
+                Supports:
+                <code>name</code>,
+                <code>item</code>,
+                <code>table</code>
+            </div>
+            <textarea id="definitions"></textarea>
+            <div class="controls">
+                <button onclick="importDefinitions()">Import</button>
+                <button onclick="exportDefinitions()">Export</button>
+                <button onclick="addItem()">+ Add Item</button>
+                <button onclick="calculate()">Calculate %</button>
+                <button onclick="roll()">Roll</button>
+                <input id="simulationCount" type="number" min="1" value="1000" style="width:120px"/>
+                <button onclick="simulateFromInput()">Simulate</button>
+                <button onclick="sortByWeight()">Sort Weight</button>
+            </div>
+            <div class="card" id="output"></div>
+            <div id="items"></div>
+        </div>
+        <script>
+            let items = []
+            function getItemName(obj) {
+                return obj.name || obj.item || obj.table || "(unnamed)"
+            }
+            function addItem(name = "", weight = 1) {
+                items.push({
+                    id: crypto.randomUUID(),
+                    name,
+                    weight
+                })
+
+                render()
+            }
+            function removeItem(id) {
+                items = items.filter(i => i.id !== id)
+                render()
+            }
+            function render() {
+                const container = document.getElementById("items")
+                container.innerHTML = ""
+
+                for (const item of items) {
+                    const div = document.createElement("div")
+                    div.className = "item"
+
+                    div.innerHTML = `
+                        <input
+                            placeholder="Item name"
+                            value="${item.name}"
+                            oninput="updateName('${item.id}', this.value)"
+                        >
+
+                        <input
+                            type="number"
+                            value="${item.weight}"
+                            oninput="updateWeight('${item.id}', this.value)"
+                        >
+
+                        <button
+                            class="remove"
+                            onclick="removeItem('${item.id}')"
+                        >
+                            X
+                        </button>
+                    `
+
+                    container.appendChild(div)
+                }
+            }
+
+            function updateName(id, value) {
+                const item = items.find(i => i.id === id)
+                item.name = value
+            }
+            function updateWeight(id, value) {
+                const item = items.find(i => i.id === id)
+                item.weight = Number(value)
+            }
+            function totalWeight() {
+                return items.reduce((sum, i) => sum + i.weight, 0)
+            }
+            function weightedRandom() {
+                const totalWeight = items.reduce(
+                    (sum, item) => sum + item.weight,
+                    0
+                )
+
+                let randomNum = Math.random() * totalWeight
+
+                for (const item of items) {
+                    if (randomNum < item.weight) {
+                        return item
+                    }
+
+                    randomNum -= item.weight
+                }
+            }
+
+            function calculate() {
+                const total = totalWeight()
+                let html = "<h3>Drop Chances</h3>"
+                for (const i of items) {
+                    const chance = total > 0
+                        ? (i.weight / total * 100).toFixed(4)
+                        : 0
+                    html += `
+                        <div class="result-line">
+                            <span>${i.name}</span>
+                            <span>${chance}%</span>
+                        </div>
+                    `
+                }
+
+                document.getElementById("output").innerHTML = html
+            }
+            function roll() {
+                const result = weightedRandom()
+
+                document.getElementById("output").innerHTML = `
+                    <h3>Roll Result</h3>
+
+                    <div class="result-line">
+                        <strong>${result?.name || "None"}</strong>
+                    </div>
+                `
+            }
+
+            function simulate(rolls = 100) {
+                rolls = Math.max(1, Math.floor(rolls))
+                const count = {}
+
+                for (const i of items) {
+                    count[i.name] = 0
+                }
+
+                for (let i = 0; i < rolls; i++) {
+                    const r = weightedRandom()
+
+                    if (r) {
+                        count[r.name]++
+                    }
+                }
+
+                let html = `<h3>Simulation (${rolls.toLocaleString()})</h3>`
+
+                for (const name in count) {
+                    const pct = (count[name] / rolls * 100).toFixed(4)
+
+                    html += `
+                        <div class="result-line">
+                            <span>${name}</span>
+                            <span>${count[name].toLocaleString()}</span>
+                            <span>${pct}%</span>
+                        </div>
+                    `
+                }
+
+                document.getElementById("output").innerHTML = html
+            }
+            function simulateFromInput() {
+                const rolls = Math.max(
+                    1,
+                    parseInt(document.getElementById("simulationCount").value) || 1
+                )
+
+                simulate(rolls)
+            }
+            function importDefinitions() {
+                const text = document
+                    .getElementById("definitions")
+                    .value
+
+                try {
+                    const parsed = eval(text)
+
+                    if (!Array.isArray(parsed)) {
+                        throw new Error("Definition must be an array")
+                    }
+
+                    items = []
+
+                    for (const obj of parsed) {
+                        items.push({
+                            id: crypto.randomUUID(),
+                            name: getItemName(obj),
+                            weight: Number(obj.weight) || 0
+                        })
+                    }
+
+                    render()
+
+                    document.getElementById("output").innerHTML = `
+                        <h3>Imported</h3>
+                        <div class="result-line">
+                            <span>${items.length} entries loaded</span>
+                        </div>
+                    `
+                }
+                catch (err) {
+                    document.getElementById("output").innerHTML = `
+                        <h3>Import Error</h3>
+                        <pre>${err}</pre>
+                    `
+                }
+            }
+
+            function exportDefinitions() {
+                const exported = items.map(i => ({
+                    name: i.name,
+                    weight: i.weight
+                }))
+
+                document.getElementById("definitions").value =
+                    JSON.stringify(exported, null, 4)
+
+                document.getElementById("output").innerHTML = `
+                    <h3>Exported</h3>
+                    <div class="result-line">
+                        <span>Definitions exported to textarea</span>
+                    </div>
+                `
+            }
+            function sortByWeight(desc = true) {
+                items.sort((a, b) => {
+                    return desc
+                        ? b.weight - a.weight
+                        : a.weight - b.weight
+                })
+
+                render()
+
+                document.getElementById("output").innerHTML = `
+                    <h3>Sorted</h3>
+                    <div class="result-line">
+                        <span>
+                            Ordered by weight (${desc ? "DESC" : "ASC"})
+                        </span>
+                    </div>
+                `
+            }
+            let sortDescending = false
+
+            function sortByWeight() {
+                items.sort((a, b) => {
+                    return sortDescending
+                        ? b.weight - a.weight
+                        : a.weight - b.weight
+                })
+                render()
+                document.getElementById("output").innerHTML = `
+                    <h3>Sorted</h3>
+                    <div class="result-line">
+                        <span>
+                            Ordered by weight (${sortDescending ? "DESC" : "ASC"})
+                        </span>
+                    </div>
+                `
+            }
+            render()
+        </script>
+    </body>
+</html>

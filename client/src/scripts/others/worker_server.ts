@@ -1,5 +1,5 @@
 import { BattleRoyale, LevelPlayer, OfflineGameServer } from "./offline.ts";
-import { ConfigType } from "common/scripts/config/config.ts";
+import { GameServerConfig } from "common/scripts/config/config.ts";
 import { FetchFileManager, OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Maps } from "common/scripts/definitions/maps/base.ts";
@@ -24,7 +24,7 @@ self.onmessage = async(ev) => {
     switch(msg.type){
         case "begin":{
             server=new OfflineGameServer(
-                msg.config as ConfigType,
+                msg.config as GameServerConfig,
                 new OfflineClientsManager(PacketManager),
                 0,
             );

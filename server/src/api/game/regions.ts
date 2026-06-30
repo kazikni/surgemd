@@ -77,7 +77,7 @@ export class RegionManager{
         try {
             const msg=await region.request({
                 type: "find_game",
-                config: this.api.get_config(data.mode,data.group_size??0)
+                config: this.api.get_game_config(data.mode,data.group_size??0)
             })
             return msg as FindGameResult
         }catch{
@@ -114,8 +114,8 @@ export class RegionManager{
                         socket.close()
                         return
                     }
-                    const user = this.api.config.api.users?.[msg.region.user.name]
-                    if (!user ||user.password !== msg.region.user.password ||!user.permitions?.allow_region) {
+                    const user = this.api.config.users?.[msg.authentication.user.name]
+                    if (!user ||user.password !== msg.authentication.user.password||!user.permitions?.allow_region) {
                         socket.close()
                         return
                     }

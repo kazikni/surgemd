@@ -9,8 +9,8 @@ import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
 import { JSONBuildingDef } from "../objects/buildings_base.ts"
 
-import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
-import { type Game } from "../../../../server/src/game_server/others/game.ts";
+import {type GameMap} from "../../../../server/src/game/others/map.ts"
+import { type Game } from "../../../../server/src/game/others/game.ts";
 import { MapRegion } from "../../packets/map_packet.ts";
 export interface Aditional{
     withammo:boolean

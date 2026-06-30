@@ -1,14 +1,13 @@
 {
   "tasks": {
-    "dev:game": "deno run --watch -A ./src/game_server/main.ts",
-    "dev:api":"go run src/api/main.go",
-    "dev:trainer": "deno run --watch -A ./src/game_server/trainer.ts",
-    "build:api":"go build -o dist/main.exe src/api/main.go",
-    "prod_l:api":"sudo /usr/local/go/bin/go run src/api/main.go",
+    "dev:game": "deno run --watch -A ./src/game/main.ts",
+    "dev:api": "go run src/api/main.go",
+    "dev:trainer": "deno run --watch -A ./src/game/trainer.ts",
+    "build:api": "go build -o dist/main.exe src/api/main.go",
+    "prod_l:api": "sudo /usr/local/go/bin/go run src/api/main.go",
     "dev": "deno task dev:game & deno task dev:api",
     "build": "deno compile ./src/main.ts",
-
-    "test:stress":"deno run -A ./src/test/stress_test.ts"
+    "test:stress": "deno run -A ./src/test/stress_test.ts"
   },
   "importMap": "../common/deps.json"
 }

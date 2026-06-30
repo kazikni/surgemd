@@ -19,18 +19,15 @@
             "modes": [
                 {
                     "group_size": [
-                        1,
-                        2,
-                        4
+                        1
                     ],
                     "mode": {
                         "mode": "normal"
-                    },
-                    "enabled": true
+                    }
                 },
                 {
                     "group_size": [
-                        1
+                        2
                     ],
                     "mode": {
                         "mode": "normal",
@@ -40,8 +37,7 @@
                                 "def": "tundra"
                             }
                         }
-                    },
-                    "enabled": true
+                    }
                 }
             ]
         }

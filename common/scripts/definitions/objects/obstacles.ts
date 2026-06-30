@@ -466,7 +466,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         },
         {
             idString:"oak_tree",
-            health:130,
+            health:110,
             hitbox:new CircleHitbox2D(v2(0,0),0.4),
             spawnHitbox:new CircleHitbox2D(v2(0,0),1.5),
             scale:{
@@ -487,6 +487,36 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             rotation_mode:RotationMode.full,
             below:{
                 hitbox:new CircleHitbox2D(v2(0,0),2.2),
+                alpha:60
+            },
+            spawnMode:Spawn.grass,
+        },
+        {
+            idString:"pine_tree",
+            health:180,
+            hitbox:new CircleHitbox2D(v2(0,0),0.5),
+            spawnHitbox:new CircleHitbox2D(v2(0,0),1.8),
+            scale:{
+                min:1,
+                max:1.2,
+                destroy:0.75,
+            },
+            assets:{
+                particles:{
+                    particle:"oak_tree_particle"
+                },
+                frame:{
+                    dead:"oak_tree_dead",
+                    biome_skins:["snow"],
+                },
+                sounds:hit_sounds.tree
+            },
+            zIndex:{
+                base:zIndexes.Obstacles5
+            },
+            rotation_mode:RotationMode.full,
+            below:{
+                hitbox:new CircleHitbox2D(v2(0,0),2.5),
                 alpha:60
             },
             spawnMode:Spawn.grass,
@@ -533,7 +563,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         particle:"plank_particle",
                         tint:0x583b08
                     },
-                    sounds:hit_sounds.wood
+                    sounds:hit_sounds.wood,
+                    frame:{
+                        biome_skins:["snow"],
+                    }
                 },
                 interactDestroy:true,
             }
@@ -548,7 +581,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     frame:{
                         dead_transform:{
                             tint:0x0a753d,
-                        }
+                        },
+                        biome_skins:["snow"],
                     },
                     sounds:hit_sounds.wood
                 },
@@ -566,7 +600,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     frame:{
                         dead_transform:{
                             tint:0x7021d3,
-                        }
+                        },
+                        biome_skins:["snow"],
                     },
                     sounds:hit_sounds.wood
                 },
@@ -584,7 +619,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     frame:{
                         dead_transform:{
                             tint:0x3e58c4,
-                        }
+                        },
+                        biome_skins:["snow"],
                     },
                     sounds:hit_sounds.wood
                 },
@@ -601,7 +637,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         dead_transform:{
                             tint:0xcc742d,
                             scale:2.3
-                        }
+                        },
+                        biome_skins:["snow"],
                     },
                     particles:{
                         particle:"metal_particle",
@@ -622,7 +659,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         dead_transform:{
                             tint:0x656877,
                             scale:2.3
-                        }
+                        },
+                        biome_skins:["snow"],
                     },
                     particles:{
                         particle:"metal_particle",
@@ -644,7 +682,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         dead_transform:{
                             tint:0xffd92b,
                             scale:2.3
-                        }
+                        },
+                        biome_skins:["snow"],
                     },
                     particles:{
                         particle:"metal_particle",

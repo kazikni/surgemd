@@ -8,7 +8,7 @@ export const NormalBiome:MapBiomeDef={
 
     },
     textures:[
-        "normal"
+        "common"
     ],
     particles:["leaf_1_particle_1"],
     particles_tint:0x2b7317,
@@ -20,6 +20,10 @@ export const NormalBiome:MapBiomeDef={
     ]
 }
 export const map_spawns={
+    trees:[
+        {def:"oak_tree",weight:100},
+        {def:"pine_tree",weight:5},
+    ],
     containers:[
         {def:"blue_container_1",weight:10},
         {def:"blue_container_2",weight:10},
@@ -75,7 +79,7 @@ export const NormalMap:MapDef={
 
                 {def:"sillo",count:7},
                 {def:map_spawns.crates,count:430},
-                {def:"oak_tree",count:700},
+                {def:map_spawns.trees,count:700},
                 {def:"river_rock",count:50},
                 {def:map_spawns.rocks,count:500},
                 {def:"bush",count:300},
@@ -95,7 +99,7 @@ export const NormalMap:MapDef={
                     points:10,
                     spawn:[
                         {def:"bunker_1",count:1},
-                        {def:"oak_tree",count:400,spawn:Spawn.grass_only},
+                        {def:map_spawns.trees,count:400,spawn:Spawn.grass_only},
                     ],
                     region:{
                         name:"Soul Forest",
@@ -287,7 +291,7 @@ export const SnowBiome:MapBiomeDef={
         [FloorType.Sand]:0x505659
     },
     skin:"snow",
-    textures:["normal"],
+    textures:["common","snow"],
     ambient_sound:"snowstorm_ambience",
     musics:[],
     particles:[],
@@ -297,7 +301,7 @@ export const DesertBiome:MapBiomeDef={
     floors:{
         [FloorType.Sand]:0xa1761a
     },
-    textures:["normal"],
+    textures:["common"],
     musics:[],
     particles:[],
 }

@@ -49,6 +49,8 @@ __                                                                              
 ### Others
 * Camera Shake On Explosions
 * Squared Bush
+* Crates Snow Skin
+* Pine Tree
 * River Rock
 * Tundra Bush Group
 * River Stones
@@ -65,6 +67,7 @@ __                                                                              
 * Some Balance Changes
 * Change Equipment Sprites
 * Katana Animations
+* Scopes Sprites Rework
 __                                                                                                                 __
 ### Menu
 * Rework Minimap System

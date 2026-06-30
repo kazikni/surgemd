@@ -202,7 +202,7 @@ export class GameMap{
     }
     generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers,gen_position?:map_gen_position,gen_valid?:map_gen_valid):Obstacle|undefined{
         const o=this.add_obstacle(def,layer)
-        o.initialize()
+        o.initialize(undefined,undefined,undefined,undefined,true)
 
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
         if(!p){

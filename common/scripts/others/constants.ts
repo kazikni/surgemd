@@ -111,6 +111,7 @@ export enum zIndexes{
     SyncedParticle,
     BuildingsCeiling,
     Obstacles4,
+    Obstacles5,
     ParachutePlayers,
     Rain1,
     Parachute,

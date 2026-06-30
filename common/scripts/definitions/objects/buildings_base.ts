@@ -37,6 +37,7 @@ export type BuildingObstacles={
     scale?:number
     stairs_dest?:Record<number,number>
     only_side?:number
+    allow_biome_skin?:boolean
 }
 export type BuildingDecal={
     def:string

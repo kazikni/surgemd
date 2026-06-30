@@ -104,6 +104,7 @@ export class Obstacle extends StaticBody{
                 owner:user,
                 critical:false,
                 direction:0,
+                penetration:1,
             })
         }
         if(this.def.expanded_behavior){
@@ -246,7 +247,7 @@ export class Obstacle extends StaticBody{
     override on_create(args?: {def:ObstacleDef}): void {
         if(args)this.set_definition(args.def)
     }
-    initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0){
+    initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0,allow_biome_skin:boolean=false){
         this.physical_data.dirty=true
         this.physical_data.dirty_part=true
         this.physical_data.scale=this.max_scale
@@ -261,7 +262,7 @@ export class Obstacle extends StaticBody{
         if(skin){
             this.visual_data.skin=skin
         }else if(this.def.assets?.frame?.biome_skins){
-            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.skin??"")+1
+            if(allow_biome_skin)this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.skin??"")+1
         }
         if(rotation===undefined){
             if(this.def.rotation_mode===RotationMode.limited){
@@ -358,6 +359,7 @@ export class Obstacle extends StaticBody{
                     position:this.position,
                     reason:DamageReason.SideEffect,
                     direction:0,
+                    penetration:1,
                     owner:owner
                 })
                 break
@@ -412,7 +414,8 @@ export class Obstacle extends StaticBody{
                 reason:DamageReason.Connection,
                 owner:params.owner,
                 resistence:10,
-                source:params.source
+                source:params.source,
+                penetration:1
             })
         }
 

@@ -46,7 +46,8 @@ const config: UserConfig = {
         svelte(),
         spritesheet("public",{
             "main":"img/game/main",
-            "normal":"img/game/normal",
+            "common":"img/game/common",
+            "snow":"img/game/snow",
             //"christmas":"christmas"
         },undefined,[
             {name:"low",scale:0.5},

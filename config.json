@@ -71,6 +71,29 @@
     },
     "vite": {
         "port": 3000,
-        "allowed_hosts": true
+        "allowed_hosts": true,
+        "spritesheet": {
+            "sheets": {
+                "main": "img/game/main",
+                "common": "img/game/common",
+                "snow": "img/game/snow"
+            },
+            "resolutions": [
+                {
+                    "name": "low",
+                    "scale": 0.5
+                },
+                {
+                    "name": "medium",
+                    "scale": 1
+                }
+            ]
+        },
+        "audios": [
+            {
+                "input": "sounds/game/main",
+                "output": "assets/main-sounds.json"
+            }
+        ]
     }
 }

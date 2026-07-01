@@ -52,6 +52,11 @@ export interface ApiServerConfig{
     }>
     game:{
         modes: ModeConfig[]
+        play_time?:{
+            week_days:number[]
+            hour:number
+            duration:number
+        }
     }
     database?:{
         enabled?: boolean
@@ -88,6 +93,14 @@ export interface GameServerConfig{
 export interface ViteServerConfig{
     port:number
     allowed_hosts?:true|string[]
+    spritesheet:{
+        sheets:Record<string,string>
+        resolutions:{name:string,scale:number}[]
+    }
+    audios:{
+        input:string
+        output:string
+    }[]
 }
 export interface ConfigType{
     api: ApiServerConfig
@@ -132,7 +145,12 @@ export function ZeroConfig():ConfigType{
         game:ZeroGameServerConfig(),
         vite:{
             port:3000,
-            allowed_hosts:true
+            allowed_hosts:true,
+            spritesheet:{
+                resolutions:[],
+                sheets:{}
+            },
+            audios:[]
         }
     }
 }

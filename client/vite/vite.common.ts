@@ -3,8 +3,9 @@ import path, { resolve } from "node:path";
 import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
 import { AudiosLists } from "./plugins/audio_list.ts";
-
-const config: UserConfig = {
+import { ConfigType } from "common/scripts/config/config.ts";
+export const config=(require("../../config.json") as ConfigType).vite;
+export const uconfig: UserConfig = {
     build: {
         rollupOptions: {
             chunkSizeWarningLimit: 2000,
@@ -41,24 +42,11 @@ const config: UserConfig = {
             }
         }
     },
-
     plugins: [
         svelte(),
-        spritesheet("public",{
-            "main":"img/game/main",
-            "common":"img/game/common",
-            "snow":"img/game/snow",
-            //"christmas":"christmas"
-        },undefined,[
-            {name:"low",scale:0.5},
-            {name:"medium",scale:1},
-        ]),
-        AudiosLists([{
-            input:"sounds/game/main",
-            output:"assets/main-sounds.json"
-        }]),
+        spritesheet("public",config.spritesheet.sheets,undefined,config.spritesheet.resolutions),
+        AudiosLists(config.audios),
     ],
-
     css: {
         preprocessorOptions: {
             scss: {
@@ -66,12 +54,13 @@ const config: UserConfig = {
             }
         }
     },
-
     resolve: {
         alias: {
             "common": path.resolve(__dirname, "../../common")
         }
     },
 };
-
-export default config;
+export default {
+    uconfig,
+    config
+}

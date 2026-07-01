@@ -63,6 +63,8 @@ export const ConfigCasters=Object.freeze({
     sv_ui_translation:Casters.toString,
     sv_ui_interactive:Casters.toBoolean,
     sv_ui_blur_backdrop:Casters.toBoolean,
+
+    sv_debug_ping_emulation:Casters.toNumber,
 })
 export const ConfigDefaultValues={
     sv_loadout_name:"",
@@ -103,6 +105,8 @@ export const ConfigDefaultValues={
     sv_ui_translation:"en",
     sv_ui_interactive:true,
     sv_ui_blur_backdrop:true,
+
+    sv_debug_ping_emulation:0,
 }
 export const ConfigDefaultActions={
     "move_up":{

@@ -208,8 +208,9 @@ export class SlotCap<ItemBase extends ItemCap = ItemCap>{
      * @param quantity Add Quantity
      * @returns `Slot` Overflow
      */
-    add(item:ItemBase,quantity:number=1):number{
+    add(item:ItemBase,quantity:number=1,allow_null:boolean=true):number{
         if(this.item==null){
+            if(!allow_null)return quantity
             if(this.accept_tags.length==0||hasTags(this.accept_tags,item.tags)){
                 this.item=item
             }else{
@@ -275,7 +276,7 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         const overAmmount=Math.floor(Numeric.clamp((sizeA-this.max_cap)/item.cap,0,quantity))
         for(const i in this.slots){
             ret=this.slots[i].add(item,ret)
-            if(ret==0){
+            if(ret===0){
                 break
             }
         }

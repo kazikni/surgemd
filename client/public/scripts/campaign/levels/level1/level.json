@@ -25,7 +25,7 @@
             {
                 "def": {
                     "ai": {
-                        "kind": "advanced"
+                        "kind": "advanced_legacy"
                     },
                     "inventory": {
                         "infinity_ammo": true,
@@ -37,47 +37,73 @@
                             },
                             {
                                 "item": "regular_pack",
-                                "weight": 15,
-                                "drop_chance": 0.3
+                                "weight": 1
                             },
                             {
                                 "item": "military_pack",
-                                "weight": 10,
-                                "drop_chance": 0.5
+                                "weight": 0.1
                             }
                         ],
                         "vest": [
                             {
                                 "item": "basic_vest",
-                                "weight": 10,
-                                "drop_chance": 0.3
+                                "weight": 10
                             },
                             {
                                 "item": "regular_vest",
-                                "weight": 15,
-                                "drop_chance": 0.5
+                                "weight": 1
                             },
                             {
                                 "item": "military_vest",
-                                "weight": 10,
-                                "drop_chance": 0.75
+                                "weight": 0.1
                             }
                         ],
                         "helmet": [
                             {
                                 "item": "basic_helmet",
-                                "weight": 10,
-                                "drop_chance": 0.3
+                                "weight": 10
                             },
                             {
                                 "item": "regular_helmet",
-                                "weight": 15,
-                                "drop_chance": 0.5
+                                "weight": 1
                             },
                             {
                                 "item": "military_helmet",
-                                "weight": 10,
-                                "drop_chance": 0.75
+                                "weight": 0.1
+                            }
+                        ],
+                        "melee": [
+                            {
+                                "item": "fist",
+                                "weight": 30
+                            },
+                            {
+                                "item": "survival_knife",
+                                "weight": 10
+                            },
+                            {
+                                "item": "shovel",
+                                "weight": 10
+                            },
+                            {
+                                "item": "axe",
+                                "weight": 5
+                            },
+                            {
+                                "item": "katana",
+                                "weight": 1
+                            },
+                            {
+                                "item": "sledgehammer",
+                                "weight": 0.75
+                            },
+                            {
+                                "item": "bonesaw",
+                                "weight": 0.75
+                            },
+                            {
+                                "item": "pan",
+                                "weight": 0.75
                             }
                         ],
                         "gun1": [
@@ -108,12 +134,76 @@
                         ],
                         "gun2": [
                             {
+                                "item": "colt1873",
+                                "weight": 7
+                            },
+                            {
+                                "item": "colt1873_dual",
+                                "weight": 7
+                            },
+                            {
+                                "item": "m9",
+                                "weight": 7
+                            },
+                            {
+                                "item": "m9_dual",
+                                "weight": 7
+                            },
+                            {
+                                "item": "taurustx",
+                                "weight": 7
+                            },
+                            {
+                                "item": "taurustx_dual",
+                                "weight": 7
+                            },
+                            {
                                 "item": "mp5",
                                 "weight": 7
                             },
                             {
                                 "item": "ak47",
                                 "weight": 7
+                            },
+                            {
+                                "item": "ar15",
+                                "weight": 7
+                            },
+                            {
+                                "item": "famas",
+                                "weight": 5
+                            },
+                            {
+                                "item": "m1921",
+                                "weight": 5
+                            },
+                            {
+                                "item": "m4a1",
+                                "weight": 4
+                            },
+                            {
+                                "item": "vector",
+                                "weight": 4
+                            },
+                            {
+                                "item": "p90",
+                                "weight": 4
+                            },
+                            {
+                                "item": "model94",
+                                "weight": 2
+                            },
+                            {
+                                "item": "sr25",
+                                "weight": 2
+                            },
+                            {
+                                "item": "vss",
+                                "weight": 2
+                            },
+                            {
+                                "item": "rifle_cbc",
+                                "weight": 2
                             },
                             {
                                 "item": "kar98k",
@@ -155,7 +245,36 @@
                             "45acp": 140,
                             "9mm": 20,
                             "22lr": 200
-                        }
+                        },
+                        "items": [
+                            [
+                                {
+                                    "item": "bandage",
+                                    "weight": 1,
+                                    "count": 5
+                                }
+                            ],
+                            [
+                                {
+                                    "item": "medikit",
+                                    "weight": 1
+                                }
+                            ],
+                            [
+                                {
+                                    "item": "yellow_soda",
+                                    "weight": 1
+                                },
+                                {
+                                    "item": "blue_soda",
+                                    "count": 2,
+                                    "weight": 1
+                                }
+                            ]
+                        ],
+                        "iitems": [
+                            "scope_2"
+                        ]
                     }
                 },
                 "count": 40

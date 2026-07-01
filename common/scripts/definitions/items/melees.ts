@@ -339,7 +339,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.right!.position,
                 rotation:-0.5,
                 zIndex:1,
-                hotspot:v2(0,0.7)
+                hotspot:v2(0,0.8)
             },
             animation:[
                 {

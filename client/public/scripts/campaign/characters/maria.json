@@ -14,55 +14,6 @@
             "team_dominance": 100
         }
     },
-    "inventory": {
-        "infinity_ammo": true,
-        "hand": 1,
-        "gun1": [
-            {
-                "item": "kar98k",
-                "weight": 1.5
-            },
-            {
-                "item": "awp",
-                "weight": 0.5
-            }
-        ],
-        "gun2": [
-            {
-                "item": "kar98k",
-                "weight": 1
-            },
-            {
-                "item": "awp",
-                "weight": 0.5
-            }
-        ],
-        "items": [
-            [
-                {
-                    "item": "bandage",
-                    "weight": 1
-                }
-            ],
-            [
-                {
-                    "item": "medikit",
-                    "weight": 1
-                }
-            ],
-            [
-                {
-                    "item": "yellow_soda",
-                    "weight": 1
-                }
-            ]
-        ],
-        "iitems": [
-            "scope_2",
-            "scope_3",
-            "scope_4"
-        ]
-    },
     "loadout": {
         "hair": "hair_2",
         "hair_tint": 1122066,

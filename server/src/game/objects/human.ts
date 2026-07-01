@@ -35,6 +35,7 @@ import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
+import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -397,6 +398,9 @@ export class Human extends MovingBody{
         switch(def.kind){
             case "advanced":
                 ai = new ADVHumanAI(this)
+                break
+            case "advanced_legacy":
+                ai = new ADVHumanAILegacy(this)
                 break
             case "dumb":
                 ai = new DumbBotAI(this)

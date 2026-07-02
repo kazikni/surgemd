@@ -33,6 +33,7 @@ __                                                                              
 * Escape Menu
 __                                                                                                                 __
 ### Items
+* Melees Switch Sounds
 * VSS - 9mm DMR
 * Rifle CBC - 22lr DMR
 * P90 - 45acp SMG

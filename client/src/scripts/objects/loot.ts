@@ -240,7 +240,6 @@ export class Loot extends GameObject{
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2(1.9,1.9);
-                    this.pickup_sound=this.game.resources.get_sound("gun_pickup")
                     radius=GameConstants.loot.radius.weapon
                     this.container.add_child(this.sprite_outline)
                     break

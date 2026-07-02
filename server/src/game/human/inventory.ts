@@ -321,9 +321,6 @@ export class AmmoItem extends AmmoItemBase implements LItem{
     drop(): Loot[] {
         return []
     }
-    attacking():boolean{
-        return false
-    }
 }
 export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     declare inventory:GInventory
@@ -406,9 +403,6 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
             }
         }
     }
-    attacking():boolean{
-        return false
-    }
     update(_user: Human,dt:number): void {
         if(this.use_delay>0)this.use_delay-=dt
     }
@@ -442,9 +436,6 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         )
     }
     on_fire_alt(user:Human):void{}
-    attacking():boolean{
-        return this.inventory.owner.grenade_holding!==undefined
-    }
     update(_user: Human,dt:number): void {
 
     }
@@ -459,9 +450,6 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     switching:boolean=false
     constructor(def:MeleeDef){
         super(def)
-    }
-    attacking():boolean{
-        return this.use_delay>0&&this.firing
     }
     on_use(_user: Human, _slot?: Slot<LItem>): void {
       
@@ -572,11 +560,9 @@ export class GInventory extends GInventoryBase<LItem>{
             this.owner.actions.cancel()
             this.owner.throw_using_projectile()
             this.owner.animation_data.dirty=true
+            this.owner.animation_data.switching=true
         }
         super.set_weapon_index(idx,force)
-        this.owner.animation_data.current_animation.push({
-            type:HumanAnimationType.Switch,
-        })
         this.net_sync.melee_world=true
     }
     override set_weapon(slot: number, wep?: GameItem,drop:boolean=true): boolean {
@@ -588,6 +574,7 @@ export class GInventory extends GInventoryBase<LItem>{
             }
         }
         super.set_weapon(slot,wep)
+        this.net_sync.melee_world=true
         return true
     }
     add_gun(dd:GunDef,full_ammo:boolean):boolean{

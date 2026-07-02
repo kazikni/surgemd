@@ -188,6 +188,72 @@ export abstract class Stream{
             (packedGroup & 32768) !== 0
         ]
     }
+    write_boolean_group3(
+        b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,
+        b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,
+        b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,
+        bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean,
+        bG?: boolean, bH?: boolean, bI?: boolean, bJ?: boolean,
+        bK?: boolean, bL?: boolean, bM?: boolean, bN?: boolean
+    ): this {
+        return this.write_uint24(
+            (b0 ? 1 : 0)
+            + (b1 ? 2 : 0)
+            + (b2 ? 4 : 0)
+            + (b3 ? 8 : 0)
+            + (b4 ? 16 : 0)
+            + (b5 ? 32 : 0)
+            + (b6 ? 64 : 0)
+            + (b7 ? 128 : 0)
+            + (b8 ? 256 : 0)
+            + (b9 ? 512 : 0)
+            + (bA ? 1024 : 0)
+            + (bB ? 2048 : 0)
+            + (bC ? 4096 : 0)
+            + (bD ? 8192 : 0)
+            + (bE ? 16384 : 0)
+            + (bF ? 32768 : 0)
+            + (bG ? 65536 : 0)
+            + (bH ? 131072 : 0)
+            + (bI ? 262144 : 0)
+            + (bJ ? 524288 : 0)
+            + (bK ? 1048576 : 0)
+            + (bL ? 2097152 : 0)
+            + (bM ? 4194304 : 0)
+            + (bN ? 8388608 : 0)
+        )
+    }
+
+    read_boolean_group3(): boolean[] & { length: 24 } {
+        const packedGroup = this.read_uint24()
+
+        return [
+            (packedGroup & 1) !== 0,
+            (packedGroup & 2) !== 0,
+            (packedGroup & 4) !== 0,
+            (packedGroup & 8) !== 0,
+            (packedGroup & 16) !== 0,
+            (packedGroup & 32) !== 0,
+            (packedGroup & 64) !== 0,
+            (packedGroup & 128) !== 0,
+            (packedGroup & 256) !== 0,
+            (packedGroup & 512) !== 0,
+            (packedGroup & 1024) !== 0,
+            (packedGroup & 2048) !== 0,
+            (packedGroup & 4096) !== 0,
+            (packedGroup & 8192) !== 0,
+            (packedGroup & 16384) !== 0,
+            (packedGroup & 32768) !== 0,
+            (packedGroup & 65536) !== 0,
+            (packedGroup & 131072) !== 0,
+            (packedGroup & 262144) !== 0,
+            (packedGroup & 524288) !== 0,
+            (packedGroup & 1048576) !== 0,
+            (packedGroup & 2097152) !== 0,
+            (packedGroup & 4194304) !== 0,
+            (packedGroup & 8388608) !== 0
+        ] as boolean[] & { length: 24 }
+    }
 
     write_booleans(l: boolean[]): this {
         const byteCount = Math.ceil(l.length / 8)

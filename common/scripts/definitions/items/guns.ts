@@ -282,7 +282,7 @@ export const guns_factory={
             idString:id,
             class:GunClasses.Pistol,
             rank:ItemRank.E,
-            barrel_length:0.8,
+            barrel_length:1,
             fire_delay:1,
             ammo_type:ammo,
         },extend)
@@ -322,7 +322,7 @@ export const guns_factory={
             class:GunClasses.Assault,
             rank:ItemRank.C,
 
-            barrel_length:0.9,
+            barrel_length:1,
 
             fire_delay:0.1,
             switch_delay:0.7,
@@ -346,13 +346,13 @@ export const guns_factory={
             speed_mod:0.97,
         },extend??{})
     },
-    smg(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
+    smg(id:string,ammo:string,small:boolean,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
             idString:id,
             class:GunClasses.SMG,
             rank:ItemRank.C,
 
-            barrel_length:0.9,
+            barrel_length:1,
 
             fire_delay:0.1,
             switch_delay:0.5,
@@ -370,7 +370,7 @@ export const guns_factory={
                 position:v2.new(0.7,0.0),
             },
             assets:{
-                world:"weapon_medium_world",
+                world:small?"weapon_small_world":"weapon_medium_world",
                 world_tint:0x22222f
             },
 
@@ -383,7 +383,7 @@ export const guns_factory={
             class:GunClasses.DMR,
             rank:ItemRank.A,
             
-            barrel_length:0.9,
+            barrel_length:1,
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
@@ -416,7 +416,7 @@ export const guns_factory={
             class:GunClasses.Sniper,
             rank:ItemRank.A,
 
-            barrel_length:1,
+            barrel_length:1.3,
 
             fire_mode:FireMode.Single,
             fire_on_release:true,
@@ -906,7 +906,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
         }),
-        guns_factory.smg("micro_uzi","9mm",{
+        guns_factory.smg("micro_uzi","9mm",true,{
             rank:ItemRank.D,
             fire_delay:0.03,
             spread:4,
@@ -929,7 +929,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.77
             },
         }),
-        guns_factory.smg("vector","9mm",{
+        guns_factory.smg("vector","9mm",false,{
             rank:ItemRank.A,
             fire_delay:0.03,
             spread:1,
@@ -952,7 +952,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.77
             },
         }),
-        guns_factory.smg("p90","45acp",{
+        guns_factory.smg("p90","45acp",false,{
             rank:ItemRank.A,
             fire_delay:0.04,
             spread:1.2,

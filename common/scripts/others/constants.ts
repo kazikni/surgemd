@@ -43,7 +43,6 @@ export enum GameObjectType{
 }
 
 export enum HumanAnimationType{
-    Switch,
     Reloading,
     Consuming,
     Melee,
@@ -54,8 +53,6 @@ export enum HumanAnimationType{
 }
 export type HumanAnimation={
 }&({
-    type:HumanAnimationType.Switch   
-}|{
     type:HumanAnimationType.Reloading
     alt_reload:boolean
 }|{
@@ -217,7 +214,7 @@ export interface HumanLoadoutData {
 }
 export interface HumanAnimationData{
     dirty:boolean
-    attacking:boolean
+    switching:boolean
 }
 export interface ObstacleVisualData{
     dirty:boolean

@@ -107,9 +107,7 @@ export class Human extends MovingBody{
         recoil_state:-1,
         recoil_type:0,
 
-        switch_and_cycle:undefined as AudioVoice|undefined,
-        switch_and_cycle_sound_time:0,
-        switch_and_cycle_state:0,
+        cycle_sound_time:undefined as (number|undefined),
 
         muzzle_flash_time:-1,
 
@@ -650,6 +648,16 @@ export class Human extends MovingBody{
         this.animation.base_weapon_position=v2.clone(this.sprites.weapon.position)
         if(this.melee)this.update_melee(this.melee)
     }
+    on_weapon_switch(){
+        this.reset_anim()
+        if(this.assets.weapon_switch_sound){
+            this.animation.sound_animation=this.game.sounds.play(this.assets.weapon_switch_sound,{
+                position:this.position,
+                max_distance:9,
+                bus:"humans"
+            })
+        }
+    }
     update_melee(def?:MeleeDef){
         this.melee=def
         if(def?.character_frame){
@@ -909,9 +917,14 @@ export class Human extends MovingBody{
 
     // Animation
     reset_anim(){
+        if(this.animation.sound_animation){
+            this.animation.sound_animation.stop()
+            this.animation.sound_animation=undefined
+        }
         this.sprites.muzzle_flash.visible=false
         this.animation.recoil_state=-1
 
+        this.animation.cycle_sound_time=undefined
         this.animation.consumibles_time=-1
         this.consumible_particles.enabled=false
         this.container.stop_all_animations()
@@ -948,21 +961,16 @@ export class Human extends MovingBody{
                 }
             }
         }
-        if(this.animation.switch_and_cycle_state!==0){
-            this.animation.switch_and_cycle_sound_time-=dt
-            if(this.animation.switch_and_cycle_sound_time<=0){
-                if(this.animation.switch_and_cycle_state===1){
-                    if(this.assets.weapon_switch_sound)this.animation.switch_and_cycle=this.game.sounds.play(this.assets.weapon_switch_sound,{
-                        position:this.position,
-                        max_distance:9,
-                    })
-                }else{
-                    if(this.assets.weapon_cycle_sound)this.animation.switch_and_cycle=this.game.sounds.play(this.assets.weapon_cycle_sound,{
-                        position:this.position,
-                        max_distance:9,
-                    })
-                }
-                this.animation.switch_and_cycle_state=0
+        if(this.animation.cycle_sound_time!==undefined){
+            this.animation.cycle_sound_time-=dt
+            if(this.animation.cycle_sound_time<=0){
+                if(this.animation.sound_animation)this.animation.sound_animation.stop()
+                if(this.assets.weapon_cycle_sound)this.animation.sound_animation=this.game.sounds.play(this.assets.weapon_cycle_sound,{
+                    position:this.position,
+                    max_distance:9,
+                    bus:"humans"
+                })
+                this.animation.cycle_sound_time=undefined
             }
         }
         if(this.animation.muzzle_flash_time!==-1){
@@ -1178,8 +1186,7 @@ export class Human extends MovingBody{
             })
         }
         if(this.assets.weapon_cycle_sound){
-            this.animation.switch_and_cycle_sound_time=def.fire_delay*0.3
-            this.animation.switch_and_cycle_state=2
+            this.animation.cycle_sound_time=def.fire_delay*0.4
         }
         if(def.muzzle_flash&&!this.sprites.muzzle_flash.visible){
             this.sprites.muzzle_flash.visible=true
@@ -1191,17 +1198,6 @@ export class Human extends MovingBody{
     set_animations(animations:HumanAnimation[]){
         for(const a of animations){
             switch(a.type){
-                case HumanAnimationType.Switch:{
-                    if(this.animation.switch_and_cycle)this.animation.switch_and_cycle.stop()
-                    if(this.assets.weapon_switch_sound){
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        this.animation.switch_and_cycle_sound_time=this.current_weapon?.switch_delay??0.1
-                        this.animation.switch_and_cycle_state=1
-                    }
-                    this.reset_anim()
-                    break
-                }
                 case HumanAnimationType.Fire:{
                     if(this.current_weapon!.item_type===InventoryItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last,a.alt_func)
                     break
@@ -1228,38 +1224,9 @@ export class Human extends MovingBody{
                     const sound=this.game.resources.get_sound((def.assets?.using_sound)??`using_${def.idString}`)
                     const consuming=def.consuming as (ConsumingAction&{type:0})
                     if(sound){
-                        /*if(consuming.drink){
-                            this.sprites.mounth.frames=undefined
-                            this.sprites.mounth.frame=this.game.resources.get_frame(this.assets.mounth_open)
-                        }*/
                         this.animation.sound_animation=this.game.sounds.play(sound,{
                             position:this.position,
                             max_distance:10,
-                            /*on_complete:()=>{
-                                if(consuming.drop){
-                                    const angle=this.physical_data.rotation+(3.141592/2)
-                                    const p=new ABParticle2D({
-                                        direction:angle,
-                                        life_time:2,
-                                        position:this.sprites.weapon._real_position,
-                                        angle:this.sprites.weapon.rotation,
-                                        frame:{
-                                            image:this.sprites.weapon.frame?.id,
-                                            hotspot:CenterHotspot,
-                                            layer:this.layer,
-                                            zIndex:zIndexes.Particles
-                                        },
-                                        speed:random.float(0.5,1),
-                                        scale:this.sprites.weapon.scale.x,
-                                        to:{
-                                            angle:angle+random.float(6,10),
-                                            scale:0.6
-                                        }
-                                    })
-                                    this.game.particles.add_particle(p)
-                                }
-                                this.update_weapon(this.current_weapon)
-                            },*/
                             bus:"humans"
                         })
                     }
@@ -1523,6 +1490,8 @@ export class Human extends MovingBody{
             effects_dirty,
             shield,
 
+            switching,
+
             hand_dirty,
             melee_wold_dirty,
 
@@ -1533,7 +1502,7 @@ export class Human extends MovingBody{
 
             controlling,
             seat,
-        ]=stream.read_boolean_group2()
+        ]=stream.read_boolean_group3()
         this.controlling=controlling
         this.seat=seat
         this.shield=shield
@@ -1642,6 +1611,9 @@ export class Human extends MovingBody{
             if(current_weapon!==this.current_weapon){
                 this.set_current_weapon(current_weapon)
             }
+        }
+        if(switching){
+            this.on_weapon_switch()
         }
         if(full||melee_wold_dirty){
             const id=stream.read_uint16()

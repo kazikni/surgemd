@@ -276,8 +276,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"fist_swing",
                 hit_sound:"fist_hit",
+                switch_sound:"medium_switch"
             },
-
             animation:[
                 {
                     time:0.1,
@@ -394,6 +394,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"light_swing",
                 hit_sound:"knife_hit",
+                switch_sound:"knife_switch"
             }
         },
         {
@@ -429,6 +430,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"heavy_swing",
                 hit_sound:"axe_hit",
+                switch_sound:"medium_switch"
             }
         },
         {
@@ -464,6 +466,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"heavy_swing",
                 hit_sound:"sledgehammer_hit",
+                switch_sound:"heavy_switch"
             }
         },
         {
@@ -498,6 +501,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"heavy_swing",
                 hit_sound:"shovel_hit",
+                switch_sound:"medium_switch"
             }
         },
         {
@@ -629,6 +633,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"medium_swing",
                 hit_sound:"axe_hit",
+                switch_sound:"medium_switch",
                 world:"katana_world"
             },
             character_frame:{
@@ -679,6 +684,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             assets:{
                 use_sound:"light_swing",
                 hit_sound:"bonesaw_hit",
+                switch_sound:"knife_switch"
             }
         },
         {

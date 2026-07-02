@@ -143,7 +143,7 @@ export class Human extends MovingBody{
     }
     animation_data:HumanAnimationData&{current_animation:HumanAnimation[]}={
         dirty:true,
-        attacking:false,
+        switching:true,
         current_animation:[]
     }
 
@@ -969,7 +969,6 @@ export class Human extends MovingBody{
             super.on_tick(dt)
             if(!this.parachute){
                 //Hand Use
-                this.animation_data.attacking=false
                 if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.downed){
                     if(this.input.using_item){
                         this.inventory.hand_item.on_fire(this)
@@ -1069,6 +1068,7 @@ export class Human extends MovingBody{
 
         this.animation_data.dirty=false
         this.animation_data.current_animation.length=0
+        this.animation_data.switching=false
 
         this.loadout.dirty=false
         this.loadout.dirty_colors=false
@@ -1408,7 +1408,7 @@ export class Human extends MovingBody{
         if(idx!==-1)this.humans_manager.humans.splice(idx,1)
     }
     override on_encode_net(stream: Stream, full: boolean,utils:any): void {
-        stream.write_boolean_group2(
+        stream.write_boolean_group3(
             // Physical
             this.physical_data.dirty_part,this.physical_data.dirty, // 2
             // Equipment
@@ -1418,6 +1418,8 @@ export class Human extends MovingBody{
             this.animation_data.dirty, // 1
             this.effects_dirty,
             this.health_data.boost_def.type===BoostType.Shield&&this.health_data.boost>0,
+
+            this.animation_data.switching,
 
             // Inventory
             this.inventory.net_sync.hand,this.inventory.net_sync.melee_world, // 2

@@ -20,6 +20,7 @@ export class Parachute extends ServerGameObject{
         super()
 
         this.allow_tick=true
+        this.net_sync_deletion=false
     }
 
     set_configuration(position:Vec2,obstacle:ObstacleDef):void{
@@ -33,7 +34,6 @@ export class Parachute extends ServerGameObject{
         this.game.pings.push({
             position:this.position,
             def:this.game.definitions.ping.getFromString("ping_airdrop").idNumber!,
-            id:-1,
             color:0xffffff,
         })
     }

@@ -1,4 +1,4 @@
-import { ABParticle2D, Camera2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, model2d, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -259,7 +259,7 @@ export class Obstacle extends StaticBody{
             max_distance:30,
             bus:"obstacles"
         })
-        for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).particles??[]){
+        for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).first_particles??[]){
             this.game.add_timeout(()=>{
                 for(let c=0;c<p.count;c++){
                     this.game.particles.add_particle(new ABParticle2D({
@@ -281,6 +281,29 @@ export class Obstacle extends StaticBody{
         if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites&&(this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def]){
             this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def],this.game.resources)
         }
+        this.game.add_timeout(()=>{
+            for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
+                this.game.add_timeout(()=>{
+                    for(let c=0;c<p.count;c++){
+                        this.game.particles.add_particle(new ABParticle2D({
+                            frame:{layer:this.layer,...p.frame},
+                            position:this.hitbox.random_point(),
+                            speed:random.float(1,4),
+                            angle:this.physical_data.rotation,
+                            direction:random.rad(),
+                            life_time:3,
+                            zIndex:zIndexes.Particles,
+                            tint:ColorM.default.white,
+                            to:{
+                                speed:random.float(0.1,1),
+                                angle:this.physical_data.rotation+random.rad(),
+                                tint:ColorM.default.transparent
+                            }
+                        }))
+                    }
+                },p.delay)
+            }
+        },(this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay)
     }
     update_door(ne:number,force:boolean=false){
         const old=this.door_data!.open

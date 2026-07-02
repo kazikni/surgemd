@@ -30,6 +30,7 @@ export class Plane extends MovingBody {
     constructor(){
         super()
         this.allow_tick=true
+        this.clamp_hitbox=false
     }
 
     override on_collided(_obj:ServerGameObject,_dt:number){
@@ -83,7 +84,7 @@ export class Plane extends MovingBody {
             this.physical_data.rotation=v2.lookTo(this.position, this.target_pos)
             this.physical_data.velocity=v2.from_RadAngle(this.physical_data.rotation,this.speed)
         }else{
-            if(this.position.x<=40||this.position.y<=40||this.position.x>=this.game.map.size.x||this.position.y>=this.game.map.size.y)this.destroy()
+            if(this.position.x<=-40||this.position.y<=-40||this.position.x>=this.game.map.size.x+40||this.position.y>=this.game.map.size.y+40)this.destroy()
         }
 
     }

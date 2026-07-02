@@ -146,10 +146,9 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
         {
             idString:"airdrop_smoke",
             lifetime:1.5,
-            force_default_scope:true,
             frame:{
                 image:"smoke_particle",
-                scale:2,
+                scale:1.6,
                 alpha:230
             },
             movement:{

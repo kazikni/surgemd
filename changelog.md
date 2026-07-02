@@ -48,6 +48,8 @@ __                                                                              
 * Guns Move Spread
 __                                                                                                                 __
 ### Others
+* Airdrop Lading Sound For Liquid And Normal
+* Airdrop More Locked Particles
 * Explosions Have Diferent Sounds In Liquids
 * Explosion Generate Riples On Liquids
 * Camera Shake On Explosions

@@ -35,7 +35,12 @@ export interface ObstacleBehaviorTransformInto{
     type:3,
     obstacles:(WeightDefinition&{id:string})[]
     sprites?:Record<number,FrameDef>
-    particles?:{
+    first_particles?:{
+        frame:FrameDef
+        delay:number
+        count:number
+    }[]
+    transform_particles?:{
         frame:FrameDef
         delay:number
         count:number
@@ -748,7 +753,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     0:{image:"airdrop_locked_1"},
                     1:{image:"airdrop_locked_2"},
                 },
-                particles:[
+                first_particles:[
                     {
                         frame:{
                             image:"airdrop_particle_1",
@@ -756,6 +761,17 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                             zIndex:zIndexes.Particles
                         },
                         count:1,
+                        delay:0
+                    }
+                ],
+                transform_particles:[
+                    {
+                        frame:{
+                            image:"airdrop_particle_2",
+                            scale:2,
+                            zIndex:zIndexes.Particles
+                        },
+                        count:10,
                         delay:0
                     }
                 ]

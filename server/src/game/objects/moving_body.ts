@@ -11,6 +11,8 @@ export interface MovingBodyPhysicalData{
 export abstract class MovingBody extends ServerGameObject{
     abstract physical_data:MovingBodyPhysicalData
 
+    clamp_hitbox:boolean=true
+
     constructor(){
         super()
         this.allow_tick=true
@@ -47,7 +49,8 @@ export abstract class MovingBody extends ServerGameObject{
             const step_dt = dt / substeps
             for (let i = 0; i < substeps; i++) {
                 const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, step_dt))
-                this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+                if(this.clamp_hitbox)this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+                else this.position=pos
                 for (const obj of objs) {
                     if (obj.id === this.id) continue
                     this.on_collided(obj, step_dt)
@@ -55,7 +58,8 @@ export abstract class MovingBody extends ServerGameObject{
             }
         } else {
             const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, dt))
-            this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+                if(this.clamp_hitbox)this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+                else this.position=pos
             const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
             for (const obj of objs) {
                 if (obj.id === this.id) continue

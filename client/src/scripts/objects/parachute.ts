@@ -1,6 +1,7 @@
-import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, v2, v2m } from "common/engine/client.ts"
+import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, v2, v2m, ColorM, random, ABParticle2D } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
+import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 
 export class Parachute extends GameObject{
     ////////////////////////////
@@ -38,16 +39,46 @@ export class Parachute extends GameObject{
     override on_destroy(): void {
         this.sprite.destroy()
     }
+    on_landed(){
+        const floor=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void) as FloorType
+        const floor_def=Floors[floor]
+        if(floor_def.floor_kind===FloorKind.Liquid){
+            this.game.sounds.play(this.game.resources.get_sound("airdrop_landed_liquid"))
+            for(let i=0;i<7;i++){
+                const pos=random.random_in_circle(2)
+                v2m.add(pos,pos,this.position)
+                this.game.particles.add_particle(new ABParticle2D({
+                    frame:{
+                        image:"riple",
+                        hotspot:CenterHotspot,
+                        zIndex:zIndexes.Decals,
+                        layer:this.layer,
+                        scale:0,
+                    },
+                    life_time:0.75,
+                    position:pos,
+                    speed:0,
+                    direction:0,
+                    to:{
+                        tint:ColorM.default.transparent,
+                        scale:6
+                    }
+                }))
+            }
+        }else{
+            this.game.sounds.play(this.game.resources.get_sound("airdrop_landed"))
+        }
+    }
     override on_tick(dt: number): void {
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
+            this.on_landed()
             this.destroy()
         }
-        const s=v2(1,1)
+        const s=v2(1.2,1.2)
         v2m.scale(s,s,1-this.time/this.parachute_data.lifetime)
-
-        v2m.add(this.sprite.scale,s,v2(1,1))
+        v2m.add(this.sprite.scale,s,v2(1.35,1.35))
         this.sprite.position=this.position
     }
     override on_decode_net(stream:Stream,full: boolean):void{

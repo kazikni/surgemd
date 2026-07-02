@@ -7,7 +7,7 @@ import { ActionsType } from "../others/constants.ts";
 export interface PingData{
     position:Vec2
     def:number
-    id:number
+    id?:number
     color:number
 }
 export interface DamageSplash{
@@ -312,10 +312,11 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             .write_pos2(d.position)
         })
         .write_array(this.priv.pings,(e)=>{
-            stream.write_int8(e.id)
+            stream.write_boolean_group(e.id!==undefined)
             .write_pos2(e.position)
             .write_uint8(e.def)
             .write_uint32(e.color)
+            if(e.id!==undefined)stream.write_id(e.id)
         },1)
         if(this.priv.active_entity.dirty){
             stream.write_id(this.priv.active_entity.id)
@@ -348,12 +349,14 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             }
         })
         this.priv.pings=stream.read_array(()=>{
-            return {
-                id:stream.read_uint8(),
+            const [id]=stream.read_boolean_group()
+            const ret:PingData={
                 position:stream.read_pos2(),
                 def:stream.read_uint8(),
                 color:stream.read_uint32()
             }
+            if(id)ret.id=stream.read_id()
+            return ret
         },1)
         if(bg[0]){
             this.priv.active_entity={

@@ -26,11 +26,9 @@ export class BasicSocket{
 export class OfflineSocket extends BasicSocket{
     output?:OfflineSocket
     private static _event: MessageEvent<any> = { data: null } as any;
-    lag:number=0
-    constructor(output?:OfflineSocket,lag:number=0){
+    constructor(output?:OfflineSocket){
         super()
         this.output=output
-        this.lag=lag
     }
     override send(data: ArrayBuffer|Uint8Array|SharedArrayBuffer){
         if (!this.output) return;
@@ -39,14 +37,7 @@ export class OfflineSocket extends BasicSocket{
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
         ev.data = data
-
-        if(this.lag){
-            setTimeout(() => {
-                out.message!(ev)
-            }, this.lag)
-        }else{
-            out.message!(ev)
-        }
+        out.message!(ev)
     }
     open(){
         this.readyState=this.OPEN
@@ -72,7 +63,10 @@ export class Client{
     onopen?:()=>void
 
     ping:number=0
-    lastPingTime:number=0
+    full_ping:number=0
+    last_ping_time:number=0
+    recev_ping_emulation:number=0
+    send_ping_emulation:number=0
 
     constructor(websocket:BasicSocket,packet_manager:PacketsManager,ip:string=""){
         this.ws=websocket
@@ -85,32 +79,11 @@ export class Client{
             this.opened=false
             this.signals.emit(DefaultSignals.DISCONNECT,new DisconnectPacket(this.ID))
         }
-        this.ws.onmessage=async(msg:MessageEvent<ArrayBuffer|Blob>)=>{
-            let buf: ArrayBufferLike | null = null
-            if (msg.data instanceof ArrayBuffer){
-                buf = msg.data
-            }else if(msg.data instanceof Uint8Array){
-                buf=msg.data.buffer
-            }else if(msg.data instanceof Blob) {
-                buf=await msg.data.arrayBuffer()
-            }
-            if (buf) {
-                const stream=new StaticStream(buf as ArrayBuffer)
-                let packet = this.manager.decode(stream)
-                while(!(packet instanceof InvalidPacket)){
-                    switch(packet.ID){
-                        case 65530:
-                            this.signals.emit(packet.Name, (packet as MessagePacket).msg)
-                            break
-                        case 65529:
-                            this.signals.emit((packet as SignalMessagePacket).signal,(packet as SignalMessagePacket).msg)
-                            break
-                        default:
-                            this.signals.emit(packet.Name, packet)
-                            break
-                    }
-                    packet=this.manager.decode(stream)
-                }
+        this.ws.onmessage = (msg) => {
+            if (this.recev_ping_emulation > 0) {
+                setTimeout(() => this._on_message(msg),this.recev_ping_emulation)
+            } else {
+                this._on_message(msg)
             }
         }
         this.IP=ip
@@ -122,16 +95,17 @@ export class Client{
                 this.emit_connect()
             })
         }
-
         this.on("pong", (packet: PongPacket) => {
             const now = performance.now()
-            this.ping = now - packet.time
+            this.full_ping = now - packet.client_time
+            this.ping=this.full_ping
+            //this.ping = packet.server_time - packet.client_time
         })
         this.on("ping", (packet: PingPacket) => {
-            this.emit_packet(new PongPacket(packet.time))
+            this.emit_packet(new PongPacket(packet.client_time,performance.now()))
         })
     }
-    private static stream_cache:Stream=new DynamicStream()
+    private stream_cache:Stream=new DynamicStream()
 
     emit(signal:string,msg?:any,bytes1:number=1,bytes2:number=2){
         const p=new SignalMessagePacket()
@@ -141,11 +115,51 @@ export class Client{
         p.bytes2=bytes2
         this.emit_packet(p)
     }
-    emit_packet(packet: Packet): void {
+    emit_packet(packet: Packet) {
         if (this.ws.readyState !== WebSocket.OPEN) return
-        Client.stream_cache.clear()
-        this.manager.encode(packet, Client.stream_cache)
-        if (this.ws.send) this.ws.send(Client.stream_cache.data.subarray(0,Client.stream_cache.length))
+
+        this.stream_cache.clear()
+        this.manager.encode(packet, this.stream_cache)
+
+        const data = this.stream_cache.data.slice(0,this.stream_cache.length)
+
+        this._send(data)
+    }
+    async _on_message(msg:MessageEvent<ArrayBuffer|Blob>){
+        let buf: ArrayBufferLike | null = null
+        if (msg.data instanceof ArrayBuffer){
+            buf = msg.data
+        }else if(msg.data instanceof Uint8Array){
+            buf=msg.data.buffer
+        }else if(msg.data instanceof Blob) {
+            buf=await msg.data.arrayBuffer()
+        }
+        if (buf) {
+            const stream=new StaticStream(buf as ArrayBuffer)
+            let packet = this.manager.decode(stream)
+            while(!(packet instanceof InvalidPacket)){
+                switch(packet.ID){
+                    case 65530:
+                        this.signals.emit(packet.Name, (packet as MessagePacket).msg)
+                        break
+                    case 65529:
+                        this.signals.emit((packet as SignalMessagePacket).signal,(packet as SignalMessagePacket).msg)
+                        break
+                    default:
+                        this.signals.emit(packet.Name, packet)
+                        break
+                }
+                packet=this.manager.decode(stream)
+            }
+        }
+    }
+    _send(data:any){
+        if(!this.ws.send)return
+        if(this.send_ping_emulation>0){
+            setTimeout(()=>this.ws.send(data),this.send_ping_emulation)
+        }else{
+            this.ws.send(data)
+        }
     }
     async wait(signal:string):Promise<any>{
         return (await this.signals.wait(signal))[0]
@@ -161,8 +175,8 @@ export class Client{
         this.signals.on(name,callback)
     }
     send_stream(stream:Stream){
-        if (this.ws.readyState !== WebSocket.OPEN) return
-        if (this.ws.send) this.ws.send(stream.data.subarray(0, stream.length))
+        if(this.ws.readyState !== WebSocket.OPEN)return
+        this._send(stream.data.subarray(0, stream.length))
     }
     send(msg:any,bytes1:number=1,bytes2:number=2){
         const p=new MessagePacket()
@@ -171,17 +185,14 @@ export class Client{
         p.bytes2=bytes2
         this.emit_packet(p)
     }
-    /**
-     * Disconnect Websocket
-     */
+
     disconnect():void{
         if(this.ws.close)this.ws.close()
     }
-    send_ping(){
-        this.lastPingTime = performance.now()
-        this.emit_packet(new PingPacket(this.lastPingTime))
+    send_ping() {
+        this.last_ping_time = performance.now()
+        this.emit_packet(new PingPacket(this.last_ping_time))
     }
-
     emit_connect(){
         this.emit_packet(new ConnectPacket(this.ID))
     }
@@ -255,16 +266,16 @@ export class OfflineClientsManager{
             client.send(msg,bytes1,bytes2)
         }
     }
-    fake_connect(lag:number):BasicSocket{
-        const s1=new OfflineSocket(undefined,lag)
-        const s2=new OfflineSocket(s1,lag)
+    fake_connect():BasicSocket{
+        const s1=new OfflineSocket(undefined)
+        const s2=new OfflineSocket(s1)
         s1.output=s2
         this.activate_ws(s1,random.id(),"localhost","localhost")
         return s2
     }
-    create_conn(lag:number):[OfflineSocket,OfflineSocket]{
-        const s1=new OfflineSocket(undefined,lag)
-        const s2=new OfflineSocket(s1,lag)
+    create_conn():[OfflineSocket,OfflineSocket]{
+        const s1=new OfflineSocket(undefined)
+        const s2=new OfflineSocket(s1)
         s1.output=s2
         return [s1,s2]
     }

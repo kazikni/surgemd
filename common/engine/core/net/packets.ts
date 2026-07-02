@@ -129,37 +129,41 @@ export class SteamPacket extends Packet{
 export class PingPacket extends Packet {
     readonly ID = 65532
     readonly Name = "ping"
-    time!: number
+    client_time:number
+    server_time:number
 
-    constructor(time: number = 0) {
+    constructor(client_time:number=0,server_time:number=0) {
         super()
-        this.time = time
+        this.client_time = client_time
+        this.server_time=server_time
     }
-
     encode(stream: Stream): void {
-        stream.write_float64(this.time)
+        stream.write_float64(this.client_time)
+        stream.write_float64(this.server_time)
     }
-
     decode(stream: Stream): void {
-        this.time = stream.read_float64()
+        this.client_time = stream.read_float64()
+        this.server_time = stream.read_float64()
     }
 }
 export class PongPacket extends Packet {
     readonly ID = 65531
     readonly Name = "pong"
-    time!: number
+    client_time:number
+    server_time:number
 
-    constructor(time: number = 0) {
+    constructor(client_time:number=0,server_time:number=0) {
         super()
-        this.time = time
+        this.client_time = client_time
+        this.server_time=server_time
     }
-
     encode(stream: Stream): void {
-        stream.write_float64(this.time)
+        stream.write_float64(this.client_time)
+        stream.write_float64(this.server_time)
     }
-
     decode(stream: Stream): void {
-        this.time = stream.read_float64()
+        this.client_time = stream.read_float64()
+        this.server_time = stream.read_float64()
     }
 }
 export class MessagePacket extends Packet {

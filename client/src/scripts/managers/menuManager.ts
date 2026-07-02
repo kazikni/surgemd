@@ -135,6 +135,7 @@ export class MenuManager{
                 setTimeout(() => {
                     this.intro_fineshed=true
                     HideElement(screen, true)
+                    screen.remove()
                     const invite = this.params.get("group-id")
                     if (invite) {
                         this.join_group(invite)

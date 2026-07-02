@@ -774,6 +774,8 @@ export class Game extends ClientGame<GameObject>{
         }
         if(client===this.client)return
         this.client=client
+        client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
+        client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
 
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)

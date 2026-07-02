@@ -761,7 +761,7 @@ export class UiManager{
             if(this.ping_time<=0){
                 this.ping_time=1
                 this.game.client.send_ping()
-                this.content.debug_show.innerHTML=`FPS: ${Math.floor(1/dt)}<br/>PING: ${Math.floor(this.game.client?.ping??0)}`
+                this.content.debug_show.innerHTML=`FPS: ${Math.floor(1/dt)}<br/>PING-PONG: ${Math.floor(this.game.client?.ping??0)}`
             }
             if(this.game.active_entity){
                 this.update_active_player(this.game.active_entity as Human,dt)

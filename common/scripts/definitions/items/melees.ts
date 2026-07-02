@@ -339,7 +339,7 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 position:DefaultFistRig.right!.position,
                 rotation:-0.5,
                 zIndex:1,
-                hotspot:v2(0,0.8)
+                hotspot:v2(0.2,0.4)
             },
             animation:[
                 {
@@ -361,31 +361,6 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                             to:{
                                 rotation:DefaultFistRig.right!.rotation-0.4,
                                 position:v2.add(DefaultFistRig.right!.position,v2(0,-0.2))
-                            }
-                        }
-                    ]
-                }
-            ],
-            alt_animation:[
-                {
-                    time:0.06,
-                    actions:[
-                        {
-                            fuser:"weapon",
-                            type:"tween",
-                            yoyo:true,
-                            to:{
-                                rotation:DefaultFistRig.right!.rotation+0.2,
-                                position:v2.add(DefaultFistRig.right!.position,v2(0.3,0.05))
-                            }
-                        },
-                        {
-                            fuser:"right_arm",
-                            type:"tween",
-                            yoyo:true,
-                            to:{
-                                rotation:DefaultFistRig.right!.rotation+0.2,
-                                position:v2.add(DefaultFistRig.right!.position,v2(0.3,0.05))
                             }
                         }
                     ]

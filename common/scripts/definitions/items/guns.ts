@@ -1384,7 +1384,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             switch_delay:0.3,
             spread:0.2,
             move_spread:2,
-            barrel_length:1,
+            barrel_length:1.3,
             ammo_type:"explosive_ammo",
             fire_mode:FireMode.Single,
             ammo_spawn:{
@@ -1409,11 +1409,11 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:70,
                     falloff:0.5,
                     on_hit_explosion:"rocket_explosion",
-                    speed:22,
+                    speed:26,
                     criticalMult:1.2,
                     obstacleMult:3,
                     tracer:{
-                        height:2,
+                        height:4,
                         width:2,
                         particles:{
                             frame:1
@@ -1429,7 +1429,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 duration:1.45,
                 speed:0.25
             },
-            speed_mod:0.5,
+            speed_mod:0.6,
+            assets:{
+                world:"weapon_large_world",
+                world_tint:0x22222f,
+            },
+            muzzle_flash:MuzzleFlash.normal,
+            rig_arms:WeaponsArmRig[1],
+            rig_image:WeaponsRig[0]
         },
         {
             idString:"m79",
@@ -1477,13 +1484,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.75,
             rig_arms:WeaponsArmRig[1],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
                 world_tint:0x22222f
-            },
-            rig_image:{
-                position:v2.new(0.6,0.45),
-                rotation:0
             },
         },
         {
@@ -1520,7 +1524,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             recoil:{
                 duration:1.45,
-                speed:0.46
+                speed:0.5
+            },
+            rig_arms:WeaponsArmRig[1],
+            rig_image:{
+                position:v2(0.28,0.075),
+                rotation:0,
             },
             speed_mod:0.6,
         },

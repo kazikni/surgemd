@@ -68,4 +68,5 @@ Insert in configurations at `api.game`:
     ],
     "hour": 17,
     "duration": 7200
-}```
+}
+```

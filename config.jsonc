@@ -43,7 +43,7 @@
         }
     },
     "game": {
-        "max_games": 5,
+        "max_games": 6,
         "tps": 100,
         "ntps": 32,
         "debug": {

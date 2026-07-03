@@ -78,7 +78,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             this.api_conn.connect()
         }
 
-        for(let i=0;i<6;i++){
+        for(let i=0;i<config.max_games;i++){
             this.add_container(new GameContainer())
         }
     }

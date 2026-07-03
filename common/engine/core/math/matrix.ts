@@ -36,6 +36,14 @@ export const matrix4={
             v.x, v.y, v.z, 1,
         ])
     },
+    scale_2d(v: Vec2): Matrix {
+        return new Float32Array([
+            v.x, 0,   0, 0,
+            0,   v.y, 0, 0,
+            0,   0,   1, 0,
+            0,   0,   0, 1,
+        ])
+    },
     scale_3d(v:Vec3) {
         return new Float32Array([
             v.x, 0,  0,  0,

@@ -1,0 +1,170 @@
+import { GameConstants, GameObjectType } from "common/scripts/others/constants.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
+import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Human } from "./human.ts";
+import { StaticBody } from "./static_body.ts";
+import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { type Obstacle } from "./obstacle.ts";
+
+export class Loot extends ServerGameObject{
+    string_type:string="loot"
+    number_type: number=GameObjectType.Loot
+
+    current_floor:FloorType=FloorType.Water
+    loot_data!:{
+        real_radius:number
+
+        count:number
+        item:GameItem
+    }
+
+    old_position:Vec2=v2(-1,-1)
+    velocity:Vec2
+
+    constructor(){
+        super()
+
+        this.velocity=v2.zero()
+        this.old_position=v2.clone(this.position)
+
+        this.allow_tick=true
+    }
+    reduce_count(count:number){
+        this.loot_data.count-=count
+        this.destroy()
+        if(this.loot_data.count>0){
+            this.game.add_loot(this.position,this.loot_data.item,this.loot_data.count,this.layer)
+        }
+    }
+    override can_interact(user: Human): boolean {
+        return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
+    }
+    override on_interact(user: Human): void {
+        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)
+        if(c!==this.loot_data.count){
+            this.reduce_count(this.loot_data.count-c)
+        }
+        return
+    }
+    set_loot(position:Vec2,item:GameItem,count:number){
+        this.position=position
+        this.loot_data={
+            item:item,
+            count:count,
+            real_radius:0
+        }
+        switch(this.loot_data.item.item_type){
+            case InventoryItemType.gun:
+            case InventoryItemType.melee:
+                this.loot_data.real_radius=GameConstants.loot.radius.weapon
+                break
+            case InventoryItemType.ammo:
+                this.loot_data.real_radius=GameConstants.loot.radius.ammo
+                break
+            case InventoryItemType.consumible:
+                this.loot_data.real_radius=GameConstants.loot.radius.consumible
+                break
+            case InventoryItemType.backpack:
+            case InventoryItemType.helmet:
+            case InventoryItemType.vest:
+                this.loot_data.real_radius=GameConstants.loot.radius.equipament
+                break
+            case InventoryItemType.grenade:
+                this.loot_data.real_radius=GameConstants.loot.radius.grenade
+                break
+            case InventoryItemType.accessory:
+                this.loot_data.real_radius=GameConstants.loot.radius.accessory
+                break
+            case InventoryItemType.scope:
+                this.loot_data.real_radius=GameConstants.loot.radius.scopes
+                break
+        }
+        (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
+    }
+    override on_create(args?: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),1)
+        if(args)this.set_loot(args.position,args.item,args.count)
+    }
+    override on_tick(dt:number): void {
+        const cf=Floors[this.current_floor]
+        const speed=1
+                * (cf.speed_mult??1)
+        if(this.current_floor === FloorType.Water){
+            for(const river of this.game.map.rivers){
+                const col=river.get_point_inside(this.position)
+                if(!col?.push){
+                    continue
+                }
+                const point=river.get_closest_point(this.position)
+                if(point){
+                    v2m.add(this.velocity,this.velocity,v2.scale(point.direction,point.push_force*dt))
+                }
+                break
+            }
+        }
+        const others:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
+        for(const other of others){
+            switch(other.number_type){
+                case GameObjectType.Loot:{
+                    if(other.id===this.id)continue
+                    const col=this.hitbox.overlap_collision(other.hitbox)
+                    if(col){
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,4*dt))
+                    }
+                    break
+                }
+                // deno-lint-ignore no-fallthrough
+                case GameObjectType.Obstacle:
+                case GameObjectType.StaticBody:
+                case GameObjectType.Building:{
+                    if((other as StaticBody).physical_data.stairs.length>0){
+                        for(const s of (other as StaticBody).physical_data.stairs){
+                            if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,other.layer+s.dest_layer)
+                        }
+                    }
+                    if((other as StaticBody).physical_data.no_collision)break
+                    const collisions=this.hitbox.overlap_collisions(other.hitbox)
+                    for(const col of collisions){
+                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
+                    }
+                    break
+                }
+            }
+        }
+        if(this.velocity.x!=0||this.velocity.y!=0){
+            v2m.scale(this.velocity,this.velocity,1/(1+dt*3))
+            const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
+            this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
+        }
+        if(!v2.is(this.position,this.old_position)){
+            this.old_position=v2.clone(this.position)
+            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
+            this.set_dirty_part()
+        }
+    }
+    push(speed:number,angle:number){
+        const a=v2.from_RadAngle(angle)
+        v2m.add_component(this.velocity,a.x*speed,a.y*speed)
+    }
+    override on_encode_net(stream: Stream, full: boolean): void {
+        stream.write_pos2(this.position)
+        if(full){
+            stream.write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
+            .write_uint8(this.loot_data.count)
+        }
+    }
+    override on_encode_checkpoint(stream: Stream): void {
+        stream.write_pos2(this.position)
+        .write_pos2(this.velocity)
+        .write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
+        .write_float32(this.loot_data.count)
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const position=stream.read_pos2()
+        this.velocity=stream.read_pos2()
+        this.set_loot(position,this.game.definitions.game_items.valueNumber[stream.read_uint16()],stream.read_float32())
+    }
+}

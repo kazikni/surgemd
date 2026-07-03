@@ -7,6 +7,7 @@ export interface BackpackDef extends Definition{
     item_type?:InventoryItemType.backpack
     rank:ItemRank
     level:number
+    special?:boolean
     no_world_image?:boolean
     slots:number
 }
@@ -20,12 +21,11 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "9mm":100,
                 "762mm":80,
                 "556mm":80,
-
                 "45acp":80,
                 "22lr":120,
 
-                "50cal":50,
-                "308sub":10,
+                "50cal":40,
+                "308sub":15,
                 "explosive_ammo":5,
                 "gasoline":5,
 
@@ -33,22 +33,23 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "smoke_grenade":12,
                 "mirv_grenade":7,
                 "molotov":5,
-                "red_flare":2,
-                "blue_flare":2,
+                "red_flare":6,
+                "blue_flare":6,
+                "yellow_flare":6,
 
                 "gauze":15,
-                "yellow_soda":5,
-                "blue_soda":5,
-                "purple_soda":5,
-                "red_soda":5,
-                "green_soda":5,
-                "black_soda":5,
-                "small_red_crystal":5,
+                "yellow_soda":6,
+                "blue_soda":6,
+                "purple_soda":6,
+                "red_soda":6,
+                "green_soda":6,
+                "black_soda":6,
+                "small_red_crystal":6,
 
-                "inhaler":4,
-                "blue_potion":4,
-                "purple_potion":4,
-                "red_crystal":4,
+                "inhaler":3,
+                "blue_potion":3,
+                "purple_potion":3,
+                "red_crystal":3,
 
                 "medikit":4,
                 "blue_pills":2,
@@ -60,7 +61,7 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             },
             rank:ItemRank.E,
             no_world_image:true,
-            slots:3,
+            slots:4,
         },
         {
             idString:"basic_pack",
@@ -68,19 +69,18 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             max:{
                 "12g":40,
                 "9mm":200,
-                "762mm":140,
-                "556mm":140,
-
-                "45acp":140,
+                "762mm":160,
+                "556mm":160,
+                "45acp":160,
                 "22lr":240,
 
                 "50cal":80,
-                "308sub":20,
+                "308sub":30,
                 "explosive_ammo":10,
                 "gasoline":10,
             },
             rank:ItemRank.E,
-            slots:4,
+            slots:5,
         },
         {
             idString:"regular_pack",
@@ -88,39 +88,38 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             max:{
                 "12g":60,
                 "9mm":300,
-                "762mm":220,
-                "556mm":220,
+                "762mm":240,
+                "556mm":240,
+                "45acp":240,
+                "22lr":360,
 
-                "45acp":220,
-                "22lr":380,
-
-                "308sub":40,
-                "50cal":130,
+                "308sub":45,
+                "50cal":120,
                 "explosive_ammo":15,
                 "gasoline":15,
             },
             rank:ItemRank.D,
-            slots:5,
+            slots:6,
         },
         {
-            idString:"tactical_pack",
+            idString:"military_pack",
             level:3,
+            special:true,
             max:{
                 "12g":80,
                 "9mm":400,
-                "762mm":300,
-                "556mm":300,
-    
-                "45acp":300,
-                "22lr":500,
+                "762mm":320,
+                "556mm":320,
+                "45acp":320,
+                "22lr":480,
 
-                "308sub":80,
+                "308sub":60,
                 "50cal":160,
                 "explosive_ammo":20,
                 "gasoline":20,
             },
             rank:ItemRank.C,
-            slots:6,
+            slots:7,
         }
     )
 }

@@ -1,0 +1,16 @@
+{
+    "meta":{
+        "name": "Debug Single Building",
+        "location": "Debug Single Building Island",
+        "description": "Debug",
+        "size":"medium",
+        "dificulty":"easy"
+    },
+    "mode":{
+        "type":"debug",
+        "map":{
+            "def":"single_building"
+        }
+    },
+    "player":{}
+}

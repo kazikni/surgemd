@@ -10,7 +10,12 @@ import { GameSave } from "../resources/saves.ts"
 import { TranslationManager } from "../../core/definition/definitions.ts";
 import { UIRoot } from "./html_manager.ts";
 import { AudioEngine } from "../resources/sounds.ts";
-export const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+export const isTablet =
+    /iPad|Tablet|PlayBook|Silk|Kindle|Nexus 7|Nexus 9|SM-T|Tab/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && window.innerWidth >= 600 &&  window.innerWidth <= 1366);
+export const isMobile = (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))||isTablet;
+
+export const isTouchDevice = navigator.maxTouchPoints > 0;
 export abstract class ClientGameObject2D extends BaseGameObject2D{
     // deno-lint-ignore no-explicit-any
     declare game:ClientGame<any>
@@ -37,7 +42,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
 
     happening:boolean=false
 
-    constructor(renderer:Renderer,language:TranslationManager=new TranslationManager({code:"none",name:"none",values:{}}),objects:Array<new ()=>GObject2D>=[]){
+    constructor(renderer:Renderer,language:TranslationManager=new TranslationManager(),objects:Array<new ()=>GObject2D>=[]){
         super(60,objects)
 
         this.renderer=renderer
@@ -90,14 +95,14 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
 
     override draw(dt:number){
         this.clock.profiler.start(3)
-        this.cam2d.fullCanvas()
+        this.cam2d.full_canvas()
         this.renderer.clear()
 
         this.on_before_render(dt)
         this.cam2d.draw(dt,this.resources)
-        for(const l of this.scene_2d.objects.layers){
-            for(const o of this.scene_2d.objects.objects[l].renderizables){
-                const obj=this.scene_2d.objects.objects[l].objects[o]
+        for(const l of this.scene_2d.objects.layers_orden){
+            for(const o of this.scene_2d.objects.layers[l].render){
+                const obj=this.scene_2d.objects.objects[o]
                 obj.render(this.cam2d,dt)
             }
         }

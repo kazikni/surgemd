@@ -22,7 +22,33 @@ export function splitPath(path:string):string[]{
     }
     return ret
 }
+export class Path {
+    static join(...parts: string[]): string {
+        const stack: string[] = []
 
+        const joined = parts
+            .join("/")
+            .replace(/\\/g, "/")
+            .split("/")
+
+        for (const part of joined) {
+            if (part === "" || part === ".") {
+                continue
+            }
+
+            if (part === "..") {
+                if (stack.length > 0) {
+                    stack.pop()
+                }
+                continue
+            }
+
+            stack.push(part)
+        }
+
+        return "/" + stack.join("/")
+    }
+}
 export type Tags=string[]
 export function hasTag(tags:Tags,tag:string):boolean{
     return tags.includes(tag)
@@ -85,6 +111,15 @@ export class SignalManager {
             }
         }
     }
+    wait(signal: string): Promise<any[]> {
+        return new Promise(resolve => {
+            const callback = (...args: any[]) => {
+                this.off(signal, callback)
+                resolve(args)
+            }
+            this.on(signal, callback)
+        })
+    }
 
     clear(signal: string): void {
         this.listeners.delete(signal)
@@ -119,11 +154,11 @@ export class TicksProfiler {
     }
 }
 export class Clock {
-    private frameDuration: number;
-    private lastFrameTime: number;
+    private frameDuration: number
+    private lastFrameTime: number
     accumulator:number=0
-    public timeScale: number;
-    public callback: (dt:number)=>void;
+    public timeScale: number
+    public callback: (dt:number)=>void
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
     running:boolean=false
@@ -377,7 +412,33 @@ export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
 
   return mergeDeep(target, ...sources);
 }
+export function deepEqual(a: any, b: any): boolean {
+    if (a === b) return true
 
+    if (
+        typeof a !== "object" ||
+        typeof b !== "object" ||
+        a === null ||
+        b === null
+    ) {
+        return false
+    }
+
+    const keysA = Object.keys(a)
+    const keysB = Object.keys(b)
+
+    if (keysA.length !== keysB.length) {
+        return false
+    }
+
+    for (const key of keysA) {
+        if (!deepEqual(a[key], b[key])) {
+            return false
+        }
+    }
+
+    return true
+}
 type NameGenerator<T extends string> = `${T}In` | `${T}Out` | `${T}InOut`
 function generatePolynomialEasingTriplet<T extends string>(degree: number, type: T): { readonly [K in NameGenerator<T>]: (t: number) => number } {
     const coeffCache = 2 ** (degree - 1);
@@ -477,6 +538,16 @@ export function Classes<T extends new (...args: any[]) => any>(
     // deno-lint-ignore no-explicit-any
     return Bases as any;
 }
+export function apply_mixins(derivedCtor: any, baseCtors: any[]) {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+             if (name !== 'constructor') {
+                derivedCtor.prototype[name] = baseCtor.prototype[name];
+            }
+        });
+    }); 
+}
+
 export class WebPath{
     IP:string
     Port:number
@@ -732,3 +803,72 @@ export async function importFromString(code: string) {
     }
 }
 export const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)))
+export function format_time(time:number):string{
+    time = Math.floor(time)
+    const days = Math.floor(time / 86400)
+    const hours = Math.floor((time % 86400) / 3600)
+    const minutes = Math.floor((time % 3600) / 60)
+    const seconds = time % 60
+    if(days > 0){
+        return `${days}:${hours.toString().padStart(2,"0")}d`
+    }
+    if(hours > 0){
+        return `${hours}:${minutes.toString().padStart(2,"0")}h`
+    }
+    if(minutes > 0){
+        return `${minutes}:${seconds.toString().padStart(2,"0")}m`
+    }
+    return `${seconds}s`
+}
+export class MinHeap<T> {
+    private data:T[]=[]
+    constructor(private score:(v:T)=>number){}
+    get length(){
+        return this.data.length
+    }
+
+    push(value:T){
+        const data=this.data
+        data.push(value)
+        let i=data.length-1
+        while(i>0){
+            const parent=(i-1)>>1
+            if(this.score(data[parent])<=this.score(data[i])){
+                break
+            }
+            ;[data[parent],data[i]]=[data[i],data[parent]]
+            i=parent
+        }
+    }
+    pop():T|undefined{
+        const data=this.data
+        if(data.length===0)return undefined
+        if(data.length===1)return data.pop()
+        const root=data[0]
+        data[0]=data.pop()!
+        let i=0
+        while(true){
+            const left=i*2+1
+            const right=i*2+2
+            let smallest=i
+            if(left<data.length&&this.score(data[left])<this.score(data[smallest])){
+                smallest=left
+            }
+            if(right<data.length&&this.score(data[right])<this.score(data[smallest])){
+                smallest=right
+            }
+            if(smallest===i)break
+            ;[data[i],data[smallest]]=[data[smallest],data[i]]
+            i=smallest
+        }
+        return root
+    }
+}
+export function formatJSONC(text:string):string{
+    /*text = text.replace(/\/\*[\s\S]*?\*\//g, "")
+    text = text.replace(/\/\/.*$/gm, "")*/
+    return text
+}
+export function parseJSONC(text: string) {
+    return JSON.parse(formatJSONC(text))
+}

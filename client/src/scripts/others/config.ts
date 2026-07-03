@@ -27,9 +27,13 @@ export const Debug={
 
 export const ConfigCasters=Object.freeze({
     sv_loadout_name:Casters.toString,
-    sv_loadout_skin:Casters.toString,
+    sv_loadout_female:Casters.toBoolean,
+    sv_loadout_body_tint:Casters.toString,
+    sv_loadout_hair:Casters.toString,
+    sv_loadout_hair_tint:Casters.toString,
+    sv_loadout_shirt:Casters.toString,
 
-    sv_graphics_resolution:Casters.generateUnionCaster(["low","medium","high"]),
+    sv_graphics_resolution:Casters.generateUnionCaster(["low","medium"]),
     sv_graphics_renderer:Casters.generateUnionCaster(["webgl1","webgl2"]),
     sv_graphics_particles:Casters.toInt,
     sv_graphics_lights:Casters.toInt,
@@ -41,33 +45,37 @@ export const ConfigCasters=Object.freeze({
     sv_game_friendly_fire:Casters.toBoolean,
     sv_game_interpolation:Casters.toBoolean,
     sv_game_client_rot:Casters.toBoolean,
+    sv_game_ammo_outline:Casters.toBoolean,
 
     sv_mobile_auto_pickup:Casters.toBoolean,
 
     sv_sounds_master_volume:Casters.toNumber,
     sv_sounds_music_volume:Casters.toNumber,
     sv_sounds_ambient_volume:Casters.toNumber,
+    sv_sounds_gameplay_music:Casters.toBoolean,
 
     sv_ui_primary_color:Casters.toString,
     sv_ui_secondary_color:Casters.toString,
+    sv_ui_tertiary_color:Casters.toString,
     sv_ui_positive_color:Casters.toString,
     sv_ui_negative_color:Casters.toString,
     sv_ui_special_color:Casters.toString,
     sv_ui_translation:Casters.toString,
     sv_ui_interactive:Casters.toBoolean,
+    sv_ui_blur_backdrop:Casters.toBoolean,
 
-    sv_loadout_female:Casters.toBoolean,
-    sv_loadout_body_tint:Casters.toString,
-    sv_loadout_hair:Casters.toString,
-    sv_loadout_hair_tint:Casters.toString,
-    sv_loadout_shirt:Casters.toString,
+    sv_debug_ping_emulation:Casters.toNumber,
 })
 export const ConfigDefaultValues={
-    sv_loadout_skin:"default_skin",
     sv_loadout_name:"",
+    sv_loadout_female:false,
+    sv_loadout_body_tint:"#f0a93f",
+    sv_loadout_hair:"hair_1",
+    sv_loadout_hair_tint:"#222222",
+    sv_loadout_shirt:"blue_shirt",
 
     sv_graphics_renderer:"webgl2",
-    sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"high",
+    sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"medium",
     sv_graphics_particles:GraphicsDConfig.Advanced,
     sv_graphics_lights:GraphicsDConfig.Advanced,
     sv_graphics_post_proccess:GraphicsDConfig.Advanced,
@@ -78,6 +86,7 @@ export const ConfigDefaultValues={
     sv_game_friendly_fire:false,
     sv_game_interpolation:true,
     sv_game_client_rot:true,
+    sv_game_ammo_outline:false,
     sv_game_ping:5,
 
     sv_mobile_auto_pickup:(Debug.force_mobile||isMobile),
@@ -85,20 +94,19 @@ export const ConfigDefaultValues={
     sv_sounds_master_volume:1,
     sv_sounds_music_volume:1,
     sv_sounds_ambient_volume:1,
+    sv_sounds_gameplay_music:true,
 
     sv_ui_primary_color:"#4f6ef7",
     sv_ui_secondary_color:"#1c2447",
+    sv_ui_tertiary_color:"#eeeeee",
     sv_ui_positive_color:"#00ccff",
     sv_ui_negative_color:"#ff3c00",
     sv_ui_special_color:"#fffb00",
     sv_ui_translation:"en",
     sv_ui_interactive:true,
+    sv_ui_blur_backdrop:true,
 
-    sv_loadout_female:false,
-    sv_loadout_body_tint:"#f0a93f",
-    sv_loadout_hair:"hair_1",
-    sv_loadout_hair_tint:"#222222",
-    sv_loadout_shirt:"blue_shirt",
+    sv_debug_ping_emulation:0,
 }
 export const ConfigDefaultActions={
     "move_up":{
@@ -129,6 +137,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.Y],
         keys:[Key.V]
     },
+    "comunication_mode":{
+        buttons:[GamepadButtonID.Y],
+        keys:[Key.C]
+    },
     "reload":{
         buttons:[GamepadButtonID.X],
         keys:[Key.R]
@@ -137,15 +149,19 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.A],
         keys:[Key.E]
     },
+    "cancel":{
+        buttons:[GamepadButtonID.A],
+        keys:[Key.X]
+    },
     "swamp_guns":{
         buttons:[GamepadButtonID.L3],
         keys:[Key.F]
     },
-    "full_tab":{
+    "toggle_full_device":{
         buttons:[GamepadButtonID.Start],
         keys:[Key.M]
     },
-    "hide_tab":{
+    "toggle_hide_device":{
         buttons:[GamepadButtonID.Select],
         keys:[Key.N]
     },
@@ -207,7 +223,11 @@ export const ConfigDefaultActions={
     },
     "next":{
         buttons:[],
-        keys:[Key.E,Key.Space,Key.Enter,Key.Mouse_Left]
+        keys:[Key.E,Key.Space,Key.Enter]
+    },
+    "escape":{
+        buttons:[],
+        keys:[Key.Escape]
     },
     "debug_menu":{
         buttons:[GamepadButtonID.R3],

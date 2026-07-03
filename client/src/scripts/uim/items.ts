@@ -1,7 +1,7 @@
 import { UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
-import { InventoryItemData } from "common/scripts/definitions/utils.ts";
+import { InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
 
 export class ItemsModule extends UIModule<Game> {
     container!: HTMLDivElement
@@ -44,6 +44,13 @@ export class ItemsModule extends UIModule<Game> {
         el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
         el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
 
+        el.onmouseenter=(e)=>{
+            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description??"",el)
+        }
+        el.onmouseleave=()=>{
+            this.game.ui.tooltip_hide()
+        }
+
         this.container.appendChild(el)
         return el
     }
@@ -55,6 +62,7 @@ export class ItemsModule extends UIModule<Game> {
 
         number.textContent = `${index + 4}`
 
+        el.dataset.item_description=""
         if (slot.count > 0) {
             const def = this.game.definitions.game_items.valueNumber[slot.idNumber]
 
@@ -63,17 +71,30 @@ export class ItemsModule extends UIModule<Game> {
             img.style.display = "block"
 
             el.classList.remove("slot-empty")
+            el.dataset.item_name="items."+def.idString
 
-            count.classList.toggle(
-                "item-maximized",
-                slot.count >= this.game.inventory.item_limit(def)
-            )
+            count.classList.toggle("item-maximized",slot.count >= this.game.inventory.item_limit(def))
+
+            if(def.item_type===InventoryItemType.consumible||def.item_type===InventoryItemType.grenade){
+                if(def.description){
+                    let descriptionKey = `items.description.${def.idString}`
+                    if(typeof def.description === "string"){
+                        descriptionKey = def.description
+                    }
+                    el.dataset.item_description=this.game.language.get(descriptionKey)
+                }
+            }
         } else {
             count.textContent = ""
             img.style.display = "none"
 
             el.classList.add("slot-empty")
             count.classList.remove("item-maximized")
+            el.dataset.item_name=""
+
+            if(this.game.ui.tooltip_element===el){
+                this.game.ui.hide_game_over()
+            }
         }
     }
 

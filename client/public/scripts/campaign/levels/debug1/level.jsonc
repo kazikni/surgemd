@@ -1,0 +1,16 @@
+{
+    "meta":{
+        "name": "Debug",
+        "location": "Debug Island",
+        "description": "Debug",
+        "size":"medium",
+        "dificulty":"easy"
+    },
+    "mode":{
+        "type":"debug",
+        "map":{
+            "def":"debug"
+        }
+    },
+    "player":{}
+}

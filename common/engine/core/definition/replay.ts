@@ -1,5 +1,5 @@
 import { type AbstractGame } from "../game/game.ts";
-import { NetStream } from "../net/stream.ts";
+import { StaticStream, Stream } from "../net/stream.ts";
 import { type FileHandle } from "./file.ts";
 
 export interface RecordedReplay{
@@ -7,7 +7,7 @@ export interface RecordedReplay{
         version:number
         frame_count:number
     }
-    frames:NetStream[]
+    frames:Stream[]
 }
 export class ReplayRecorder {
     game: AbstractGame<any>
@@ -22,11 +22,11 @@ export class ReplayRecorder {
     private sizeBuf = new Uint8Array(4)
     private sizeView = new DataView(this.sizeBuf.buffer)
 
-    frame_generator?: (r: ReplayRecorder,full:boolean) => NetStream
+    frame_generator?: (r: ReplayRecorder,full:boolean) => Stream
 
     constructor(
         game: AbstractGame<any>,
-        frame_generator?: (r: ReplayRecorder,full:boolean) => NetStream,
+        frame_generator?: (r: ReplayRecorder,full:boolean) => Stream,
         tick_rate:number=32
     ) {
         this.game = game
@@ -35,7 +35,7 @@ export class ReplayRecorder {
     }
 
     /* ================= RECORD ================= */
-    async startRecording(file: FileHandle, loadStream?: NetStream) {
+    async startRecording(file: FileHandle, loadStream?: Stream) {
         this.recording = true
         this.file = file
         this.frameCount = 0
@@ -43,7 +43,7 @@ export class ReplayRecorder {
         const header = new Uint8Array(32)
         const view = new DataView(header.buffer)
 
-        header.set(NetStream.encoder.encode(".REPL"), 0)
+        header.set(Stream.encoder.encode(".REPL"), 0)
 
         view.setUint16(5, this.version, true)
         view.setUint8(7, this.tickRate)
@@ -52,7 +52,7 @@ export class ReplayRecorder {
         await this.file.write(header)
 
         if (loadStream) {
-            const data = new Uint8Array(loadStream._u8Array.slice(0, loadStream.length))
+            const data = new Uint8Array(loadStream.data.slice(0, loadStream.length))
 
             this.sizeView.setUint32(0, data.length, true)
 
@@ -80,14 +80,14 @@ export class ReplayRecorder {
     async updateRecord() {
         if (!this.recording || !this.file) return
 
-        let stream: NetStream
+        let stream: Stream
         if (this.frame_generator) {
             stream = this.frame_generator(this, this.frameCount===0)
         } else {
-            stream = this.game.scene_2d.objects.encode_all(true)
+            stream = this.game.scene_2d.objects.encode_all_net(true)
         }
 
-        const data = new Uint8Array(stream._u8Array.slice(0, stream.length))
+        const data = new Uint8Array(stream.data.slice(0, stream.length))
 
         this.sizeView.setUint32(0, data.length, true)
 
@@ -118,8 +118,8 @@ export class ReplayWatcher {
 
     interval?: number
 
-    on_frame?: (frame: NetStream, index: number) => void
-    on_load?: (stream: NetStream|null) => void
+    on_frame?: (frame: Stream, index: number) => void
+    on_load?: (stream: Stream|null) => void
     on_finish?: () => void
 
     private sizeBuf = new Uint8Array(4)
@@ -145,12 +145,12 @@ export class ReplayWatcher {
         await this.readExact(this.sizeBuf)
         const size = this.sizeView.getUint32(0, true)
 
-        let loadStream: NetStream | null = null
+        let loadStream: Stream | null = null
 
         if (size > 0) {
             const data = new Uint8Array(size)
             await this.readExact(data)
-            loadStream = new NetStream(data.buffer)
+            loadStream = new StaticStream(data.buffer)
         }
 
         if (this.on_load) {
@@ -211,7 +211,7 @@ export class ReplayWatcher {
         const data = new Uint8Array(size)
         await this.readExact(data)
 
-        const stream = new NetStream(data.buffer)
+        const stream = new StaticStream(data.buffer)
 
         if (this.on_frame) {
             this.on_frame(stream, this.currentFrame)

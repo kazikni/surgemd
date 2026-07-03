@@ -22,6 +22,7 @@ kl-md-submenu-options button,
 kl-md-submenu-options select {
     width: 300px;
     height: 50px;
+    margin-top:-2px;
     @include main.medium_screen {
         width: 200px;
         height: 35px;
@@ -50,6 +51,7 @@ kl-md-extra {
     .wheel-hover{
         position: absolute;
         transform: translate(-50%,-50%);
+        pointer-events: none;
     }
     .emote-wheel-part{
         position: absolute;

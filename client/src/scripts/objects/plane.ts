@@ -1,6 +1,6 @@
-import { GameObjectType, Layers, zIndexes } from "common/scripts/others/constants.ts"
+import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { AudioVoice, Container2D, NetStream, Sprite2D, v2 } from "common/engine/client.ts";
+import { AudioVoice, Container2D, Stream, Sprite2D, v2 } from "common/engine/client.ts";
 
 export interface PlanePhysicalData extends MovingBodyPhysicalData {}
 
@@ -21,12 +21,22 @@ export class Plane extends MovingBody {
         super()
     }
 
-    override create(args: Record<string, any>): void {
+    override on_create(args: Record<string, any>): void {
         this.container.add_child(this.sprite)
-        this.game.cam2d.addObject(this.container)
+        this.game.cam2d.add_object(this.container)
         this.container.zIndex = zIndexes.Planes
-        this.container.layer = Layers.Normal
         this.position = this.container.position
+    }
+    override on_layer_set(){
+        this.container.layer = this.layer
+    }
+    override on_tick(dt: number) {
+        super.on_tick(dt)
+        this.container.position=this.position
+        this.container.rotation = this.physical_data.rotation
+        if (this.sound) {
+            this.sound.position = this.position
+        }
     }
     override on_destroy() {
         this.container.destroy()
@@ -34,19 +44,9 @@ export class Plane extends MovingBody {
         this.destroyed = true
         this.sound?.stop()
     }
-
-    override update(dt: number) {
-        super.update(dt)
-        this.container.position=this.position
-        this.container.rotation = this.physical_data.rotation
-        if (this.sound) {
-            this.sound.position = v2.clone(this.position)
-        }
-    }
-
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         this.decode_physical_data(stream, full)
-        const type = stream.readUint8()
+        const type = stream.read_uint8()
         if (this.initial) {
             this.plane_type = type
             switch (this.plane_type) {
@@ -54,7 +54,7 @@ export class Plane extends MovingBody {
                     this.sprite.set_frame(
                         {
                             image: "airdrop_plane",
-                            scale: 11,
+                            scale: 20,
                             hotspot: v2.half_one
                         },
                         this.game.resources
@@ -63,9 +63,9 @@ export class Plane extends MovingBody {
                         this.game.resources.get_sound("airdrop_plane_sfx"),
                         {
                             max_distance: 40,
-                            position: v2.clone(this.position),
+                            position: this.position,
                             loop: true,
-                            volume: 0.5
+                            volume: 0.7
                         }
                     )
                     break
@@ -81,10 +81,10 @@ export class Plane extends MovingBody {
                     this.sound = this.game.sounds.play(
                         this.game.resources.get_sound("airstrike_plane_sfx"),
                         {
-                            max_distance: 40,
-                            position: v2.clone(this.position),
+                            max_distance: 300,
+                            position: this.position,
                             loop: false,
-                            volume: 0.5
+                            volume: 0.7
                         }
                     )
                     break

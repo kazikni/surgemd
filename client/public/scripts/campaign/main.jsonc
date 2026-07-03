@@ -1,0 +1,14 @@
+{
+    "charpters":[
+        {
+            "name":"Welcome To The Island",
+            "levels":[
+                "levels/level1",
+                "levels/level2",
+                "levels/level3",
+                "levels/debug1",
+                "levels/debug2"
+            ]
+        }
+    ]
+}

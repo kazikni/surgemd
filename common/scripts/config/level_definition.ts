@@ -1,28 +1,11 @@
 import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
-import { InventoryPreset } from "../definitions/utils.ts";
-import { HumanModifiers } from "../others/constants.ts";
-import { HistoryCommand } from "./history.ts";
-
-export type HumanDefinition={
-    name?:string
-    start_position?:Vec2
-    inventory?:InventoryPreset
-    team?:number
-    group?:number
-    modifiers?:Partial<HumanModifiers>
-}
+import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
-export type EnemyDef={
-    ia:{
-        kind?:string
-        action?:string
-        params?:Record<string,any>
-    }
-}&HumanDefinition
+
 export type LevelEnemys={
-    def:EnemyDef|string
+    def:HumanDefinition|string
     team?:number
     name?:string
     position?:Vec2
@@ -44,6 +27,22 @@ export type LevelMode={
 })|{
     type:"debug"
 }
+export enum GameOverScreenType{
+    Normal,
+    Restart,
+    Light
+}
+export type GameOverScreen={
+    type:GameOverScreenType.Normal
+}|{
+    type:GameOverScreenType.Restart
+}|{
+    type:GameOverScreenType.Light
+}
+export type LevelCharacter=CharacterDefinition&{
+    path?:string
+    ia?:LevelCharacterAI
+}
 export interface LevelDefinition{
     meta:{
         name: string
@@ -53,30 +52,26 @@ export interface LevelDefinition{
         location: string
         date:string
     }
+    game_over?:GameOverScreen
+    cutscenes?:{
+        begin?:string
+    }
     mode:LevelMode
     deadzone?:{
         stage?:number
     }
-    player: HumanDefinition
+    player: LevelCharacter
+    characters_selection?:{
+        spawn_other?:boolean
+        characters:LevelCharacter[]
+    }
     assets?:{
         background_music?:string
-        load?:{
-            sounds?:Record<string,string>
-        }
+        assets?:Record<string,string>
+        textures?:string[]
     }
     definitions?:{
         enemies?:Record<string,EnemyDef>
         buildings?:Record<string,JSONBuildingDef>
-    }
-    begin?:{
-        history?:HistoryCommand[]
-    }
-    end?:{
-        history?:HistoryCommand[]
-        next?:{
-            type:"level"
-            charpter:number
-            level:number
-        }
     }
 }

@@ -18,8 +18,10 @@ export type HistoryCommand={
     frame:string
 }|{
     type:HistoryCommandType.SetDialog
-    text:string // HTML Text
+    text?:string // HTML Text
+    text_ln?:string // HTML Text
     name?:string
+    name_ln?:string
     color?:string
     typewriter_delay?:number
 }|{

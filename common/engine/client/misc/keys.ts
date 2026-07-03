@@ -40,6 +40,7 @@ export enum Key {
     Number_8,
     Number_9,
 
+    Escape,
     Enter,
     Backspace,
     Space,
@@ -68,7 +69,7 @@ export enum Key {
     Mouse_Wheel_Down,
 
     Mouse_Option1,
-    Mouse_Option2
+    Mouse_Option2,
 }
 export const KeyNames: Record<number, Key> = {
     65: Key.A,
@@ -109,6 +110,7 @@ export const KeyNames: Record<number, Key> = {
     56: Key.Number_8,
     57: Key.Number_9,
 
+    27: Key.Escape,
     13: Key.Enter,
     8: Key.Backspace,
     32: Key.Space,
@@ -185,10 +187,12 @@ export enum InputEventType {
 export type InputKeyEvent = {
     type: InputEventType.KeyDown | InputEventType.KeyUp
     key: number
+    element?:HTMLElement
 }
 export type InputActionEvent = {
     type: InputEventType.ActionDown | InputEventType.ActionUp
     action: string
+    element?:HTMLElement
 }
 export type InputAxisEvent = {
     type: InputEventType.Axis
@@ -200,7 +204,7 @@ export type InputMouseMoveEvent = {
     position: Vec2
     delta: Vec2
 }
-export type InputEvent =InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent
+export type InputEvent = InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent
 export class InputManager {
     listener = new SignalManager()
 
@@ -211,6 +215,7 @@ export class InputManager {
     pressed = new Set<number>()
     down = new Set<number>()
     up = new Set<number>()
+    key_elements:Record<number,HTMLElement>={}
 
     gamepad_pressed = new Set<number>()
     private wheel_pressed = new Set<number>()
@@ -223,11 +228,12 @@ export class InputManager {
 
     axis: Record<string, AxisData> = {}
 
-    mouse_position = v2(0, 0)
-    mouse_delta = v2(0, 0)
+    real_mouse_position = v2.zero()
+    mouse_position = v2.zero()
+    mouse_delta = v2.zero()
 
-    left_stick = v2(0, 0)
-    right_stick = v2(0, 0)
+    left_stick = v2.zero()
+    right_stick = v2.zero()
 
     dead_zone = v2(0.15, 0.15)
 
@@ -238,85 +244,92 @@ export class InputManager {
     }
     bind(canvas: HTMLCanvasElement,elem: HTMLElement = document.body) {
         elem.tabIndex = 1
-        elem.addEventListener("keydown",this.on_key_down)
-        elem.addEventListener("keyup",this.on_key_up)
-        canvas.addEventListener("mousedown",this.on_mouse_down)
-        elem.addEventListener("mouseup",this.on_mouse_up)
-        elem.addEventListener("wheel",this.on_wheel,{passive: false})
+        elem.addEventListener("keydown",this.on_key_down())
+        elem.addEventListener("keyup",this.on_key_up())
+        elem.addEventListener("mousedown",this.on_mouse_down())
+        elem.addEventListener("mouseup",this.on_mouse_up())
+        elem.addEventListener("wheel",this.on_wheel(),{passive: false})
         elem.addEventListener("pointermove",e => this.on_pointer_move(e, canvas))
     }
     private emit(event: InputEvent) {
         this.listener.emit(event.type, event)
     }
-    private on_key_down = (e: KeyboardEvent) => {
-        if (!this.focus) return
-        const key = KeyNames[e.keyCode]
-        if (key === undefined) return
-        if (!this.pressed.has(key)) {
-            this.down.add(key)
-            this.emit({type: InputEventType.KeyDown,key})
+    private on_key_down(){
+        return (e: KeyboardEvent) => {
+            if (!this.focus) return
+            const key = KeyNames[e.keyCode]
+            if (key === undefined) return
+            if (!this.pressed.has(key)) {
+                this.down.add(key)
+                this.emit({type: InputEventType.KeyDown,key,element:e.target as HTMLElement})
+            }
+            this.pressed.add(key)
         }
-        this.pressed.add(key)
     }
-    private on_key_up = (e: KeyboardEvent) => {
-        const key = KeyNames[e.keyCode]
-        if (key === undefined) return
-        this.pressed.delete(key)
-        this.up.add(key)
-        this.emit({type: InputEventType.KeyUp,key})
-    }
-    private on_mouse_down = (e: MouseEvent) => {
-        if (!this.focus) return
-        const key = KeyNames[e.button + 1000]
-        if (key === undefined) return
-        if (!this.pressed.has(key)) {
-            this.down.add(key)
-            this.emit({type: InputEventType.KeyDown,key})
+    private on_key_up(){
+        return (e: KeyboardEvent) => {
+            const key = KeyNames[e.keyCode]
+            if (key === undefined) return
+            this.pressed.delete(key)
+            this.up.add(key)
+            this.emit({type: InputEventType.KeyUp,key,element:e.target as HTMLElement})
         }
-        this.pressed.add(key)
     }
-    private on_mouse_up = (e: MouseEvent) => {
-        const key = KeyNames[e.button + 1000]
-        if (key === undefined) return
-        this.pressed.delete(key)
-        this.up.add(key)
-        this.emit({type: InputEventType.KeyUp,key})
-    }
-    private on_wheel = (e: WheelEvent) => {
-        if (!this.focus) {
-            return
+    private on_mouse_down(){
+        return (e: MouseEvent) => {
+            if (!this.focus) return
+            const key = KeyNames[e.button + 1000]
+            if (key === undefined) return
+            if (!this.pressed.has(key)) {
+                this.down.add(key)
+                this.emit({type: InputEventType.KeyDown,key,element:e.target as HTMLElement})
+                this.key_elements[key]=e.target as HTMLElement
+            }
+            this.pressed.add(key)
         }
-        const key=e.deltaY<0?Key.Mouse_Wheel_Up:Key.Mouse_Wheel_Down
-        this.wheel_pressed.add(key)
+    }
+    private on_mouse_up(){
+        return (e: MouseEvent) => {
+            const key = KeyNames[e.button + 1000]
+            if (key === undefined) return
+            this.pressed.delete(key)
+            this.up.add(key)
+            this.emit({type: InputEventType.KeyUp,key,element:e.target as HTMLElement})
+            delete this.key_elements[key]
+        }
+    }
+    private on_wheel(){
+        return (e: WheelEvent) => {
+            if (!this.focus) {
+                return
+            }
+            const key=e.deltaY<0?Key.Mouse_Wheel_Up:Key.Mouse_Wheel_Down
+            this.wheel_pressed.add(key)
 
-        this.pressed.add(key)
-        this.down.add(key)
-        this.up.add(key)
+            this.pressed.add(key)
+            this.down.add(key)
+            this.up.add(key)
 
-        this.emit({
-            type: InputEventType.KeyDown,
-            key
-        })
-        this.emit({
-            type: InputEventType.KeyUp,
-            key
-        })
+            this.emit({type: InputEventType.KeyDown,key,element:e.target as HTMLElement})
+            this.emit({type: InputEventType.KeyUp,key,element:e.target as HTMLElement})
+            this.key_elements[key]=e.target as HTMLElement
+        }
     }
     private on_pointer_move(e: PointerEvent,canvas: HTMLCanvasElement) {
         if (!this.focus) return
         const rect = canvas.getBoundingClientRect()
-        const scaleX = canvas.width / rect.width
-        const scaleY = canvas.height / rect.height
+        const scale = v2(canvas.width / rect.width, canvas.height / rect.height)
         const old = this.mouse_position
-        this.mouse_position = v2((e.clientX - rect.left) * scaleX,(e.clientY - rect.top) * scaleY)
+        this.real_mouse_position=v2(e.clientX - rect.left,e.clientY - rect.top)
+        this.mouse_position = v2.mult(this.real_mouse_position,scale)
         this.mouse_delta = v2.sub(this.mouse_position,old)
-        this.emit({type: InputEventType.MouseMove,position: this.position,delta: this.mouse_delta})
+        this.emit({type: InputEventType.MouseMove,position: this.world_mouse_position,delta: this.mouse_delta})
     }
-    get position(): Vec2 {
+    get world_mouse_position(): Vec2 {
         return v2.dscale(this.mouse_position,this.meter_size)
     }
     camera_pos(camera: Camera2D): Vec2 {
-        return v2.add(v2.scale(this.position,camera.zoom),camera.position)
+        return v2.add(v2.scale(this.world_mouse_position,camera.zoom),camera.position)
     }
     private apply_dead_zone(x: number,y: number): Vec2 {
         return v2(
@@ -402,23 +415,23 @@ export class InputManager {
     keyUp(key: number): boolean {
         return this.up.has(key)
     }
-    action_pressed(action: InputAction): boolean {
+    action_pressed(action: InputAction): {key:number,button:number}|undefined {
         for (const k of action.keys) {
             if(this.pressed.has(k)) {
-                return true
+                return {key:k,button:-1}
             }
         }
         for (const b of action.buttons) {
             if(this.gamepad_pressed.has(b)) {
-                return true
+                return {button:b,key:-1}
             }
         }
-        return false
+        return
     }
     action_id_pressed(id: string): boolean {
         const action = this.actions[id]
         if (!action) return false
-        return this.action_pressed(action)
+        return this.action_pressed(action)!==undefined
     }
     wait_for_action(action: string): Promise<void> {
         return new Promise((resolve) => {
@@ -498,13 +511,14 @@ export class InputManager {
                 this.active_actions.add(action)
                 this.emit({
                     type: InputEventType.ActionDown,
-                    action
+                    action,
+                    element:this.key_elements[pressed.key]
                 })
             }else if(!pressed&&active){
                 this.active_actions.delete(action)
                 this.emit({
                     type: InputEventType.ActionUp,
-                    action
+                    action,
                 })
             }
         }
@@ -571,5 +585,8 @@ export class InputManager {
         for (const k in config) {
             this.actions[k]=structuredClone(config[k])
         }
+    }
+    action_to_string(name:string):string{
+        return this.actions[name].keys.map(k=>Key[k]).join(", ")
     }
 }

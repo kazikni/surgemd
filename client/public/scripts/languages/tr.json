@@ -34,9 +34,9 @@
             "regular_vest":"Normal Yelek",
             "regular_helmet":"Normal Kask",
             "regular_pack":"Normal Çanta",
-            "tactical_vest":"Taktiksel Yelek",
-            "tactical_helmet":"Taktiksel Kask",
-            "tactical_pack":"Askeri Sırt Çantası",
+            "military_vest":"Taktiksel Yelek",
+            "military_helmet":"Taktiksel Kask",
+            "military_pack":"Askeri Sırt Çantası",
 
             "explosive_ammo":"Patlayıcı Mermi",
             "gasoline":"Gasoline",
@@ -51,7 +51,7 @@
             "yellow_laser_pistol_dual":"Çift Sarı Lazer Tabancası",
             "pfeifer_zeliska_dual":"Çift Pfeifer Zeliska"
         },
-        "killfeed":{
+        "feed":{
             "join":"${player} Katıldı",
             "kill":{
                 "abstinence":"${player} Yoksunluktan öldü.",

@@ -9,8 +9,9 @@ import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
 import { JSONBuildingDef } from "../objects/buildings_base.ts"
 
-import {type GameMap} from "../../../../server/src/game_server/others/map.ts"
-import { type Game } from "../../../../server/src/game_server/others/game.ts";
+import {type GameMap} from "../../../../server/src/game/others/map.ts"
+import { type Game } from "../../../../server/src/game/others/game.ts";
+import { MapRegion } from "../../packets/map_packet.ts";
 export interface Aditional{
     withammo:boolean
 }
@@ -44,52 +45,65 @@ export function loot_table_get_item(item:string,count:number,_aditional:Aditiona
         ]
     }
 }
-export interface BiomeFloor{
-    color?:number
+export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
+export interface TerrainLayerDef {
+    type:FloorType
+    tint?:number
+    layer?:number
+    padding:number
+    variation:number
+    spacing:number
 }
-export interface BiomeDef{
-    biome_skin?:string
-    floors:Partial<Record<FloorType,BiomeFloor>>
-    assets:string[]
-    ambient:{
-        snow?:boolean
-        rain?:boolean
-        particles:string[]
-        particles_tint?:number
-        sound?:string
-    }
-    musics?:string[]
+export interface TerrainShapeDef {
+    radius:number
+
+    position?:Vec2
+
+    variation?:number
+    points?:number
+    passes?:number
+    variation_decay?:number
+
+    floors:TerrainLayerDef[]
+}
+export interface MapStructureDef extends TerrainShapeDef{
+    spawn?:MapObjectGeneration[]
+    region?:MapRegion
 }
 export interface IslandDef{
     size:Vec2
+    spawn?:MapObjectGeneration[]
+    structures?:MapStructureDef[]
     terrain:{
         base:FloorType
-        floors:{
-            type:FloorType
-            padding:number
-            variation:number
-            spacing:number
-        }[]
+        base_tint?:number
         rivers?:{
             defs:RiversDef[]
             expansion?:number
             spawn_floor:number
             divisions:number
-            floor?:FloorType
         }
-    },
-    spawn?:{def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}[][],
+    }&TerrainShapeDef,
+}
+export interface MapBiomeDef{
+    skin?:string
+    floors:Partial<Record<FloorType,number>>
+    particles:string[]
+    particles_tint?:number
+    ambient_sound?:string
+    musics:string[]
+    textures:string[]
 }
 export interface MapDef{
     loot_tables:Record<string,LootTable>
     default_floor?:FloorType
-    biome:BiomeDef
     generation:{
         island?:IslandDef
     }
-    assets?:string[]
     buildings?:JSONBuildingDef[]
     seed?:number
+    biome:MapBiomeDef
+    deadzone_initial_size?:number
     gen_callback?:(map:GameMap)=>void
 }
 export interface CounterMapDef extends MapDef{

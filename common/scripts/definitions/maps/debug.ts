@@ -9,21 +9,25 @@ export const DebugMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2(500,500),
+            size:v2(550,550),
             terrain:{
                 base:FloorType.Water,
+                radius:230,
+                passes:3,
+                points:5,
+                variation:50,
                 floors:[
                     {
-                        padding:30,
+                        padding:0,
                         type:FloorType.Sand,
                         spacing:3,
-                        variation:1.3,
+                        variation:3,
                     },
                     {
-                        padding:20,
+                        padding:10,
                         type:FloorType.Grass,
                         spacing:3,
-                        variation:1.3,
+                        variation:3,
                     }
                 ]
             },
@@ -36,7 +40,7 @@ export const DebugMap:MapDef={
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
             map.game.add_loot(v2(x,y),item,Infinity)
             i++
-            if(i>=20){
+            if(i>=10){
                 i=0
                 x=map.size.x/2
                 y+=2
@@ -52,7 +56,7 @@ export const DebugMap:MapDef={
             o.initialize(0)
             o.set_position(v2(x,y))
             i++
-            if(i>=20){
+            if(i>=25){
                 i=0
                 x=map.size.x/2
                 y-=5
@@ -63,7 +67,7 @@ export const DebugMap:MapDef={
         for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
             const v=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
             i++
-            if(i>=20){
+            if(i>=25){
                 i=0
                 x=map.size.x/2
                 y-=5
@@ -91,21 +95,25 @@ export const SingleBuildMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     generation:{
         island:{
-            size:v2(80,80),
+            size:v2(100,100),
             terrain:{
                 base:FloorType.Water,
+                radius:50,
+                passes:1,
+                points:5,
+                variation:1,
                 floors:[
                     {
-                        padding:10,
+                        padding:0,
                         type:FloorType.Sand,
-                        spacing:3,
-                        variation:1.3,
+                        spacing:1,
+                        variation:1,
                     },
                     {
-                        padding:5,
+                        padding:10,
                         type:FloorType.Grass,
-                        spacing:3,
-                        variation:1.3,
+                        spacing:1,
+                        variation:1,
                     }
                 ]
             },
@@ -113,10 +121,11 @@ export const SingleBuildMap:MapDef={
     },
     gen_callback(map) {
         //const def=map.game.definitions.buildings.getFromString("shed")
-        //const def=map.game.definitions.buildings.getFromString("bunker_1")
+        //const def=map.game.definitions.buildings.getFromString("storehouse_1")
+        const def=map.game.definitions.buildings.getFromString("bunker_1")
         //const def=map.game.definitions.buildings.getFromString("small_house_1")
         //const def=map.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,4)}`)
-        const def=map.game.definitions.buildings.getFromString("black_container")
+        //const def=map.game.definitions.buildings.getFromString("black_container")
 
         const b=map.game.map.add_building(def)
         b.init(0)

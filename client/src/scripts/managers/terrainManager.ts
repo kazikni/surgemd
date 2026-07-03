@@ -1,14 +1,11 @@
-import { Floors, TerrainManager } from "common/scripts/others/terrain.ts";
+import { Floors, FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
 import { MapConfig } from "common/scripts/packets/map_packet.ts";
 import { type Game } from "../others/game.ts";
-import { Debug } from "../others/config.ts";
-import { BiomeDef } from "common/scripts/definitions/maps/base.ts";
-import { ColorM, Graphics2D, HitboxType2D, model2d, PolygonHitbox2D } from "common/engine/client.ts";
+import { ColorM, Graphics2D } from "common/engine/client.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 export class TerrainM extends TerrainManager{
     map!:MapConfig
     game:Game
-    biome?:BiomeDef
 
     last_layer?:number
     constructor(game:Game){
@@ -17,12 +14,11 @@ export class TerrainM extends TerrainManager{
     }
     process_map(mp:MapConfig):Promise<void>{
         return new Promise<void>((resolve, _reject) => {
+            this.game.minimap.biome=mp.biome
             this.map=mp
             for(const f of mp.terrain){
-                this.add_floor(f.type,f.hb,f.layer,f.smooth)
+                this.add_floor(f)
             }
-            this.biome=mp.biome
-            this.game.ambient.biome=this.biome
             resolve()
         })
     }
@@ -30,19 +26,19 @@ export class TerrainM extends TerrainManager{
         if(this.last_layer!==layer){
             this.last_layer=layer
             graphic.layer=layer
-            graphic.clear()
+            graphic.ctx.clear()
             for(const f of this.floors){
                 if(layer<f.layer)continue
-                const flb=this.biome?.floors[f.type]
-                graphic.beginPath()
-                graphic.set_hitbox(f.hb)
-                graphic.repeat_size=3
-                graphic.endPath()
-                const col=(flb?.color!==undefined)?flb?.color:Floors[f.type].default_color
-                graphic.fill_color(ColorM.number(col))
-                graphic.fill()
+                const flb=this.game.minimap.biome.floors[f.type as FloorType]
+
+                graphic.ctx.begin_path()
+                graphic.ctx.set_hitbox(f.hb)
+                graphic.ctx.end_path()
+
+                graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
+                graphic.ctx.fill()
             }
-            if(Debug.hitbox){
+            /*if(Debug.hitbox){
                 for(const f of this.floors){
                     graphic.fill_color(ColorM.hex("#ff0"))
                     if(f.hb.type===HitboxType2D.polygon)
@@ -50,7 +46,7 @@ export class TerrainM extends TerrainManager{
                         graphic.drawModel(model2d.circle(0.1,8,p))
                     }
                 }
-            }
+            }*/
         }
     }
 }

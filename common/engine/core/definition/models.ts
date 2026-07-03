@@ -59,62 +59,6 @@ export function ImageModel2D(scale: Vec2,angle: number,hotspot: Vec2,size: Vec2,
     rect.max.x = maxX
     rect.max.y = maxY
 }
-export function ImageModel3D(
-    scale: Vec2,
-    angle: { x: number; y: number; z: number }, // rotação em rad em 3 eixos
-    hotspot: Vec2 = v2(0, 0),
-    size: Vec2,
-    meter_size: number = 100
-): Float32Array {
-    const sizeR = v2(
-        (size.x / meter_size) * (scale.x / 2),
-        (size.y / meter_size) * (scale.y / 2)
-    );
-    const x1 = -sizeR.x * hotspot.x;
-    const y1 = -sizeR.y * hotspot.y;
-    const x2 = sizeR.x + x1;
-    const y2 = sizeR.y + y1;
-
-    const verticesB = [
-        { x: x1, y: y1, z: 0 },
-        { x: x2, y: y1, z: 0 },
-        { x: x1, y: y2, z: 0 },
-        { x: x2, y: y2, z: 0 }
-    ];
-
-    const verticesR = verticesB.map(v => rotate3D(v, angle));
-
-    return new Float32Array([
-        verticesR[0].x, verticesR[0].y, verticesR[0].z,
-        verticesR[1].x, verticesR[1].y, verticesR[1].z,
-        verticesR[2].x, verticesR[2].y, verticesR[2].z,
-
-        verticesR[2].x, verticesR[2].y, verticesR[2].z,
-        verticesR[1].x, verticesR[1].y, verticesR[1].z,
-        verticesR[3].x, verticesR[3].y, verticesR[3].z
-    ]);
-}
-function rotate3D(v: { x: number; y: number; z: number }, angle: { x: number; y: number; z: number }) {
-    let { x, y, z } = v;
-
-    let cy = Math.cos(angle.x), sy = Math.sin(angle.x);
-    let y1 = y * cy - z * sy;
-    let z1 = y * sy + z * cy;
-
-    y = y1; z = z1
-
-    let cx = Math.cos(angle.y), sx = Math.sin(angle.y);
-    let x1 = x * cx + z * sx;
-    let z2 = -x * sx + z * cx;
-
-    x = x1; z = z2;
-
-    let cz = Math.cos(angle.z), sz = Math.sin(angle.z);
-    let x2 = x * cz - y * sz;
-    let y2 = x * sz + y * cz;
-
-    return { x: x2, y: y2, z };
-}
 export const model2d={
     zero(){
         return {

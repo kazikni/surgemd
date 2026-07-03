@@ -29,12 +29,14 @@ export interface ConsumibleDef extends Definition{
     rank:ItemRank
     consuming:ConsumingAction
     condition?:ConsumibleCondition[]
+    allow_merge?:boolean
     assets?:{
         using_particle?:string
         using_sound?:string
         pickup_sound?:string
     }
     item_type?:InventoryItemType.consumible
+    description?:string|boolean
 }
 export enum ConsumibleCondition{
     UnfullHealth,
@@ -97,6 +99,7 @@ export const ConsumiblesAnimations={
 export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:number=25,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
         idString:color+"_soda",
+        description:true,
         consuming:{
             type:0,
             side_effects:[
@@ -109,7 +112,7 @@ export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:
                     }
                 }
             ],
-            use_delay:2.65,
+            use_delay:3,
             animation:ConsumiblesAnimations.drinking(color+"_soda",2.5),
             drink:true,
             drop:true,
@@ -126,6 +129,7 @@ export function CreateSoda(color:string,boost_type:BoostType,max?:number,amount:
 export function CreatePills(color:string,boost_type:BoostType,item:DeepPartial<ConsumibleDef>={}):ConsumibleDef{
     return mergeDeep({
         idString:color+"_pills",
+        description:true,
         consuming:{
             type:0,
             side_effects:[
@@ -189,6 +193,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 ],
                 use_delay:3,
             },
+            description:true,
             rank:ItemRank.D,
             condition:[ConsumibleCondition.UnfullHealth],
             assets:{
@@ -210,6 +215,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 use_delay:5.5,
             },
             rank:ItemRank.D,
+            description:true,
             condition:[ConsumibleCondition.UnfullHealth]
         },
 
@@ -217,6 +223,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         CreateSoda("yellow",BoostType.Adrenaline),
         {
             idString:"inhaler",
+            description:true,
             consuming:{
                 type:0,
                 side_effects:[
@@ -259,6 +266,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
             },
             rank:ItemRank.C,
             condition:[ConsumibleCondition.UnfullExtra],
+            description:true,
             assets:{
                 using_sound:"using_potion"
             },
@@ -295,6 +303,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         CreateSoda("red",BoostType.Addiction,0.5,50),
         {
             idString:"small_red_crystal",
+            description:true,
             consuming:{
                 type:0,
                 use_delay:1.5,
@@ -315,6 +324,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         },
         {
             idString:"red_crystal",
+            description:true,
             consuming:{
                 type:0,
                 use_delay:3,
@@ -339,7 +349,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         //Death
         CreateSoda("black",BoostType.Death,undefined,1),
         //Misc
-        {
+        /*{
             idString:"pocket_portal",
             consuming:{
                 type:0,
@@ -352,7 +362,7 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
                 boost_type:BoostType.Mana
             },
             rank:ItemRank.A,
-        },
+        },*/
 
         CreateSpray("healing")
     )

@@ -1,0 +1,35 @@
+{
+    "name": "Mark",
+    "group_color": 14554741,
+    "icon": "/img/menu/gui/character/mark_character_selector.png",
+    "description": "Shy And Without Much Combat Experience - Recomended",
+    "ai": {
+        "kind": "advanced",
+        "params": {
+            "aim_skills": 20,
+            "quick_switch_skills": 30,
+            "game_notion": 100,
+            "bravery": 10,
+            "team_work": 100,
+            "team_dominance": 0
+        }
+    },
+    "loadout": {
+        "hair": "hair_1",
+        "hair_tint": 1122066,
+        "body": "body_1",
+        "body_tint": 15771967,
+        "eyes": "eyes_1",
+        "shirt": "black_shirt",
+        "legs": "jeans_pants",
+        "accessorys": [],
+        "colors": {
+            "primary": "#de1675",
+            "secondary": "#1c0210",
+            "tertiary": "#eeeeee",
+            "positive": "#00ccff",
+            "negative": "#ff3c00",
+            "special": "#fffb00"
+        }
+    }
+}

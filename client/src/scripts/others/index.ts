@@ -9,6 +9,7 @@ import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { FindGameResult } from "common/scripts/config/config.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -60,10 +61,11 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 
             this.menu_manager=menu_manager
 
-            this.game=new Game(this.definitions,menu_manager,canvas,new TranslationManager({code:"",name:"",values:{}}))
+            this.game=new Game(this.definitions,menu_manager,canvas,new TranslationManager())
         }
         async init(){
             this.menu_manager.play_callback=this.play_game.bind(this)
+            this.menu_manager.play_callback_hard=this.play_game_hard.bind(this)
             if(mods){
                 mods.stateFile="save/mods_state.json"
                 await mods.loadManifests()
@@ -74,9 +76,72 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                 }
             }
             await this.game.bind(fs)
-            this.menu_manager.init(this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
-            this.game.load_resources(["main"])
+            this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
+            this.game.load_resources(["main"],{})
 
+            /*sleep(10).then(async()=>{
+                this.game.final_screen.set_final_screen(island_final)
+                this.game.final_screen.show_final_screen()
+                const app:ScoreApplyer[]=[]
+                const leaderboard:LeaderboardPlayer[]=[]
+                for(let i=0;i<5;i++){
+                    app.push(
+                        {
+                            amount:100,
+                            multiplier:1,
+                            type:ScoreApplyerType.Kill
+                        },
+                        {
+                            amount:100,
+                            multiplier:1,
+                            type:ScoreApplyerType.KillLeader
+                        },
+                        {
+                            amount:10,
+                            multiplier:1,
+                            type:ScoreApplyerType.Rank
+                        },
+                        {
+                            amount:100,
+                            multiplier:1.2,
+                            type:ScoreApplyerType.DamageDealth
+                        },
+                        {
+                            amount:-100,
+                            multiplier:1.2,
+                            type:ScoreApplyerType.DamageTaken
+                        },
+                    )
+                }
+                const pc=500
+                for(let i=0;i<pc;i++){
+                    let name="player-"+(i+1)
+                    this.game.ui.players_name[i]={
+                        badge:"",
+                        full:name,
+                        name:name,
+                    }
+                    leaderboard.push(
+                        {
+                            id:i,
+                            kills:1,
+                            rank:pc-i,
+                            score:i*5
+                        }
+                    )
+                }
+                await this.game.final_screen.show_status({
+                    damage:1000,
+                    damage_taken:0,
+                    id:0,
+                    kills:5,
+                    score:1000,
+                    score_applyer:app,
+                    time_alive:1000
+                })
+                await this.game.final_screen.show_leaderboards(leaderboard)
+                await this.game.final_screen.hide_final_screen()
+            })*/
             this.game.mainloop(true)
         }
         join_on_game(url:string,password:string,attempts=0,delay=500){
@@ -92,26 +157,43 @@ import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
                 }
             }
         }
+        play_game_hard(result:FindGameResult){
+            if(result.success){
+                this.game.group_token=result.token??""
+                this.game.connect(result.address)
+            }
+        }
         async play_game(play:PlayArgs){
             if(this.game.happening)return
-            this.menu_manager.show_loading_screen()
             switch(play.type){
                 case "online":{
-                    const ghost=await(await fetch(API_BASE+"/find-game",{
-                        method:"post",
-                        body:JSON.stringify({
-                            ...play,
-                            region:this.game.save.get_variable("sv_game_region"),
-                        })
-                    })).json()
-                    if(ghost.status===0){
-                        this.game.connect(ghost.address)
+                    const args={
+                        ...play,
+                        region:this.game.save.get_variable("sv_game_region"),
+                    }
+                    try{
+                        if(this.game.menu.group_state){
+                            this.game.menu.team_ws!.send(JSON.stringify({
+                                ...args,
+                                type:"play"
+                            }))
+                        }else{
+                            const ghost:FindGameResult=await(await fetch(API_BASE+"/find-game",{
+                                method:"post",
+                                body:JSON.stringify(args)
+                            })).json()
+                            if(ghost.success){
+                                this.game.connect(ghost.address)
+                            }
+                        }
+                    }catch{
+                        alert("Error")
                     }
                     break
                 }
                 case "campaign":{
-                    const js=JSON.parse(await this.file.read_file(this.menu_manager.campaign.charpters[play.charpter].levels[play.level]))
-                    this.game.start_campaign_level(js)
+                    this.game.start_with_intro=play.start_with_intro
+                    this.game.local_server.begin_level(play.path)
                     break
                 }
                 case "join":{

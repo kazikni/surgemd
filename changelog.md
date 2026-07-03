@@ -1,87 +1,95 @@
-# Surgemd Pre-Beta-7
+# Surgemd Pre-Beta-8
 ## News
 __                                                                                                                 __
 ### Mains
-* Legs
-* Bunkers
-* Shed
-* Remake Animation System
-* Rework Sounds Engine
-* Some Optimisations
+* Storehouse!
+* Small House
+* New Map
+* Decals
+* River Push Loot
+* Vehicles Rework
+* Boat
+* Groups
+* Cancel Action Input
+* Rework Rendering Engine
 __                                                                                                                 __
 ### Menu
-* Equipment UI
-* Status UI
-* Menu Rework
-* Intro Video
-* Region Settings
-* Translations
-* Brazilian Portuguese Translation
-* Turkish Translation
-* Espanish Translation
-* Positive UI Color Setting
-* Negative UI Color Setting
-* Special UI Color Setting
-* Interactive UI Setting
-* Mobile Aim Line
-* Battle Royale Level Dialogs Part
+* Keybind Settings!
+* Final Screen
+* Tertiary Color Settings
+* Gameplay Music Settings
+* UI Blur Backdrop Settings
+* Guns Outline as ammo Type Settings
+* Loadout Set Character Name
+* Document Body
+* UI improvements
+* Ak-47 Translation
+* Drop Equipments
+* Tundra Map Loading Screen
+* Start With Intro Screen
+* Failed To Join Alert
+* Maximized Equipments Show In UI
+* Escape Menu
+* Characters Selection Screen
 __                                                                                                                 __
 ### Items
-* Fist - New Default Melee
-* Shovel - A New Melee
-* Katana - A New Melee
-* M1 Garand - 762MM DMR
-* Colt1873 - 45ACP pistol
-* M79 - Explosive Misc Gun
-* Famas Sprite And Sounds
-* Survival Knife Alt Animation
-* Healing Sprays Test
-* Good Reflective Bullets
+* Melees Switch Sounds
+* VSS - 9mm DMR
+* Rifle CBC - 22lr DMR
+* P90 - 45acp SMG
+* M4A1 - 556mm Assault
+* Desert Eagle - 50Cal Pistol
+* M16 With Grenade Launcher - Unfineshed 556mm AR with a grenade launcher
+* Ghost Bullets - A Accessory When Do Your Bullets Go Through Everything
+* HP Bullets - A Accessory when give 80% of armor penetration
+* Bonesaw
+* Pan
+* Yellow Flare
+* Guns Move Spread
 __                                                                                                                 __
 ### Others
-* Black Container
-* Colored Containers
-* Players Snow Footsteps
-* Snow Footsteps Sound
-* Ice Footsteps Sound
-* Campfire Crate
-* Gold Rock
-* Platinum Rock
-* Debug Level
-* Stove
-* Sink
-* Bed
+* Airdrop Lading Sound For Liquid And Normal
+* Airdrop More Locked Particles
+* Explosions Have Diferent Sounds In Liquids
+* Explosion Generate Riples On Liquids
+* Camera Shake On Explosions
+* Throwables Feel The Floor
+* Squared Bush
+* Crates Snow Skin
+* Pine Tree
+* River Rock
+* Tundra Bush Group
+* River Stones
+* New Gameplay Musics
+* Ammo Crate
+* Box
+* Wood Pallet
+* 2 New Hairs
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __
 ### Items
+* Change Loot Tables
 * Some Balance Changes
-* Some Loot Table Changes
-* Improve Grenades Physics
-* Liquid Insanity And Lastman Helmet now heal boost too
-* Change Guns Background
+* Change Scopes Zoom
+* Change Equipment Sprites
+* Katana Animations
+* Scopes Sprites Rework
 __                                                                                                                 __
 ### Menu
-* New Game Over Music
-* New Menu Music By
-* Client Side News
-* Improved Loading Screen
-* Loadout Menu Rework
+* Rework Minimap System
+* Deenable Mobile Device
 __                                                                                                                 __
 ### Others
-* Change Atlas To KSPR(Kazikni sprite sheet with resolution)
-* Improve Explosions Physics
-* Improve Musics Loading
-* Deno API
-* Tundra Now Have Ice Lakes
-* Change Levels Order
-* Containers Redesign
-* Gold And Iron Crate Redesign
-* Airdrop Redesign
-* Airdrop Plane Redesign
-* Rivers Fix
+* Change Some Graphics
+* Fix Explosives Obstacles Particles
+* Reduce Containers Size
+* Change Containers Spawn
+* Bullets can now pass through bushes and tables
+* Fix Badges
+* Readd Human Bodys
+* Deadzone Visual Rework
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)
-[Windows Version](https://surgemd.io/files/surgemd-windows-lasted.zip)
 If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

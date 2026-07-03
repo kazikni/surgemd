@@ -1,4 +1,5 @@
-import { KDate, NetStream, Packet } from "../../engine/core.ts";
+import { KDate, Stream, Packet } from "../../engine/core.ts";
+import { PacketType } from "../definitions/utils.ts";
 export enum ShopItemType {
     tab,
     section,
@@ -32,10 +33,11 @@ export type ShopNode =
         icon?: string
     }
 export class JoinnedPacket extends Packet{
-    ID=5
+    ID=PacketType.Joinned
     Name="joinned"
     players:{id:number,name:string,badge?:number}[]=[]
-    kill_leader?:{id:number,kills:number}
+    leader?:{id:number,kills:number}
+    ntps:number=0
 
     date!:KDate
     mode:{
@@ -44,41 +46,43 @@ export class JoinnedPacket extends Packet{
     constructor(){
         super()
     }
-    encode(stream: NetStream): void {
-        stream.writeBooleanGroup(this.kill_leader!==undefined)
-        if(this.kill_leader){
-            stream.writeID(this.kill_leader.id)
-            stream.writeUint8(this.kill_leader.kills)
+    encode(stream: Stream): void {
+        stream.write_boolean_group(this.leader!==undefined)
+        stream.write_uint8(this.ntps)
+        if(this.leader){
+            stream.write_id(this.leader.id)
+            stream.write_uint8(this.leader.kills)
         }
-        stream.writeArray(this.players,(e)=>{
-            stream.writeUint16((e.badge??-1)+1)
-            stream.writeStringSized(28,e.name)
-            stream.writeID(e.id)
+        stream.write_array(this.players,(e)=>{
+            stream.write_uint16((e.badge??-1)+1)
+            stream.write_string_sized(e.name,28)
+            stream.write_id(e.id)
         },1)
-        stream.writeArray(this.mode.shop??[],(n)=>{
-            stream.writeObject(n,1,1)
+        stream.write_array(this.mode.shop??[],(n)=>{
+            stream.write_object(n,1,1)
         },1)
-        stream.writeKDate(this.date)
+        stream.write_kdate(this.date)
     }
-    decode(stream: NetStream): void {
-        const [killleader]=stream.readBooleanGroup()
-        if(killleader){
-            this.kill_leader={
-              id:stream.readID(),
-              kills:stream.readUint8()
+    decode(stream: Stream): void {
+        const [leader]=stream.read_boolean_group()
+        this.ntps=stream.read_uint8()
+        if(leader){
+            this.leader={
+              id:stream.read_id(),
+              kills:stream.read_uint8()
             }
         }
-        this.players=stream.readArray((_e)=>{
-            const b=stream.readUint16()
+        this.players=stream.read_array((_e)=>{
+            const b=stream.read_uint16()
             return {
-                name:stream.readStringSized(28),
-                id:stream.readID(),
+                name:stream.read_string_sized(28),
+                id:stream.read_id(),
                 badge:b===0?undefined:b-1
             }
         },1)
-        this.mode.shop=stream.readArray(()=>{
-            return stream.readObject(1,1) as ShopNode
+        this.mode.shop=stream.read_array(()=>{
+            return stream.read_object(1,1) as ShopNode
         },1)
-        this.date=stream.readKDate()
+        this.date=stream.read_kdate()
     }
 }

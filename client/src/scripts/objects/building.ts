@@ -1,8 +1,41 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Numeric, NetStream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Stream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Debug } from "../others/config.ts";
+export class BuildingCeiling{
+    parent:Building
+    def:BuildingCeilingDef
+    alpha_tween?:Tween<Color>
+    alive:boolean=false
+    below:boolean=false
+    opacity:number=1
+    hitbox:Hitbox2D
+    container:Container2DObject
+    sprite:Sprite2D
+    constructor(parent:Building,def:BuildingCeilingDef,hitbox:Hitbox2D,container:Container2DObject,sprite:Sprite2D){
+        this.parent=parent
+        this.def=def
+        this.hitbox=hitbox
+        this.container=container
+        this.sprite=sprite
+    }
+    can_below(other:Hitbox2D):boolean{
+        return !this.def.below?.deenabled&&this.alive&&other.colliding_with(this.hitbox)
+    }
+    set_below(below:boolean){
+        if(this.below===below||this.def.below?.deenabled)return
+        if(this.alpha_tween)this.alpha_tween.kill()
+        this.below=below
+        this.alpha_tween=this.parent.game.add_tween({
+            duration:this.def.below?.duration??0.5,
+            target:this.container.tint,
+            to:{
+                a:below?(this.def.below?.alpha??0):255,
+            }
+        })
+    }
+}
 export class Building extends StaticBody{
     ////////////////////////////
     // Definition             //
@@ -17,22 +50,14 @@ export class Building extends StaticBody{
         no_bullets_collision:false,
         no_collision:false,
         reflect_bullets:false,
+        passable_by_bullets:false,
 
         side:0
     };
     objects:Container2DObject[]=[]
 
-    ceilings:{
-        def:BuildingCeilingDef
-        alive:boolean
-        collided:boolean
-        opacity:number
-        hitbox:Hitbox2D
-        container:Container2DObject
-        sprite:Sprite2D
-    }[]=[]
+    ceilings:BuildingCeiling[]=[]
 
-    
     ////////////////////////////
     // Assets                 //
     ////////////////////////////
@@ -49,33 +74,14 @@ export class Building extends StaticBody{
         }
     }
 
+    constructor(){
+        super()
+    }
     override on_destroy(): void {
         for(const o of this.objects){
             o.destroy()
         }
     }
-    update(dt:number): void {
-        for(const c of this.ceilings){
-            if(c.container.tint.a===0&&c.container.visible){
-                c.container.visible=false
-            }else if(c.container.tint.a!==0&&!c.container.visible){
-                c.container.visible=true
-            }
-
-            if(!c.collided){
-                c.container.tint.a=Numeric.lerp(c.container.tint.a,1,Numeric.dt_expo_inter(5,dt))
-            }
-            c.collided=false
-        }
-    }
-    constructor(){
-        super()
-    }
-
-    override create(_args: Record<string, any>): void {
-        //this.updatable=false
-    }
-
     update_ceilings(ceilings:{alive:boolean}[]){
         for(let i=0;i<ceilings.length;i++){
             if(this.ceilings[i].alive&&!ceilings[i].alive){
@@ -95,7 +101,7 @@ export class Building extends StaticBody{
                     }
                     if(this.ceilings[i].def.destroy!.particles?.count){
                         for(let j=0;j<this.ceilings[i].def.destroy!.particles!.count;j++){
-                            this._add_own_particle(this.ceilings[i].hitbox.randomPoint())
+                            this._add_own_particle(this.ceilings[i].hitbox.random_point())
                         }
                     }
                 }
@@ -123,7 +129,7 @@ export class Building extends StaticBody{
 
             sprite.hotspot=v2.half_one
             sprite._scale.set(2,2)
-            sprite.zIndex=zIndexes.BuildingsFloor
+            sprite.zIndex=zIndexes.BuildingsFloor2
 
             sprite.set_frame({
                 image:f.image,
@@ -137,7 +143,7 @@ export class Building extends StaticBody{
                 tint:f.tint,
             },this.game.resources)
 
-            this.game.cam2d.addObject(sprite)
+            this.game.cam2d.add_object(sprite)
             this.objects.push(sprite)
         }
         for(const c of def.content.ceiling??[]){
@@ -158,40 +164,33 @@ export class Building extends StaticBody{
                 zIndex:zIndexes.DeadCeilings,
                 tint:c.frame.tint
             },this.game.resources)
-            this.game.cam2d.addObject(sprite)
+            this.game.cam2d.add_object(sprite)
             this.objects.push(sprite)
 
-            this.ceilings.push({
-                container:sprite,
-                def:c,
-                hitbox:c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),
-                opacity:c.visible_opacity??0,
-                collided:false,
-                alive:false,
-                sprite
-            })
+            const ceiling=new BuildingCeiling(this,c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),sprite,sprite)
+            this.ceilings.push(ceiling)
         }
 
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,0,this.def.assets.particles)
 
         if(Debug.hitbox){
-            this.game.hitboxes_gfx.fill_color(ColorM.hex("#f007"))
-            this.game.hitboxes_gfx.drawModel(model2d.hitbox(this.hitbox))
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
         }
     }
-    override decode(stream: NetStream, full: boolean): void {
-        const [physical_data]=stream.readBooleanGroup()
+    override on_decode_net(stream: Stream, full: boolean): void {
+        const [physical_data]=stream.read_boolean_group()
         if(physical_data||full){
-            this.position=stream.readPos2()
-            this.physical_data.side=stream.readUint8()
+            this.position=stream.read_pos2()
+            this.physical_data.side=stream.read_uint8()
         }
         if(full){
-            const def=this.game.definitions.buildings.getFromNumber(stream.readID())
+            const def=this.game.definitions.buildings.getFromNumber(stream.read_id())
             this.set_definition(def)
         }
-        const ceilings=stream.readArray(()=>{
-            const bg=stream.readBooleanGroup()
+        const ceilings=stream.read_array(()=>{
+            const bg=stream.read_boolean_group()
             return {
                 alive:bg[0]
             }

@@ -60,21 +60,21 @@ export const WeaponsArmRig={
     },
     1:{
         left:{
-            position:v2(0.7,-0.045),
-            rotation:0.32,
-        },
-        right:{
-            position:v2(0.5,0.05),
-            rotation:-0.2,
-        }
-    },
-    2:{
-        left:{
             position:v2(0.7,-0.035),
             rotation:0.35,
         },
         right:{
             position:v2(0.5,0.05),
+            rotation:-0.3,
+        }
+    },
+    2:{
+        left:{
+            position:v2(0.85,-0.05),
+            rotation:0.2,
+        },
+        right:{
+            position:v2(0.5,0.04),
             rotation:-0.3,
         }
     },
@@ -102,7 +102,7 @@ export const tracers={
         }
     },
     small:{
-        width:5.5,
+        width:6,
         height:1,
         proj:{
             img:0,
@@ -111,7 +111,7 @@ export const tracers={
         }
     },
     medium:{
-        width:8,
+        width:10,
         height:1.2,
         proj:{
             img:0,
@@ -120,7 +120,7 @@ export const tracers={
         }
     },
     large:{
-        width:10,
+        width:12,
         height:1.6,
         proj:{
             img:0,
@@ -129,7 +129,7 @@ export const tracers={
         }
     },
     xl:{
-        width:13,
+        width:15,
         height:2,
         proj:{
             img:0,
@@ -149,7 +149,7 @@ export const tracers={
     },
     black_projectile:{
         height:1,
-        width:1.3,
+        width:2,
         color:0x334455,
         proj:{
             img:0,

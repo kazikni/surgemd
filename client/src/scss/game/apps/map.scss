@@ -10,7 +10,6 @@
         height: 100%;
     }
 
-    // ================= LEFT =================
     .map-sidebar {
         background: #15181f;
         padding: 12px;
@@ -67,16 +66,23 @@
         cursor: grabbing;
     }
 
-    .map-inner {
-        position: absolute;
-        transform-origin: 0 0;
-        will-change: transform;
+    .map-inner{
+        position:absolute;
+        left:0;
+        top:0;
+        transform-origin:0 0;
+        will-change:transform;
     }
-
-    .map-image {
-        display: block;
-        user-select: none;
-        pointer-events: none;
+    .map-tiles{
+        position:absolute;
+        left:0;
+        top:0;
+    }
+    .map-tile{
+        position:absolute;
+        image-rendering:auto;
+        pointer-events:none;
+        user-select:none;
     }
 
     .map-pings {
@@ -135,7 +141,6 @@
     }
     .map-deadzone-safe-line{
         position:absolute;
-        height:10px;
         background:var(--game-device-primary);
         transform-origin:left center;
         pointer-events:none;
@@ -162,8 +167,8 @@
             left:0;
             top:0;
 
-            width:50px;
-            height:50px;
+            width:40px;
+            height:40px;
 
             z-index:2;
             svg path {
@@ -172,19 +177,13 @@
         }
         .map-ping-pulse{
             position:absolute;
-
             left:50%;
             top:50%;
-
             width:20px;
             height:20px;
-
             border-radius:50%;
-
             border:3px solid var(--ping-color);
-
             transform:translate(-50%,-50%);
-
             z-index:1;
         }
     }

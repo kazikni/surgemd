@@ -106,9 +106,7 @@ export class Surface2D{
 
         const mat=this.renderer.factorys2D.texture.create({
             texture:src.texture,
-            tint:{r:1,g:1,b:1,a:1}
+            tint:{r:255,g:255,b:255,a:255}
         })
-
-        this.ctx.draw_model2d(mat,model,{})
     }
 }

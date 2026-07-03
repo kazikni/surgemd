@@ -1,8 +1,13 @@
-import { NetStream, Packet, v2, Vec2 } from "../../engine/core.ts";
-import { type BiomeDef, type BiomeFloor } from "../definitions/maps/base.ts";
+import { Stream, Packet, v2, Vec2 } from "../../engine/core.ts";
+import { MapBiomeDef } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
+import { PacketType } from "../definitions/utils.ts";
 import { Floor } from "../others/terrain.ts";
+export interface MapRegion{
+    name:string
+    position:Vec2
+}
 export interface MapObjectObstacle{
     type:0,
     def:number
@@ -17,127 +22,122 @@ export interface MapConfig{
     terrain:Floor[]
     size:Vec2
     seed:number
-    biome:BiomeDef
+    biome:MapBiomeDef
     objects:MapObjectEncode[]
+    regions:MapRegion[]
     buildings?:JSONBuildingDef[]
-    assets:string[]
 }
-function write_biome(biome:BiomeDef,stream:NetStream){
-    stream.writeString(biome.biome_skin??"",1)
-    .writeArray(biome.assets,(i,_s)=>{
-        stream.writeString(i,1)
+function write_biome(biome:MapBiomeDef,stream:Stream){
+    stream.write_array(biome.musics??[],(i,_s)=>{
+        stream.write_string(i,1)
     })
-    .writeArray(biome.musics??[],(i,_s)=>{
-        stream.writeString(i,1)
+    .write_uint32(biome.particles_tint??0)
+    .write_array(biome.particles,(i,_s)=>{
+        stream.write_string(i,1)
     })
-    .writeUint32(biome.ambient.particles_tint??0)
-    .writeArray(biome.ambient.particles,(i,_s)=>{
-        stream.writeString(i,1)
-    })
-    .writeBooleanGroup(biome.ambient.rain===true,biome.ambient.snow===true)
-    .writeString(biome.ambient.sound??"",1)
-    .writeNumberDict(biome.floors as Record<number,BiomeFloor>,(i,_s)=>{
-        stream.writeBooleanGroup(i.color!==undefined)
-        if(i.color!==undefined)stream.writeUint32(i.color??0)
+    .write_string(biome.ambient_sound??"",1)
+    .write_number_dict(biome.floors as Record<number,number>,(i)=>{
+        stream.write_uint32(i)
     },1)
 }
-function decode_biome(stream:NetStream):BiomeDef{
-    const biome:BiomeDef={
-        ambient:{
-            particles:[]
-        },
-        assets:[],
+function decode_biome(stream:Stream):MapBiomeDef{
+    const biome:MapBiomeDef={
         floors:{},
+        skin:"",
+        musics:[],
+        particles:[],
+        textures:[]
     }
-    biome.biome_skin=stream.readString(1)
-    biome.assets=stream.readArray(()=>{
-        return stream.readString(1)
+    biome.musics=stream.read_array(()=>{
+        return stream.read_string(1)
     },1)
-    biome.musics=stream.readArray(()=>{
-        return stream.readString(1)
-    },1)
-    biome.ambient.particles_tint=stream.readUint32()
-    biome.ambient.particles=stream.readArray(()=>stream.readString(1),1)
-    const bg1=stream.readBooleanGroup()
-    biome.ambient.rain=bg1[0]
-    biome.ambient.snow=bg1[1]
-    biome.ambient.sound=stream.readString(1)
-    biome.floors=stream.readNumberDict((_s)=>{
-        const [has_color]=stream.readBooleanGroup()
-        const floor:BiomeFloor={}
-        if(has_color){
-            floor.color=stream.readUint32()
-        }
-        return floor
+    biome.particles_tint=stream.read_uint32()
+    biome.particles=stream.read_array(()=>stream.read_string(1),1)
+    biome.ambient_sound=stream.read_string(1)
+    biome.floors=stream.read_number_dict((_s)=>{
+        return stream.read_uint32()
     },1)
     return biome
 }
 export class MapPacket extends Packet{
-    ID=6
+    ID=PacketType.Map
     Name="map"
-    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],assets:[]}
+    map:MapConfig={terrain:[],size:v2(0,0),objects:[],seed:0,biome:NormalBiome,buildings:[],regions:[]}
     constructor(){
         super()
     }
-    encode(stream: NetStream): void {
-        stream.writeArray(this.map.terrain,(t)=>{
-            stream.writeBooleanGroup(t.smooth,t.jagged,t.visible)
-            .writeHitbox(t.final_hb)
-            stream.writeUint8(t.type)
-            .writeInt8(t.layer)
+    encode(stream: Stream): void {
+        stream.write_array(this.map.terrain,(t)=>{
+            stream.write_boolean_group(t.smooth,t.visible,t.tint!==undefined)
+            .write_hitbox(t.hb)
+            .write_uint8(t.type)
+            .write_int8(t.layer)
+            if(t.tint!==undefined){
+                stream.write_uint32(t.tint)
+            }
         },2)
-        .writeArray(this.map.objects,(i)=>{
-            stream.writeUint8(i.type)
+        .write_array(this.map.objects,(i)=>{
+            stream.write_uint8(i.type)
             switch(i.type){
                 case 0:
-                    stream.writeID(i.def)
-                    .writeRad(i.rotation)
-                    .writeUint8(i.variation)
-                    .writeUint8(i.skin)
-                    .writePos2(i.position)
-                    .writeFloat(i.scale,0.1,2,1)
+                    stream.write_id(i.def)
+                    .write_rad(i.rotation)
+                    .write_uint8(i.variation)
+                    .write_uint8(i.skin)
+                    .write_pos2(i.position)
+                    .write_float(i.scale,0,10,2)
             }
         },2)
-        .writeUint32(this.map.seed)
-        .writeUint16(this.map.size.x)
-        .writeUint16(this.map.size.y)
+        .write_uint32(this.map.seed)
+        .write_uint16(this.map.size.x)
+        .write_uint16(this.map.size.y)
         write_biome(this.map.biome,stream)
-        stream.writeObjectAdvanced(this.map.buildings)
-        .writeArray(this.map.assets??[],(v)=>stream.writeString(v,1),1)
+        stream.write_object_advanced(this.map.buildings)
+        .write_array(this.map.regions,(v)=>{
+            stream.write_string(v.name,1)
+            .write_pos2(v.position)
+        },1)
     }
-    decode(stream: NetStream): void {
-        this.map.terrain=stream.readArray(()=>{
-            const bg=stream.readBooleanGroup()
-            const fhb=stream.readHitbox()
-            return {
-                type:stream.readUint8(),
+    decode(stream: Stream): void {
+        this.map.terrain=stream.read_array(()=>{
+            const bg=stream.read_boolean_group()
+            const hb=stream.read_hitbox()
+            const floor:Floor={
+                type:stream.read_uint8(),
+                layer:stream.read_int8(),
                 smooth:bg[0],
-                jagged:bg[1],
-                visible:bg[2],
-                layer:stream.readInt8(),
-                final_hb:fhb,
-                hb:fhb
+                visible:bg[1],
+                hb:hb,
             }
+            if(bg[2]){
+                floor.tint=stream.read_uint32()
+            }
+            return floor
         },2)
-        this.map.objects=stream.readArray(()=>{
-            const tp=stream.readUint8()
+        this.map.objects=stream.read_array(()=>{
+            const tp=stream.read_uint8()
             switch(tp){
                 default:
                     return {
                         type:0,
-                        def:stream.readID(),
-                        rotation:stream.readRad(),
-                        variation:stream.readUint8(),
-                        skin:stream.readUint8(),
-                        position:stream.readPos2(),
-                        scale:stream.readFloat(0.1,2,1),
+                        def:stream.read_id(),
+                        rotation:stream.read_rad(),
+                        variation:stream.read_uint8(),
+                        skin:stream.read_uint8(),
+                        position:stream.read_pos2(),
+                        scale:stream.read_float(0,10,2),
                     }
             }
         },2)
-        this.map.seed=stream.readUint32()
-        this.map.size=v2(stream.readUint16(),stream.readUint16())
+        this.map.seed=stream.read_uint32()
+        this.map.size=v2(stream.read_uint16(),stream.read_uint16())
         this.map.biome=decode_biome(stream)
-        this.map.buildings=stream.readObjectAdvanced()
-        this.map.assets=stream.readArray(()=>stream.readString(1),1)
+        this.map.buildings=stream.read_object_advanced()
+        this.map.regions=stream.read_array(()=>{
+            return {
+                name:stream.read_string(1),
+                position:stream.read_pos2()
+            }
+        },1)
     }
 }

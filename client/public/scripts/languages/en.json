@@ -1,9 +1,8 @@
 {
-    "values":{
-        "game-name":"Surgemd.io",
-
-        "barrel":"Barrel",
-        "items":{
+    "values": {
+        "game-name": "Surgemd.io",
+        "barrel": "Barrel",
+        "items": {
             "scope_1": "Scope 1x",
             "scope_2": "Scope 2x",
             "scope_3": "Scope 4x",
@@ -11,196 +10,245 @@
             "scope_5": "Scope 8x",
             "scope_6": "Scope 10x",
             "scope_7": "Scope 12x",
-
-            "bandage":"Bandage",
-            "medikit":"Medikit",
-            "yellow_soda":"Yellow Soda",
-            "inhaler":"Inhaler",
-            "yellow_pills":"Yellow Pills",
-            "blue_soda":"Blue Soda",
-            "blue_potion":"Blue Potion",
-            "blue_pills":"Blue Pills",
-            "purple_soda":"Purple Soda",
-            "purple_potion":"Purple Potion",
-            "purple_pills":"Purple Pills",
-            "small_red_crystal":"Small Red Crystal",
-            "red_soda":"Red Soda",
-            "red_crystal":"Red Crystal",
-            "red_pills":"Red Pills",
-            "green_soda":"Green Soda",
-            "black_soda":"Black Soda",
-            
-            "basic_vest":"Basic Vest",
-            "basic_helmet":"Basic Helmet",
-            "basic_pack":"Small Backpack",
-            "regular_vest":"Regular Vest",
-            "regular_helmet":"Regular Helmet",
-            "regular_pack":"Regular Backpack",
-            "tactical_vest":"Tactical Vest",
-            "tactical_helmet":"Tactical Helmet",
-            "tactical_pack":"Military Backpack",
-
-            "12g":"12G",
-            "762mm":"7.62MM",
-            "556mm":"5.56MM",
-            "9mm":"9MM",
-            "45acp":"9MM",
-            "22lr":"22LR",
-            "50cal":"50Cal",
-            "308sub":".308 Sub-Sonic",
-            "explosive_ammo":"Explosive Ammo",
-            "gasoline":"Gasoline",
-            "mana_mm":"Mana-MM LOL",
-
-            "fist":"Fists",
-            "survival_knife":"Survival Knife",
-            "axe":"Axe",
-            "shovel":"Shovel",
-            "sledgehammer":"Sledgehammer",
-            "katana":"Katana",
-
-            "m9":"M9",
-            "m9_dual":"Dual M9",
-            "colt1873":"Colt 1873",
-            "colt1873_dual":"Dual Colt 1873",
-            "taurustx":"Taurus TX 22",
-            "taurustx_dual":"Dual Taurus TX 22",
-            "yellow_laser_pistol":"Yellow Laser Pistol",
-            "yellow_laser_pistol_dual":"Dual Yellow Laser Pistol",
-            "pfeifer_zeliska":"Pfeifer Zeliska 600 Nitro Express",
-            "pfeifer_zeliska_dual":"Dual Pfeifer Zeliska",
-            "ak47":"AK47",
-            "ar15":"AR15",
-            "mp5":"MP5",
-            "m1921":"M1921",
-            "famas":"Famas",
-            "micro_uzi":"Micro-Uzi",
-            "vector":"Vector",
-            "kar98k":"Kar98k",
-            "awp":"AWP",
-            "awms":"AWM-S",
-            "blr81":"BLR-81",
-            "model94":"Model-94",
-            "m870":"M870",
-            "spas12":"Spas-12",
-            "hp18":"HP18",
-            "sr25":"SR-25",
-            "m1_garand":"M1 Garand",
-            "pkp":"PKP Pecheneg",
-            "rpg7":"RPG-7",
-            "m79":"M79",
-            "m2_2":"M2-2",
-
-            "bullet_breaker_barrel":"Bullet Breaker Barrel",
-            "high_quality_projectiles":"High Quality Projectiles",
-            "rare_projectile":"Rare Projectile",
-            "good_reflective_bullet":"Good Reflective Bullets",
-            "liquid_insanity":"Liquid Insanity",
-            "pygmy_necklace":"Pygmy Necklace",
-            "lucky_coin":"Lucky Coin",
-            "nature_leaf":"Nature Leaf",
-            "ghost_ammo":"Ghost Ammo",
-            "biggest_magazine":"Biggest Magazine",
-            "self_revive":"Self Revive",
-
-            "frag_grenade":"Frag Grenade",
-            "smoke_grenade":"Smoke Grenade",
-            "molotov":"Molotov Cocktail",
-            "mirv_grenade":"Mirv Grenade",
-            "blue_flare":"Blue flare",
-            "red_flare":"red_flare"
-        },
-        "killfeed":{
-            "join":"${player} Joined",
-            "kill":{
-                "abstinence":"${player} Died Of Abstinence",
-                "player":"${player1} Killed ${player2} With ${source}",
-                "explosion":"${player1} Explode ${player2} With ${source}",
-                "deadzone":"${player} Was Caught By Deadzone",
-                "side-effect":"${player} Die For SideEffect",
-                "disconnect":"${player} Give Up",
-                "bleend":"${player} Bled To Death"
-            },
-            "down":{
-                "abstinence":"${player} Fell Due To Abstinence",
-                "player":"${player1} Knocked Out ${player2} With ${source}",
-                "deadzone":"Deadzone Took ${player} Forces",
-                "side-effect":"${player} Knocked Out For SideEffect",
-                "disconnect":"${player} Give Up",
-                "bleend":"This Killfeed Message Are A Bug - Report"
-            },
-            "killleader":{
-                "assigned":"${player} Become The Kill Leader",
-                "dead":"The Kill Leader Are Dead"
+            "bandage": "Bandage",
+            "medikit": "Medikit",
+            "yellow_soda": "Yellow Soda",
+            "inhaler": "Inhaler",
+            "yellow_pills": "Yellow Pills",
+            "blue_soda": "Blue Soda",
+            "blue_potion": "Blue Potion",
+            "blue_pills": "Blue Pills",
+            "purple_soda": "Purple Soda",
+            "purple_potion": "Purple Potion",
+            "purple_pills": "Purple Pills",
+            "small_red_crystal": "Small Red Crystal",
+            "red_soda": "Red Soda",
+            "red_crystal": "Red Crystal",
+            "red_pills": "Red Pills",
+            "green_soda": "Green Soda",
+            "black_soda": "Black Soda",
+            "basic_vest": "Basic Vest",
+            "basic_helmet": "Basic Helmet",
+            "basic_pack": "Small Backpack",
+            "regular_vest": "Regular Vest",
+            "regular_helmet": "Regular Helmet",
+            "regular_pack": "Regular Backpack",
+            "military_vest": "Military Vest",
+            "military_helmet": "Military Helmet",
+            "military_pack": "Military Backpack",
+            "12g": "12G",
+            "762mm": "7.62MM",
+            "556mm": "5.56MM",
+            "9mm": "9MM",
+            "45acp": "9MM",
+            "22lr": "22LR",
+            "50cal": "50Cal",
+            "308sub": ".308 Sub-Sonic",
+            "explosive_ammo": "Explosive Ammo",
+            "gasoline": "Gasoline",
+            "mana_mm": "Mana-MM LOL",
+            "fist": "Fists",
+            "survival_knife": "Survival Knife",
+            "axe": "Axe",
+            "shovel": "Shovel",
+            "sledgehammer": "Sledgehammer",
+            "katana": "Katana",
+            "bonesaw": "Bonesaw",
+            "pan": "Pan",
+            "m9": "M9",
+            "m9_dual": "Dual M9",
+            "colt1873": "Colt 1873",
+            "colt1873_dual": "Dual Colt 1873",
+            "desert_eagle": "Desert Eagle",
+            "desert_eagle_dual": "Dual Desert Eagle",
+            "taurustx": "Taurus TX 22",
+            "taurustx_dual": "Dual Taurus TX 22",
+            "yellow_laser_pistol": "Yellow Laser Pistol",
+            "yellow_laser_pistol_dual": "Dual Yellow Laser Pistol",
+            "pfeifer_zeliska": "Pfeifer Zeliska 600 Nitro Express",
+            "pfeifer_zeliska_dual": "Dual Pfeifer Zeliska",
+            "ak47": "AK47",
+            "ar15": "AR15",
+            "m4a1": "M4A1",
+            "m16_gl": "M16 With Grenade Launcher",
+            "mp5": "MP5",
+            "m1921": "M1921",
+            "famas": "Famas",
+            "micro_uzi": "Micro-Uzi",
+            "vector": "Vector",
+            "p90": "P90",
+            "kar98k": "Kar98k",
+            "awp": "AWP",
+            "awm": "AWM",
+            "blr81": "BLR-81",
+            "model94": "Model-94",
+            "m870": "M870",
+            "spas12": "Spas-12",
+            "hp18": "HP18",
+            "sr25": "SR-25",
+            "vss": "VSS Vintorez",
+            "rifle_cbc": "Rifle-CBC",
+            "m1_garand": "M1 Garand",
+            "pkp": "PKP Pecheneg",
+            "rpg7": "RPG-7",
+            "m79": "M79",
+            "m2_2": "M2-2",
+            "rip_ammo": "R.I.P Ammo",
+            "high_quality_projectiles": "High Quality Projectiles",
+            "first_last_great": "First Last Great",
+            "good_reflective_bullet": "Good Reflective Bullets",
+            "liquid_insanity": "Liquid Insanity",
+            "pygmy_necklace": "Pygmy Necklace",
+            "lucky_coin": "Lucky Coin",
+            "nature_leaf": "Nature Leaf",
+            "sprite_ammo": "Sprite Ammo",
+            "ghost_bullets": "Ghost Bullets",
+            "biggest_magazine": "Biggest Magazine",
+            "self_revive": "Self Revive",
+            "frag_grenade": "Frag Grenade",
+            "smoke_grenade": "Smoke Grenade",
+            "molotov": "Molotov Cocktail",
+            "mirv_grenade": "Mirv Grenade",
+            "blue_flare": "Blue flare",
+            "yellow_flare": "Yellow flare",
+            "red_flare": "Red Flare",
+            "description": {
+                "12g": "12 Gauge. Used in shotguns",
+                "762mm": "7.62mm used in snipers and AR.",
+                "556mm": "5.56mm used in Snipers and AR. Almost the same thing of 7.62mm",
+                "9mm": "9mm used in Pistols and SMG.",
+                "45acp": "5.56mm used in Snipers and AR. Almost the same thing of 7.62mm",
+                "22lr": "9mm used in Pistols and SMG. Almost the same thing of 9mm",
+                "50cal": "A big ammo. used into pistols, snipers and dmr",
+                "308sub": "Biggerst than a hand. used into pistols, snipers and dmr",
+                "explosive_ammo": "Boom Boom Motherfucker!",
+                "gasoline": "A good fuel.",
+                "mana_mm": "Mana-MM I'm tired of creating descriptions. It's already 18:50.",
+                "bandage": "A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
+                "medikit": "This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",
+                "yellow_soda": "A delicious soda that tastes like pure energy.<br>Grants 25 adrenaline.",
+                "inhaler": "This device turns tablets into vapor, increasing their effectiveness.<br>Grants 50 adrenaline.",
+                "yellow_pills": "A very powerful medicine.<br>Six times stronger than the tablets used in the inhaler.<br>Grants 100 adrenaline.",
+                "blue_soda": "A delicious soda.<br>Contains a compound that creates a glass-like barrier around the user.<br>Grants 25 shield up to a maximum of 50%.",
+                "blue_potion": "This bottle was crafted using an ancient method, but its contents use cutting-edge technology.<br>Grants 50 shield.",
+                "blue_pills": "A medicine used by soldiers as a defensive barrier.<br>Features advanced digital technology.<br>Grants 100 shield.",
+                "red_soda": "The recipe for this soda is highly classified.<br>Experts believe it contains an extremely toxic and addictive chemical compound.<br>Grants 50 addiction up to a maximum of 50%.",
+                "small_red_crystal": "Even this small amount of RQPU can enhance physical abilities, but it is not enough to satisfy the addiction.<br>Grants 25 addiction.",
+                "red_crystal": "This illegal drug can make you incredibly fast and strong, but it is highly addictive.<br>It seems nobody cares much about the law.<br>Grants 50 addiction.",
+                "red_pills": "This drug is capable of ruining someone's life.<br>Fortunately, the police are always fighting drug trafficking.<br>But where do the confiscated drugs go?<br>Grants 100 addiction.",
+                "green_soda": "This soda is incredibly tasty.<br>After drinking it, you feel blessed.<br>Grants 100 Green Bless.",
+                "black_soda": "This poison is strong enough to kill an elephant.<br>Despite being a poison, it behaves similarly to a bacterium.<br>Triggers Death.",
+                "blue_flare": "Call a airdrop",
+                "yellow_flare": "Call a airstrike",
+                "red_flare": "Call a nuke",
+                "helmet": "Reduces incoming damage by ${reduction}%.",
+                "vest": "Reduces incoming damage by ${reduction}%.",
+                "backpack": "Increases inventory capacity."
             }
         },
-        "killleader-wait":"Waiting For A Kill Leader",
-        "interact":{
-            "loot":"Take ${source}${count}",
-            "obstacles":{
-                "break":"Break ${obstacle}",
-                "door":{
-                    "open":"Open Door",
-                    "close":"Close Door"
+        "characters": {
+            "nick": "Nick",
+            "justin": "Justin",
+            "shelly": "Shelly",
+            "Victoria": "Victoria",
+            "nick_mom": "Nick (Mom)",
+            "nick_dad": "Nick (Dad)",
+            "shelly_mom": "Shelly (Mom)",
+            "shelly_dad": "Shelly (Dad)",
+            "boy": "Boy",
+            "girl": "Girl"
+        },
+        "feed": {
+            "join": "${player} Joined",
+            "kill": {
+                "abstinence": "${player} Died Of Abstinence",
+                "player": "${player1} Killed ${player2} With ${source}",
+                "explosion": "${player1} Explode ${player2} With ${source}",
+                "deadzone": "${player} Was Caught By Deadzone",
+                "side-effect": "${player} Die For SideEffect",
+                "disconnect": "${player} Give Up",
+                "bleend": "${player} Bled To Death"
+            },
+            "down": {
+                "abstinence": "${player} Fell Due To Abstinence",
+                "player": "${player1} Knocked Out ${player2} With ${source}",
+                "deadzone": "Deadzone Took ${player} Forces",
+                "side-effect": "${player} Knocked Out For SideEffect",
+                "disconnect": "${player} Give Up",
+                "bleend": "This Feed Message Are A Bug - Report"
+            },
+            "leader": {
+                "assigned": "${player} Become The Leader",
+                "dead": "The Leader Are Dead"
+            }
+        },
+        "leader-wait": "Waiting For A Leader",
+        "interact": {
+            "loot": "Take ${source}${count}",
+            "obstacles": {
+                "break": "Break ${obstacle}",
+                "door": {
+                    "open": "Open Door",
+                    "close": "Close Door"
                 },
-                "scalable":"Climp",
-                "transform-into":{
-                    "airdrop_locked":"Unlock Airdrop"
+                "scalable": "Climp",
+                "transform-into": {
+                    "airdrop_locked": "Unlock Airdrop"
                 }
             }
         },
-        "gameover":{
-            "eliminated-by":"<span id='gameover-eliminated'>Eliminated By</span> ${player}",
-            "you-win":"<span id='gameover-you-win'>You Win!</span>",
-            "messages":{
-                "introductions":{
-                    "0":"Hi",
-                    "1":"Hello",
-                    "2":"Hey"
+        "gameover": {
+            "eliminated-by": "<span id='gameover-eliminated'>Eliminated By</span> ${player}",
+            "you-win": "<span id='gameover-you-win'>You Win!</span>",
+            "messages": {
+                "introductions": {
+                    "0": "Hi",
+                    "1": "Hello",
+                    "2": "Hey"
                 },
-                "death":{
-                    "0":"You died again.",
-                    "1":"You've become a pile of meat.",
-                    "2":"You died.",
-                    "3":"You are dead.",
-                    "4":"You lose.",
-                    "5":"Your Hearth Stop.",
-                    "6":"You were turned inside out",
-                    "7":"You were taken apart.",
-                    "8":"You suffered brain death.",
-                    "9":"You Dont Exist More",
-                    "10":"You’re sleeping with the fishes."
+                "death": {
+                    "0": "You died again.",
+                    "1": "You've become a pile of meat.",
+                    "2": "You died.",
+                    "3": "You are dead.",
+                    "4": "You lose.",
+                    "5": "Your Hearth Stop.",
+                    "6": "You were turned inside out",
+                    "7": "You were taken apart.",
+                    "8": "You suffered brain death.",
+                    "9": "You Dont Exist More",
+                    "10": "You’re sleeping with the fishes."
                 },
-                "status":{
-                    "kills":"You got ${kills} kills.",
-                    "no-kills":"You didn't eliminate anyone.",
-                    "no-kills-dead":"Unfortunately, this is not the way to get out of here alive."
+                "status": {
+                    "kills": "You got ${kills} kills.",
+                    "no-kills": "You didn't eliminate anyone.",
+                    "no-kills-dead": "Unfortunately, this is not the way to get out of here alive."
                 },
-                "hints":{
-                    "quickswitch":{
-                        "0":"Have you heard about quickswitch?",
-                        "1":"Quickswitch removes your recoil.",
-                        "2":"Just switch to another weapon after shooting.",
-                        "3":"Quickswitch only works with single-shot weapons...",
-                        "4":"Weapons like snipers or shotguns."
+                "hints": {
+                    "quickswitch": {
+                        "0": "Have you heard about quickswitch?",
+                        "1": "Quickswitch removes your recoil.",
+                        "2": "Just switch to another weapon after shooting.",
+                        "3": "Quickswitch only works with single-shot weapons...",
+                        "4": "Weapons like snipers or shotguns."
                     },
-                    "movement":{
-                        "0":"Movement is a weapon too.",
-                        "1":"Use it wisely."
+                    "movement": {
+                        "0": "Movement is a weapon too.",
+                        "1": "Use it wisely."
                     },
-                    "cover":{
-                        "0":"Cover can save your life.",
-                        "1":"Fight near rocks or trees.",
-                        "2":"Never stay in the open."
+                    "cover": {
+                        "0": "Cover can save your life.",
+                        "1": "Fight near rocks or trees.",
+                        "2": "Never stay in the open."
                     },
-                    "healing":{
-                        "0":"Do not fight while weak.",
-                        "1":"Heal first.",
-                        "2":"Then fight."
+                    "healing": {
+                        "0": "Do not fight while weak.",
+                        "1": "Heal first.",
+                        "2": "Then fight."
                     },
-                    "grenade":{
-                        "0":"A well placed grenade",
-                        "1":"can win a fight instantly."
+                    "grenade": {
+                        "0": "A well placed grenade",
+                        "1": "can win a fight instantly."
                     }
                 },
                 "motivational": {
@@ -227,9 +275,9 @@
                         "0": "No pain.",
                         "1": "No gain."
                     },
-                    "7":{
-                        "0":"Fritz never gave up.",
-                        "1":"Look where he is now."
+                    "7": {
+                        "0": "Fritz never gave up.",
+                        "1": "Look where he is now."
                     }
                 },
                 "final": {
@@ -238,96 +286,153 @@
                     "2": "You are too important to die.",
                     "3": "Your time hasn’t come yet."
                 },
-                "death-end":"Get up!"
+                "death-end": "Get up!"
             }
         },
-        "menu":{
-            "options":{
-                "play":"Play",
-                "settings":"Settings",
-                "loadout":"Loadout",
-                "mods":"Mods",
-                "about":"About"
+        "menu": {
+            "options": {
+                "play": "Play",
+                "settings": "Settings",
+                "loadout": "Loadout",
+                "mods": "Mods",
+                "about": "About"
             },
-            "play":{
-                "label-campaign":"Campaign",
-                "level-selector":"Level Selector",
-                "label-online":"Online",
-                "host-game":"Host Game",
-                "join-game":"Join Game",
-                "play-online":"Play Online",
-                "group":"Group",
-                "label-files":"Files",
-                "replay":"Replay"
+            "play": {
+                "label-campaign": "Campaign",
+                "level-selector": "Level Selector",
+                "label-online": "Online",
+                "host-game": "Host Game",
+                "join-game": "Join Game",
+                "play-online": "Play Online",
+                "play-btn": "Play ${group_size}",
+                "group": "Group",
+                "label-files": "Files",
+                "replay": "Replay"
             },
-            "settings":{
-                "game":"Game",
-                "graphics":"Graphics",
-                "sounds":"Sounds",
-                "ui":"UI"
+            "settings": {
+                "game": "Game",
+                "graphics": "Graphics",
+                "sounds": "Sounds",
+                "ui": "UI",
+                "keybinds": "Keybinds"
             },
-            "loadout":{
-                "character":"Character"
+            "loadout": {
+                "character": "Character"
             },
-            "mods":{
-                "mods-list":"Mods List"
+            "mods": {
+                "mods-list": "Mods List"
             },
-            "about":{
-                "social":"Social",
-                "news":"News",
-                "rules":"Rules",
-                "credits":"Credits"
+            "about": {
+                "social": "Social",
+                "news": "News",
+                "rules": "Rules",
+                "credits": "Credits"
             },
-            "loading-screen":{
-                "load":"Loading: ${text}",
-                "unload":"Unloading: ${text}"
+            "loading-screen": {
+                "load": "Loading: ${text}",
+                "unload": "Unloading: ${text}"
             }
         },
-        "settings":{
-            "game":{
-                "region":"Region",
-                "interpolation":"Interpolation",
-                "client_rot":"Client Side Rotation",
-                "friendly_fire":"Friendly Fire"
+        "settings": {
+            "game": {
+                "region": "Region",
+                "interpolation": "Interpolation",
+                "client_rot": "Client Side Rotation",
+                "friendly_fire": "Friendly Fire",
+                "ammo_outline": "Guns Outline As Ammo Type"
             },
-            "graphics":{
-                "resolution":"Textures Quality",
-                "particles":"Particles",
-                "lights":"Lights",
-                "post_proccess":"Post Proccess",
-                "climate":"Climate",
-                "fullscreen":"Fullscreen"
+            "graphics": {
+                "resolution": "Textures Quality",
+                "particles": "Particles",
+                "lights": "Lights",
+                "post_proccess": "Post Proccess",
+                "climate": "Climate",
+                "fullscreen": "Fullscreen"
             },
-            "sounds":{
-                "master_volume":"Master Volume",
-                "music_volume":"Music Volume",
-                "ambient_volume":"Ambient Volume"
+            "sounds": {
+                "master_volume": "Master Volume",
+                "music_volume": "Music Volume",
+                "ambient_volume": "Ambient Volume",
+                "gameplay_music": "Gameplay Music"
             },
-            "ui":{
-                "primary_color":"Primary Color",
-                "secondary_color":"Secondary Color",
-                "positive_color":"Positive Color",
-                "negative_color":"Negative Color",
-                "special_color":"Special Color",
-                "translation":"Translation",
-                "interactive":"Interactive UI"
+            "ui": {
+                "primary_color": "Primary Color",
+                "secondary_color": "Secondary Color",
+                "tertiary_color": "Tertiary Color",
+                "positive_color": "Positive Color",
+                "negative_color": "Negative Color",
+                "special_color": "Special Color",
+                "translation": "Translation",
+                "interactive": "Interactive UI",
+                "blur_backdrop": "Blur Backdrop"
             }
         },
-        "loadout":{
-            "character":{
-                "hair_tint":"Hair Color",
-                "hair_type":"Hair Type",
-                "body_tint":"Body Color",
-                "female":"Is Female",
-                "shirt":"Shirt"
+        "keybinds": {
+            "move_up": "Move Up",
+            "move_down": "Move Down",
+            "move_left": "Move Left",
+            "move_right": "Move Right",
+            "fire": "Fire/Use",
+            "alt_fire": "Fire Alt/Use Alt",
+            "emote_wheel": "Emote Wheel",
+            "comunication_mode": "Comunication Mode",
+            "reload": "Reload",
+            "interact": "Interact",
+            "cancel": "Cancel",
+            "swamp_guns": "Swamp Guns Slot",
+            "toggle_full_device": "Minimap Toggle Full",
+            "toggle_hide_device": "Hide/Show Minimap",
+            "weapon1": "Melee",
+            "weapon2": "Gun 1",
+            "weapon3": "Gun 2",
+            "use_item1": "Item 1",
+            "use_item2": "Item 2",
+            "use_item3": "Item 3",
+            "use_item4": "Item 4",
+            "use_item5": "Item 5",
+            "use_item6": "Item 6",
+            "use_item7": "Item 7",
+            "previous_weapon": "Previous Weapon",
+            "next_weapon": "Next Weapon",
+            "previous_scope": "Previous Scope",
+            "next_scope": "Next Scope",
+            "next": "Next",
+            "escape": "Escape",
+            "debug_menu": "Debug Menu"
+        },
+        "loadout": {
+            "character": {
+                "name": "Character Name",
+                "hair_tint": "Hair Color",
+                "hair_type": "Hair Type",
+                "body_tint": "Body Color",
+                "female": "Is Female",
+                "shirt": "Shirt"
             }
         },
-        "region":{
-            "local":"Local",
-            "na":"North America",
-            "sa":"South America",
-            "eu":"Europe",
-            "as":"Asia"
+        "region": {
+            "local": "Local",
+            "na": "North America",
+            "sa": "South America",
+            "eu": "Europe",
+            "as": "Asia"
+        },
+        "score_applier": {
+            "0": "Kill",
+            "1": "Win",
+            "2": "Rank",
+            "3": "Damage taken",
+            "4": "Damage Dealth",
+            "5": "Kill Leader"
+        },
+        "modes": {
+            "tundra": "Tundra",
+            "group_size": {
+                "1": "Solo",
+                "2": "Duo",
+                "3": "Trio",
+                "4": "Squad"
+            }
         }
     }
 }

@@ -2,11 +2,10 @@ import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 import { InventoryItemType } from "../utils.ts";
 export interface AmmoDef extends Definition{
+    description?:string|boolean
     tint:number
-    defaultTrail:number
-    strongTrail:number
-    defaultProj:number
-    strongProj:number
+    defaultTrail?:number
+    strongTrail?:number[]
     ammoType:string
 
     liquid?:boolean
@@ -21,10 +20,9 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"12g",
             ammoType:"12g",
+            description:true,
             defaultTrail:0xcfada0,
-            strongTrail:0xdb2218,
-            defaultProj:0xcfada0,
-            strongProj:0xdb2218,
+            strongTrail:[0xdb2218,0x96231d],
             tint:0xff0000,
             drop_count:15,
             rank:ItemRank.E
@@ -32,72 +30,65 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"762mm",
             ammoType:"762mm",
+            description:true,
             defaultTrail:0xb8ccde,
-            strongTrail:0x0034f2,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0x0034f2,0x14319c],
             tint:0x0000ff,
             rank:ItemRank.E
         },
         {
             idString:"556mm",
             ammoType:"556mm",
-            defaultTrail:0x66ff88,
-            strongTrail:0x00a41c,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            description:true,
+            defaultTrail:0xa7f2b2,
+            strongTrail:[0x27f227,0x00a41c],
             tint:0x00ff00,
+            rank:ItemRank.E
+        },
+        {
+            idString:"45acp",
+            ammoType:"45acp",
+            description:true,
+            defaultTrail:0xcea2e0,
+            strongTrail:[0x791390,0x4a0659],
+            tint:0x791390,
             rank:ItemRank.E
         },
         {
             idString:"9mm",
             ammoType:"9mm",
+            description:true,
             defaultTrail:0xefef9f,
-            strongTrail:0xefef33,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0xefef33,0x8a7b0e],
             tint:0xffff00,
-            rank:ItemRank.E
-        },
-        //Modes
-        {
-            idString:"45acp",
-            ammoType:"45acp",
-            defaultTrail:0xcea2e0,
-            strongTrail:0x791390,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
-            tint:0x791390,
             rank:ItemRank.E
         },
         {
             idString:"22lr",
             ammoType:"22lr",
-            defaultTrail:0xefefef,
-            strongTrail:0xefefff,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            description:true,
+            defaultTrail:0xaaaaaa,
+            strongTrail:[0xefefff,0x9c9cb8],
             tint:0xffffff,
             rank:ItemRank.E
         },
+
+        //Exotic
         {
             idString:"50cal",
             ammoType:"50cal",
+            description:true,
             defaultTrail:0x555555,
-            strongTrail:0x000000,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0x222222,0x111111],
             tint:0x000000,
             rank:ItemRank.B
         },
-        //Exotic
         {
             idString:"308sub",
             ammoType:"308sub",
+            description:true,
             defaultTrail:0x222835,
-            strongTrail:0x0c1420,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0x0c1420,0x050d1a],
             tint:0x001330,
             drop_count:10,
             rank:ItemRank.A
@@ -105,20 +96,18 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"explosive_ammo",
             ammoType:"explosive_ammo",
+            description:true,
             defaultTrail:0x616d61,
-            strongTrail:0x2b402b,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0x2b402b,0x0e1c0e],
             tint:0x001330,
             rank:ItemRank.S
         },
         {
             idString:"gasoline",
             ammoType:"gasoline",
+            description:true,
             defaultTrail:0xefef33,
-            strongTrail:0x889fcb,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0xefef33,0xefef33],
             liquid:true,
             tint:0x001330,
             rank:ItemRank.A
@@ -126,10 +115,9 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         {
             idString:"mana_mm",
             ammoType:"mana",
+            description:true,
             defaultTrail:0x889fcb,
-            strongTrail:0x009fcb,
-            defaultProj:0xefef9f,
-            strongProj:0xefef33,
+            strongTrail:[0x009fcb,0x009fcb],
             tint:0x001330,
             rank:ItemRank.S
         }

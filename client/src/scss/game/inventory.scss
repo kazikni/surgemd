@@ -1,5 +1,6 @@
 @use "common/engine/main.scss";
 @use "../fonts.scss";
+@use "../components/text.scss";
 .item-maximized{
     color:var(--ui-theme-special)
 }
@@ -63,9 +64,11 @@
     justify-content: center;
     overflow: hidden;
     pointer-events: all;
+    backdrop-filter: var(--ui-backdrop-filter);
 
     font-family: "Russo-One", serif;
 
+    color: var(--ui-theme-tertiary);
     .slot-image {
         width: 50px;
         height: 50px;
@@ -82,14 +85,12 @@
         font-weight: bold;
         text-shadow: 0 0 2px #000;
     }
-
     .slot-number {
         position: absolute;
         top: 2px;
         left: 4px;
         font-size: 12px;
-        color: #fff9;
-        color: var(--ui-theme-primary)
+        color: var(--ui-theme-primary);
     }
     @include main.medium_screen {
         width: 55px;
@@ -145,6 +146,7 @@
         font-family: "Russo-One", serif;
         background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
         box-shadow: 0 0 3px var(--ui-theme-primary);
+        backdrop-filter: var(--ui-backdrop-filter);
         .weapon-slot-number {
             position: relative;
             top: 5px;
@@ -155,7 +157,7 @@
             position: absolute;
             bottom: 5px;
             right: 10px;
-            color: #fff;
+            color: var(--ui-theme-tertiary);
         }
         .weapon-slot-image {
             pointer-events: none;
@@ -236,6 +238,7 @@
             width: 40px;
             height: 40px;
         }
+        backdrop-filter: var(--ui-backdrop-filter);
     }
     .scope-slot-selected{
         border: 2px solid var(--ui-theme-primary);
@@ -279,42 +282,61 @@
     }
 }
 #ui-aitems{
-    display: grid;
-    grid-template-columns: repeat(auto, 5);
+    display: flex;
+    flex-direction: column;
+    flex-wrap:wrap-reverse;
+    max-height: 200px;
     gap: 5px;
     position: absolute;
-    right: 5px;
-    top: 50%;
+    right: 10px;
+    top: 65%;
     transform: translate(0%, -50%);
     justify-items: end;
     pointer-events: none;
-    .aitem-slot{
-        background: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
+    .aitem-slot {
+        color: var(--ui-theme-tertiary);
+        backdrop-filter: var(--ui-backdrop-filter);
+        background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
+
         display: flex;
-        flex-direction: column;
+        flex-direction: row-reverse;
+        align-items: center;
+        justify-content: space-between;
+
         border-radius: 4px;
+        width: 70px;
+        height: 34px;
+        gap: 5px;
+
+        padding: 0 6px;
+
         pointer-events: auto;
+
+        box-shadow: 0 0 3px var(--ui-theme-primary);
+
         .count {
             font-family: "Russo-One", sans-serif;
-            text-align: center;
             font-size: 15px;
-            text-anchor: middle;
+
+            flex: 1;
+            text-align: left;
         }
-        .icon{
-            width: 30px;
-            height: 30px;
-            margin: auto;
-            padding-top: 5px;
-            padding-left: 5px;
-            padding-right: 5px;
+
+        .icon {
+            width: 28px;
+            height: 28px;
+
+            flex-shrink: 0;
+            object-fit: contain;
         }
-        box-shadow: 0 0 3px var(--ui-theme-primary);
     }
     .aitem-slot:hover{
         border: 2px solid var(--ui-theme-primary);
     }
     @include main.medium_screen{
         .aitem-slot{
+            width: 50px;
+            height: 22px;
             .count{
                 font-size: 12px;
             }
@@ -323,10 +345,14 @@
                 height: 20px;
             }
         }
-        left: 2px;
+        max-height: 130px;
+        gap: 3px;
+        right: 7px;
     }
     @include main.small_screen{
         .aitem-slot{
+            width: 30px;
+            height: 14px;
             .count{
                 font-size: 10px;
             }
@@ -335,13 +361,16 @@
                 height: 12px;
             }
         }
-        left: 3px;
+        max-height: 80px;
+        gap: 2px;
+        right: 5px;
     }
 }
 #ui-equipment{
     position: absolute;
     right: 10px;
     bottom: 10px;
+    color: var(--ui-theme-tertiary);
     .equipment-fixed {
         display: flex;
         gap: 10px;
@@ -354,6 +383,7 @@
     .equipment-slot {
         background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
         box-shadow: 0 0 3px var(--ui-theme-primary);
+        backdrop-filter: var(--ui-backdrop-filter);
         width: 70px;
         height: 70px;
         position: relative;
@@ -381,11 +411,11 @@
         font-size: 10px;
         bottom: 2px;
         left: 2px;
-        color: #aaa;
     }
     @include main.medium_screen {
         right: 7px;
         bottom: 7px;
+        font-size: 10px;
         .equipment-fixed {
             gap: 7px;
         }
@@ -404,5 +434,46 @@
             width: 35px;
             height: 35px;
         }
+    }
+}
+#item-tooltip{
+    @extend .span-text-base;
+
+    opacity:0;
+    pointer-events:none;
+    position:fixed;
+
+    min-width:300px;
+    max-width:450px;
+
+    max-height:300px;
+    overflow-y:auto;
+
+    padding:10px;
+    border-radius:6px;
+
+    background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
+    box-shadow: 0 0 3px var(--ui-theme-primary);
+
+    transition:opacity .15s;
+    transform: translate(-100%,-100%);
+
+    color: var(--ui-theme-tertiary);
+    #item-tooltip-title{
+        font-weight:bold;
+        margin-bottom:6px;
+        font-size:20px;
+    }
+    #item-tooltip-description{
+        font-size:15px;
+
+        white-space:pre-wrap;
+        overflow-wrap:break-word;
+        word-break:break-word;
+
+        line-height:1.35;
+    }
+    &.tooltip-visible{
+        opacity:1;
     }
 }

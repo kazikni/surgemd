@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="77.105"
+   height="75.678"
+   viewBox="0 0 20.401 20.023"
+   version="1.1"
+   id="svg20"
+   sodipodi:docname="blood_splash_2.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs24" />
+  <sodipodi:namedview
+     id="namedview22"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="11.073231"
+     inkscape:cx="29.259752"
+     inkscape:cy="37.839001"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg20" />
+  <g
+     transform="matrix(.6 0 0 .6 -1.19 -156.557)"
+     fill="#fff"
+     id="g18">
+    <path
+       d="M10.187 266.304a3.725 3.725 0 0 0-3.725 3.725 3.725 3.725 0 0 0 2.38 3.474 11.264 11.264 0 0 0-.934 4.044 1.436 1.436 0 0 0-1.177 1.413 1.436 1.436 0 0 0 1.421 1.436 11.264 11.264 0 0 0 4.15 6.555 3.231 3.231 0 0 0-.903 2.24 3.231 3.231 0 0 0 3.23 3.232 3.231 3.231 0 0 0 3.232-3.218 11.264 11.264 0 0 0 1.3.076 11.264 11.264 0 0 0 1.866-.156 2.962 2.962 0 0 0 2.578 1.503 2.962 2.962 0 0 0 2.962-2.962 2.962 2.962 0 0 0-.177-1.01 11.264 11.264 0 0 0 3.696-5.894 4.892 4.892 0 0 0 2.674-4.36 4.892 4.892 0 0 0-4.385-4.866 11.264 11.264 0 0 0-9.213-4.783 11.264 11.264 0 0 0-5.68 1.537 3.725 3.725 0 0 0-3.295-1.986z"
+       style="stroke:#7a8385;stroke-opacity:1"
+       id="path2" />
+    <circle
+       cx="28.093"
+       cy="265.856"
+       r="2.693"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle4" />
+    <circle
+       cx="5.43"
+       cy="285.826"
+       r="2.827"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle6" />
+    <circle
+       cx="16.829"
+       cy="263.388"
+       r="2.019"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle8" />
+    <circle
+       cx="32.446"
+       cy="270.299"
+       r=".763"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle10" />
+    <circle
+       cx="33.702"
+       cy="284.928"
+       r="1.84"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle12" />
+    <circle
+       cx="29.573"
+       cy="291.66"
+       r="2.199"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle14" />
+    <circle
+       cx="3.276"
+       cy="277.21"
+       r=".853"
+       stroke-width="1.958"
+       style="stroke:#7a8385;stroke-width:0.881944;stroke-dasharray:none;stroke-opacity:1"
+       id="circle16" />
+  </g>
+</svg>

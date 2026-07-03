@@ -57,7 +57,7 @@ export class ClientsManager extends OfflineClientsManager {
             //@ts-ignore
             socket.onopen = () => {
                 let id = IDGen!();
-                id=this.activate_ws(socket as unknown as BasicSocket,id,info.remoteAddr as unknown as string, username!);
+                id=this.activate_ws(socket as unknown as BasicSocket,id,ip, username!);
             };
 
             return response;

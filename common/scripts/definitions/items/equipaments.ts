@@ -3,12 +3,12 @@ import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { HumanModifiers } from "../../others/constants.ts";
-import { BoostType } from "../player/boosts.ts";
 export interface VestDef extends Definition{
     defence:number
     reduction:number
     health?:number
     level:number
+    special?:boolean
     tint:number
     rank:ItemRank
     reflect_bullets?:boolean
@@ -24,6 +24,7 @@ export interface HelmetDef extends Definition{
     health?:number
     health_frames?:{frame:string,health:number}[]
     level:number
+    special?:boolean
     position?:Vec2
     rank:ItemRank
     item_type?:InventoryItemType.helmet
@@ -63,9 +64,10 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             rank:ItemRank.D
         },
         {
-            idString:"tactical_helmet",
+            idString:"military_helmet",
             defence:0,
             level:3,
+            special:true,
             health:1600,
             reduction:0.2,
             position:v2(0,0),
@@ -76,6 +78,7 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
             idString:"lastman_helmet",
             defence:0,
             level:5,
+            special:true,
             reduction:0.3,
             position:v2(0,0),
             rank:ItemRank.S,
@@ -128,18 +131,20 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
             rank:ItemRank.D
         },
         {
-            idString:"tactical_vest",
+            idString:"military_vest",
             defence:0,
             level:3,
+            special:true,
             health:2600,
             reduction:0.2,
-            tint:0x010011,
+            tint:0x111122,
             rank:ItemRank.C
         },
         {
             idString:"elite_vest",
             defence:0,
             level:4,
+            special:true,
             reflect_bullets:true,
             reduction:0.25,
             tint:0x5C322E,

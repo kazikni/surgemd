@@ -1,14 +1,21 @@
 import { Definition, Definitions, FrameDef, MinMax1 } from "../../../engine/core.ts";
 import { tracers } from "../../others/item.ts";
 import { BulletDef } from "../utils.ts";
-
+import { DecalInstanceDef } from "./decals.ts";
+export interface CamShake{
+    duration:number
+    intensity:number
+    distance?:number
+}
 export type ExplosionDef={
     size:{
         begin:number
         end:number
+        visual?:number
     }
     tint:string
     damage:number
+    obstacle_mult?:number
     push_force?:number
     bullet?:{
         def:BulletDef
@@ -16,6 +23,7 @@ export type ExplosionDef={
     },
     assets:{
         sound:string
+        liquid_sound?:string
     },
     projectiles?:{
         def:string
@@ -34,18 +42,80 @@ export type ExplosionDef={
         def:string
         count:number
     }
+    decal?:DecalInstanceDef
+    liquid_decal?:DecalInstanceDef
+    cam_shake?:CamShake
 }&Definition
-
+export const explosion_cam_shakes={
+    big:{
+        duration:3,
+        intensity:5,
+    },
+    normal:{
+        duration:0.25,
+        intensity:1,
+    },
+    small:{
+        duration:0.25,
+        intensity:0.4,
+    }
+} satisfies Record<string,CamShake>
+export const explosions_decals={
+    big:{
+        def:"explosion_decal",
+        scale:6,
+        tint:{
+            color:0x000000,
+            alpha:230,
+        },
+    },
+    normal:{
+        def:"explosion_decal",
+        scale:1.5,
+        tint:{
+            color:0x000000,
+            alpha:230,
+        },
+    },
+    small:{
+        def:"explosion_decal",
+        scale:1,
+        tint:{
+            color:0x000000,
+            alpha:190,
+        },
+    }
+} satisfies Record<string,DecalInstanceDef>
+export const explostion_factory={
+    flare_explosion(id:string,tint:string){
+        return {
+            idString:id,
+            tint:tint,
+            push_force:0,
+            size:{
+                begin:0.5,
+                end:1
+            },
+            damage:0,
+            assets:{
+                sound:"explosion_3"
+            },
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.small,
+        }
+    }
+}
 export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
     explosions.insert(
         {
             idString:"barrel_explosion",
-            tint:"#445",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:5
             },
             damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -74,16 +144,19 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal
         },
         {
             idString:"frag_grenade_explosion",
-            tint:"#355",
+            tint:"#9c3932",
             size:{
                 begin:2,
                 end:5
             },
             damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -94,7 +167,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 count:10
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -112,7 +186,9 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal
         },
         {
             idString:"smoke_grenade_explosion",
@@ -129,7 +205,9 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             synced_particles:{
                 count:11,
                 def:"smoke"
-            }
+            },
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.small
         },
         {
             idString:"molotov_explosion",
@@ -145,16 +223,18 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             synced_particles:{
                 count:15,
                 def:"molotov_fire"
-            }
+            },
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"mirv_grenade_explosion",
-            tint:"#09e",
+            tint:"#9c3932",
             size:{
                 begin:2,
-                end:5
+                end:4.5
             },
-            damage:120,
+            damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
                     damage:7,
@@ -162,17 +242,18 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     range:10,
                     tracer:tracers.mirv
                 },
-                count:5
+                count:10
             },
             projectiles:{
                 count:6,
                 def:"submirv_grenade",
-                speed:1,
+                speed:1.2,
                 angSpeed:15,
                 randomAng:3
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -190,16 +271,19 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"submirv_grenade_explosion",
-            tint:"#09e",
+            tint:"#9c3932",
             size:{
                 begin:1,
-                end:4
+                end:3
             },
-            damage:30,
+            damage:60,
+            obstacle_mult:1.1,
             bullet:{
                 def:{
                     damage:7,
@@ -207,10 +291,11 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     range:10,
                     tracer:tracers.mirv
                 },
-                count:5
+                count:7
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_7",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -228,37 +313,100 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
+            ],
+            decal:explosions_decals.small,
+            cam_shake:explosion_cam_shakes.normal,
+        },
+        explostion_factory.flare_explosion("blue_flare_explosion","#08b0ce"),
+        explostion_factory.flare_explosion("red_flare_explosion","#ca0819"),
+        explostion_factory.flare_explosion("yellow_flare_explosion","#f6dc1b"),
+        {
+            idString:"rocket_explosion",
+            tint:"#9c3932",
+            size:{
+                begin:2,
+                end:5
+            },
+            damage:70,
+            obstacle_mult:2,
+            bullet:{
+                def:{
+                    damage:4,
+                    speed:20,
+                    range:10,
+                    tracer:tracers.black_projectile
+                },
+                count:10
+            },
+            assets:{
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
+            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
-            idString:"blue_flare_explosion",
-            tint:"#08b0ce",
-            push_force:0,
+            idString:"m79_grenade_explosion",
+            tint:"#9c3932",
             size:{
-                begin:0.5,
-                end:1
+                begin:2,
+                end:5
             },
-            damage:0,
+            damage:70,
+            obstacle_mult:1.5,
+            bullet:{
+                def:{
+                    damage:4,
+                    speed:20,
+                    range:10,
+                    tracer:tracers.black_projectile
+                },
+                count:10
+            },
             assets:{
-                sound:"explosion_3"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
-        },
-        {
-            idString:"red_flare_explosion",
-            tint:"#ca0819",
-            push_force:0,
-            size:{
-                begin:0.5,
-                end:1
-            },
-            damage:0,
-            assets:{
-                sound:"explosion_3"
-            },
+            particles:[
+                {
+                    count:10,
+                    lifetime:{
+                        min:1,
+                        max:1.5
+                    },
+                    speed:{
+                        min:1,
+                        max:3
+                    },
+                    frame:{
+                        image:"gas_smoke_particle",
+                        scale:0.01
+                    }
+                }
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:explosion_cam_shakes.normal,
         },
         {
             idString:"nuke_explosion",
-            tint:"#445",
+            tint:"#9c3932",
             size:{
                 begin:5,
                 end:25
@@ -276,26 +424,31 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             assets:{
                 sound:"explosion_2"
             },
+            decal:explosions_decals.big,
+            cam_shake:explosion_cam_shakes.big,
         },
         {
-            idString:"rocket_explosion",
-            tint:"#445",
+            idString:"mini_nuke_explosion",
+            tint:"#f6dc1b",
             size:{
                 begin:2,
-                end:4
+                end:6,
+                visual:1.5
             },
-            damage:60,
+            damage:115,
+            obstacle_mult:1.25,
             bullet:{
                 def:{
-                    damage:4,
+                    damage:7,
                     speed:20,
-                    range:10,
+                    range:25,
                     tracer:tracers.black_projectile
                 },
                 count:10
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -313,45 +466,12 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                         scale:0.01
                     }
                 }
-            ]
-        },
-        {
-            idString:"m79_grenade_explosion",
-            tint:"#355",
-            size:{
-                begin:3,
-                end:5
-            },
-            damage:60,
-            bullet:{
-                def:{
-                    damage:4,
-                    speed:20,
-                    range:10,
-                    tracer:tracers.black_projectile
-                },
-                count:10
-            },
-            assets:{
-                sound:"explosion_1"
-            },
-            particles:[
-                {
-                    count:10,
-                    lifetime:{
-                        min:1,
-                        max:1.5
-                    },
-                    speed:{
-                        min:1,
-                        max:3
-                    },
-                    frame:{
-                        image:"gas_smoke_particle",
-                        scale:0.01
-                    }
-                }
-            ]
+            ],
+            decal:explosions_decals.normal,
+            cam_shake:{
+                duration:explosion_cam_shakes.normal.duration*2,
+                intensity:explosion_cam_shakes.normal.intensity*2,
+            }
         },
     )
 }

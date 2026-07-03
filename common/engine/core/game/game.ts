@@ -1,7 +1,8 @@
 import { Clock, SignalManager } from "../math/utils.ts"
-import { BaseObject2D, type CellsManager2D, GameObjectManager2D } from "./gameObject.ts"
+import { BaseObject2D, type CellsManager2D, CheckpointSettings, GameObjectManager2D } from "./gameObject.ts"
 import { DefinitionsSimple } from "../definition/definitions.ts";
 import { v2, Vec2 } from "../math/vec2.ts";
+import { Stream } from "../net/stream.ts";
 export abstract class BaseGameObject2D extends BaseObject2D{
     // deno-lint-ignore no-explicit-any
     public game!:AbstractGame<any>
@@ -44,17 +45,18 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.objects=new GameObjectManager2D<DefaultGameObject>(scene.cellsSize)
         this.cells=this.objects.cells
         this.game=game
+        this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
         this.reset()
     }
 
     private _addObject(obj: DefaultGameObject, layer: number, id?: number, args?: Record<string, any>, sv?: Record<string, any>){
         obj.game = this.game;
-        return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args);
+        return GameObjectManager2D.prototype.add_object.call(this.objects,obj,layer,id,args,sv);
     }
     reset(){
         this.objects.clear()
         this.objects.add_object = this._addObject.bind(this);
-        this.objects.oncreate=(_id:number,_layer:number,t)=>{
+        this.objects.make_object_net=(_id:number,_layer:number,t)=>{
             if(!this.game.objects.getFromNumber(t))return undefined
             return new (this.game.objects.getFromNumber(t))()
         }
@@ -67,15 +69,25 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
             }
         }
     }
-
     update(dt:number,net_update:boolean=true,destroy_queue:boolean=true):void{
-        this.objects.update(dt)
+        this.objects.tick(dt)
         if(net_update){
             this.objects.update_to_net()
         }
         if(destroy_queue){
             this.objects.apply_destroy_queue()
         }
+    }
+
+    make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
+        if(!this.game.objects.getFromNumber(t))return undefined
+        return new (this.game.objects.getFromNumber(t))()
+    }
+    make_checkpoint(stream:Stream,settings?:CheckpointSettings){
+        this.objects.encode_checkpoint(stream,settings)
+    }
+    load_checkpoint(stream:Stream){
+        this.objects.proccess_checkpoint(stream)
     }
 }
 
@@ -133,6 +145,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         if(!this.running){
             this.clock.stop()
             this.on_stop()
+            this.signals.emit("stop",{game:this})
         }
         this.clock.profiler.end(1)
     }

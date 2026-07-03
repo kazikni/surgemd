@@ -106,7 +106,7 @@ export class GameDeviceManager {
 
     full: boolean = false
     visible: boolean = false
-    enabled:boolean = true
+    enabled:boolean = false
 
     apps: GameApp[] = []
     state:number=0

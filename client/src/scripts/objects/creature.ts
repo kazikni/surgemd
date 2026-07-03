@@ -1,7 +1,7 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
-import { Container2D, NetStream } from "common/engine/client.ts";
+import { Container2D, Stream } from "common/engine/client.ts";
 export class Creature extends MovingBody {
     string_type: string = "creature"
     number_type: number = GameObjectType.Creature
@@ -17,22 +17,22 @@ export class Creature extends MovingBody {
 
     constructor() {
         super()
-
         this.container.zIndex = zIndexes.Creatures
+        this.allow_tick=true
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
+    override on_create(_args: any): void {
+        this.game.cam2d.add_object(this.container)
     }
-    create(_args: any): void {
-        this.game.cam2d.addObject(this.container)
+    override on_layer_set(): void {
+        this.container.layer=this.layer
     }
     override on_destroy(): void {
         this.container.destroy()
     }
 
-    override update(dt: number): void {
+    override on_tick(dt: number): void {
         if(!this.def)return
-        super.update(dt)
+        super.on_tick(dt)
 
         this.def.update?.(this, dt, true)
 
@@ -53,14 +53,14 @@ export class Creature extends MovingBody {
         this.def = def
         this.def.on_start?.(this, {}, true)
     }
-    override decode(stream: NetStream, full: boolean): void {
-        const [physical_dirty,dead]=stream.readBooleanGroup()
+    override on_decode_net(stream: Stream, full: boolean): void {
+        const [physical_dirty,dead]=stream.read_boolean_group()
         if(physical_dirty||full){
             this.decode_physical_data(stream,full)
         }
 
         if (full) {
-            const id=stream.readUint16()
+            const id=stream.read_uint16()
             this.set_definition(this.game.definitions.creatures.getFromNumber(id))
         }
 

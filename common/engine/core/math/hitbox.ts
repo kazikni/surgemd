@@ -1,7 +1,7 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 
 import { random } from "./random.ts";
-import { NetStream } from "../net/stream.ts";
+import { Stream } from "../net/stream.ts";
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
 
@@ -79,14 +79,14 @@ export abstract class BaseHitbox2D{
 
     abstract center():Vec2
     abstract scale(scale:number):void
-    abstract randomPoint():Vec2
+    abstract random_point():Vec2
     abstract to_rect():Rect
     abstract transform(position?:Vec2,scale?:number,position_angle?:number,side?:number):Hitbox2D
     abstract clone():Hitbox2D
     abstract readonly position:Vec2
     abstract translate(position:Vec2,angle?:number):void
     abstract clamp(position:Vec2,min:Vec2,max:Vec2):Vec2 // returns clamped position
-    abstract encode(stream:NetStream):void
+    abstract encode(stream:Stream):void
     abstract to_json():JsonHitbox2D
 
     constructor(){
@@ -120,7 +120,7 @@ export class NullHitbox2D extends BaseHitbox2D{
     override center(): Vec2 {
         return this.position
     }
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
       return this.position
     }
     override to_rect():Rect{
@@ -129,6 +129,10 @@ export class NullHitbox2D extends BaseHitbox2D{
             min:pos,
             max:pos
         }
+    }
+    copy_from(hb:Hitbox2D){
+        if(hb.type!==this.type)return
+        this.position=hb.position
     }
     override scale(_scale: number): void {}
     override is_null():boolean{
@@ -146,16 +150,16 @@ export class NullHitbox2D extends BaseHitbox2D{
     override clamp(position:Vec2,min:Vec2,max:Vec2){
         return v2.clamp2(position,min,max)
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.position)
+    override encode(stream:Stream){
+        stream.write_pos2(this.position)
     }
     override to_json():JsonNullHitbox2D{
         return {
             type:HitboxType2D.null,
         }
     }
-    static decode(stream:NetStream):NullHitbox2D{
-        return new NullHitbox2D(stream.readPos2())
+    static decode(stream:Stream):NullHitbox2D{
+        return new NullHitbox2D(stream.read_pos2())
     }
 }
 export class CircleHitbox2D extends BaseHitbox2D{
@@ -263,7 +267,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
     override scale(scale: number): void {
         this.radius*=scale
     }
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
         const angle = random.float(0,Math.PI*2)
         const length = random.float(0,this.radius)
         return v2(this.position.x+(Math.cos(angle)*length),this.position.y+(Math.sin(angle)*length))
@@ -274,6 +278,12 @@ export class CircleHitbox2D extends BaseHitbox2D{
             min:v2.sub(this.position,size),
             max:v2.add(this.position,size)
         }
+    }
+    copy_from(hb:Hitbox2D){
+        if(hb.type!==this.type)return
+        this.position.x=hb.position.x
+        this.position.y=hb.position.y
+        this.radius=hb.radius
     }
     override transform(position?:Vec2,scale?:number,position_angle?:number,_side?:number):CircleHitbox2D{
         const ret=this.clone() as CircleHitbox2D
@@ -301,9 +311,9 @@ export class CircleHitbox2D extends BaseHitbox2D{
             v2.sub(max, r)
         )
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.position)
-        stream.writeFloat(this.radius,0,500,2)
+    override encode(stream:Stream){
+        stream.write_pos2(this.position)
+        stream.write_float(this.radius,0,500,2)
     }
     override to_json():JsonCircleHitbox2D{
         return {
@@ -312,8 +322,8 @@ export class CircleHitbox2D extends BaseHitbox2D{
             radius:this.radius
         }
     }
-    static decode(stream:NetStream):CircleHitbox2D{
-        return new CircleHitbox2D(stream.readPos2(),stream.readFloat(0,500,2))
+    static decode(stream:Stream):CircleHitbox2D{
+        return new CircleHitbox2D(stream.read_pos2(),stream.read_float(0,500,2))
     }
 }
 
@@ -330,8 +340,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         return new RectHitbox2D(position,v2.add(position,size))
     }
     static centered(position:Vec2,size:Vec2):RectHitbox2D{
-        v2m.dscale(size,size,2)
-        return new RectHitbox2D(v2.sub(position,size),v2.add(position,size))
+        return new RectHitbox2D(v2(position.x-size.x/2,position.y-size.y/2),v2(position.x+size.x/2,position.y+size.y/2))
     }
     static wall_enabled(min:Vec2,max:Vec2,walls:{
         left:boolean
@@ -351,6 +360,27 @@ export class RectHitbox2D extends BaseHitbox2D{
         }
         if(walls.bottom){
             ret.hitboxes.push(new RectHitbox2D(v2(min.x,max.y-walls_size),v2(max.x,max.y)))
+        }
+        return ret
+    }
+    static wall_enabled_list(min:Vec2,max:Vec2,walls:{
+        left:boolean
+        right:boolean
+        top:boolean
+        bottom:boolean
+    },walls_size:number):Hitbox2D[]{
+        const ret:Hitbox2D[]=[]
+        if(walls.left){
+            ret.push(new RectHitbox2D(v2(min.x,min.y),v2(min.x+walls_size,max.y)))
+        }
+        if(walls.right){
+            ret.push(new RectHitbox2D(v2(max.x-walls_size,min.y),v2(max.x,max.y)))
+        }
+        if(walls.top){
+            ret.push(new RectHitbox2D(v2(min.x,min.y),v2(max.x,min.y+walls_size)))
+        }
+        if(walls.bottom){
+            ret.push(new RectHitbox2D(v2(min.x,max.y-walls_size),v2(max.x,max.y)))
         }
         return ret
     }
@@ -406,7 +436,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         return
     }
     override point_inside(point: Vec2): boolean {
-        return (point.x>=this.max.x&&point.x<=this.min.x)&&(point.y>=this.max.y&&point.y<=this.min.y)
+        return (point.x>=this.min.x&&point.x<=this.max.x)&&(point.y>=this.min.y&&point.y<=this.max.y)
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
         let tmin = 0
@@ -530,7 +560,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         };
     }
     override center(): Vec2 {
-        return v2.add(this.min,v2.dscale(v2.sub(this.min,this.max),2))
+        return v2(this.min.x+(this.max.x-this.min.x)/2,this.min.y+(this.max.y-this.min.y)/2)
     }
     override scale(scale: number): void {
         const centerX = (this.min.x + this.max.x) / 2
@@ -538,7 +568,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         v2m.set(this.min,(this.min.x - centerX) * scale + centerX, (this.min.y - centerY) * scale + centerY)
         v2m.set(this.max,(this.max.x - centerX) * scale + centerX, (this.max.y - centerY) * scale + centerY)
     }
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
         return v2.random2(this.min,this.max)
     }
     override to_rect():Rect{
@@ -546,6 +576,13 @@ export class RectHitbox2D extends BaseHitbox2D{
             min:v2.clone(this.min),
             max:v2.clone(this.max)
         }
+    }
+    copy_from(hb:Hitbox2D){
+        if(hb.type!==this.type)return
+        this.min.x=hb.min.x
+        this.min.y=hb.min.y
+        this.max.x=hb.max.x
+        this.max.y=hb.max.y
     }
     override transform(position: Vec2 = v2(0, 0),scale: number=1,position_angle?:number,side?:number): RectHitbox2D {
         const min = v2.scale(this.min, scale)
@@ -605,12 +642,12 @@ export class RectHitbox2D extends BaseHitbox2D{
             max:this.max
         }
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.min)
-        stream.writePos2(this.max)
+    override encode(stream:Stream){
+        stream.write_pos2(this.min)
+        stream.write_pos2(this.max)
     }
-    static decode(stream:NetStream):RectHitbox2D{
-        return new RectHitbox2D(stream.readPos2(),stream.readPos2())
+    static decode(stream:Stream):RectHitbox2D{
+        return new RectHitbox2D(stream.read_pos2(),stream.read_pos2())
     }
     override clamp(position: Vec2, min: Vec2, max: Vec2): Vec2 {
         const size = v2.sub(this.max, this.min);
@@ -673,8 +710,8 @@ export class HitboxGroup2D extends BaseHitbox2D{
     override center(): Vec2 {
         return this.to_rect().min;
     }
-    override randomPoint(): Vec2 {
-        return this.hitboxes[random.int(0,this.hitboxes.length)].randomPoint()
+    override random_point(): Vec2 {
+        return this.hitboxes[random.int(0,this.hitboxes.length)].random_point()
     }
     override to_rect():Rect{
         const min = v2(Number.MAX_VALUE, Number.MAX_VALUE);
@@ -689,6 +726,23 @@ export class HitboxGroup2D extends BaseHitbox2D{
         return {
             min:min,
             max:max
+        }
+    }
+    copy_from(hb: Hitbox2D) {
+        if (hb.type !== this.type) return
+        const len = hb.hitboxes.length
+        while (this.hitboxes.length < len) {
+            this.hitboxes.push(hb.hitboxes[this.hitboxes.length].clone())
+        }
+        this.hitboxes.length = len
+        for (let i = 0; i < len; i++) {
+            const src = hb.hitboxes[i]
+            const dst = this.hitboxes[i]
+            if (src.type !== dst.type) {
+                this.hitboxes[i] = src.clone()
+                continue
+            }
+            this.hitboxes[i].copy_from(src)
         }
     }
     override scale(scale: number): void {
@@ -730,11 +784,11 @@ export class HitboxGroup2D extends BaseHitbox2D{
             v2.sub(max, size)
         );
     }
-    override encode(stream:NetStream){
-        stream.writePos2(this.position)
+    override encode(stream:Stream){
+        stream.write_pos2(this.position)
     }
-    static decode(stream:NetStream):NullHitbox2D{
-        return new NullHitbox2D(stream.readPos2())
+    static decode(stream:Stream):NullHitbox2D{
+        return new NullHitbox2D(stream.read_pos2())
     }
     override to_json():JsonGroupHitbox2D{
         return {
@@ -856,7 +910,7 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         }
     }
 
-    override randomPoint(): Vec2 {
+    override random_point(): Vec2 {
         const rect = this.to_rect();
         let p: Vec2;
         do {
@@ -877,6 +931,25 @@ export class PolygonHitbox2D extends BaseHitbox2D {
         return {
             min:min,
             max:max
+        }
+    }
+    copy_from(hb: Hitbox2D) {
+        if (hb.type !== this.type) return
+
+        this.position.x = hb.position.x
+        this.position.y = hb.position.y
+
+        const len = hb.points.length
+
+        while (this.points.length < len) {
+            this.points.push(v2.zero)
+        }
+
+        this.points.length = len
+
+        for (let i = 0; i < len; i++) {
+            this.points[i].x = hb.points[i].x
+            this.points[i].y = hb.points[i].y
         }
     }
 
@@ -910,21 +983,21 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             v2.sub(max, size)
         );
     }
-    override encode(stream: NetStream): void {
-        stream.writeUint24(this.points.length)
+    override encode(stream: Stream): void {
+        stream.write_uint24(this.points.length)
         for (const p of this.points) {
-            stream.writePos2(p)
+            stream.write_pos2(p)
         }
-        stream.writePos2(this.position)
+        stream.write_pos2(this.position)
     }
 
-    static decode(stream: NetStream): PolygonHitbox2D {
-        const len = stream.readUint24();
+    static decode(stream: Stream): PolygonHitbox2D {
+        const len = stream.read_uint24();
         const pts: Vec2[] = [];
         for (let i = 0; i < len; i++) {
-            pts.push(stream.readPos2())
+            pts.push(stream.read_pos2())
         }
-        const center = stream.readPos2()
+        const center = stream.read_pos2()
         return new PolygonHitbox2D(pts, center);
     }
     override to_json():JsonPolygonHitbox2D{

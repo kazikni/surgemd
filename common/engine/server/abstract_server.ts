@@ -8,7 +8,7 @@ export type WorkerMessageBase<GameConfig, GameData, MainConfig> =
 
         id: number
         port: number
-        https?: boolean
+        ssl?: boolean
         certFile?: string
         keyFile?: string
 
@@ -82,6 +82,7 @@ export abstract class AbstractGameContainer<
 > {
     id = 0
     data!: GameData
+    config?:GameConfig
     worker!: Worker
     abstract worker_path: URL
 
@@ -95,28 +96,47 @@ export abstract class AbstractGameContainer<
         return `${ip}:${this.port}`
     }
     begin() {
-        this.worker = new Worker(this.worker_path.href, { type: "module" })
-        this.worker.postMessage({
-            type: 0,
+        this.reset_worker()
+    }
+    protected reset_worker() {
+        this.config=undefined
+        if (this.worker) {
+            this.worker.onerror = null
+            this.worker.onmessage = null
+            try {
+                this.worker.terminate()
+            } catch {}
+        }
 
-            id: this.id,
-            port:this.port,
-            https:this.server.server.https,
-            certFile:this.server.server.certFile,
-            keyFile:this.server.server.keyFile,
+        console.log(`[GAME ${this.id}] Starting worker`)
 
-            config:this.server.config
+        const worker=new Worker(this.worker_path.href, {
+            type: "module"
         })
-
-        this.worker.onmessage=(e)=>{
-            const msg = e.data as WorkerMessage
-
-            switch (msg.type) {
-            case WorkerMsg.SetData:
-                this.data=msg.data
-                break
+        this.worker = worker
+        this.worker.postMessage({
+            type: WorkerMsg.Begin,
+            id: this.id,
+            port: this.port,
+            ssl: this.server.server.ssl,
+            certFile: this.server.server.certFile,
+            keyFile: this.server.server.keyFile,
+            config: this.server.config
+        })
+        this.worker.onerror = (e) => {
+            e.preventDefault()
+            console.error(`[GAME ${this.id}] Worker crashed`)
+            if (this.worker === worker) {
+                this.reset_worker()
             }
-
+        }
+        this.worker.onmessage = (e) => {
+            const msg = e.data as WorkerMessage
+            switch (msg.type) {
+                case WorkerMsg.SetData:
+                    this.data = msg.data
+                    break
+            }
             this.on_message(msg)
         }
     }
@@ -128,8 +148,10 @@ export abstract class AbstractGameContainer<
             type: 1,
             config:config
         })
+        this.config=config
     }
     stop() {
         this.worker.postMessage({ type: 3 })
+        this.config=undefined
     }
 }

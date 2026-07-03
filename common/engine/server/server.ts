@@ -206,6 +206,19 @@ export class Router {
             this._route(splitPath(url), handler);
         });
     }
+    router(url: string): Router {
+        const path = splitPath(url)
+        let current: Router = this
+        for (const part of path) {
+            if (!current.sub_routers.has(part)) {
+                const router = new Router(this.failCallback)
+                current.sub_routers.set(part, router)
+                current.add_route(part, router._handler())
+            }
+            current = current.sub_routers.get(part)!
+        }
+        return current
+    }
 
     folder(url: string, path: string) {
         this.route(url, async (req, url_path, info: Deno.ServeHandlerInfo) => {
@@ -250,23 +263,23 @@ export class Router {
 
 export class Server extends Router {
     port: number;
-    https: boolean = false;
+    ssl: boolean = false;
     certFile: string;
     keyFile: string;
     server: Deno.HttpServer | null;
 
     default_handlers:typeof default_handlers
-    constructor(port: number = 5000, https: boolean = false, certFile: string = "", keyFile: string = "") {
+    constructor(port: number = 5000, ssl: boolean = false, certFile: string = "", keyFile: string = "") {
         super();
-        this.port = port;
-        this.https = https;
-        this.certFile = certFile;
-        this.keyFile = keyFile;
-        this.server = null;
+        this.port = port
+        this.ssl = ssl
+        this.certFile = certFile
+        this.keyFile = keyFile
+        this.server = null
         this.default_handlers=default_handlers
     }
     run() {
-        if (this.https) {
+        if (this.ssl) {
             this.server = Deno.serve({
                 port: this.port,
                 hostname:"0.0.0.0",

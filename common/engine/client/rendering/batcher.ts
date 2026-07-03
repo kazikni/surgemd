@@ -1,10 +1,8 @@
-import { Matrix } from "../../core/math/matrix.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Model2D } from "../../core/definition/models.ts";
-import { Color } from "../../core/math/color.ts";
 import { Vec2 } from "../../core/math/vec2.ts";
-import { Frame } from "../resources/resources.ts";
 import { Material, Renderer, WebglRenderer } from "./renderer.ts";
-
+import { DynamicStream, Stream } from "../../core/net/stream.ts";
 export abstract class SingleMatBatchingBase{
     mat: Material
     renderer: Renderer
@@ -70,109 +68,60 @@ export abstract class SingleMatBatching2D extends SingleMatBatchingBase{
         this.clear()
     }
 }
-export interface BatcherDraw{
+export type BatcherMaterialCommand={
+    type:0
     material:Material
-    arrays:Record<string,number[]>
+    stream:Stream
+    vertex_count:number
+    params: Record<string, any>
     matrix?:Matrix
 }
-
+export type BatcherSubbatcherCommand={
+    type:1
+    matrix?:Matrix
+    batcher:Batcher
+}
+export type BatcherCommand=BatcherMaterialCommand|BatcherSubbatcherCommand
 export class Batcher {
-    renderer: Renderer
-    commands: BatcherDraw[] = []
-    current?: BatcherDraw
-    gpuArrays: Record<string, Float32Array> = {}
+    commands: BatcherCommand[] = []
+    current?: BatcherCommand
 
-    constructor(renderer: Renderer) {
-        this.renderer = renderer
+    constructor(){
     }
-    private ensure(material: Material,matrix:Matrix|undefined) {
-        if (!this.current || this.current.material !== material) {
+    ensure(material: Material,matrix?:Matrix):BatcherMaterialCommand{
+        if(!this.current||!(this.current.type===0&&this.current.material===material)) {
             this.current = {
+                type:0,
                 material,
-                arrays: {},
-                matrix:matrix
+                matrix,
+                params: {},
+                stream:new DynamicStream(),
+                vertex_count:0
             }
             this.commands.push(this.current)
         }
         return this.current
     }
-    push_array(cmd: BatcherDraw, name: string, data: Float32Array | number[], vertexCount: number) {
-        if (!cmd.arrays[name]) cmd.arrays[name] = []
-        const out = cmd.arrays[name]
-        if (data.length >= vertexCount * 2) {
-            out.push(...data)
-            return
+    draw_batcher(batcher:Batcher,matrix?:Matrix){
+        this.current={
+            type:1,
+            batcher,
+            matrix
         }
-        for (let v = 0; v < vertexCount; v++) {
-            out.push(...data)
-        }
+        this.commands.push(this.current)
     }
-    draw_model2d(
-        material: Material,
-        model: Model2D,
-        position: Vec2,
-        scale: Vec2,
-        rotation:number=0,
-        attr: Record<string, { value: Float32Array | number[] }>,
-        matrix?:Matrix
-    ) {
-        const vertexCount = model.vertices.length / 2
-        if (vertexCount < 2) return
-
-        const cmd = this.ensure(material,matrix)
-
-        this.push_array(cmd, "vertices", model.vertices, vertexCount)
-        this.push_array(cmd, "tex_coord", model.tex_coords, vertexCount)
-        this.push_array(cmd, "position", [position.x, position.y], vertexCount)
-        this.push_array(cmd, "scale", [scale.x, scale.y], vertexCount)
-        this.push_array(cmd, "rotation", [rotation], vertexCount)
-
-        for (const k in attr) {
-            this.push_array(cmd, k, attr[k].value, vertexCount)
-        }
-    }
-    draw_frame2d(
-        frame:Frame|undefined,
-        model:Float32Array,
-        tint:Color={r:1,g:1,b:1,a:1},
-        attr:Record<string,number[]>={},
-        matrix?:Matrix
-    ){
-        const vertexCount = model.length / 2
-        if (vertexCount < 2||!frame||!frame.batch_mat) return
-        const cmd = this.ensure(frame.batch_mat,matrix)
-
-        this.push_array(cmd, "vertices", model, vertexCount)
-        this.push_array(cmd, "tex_coord", frame.texcoords, vertexCount)
-        this.push_array(cmd, "tint", [tint.r,tint.g,tint.b,tint.a], vertexCount)
-        for (const k in attr) {
-            this.push_array(cmd, k, attr[k], vertexCount)
-        }
-    }
-
-    render(matrix: Matrix) {
-        for (const cmd of this.commands) {
-            for (const k in cmd.arrays) {
-                if(!this.gpuArrays[k]||this.gpuArrays[k].length!==cmd.arrays[k].length){
-                    this.gpuArrays[k] = new Float32Array(cmd.arrays[k].length)
-                }
-                this.gpuArrays[k].set(cmd.arrays[k])
+    render(renderer:Renderer,matrix: Matrix=matrix4.identity()) {
+        for(const cmd of this.commands) {
+            const m=cmd.matrix?matrix4.mult(matrix,cmd.matrix):matrix
+            if(cmd.type===0){
+                const params={data:cmd.stream.data.subarray(0,cmd.stream.length),data_count:cmd.vertex_count,...cmd.params}
+                cmd.material.draw(cmd.material,m,params)
+                renderer.draw_calls++
+            }else{
+                cmd.batcher.render(renderer,m)
             }
-
-            cmd.material.draw(cmd.material, matrix, this.gpuArrays)
         }
-        this.clear()
-        /*for (const cmd of this.commands) {
-            const gpuArrays: Record<string, Float32Array> = {}
-            for (const k in cmd.arrays) {
-                gpuArrays[k] = new Float32Array(cmd.arrays[k])
-            }
-
-            cmd.material.draw(cmd.material, matrix, gpuArrays)
-        }
-        this.clear()*/
     }
-
     clear() {
         this.commands.length = 0
         this.current = undefined

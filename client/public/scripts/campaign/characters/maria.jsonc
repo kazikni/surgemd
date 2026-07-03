@@ -1,0 +1,35 @@
+{
+    "name": "Maria",
+    "group_color": 15144984,
+    "icon": "/img/menu/gui/character/maria_character_selector.png",
+    "description": "Extremely Skillful",
+    "ai": {
+        "kind": "advanced",
+        "params": {
+            "aim_skills": 100,
+            "quick_switch_skills": 100,
+            "game_notion": 100,
+            "bravery": 100,
+            "team_work": 100,
+            "team_dominance": 100
+        }
+    },
+    "loadout": {
+        "hair": "hair_2",
+        "hair_tint": 1122066,
+        "body": "body_1",
+        "body_tint": 15771967,
+        "eyes": "eyes_2",
+        "shirt": "black_shirt",
+        "legs": "jeans_pants",
+        "accessorys": [],
+        "colors": {
+            "primary": "#e71818",
+            "secondary": "#240109",
+            "tertiary": "#eeeeee",
+            "positive": "#00ccff",
+            "negative": "#ff3c00",
+            "special": "#fffb00"
+        }
+    }
+}

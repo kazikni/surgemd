@@ -89,9 +89,8 @@
 
     #health-bar-amount {
         position: absolute;
-        color: #fff;
+        color: var(--ui-theme-tertiary);
         font-style: italic;
-        z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
@@ -117,9 +116,8 @@
 
     #boost-bar-amount {
         position: absolute;
-        color: #fff;
+        color: var(--ui-theme-tertiary);
         font-style: italic;
-        z-index: 1;
         top:50%;
         left: 103%;
         transform: translateY(-50%);
@@ -144,10 +142,12 @@
     gap: 10px;
 
     width: 410px;
+    color: var(--ui-theme-tertiary);
 
     > div{
         position: relative;
         background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
+        backdrop-filter: var(--ui-backdrop-filter);
     }
 
     #action-info{
@@ -182,7 +182,9 @@
         img{
             position: static;
             width: 28px;
+            margin-left: 5px;
             height: auto;
+            pointer-events: all;
         }
     }
     @include main.medium_screen {
@@ -226,7 +228,7 @@
 
     }
 }
-#killfeed-container{
+#feed-container{
     @extend .span-text;
     font-size: 16px;
     pointer-events: none;
@@ -237,16 +239,17 @@
     flex-direction: column;
     gap: 5px;
     width: 400px;
-    .killfeed-message{
+    .feed-message{
         background: color-mix(in srgb, var(--ui-theme-secondary) 30%, #0000);
         border-radius: 4px;
         padding: 3px;
+        color: var(--ui-theme-tertiary);
         img{align-self: center}
     }
-    .killfeed-message-good{
+    .feed-message-good{
         color:var(--ui-theme-positive);
     }
-    .killfeed-message-negative{
+    .feed-message-negative{
         color:var(--ui-theme-negative);
     }
     .badge-icon {
@@ -258,7 +261,7 @@
         width: 220px;
         right: 200px;
         gap: 3px;
-        .killfeed-message{
+        .feed-message{
             font-size: 10px;
         }
     }
@@ -266,7 +269,7 @@
         width: 150px;
         right: 150px;
         gap: 1px;
-        .killfeed-message{
+        .feed-message{
             font-size: 8px;
         }
     }
@@ -305,51 +308,6 @@
         color: var(--ui-theme-primary);
     }
 }
-#killeader-container{
-    pointer-events: none;
-    position: absolute;
-    display: flex;
-    flex-direction: row;
-    font-family: "Russo-One";
-    font-size: 20px;
-    width: fit-content;
-    height: fit-content;
-    top: 5px;
-    right: 5px;
-    padding: 15px;
-    color: var(--ui-theme-primary);
-    #killeader-container-icon{
-        background-image: url("/img/menu/icons/aim.svg");
-        background-size: cover;
-        width: 40px;
-        height: 40px;
-        position: relative;
-        left: 0px;
-    }
-    #killeader-text{
-        transform: translateY(25%);
-        width: fit-content;
-        height: fit-content;
-    }
-    @include main.medium_screen {
-        font-size: 15px;
-        top: 5px;
-        right: 5px;
-        #killeader-container-icon{
-            width: 30px;
-            height: 30px;
-        }
-    }
-    @include main.small_screen {
-        font-size: 10px;
-        top: 5px;
-        right: 5px;
-        #killeader-container-icon{
-            width: 20px;
-            height: 20px;
-        }
-    }
-}
 #help-gui{
     pointer-events: none;
     display: flex;
@@ -364,9 +322,348 @@
         font-size: 10px;
     }
 }
-
 #debug-show{
     position: absolute;
     left: 5px;
     top: 40%;
+}
+#additional-info{
+    @extend .span-text-base;
+    position:absolute;
+
+    right:10px;
+    top:10px;
+
+    width:280px;
+
+    display:flex;
+    flex-direction:row;
+    gap:20px;
+
+    padding:10px;
+
+    background:color-mix(in srgb,var(--ui-theme-secondary) 30%,#0000);
+    box-shadow:0 0 3px var(--ui-theme-primary);
+    border:1px solid var(--ui-theme-primary);
+    color: var(--ui-theme-tertiary);
+    backdrop-filter: var(--ui-backdrop-filter);
+
+    font-size: 20px;
+    pointer-events:none;
+
+    >div{
+        display:flex;
+        align-items:center;
+        gap:1px;
+        min-height:24px;
+    }
+    img{
+        width:24px;
+        height:24px;
+        flex-shrink:0;
+    }
+    #deadzone-info-state{
+        margin-left:auto;
+    }
+    @include main.medium_screen {
+        width: 185px;
+        padding: 7px;
+        top: 7px;
+        right: 7px;
+        font-size: 15px;
+        img{
+            width:19px;
+            height:19px;
+        }
+    }
+    @include main.small_screen {
+        width: 119px;
+        padding: 5px;
+        top: 5px;
+        right: 5px;
+        font-size: 10px;
+        img{
+            width:10px;
+            height:10px;
+        }
+    }
+}
+#ui-map{
+    position:absolute;
+
+    right:10px;
+    top:70px;
+
+    width:300px;
+    height:300px;
+
+    overflow:hidden;
+
+    border-radius:2px;
+
+    pointer-events:all;
+
+    box-shadow: 0 0 3px var(--ui-theme-primary);
+    opacity: var(--ui-minimap-opacity);
+
+    .map-viewport{
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        transform-origin:0 0;
+        backdrop-filter: var(--ui-backdrop-filter);
+    }
+    .map-tile{
+        position:absolute;
+        display:block;
+    }
+
+    &.fullscreen{
+        left:50%;
+        top:50%;
+        transform: translate(-50%,-50%);
+
+        width: 45vw;
+        height: 45vw;
+
+        border-radius:0;
+        opacity: var(--ui-minimap-full-opacity);
+        border:2px solid var(--ui-theme-primary);
+        box-shadow: 0 0 10px var(--ui-theme-primary);
+    }
+    .map-deadzone-safe-line{
+        position:absolute;
+        height:10px;
+        background:var(--ui-theme-primary);
+        pointer-events:none;
+        transform-origin:left center;
+    }
+    .map-deadzone{
+        position:absolute;
+        border-radius:50%;
+        pointer-events:none;
+
+        left:var(--dx);
+        top:var(--dy);
+
+        width:var(--dr);
+        height:var(--dr);
+
+        transform:translate(-50%,-50%);
+        box-shadow: 0 0 0 8000px var(--deadzone-color);
+    }
+    .map-deadzone-dest{
+        position:absolute;
+        border-radius:50%;
+        pointer-events:none;
+
+        left:0px;
+        top: 0px;
+        width: 100px;
+        height: 100px;
+
+        left:var(--dx);
+        top:var(--dy);
+
+        width:var(--dr);
+        height:var(--dr);
+
+        transform:translate(-50%,-50%);
+        box-shadow:0 0 0 30px #fff5;
+    }
+    .map-ping{
+        position:absolute;
+
+        width:50px;
+        height:50px;
+
+        pointer-events:none;
+
+        left: var(--px);
+        top: var(--py);
+
+        scale: var(--scale);
+
+        transform:translate(-50%,-50%);
+        z-index:40;
+
+        .map-ping-icon{
+            position:absolute;
+
+            left:0;
+            top:0;
+
+            width:50px;
+            height:50px;
+
+            z-index:2;
+            color: var(--ping-color);
+        }
+        .map-ping-pulse{
+            position:absolute;
+
+            left:50%;
+            top:50%;
+
+            width:20px;
+            height:20px;
+
+            border-radius:50%;
+
+            border:4px solid var(--ping-color);
+
+            transform:translate(-50%,-50%);
+
+            z-index:1;
+        }
+    }
+    .map-humans{
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        z-index: 41;
+        
+        .map-human{
+            position:absolute;
+        }
+    }
+
+    @include main.medium_screen {
+        width: 200px;
+        height: 200px;
+        right: 7px;
+        top: 54px;
+    }
+    @include main.small_screen {
+        width: 130px;
+        height: 130px;
+        right: 5px;
+        top: 47px;
+    }
+}
+#leader-container{
+    max-width: 260px;
+    pointer-events: none;
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    font-family: "Russo-One";
+    font-size: 20px;
+    top: 360px;
+    right: 0px;
+    padding: 15px;
+    color: var(--ui-theme-tertiary);
+    #leader-container-icon{
+        background-image: url("/img/menu/icons/aim.svg");
+        background-size: cover;
+        width: 40px;
+        height: 40px;
+        position: relative;
+        left: 0px;
+    }
+    #leader-text{
+        transform: translateY(25%);
+        width: fit-content;
+        height: fit-content;
+    }
+    @include main.medium_screen {
+        font-size: 15px;
+        top: 250px;
+        #leader-container-icon{
+            width: 30px;
+            height: 30px;
+        }
+    }
+    @include main.small_screen {
+        font-size: 10px;
+        top: 170px;
+        #leader-container-icon{
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+#groups-info{
+    position:absolute;
+    left:10px;
+    top:10px;
+
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+
+    width:300px;
+
+    .group-human{
+        padding:8px;
+        height: fit-content;
+
+        background:color-mix(in srgb,var(--ui-theme-secondary) 30%,#0000);
+        backdrop-filter:var(--ui-backdrop-filter);
+
+        border:1px solid var(--ui-theme-primary);
+        box-shadow:0 0 3px var(--ui-theme-primary);
+
+        display:flex;
+        flex-direction:column;
+    }
+
+    .group-info{
+        display:flex;
+        align-items:center;
+        gap:6px;
+
+        span{
+            font-family:"Russo-One";
+            color:var(--ui-theme-tertiary);
+        }
+        .badge-icon {
+            width: 20px;
+            margin-bottom: -3px;
+            margin-left: 3px;
+        }
+    }
+
+    .member-color{
+        width:14px;
+        height:14px;
+        border-radius:50%;
+        background:#00ff00;
+        flex-shrink:0;
+    }
+
+    .health-bar-container,
+    .boost-bar-container{
+        position:relative;
+        width:100%;
+        overflow:hidden;
+        border-radius:3px;
+    }
+    .health-bar-bg,
+    .boost-bar-bg{
+        position:absolute;
+        inset:0;
+        background:#0008;
+    }
+    .health-bar,
+    .boost-bar{
+        position:absolute;
+        left:0;
+        top:0;
+        height:100%;
+        width:100%;
+        transition:width .15s linear;
+    }
+
+    .health-bar-container{
+        height:15px;
+        margin-top: 5px;
+    }
+    .health-bar{
+        background: linear-gradient(90deg, #fff,#dfdfdf);
+    }
+    .boost-bar-container{
+        height:7px;
+        margin-top: 5px;
+    }
 }

@@ -1,7 +1,6 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
-import { BoostType } from "../player/boosts.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { InventoryItemType } from "../utils.ts";
 
@@ -18,23 +17,24 @@ export function AccessoryDropLootFromObstacle(table:string){
         const loot=e.human.game.loot_tables.get_loot(table,{withammo:true},e.human.game)
 
         for(const l of loot){
-            e.human.game.add_loot(e.obstacle.hitbox.randomPoint(),l.item,l.count,e.obstacle.layer)
+            e.human.game.add_loot(e.obstacle.hitbox.random_point(),l.item,l.count,e.obstacle.layer)
         }
     }
 }
 export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
     accessorys.insert(
         {
-            idString:"bullet_breaker_barrel",
+            idString:"rip_ammo",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.7
 
-                    const spread=0.016
+                    const spread=Math.max(e.spread*0.004,0.01)
 
                     let b=e.bullet.clone()
                     b.damage*=0.2
+                    b.tracerAlpha*=0.7
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
@@ -43,6 +43,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
 
                     b=e.bullet.clone()
                     b.damage*=0.2
+                    b.tracerAlpha*=0.7
                     b.modifiers={
                         speed:e.user.modifiers.bullet_speed,
                         size:e.user.modifiers.bullet_size*0.4,
@@ -56,21 +57,21 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
-                    e.bullet.damage*=1.1
-                    e.bullet.set_color(true)
+                    e.bullet.damage*=1.05
+                    e.bullet.set_color(0)
                 }
             }
         },
         {
-            idString:"rare_projectile",
+            idString:"first_last_great",
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
                     if(e.item.ammo===0||e.item.ammo===e.item.get_capacity()-1){
-                        e.bullet.damage*=1.25
-                        e.bullet.modifiers.speed*=1.25
+                        e.bullet.damage*=1.2
+                        e.bullet.modifiers.speed*=1.2
                         e.bullet.modifiers.size*=1.75
-                        e.bullet.set_color(true)
+                        e.bullet.set_color(1)
                     }
                 }
             }
@@ -80,11 +81,21 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "bullet_reflect":(e)=>{
-                    e.bullet.damage*=2.5
+                    e.bullet.damage*=2*1.2
                     e.bullet.tracerAlpha*=2
-                    e.bullet.modifiers.speed*=1.25
+                    e.bullet.modifiers.speed*=1.2
                     e.bullet.modifiers.size*=1.75
-                    e.bullet.set_color(true)
+                    e.bullet.set_color(1)
+                }
+            }
+        },
+        {
+            idString:"hp_bullets",
+            rank:ItemRank.S,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.penetration*=0.2
+                    e.bullet.set_color(1)
                 }
             }
         },
@@ -133,7 +144,16 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
         },
 
         {
-            idString:"ghost_ammo",
+            idString:"ghost_bullets",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.pass_through_everthing=true
+                }
+            }
+        },
+        {
+            idString:"sprite_ammo",
             rank:ItemRank.A,
             property:["infinity_ammo"],
             events:{

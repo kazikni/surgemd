@@ -42,7 +42,7 @@ class Bot {
         const jp=new JoinPacket()
         jp.player_name=`BOT-${this.id}`
         jp.is_mobile=false
-        this.client.emit(jp)
+        this.client.emit_packet(jp)
 
         /*const loop = async () => {
             while (this.active) {

@@ -1,5 +1,5 @@
 import { FileHandle, FileManager } from "../../core/definition/file.ts";
-import { NetStream } from "../../core/net/stream.ts";
+import { Stream } from "../../core/net/stream.ts";
 
 export class BrowserFileHandle extends FileHandle {
     private data: Uint8Array
@@ -50,7 +50,7 @@ export class BrowserFileManager extends FileManager {
     async read_file(path: string): Promise<string> {
         const data = this.files.get(path)
         if (!data) throw new Error("File not found")
-        return NetStream.decoder.decode(data)
+        return Stream.decoder.decode(data)
     }
 
     async write_file(): Promise<void> {

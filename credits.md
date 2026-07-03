@@ -11,12 +11,17 @@ ___
 * @cheerfulbull_29688
 * @endermanking
 * @littlethief69
+* Suroi.io
+* Surviv.io
+* Survev.io
 ___
 ## Menu Designers
 * @kazikni
 * @namerio
 ___
 ## Sound Designers
+* Surviv.io
+* Suroi.io
 * @teardwop
 * Free Sounds On Net
 * Half Life
@@ -30,7 +35,8 @@ ___
 * I Wanna Be The Guy
 * Some Youtube Musics
 * NoCopyrightSound
-* Pertubaror/Hotline Miami 2
+* Hotline Miami 2
+* Five Nights At Freddys
 ___
 ## Lore
 @kazikni 
@@ -38,6 +44,7 @@ ___
 ## Additional Art
 * @sentido_ss
 * @bien.star
+* @paoagiota4740
 ___
 ## Videos And Trailers
 * @kazikni

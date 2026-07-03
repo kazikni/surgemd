@@ -1,9 +1,10 @@
 import { type ID } from "../math/utils.ts"
-import { NetStream } from "../net/stream.ts";
+import { DynamicStream, Stream } from "../net/stream.ts";
 import { random } from "../math/random.ts";
 import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
+import { Rect } from "../math/geometry.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -28,93 +29,78 @@ export abstract class BaseObject2D{
         this._position.set(v.x,v.y)
     }
 
-    public destroyed:boolean
+    public destroyed:boolean=false
+    public deleted:boolean=false
     public registred:boolean=false
 
     public id!:GameObjectID
     public layer!:number
 
-    net_sync:{
-        full:boolean
-        part:boolean
-        enabled:{
-            deletion:boolean,
-            dirty:boolean,
-            creation:boolean,
-        }
-    }={
-        full:false,
-        part:false,
-        enabled:{
-            deletion:true,
-            creation:true,
-            dirty:true,
-        },
-    }
 
+    allow_tick:boolean=false
+    allow_physics_update:boolean=false
+    allow_net_update:boolean=false
+    allow_render:boolean=false
+    allow_checkpoint:boolean=true
+
+    net_sync_deletion:boolean=true
+    net_sync_dirty:boolean=true
+    net_sync_creation:boolean=true
+
+    physics_frozen:boolean=false
     is_new:boolean=true
-    updatable=true
-    visible=true
 
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
-
-    update_hitbox():void{
-        this.hitbox=this.base_hitbox.transform(this._position)
-        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
-    }
 
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
         this._base_hitbox=new NullHitbox2D(v2(0,0))
         this.hitbox=this.base_hitbox.transform(this._position)
-        this.destroyed=false
     }
 
-    encode(stream:NetStream,full:boolean,options?:any):void{}
-    decode(stream:NetStream,full:boolean):void{}
-
-    abstract update(dt:number):void
-    net_update():void{}
-    // deno-lint-ignore no-explicit-any
-    abstract create(args:Record<string,any>):void
-    on_destroy():void{}
-    destroy():void{
+    tick(dt:number){
         if(this.destroyed)return
+        this.on_tick(dt)
+        if(this.manager.cells.dirty_objects.has(this)){
+            this.manager.cells.update_object(this)
+        }
+    }
+
+    update_hitbox():void{
+        this.hitbox=this.base_hitbox.transform(this._position)
+        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
+    }
+    to_rect():Rect{
+        return this.hitbox.to_rect()
+    }
+
+    on_encode_net(stream:Stream,full:boolean,options?:any):void{}
+    on_decode_net(stream:Stream,full:boolean):void{}
+
+    on_encode_checkpoint(stream: Stream,ctx:CheckpointContext): void {}
+    on_decode_checkpoint(stream: Stream,ctx:CheckpointContext): void {}
+
+    on_create(_args:any):void{}
+    on_registry():void{}
+    on_layer_set():void{}
+    on_tick(_dt:number):void{}
+    on_physics_tick(_dt:number):void{}
+    on_net_update():void{}
+    on_destroy():void{}
+
+    destroy():void{
+        if(this.destroyed||!this.manager)return
         this.destroyed=true
         this.manager.destroy_queue.push(this)
     }
-    on_layer_set(layer:number):void{}
-    set_layer(layer: number) {
-        if (!this.manager) return
-        this.manager.set_layer(this as any, layer)
-    }
-    
-    encodeObject(full:boolean,stream:NetStream,options:any){
-        const bools=[
-            (full||this.net_sync.part)&&this.net_sync.enabled.dirty, //Dirty Part
-            (full||this.net_sync.full)&&this.net_sync.enabled.dirty, //Dirty Full
-            this.destroyed&&this.net_sync.enabled.deletion, //Dirty Deletion
-            this.net_sync.enabled.creation, //Dirty Creation
-            this.is_new
-        ]
-        stream.writeBooleanGroup(bools[0],bools[1],bools[2],bools[3],bools[4])
-        if(bools[0]||bools[1]||bools[2]){
-            stream.writeID(this.id)
-            stream.writeInt8(this.layer)
-            stream.writeUint8(this.number_type)
-            if(bools[0]||bools[1]){
-                this.encode(stream,bools[1],options)
-            }
-        }
-    }
-}
 
-export interface Layer2D<GameObject extends BaseObject2D> {
-    objects:Record<GameObjectID,GameObject>
-    orden:number[]
-    updatables:number[]
-    renderizables:number[]
+    set_dirty_part(){
+        this.manager.part_dirty_objects[this.id]=this
+    }
+    set_dirty_full(){
+        this.manager.full_dirty_objects[this.id]=this
+    }
 }
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cell_size: number;
@@ -171,7 +157,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     update_object(obj: GameObject) {
         this.remove_object_from_cells(obj)
 
-        const rect = obj.hitbox.to_rect()
+        const rect = obj.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 
@@ -333,341 +319,470 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         return results
     }
 }
+export type CheckpointSettings={
+    save_id?:boolean
+    blacklist?:(number|string)[]
+    orden?:(number|string)[]
+}
+export type CheckpointContext={
+    idco:Record<number,number> // Record<ObjectID, CheckpointObjectID>
+    coid:Record<number,number> // Record<CheckpointObjectID, ObjectID>
+}
+export interface Layer2D<GameObject extends BaseObject2D> {
+    //objects:Record<GameObjectID,GameObject>
+    orden:number[]
+    ticks:number[]
+    physics_update:number[]
+    net_update:number[]
+    render:number[]
+}
+export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
+export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number|undefined,layer:number,type:number)=>GameObject|undefined
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     cells:CellsManager2D<GameObject>
-    objects:Record<number,Layer2D<GameObject>>={}
-    all_objects:Map<number,GameObject>=new Map()
-    layers:number[]=[]
-    ondestroy:(obj:GameObject)=>void=(_)=>{}
-    oncreate:(_id:number,_layer:number,_type:number)=>GameObject|undefined
+
+    layers:Record<number,Layer2D<GameObject>>={}
+    layers_orden:number[]=[]
+
+    objects:Record<number,GameObject>={}
+    full_dirty_objects:Record<number,GameObject>={}
+    part_dirty_objects:Record<number,GameObject>={}
+    news_queue:Set<GameObject>=new Set()
     destroy_queue:GameObject[]=[]
 
-    stream_cache?:NetStream
-    constructor(cellsSize?:number,oncreate?:((_id:number,_layer:number,_type:number)=>GameObject|undefined)){
-        this.cells=new CellsManager2D(cellsSize)
-        this.oncreate=oncreate??((_k,_t)=>{return undefined})
+    make_object_net:MakeObjectCallback<GameObject>
+    make_object_checkpoint:MakeObjectCheckpointCallback<GameObject>
+
+    stream_cache?:Stream
+    constructor(cell_size?:number,make_object_net:MakeObjectCallback<GameObject>=(_a,_b,_c)=>{return undefined},make_object_checkpoint:MakeObjectCheckpointCallback<GameObject>=(_a,_b,_c,_d)=>{return undefined}){
+        this.cells=new CellsManager2D(cell_size)
+        this.make_object_net=make_object_net
+        this.make_object_checkpoint=make_object_checkpoint
     }
     clear(){
-        for(const obj of this.all_objects.values()){
-            obj.on_destroy()
-            obj.registred = false
-            obj.destroyed = true
+        for(const obj in this.objects){
+            this.objects[obj].on_destroy()
+            this.objects[obj].registred=false
+            this.objects[obj].destroyed=true
         }
 
-        this.objects = {}
-        this.all_objects.clear()
+        this.layers={}
+        this.objects={}
+        this.full_dirty_objects={}
+        this.part_dirty_objects={}
+        this.news_queue.clear()
+        this.destroy_queue.length=0
+        this.layers_orden.length=0
 
-        this.layers.length = 0
-        this.destroy_queue.length = 0
         this.cells.clear()
     }
-    set_layer(obj: GameObject, newLayer: number) {
+    set_layer(obj: GameObject, new_layer: number) {
         if (!obj.registred) return
-        if (obj.layer === newLayer) return
-
-        const oldLayer = obj.layer
-
-        if (!this.objects[oldLayer]) return
-
-        const oldLayerData = this.objects[oldLayer]
-        delete oldLayerData.objects[obj.id]
-
-        let idx = oldLayerData.orden.indexOf(obj.id)
-        if (idx >= 0) oldLayerData.orden.splice(idx, 1)
-
-        idx = oldLayerData.updatables.indexOf(obj.id)
-        if (idx >= 0) oldLayerData.updatables.splice(idx, 1)
-
-        idx = oldLayerData.renderizables.indexOf(obj.id)
-        if (idx >= 0) oldLayerData.renderizables.splice(idx, 1)
-
-        this.cells.unregistry(obj)
-
-        if (!this.objects[newLayer]) {
-            this.add_layer(newLayer)
-        }
-
-        const newLayerData = this.objects[newLayer]
-
-        obj.layer = newLayer
-
-        newLayerData.objects[obj.id] = obj
-        newLayerData.orden.push(obj.id)
-
-        if (obj.updatable) {
-            newLayerData.updatables.push(obj.id)
-        }
-        if (obj.visible) {
-            newLayerData.renderizables.push(obj.id)
-        }
-
-        obj.net_sync.full = true
-        obj.net_sync.part = true
-
-        this.cells.update_object(obj)
-
-        obj.on_layer_set(obj.layer)
+        if (obj.layer === new_layer) return
+        this.unregister_object(obj)
+        obj.layer=new_layer
+        this.registry_object(obj)
+        obj.on_layer_set()
+    }
+    generate_object_id():number{
+        let ret=0
+        do {
+            ret = random.id()
+        } while (this.objects[ret])
+        return ret
     }
     // deno-lint-ignore no-explicit-any
-    add_object(obj: GameObject,layer: number,id?: number,args?: Record<string, any>,sv: Record<string, any> = {},): GameObject {
-        if (!this.objects[layer]) {
-            this.add_layer(layer);
+    add_object(obj: GameObject,layer: number,id?: number,args: any=undefined,sv: Record<string, any> = {}): GameObject {
+        if (!this.layers[layer]) {
+            this.add_layer(layer)
         }
-        if (id === undefined) {
-            do {
-                id = random.id();
-            } while (this.objects[layer].objects[id]);
-        }
-        obj.id = id;
-        obj.layer = layer;
-
-        obj.net_sync.full = true;
-
-        obj.manager = this;
-        obj.registred=true
-
-        this.all_objects.set(obj.id,obj)
-        this.objects[layer].objects[obj.id] = obj;
-        this.objects[layer].orden.push(obj.id);
-
+        obj.id=id===undefined?this.generate_object_id():id
+        obj.layer = layer
+        obj.manager = this
+        obj.is_new=true
         for (const key in sv) {
             // deno-lint-ignore ban-ts-comment
             // @ts-ignore
-            obj[key] = sv[key];
+            obj[key] = sv[key]
         }
-        obj.create(args ?? {});
-        this.cells.registry(obj);
-
-        if(obj.updatable){
-            this.objects[layer].updatables.push(obj.id);
-        }
-        if(obj.visible){
-            this.objects[layer].renderizables.push(obj.id);
-        }
-        obj.on_layer_set(obj.layer)
-
+        this.registry_object(obj)
+        obj.on_create(args)
+        obj.on_layer_set()
         this.cells.update_object(obj)
-        return obj;
+        return obj
     }
-    registry(obj: GameObject){
-        if(obj.registred)return
-
-        obj.registred=true
+    registry_object(obj: GameObject){
         obj.destroyed=false
-        obj.manager = this;
-
-        obj.net_sync.full = true;
-        obj.net_sync.part = true;
-        obj.is_new=true;
-
-        do {
-            obj.id = random.id()
-        } while (this.all_objects.has(obj.id))
-
-        this.all_objects.set(obj.id,obj)
-        this.objects[obj.layer].objects[obj.id] = obj;
-        this.objects[obj.layer].orden.push(obj.id);
-        this.cells.registry(obj);
-
-        if(obj.updatable){
-            this.objects[obj.layer].updatables.push(obj.id);
+        obj.deleted=false
+        const idx=this.destroy_queue.indexOf(obj)
+        if(idx!==-1){
+            this.destroy_queue.splice(idx,1)
         }
-        if(obj.visible){
-            this.objects[obj.layer].renderizables.push(obj.id);
-        }
-        
-        const idx = this.destroy_queue.indexOf(obj)
-        if(idx !== -1) this.destroy_queue.splice(idx,1)
+        if(obj.registred)return
+        obj.registred=true
+        obj.set_dirty_full()
 
-        obj.on_layer_set(obj.layer)
+        this.objects[obj.id]=obj
+        this.layers[obj.layer].orden.push(obj.id)
+        this.cells.registry(obj)
+
+        if(obj.allow_tick){
+            this.layers[obj.layer].ticks.push(obj.id)
+        }
+        if(obj.allow_physics_update){
+            this.layers[obj.layer].physics_update.push(obj.id)
+        }
+        if(obj.allow_render){
+            this.layers[obj.layer].render.push(obj.id)
+        }
+        if(obj.allow_net_update){
+            this.layers[obj.layer].net_update.push(obj.id)
+        }
         this.cells.update_object(obj)
+        obj.on_registry()
+    }
+    unregister_object(obj:GameObject){
+        if(!obj.registred)return
+        obj.registred=false
+        this.cells.unregistry(obj)
+        let idx=this.layers[obj.layer].orden.indexOf(obj.id)
+        if(idx>=0)this.layers[obj.layer].orden.splice(idx,1)
+        if(obj.allow_tick){
+            idx=this.layers[obj.layer].ticks.indexOf(obj.id)
+            if(idx>=0)this.layers[obj.layer].ticks.splice(idx,1)
+        }
+        if(obj.allow_physics_update){
+            idx=this.layers[obj.layer].physics_update.indexOf(obj.id)
+            if(idx>=0)this.layers[obj.layer].physics_update.splice(idx,1)
+        }
+        if(obj.allow_net_update){
+            idx=this.layers[obj.layer].net_update.indexOf(obj.id)
+            if(idx>=0)this.layers[obj.layer].net_update.splice(idx,1)
+        }
+        if(obj.allow_render){
+            idx=this.layers[obj.layer].render.indexOf(obj.id)
+            if(idx>=0)this.layers[obj.layer].render.splice(idx,1)
+        }
+        delete this.objects[obj.id]
+    }
+    delete_object(obj:GameObject){
+        if(!obj.deleted)
+        obj.deleted=true
+        this.unregister_object(obj)
+        obj.on_destroy()
     }
     get_object(id:number):GameObject|undefined{
-        return this.all_objects.get(id)
+        return this.objects[id]
     }
-    exist(id:number,layer:number):boolean{
-        return Object.hasOwn(this.objects,layer)&&Object.hasOwn(this.objects[layer].objects,id)
-    }
-    exist_all(id:number,type:number):boolean{
-        for(const l of Object.values(this.objects)){
-            if(Object.hasOwn(l.objects,id)&&l.objects[id].number_type===type)return true
-        }
-        return false
-    }
-    alive_count(layer:keyof typeof this.objects):number{
-        return this.objects[layer].orden.length
+    exist_object(id:number):boolean{
+        return Object.hasOwn(this.objects,id)
     }
     add_layer(layer: number) {
-        if (this.objects[layer]) return;
-        this.objects[layer] = { orden: [], objects: {},updatables:[],renderizables:[] };
-        this.layers.push(layer);
+        if (this.layers[layer]) return;
+        this.layers[layer] = {
+            orden: [],
+            ticks:[],
+            render:[],
+            physics_update:[],
+            net_update:[]
+        }
+        this.layers_orden.push(layer)
     }
-    proccess_object(stream:NetStream):GameObject|undefined{
-        const b=stream.readBooleanGroup()
-        if(b[0]||b[1]||b[2]){
-            const oid=stream.readID()
-            const layer=stream.readInt8()
-            if(!this.objects[layer]){
+    proccess_object_net(stream: Stream): GameObject | undefined {
+        const size = stream.read_uint24()
+        const start = stream.index
+        const end = start + size
+        try{
+            const b = stream.read_boolean_group()
+            if (!(b[0] || b[1] || b[2])) {
+                return
+            }
+            const oid = stream.read_id()
+            const layer = stream.read_int8()
+            if (!this.layers[layer]) {
                 this.add_layer(layer)
             }
-            const tp=stream.readUint8()
-            let obj=this.all_objects.get(oid)
-            if(b[3]&&!obj&&!b[2]){
-                const obb=this.oncreate(oid,layer,tp)
-                if(!obb)return
-                obj=obb
-                this.add_object(obj,layer,oid,undefined,undefined)
+            const tp = stream.read_uint8()
+            let obj:GameObject|undefined = this.objects[oid]
+            if (b[3] && !obj && !b[2]) {
+                const obb = this.make_object_net(oid, layer, tp)
+                if (obb) {
+                    obj = obb
+                    if(obj)this.add_object(obj, layer, oid)
+                }else{
+                    throw new Error(`Cannot create object type=${tp} id=${oid} layer=${layer}`)
+                }
             }
-            if(!obj)return
-            obj.is_new=b[4]
-            if(obj){
-                if(obj.layer!==layer){
-                    obj.set_layer(layer)
-                }
-                if(b[0]||b[1]){
-                    obj.decode(stream,b[1])
-                }
-                if(b[2]){
-                    if(obj.net_sync.enabled.deletion)obj.destroy()
-                    else obj.on_destroy()
-                }
-                return obj
+            if(!obj){
+                throw new Error(`Object ${oid} not found. type=${tp}`)
             }
+            obj.is_new = b[4]
+            if (obj.layer !== layer) {
+                this.set_layer(obj, layer)
+            }
+            if(b[0]||b[1]) {
+                obj.on_decode_net(stream, b[1])
+            }
+            if(b[2]) {
+                if (obj.net_sync_deletion) {
+                    obj.destroy()
+                } else {
+                    obj.on_destroy()
+                }
+            }
+            return obj
+        }catch(e){
+            console.error(e)
+        }finally{
+            if(stream.index !== end){
+                console.warn(`Size mismatch (${stream.index-start}/${size})`)
+            }
+            stream.index = start + size
         }
     }
-    proccess_all(stream:NetStream):GameObject[]{
+    proccess_all_net(stream:Stream):GameObject[]{
         const ret:GameObject[]=[]
 
-        const ls = stream.readID()
+        const ls = stream.read_id()
         for(let l=0;l<ls;l++){
-            const obj=this.proccess_object(stream)
+            const obj=this.proccess_object_net(stream)
             if(obj)ret.push(obj)
         }
 
         return ret
     }
-    proccess_list(stream:NetStream,process_deletion:boolean=false):GameObject[]{
+    proccess_list_net(stream:Stream,process_deletion:boolean=false):GameObject[]{
         const ret:GameObject[]=[]
 
-        let os=stream.readUint16()
+        let os=stream.read_uint16()
         for(let i=0;i<os;i++){
-            const obj=this.proccess_object(stream)
+            const obj=this.proccess_object_net(stream)
             if(obj)ret.push(obj)
         }
-        os=stream.readUint16()
+        os=stream.read_uint16()
         for(let i=0;i<os;i++){
-            const id=stream.readID()
-            if(process_deletion&&this.all_objects.has(id)){
-                const obj=this.all_objects.get(id)!
-                if(obj.net_sync.enabled.deletion)obj.destroy()
+            const id=stream.read_id()
+            if(process_deletion&&this.objects[id]){
+                const obj=this.objects[id]
+                if(obj.net_sync_deletion)obj.destroy()
                 else obj.on_destroy()
             }
         }
         return ret
     }
-    proccess(stream:NetStream,process_deletion:boolean){
-        const tp=stream.readUint8()
+    proccess_net(stream:Stream,process_deletion:boolean,allow_deall:boolean=true){
+        const tp=stream.read_uint8()
+        const bg=stream.read_boolean_group()
+        if(bg[1]&&allow_deall)this.clear()
         if(tp===100){
-            return this.proccess_all(stream)
+            return this.proccess_all_net(stream)
         }else if(tp===200){
-            return this.proccess_list(stream,process_deletion)
+            return this.proccess_list_net(stream,process_deletion)
         }
     }
-    encode_all(full:boolean=false,stream?:NetStream,recreate:boolean=false):NetStream{
+    encode_object_net(object:GameObject,full:boolean,stream:Stream,options:any){
+        const sizePos = stream.index
+        stream.write_uint24(0)
+        const start = stream.index
+
+        const bools=[
+            (full||this.part_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Part
+            (full||this.full_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Full
+            object.destroyed&&object.net_sync_deletion, //Dirty Deletion
+            object.net_sync_creation, //Dirty Creation
+            object.is_new
+        ]
+        stream.write_boolean_group(bools[0],bools[1],bools[2],bools[3],bools[4])
+        if(bools[0]||bools[1]||bools[2]){
+            stream.write_id(object.id)
+            stream.write_int8(object.layer)
+            stream.write_uint8(object.number_type)
+            if(bools[0]||bools[1]){
+                object.on_encode_net(stream,bools[1],options)
+            }
+        }
+
+        const end = stream.index
+        stream.index = sizePos
+        stream.write_uint24(end - start)
+        stream.index = end
+    }
+    encode_all_net(force_full:boolean=false,delete_all:boolean=false,stream?:Stream):Stream{
         if(!stream){
-            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
+            if(!this.stream_cache)this.stream_cache=new DynamicStream()
             stream=this.stream_cache
             this.stream_cache.clear()
         }
-        stream.writeUint8(100) // All Encode
-        const list:GameObject[]=[]
-        for(const obj of this.all_objects.values()){
-            if(obj.net_sync.full||full||recreate||obj.net_sync.part)list.push(obj)
-        }
-
-        stream.writeID(list.length)
+        stream.write_uint8(100) // All Encode
+        stream.write_boolean_group(force_full,delete_all)
+    
+        const list:GameObject[]=force_full?Object.values(this.objects):[...Object.values(this.part_dirty_objects),...Object.values(this.full_dirty_objects)]
+        stream.write_id(list.length)
         for(const obj of list){
-            obj.encodeObject(full||recreate,stream,null)
+            this.encode_object_net(obj,force_full,stream,null)
         }
         return stream
     }
-    encode_list(objects_list:GameObject[],last_list:GameObject[]=[],force_dirty:boolean=false,object_options?:(obj:GameObject)=>any,stream?:NetStream,recreate:boolean=false):{last:GameObject[],strm:NetStream}{
+    encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,delete_all:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
         if(!stream){
-            if(!this.stream_cache)this.stream_cache=new NetStream(new ArrayBuffer(1024*50))
+            if(!this.stream_cache)this.stream_cache=new DynamicStream()
             stream=this.stream_cache
             this.stream_cache.clear()
         }
-        stream.writeUint8(200) // List Encode
+        stream.write_uint8(200) // List Encode
+        stream.write_boolean_group(force_full,delete_all)
 
         const list:[GameObject,boolean][]=[]
-        objects_list.forEach((v)=>{
-            const full=v.net_sync.full||force_dirty||!last_list.includes(v)
-            if(full||v.net_sync.part)list.push([v,full])
+        objects.forEach((v)=>{
+            const full=force_full||this.full_dirty_objects[v.id]!==undefined||!last_list.includes(v)
+            if(full||this.part_dirty_objects[v.id])list.push([v,full])
         })
 
-        stream.writeUint16(list.length)
+        stream.write_uint16(list.length)
         for(const o of list){
-            o[0].encodeObject(o[1],stream,object_options?object_options(o[0]):null)
+            this.encode_object_net(o[0],o[1],stream,object_options?object_options(o[0]):null)
         }
 
+        // Destroy Queue
         const deletions: GameObject[] = []
-        for (let i = 0; i < last_list.length; i++) {
-            const obj = last_list[i]
-            if (obj.net_sync.enabled.deletion && objects_list.indexOf(obj) === -1) deletions.push(obj)
+        for (const obj of last_list){
+            if (obj.net_sync_deletion && !objects.includes(obj))deletions.push(obj)
+        }
+        stream.write_uint16(deletions.length)
+        for(let i=0;i<deletions.length;i++){
+            stream.write_id(deletions[i].id)
         }
 
-        stream.writeUint16(deletions.length)
-        for(let i=0;i<deletions.length;i++){
-            stream.writeID(deletions[i].id)
-        }
-        return {strm:stream,last:objects_list}
+        return {strm:stream,last:objects}
     }
-    update(dt:number){
-        for(const l in this.objects){
-            for(let j=0;j<this.objects[l].updatables.length;j++){
-                const o=this.objects[l].updatables[j]
-                const obj=this.objects[l].objects[o]
-                if(obj.destroyed)continue
-                obj.update(dt)
-                if(this.cells.dirty_objects.has(obj)){
-                    this.cells.update_object(obj)
+    encode_checkpoint(stream:Stream,settings:CheckpointSettings={}){
+        const save_id=settings.save_id??false
+        const blacklist=new Set(settings.blacklist??[])
+        const orderMap = new Map<number | string, number>()
+        for (const [i, value] of (settings.orden ?? []).entries()) {
+            orderMap.set(value, i)
+        }
+        stream.write_boolean_group(save_id)
+        stream.write_uint8(this.layers_orden.length)
+
+        let idx=0
+        const ctx:CheckpointContext={
+            coid:{},
+            idco:{}
+        }
+
+        const layers:GameObject[][]=[]
+
+        // Create Objects
+        for(const l of this.layers_orden){
+            const objects:GameObject[]=[]
+            stream.write_uint8(l)
+            for(const o of this.layers[l].orden){
+                if(this.objects[o]?.allow_checkpoint){
+                    if(!blacklist.has(this.objects[o].number_type)&&!blacklist.has(this.objects[o].string_type))objects.push(this.objects[o])
+                }
+            }
+            objects.sort((a, b) => {
+                const pa=orderMap.get(a.number_type)??orderMap.get(a.string_type)??Number.MAX_SAFE_INTEGER
+                const pb=orderMap.get(b.number_type)??orderMap.get(b.string_type)??Number.MAX_SAFE_INTEGER
+                return pa - pb
+            })
+            stream.write_uint16(objects.length)
+            for(const obj of objects){
+                if(save_id)stream.write_id(obj.id)
+                stream.write_id(idx)
+                stream.write_uint8(obj.number_type)
+                //.write_boolean_group(obj.is_new)
+                ctx.coid[idx]=obj.id
+                ctx.idco[obj.id]=idx
+                idx++
+            }
+            layers.push(objects)
+        }
+        // Apply Object
+        for(const layer of layers){
+            for(const obj of layer){
+                obj.on_encode_checkpoint(stream,ctx)
+            }
+        }
+    }
+    proccess_checkpoint(stream:Stream):GameObject[][]{
+        this.clear()
+        const layers:GameObject[][]=[]
+        const boolgroup=stream.read_boolean_group()
+        const layers_count=stream.read_uint8()
+
+        const read_id=boolgroup[0]
+        const ctx:CheckpointContext={
+            coid:{},
+            idco:{}
+        }
+        
+
+        for(let i=0;i<layers_count;i++){
+            const objects:GameObject[]=[]
+            const layer=stream.read_uint8()
+            const obj_len=stream.read_uint16()
+            for(let j=0;j<obj_len;j++){
+                let id:number|undefined
+                if(read_id)id=stream.read_id()
+                const co=stream.read_id()
+                const tp=stream.read_uint8()
+                //const bg=stream.read_boolean_group()
+                const obb=this.make_object_checkpoint(stream,id,layer,tp)
+                if(!obb)continue
+                const obj=this.add_object(obb,layer,id)
+                obj.is_new=false
+
+                ctx.coid[co]=obj.id
+                ctx.idco[obj.id]=co
+                if(obj)objects.push(obj)
+            }
+            layers.push(objects)
+        }
+        for(let j=0;j<layers.length;j++){
+            for(const obj of layers[j]){
+                obj.on_decode_checkpoint(stream,ctx)
+            }
+        }
+        return layers
+    }
+    tick(dt:number){
+        for(const l of this.layers_orden){
+            for(const o of this.layers[l].ticks){
+                const obj=this.objects[o]
+                try{
+                    obj.tick(dt)
+                }catch(err){
+                    console.error(err)
                 }
             }
         }
         this.cells.update()
     }
     update_to_net(){
-        for(const l of this.layers){
-            for(let j=0;j<this.objects[l].orden.length;j++){
-                const idx=this.objects[l].orden[j]
-                this.objects[l].objects[idx].net_sync.part=false
-                this.objects[l].objects[idx].net_sync.full=false
-                this.objects[l].objects[idx].is_new=false
-                this.objects[l].objects[idx].net_update()
+        for(const n of this.news_queue.values()){
+            n.is_new=false
+        }
+        this.news_queue.clear()
+        for(const id in this.full_dirty_objects){
+            if(this.full_dirty_objects[id].is_new){
+                if(this.objects[id])this.news_queue.add(this.objects[id])
+            }
+        }
+        this.full_dirty_objects={}
+        this.part_dirty_objects={}
+        for(const l of this.layers_orden){
+            for(const o of this.layers[l].net_update){
+                this.objects[o].on_net_update()
             }
         }
     }
     apply_destroy_queue(){
         for(const obj of this.destroy_queue){
-            if(!this.objects[obj.layer]||!this.objects[obj.layer].objects[obj.id])continue
-            this.unregister(obj)
-            delete this.objects[obj.layer].objects[obj.id]
-            this.objects[obj.layer].orden.splice(this.objects[obj.layer].orden.indexOf(obj.id),1)
+            if(!this.objects[obj.id])continue
+            this.delete_object(obj)
         }
         this.destroy_queue.length=0
-    }
-    unregister(obj:GameObject,force_destroy:boolean=true){
-        if(force_destroy){
-            this.ondestroy(this.objects[obj.layer].objects[obj.id])
-            this.objects[obj.layer].objects[obj.id].on_destroy()
-
-            let idx=this.objects[obj.layer].updatables.indexOf(obj.id)
-            if(idx>=0)this.objects[obj.layer].updatables.splice(idx,1)
-            idx=this.objects[obj.layer].renderizables.indexOf(obj.id)
-            if(idx>=0)this.objects[obj.layer].renderizables.splice(idx,1)
-            this.all_objects.delete(obj.id)
-        }
-        obj.registred=false
-        this.cells.unregistry(this.objects[obj.layer].objects[obj.id])
     }
 }

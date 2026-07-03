@@ -1,13 +1,13 @@
 @use "common/engine/main.scss";
 @use "../components/text.scss";
-#gameover-container{
+#normal-gameover-container{
     position: absolute;
     top: 0px;
     left: 0px;
     width: 100%;
     height: 100%;
     transform-origin: 0 0;
-    z-index: 100;
+    z-index: 10;
     #gameover-status-container{
         @extend .span-text-base;
         display: flex;
@@ -84,6 +84,27 @@
                 font-size: 17px;
             }
         }
+    }
+}
+#restart-gameover-container{
+    @extend .span-text-base;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 20px;
+    font-size: 25px;
+    color: var(--ui-theme-tertiary);
+    background-color: var(--ui-theme-secondary);
+    border: 2px solid var(--ui-theme-primary);
+    border-left: none;
+    border-top: none;
+    transition: transform 1s ease;
+    #go-message{
+        animation: text-normal-float 3s alternate ease-in-out infinite;
+    }
+    &.hidden{
+        transform: translateY(-100%);
+        visibility: hidden;
     }
 }
 #gameover-you-dead {

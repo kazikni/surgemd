@@ -1,6 +1,19 @@
-import { Definition, NetStream, WeightDefinition } from "../../engine/core.ts";
+import { Definition, Stream, Vec2, WeightDefinition } from "../../engine/core.ts";
+import { type HumanModifiers } from "../others/constants.ts";
 import { ItemRank } from "../others/item.ts";
 import { BoostType } from "./player/boosts.ts";
+export enum PacketType{
+    Feed=1,
+    GameOver,
+    GeneralUpdate,
+    Input,
+    JMSG,
+    Join,
+    Joinned,
+    Map,
+    Start,
+    Update,
+}
 export enum BulletReflection{
     All=0,
     Only_Reflective=1,
@@ -18,15 +31,11 @@ export interface BulletDef{
         particles?:{
             frame:number
         }
-        proj:{
-            img:number
-            width:number
-            height:number
-            color?:number
-        }
+        alpha?:number
         color?:number
     }
     reflection?:BulletReflection
+    pass_through_humans?:boolean
     obstacleMult?:number
     criticalMult?:number
     on_hit_explosion?:string
@@ -35,42 +44,50 @@ export type ItemRankSetting={
     name:string
     color1:string
     color2:string
+    tint:number
 }
 export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
     [ItemRank.E]:{
         name:"common",
         color1:"#eeeeee",
-        color2:"#a0a0a0"
+        color2:"#a0a0a0",
+        tint:0xffffff
     },
     [ItemRank.D]:{
         name:"uncommon",
         color1:"#11ef45",
         color2:"#0c913a",
+        tint:0x11ef45
     },
     [ItemRank.C]:{
         name:"rare",
         color1:"#3533ee",
-        color2:"#15118a"
+        color2:"#15118a",
+        tint:0x2a5eeb
     },
     [ItemRank.B]:{
         name:"epic",
         color1:"#9309de",
-        color2:"#3b0b7d"
+        color2:"#3b0b7d",
+        tint:0xa743de
     },
     [ItemRank.A]:{
         name:"mythic",
         color1:"#f0d107",
-        color2:"#ab8c0f"
+        color2:"#ab8c0f",
+        tint:0xf0ba07
     },
     [ItemRank.S]:{
         name:"legendary",
         color1:"#ed092c",
-        color2:"#a3050a"
+        color2:"#a3050a",
+        tint:0xee2244
     },
     [ItemRank.Developer]:{
         name:"developer",
         color1:"#eeeeee",
-        color2:"#eeeeee"
+        color2:"#eeeeee",
+        tint:0x11ef45
     },
 }
 export enum InventoryItemType{
@@ -142,16 +159,48 @@ export interface InventoryPreset{
         boost_type:BoostType
     })[]
 }
-export function InventoryItemDataEncode(stream:NetStream,data:InventoryItemData){
-    stream.writeUint16(data.count)
-    stream.writeUint16(data.idNumber)
-    stream.writeUint8(data.type)
+export interface LoadoutPreset{
+    badge?:string
+    hair?:string
+    hair_tint?:number
+    body?:string
+    body_tint?:number
+    eyes?:string
+    shirt?:string
+    legs?:string
+    accessorys?:string[]
+    colors?:Record<string,string>
 }
-export function InventoryItemDataDecode(stream:NetStream):InventoryItemData{
+export type HumanAIDef={
+    kind?:string
+    action?:string
+    params?:Record<string,any>
+}
+export type HumanDefinition={
+    name?:string
+    position?:Vec2
+    loadout?:LoadoutPreset
+    inventory?:InventoryPreset
+    team?:number
+    group?:number
+    group_color?:number
+    ai?:HumanAIDef
+    modifiers?:Partial<HumanModifiers>
+}
+export type CharacterDefinition=HumanDefinition&{
+    description?:string
+    icon?:string
+}
+export function InventoryItemDataEncode(stream:Stream,data:InventoryItemData){
+    stream.write_uint16(data.count)
+    stream.write_uint16(data.idNumber)
+    stream.write_uint8(data.type)
+}
+export function InventoryItemDataDecode(stream:Stream):InventoryItemData{
     return {
-        count:stream.readUint16(),
-        idNumber:stream.readUint16(),
-        type:stream.readUint8(),
+        count:stream.read_uint16(),
+        idNumber:stream.read_uint16(),
+        type:stream.read_uint8(),
     }
 }
 

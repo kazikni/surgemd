@@ -1,29 +1,108 @@
-import { Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_GridMatArgs, GL2D_GridMatAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Grid, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
+import { v2, Vec2 } from "../../core/math/vec2.ts";
+import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
 import { Matrix } from "../../core/math/matrix.ts";
+import { Context2D, GLContext2D } from "./context.ts";
+export interface Material{
+    draw(material:Material,matrix:Matrix,attr:any):void
+    free():void
+}
+export interface Texture{
+    size:Vec2
+    material:Material
 
-export type Material=GLMaterial
+    to_blob(canvas:HTMLCanvasElement,ctx:CanvasRenderingContext2D,type?:string):Promise<Blob|undefined>
+    free():void
+}
 
+export class GLTexture implements Texture{
+    size:Vec2
+
+    renderer:WebglRenderer
+    texture?:WebGLTexture
+    framebuffer?:WebGLFramebuffer
+    material:Material
+
+    constructor(size: Vec2,texture:WebGLTexture,renderer:WebglRenderer,material:Material){
+        this.renderer=renderer
+        this.size=size
+        this.texture=texture
+        this.material=material
+    }
+
+    to_blob(canvas:HTMLCanvasElement,ctx: CanvasRenderingContext2D, type: string="image/png"): Promise<Blob|undefined>{
+        if(!this.framebuffer)return new Promise(resolve=>resolve(undefined))
+
+        const pixels = new Uint8Array(this.size.x*this.size.y*4)
+        this.renderer.gl.bindFramebuffer(this.renderer.gl.FRAMEBUFFER,this.framebuffer)
+        this.renderer.gl.readPixels(0,0,this.size.x,this.size.y,this.renderer.gl.RGBA,this.renderer.gl.UNSIGNED_BYTE,pixels)
+        
+        
+        canvas.width = this.size.x;
+        canvas.height = this.size.y;
+
+        ctx.putImageData(new ImageData(new Uint8ClampedArray(pixels),this.size.x,this.size.y),0,0)
+
+        return new Promise(resolve=>{
+            canvas.toBlob(blob=>resolve(blob!),type)
+        })
+    }
+
+    free(): void {
+        if(this.texture){
+            if(this.framebuffer)this.renderer.gl.deleteFramebuffer(this.framebuffer)
+            this.renderer.gl.deleteTexture(this.texture)
+            this.texture=undefined
+        }
+    }
+}
 export abstract class Renderer {
     canvas: HTMLCanvasElement
-    background: Color = ColorM.default.white;
+    draw_calls:number=0
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
     }
-    abstract draw(material:Material,matrix:Matrix,attr:any):void
+
+    abstract empty_texture(): Texture
+    abstract create_texture(width:number,height:number,smooth?:boolean):Texture
+    abstract load_texture(img:HTMLImageElement,smooth?:boolean):Texture
+
+    abstract bind_texture(texture:Texture):void
+    abstract unbind_texture():void
+
+    abstract make_context():Context2D
+
     abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
+    abstract set_background_color(color:Color):void
     abstract clear(): void
+
+    full_canvas(max_ration?:number,roundPixels?:boolean){
+        fullCanvas(this.canvas,max_ration,roundPixels)
+    }
 }
 export class GLDynamicBuffer {
     buffer: WebGLBuffer
     size = 0
+    draw_calls:number=0
     private disposed = false
     constructor(private gl: WebGLRenderingContext) {
         this.buffer = gl.createBuffer()!
     }
-    upload(target: number, data: Float32Array, usage: number = 35048) {
+    upload_f32(target: number, data: Float32Array, usage: number = 35048) {
+        if (this.disposed) return
+
+        const gl = this.gl
+        gl.bindBuffer(target, this.buffer)
+
+        if (data.length > this.size) {
+            this.size = data.length
+            gl.bufferData(target, data, usage)
+        } else {
+            gl.bufferSubData(target, 0, data)
+        }
+    }
+    upload_u8(target: number, data: Uint8Array, usage: number = 35048) {
         if (this.disposed) return
 
         const gl = this.gl
@@ -69,7 +148,6 @@ export class WebglRenderer extends Renderer {
         simple_batch:GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
         ctx_simple_batch:GLMaterialFactory<GL2D_CTXSimpleBatchArgs,GL2D_CTXSimpleBatchAttr>,
         simple:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>,
-        grid:GLMaterialFactory<GL2D_GridMatArgs,GL2D_GridMatAttr>,
         texture:GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
         //light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
@@ -77,9 +155,12 @@ export class WebglRenderer extends Renderer {
     readonly factorys3D:{
         simple:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatAttr>,
     }
+    readonly isWebGL2: boolean
 
-    readonly isWebGL2: boolean;
     current_program?:WebGLProgram
+    background:Color
+
+    current_texture?:GLTexture
 
     proccess_factory<A,B>(fac_def:GLMaterialFactoryCall<A,B>):GLMaterialFactory<A,B>{
         const prog=this.createProgram(fac_def.vertex,fac_def.frag)
@@ -96,7 +177,8 @@ export class WebglRenderer extends Renderer {
 
     quadVBO:WebGLBuffer
     quadTBO:WebGLBuffer
-    constructor(canvas: HTMLCanvasElement, background: Color = ColorM.default.white, version: 1 | 2 = 2,antialias: boolean = true) {
+
+    constructor(canvas: HTMLCanvasElement, version: 1 | 2 = 2,antialias: boolean = true) {
         super(canvas);
         const gl =
             version === 2
@@ -107,14 +189,12 @@ export class WebglRenderer extends Renderer {
         // deno-lint-ignore no-explicit-any
         this.gl = gl as any
         this.isWebGL2 = version === 2
-
-        this.background = background;
+        this.background=ColorM.default.white
 
         this.factorys2D={
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
             ctx_simple_batch:this.proccess_factory(GLF_CTXSimpleBatch),
             simple:this.proccess_factory(GLF_Simple),
-            grid:this.proccess_factory(GLF_Grid),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
             texture:this.proccess_factory(GLF_Texture),
             //light:this.proccess_factory(GLF_Light),
@@ -148,7 +228,96 @@ export class WebglRenderer extends Renderer {
 
         this.quadVBO = gl.createBuffer()
         this.quadTBO = gl.createBuffer()
+        this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
     }
+    make_context():GLContext2D{
+        return new GLContext2D(this)
+    }
+
+    override bind_texture(texture: GLTexture): void {
+        if(this.current_texture)return
+        const gl=this.gl
+
+        if(texture.framebuffer){
+            gl.bindFramebuffer(gl.FRAMEBUFFER,texture.framebuffer)
+        }else{
+            texture.framebuffer=gl.createFramebuffer()!
+            gl.bindFramebuffer(gl.FRAMEBUFFER,texture.framebuffer)
+            gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texture.texture!,0)
+        }
+
+        this.current_texture=texture
+        gl.viewport(0,0,texture.size.x,texture.size.y)
+    }
+    unbind_texture(){
+        if(!this.current_texture?.framebuffer)return
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER,null)
+        this.gl.viewport(0,0,this.canvas.width,this.canvas.height)
+        this.current_texture=undefined
+    }
+    override empty_texture(): GLTexture {
+        const te=this.gl.createTexture()!
+        return new GLTexture(v2.zero(),te,this,this.factorys2D.texture_batch.create({texture:te}))
+    }
+    override create_texture(width:number,height:number,smooth:boolean=false):GLTexture{
+        const gl=this.gl;
+        const tex=gl.createTexture()!;
+        gl.bindTexture(gl.TEXTURE_2D,tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            width,
+            height,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            null
+        );
+
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,smooth?this.gl.LINEAR:this.gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,smooth?this.gl.LINEAR:this.gl.NEAREST);
+
+        return new GLTexture(v2(width,height),tex,this,this.factorys2D.texture_batch.create({texture:tex}))
+    }
+    override load_texture(img:HTMLImageElement,smooth:boolean=true):Texture{
+        const texture=this.gl.createTexture()!
+        this.gl.bindTexture(this.gl.TEXTURE_2D,texture)
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_WRAP_S,
+            this.gl.CLAMP_TO_EDGE
+        )
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_WRAP_T,
+            this.gl.CLAMP_TO_EDGE
+        )
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_MIN_FILTER,
+            smooth?this.gl.LINEAR:this.gl.NEAREST
+        )
+        this.gl.texParameteri(
+            this.gl.TEXTURE_2D,
+            this.gl.TEXTURE_MAG_FILTER,
+            smooth?this.gl.LINEAR:this.gl.NEAREST
+        )
+        this.gl.texImage2D(
+            this.gl.TEXTURE_2D,
+            0,
+            this.gl.RGBA,
+            this.gl.RGBA,
+            this.gl.UNSIGNED_BYTE,
+            img
+        )
+        const tex=new GLTexture(v2(img.width,img.height),texture,this,this.factorys2D.texture_batch.create({texture}))
+        return tex
+    }
+
+
     createShader(src: string, type: number): WebGLShader {
         const shader = this.gl.createShader(type);
         if (shader) {
@@ -168,9 +337,6 @@ export class WebglRenderer extends Renderer {
         this.gl.linkProgram(p!)
         return p!
     }
-    override draw(material:Material,matrix:Matrix,attr:any):void{
-        material.draw(material,matrix,attr)
-    }
     create_single_mat_batcher(mat:Material):SingleMatBatching2DGL{
         return new SingleMatBatching2DGL(this,mat)
     }
@@ -186,58 +352,35 @@ export class WebglRenderer extends Renderer {
 
     clear() {
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
-        this.gl.clearColor(this.background.r, this.background.g, this.background.b, 1)
-        this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
+        this.gl.clearColor(this.background.r/255, this.background.g/255, this.background.b/255, 1)
         this.gl.clear(this.gl.COLOR_BUFFER_BIT |this.gl.DEPTH_BUFFER_BIT);
-        
         this.gl.depthMask(true)
         this.gl.depthFunc(this.gl.LEQUAL)
         this.gl.enable(this.gl.BLEND)
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+        this.draw_calls=0
+    }
+    override set_background_color(color: Color): void {
+        this.background=color
     }
 }
-export function createCanvas(size: Vec2, pixelated: boolean = true, center: boolean = true): HTMLCanvasElement {
-    const canvas = document.createElement("canvas");
-    canvas.width = size.x;
-    canvas.height = size.y;
 
-    canvas.tabIndex = 0
-    canvas.focus()
-    if (pixelated) {
-        canvas.style.imageRendering = "pixelated"
-        canvas.style.imageRendering = "crisp-edges"
-        canvas.style.imageRendering = "-moz-crisp-edges"
+
+export function fullCanvas(canvas: HTMLCanvasElement,maxRatio: number = 2,roundPixels: boolean = true): boolean {
+    const cssWidth=self.innerWidth;
+    const cssHeight=self.innerHeight;
+
+    const ratio = Math.min(self.devicePixelRatio || 1, maxRatio);
+    const width = roundPixels?Math.round(cssWidth*ratio):cssWidth*ratio;
+    const height = roundPixels?Math.round(cssHeight*ratio):cssHeight*ratio;
+
+    const resized = canvas.width !== width || canvas.height !== height;
+    if (resized) {
+        canvas.width = width;
+        canvas.height = height;
+
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = `${cssHeight}px`;
     }
-    if (center) {
-        canvas.style.position = "absolute"
-        canvas.style.left = "0px"
-        canvas.style.right = "0px"
-        canvas.style.top = "0px"
-        canvas.style.bottom = "0px"
-        canvas.style.margin = "auto"
-    }
-    return canvas;
-}
-
-export function applyBorder(elem: HTMLElement) {
-    elem.style.border = "1px solid #000";
-}
-
-export function applyShadow(elem: HTMLElement) {
-    elem.style.boxShadow = "0px 4px 17px 0px rgba(0,0,0,0.19)";
-}
-
-export function fullCanvas(elem: HTMLCanvasElement) {
-    const ratio = self.devicePixelRatio || 1;
-
-    elem.width  = self.innerWidth  * ratio;
-    elem.height = self.innerHeight * ratio;
-
-    elem.style.width  = `${self.innerWidth}px`;
-    elem.style.height = `${self.innerHeight}px`;
-
-    const ctx = elem.getContext("2d");
-    if (ctx) {
-        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    }
+    return resized;
 }

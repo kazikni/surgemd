@@ -1,4 +1,4 @@
-import { CenterHotspot, CircleHitbox2D, NetStream, Sprite2D, type Tween, v2} from "common/engine/client.ts"
+import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, type Tween, v2} from "common/engine/client.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
@@ -17,21 +17,19 @@ export class SyncedParticle extends MovingBody{
     dead:boolean=false
     tweens:Tween<any>[]=[]
 
-    override on_layer_set(layer: number): void {
-        this.sprite.layer=layer
-    }
-    // deno-lint-ignore no-explicit-any
-    create(_args: Record<string,any>): void {
-        this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
-        this.game.cam2d.addObject(this.sprite)
-    }
     constructor(){
         super()
         this.physical_data={
             rotation:0
         }
     }
-
+    override on_create(_args: Record<string,any>): void {
+        this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
+        this.game.cam2d.add_object(this.sprite)
+    }
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
+    }
     override on_destroy(): void {
         for(const t of this.tweens)t.kill()
         const time=this.time>=0.98?this.def.animation?.destroy?.time??0:0
@@ -65,9 +63,9 @@ export class SyncedParticle extends MovingBody{
             }
         }
     }
-    override update(dt:number){
+    override on_tick(dt:number){
         if(!this.def)return
-        super.update(dt)
+        super.on_tick(dt)
 
         this.sprite.position=this.position
         this.sprite.rotation=this.physical_data.rotation
@@ -115,11 +113,11 @@ export class SyncedParticle extends MovingBody{
             }
         }
     }
-    override decode(stream:NetStream,full: boolean):void{
+    override on_decode_net(stream:Stream,full: boolean):void{
         super.decode_physical_data(stream,full)
         if (full) {
-            this.time=stream.readFloat(0,60,2)
-            const id=stream.readUint8()
+            this.time=stream.read_float(0,60,2)
+            const id=stream.read_uint8()
             this.set_definition(this.game.definitions.synced_particle.getFromNumber(id))
         }
     }

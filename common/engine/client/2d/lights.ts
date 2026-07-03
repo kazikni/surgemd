@@ -24,7 +24,7 @@ export class Lights2D extends Container2DObject {
 
     downscale = 1.0
 
-    ambientColor: Color = { r:1,g:1,b:1,a:1 }
+    ambientColor: Color = { r:255,g:255,b:255,a:255 }
 
     quality = 2
     // 0 = disabled
@@ -46,7 +46,7 @@ export class Lights2D extends Container2DObject {
     private _lastW = 0
     private _lastH = 0
 
-    addLight(pos:Vec2,model:Model2D,color:Color={r:1,g:1,b:1,a:1}){
+    addLight(pos:Vec2,model:Model2D,color:Color={r:255,g:255,b:255,a:255}){
 
         const mat = this.renderer.factorys2D.light.create({color})
 
@@ -210,7 +210,7 @@ export class Lights2D extends Container2DObject {
 
         const mat = renderer.factorys2D.texture.create({
             texture:this.lightTexture,
-            tint:{r:1,g:1,b:1,a:1}
+            tint:{r:255,g:255,b:255,a:255}
         })
 
         gl.blendFunc(gl.DST_COLOR,gl.ZERO)

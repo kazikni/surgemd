@@ -1,13 +1,13 @@
 // deno-lint-ignore-file no-explicit-any
-import { cloneDeep, deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
-import { type MenuManager } from "../managers/menuManager.ts";
-import { GamemodeConfig } from "common/scripts/config/config.ts";
+import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
+import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
+import { ModeConfig } from "common/scripts/config/config.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -305,6 +305,24 @@ export function game_mode_settings_manager_popup(settings:any,translation:Transl
         parent.appendChild(buttons)
     }
 }
+export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupFunction {
+    return (popup) => {
+        popup.parent.innerHTML=`
+<p class="span-text">${msg}</p>
+<div style="display:flex;flex-direction:column;gap:3px">
+    <button id="popup-yes" class="btn-green">${yes_text}</button>
+    <button id="popup-no" class="btn-red">${no_text}</button>
+</div>`
+        const yes = popup.parent.querySelector("#popup-yes") as HTMLButtonElement
+        const no = popup.parent.querySelector("#popup-no") as HTMLButtonElement
+        yes.onclick = () => {
+            popup.resolve(true)
+        }
+        no.onclick = () => {
+            popup.resolve(false)
+        }
+    }
+}
 export function make_menu_settings(save: GameSave, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
         parent.innerHTML=""
@@ -345,25 +363,30 @@ export function make_menu_campaign(campaign:Record<string,any>){
 <button class="btn-green">Start Level</button>`
                 parent.appendChild(level_div)
                 const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
-                start_btn.onclick = () => {
-                    if(manager.play_callback)manager.play_callback({type:"campaign",level:l as unknown as number,charpter:c as unknown as number})
+                start_btn.onclick = async() => {
+                    const si=await manager.game_popup(yes_no_popup("Start With Intro?"))
+                    if(manager.play_callback)manager.play_callback({type:"campaign",path:level.path,start_with_intro:si})
                 }
             }
         }
     }
 }
-export function make_menu_modes(modes:GamemodeConfig[]){
+export function make_menu_modes(modes:ModeConfig[]){
     return (parent:HTMLDivElement,manager:MenuManager)=>{
-        for(const mode of modes){
+        for(const m in modes){
+            const mode=modes[m]
             const mb=document.createElement("div")
+            mb.className="background-menu-ss background-menu-blue"
             mb.innerHTML=`
-<div class="background-menu-ss background-menu-blue">
-<h1>${mode.gamemode}</h1>
-<button id="btn-join-${mode.gamemode}" class="btn-green">Play</button>
-</div>`
-            const join_btn=mb.querySelector(`#btn-join-${mode.gamemode}`) as HTMLButtonElement
-            join_btn.onclick=()=>{
-                if(manager.play_callback)manager.play_callback({type:"online",mode:mode.gamemode,team_size:1})
+<h1>${mode.mode.name==undefined?mode.mode.mode:manager.translation.get(mode.mode.name)}</h1>`
+            for(const t in mode.group_size){
+                const btn=document.createElement("button")
+                btn.className="btn-green"
+                btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+mode.group_size[t])})
+                btn.onclick=()=>{
+                    if(manager.play_callback)manager.play_callback({type:"online",mode:parseInt(m),group_size:parseInt(t)})
+                }
+                mb.appendChild(btn)
             }
             parent.appendChild(mb)
         }
@@ -471,12 +494,14 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 }
 
 export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,mods?:CModsManager){
-    const txt=await fs.read_file("scripts/campaign.json")
-    const campaign=JSON.parse(txt)
-    menu.campaign=cloneDeep(campaign)
+    const campaign_path="scripts/campaign"
+    const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
-            campaign.charpters[c].levels[l]=JSON.parse(await fs.read_file(campaign.charpters[c].levels[l]))
+            const path=campaign_path+"/"+campaign.charpters[c].levels[l]
+            const txt=await fs.read_file(path+"/level.jsonc")
+            campaign.charpters[c].levels[l]=parseJSONC(txt)
+            campaign.charpters[c].levels[l].path=path
         }
     }
     const play_subtabs={
@@ -486,13 +511,11 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
         "replays":{
             generate: (parent, manager) => {
                 parent.innerHTML = `
-                    <h2>Play Replay</h2>
-
-                    <div class="replay-upload background-menu-blue">
-                        <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
-                        <button class="btn-green" id="btn-load-replay">Load Replay</button>
-                    </div>
-                `
+                <h2>Play Replay</h2>
+                <div class="replay-upload background-menu-blue">
+                    <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
+                    <button class="btn-green" id="btn-load-replay">Load Replay</button>
+                </div>`
 
                 const input = parent.querySelector("#replay-file-input") as HTMLInputElement
                 const btn = parent.querySelector("#btn-load-replay") as HTMLButtonElement
@@ -784,6 +807,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     name:"menu.settings.ui",
                     subtab:"ui"
                 },
+                {
+                    id:"keybinds",
+                    type:"button",
+                    name:"menu.settings.keybinds",
+                    subtab:"keybinds"
+                }
             ],
             subtabs:{
                 "game":{
@@ -792,7 +821,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             type:"choose",
                             name:"settings.game.region",
                             var:"sv_game_region",
-                            options:Object.keys(menu.api_settings.regions).map((v)=>{
+                            options:menu.api_settings.regions.map((v)=>{
                                 return {
                                     name:menu.translation.get("region."+v),
                                     value:v
@@ -814,6 +843,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.game.friendly_fire",
                             var:"sv_game_friendly_fire",
                         },
+                        {
+                            type:"toggle",
+                            name:"settings.game.ammo_outline",
+                            var:"sv_game_ammo_outline",
+                        },
                     ],translation)
                 },
                 "graphics":{
@@ -825,7 +859,6 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             options:[
                                 {name:"Low",value:"low"},
                                 {name:"Medium",value:"medium"},
-                                {name:"High",value:"high"},
                             ],
                         },
                         {
@@ -908,6 +941,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             max:1,
                             step:0.05
                         },
+                        {
+                            type:"toggle",
+                            name:"settings.sounds.gameplay_music",
+                            var:"sv_sounds_gameplay_music",
+                        },
                     ],translation),
                 },
                 "ui":{
@@ -916,41 +954,31 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             type:"color",
                             name:"settings.ui.primary_color",
                             var:"sv_ui_primary_color",
-                            on_set(val:string){
-                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-primary",val)
-                            }
                         },
                         {
                             type:"color",
                             name:"settings.ui.secondary_color",
                             var:"sv_ui_secondary_color",
-                            on_set(val:string){
-                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-secondary",val)
-                            }
+                        },
+                        {
+                            type:"color",
+                            name:"settings.ui.tertiary_color",
+                            var:"sv_ui_tertiary_color",
                         },
                         {
                             type:"color",
                             name:"settings.ui.positive_color",
                             var:"sv_ui_positive_color",
-                            on_set(val:string){
-                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-positive",val)
-                            }
                         },
                         {
                             type:"color",
                             name:"settings.ui.negative_color",
                             var:"sv_ui_negative_color",
-                            on_set(val:string){
-                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-negative",val)
-                            }
                         },
                         {
                             type:"color",
                             name:"settings.ui.special_color",
                             var:"sv_ui_special_color",
-                            on_set(val:string){
-                                (document.querySelector("#game-gui") as HTMLDivElement).style.setProperty("--ui-theme-special",val)
-                            }
                         },
                         {
                             type:"choose",
@@ -961,6 +989,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 {name:"Espanhol",value:"es"},
                                 {name:"Brazilian Portuguese",value:"pt-br"},
                                 {name:"Turkish",value:"tr"},
+                                {name:"Ak-47",value:"ak47"},
                             ],
                         },
                         isMobile?undefined:{
@@ -968,7 +997,68 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             name:"settings.ui.interactive",
                             var:"sv_ui_interactive",
                         },
+                        {
+                            type:"toggle",
+                            name:"settings.ui.blur_backdrop",
+                            var:"sv_ui_blur_backdrop",
+                            on_set(v:boolean){
+                                if(v){
+                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","blur(10px)")
+                                }else{
+                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","none")
+                                }
+                            }
+                        }
                     ],translation),
+                },
+                "keybinds":{
+                    generate:(parent,_m)=>{
+                        const generate_actions=()=>{
+                            parent.innerHTML=""
+                            const actions=menu.save.input_manager?.actions ?? {}
+                            for(const [name,action] of Object.entries(actions)){
+                                const row=document.createElement("div")
+                                row.className="settings-row"
+
+                                const current=document.createElement("span")
+                                current.className="span-text"
+                                current.textContent=" "+menu.input.action_to_string(name)
+
+                                const btn=document.createElement("button")
+                                btn.className="btn-blue"
+                                btn.textContent=translation.get("keybinds."+name)
+
+                                btn.onclick=async()=>{
+                                    const key=await menu.game_popup(async(ctx)=>{
+                                        ctx.parent.innerHTML=`
+                                        <h2>Waiting Key</h2>
+                                        <p>Press any key...</p>
+                                        `
+                                        ctx.resolve(await menu.input.wait_for_any_key())
+                                    })
+                                    menu.save.set_action(name,{
+                                        ...action,
+                                        keys:[key]
+                                    })
+                                    current.textContent=" "+menu.input.action_to_string(name)
+                                }
+                                row.append(btn,current)
+                                parent.appendChild(row)
+                            }
+                            parent.appendChild(reset)
+                        }
+                        const reset=document.createElement("button")
+                        reset.className="btn-red"
+                        reset.textContent="Reset Keybinds"
+                        reset.onclick=()=>{
+                            menu.save.input_manager?.resetAllActions()
+                            if(menu.save.current_save){
+                                menu.save.save(menu.save.current_save)
+                            }
+                            generate_actions()
+                        }
+                        generate_actions()
+                    }
                 }
             },
             on_close(_m){
@@ -989,6 +1079,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             subtabs:{
                 "character":{
                     generate:make_menu_settings(menu.save,[
+                        {
+                            type:"input",
+                            name:"loadout.character.name",
+                            var:"sv_loadout_name",
+                        },
                         {
                             type:"color",
                             name:"loadout.character.hair_tint",
@@ -1191,12 +1286,17 @@ ___
 * @cheerfulbull_29688
 * @endermanking
 * @littlethief69
+* Suroi.io
+* Surviv.io
+* Survev.io
 ___
 ## Menu Designers
 * @kazikni
 * @namerio
 ___
 ## Sound Designers
+* Surviv.io
+* Suroi.io
 * @teardwop
 * Free Sounds On Net
 * Half Life
@@ -1210,7 +1310,8 @@ ___
 * I Wanna Be The Guy
 * Some Youtube Musics
 * NoCopyrightSound
-* Pertubaror/Hotline Miami 2
+* Hotline Miami 2
+* Five Nights At Freddys
 ___
 ## Lore
 @kazikni 
@@ -1218,6 +1319,7 @@ ___
 ## Additional Art
 * @sentido_ss
 * @bien.star
+* @paoagiota4740
 ___
 ## Videos And Trailers
 * @kazikni

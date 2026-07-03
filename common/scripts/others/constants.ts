@@ -1,4 +1,4 @@
-import { LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -10,13 +10,13 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.42,
+            ammo:0.44,
             weapon:0.65,
             accessory:0.65,
-            consumible:0.42,
-            equipament:0.42,
-            grenade:0.42,
-            scopes:0.42,
+            consumible:0.44,
+            equipament:0.44,
+            grenade:0.44,
+            scopes:0.44,
         }
     },
     collision:{
@@ -24,8 +24,25 @@ export const GameConstants={
         chunckSize:2
     }
 }
-export enum PlayerAnimationType{
-    Switch,
+export enum GameObjectType{
+    StaticBody,
+    Human,
+    HumanBody,
+    Loot,
+    Obstacle,
+    Building,
+    Bullet,
+    Decal,
+    Explosion,
+    Grenade,
+    Vehicle,
+    Creature,
+    Parachute,
+    SyncedParticle,
+    Plane,
+}
+
+export enum HumanAnimationType{
     Reloading,
     Consuming,
     Melee,
@@ -34,27 +51,26 @@ export enum PlayerAnimationType{
     Throw,
     Reset
 }
-export type PlayerAnimation={
+export type HumanAnimation={
 }&({
-    type:PlayerAnimationType.Switch   
-}|{
-    type:PlayerAnimationType.Reloading
+    type:HumanAnimationType.Reloading
     alt_reload:boolean
 }|{
-    type:PlayerAnimationType.Consuming
+    type:HumanAnimationType.Consuming
     item:number
 }|{
-    type:PlayerAnimationType.Melee
+    type:HumanAnimationType.Melee
 }|{
-    type:PlayerAnimationType.Fire
+    type:HumanAnimationType.Fire
     last:boolean
     alt:boolean
+    alt_func:boolean
 }|{
-    type:PlayerAnimationType.Cook
+    type:HumanAnimationType.Cook
 }|{
-    type:PlayerAnimationType.Throw
+    type:HumanAnimationType.Throw
 }|{
-    type:PlayerAnimationType.Reset
+    type:HumanAnimationType.Reset
 })
 export enum Layers{
     Normal=10
@@ -64,29 +80,35 @@ export const LayersL=[
 ]
 
 export enum zIndexes{
+    //Ground
     Terrain,
     Grid,
-    BuildingsFloor,
+    BuildingFloor1,
+    BuildingsFloor2,
+    Decals,
     DeadObstacles,
     DeadCeilings,
-    Decals,
+    ClientDecals,
     DeadCreatures,
     PlayersBody,
     Obstacles1,
     Obstacles2,
     Loots,
-    Bullets,
+    GrenadeGround,
     Rain2,
+
+    Bullets,
     Vehicles,
     Creatures,
     Players,
     Particles,
-    Grenade,
+    GrenadeAir,
     Obstacles3,
     Explosions,
     SyncedParticle,
     BuildingsCeiling,
     Obstacles4,
+    Obstacles5,
     ParachutePlayers,
     Rain1,
     Parachute,
@@ -94,12 +116,13 @@ export enum zIndexes{
     DeadZone,
     Lights,
     DamageSplashs,
-    UI
+    UI,
 }
 export enum ActionsType{
     Reload,
     Consuming,
-    Helpup
+    Helpup,
+    BeingHelpup
 }
 
 export type HumanModifiers={
@@ -119,11 +142,15 @@ export enum  SpawnModeType{
     any,
     blacklist,
     whitelist,
+    river
 }
 export type SpawnMode={
     type:SpawnModeType.any
 }|{
     type:SpawnModeType.blacklist|SpawnModeType.whitelist
+    list:FloorType[]
+}|{
+    type:SpawnModeType.river
     list:FloorType[]
 }
 
@@ -131,23 +158,45 @@ export const Spawn={
     any:{
         type:SpawnModeType.any,
     },
+    water:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Water,FloorType.Ice]
+    },
+    outside_water:{
+        type:SpawnModeType.blacklist,
+        list:[FloorType.Water,FloorType.Ice,FloorType.Void]
+    },
     grass:{
         type:SpawnModeType.whitelist,
         list:[FloorType.Grass,FloorType.Snow]
+    },
+    ground:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Grass,FloorType.Snow,FloorType.Sand]
+    },
+    snow_only:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Snow]
+    },
+    grass_only:{
+        type:SpawnModeType.whitelist,
+        list:[FloorType.Grass]
+    },
+    river_water:{
+        type:SpawnModeType.river,
+        list:[FloorType.Water,FloorType.Ice]
     },
 } satisfies Record<string,SpawnMode>
 
 export interface HumanHealthData{
     health:number
     max_health:number
-    dead:boolean
 
     boost:number
     max_boost:number
     boost_def:BoostDef
 
     invensibility_time:number
-    downed:boolean
 }
 export interface HumanLoadoutData {
     body:{
@@ -161,34 +210,38 @@ export interface HumanLoadoutData {
     eyes?:LoadoutEyesDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
+    accessorys:LoadoutAccessoryDef[]
 }
 export interface HumanAnimationData{
     dirty:boolean
-    attacking:boolean
+    switching:boolean
 }
 export interface ObstacleVisualData{
     dirty:boolean
     skin:number
     variation:number
 }
-export enum GameObjectType{
-    StaticBody,
-    Human,
-    Loot,
-    Obstacle,
-    Building,
-    Bullet,
-    Explosion,
-    Grenade,
-    Vehicle,
-    Creature,
-    Parachute,
-    SyncedParticle,
-    Plane
+export enum ScoreApplyerType{
+    Kill,
+    Win,
+    Rank,
+    DamageTaken,
+    DamageDealth,
+    KillLeader
+}
+export type ScoreApplyer={
+    type:number
+    amount:number
+    multiplier:number
 }
 export interface HumanStatus{
     damage:number
     damage_taken:number
     kills:number
     score:number
+}
+export interface PlayerStatus extends HumanStatus{
+    id:number
+    time_alive:number
+    score_applyer:ScoreApplyer[]
 }

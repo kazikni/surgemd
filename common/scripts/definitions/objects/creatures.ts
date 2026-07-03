@@ -1,5 +1,4 @@
-import { CenterHotspot } from "../../../engine/client.ts";
-import { CircleHitbox2D, Definition, Definitions, Hitbox2D, LootTable, NetStream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, Definition, Definitions, Hitbox2D, LootTable, Stream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
 import { SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 export type CreatureDef={
@@ -20,8 +19,8 @@ export type CreatureDef={
     update?:(creature:any,dt:number,client_side:boolean)=>void
     net_update?:(creature:any,client_side:boolean)=>void
 
-    encode?:(creature:any,stream:NetStream,full:boolean)=>void
-    decode?:(creature:any,stream:NetStream,full:boolean)=>void
+    encode?:(creature:any,stream:Stream,full:boolean)=>void
+    decode?:(creature:any,stream:Stream,full:boolean)=>void
 
     assets?:any
     ai?:any
@@ -31,7 +30,7 @@ export const SpriteEntity={
         if(!cs)return
 
         c.main_sprite=c.container.create_sprite()
-        c.main_sprite.hotspot = CenterHotspot
+        c.main_sprite.hotspot = v2.half_one
         c.main_sprite.zIndex = 2
         c.main_sprite.set_frame(c.def.assets.frames.main,c.game.resources)
     }

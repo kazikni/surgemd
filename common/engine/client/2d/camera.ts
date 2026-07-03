@@ -1,11 +1,11 @@
-import { fullCanvas, Renderer, WebglRenderer } from "../rendering/renderer.ts"
+import { Renderer } from "../rendering/renderer.ts"
 import { CamA, Container2DObject } from "./base.ts"
 import { v2, v2m } from "../../core/math/vec2.ts"
 import { ResourcesManager } from "../resources/resources.ts"
-import { Context2D, GLContext2D } from "../rendering/context.ts";
+import {  Context2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
-import { Rect } from "../../core/math/geometry.ts";
+import { circle, Rect } from "../../core/math/geometry.ts";
 
 export class Camera2D{
     renderer:Renderer
@@ -36,13 +36,19 @@ export class Camera2D{
 
     ctx:Context2D
 
+    _shake?:{
+        intensity:number
+        duration:number
+        priority:number
+    }
+
     visible_callback?:(obj:Container2DObject)=>boolean
     sort_callback?:(a:Container2DObject,b:Container2DObject)=>number
     constructor(renderer:Renderer){
         this.renderer=renderer
         this.zoom=1
-        this.container.object_group=true
-        this.ctx=new GLContext2D(renderer as WebglRenderer)
+        this.container.full_request=false
+        this.ctx=renderer.make_context()
     }
 
     get_rect():Rect{
@@ -61,7 +67,7 @@ export class Camera2D{
         }
     }
 
-    addObject(...objects: Container2DObject[]): void {
+    add_object(...objects: Container2DObject[]): void {
         for(const o of objects){
             this.container.add_child(o);
         }
@@ -79,13 +85,38 @@ export class Camera2D{
         this.width = scaleX;
         this.height = scaleY;
     }
+    stop_shake(){
+        this._shake=undefined
+    }
+    shake(intensity:number,duration:number,priority:number=0){
+        if(this._shake){
+            if(priority>=this._shake.priority&&this._shake.intensity<intensity)this._shake={
+                intensity:intensity,
+                duration:duration,
+                priority:priority
+            }
+        }else{
+            this._shake={
+                intensity:intensity,
+                duration:duration,
+                priority:priority
+            }
+        }
+    }
 
     update(dt:number,resources:ResourcesManager): void {
         this.projectionMatrix=this.SubMatrix
         if(this.center_pos){
             const halfViewSize = v2(this.width / 2, this.height / 2);
-            const cameraPos = v2.sub(this.position, halfViewSize);
+            let cameraPos = v2.sub(this.position, halfViewSize);
 
+            if(this._shake){
+                cameraPos=circle.random_point_inside(cameraPos,this._shake.intensity)
+                if(this._shake.duration!==-1){
+                    this._shake.duration-=dt
+                    if(this._shake.duration<=0)this._shake=undefined
+                }
+            }
             this.visual_position=cameraPos
             this.projectionMatrix=this.SubMatrix
 
@@ -93,7 +124,6 @@ export class Camera2D{
         }else{
             this.visual_position=this.position
             this.projectionMatrix=this.SubMatrix
-
             this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
         this.container.update(dt,resources)
@@ -131,19 +161,23 @@ export class Camera2D{
             this.old_layer=this.layer
             this.container.dirty_zindex=true
         }
-        this.container.draw(cam)
         this.ctx.base_matrix=this.projectionMatrix
-        this.ctx.render()
+        this.container.draw(cam)
+        this.ctx.render(this.renderer)
+        this.ctx.clear()
 
         for(const a of this.after_draw){
             a(cam)
         }
     }
 
-    fullCanvas(){
+    clear(){
+        this.container.clear()
+    }
+    full_canvas(){
         const sx=this.renderer.canvas.width
         const sy=this.renderer.canvas.height
-        fullCanvas(this.renderer.canvas)
+        this.renderer.full_canvas()
         if(sx!=this.renderer.canvas.width||sy!=this.renderer.canvas.height){
             this.resize()
         }

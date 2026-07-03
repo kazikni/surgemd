@@ -1,12 +1,8 @@
-import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, NetStream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
-const images=[
-    "bullet_normal",
-    "bullet_rocket"
-]
 const particles=[
     "gas_smoke_particle"
 ]
@@ -36,8 +32,6 @@ export class Bullet extends GameObject{
     // Visual                 //
     ////////////////////////////
     sprite_trail:Sprite2D=new Sprite2D()
-    sprite_projectile?:Sprite2D=new Sprite2D()
-    container:Container2D=new Container2D()
 
     ////////////////////////////
     // Sound                  //
@@ -50,7 +44,6 @@ export class Bullet extends GameObject{
     ////////////////////////////
     dying:boolean=false
     sendDelete: boolean=true;
-    reflection_count:number=0;
     private tticks:number=0
 
     ////////////////////////////
@@ -61,39 +54,43 @@ export class Bullet extends GameObject{
     particles=0
     par_time=0
 
+    collided_with:Set<GameObject>=new Set()
+
+    hit_owner:boolean=false
+    pass_through_humans:boolean=false
+    pass_through_everthing:boolean=false
     constructor(){
         super()
 
-        this.sprite_trail.hotspot=v2(0.965,.5)
+        this.sprite_trail.hotspot=v2(1,.5)
         this.sprite_trail.zIndex=1
         this.sprite_trail.position.x=0
         this.sprite_trail.position.y=0
+        this.sprite_trail.visible=false
+        this.sprite_trail.zIndex=zIndexes.Bullets
 
-        this.container.visible=false
-
-        this.container.add_child(this.sprite_trail)
-        this.container.zIndex=zIndexes.Bullets
+        this.allow_tick=true
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
+    override on_layer_set(): void {
+        this.sprite_trail.layer=this.layer
     }
-    override create(_args: Record<string, void>) {
+    override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
-        this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,55) // Metter Size * 2
-        this.game.cam2d.addObject(this.container)
+        this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,16) // Metter Size * 2
+        this.game.cam2d.add_object(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
     override on_destroy(): void {
-        this.container.destroy()
+        this.sprite_trail.destroy()
     }
     override render(_camera: Camera2D, _dt: number): void {
 
     }
-    update(dt:number): void {
-        if(this.dying||v2.distance(this.initialPosition,this.position)>this.maxDistance){
+    override on_tick(dt:number): void {
+        if(v2.distance(this.initialPosition,this.position)>this.maxDistance)this.die()
+        if(this.dying){
             this.dying=true
             this.tticks-=dt
-            this.sprite_projectile?.destroy()
             if(this.tticks<=0){
                 this.destroy()
             }
@@ -106,7 +103,7 @@ export class Bullet extends GameObject{
             v2m.add(this._position,this._position,dst)
 
             // Bullet Whiz Sound
-            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&this.reflection_count===0)){
+            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&!this.hit_owner)){
                 if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.colliding_with(this.hitbox)){
                     this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
@@ -122,22 +119,41 @@ export class Bullet extends GameObject{
             for(const obj of objs){
                 if(this.dying)break
                 switch((obj as BaseGameObject2D).number_type){
-                    case GameObjectType.Human:
-                        if(!(obj as Human).dead&&!(obj as Human).parachute){
-                            const col=obj.hitbox.overlap_line(this.old_position,this.position)
-                            if(col){
-                                (obj as Human).on_hitted(this.position,this._critical)
-                                this.dying=true
+                    case GameObjectType.Human:{
+                        if((obj as Human).dead||(obj as Human).parachute||this.collided_with.has(obj)||(obj.id===this.owner_id&&!this.hit_owner))break
+                        const colBody=obj.hitbox.overlap_line(this.old_position,this.position)
+                        const reflectSeg = (obj as Human).get_reflect_segment()
+                        let colReflect = null
+                        let isReflect = false
+                        let chosen: typeof colBody | typeof colReflect = null
+                        if (reflectSeg) {
+                            colReflect = reflectSeg.overlap_line(this.old_position,this.position)
+                        }
+                        if (colBody || colReflect) {
+                            const distBody = colBody ? v2.distance(this.old_position, colBody.point) : Infinity
+                            const distPan = colReflect ? v2.distance(this.old_position, colReflect.point) : Infinity
+                            if (distPan < distBody) {
+                                chosen = colReflect
+                                isReflect = true
+                            } else {
+                                chosen = colBody
                             }
                         }
+                        if(chosen){
+                            this.collided_with.add(obj);
+                            (obj as Human).on_hitted(this.position,this._critical,undefined,isReflect)
+                            if(!(this.pass_through_humans||this.pass_through_everthing)||isReflect)this.die()
+                        }
                         break
+                    }
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
-                        if(!(obj as StaticBody).physical_data.no_bullets_collision){
+                        if(!this.collided_with.has(obj)&&!(obj as StaticBody).physical_data.no_bullets_collision){
                             const col=obj.hitbox.overlap_line(this.old_position,this.position)
                             if(col){
+                                this.collided_with.add(obj);
                                 (obj as StaticBody).on_hitted(this.position,this._critical)
-                                this.dying=true
+                                if(!((obj as StaticBody).physical_data.passable_by_bullets||this.pass_through_everthing))this.die()
                             }
                         }
                         break
@@ -170,7 +186,7 @@ export class Bullet extends GameObject{
             }
 
             // Update Visual Position
-            this.container.position=this.position
+            this.sprite_trail.position=this.position
         }
 
         // Update Visual
@@ -183,45 +199,38 @@ export class Bullet extends GameObject{
             this.maxLength
         );
     }
-    override decode(stream: NetStream, full: boolean): void {
-        this.position=stream.readPos2()
+    die(){
+        this.dying=true
+        this.velocity.x=0
+        this.velocity.y=0
+    }
+    override on_decode_net(stream: Stream, full: boolean): void {
+        this.position=stream.read_pos2()
         this.old_position=v2.clone(this.position)
-        this.tticks=stream.readFloat(0,60,2)
+        this.tticks=stream.read_float(0,60,2)
         if(full){
-            this.initialPosition=stream.readPos2()
-            this.maxDistance=stream.readFloat32()
+            this.initialPosition=stream.read_pos2()
+            this.maxDistance=stream.read_float32()
 
-            this.speed=stream.readFloat32()
-            this.container.rotation=stream.readRad()
+            this.speed=stream.read_float32()
+            this.sprite_trail.rotation=stream.read_rad()
 
-            this.velocity=v2.from_RadAngle(this.container.rotation,this.speed)
+            this.velocity=v2.from_RadAngle(this.sprite_trail.rotation,this.speed)
 
-            this.maxLength=stream.readFloat(0,100,3)
-            this.sprite_trail.scale!.y=stream.readFloat(0,6,2)
-            const col=ColorM.number(stream.readUint32())
-            col.a=stream.readUint8()/255
+            this.maxLength=stream.read_float(0,100,3)
+            this.sprite_trail.scale!.y=stream.read_float(0,6,2)
+            const col=ColorM.number(stream.read_uint32())
+            col.a=stream.read_uint8()
             this.sprite_trail.tint=col
 
-            const proj=stream.readUint8()
-            if(proj>0){
-                this.sprite_projectile=new Sprite2D()
-                this.sprite_projectile.hotspot=CenterHotspot
-                this.sprite_projectile.zIndex=2
-                this.sprite_projectile.position.x=0
-                this.sprite_projectile.position.y=0
-                this.sprite_projectile.scale.x=stream.readFloat(0,6,2)
-                this.sprite_projectile.scale.y=stream.readFloat(0,6,2)
-
-                this.sprite_projectile.tint=ColorM.number(stream.readUint32())
-                this.sprite_projectile.frame=this.game.resources.get_frame(images[proj-1])
-
-                this.container.add_child(this.sprite_projectile)
-            }
-            this.particles=stream.readUint8()
-            this.container.visible=true
-            this._critical=stream.readBooleanGroup()[0]
-            this.owner_id=stream.readID()
-            this.reflection_count=stream.readUint8()
+            this.particles=stream.read_uint8()
+            this.sprite_trail.visible=true
+            const bg=stream.read_boolean_group()
+            this.hit_owner=bg[0]
+            this._critical=bg[1]
+            this.pass_through_humans=bg[2]
+            this.pass_through_everthing=bg[3]
+            this.owner_id=stream.read_id()
         }
     }
 }

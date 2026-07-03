@@ -1,7 +1,8 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, NetStream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
+import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
+import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     zpos:number
 }
@@ -18,33 +19,66 @@ export class Grenade extends MovingBody{
     def!:GrenadeDef
     particles_spawner?:ParticlesEmitter2D<Particle2D>
 
-    create(_args: Record<string, void>): void {
-        this.game.cam2d.addObject(this.sprite)
+    constructor(){
+        super()
     }
-    override on_layer_set(layer: number): void {
-        this.sprite.layer=layer
+    override on_create(_args: Record<string, void>): void {
+        this.game.cam2d.add_object(this.sprite)
+    }
+    override on_layer_set(): void {
+        this.sprite.layer=this.layer
     }
     override on_destroy(): void {
         this.sprite.destroy()
         if(this.particles_spawner)this.particles_spawner.destroyed=true
     }
-
-    override update(dt:number): void {
-        super.update(dt)
+    override on_tick(dt:number): void {
+        super.on_tick(dt)
         const s=(this.def.zBaseScale+(this.def.zScaleAdd*this.physical_data.zpos))*2
         this.sprite.position=this.position
         this.sprite.rotation=this.physical_data.rotation
         this.sprite.scale=v2(s,s)
-    }
-    constructor(){
-        super()
+        if(this.physical_data.zpos===0){
+            if(this.sprite.zIndex===zIndexes.GrenadeAir){
+                const floor=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void) as FloorType
+                const floor_def=Floors[floor]
+                if(floor_def.footstep_sounds)this.game.sounds.play(this.game.resources.get_sound(random.choose(floor_def.footstep_sounds)),{
+                    position:this.position,
+                    max_distance: 15,
+                    volume:0.4,
+                    bus:"explosions"
+                })
+                if(floor_def.floor_kind===FloorKind.Liquid){
+                    this.game.particles.add_particle(new ABParticle2D({
+                        direction:0,
+                        frame:{
+                            image:"riple",
+                            hotspot:CenterHotspot,
+                            zIndex:zIndexes.Decals,
+                            layer:this.layer,
+                            scale:0,
+                        },
+                        life_time:0.5,
+                        position:this.position,
+                        speed:0,
+                        to:{
+                            scale:3,
+                            tint:ColorM.default.transparent
+                        }
+                    }))
+                }
+            }
+            this.sprite.zIndex=zIndexes.GrenadeGround
+        }else{
+            this.sprite.zIndex=zIndexes.GrenadeAir
+        }
     }
     set_definition(def:GrenadeDef){
         if(this.def)return
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.sprite.hotspot=CenterHotspot
-        this.sprite.zIndex=zIndexes.Grenade
+        this.sprite.zIndex=zIndexes.GrenadeAir
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
             this.particles_spawner=this.game.particles.add_emiter({
@@ -79,11 +113,11 @@ export class Grenade extends MovingBody{
             },def.particles!.spawn_delay??0)
         }
     }
-    override decode(stream: NetStream, full: boolean): void {
+    override on_decode_net(stream: Stream, full: boolean): void {
         this.decode_physical_data(stream,full)
-        this.physical_data.zpos=stream.readFloat(0,1,1)
+        this.physical_data.zpos=stream.read_float(0,1,1)
         if(full){
-            this.set_definition(this.game.definitions.grenades.getFromNumber(stream.readID()))
+            this.set_definition(this.game.definitions.grenades.getFromNumber(stream.read_id()))
         }
     }
 }

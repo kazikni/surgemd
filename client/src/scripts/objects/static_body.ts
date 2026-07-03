@@ -10,6 +10,7 @@ export type StaticBodyPhysicalData={
     reflect_bullets:boolean
     no_collision:boolean
     no_bullets_collision:boolean
+    passable_by_bullets:boolean
 }
 export interface StaticBodyAssetData{
     particles?:{
@@ -28,7 +29,6 @@ export abstract class StaticBody extends GameObject{
     number_type: number=GameObjectType.StaticBody
 
     abstract physical_data:StaticBodyPhysicalData
-
     constructor(){
         super()
     }
@@ -93,13 +93,5 @@ export abstract class StaticBody extends GameObject{
         }else{
             this.assets_data.particles.images.push(particle)
         }
-    }
-
-    // deno-lint-ignore no-explicit-any
-    create(_args: Record<string,any>): void {
-        this.updatable=false
-    }
-
-    override on_destroy(): void {
     }
 }

@@ -1,18 +1,26 @@
 import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
 import { InventoryItemType } from "../utils.ts";
+export type Airstrike={
+    count?:number
+    delay:number
+    delay_gap?:number
+    bomb:{
+        count?:number
+        radius?:number
+        def:string
+    }
+}
 export type GrenadeDef={
     rank:ItemRank
     item_type?:InventoryItemType.grenade
+    description?:string|boolean
 
     explosion?:string
     call_airdrop?:{
         delay:number
     }
-    call_airstrike?:{
-        delay:number
-        def:string
-    }
+    call_airstrike?:Airstrike
     particles?:{
         spawn_delay?:number
         spawn:Vec2
@@ -77,7 +85,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:true,
-                fuse_time:6
+                fuse_time:5
             },
             throw_max_speed:15,
             frames:{
@@ -163,7 +171,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:true,
-                fuse_time:6
+                fuse_time:5
             },
             throw_max_speed:15,
             frames:{
@@ -177,9 +185,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"submirv_grenade",
             rank:ItemRank.E,
-
             explosion:"submirv_grenade_explosion",
-
             gravity:3,
             radius:0.1,
             zBaseScale:1,
@@ -203,7 +209,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"blue_flare",
             rank:ItemRank.A,
-
+            description:true,
             explosion:"blue_flare_explosion",
             call_airdrop:{
                 delay:9
@@ -226,7 +232,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                     scale:0.01
                 }
             },
-
             gravity:2,
             radius:0.25,
             zBaseScale:0.4,
@@ -252,14 +257,17 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
         {
             idString:"red_flare",
             rank:ItemRank.A,
-
+            description:true,
             explosion:"red_flare_explosion",
             call_airstrike:{
+                bomb:{
+                    def:"nuke",
+                },
                 delay:3,
-                def:"nuke"
+
             },
             particles:{
-                spawn_delay:3,
+                spawn_delay:0.5,
                 tint:0xca0819,
                 delay:0.1,
                 spawn:v2(0.3,0),
@@ -276,7 +284,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                     scale:0.01
                 }
             },
-
             gravity:2,
             radius:0.25,
             zBaseScale:0.4,
@@ -287,12 +294,96 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             },
             cook:{
                 allow_hand:false,
-                fuse_time:9
+                fuse_time:4
             },
             throw_max_speed:20,
             frames:{
                 world:{
                     image:"proj_red_flare"
+                }
+            },
+            speed_mod:1,
+            rig_arms:DefaultFistRig,
+            rig_image:GrenadeRig,
+        },
+        {
+            idString:"yellow_flare",
+            rank:ItemRank.A,
+            description:true,
+            explosion:"yellow_flare_explosion",
+            call_airstrike:{
+                delay:2,
+                count:3,
+                delay_gap:1,
+                bomb:{
+                    def:"mini_nuke",
+                    count:10,
+                    radius:7
+                }
+            },
+            particles:{
+                spawn_delay:0.5,
+                tint:0xf6dc1b,
+                delay:0.1,
+                spawn:v2(0.3,0),
+                lifetime:{
+                    min:2,
+                    max:5
+                },
+                speed:{
+                    min:0.1,
+                    max:0.25
+                },
+                frame:{
+                    image:"gas_particle",
+                    scale:0.01
+                }
+            },
+            gravity:2,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.6,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:false,
+                fuse_time:3
+            },
+            throw_max_speed:20,
+            frames:{
+                world:{
+                    image:"proj_yellow_flare"
+                }
+            },
+            speed_mod:1,
+            rig_arms:DefaultFistRig,
+            rig_image:GrenadeRig,
+        },
+        {
+            idString:"m79_grenade",
+            rank:ItemRank.E,
+
+            explosion:"m79_grenade_explosion",
+
+            gravity:1.6,
+            radius:0.25,
+            zBaseScale:0.4,
+            zScaleAdd:0.7,
+            decays:{
+                ground_rotation:2,
+                ground_speed:2,
+            },
+            cook:{
+                allow_hand:true,
+                ground:true,
+                impact:true,
+            },
+            throw_max_speed:11,
+            frames:{
+                world:{
+                    image:"proj_m79"
                 }
             },
             speed_mod:1,
@@ -326,33 +417,30 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             rank:ItemRank.S
         },
         {
-            idString:"m79_grenade",
-            rank:ItemRank.E,
-
-            explosion:"m79_grenade_explosion",
-
-            gravity:1.6,
-            radius:0.25,
-            zBaseScale:0.4,
-            zScaleAdd:0.7,
+            idString:"mini_nuke",
+            gravity:1.1,
+            radius:0.6,
+            zBaseScale:1,
+            zScaleAdd:1,
             decays:{
                 ground_rotation:2,
-                ground_speed:2,
+                ground_speed:2
             },
             cook:{
-                allow_hand:true,
+                allow_hand:false,
                 ground:true,
-                impact:true,
             },
-            throw_max_speed:11,
+            explosion:"mini_nuke_explosion",
+            zindex_set_resistence:true,
             frames:{
                 world:{
-                    image:"proj_m79"
+                    image:"proj_mini_nuke"
                 }
             },
-            speed_mod:1,
             rig_arms:DefaultFistRig,
             rig_image:GrenadeRig,
+            rank:ItemRank.A,
+            push_force_resistence:0,
         },
     )
 }

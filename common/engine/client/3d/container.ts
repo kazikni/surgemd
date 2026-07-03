@@ -58,10 +58,10 @@ export abstract class Container3DObject {
             }
 
             this._real_tint = {
-                r: this.parent._real_tint.r * this.tint.r,
-                g: this.parent._real_tint.g * this.tint.g,
-                b: this.parent._real_tint.b * this.tint.b,
-                a: this.parent._real_tint.a * this.tint.a
+                r: this.parent._real_tint.r * (this.tint.r/255),
+                g: this.parent._real_tint.g * (this.tint.g/255),
+                b: this.parent._real_tint.b * (this.tint.b/255),
+                a: this.parent._real_tint.a * (this.tint.a/255)
             };
         } else {
             this._real_position = this.position;
@@ -190,7 +190,7 @@ export class Camera3D{
         this.resize()
     }
 
-    addObject(...objects: Container3DObject[]): void {
+    add_object(...objects: Container3DObject[]): void {
         for(const o of objects){
             this.container.add_child(o);
         }

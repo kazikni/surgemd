@@ -1,5 +1,5 @@
 import { api, API_BASE, api_server } from "../others/config.ts";
-import { ApiSettingsS } from "common/scripts/config/config.ts";
+import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
 import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
@@ -7,6 +7,8 @@ import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
+export type PopupFunction=(ctx:GamePopupCTX)=>void
 type PhaseIntroConfig = {
     location: string
     name: string
@@ -17,7 +19,7 @@ type PhaseIntroConfig = {
     wait_time?:number
 }
 export class MenuManager{
-    api_settings:ApiSettingsS
+    api_settings:ApiSettings
     account:AccountManager
     tabs:Record<string,MenuTab>={}
     tabs_html:Record<string,HTMLDivElement>={}
@@ -44,12 +46,6 @@ export class MenuManager{
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
         history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
-
-        phase_intro_overlay: document.querySelector("#phase-intro-overlay") as HTMLDivElement,
-        phase_intro_location: document.querySelector("#phase-intro-location") as HTMLDivElement,
-        phase_intro_name: document.querySelector("#phase-intro-name") as HTMLDivElement,
-        phase_intro_date: document.querySelector("#phase-intro-date") as HTMLDivElement,
-        phase_intro_description: document.querySelector("#phase-intro-description") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
     }
 
@@ -58,12 +54,14 @@ export class MenuManager{
     translation!:TranslationManager
     sounds!:AudioEngine
     submenu_param:boolean
+    input!:InputManager
 
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
+    play_callback_hard?:(play:FindGameResult)=>void
 
-    campaign:Record<string,any>={}
+    cutscene:HistoryCommand[]=[]
 
     params:URLSearchParams
 
@@ -78,33 +76,25 @@ export class MenuManager{
         this.api_settings={
             modes:[
                 {
-                    gamemode:"normal",
-                    team_size:[1]
+                    mode:{
+                        mode:"normal"
+                    },
+                    group_size:[1]
                 },
             ],
-            debug:{
-                debug_menu:true,
-            },
             database:{
                 enabled:false,
             },
-            regions:{
-                "local":{
-                    host:"localhost",
-                    port:8080
-                }
-            },
-            shop:{
-                skins:{
-
-                }
-            }
+            regions:["local"],
         }
 
         HideElement(this.content.gameD)
         ShowElement(this.content.menuD)
 
         HideElement(this.content.loading_screen)
+        this.content.loading_screen.style.backgroundImage=`url("/img/menu/background/${
+            random.choose(["normal_background","tundra_background_1"])
+        }.png")`
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
         this.start_intro()
@@ -145,6 +135,7 @@ export class MenuManager{
                 setTimeout(() => {
                     this.intro_fineshed=true
                     HideElement(screen, true)
+                    screen.remove()
                     const invite = this.params.get("group-id")
                     if (invite) {
                         this.join_group(invite)
@@ -275,11 +266,12 @@ export class MenuManager{
             this.content.menu_options.style.opacity="1"
         }
     }
-    async init(save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
         this.translation=transition
+        this.input=input
         this.update_api()
 
         MenuInitDefault(this,definitions,fs,transition,mods)
@@ -336,6 +328,12 @@ export class MenuManager{
 
                 this.reload_group_ui()
                 break
+            case "start_game":{
+                if(this.play_callback_hard)this.play_callback_hard({
+                    ...msg,
+                })
+                break
+            }
             case "kicked":
                 this.leave_group()
                 break
@@ -449,7 +447,7 @@ export class MenuManager{
             requestAnimationFrame(()=>next(0))
         })
     }
-    game_popup(content:(ctx:GamePopupCTX)=>void):Promise<any>{
+    game_popup(content:PopupFunction):Promise<any>{
         return new Promise((resolve)=>{
             const overlay=document.createElement("div")
             overlay.className="game-popup-overlay"
@@ -479,15 +477,18 @@ export class MenuManager{
                     resolve(undefined)
                 }
             }
-
             content(ctx)
-
             requestAnimationFrame(()=>{
                 overlay.style.opacity="1"
             })
         })
     }
     history_buffer:ImageBuffer=new ImageBuffer()
+    async preload_cutscene(path:string){
+        this.cutscene=await this.resources.load_json(path,this.set_loading_current)
+        this.history_buffer.clear()
+        await this.preload_history_frames(this.cutscene)
+    }
     async preload_history_frames(commands: HistoryCommand[], max = 6){
         let count = 0
         for(const cmd of commands){
@@ -531,7 +532,7 @@ export class MenuManager{
 
                     this.content.history_frame.style.opacity = "0"
                     await sleep(0.4)
-
+ 
                     const img = await this.history_buffer.load(cmd.frame)
                     this.content.history_frame.src = img.src
 
@@ -542,19 +543,19 @@ export class MenuManager{
                     break
                 }
                 case HistoryCommandType.SetDialog: {
-                    if(cmd.text){
+                    const text=cmd.text??(cmd.text_ln===undefined?"":this.translation.get(cmd.text_ln))
+                    if(text){
                         ShowElement(this.content.history_dialog_text,true)
+
+                        const name=cmd.name??(cmd.name_ln===undefined?"":this.translation.get(cmd.name_ln))
                         this.content.history_dialog_text.innerHTML = `
-                            ${cmd.name?`<p class="name">${cmd.name}</p>`:""}
+                            ${name?`<p class="name">${name}</p>`:""}
                             <p class="content"></p>
                         `
 
                         const content=this.content.history_dialog_text.querySelector(".content") as HTMLSpanElement
-                        await typewriter(
-                            content,
-                            cmd.text,
-                            cmd.typewriter_delay??20
-                        )
+
+                        await typewriter(content,text,cmd.typewriter_delay??20)
                         content.style.color = cmd.color ?? "white"
                         
                     }else{
@@ -608,42 +609,73 @@ export class MenuManager{
         HideElement(this.content.history_overlay,true)
         if (music_player) music_player.set(undefined)
     }
-    open_phase_intro(){
-        // reset
-        this.content.phase_intro_location.innerText = ""
-        this.content.phase_intro_name.innerText = ""
-        this.content.phase_intro_date.innerText = ""
-        this.content.phase_intro_description.innerText = ""
-        ShowElement(this.content.phase_intro_overlay)
-    }
-    async show_phase_intro(config: PhaseIntroConfig,type_sounds:(Sound|undefined)[]): Promise<void> {
-        const play_type_sound=(_a:string)=>{
-            this.sounds.play(random.choose(type_sounds),{
-                volume:0.15,
-                bus:"ui"
-            })
-        }
-        const text_speed=config.text_speed??1
-        const wait_time=(config.wait_time??2)*1000
-        this.open_phase_intro()
-        // TYPEWRITER
-        const rand_delay={
-            min:40*text_speed,
-            max:200*text_speed
-        }
+    select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
+        return this.game_popup((ctx) => {
+            let selected = 0
 
-        await typewriter(this.content.phase_intro_name, config.name, rand_delay,play_type_sound)
-        await typewriter(this.content.phase_intro_location, config.location, rand_delay,play_type_sound)
-        if (config.date) {
-            await typewriter(this.content.phase_intro_date, config.date, rand_delay,play_type_sound)
-        }
-        if (config.description) {
-            await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
-        }
-        setTimeout(()=>{
-            HideElement(this.content.phase_intro_overlay)
-        },wait_time+1000)
-        await new Promise(r => setTimeout(r, wait_time))
+            ctx.parent.innerHTML = `
+                <div class="character-selector-screen">
+                    <div class="character-main background-menu-blue">
+                        <h1 class="character-name"></h1>
+                        <div class="character-image-wrapper">
+                            <img class="character-icon">
+                        </div>
+                        <div class="character-description"></div>
+                        <button class="btn-blue character-select-btn">
+                            Select Character
+                        </button>
+                    </div>
+                    <div class="character-selector-list"></div>
+                </div>
+            `
+
+            const list = ctx.parent.querySelector(".character-selector-list") as HTMLDivElement
+            const icon = ctx.parent.querySelector(".character-icon") as HTMLImageElement
+            const name = ctx.parent.querySelector(".character-name") as HTMLHeadingElement
+            const desc = ctx.parent.querySelector(".character-description") as HTMLDivElement
+            const button = ctx.parent.querySelector(".character-select-btn") as HTMLButtonElement
+
+            const cards: HTMLDivElement[] = []
+
+            const update = () => {
+                const char = characters[selected]
+
+                icon.src = char.icon!
+                name.innerText = char.name ?? "Unknown"
+                desc.innerText = char.description ?? ""
+
+                for (const c of cards) {
+                    c.classList.remove("selected")
+                }
+
+                cards[selected]?.classList.add("selected")
+            }
+
+            for (let i = 0; i < characters.length; i++) {
+                const char = characters[i]
+
+                const card = document.createElement("div")
+                card.className = "character-card"
+
+                card.innerHTML = `
+                    <img src="${char.icon}">
+                `
+
+                card.onclick = () => {
+                    selected = i
+                    update()
+                }
+
+                list.appendChild(card)
+                cards.push(card)
+            }
+
+            button.onclick = () => {
+                ctx.resolve(selected)
+            }
+
+            update()
+        })
     }
     game_start(){
         ShowElement(this.content.gameD)

@@ -87,6 +87,15 @@
         background-image: url("/img/menu/gui/buttons/reload_button.svg");
         background-size: cover;
     }
+    #btn-mobile-emotes{
+        align-self: center;
+        left:30px;
+        top: 30px;
+        transform: scale(60%);
+        background-color: #0003;
+        background-image: url("/img/menu/gui/buttons/emote_button.svg");
+        background-size: cover;
+    }
     @include main.medium_screen {
         button{
             left: 20%;

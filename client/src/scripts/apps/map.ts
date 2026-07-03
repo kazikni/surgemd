@@ -21,7 +21,7 @@ type MapPing={
 export class MapApp extends GameApp {
     mapViewport!:HTMLDivElement
     mapInner!:HTMLDivElement
-    mapImage!:HTMLImageElement
+    mapTiles!:HTMLDivElement
 
     deadzoneEl!:HTMLDivElement
     deadzoneDestEl!:HTMLDivElement
@@ -70,7 +70,7 @@ export class MapApp extends GameApp {
     </div>
     <div class="map-viewport">
         <div class="map-inner">
-            <img class="map-image" draggable="false"/>
+            <div class="map-tiles"></div>
             <div class="map-deadzone"></div>
             <div class="map-deadzone-dest"></div>
             <div class="map-deadzone-safe-line"></div>
@@ -82,7 +82,7 @@ export class MapApp extends GameApp {
 
         this.mapViewport=this.element.querySelector(".map-viewport") as HTMLDivElement
         this.mapInner=this.element.querySelector(".map-inner") as HTMLDivElement
-        this.mapImage=this.element.querySelector(".map-image") as HTMLImageElement
+        this.mapTiles=this.element.querySelector(".map-tiles") as HTMLDivElement
 
         const followChk=this.element.querySelector("#map-follow-player") as HTMLInputElement
 
@@ -135,20 +135,16 @@ export class MapApp extends GameApp {
             const rect=this.mapViewport.getBoundingClientRect()
             const mx=e.clientX-rect.left
             const my=e.clientY-rect.top
-
             const before=v2((mx-this.offset.x)/this.zoom,(my-this.offset.y)/this.zoom)
             const delta=-e.deltaY*0.001
-
-            const minZoom=this.mapViewport.clientHeight/this.mapImage.height
+            const mapW=this.mapInner.clientWidth
+            const mapH=this.mapInner.clientHeight
+            const minZoom=Math.min(this.mapViewport.clientWidth/mapW,this.mapViewport.clientHeight/mapH)
             const maxZoom=4
-
             this.zoom=Math.min(maxZoom,Math.max(minZoom,this.zoom+delta))
-
             const after=v2(before.x*this.zoom+this.offset.x,before.y*this.zoom+this.offset.y)
-
             this.offset.x+=mx-after.x
             this.offset.y+=my-after.y
-
             this.updateTransform()
         }
         this.updateTransform()
@@ -244,8 +240,8 @@ export class MapApp extends GameApp {
         const vw=this.mapViewport.clientWidth
         const vh=this.mapViewport.clientHeight
 
-        const mapW=this.mapImage.width*this.zoom
-        const mapH=this.mapImage.height*this.zoom
+        const mapW=this.mapInner.clientWidth*this.zoom
+        const mapH=this.mapInner.clientHeight*this.zoom
 
         const minX=vw-mapW
         const minY=vh-mapH
@@ -259,10 +255,10 @@ export class MapApp extends GameApp {
         this.mapInner.style.transform=`translate(${this.offset.x}px,${this.offset.y}px) scale(${this.zoom})`
     }
     worldToMap(x:number,y:number){
-        const ms=this.device.game.minimap.ms
+        const ms=this.device.game.minimap.meter_size
         return {
-            x:x/ms,
-            y:y/ms
+            x:x*ms,
+            y:y*ms
         }
     }
     centerOnPlayer(){
@@ -289,13 +285,13 @@ export class MapApp extends GameApp {
         this.deadzoneDestEl.style.display="block"
         this.deadzoneLineEl.style.display="block"
 
-        const ms=this.device.game.minimap.ms
-        const pos=v2(dz.position.x/ms,dz.position.y/ms)
+        const ms=this.device.game.minimap.meter_size
+        const pos=v2(dz.position.x*ms,dz.position.y*ms)
 
-        const dest=v2(dz.dest_position.x/ms,dz.dest_position.y/ms)
+        const dest=v2(dz.dest_position.x*ms,dz.dest_position.y*ms)
 
-        const r=dz.radius/ms
-        const dr=dz.dest_radius/ms
+        const r=dz.radius*ms
+        const dr=dz.dest_radius*ms
 
         this.deadzoneEl.style.setProperty("--dx",`${pos.x}px`)
         this.deadzoneEl.style.setProperty("--dy", `${pos.y}px`)
@@ -317,13 +313,13 @@ export class MapApp extends GameApp {
             return
         }
 
-        const ms=this.device.game.minimap.ms
+        const ms=this.device.game.minimap.meter_size
 
-        const px=p.x/ms
-        const py=p.y/ms
+        const px=p.x*ms
+        const py=p.y*ms
 
-        const zx=dz.dest_position.x/ms
-        const zy=dz.dest_position.y/ms
+        const zx=dz.dest_position.x*ms
+        const zy=dz.dest_position.y*ms
 
         const dx=zx-px
         const dy=zy-py
@@ -354,13 +350,33 @@ export class MapApp extends GameApp {
     }
 
     on_open(){
-        this.mapImage.src = this.device.game.minimap.image.src
-        this.mapImage.onload=()=>{
-            const minZoom=this.mapViewport.clientHeight/this.mapImage.height
-            this.zoom_input.min=minZoom.toString()
-            if(this.zoom<minZoom)this.zoom=minZoom
-            this.updateTransform()
+        const minimap=this.device.game.minimap
+        this.mapTiles.innerHTML=""
+        let max_w=0
+        let max_h=0
+        for(const tile of minimap.tiles.values()){
+            const img=document.createElement("img")
+            img.className="map-tile"
+            img.draggable=false
+            img.src=tile.image.src
+            const px=tile.position.x*minimap.tile_size_px
+            const py=tile.position.y*minimap.tile_size_px
+            img.style.left=px+"px"
+            img.style.top=py+"px"
+            this.mapTiles.appendChild(img)
+            max_w=Math.max(max_w,px+img.width)
+            max_h=Math.max(max_h,py+img.height)
         }
+        this.mapInner.style.width=max_w+"px"
+        this.mapInner.style.height=max_h+"px"
+        requestAnimationFrame(()=>{
+            const minZoom=this.mapViewport.clientHeight/max_h
+            this.zoom_input.min=minZoom.toString()
+            if(this.zoom<minZoom){
+                this.zoom=minZoom
+            }
+            this.updateTransform()
+        })
     }
     on_close(){}
     on_clear(){}

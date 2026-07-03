@@ -32,7 +32,8 @@ export const random=Object.freeze({
         return val[Math.floor(Math.random()*val.length)]
     },
     id():ID{
-        return Math.floor(Math.random() * 16777214)+1
+        return Math.floor(Math.random() * 65535)+1
+        //return Math.floor(Math.random() * 16777214)+1
     },
     rad():RadAngle{
         return Math.random()*(Math.PI-(-Math.PI))+(-Math.PI)
@@ -171,5 +172,148 @@ export class SeededRandom {
     }
     reset() {
         this._rng = this.seed;
+    }
+}
+export abstract class MatrixCalculatorProgram {
+    workgroup_size = 64;
+    abstract shader(): string;
+    initialize(_calc: MatrixCalculator): void {}
+    on_calculate?(array: Uint32Array): void;
+}
+export class MatrixCalculator {
+    readonly allow_webgpu: boolean;
+
+    adapter?: GPUAdapter;
+    device?: GPUDevice;
+
+    pipeline?: GPUComputePipeline;
+    bindGroup?: GPUBindGroup;
+
+    gpuBuffer?: GPUBuffer;
+    readBuffer?: GPUBuffer;
+
+    program?: MatrixCalculatorProgram;
+
+    initialized = false;
+
+    constructor(allow_webgpu = true) {
+        this.allow_webgpu = allow_webgpu;
+    }
+
+    async initialize(): Promise<boolean> {
+        if (!this.allow_webgpu)return false;
+        if (!navigator.gpu)return false;
+        this.adapter = await navigator.gpu.requestAdapter() as GPUAdapter|undefined;
+        if (!this.adapter)return false;
+
+        this.device = await this.adapter.requestDevice();
+
+        this.initialized = true;
+
+        return true;
+    }
+
+    set_program(program: MatrixCalculatorProgram) {
+        this.program = program;
+
+        if (!this.initialized || !this.device)
+            return;
+
+        const shader = this.device.createShaderModule({
+            code: program.shader()
+        });
+
+        this.pipeline = this.device.createComputePipeline({
+            layout: "auto",
+            compute: {
+                module: shader,
+                entryPoint: "main"
+            }
+        });
+
+        program.initialize(this);
+    }
+
+    async calculate(array: Uint32Array): Promise<Uint32Array> {
+
+        if (!this.initialized ||
+            !this.device ||
+            !this.pipeline ||
+            !this.program)
+        {
+            this.program?.on_calculate?.(array);
+            return array;
+        }
+
+        const bytes = array.byteLength;
+
+        this.gpuBuffer = this.device.createBuffer({
+            size: bytes,
+            usage:
+                GPUBufferUsage.STORAGE |
+                GPUBufferUsage.COPY_DST |
+                GPUBufferUsage.COPY_SRC
+        });
+
+        this.readBuffer = this.device.createBuffer({
+            size: bytes,
+            usage:
+                GPUBufferUsage.COPY_DST |
+                GPUBufferUsage.MAP_READ
+        });
+
+        this.device.queue.writeBuffer(
+            this.gpuBuffer,
+            0,
+            array
+        );
+
+        this.bindGroup = this.device.createBindGroup({
+            layout: this.pipeline.getBindGroupLayout(0),
+            entries: [
+                {
+                    binding: 0,
+                    resource: {
+                        buffer: this.gpuBuffer
+                    }
+                }
+            ]
+        });
+
+        const encoder = this.device.createCommandEncoder();
+
+        const pass = encoder.beginComputePass();
+
+        pass.setPipeline(this.pipeline);
+
+        pass.setBindGroup(0, this.bindGroup);
+
+        pass.dispatchWorkgroups(
+            Math.ceil(array.length / this.program.workgroup_size)
+        );
+
+        pass.end();
+
+        encoder.copyBufferToBuffer(
+            this.gpuBuffer,
+            0,
+            this.readBuffer,
+            0,
+            bytes
+        );
+
+        this.device.queue.submit([
+            encoder.finish()
+        ]);
+
+        await this.readBuffer.mapAsync(GPUMapMode.READ);
+
+        const result = new Uint32Array(
+            this.readBuffer.getMappedRange().slice(0)
+        );
+
+        this.readBuffer.unmap();
+
+        return result;
     }
 }

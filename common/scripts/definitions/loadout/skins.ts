@@ -6,7 +6,8 @@ export enum LoadoutItemKind{
     Hair,
     Eyes,
     Shirt,
-    Leg
+    Leg,
+    Accessory
 }
 export interface LoadoutBodyDef extends Definition{
     item:LoadoutItemKind.Body
@@ -19,14 +20,14 @@ export interface LoadoutBodyDef extends Definition{
         normal:string
         open:string
     }
-    rank:ItemRank,
+    rank:ItemRank
 }
 export interface LoadoutHairDef extends Definition{
     item:LoadoutItemKind.Hair
     frame?:{
         base?:FrameDef
     }
-    rank:ItemRank,
+    rank:ItemRank
 }
 export interface LoadoutEyesDef extends Definition{
     item:LoadoutItemKind.Eyes
@@ -35,7 +36,7 @@ export interface LoadoutEyesDef extends Definition{
         base?:string
         blink?:string
     }
-    rank:ItemRank,
+    rank:ItemRank
 }
 export interface LoadoutShirtDef extends Definition{
     item:LoadoutItemKind.Shirt
@@ -44,7 +45,7 @@ export interface LoadoutShirtDef extends Definition{
         arm_tint?:number
         chest?:FrameDef
     }
-    rank:ItemRank,
+    rank:ItemRank
 }
 export interface LoadoutLegDef extends Definition{
     item:LoadoutItemKind.Leg
@@ -52,9 +53,15 @@ export interface LoadoutLegDef extends Definition{
         foot?:FrameDef
         leg?:FrameDef
     }
-    rank:ItemRank,
+    rank:ItemRank
 }
-export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef
+export interface LoadoutAccessoryDef extends Definition{
+    item:LoadoutItemKind.Accessory
+    frame?:FrameDef
+    hide_helmet?:boolean
+    rank:ItemRank
+}
+export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef|LoadoutAccessoryDef
 export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
     loadout.insert(
         {
@@ -88,6 +95,26 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             frame:{
                 base:{
                     position:v2(-0.22,0)
+                }
+            }
+        },
+        {
+            item:LoadoutItemKind.Hair,
+            idString:"hair_3",
+            rank:ItemRank.E,
+            frame:{
+                base:{
+                    position:v2(-0.12,0)
+                }
+            }
+        },
+        {
+            item:LoadoutItemKind.Hair,
+            idString:"hair_4",
+            rank:ItemRank.E,
+            frame:{
+                base:{
+                    position:v2(-0.15,0)
                 }
             }
         },
@@ -246,12 +273,22 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             frame:{
                 leg:{
                     image:"human_leg_1_1",
-                    tint:0x343f4e
+                    tint:0x667994
                 },
                 foot:{
                     image:"human_leg_1_2",
-                    tint:0x353c7e,
+                    tint:0x222233,
                 },
+            }
+        },
+        // Accessorys
+        {
+            item:LoadoutItemKind.Accessory,
+            idString:"hair_bow",
+            rank:ItemRank.E,
+            frame:{
+                position:v2(-0.15,-0.3),
+                rotation:-0.4
             }
         },
     )

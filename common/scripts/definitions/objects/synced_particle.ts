@@ -7,7 +7,9 @@ export interface SyncedParticleDef extends Definition{
     action_time?:number
     side_effect?:SideEffect[]
     no_hit_owner?:boolean
+    single_use?:boolean
     hitbox?:Hitbox2D
+    force_default_scope?:boolean
     movement?:({
         type:"walk"
         velocity:{
@@ -57,6 +59,7 @@ export const synsed_particle_factory={
             idString:id,
             lifetime:1,
             no_hit_owner:true,
+            single_use:true,
             hitbox:new CircleHitbox2D(v2.zero,0.5),
             side_effect:side_effect,
             frame:{
@@ -78,7 +81,7 @@ export const synsed_particle_factory={
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.7,
+                        to:178,
                         duration:0.2,
                     },
                     scale:{
@@ -102,6 +105,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
         {
             idString:"smoke",
             lifetime:33,
+            force_default_scope:true,
             frame:{
                 image:"smoke_particle",
                 scale:0.01
@@ -122,7 +126,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.9,
+                        to:230,
                         duration:2,
                     },
                     scale:{
@@ -141,11 +145,11 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
         },
         {
             idString:"airdrop_smoke",
-            lifetime:1,
+            lifetime:1.5,
             frame:{
                 image:"smoke_particle",
-                scale:2,
-                alpha:0.92
+                scale:1.6,
+                alpha:230
             },
             movement:{
                 type:"walk",
@@ -206,7 +210,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.7,
+                        to:178,
                         duration:0.2,
                     },
                     scale:{
@@ -261,7 +265,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 spawn:{
                     alpha:{
                         from:0,
-                        to:0.5,
+                        to:127,
                         duration:0.2,
                     },
                     scale:{
@@ -282,7 +286,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
             {
                 type:SideEffectType.Heal,
                 health:{
-                    amount:0.25,
+                    amount:1,
                 }
             }
         ])

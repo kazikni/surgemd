@@ -14,6 +14,7 @@ import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
 import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
 import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
+import { DecalDef, Decals_Default_Init } from "./objects/decals.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
 import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
 import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
@@ -93,6 +94,7 @@ export class GameDefinition{
     // Objects
     buildings=new Definitions<BuildingDef,{}>((i)=>{})
     creatures=new Definitions<CreatureDef,{}>((i)=>{})
+    decals=new Definitions<DecalDef,{}>((_v)=>{})
     explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
     obstacles=new Definitions<ObstacleDef,{}>((_v)=>{})
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
@@ -107,16 +109,16 @@ export class GameDefinition{
     }
 
     clear(){
+        this.melees.clear()
+        this.guns.clear()
         this.ammos.clear()
-        this.backpacks.clear()
         this.consumibles.clear()
+        this.backpacks.clear()
         this.helmets.clear()
         this.vests.clear()
-        this.accessorys.clear()
         this.grenades.clear()
-        this.guns.clear()
-        this.melees.clear()
         this.scopes.clear()
+        this.accessorys.clear()
 
         this.loadout.clear()
         this.badges.clear()
@@ -125,6 +127,7 @@ export class GameDefinition{
 
         this.buildings.clear()
         this.creatures.clear()
+        this.decals.clear()
         this.explosions.clear()
         this.obstacles.clear()
         this.vehicles.clear()
@@ -134,16 +137,16 @@ export class GameDefinition{
         this.game_objects.clear()
     }
     init_default(){
+        Melees_Default_Init(this.melees)
+        Guns_Default_Init(this.guns)
         Ammos_Default_Init(this.ammos)
-        Backpacks_Default_Init(this.backpacks)
         Consumibles_Default_Init(this.consumibles)
+        Backpacks_Default_Init(this.backpacks)
         Helmets_Default_Init(this.helmets)
         Vests_Default_Init(this.vests)
-        Accessorys_Default_Init(this.accessorys)
         Grenades_Default_Init(this.grenades)
-        Guns_Default_Init(this.guns)
-        Melees_Default_Init(this.melees)
         Scopes_Default_Init(this.scopes)
+        Accessorys_Default_Init(this.accessorys)
 
         Loadout_Default_Init(this.loadout)
         Badges_Default_Init(this.badges)
@@ -152,19 +155,20 @@ export class GameDefinition{
 
         Buildings_Default_Init(this.buildings)
         Creatures_Default_Init(this.creatures)
+        Decals_Default_Init(this.decals)
         Explosions_Default_Init(this.explosions)
-        Obstacles_Default_Init(this.obstacles)
+        Obstacles_Default_Init(this.obstacles,this.guns)
         Vehicles_Default_Init(this.vehicles)
         SyncedParticle_Default_Init(this.synced_particle)
 
+        this.game_items.insert_def(this.melees.value)
+        this.game_items.insert_def(this.guns.value)
         this.game_items.insert_def(this.ammos.value)
-        this.game_items.insert_def(this.backpacks.value)
         this.game_items.insert_def(this.consumibles.value)
+        this.game_items.insert_def(this.backpacks.value)
         this.game_items.insert_def(this.helmets.value)
         this.game_items.insert_def(this.vests.value)
         this.game_items.insert_def(this.grenades.value)
-        this.game_items.insert_def(this.guns.value)
-        this.game_items.insert_def(this.melees.value)
         this.game_items.insert_def(this.scopes.value)
         this.game_items.insert_def(this.accessorys.value)
 

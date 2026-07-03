@@ -19,8 +19,8 @@ export abstract class MDItem extends Item{
         //@ts-ignore
         this.inventory=null
     }
-    unload(){}
-    load(){}
+    unload(def?:GameItem){}
+    load(def?:GameItem){}
 }
 export class GunItemBase extends MDItem{
     def:GunDef
@@ -150,9 +150,10 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         }
     }
     set_hand_item(val:IT){
+        const old=this.hand_item?.def
         this.hand_item=val
         this.hand_def=val.def
-        this.hand_item.load()
+        this.hand_item.load(old)
 
         this.net_sync.hand=true
     }
@@ -211,7 +212,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
         this.iitems.length=1
         this.set_backpack()
         for(const s of this.slots){
-          s.clear()
+            s.clear()
         }
         this.clear_weapons()
     }

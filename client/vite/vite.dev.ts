@@ -1,22 +1,12 @@
 import { mergeConfig, type UserConfig } from "vite";
-
 import common from "./vite.common.ts";
 
-import { ConfigType } from "common/scripts/config/config.ts";
-const con=require("../../config.json") as ConfigType
-const config: UserConfig = {
+const uconfig: UserConfig = {
     server: {
-        port: con.vite.port,
+        port: common.config.port,
         strictPort: true,
         host: "0.0.0.0",
-        proxy: {
-            "/api": {
-                target: con.api.global,
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, ""),
-            },
-        },
-        allowedHosts:con.vite.allowed_hosts
+        allowedHosts:common.config.allowed_hosts
     },
     preview: {
         port: 3000,
@@ -25,4 +15,4 @@ const config: UserConfig = {
     },
 };
 
-export default mergeConfig(common, config);
+export default mergeConfig(uconfig, common.uconfig);

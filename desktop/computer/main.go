@@ -135,7 +135,7 @@ func JSexecServer(port int, mode, settings, password string) error {
 
 	if dev_mode {
 		cmd = exec.Command("deno", append([]string{
-			"run", "-A", "../server/src/game_server/cli.ts",
+			"run", "-A", "../server/src/game/cli.ts",
 		}, args...)...)
 		fmt.Println("DEV → deno", args)
 	} else {

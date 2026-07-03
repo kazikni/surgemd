@@ -1,40 +1,48 @@
-import { BattleRoyaleSolo, LevelPlayer, OfflineGameServer } from "./offline.ts";
-import { ConfigType } from "common/scripts/config/config.ts";
-import { OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
+import { BattleRoyale, LevelPlayer, OfflineGameServer } from "./offline.ts";
+import { GameServerConfig } from "common/scripts/config/config.ts";
+import { FetchFileManager, OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Maps } from "common/scripts/definitions/maps/base.ts";
 let server:OfflineGameServer
 let level:LevelPlayer
-function logError(e: any){
+function logError(e: unknown): never {
     if (e instanceof Error) {
-        console.error(e.stack)
-    } else {
-        console.error(e)
+        throw e
     }
+    throw new Error(String(e))
 }
 
-self.onerror = (ev: ErrorEvent) => logError(ev.error ?? ev.message)
-self.onunhandledrejection = (ev) => logError(ev.reason)
+self.onerror = (ev: string|Event) => {
+    logError(ev)
+}
+self.onunhandledrejection = (ev) => {
+    logError(ev.reason)
+}
 
-self.onmessage = (ev) => {
+self.onmessage = async(ev) => {
     const msg = ev.data;
     switch(msg.type){
         case "begin":{
             server=new OfflineGameServer(
-                msg.config as ConfigType,
+                msg.config as GameServerConfig,
                 new OfflineClientsManager(PacketManager),
                 0,
             );
             break
         }
-        case "init_level":{
-            level=new LevelPlayer(server)
-            level.begin(msg.level)
-            if(!server.running)server.mainloop()
+        case "load_level":{
+            const path="/"+msg.path
+            const fs=new FetchFileManager()
+            fs.base=path+"/"
+            level=new LevelPlayer(server,fs)
+            await level.begin(path)
+            self.postMessage({
+                type:"server_created"
+            })
             break
         }
-        case "init_mode":{
-            server.init(new BattleRoyaleSolo({
+        case "load_mode":{
+            server.init(new BattleRoyale({
                 map:{
                     def:Maps["normal"]
                 },
@@ -43,9 +51,16 @@ self.onmessage = (ev) => {
                 }
             }))
             if(!server.running)server.mainloop()
+            self.postMessage({
+                type:"server_created"
+            })
             break
         }
-        case "start":{
+        case "init":{
+            level.init(msg.start_with_intro)
+            break
+        }
+        case "start_game":{
             level.start()
             break
         }

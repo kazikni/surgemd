@@ -1,7 +1,6 @@
 import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ParticlesEmitter2D, RainParticle2D, random, Sound, SoundController, Tween, v2 } from "common/engine/client.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
-import { BiomeDef } from "common/scripts/definitions/maps/base.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
 
 export class AmbientManager{
@@ -10,7 +9,6 @@ export class AmbientManager{
     ambient_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
     snow_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
 
-    biome!:BiomeDef
     music:SoundController
     ambience:SoundController
     deadzone_ambience:SoundController
@@ -98,10 +96,10 @@ export class AmbientManager{
                 const dir=random.rad()
                 const ret=new ABParticle2D({
                     frame:{
-                        image:random.choose(this.biome!.ambient.particles),
+                        image:random.choose(this.game.minimap.biome!.particles),
                         layer:this.game.cam2d.layer,
                     },
-                    tint:ColorM.number(this.biome.ambient.particles_tint??0),
+                    tint:ColorM.number(this.game.minimap.biome.particles_tint??0),
                     zIndex:zIndexes.Particles,
                     life_time:random.float(10,30),
                     direction:dir,
@@ -156,6 +154,8 @@ export class AmbientManager{
         this.ambience=this.game.sounds.create_controller("ambience")
         this.deadzone_ambience=this.game.sounds.create_controller("ambience")
 
+        this.music.set_volume(0.5)
+
         this.game.sounds.signals.on("unlock",async()=>{
             await this.game.resources.load_sound("menu_music",{src:`/sounds/musics/menu_music.mp3`,volume:1},"essentials")
             this.game.resources.load_sound("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
@@ -176,7 +176,7 @@ export class AmbientManager{
         this.light_map.layer=1000
         this.light_map.ambient = 0
         this.light_map.quality=2
-        this.game.cam2d.addObject(this.light_map)*/
+        this.game.cam2d.add_object(this.light_map)*/
     }
     on_game_close(){
         this.end_game=false
@@ -222,11 +222,11 @@ export class AmbientManager{
         this.global_ilumination = Math.max(light * (1 - rainDark),0.4)
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
-        if(!this.biome)return
+        if(!this.game.minimap.biome)return
         this.rain_value=value
         if(value===0||this.game.cam2d.layer<Layers.Normal){
-            if(this.biome.ambient.sound){
-                this.ambience.set(this.game.resources.get_sound(this.biome.ambient.sound),{
+            if(this.game.minimap.biome.ambient_sound){
+                this.ambience.set(this.game.resources.get_sound(this.game.minimap.biome.ambient_sound),{
                     loop:true,
                 })
             }else{
@@ -251,15 +251,14 @@ export class AmbientManager{
         }
     }
     reload(){
-        this.biome=this.game.terrain.biome!
-        this.musics=this.biome.musics??[]
+        this.musics=this.game.minimap.biome.musics??[]
 
-        if(this.biome.ambient.snow){
+        /*if(this.game.minimap.biome.ambient_snow){
             this.fog_enabled=true
             this.fog_color=5
             this.fog_saturate=0.8
             this.fog_constrast=0.75
-        }
+        }*/
 
         this.global_ilumination=1
 
@@ -291,25 +290,27 @@ export class AmbientManager{
                 this.date.hour+=1
             }
             
-            if(this.biome?.ambient?.rain&&this.thunders){
+            if(this.thunders){
                 if(Math.random()<=0.05){
                     this.bolt()
                 }
             }
 
             if(!this.game.game_over){
-                if(this.finding_music&&!this.music.running&&this.musics.length>0){
-                    if(Math.random()<=0.01){
-                        const music=random.choose(this.musics)
-                        this.game.resources.unload_sound("gameplay_music")
-                        this.game.resources.load_sound("gameplay_music",{
-                            src:music,
-                            volume:1
-                        }).then((v)=>{
-                            this.music.set(v)
-                            this.finding_music=true
-                        })
-                        this.finding_music=false
+                if(this.game.save.get_variable("sv_sounds_gameplay_music")){
+                    if(this.finding_music&&!this.music.running&&this.musics.length>0){
+                        if(Math.random()<=0.01){
+                            const music=random.choose(this.musics)
+                            this.game.resources.unload_sound("gameplay_music")
+                            this.game.resources.load_sound("gameplay_music",{
+                                src:music,
+                                volume:1
+                            }).then((v)=>{
+                                this.music.set(v)
+                                this.finding_music=true
+                            })
+                            this.finding_music=false
+                        }
                     }
                 }
             }

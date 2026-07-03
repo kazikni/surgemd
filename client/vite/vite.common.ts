@@ -1,15 +1,21 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path, { resolve } from "node:path";
+import fs from "node:fs"
 import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
 import { AudiosLists } from "./plugins/audio_list.ts";
-
-const config: UserConfig = {
+import { ConfigType } from "common/scripts/config/config.ts";
+import { parseJSONC } from "../../common/engine/core/math/utils.ts";
+const td=new TextDecoder()
+const txt=td.decode(fs.readFileSync("../config.jsonc"))
+export const config=(parseJSONC(txt) as ConfigType).vite;
+export const uconfig: UserConfig = {
     build: {
         rollupOptions: {
             chunkSizeWarningLimit: 2000,
             input: {
                 main: resolve(__dirname, "../index.html"),
+                books: resolve(__dirname, "../pages/books/index.html"),
                 //forum: resolve(__dirname, "../pages/forum/index.html"),
                 //user: resolve(__dirname, "../pages/user/index.html"),
                 //news: resolve(__dirname, "../pages/news/index.html"),
@@ -40,24 +46,11 @@ const config: UserConfig = {
             }
         }
     },
-
     plugins: [
         svelte(),
-        spritesheet("public",{
-            "main":"img/game/main",
-            "normal":"img/game/normal",
-            //"christmas":"christmas"
-        },undefined,[
-            {name:"low",scale:0.5},
-            {name:"medium",scale:0.75},
-            {name:"high",scale:1},
-        ]),
-        AudiosLists([{
-            input:"sounds/game/main",
-            output:"assets/main-sounds.json"
-        }]),
+        spritesheet("public",config.spritesheet.sheets,undefined,config.spritesheet.resolutions),
+        AudiosLists(config.audios),
     ],
-
     css: {
         preprocessorOptions: {
             scss: {
@@ -65,12 +58,13 @@ const config: UserConfig = {
             }
         }
     },
-
     resolve: {
         alias: {
             "common": path.resolve(__dirname, "../../common")
         }
     },
 };
-
-export default config;
+export default {
+    uconfig,
+    config
+}

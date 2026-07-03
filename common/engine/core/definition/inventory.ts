@@ -5,6 +5,7 @@ import { Numeric, Tags, hasTag, hasTags } from "../math/utils.ts"
 export abstract class Item{
     limit_per_slot:number=1
     tags:Tags=[]
+    allow_merge:boolean=true
     abstract is(other:Item):boolean
 }
 
@@ -25,12 +26,15 @@ export class Slot<ItemBase extends Item = Item>{
      */
     add(item:ItemBase,quantity:number=1):number{
         if(this.item==null){
-            if(this.accept_tags.length==0||hasTags(this.accept_tags,item.tags)){
+            if(this.accept_tags.length===0||hasTags(this.accept_tags,item.tags)){
                 this.item=item
             }else{
                 return quantity
             }
         }else if(!this.item.is(item)){
+            return quantity
+        }
+        if(!this.item.allow_merge){
             return quantity
         }
         const add=this.quantity+quantity
@@ -76,6 +80,13 @@ export class Inventory<ItemBase extends Item = Item>{
      * @returns `Inventory` Overflow
      */
     add(item:ItemBase,quantity:number=1):number{
+        /*let ret=quantity
+        let i=-1
+        while(i < this.slots.length&&ret>0&&this.slots[i]){
+            i++
+            ret=this.slots[i].add(item,ret)
+        }
+        return ret*/
         let ret=quantity
         for(const i in this.slots){
             ret=this.slots[i].add(item,ret)
@@ -197,8 +208,9 @@ export class SlotCap<ItemBase extends ItemCap = ItemCap>{
      * @param quantity Add Quantity
      * @returns `Slot` Overflow
      */
-    add(item:ItemBase,quantity:number=1):number{
+    add(item:ItemBase,quantity:number=1,allow_null:boolean=true):number{
         if(this.item==null){
+            if(!allow_null)return quantity
             if(this.accept_tags.length==0||hasTags(this.accept_tags,item.tags)){
                 this.item=item
             }else{
@@ -264,7 +276,7 @@ export class InventoryCap<ItemBase extends ItemCap=ItemCap>{
         const overAmmount=Math.floor(Numeric.clamp((sizeA-this.max_cap)/item.cap,0,quantity))
         for(const i in this.slots){
             ret=this.slots[i].add(item,ret)
-            if(ret==0){
+            if(ret===0){
                 break
             }
         }
@@ -418,6 +430,12 @@ export abstract class BaseAction<User>{
     abstract delay:number
     abstract type:number
     abstract on_execute(user:User):void
+    on_begin(user:User){
+        
+    }
+    on_cancel(user:User){
+
+    }
     update(user:User,dt:number){}
     constructor(){}
 }
@@ -432,15 +450,18 @@ export class ActionsManager<User,Action extends BaseAction<User>>{
     }
     cancel(){
         if(this.current_action){
+            const action=this.current_action
             this.current_action=undefined
             this.current_delay=0
             this.dirty=true
+            action.on_cancel(this.user)
         }
     }
     play(action:Action):void{
         if(this.current_action)return
         this.current_action=action
         this.current_delay=action.delay
+        this.current_action.on_begin(this.user)
         this.dirty=true
     }
     update(deltaTime:number){

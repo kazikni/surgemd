@@ -18,11 +18,12 @@ export class Sprite2D extends Container2DObject{
     }
     set size(val:Vec2|undefined){
         if(val){
-            if(!this._size)this._size=new Vec2M(0,0,this._position.on_set)
+            if(!this._size)this._size=new Vec2M(0,0,this._bid)
             this._size.set(val.x,val.y)
         }else{
             this._size=undefined
         }
+        this.dirty_reals=true
     }
 
     _real_size:Vec2=v2(0,0)
@@ -44,12 +45,7 @@ export class Sprite2D extends Container2DObject{
 
     override update_real(): void {
         super.update_real()
-        this.update_model()
-    }
-
-    update_model(){
-        if(!this.frame)return
-        this._real_size=this.size??this.frame.frame_size
+        this._real_size=this.size??this.frame?.frame_size??v2.zero()
         ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100,this._real_position,this._rect,this.model)
     }
 
@@ -79,6 +75,8 @@ export class Sprite2D extends Container2DObject{
         super.transform_frame(frame)
         if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
         if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
+        if(frame.alpha!==undefined)this.tint.a=frame.alpha
+        this.dirty_reals=true
     }
     override get_rect():Rect{
         return this._rect

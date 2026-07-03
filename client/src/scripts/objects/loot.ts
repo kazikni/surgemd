@@ -1,8 +1,8 @@
 
-import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, Container2D, ease, NetStream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { InventoryItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { Human } from "./human.ts";
@@ -10,6 +10,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { Debug } from "../others/config.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -42,14 +43,16 @@ export class Loot extends GameObject{
 
         this.container.zIndex=zIndexes.Loots
         this.container.add_child(this.sprite_main)
+
+        this.allow_tick=true
     }
-    override on_layer_set(layer: number): void {
-        this.container.layer=layer
+    override on_create(_args: Record<string, void>): void {
+        this.game.cam2d.add_object(this.container)
     }
-    create(_args: Record<string, void>): void {
-        this.game.cam2d.addObject(this.container)
+    override on_layer_set(): void {
+        this.container.layer=this.layer
     }
-    update(_dt:number): void {
+    override on_tick(_dt:number): void {
         if(this.dest_pos){
             v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
         }
@@ -65,7 +68,7 @@ export class Loot extends GameObject{
         return this.item&&h.hitbox.colliding_with(this.hitbox)
     }
 
-    override interact(h:Human): void {
+    override on_interact(h:Human): void {
         switch(this.item.item_type!){
             case InventoryItemType.gun:
                 if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.gun)))return
@@ -128,11 +131,11 @@ export class Loot extends GameObject{
             count: this.count > 1 ? `(${this.count})` : ""
         })
     }
-    override decode(stream: NetStream, full: boolean): void {
-        const position=stream.readPos2()
+    override on_decode_net(stream: Stream, full: boolean): void {
+        const position=stream.read_pos2()
         if(full){
-            this.item=this.game.definitions.game_items.valueNumber[stream.readUint16()]
-            this.count=stream.readUint8()
+            this.item=this.game.definitions.game_items.valueNumber[stream.read_uint16()]
+            this.count=stream.read_uint8()
             let radius=0.3
             switch(this.item.item_type!){
                 case InventoryItemType.gun:
@@ -140,7 +143,14 @@ export class Loot extends GameObject{
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.frame=this.game.resources.get_frame(`${(this.item as unknown as GunDef).ammo_type}_outline`)
+                    if(this.game.save.get_variable("sv_game_ammo_outline")){
+                        this.sprite_outline.frame=this.game.resources.get_frame(`${(this.item as unknown as GunDef).ammo_type}_outline`)
+                    }else{
+                        this.sprite_outline.frame=this.game.resources.get_frame("rarity_outline")
+                        this.sprite_outline.transform_frame({
+                            tint:ItemQualitySettings[this.item.rank].tint
+                        })
+                    }
                     this.sprite_outline.visible=true;
                     this.sprite_outline.scale=v2(2,2);
                     this.pickup_sound=this.game.resources.get_sound("gun_pickup")
@@ -151,8 +161,8 @@ export class Loot extends GameObject{
                 case InventoryItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true;
-                    this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.scale=v2(2,2);
+                    this.sprite_main.scale=v2(1.2,1.2)
+                    this.sprite_outline.visible=false;
                     this.pickup_sound=this.game.resources.get_sound("ammo_pickup")
                     radius=GameConstants.loot.radius.ammo
                     break
@@ -174,7 +184,7 @@ export class Loot extends GameObject{
                     this.sprite_outline.visible=true;
                     this.sprite_main.scale=v2(0.8,0.8);
                     this.sprite_outline.scale=v2(1.4,1.4);
-                    (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.equipament
+                    radius=GameConstants.loot.radius.equipament
                     this.pickup_sound=this.game.resources.get_sound(`helmet_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break
@@ -205,32 +215,31 @@ export class Loot extends GameObject{
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(1.5,1.5);
+                    this.sprite_main.scale=v2(1.9,1.9);
                     this.sprite_outline.scale=v2(1.4,1.4);
-                    (this.base_hitbox as CircleHitbox2D).radius=GameConstants.loot.radius.scopes
+                    radius=GameConstants.loot.radius.scopes
                     this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break
                 case InventoryItemType.grenade:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
+                    this.sprite_main.scale=v2(2,2)
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true
-                    this.sprite_main.scale=v2(0.8,0.8);
                     this.sprite_outline.scale=v2(1.4,1.4);
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     radius=GameConstants.loot.radius.grenade
-
                     this.container.add_child(this.sprite_outline)
                     break
                 case InventoryItemType.melee:
                     this.sprite_main.frame=this.game.resources.get_frame((this.item as MeleeDef).assets?.item??this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
+                    this.sprite_main.scale=v2(2,2)
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true;
-                    this.sprite_outline.scale=v2(2,2);
-                    this.pickup_sound=this.game.resources.get_sound("gun_pickup")
+                    this.sprite_outline.scale=v2(1.9,1.9);
                     radius=GameConstants.loot.radius.weapon
                     this.container.add_child(this.sprite_outline)
                     break
@@ -260,11 +269,15 @@ export class Loot extends GameObject{
             }
             this.base_hitbox=new CircleHitbox2D(v2(0,0),radius)
             this.container.visible=true
-        }
-        if(this.game.save.get_variable("sv_game_interpolation")&&!full){
-            this.dest_pos=position
-        }else{
             this.position=position
+            if(Debug.hitbox){
+                this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+                this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
+            }
+        }else{
+            if(this.game.save.get_variable("sv_game_interpolation")){
+                this.dest_pos=position
+            }
         }
     }
 }

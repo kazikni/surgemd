@@ -1,6 +1,5 @@
-# Surgemd Pre-Beta-8
 ## News
-__                                                                                                                 __
+___
 ### Mains
 * Storehouse!
 * Small House
@@ -12,7 +11,7 @@ __                                                                              
 * Groups
 * Cancel Action Input
 * Rework Rendering Engine
-__                                                                                                                 __
+___
 ### Menu
 * Keybind Settings!
 * Final Screen
@@ -31,7 +30,7 @@ __                                                                              
 * Maximized Equipments Show In UI
 * Escape Menu
 * Characters Selection Screen
-__                                                                                                                 __
+___
 ### Items
 * Melees Switch Sounds
 * VSS - 9mm DMR
@@ -46,7 +45,7 @@ __                                                                              
 * Pan
 * Yellow Flare
 * Guns Move Spread
-__                                                                                                                 __
+___
 ### Others
 * Airdrop Lading Sound For Liquid And Normal
 * Airdrop More Locked Particles
@@ -65,9 +64,9 @@ __                                                                              
 * Box
 * Wood Pallet
 * 2 New Hairs
-__                                                                                                                 __
+___
 ## Changes
-__                                                                                                                 __
+___
 ### Items
 * Change Loot Tables
 * Some Balance Changes
@@ -75,11 +74,11 @@ __                                                                              
 * Change Equipment Sprites
 * Katana Animations
 * Scopes Sprites Rework
-__                                                                                                                 __
+___
 ### Menu
 * Rework Minimap System
 * Deenable Mobile Device
-__                                                                                                                 __
+___
 ### Others
 * Change Some Graphics
 * Fix Explosives Obstacles Particles
@@ -89,7 +88,3 @@ __                                                                              
 * Fix Badges
 * Readd Human Bodys
 * Deadzone Visual Rework
-__                                                                                                                 __
-# Play The Game
-[Web Version](https://surgemd.io)
-If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

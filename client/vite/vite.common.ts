@@ -4,7 +4,7 @@ import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
 import { AudiosLists } from "./plugins/audio_list.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-export const config=(require("../../config.json") as ConfigType).vite;
+export const config=(require("../../config.jsonc") as ConfigType).vite;
 export const uconfig: UserConfig = {
     build: {
         rollupOptions: {

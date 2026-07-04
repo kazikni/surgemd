@@ -864,3 +864,11 @@ export class MinHeap<T> {
         return root
     }
 }
+export function formatJSONC(text:string):string{
+    /*text = text.replace(/\/\*[\s\S]*?\*\//g, "")
+    text = text.replace(/\/\/.*$/gm, "")*/
+    return text
+}
+export function parseJSONC(text: string) {
+    return JSON.parse(formatJSONC(text))
+}

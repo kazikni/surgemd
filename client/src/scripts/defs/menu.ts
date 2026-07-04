@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { deleteDeep, FileManager, getDeep, Numeric, setDeep, TranslationManager } from "common/engine/core.ts";
+import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
@@ -495,12 +495,12 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 
 export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,mods?:CModsManager){
     const campaign_path="scripts/campaign"
-    const campaign=JSON.parse(await fs.read_file(campaign_path+"/main.json"))
+    const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
             const path=campaign_path+"/"+campaign.charpters[c].levels[l]
-            const txt=await fs.read_file(path+"/level.json")
-            campaign.charpters[c].levels[l]=JSON.parse(txt)
+            const txt=await fs.read_file(path+"/level.jsonc")
+            campaign.charpters[c].levels[l]=parseJSONC(txt)
             campaign.charpters[c].levels[l].path=path
         }
     }

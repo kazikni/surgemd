@@ -14,7 +14,7 @@
         }
     },
     "cutscenes": {
-        "begin": "cutscenes/begin.json"
+        "begin": "cutscenes/begin.jsonc"
     },
     "mode": {
         "type": "battle_royale",
@@ -290,6 +290,6 @@
         ]
     },
     "player": {
-        "path": "../../characters/nick.json"
+        "path": "../../characters/nick.jsonc"
     }
 }

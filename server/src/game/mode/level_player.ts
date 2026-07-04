@@ -5,7 +5,7 @@ import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { ModeManager } from "./modeManager.ts"
 import { type Human } from "../objects/human.ts"
 import { type Player } from "../objects/player.ts"
-import { FileManager, mergeDeep, DynamicStream, Stream, v2m, Vec2 } from "common/engine/core.ts";
+import { FileManager, mergeDeep, DynamicStream, Stream, v2m, Vec2, parseJSONC } from "common/engine/core.ts";
 import { Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -103,7 +103,7 @@ export class LevelPlayer {
     }
 
     async begin(path:string){
-        this.level = JSON.parse(await this.fs.read_file("level.json"))
+        this.level = parseJSONC(await this.fs.read_file("level.jsonc"))
 
         this.game.start_settings.background_music=this.level.assets?.background_music
         this.game.start_settings.textures.push(...(this.level.assets?.textures??[]))
@@ -130,7 +130,7 @@ export class LevelPlayer {
                 if(this.level.player){
                     let p:LevelCharacter
                     if(this.level.player.path){
-                        p=mergeDeep(JSON.parse(await this.fs.read_file(this.level.player.path)),this.level.player)
+                        p=mergeDeep(parseJSONC(await this.fs.read_file(this.level.player.path)),this.level.player)
                     }else{
                         p=this.level.player
                     }
@@ -155,7 +155,7 @@ export class LevelPlayer {
         this.game.clock.timeScale=0
         if(start_with_intro){
             if(this.level.cutscenes?.begin){
-                const def=JSON.parse(await this.fs.read_file(this.level.cutscenes.begin))
+                const def=parseJSONC(await this.fs.read_file(this.level.cutscenes.begin))
                 this.game.clients.send({
                     type:OnlineMessageType.Cutscene,
                     cutscene:def
@@ -167,7 +167,7 @@ export class LevelPlayer {
             const characters:LevelCharacter[]=[]
             for(const v of this.level.characters_selection.characters){
                 if(v.path){
-                    characters.push(mergeDeep(JSON.parse(await this.fs.read_file(v.path)),this.level.player))
+                    characters.push(mergeDeep(parseJSONC(await this.fs.read_file(v.path)),this.level.player))
                 }else{
                     characters.push(v)
                 }

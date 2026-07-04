@@ -360,8 +360,8 @@ export const buildings_factory={
                         hitbox:spawn_hb,
                     }],
                     floor_image:[
-                        {image:floor+"_1"},
                         {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
+                        {image:floor+"_1"},
                     ],
                     stair_data:[{
                         hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
@@ -411,7 +411,7 @@ export const buildings_factory={
                     ],
                     floor_image:[
                         {image:"small_bunker_floor_2",scale:4,zIndex:zIndexes.BuildingFloor1},
-                        {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingFloor1},
+                        {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
                     ],
                     ceiling:[
                         {
@@ -808,6 +808,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
 
         ...buildings_factory.stairs("small_iron_stairs",{
             both:{
+                reflect_bullets:true,
                 assets:{
                     particles:{
                         particle:"metal_particle",

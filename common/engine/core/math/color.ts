@@ -154,6 +154,14 @@ export const ColorM={
         dst.b=Math.floor(x.b*(y.b/255))
         dst.a=Math.floor(x.a*(y.a/255))
     },
+    mult_rgba(x:Color,r:number,g:number,b:number,a:number){
+        return {
+            r:x.r*r,
+            g:x.g*g,
+            b:x.b*b,
+            a:x.a*a,
+        }
+    },
     mult_hsv(
         color: Color,
         hMul: number = 1,

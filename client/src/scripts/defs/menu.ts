@@ -1096,9 +1096,35 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             options:hairs_types,
                         },
                         {
-                            type:"color",
+                            type:"choose",
                             name:"loadout.character.body_tint",
                             var:"sv_loadout_body_tint",
+                            options:[
+                                {
+                                    name:"1",
+                                    value:"#f0a93f"
+                                },
+                                {
+                                    name:"2",
+                                    value:"#a06e22"
+                                },
+                                {
+                                    name:"3",
+                                    value:"#a06e22"
+                                },
+                                {
+                                    name:"4",
+                                    value:"#d8a14e"
+                                },
+                                {
+                                    name:"5",
+                                    value:"#ffcb7c"
+                                },
+                                {
+                                    name:"6",
+                                    value:"#f39f67"
+                                }
+                            ]
                         },
                         {
                             type:"toggle",

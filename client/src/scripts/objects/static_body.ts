@@ -37,6 +37,7 @@ export abstract class StaticBody extends GameObject{
 
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         if(!this.assets_data.particles)return
+        const tint=this.assets_data.particles.tint
         const p=new ABParticle2D({
             frame:{
                 image:random.choose(this.assets_data.particles.images),
@@ -53,6 +54,7 @@ export abstract class StaticBody extends GameObject{
             to:{
                 speed:random.float(0.1,1),
                 angle:random.rad(),
+                tint:ColorM.mult_rgba(tint??ColorM.default.white,1,1,1,0),
             }
         })
         this.game.particles.add_particle(p)

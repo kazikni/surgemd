@@ -79,8 +79,8 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             ammoType:"50cal",
             description:true,
             defaultTrail:0x555555,
-            strongTrail:[0x222222,0x111111],
-            tint:0x000000,
+            strongTrail:[0x654747,0x653339],
+            tint:0x504747,
             rank:ItemRank.B
         },
         {

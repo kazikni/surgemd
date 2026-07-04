@@ -129,7 +129,7 @@ export class Building extends StaticBody{
 
             sprite.hotspot=v2.half_one
             sprite._scale.set(2,2)
-            sprite.zIndex=zIndexes.BuildingsFloor2
+            sprite.zIndex=zIndexes.BuildingsFloor3
 
             sprite.set_frame({
                 image:f.image,

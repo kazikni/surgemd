@@ -130,7 +130,8 @@ export class Human extends MovingBody{
         emote?:GameItem|EmoteDef
         ping?:PingData
         emotes:{
-            die?:EmoteDef
+            death?:EmoteDef
+            victory?:EmoteDef
         }
         badge?:BadgeDef
         original:{
@@ -300,8 +301,7 @@ export class Human extends MovingBody{
             legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
             
             emote_is_item:false,
-            emotes:{
-            },
+            emotes:{},
             accessorys:female?[
                 this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
             ]:[],
@@ -827,7 +827,9 @@ export class Human extends MovingBody{
                 }
                 break
             }
+            // deno-lint-ignore no-fallthrough
             case GameObjectType.Human:
+                if((obj as Human).dead)break
             case GameObjectType.Loot:
                 if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
                     this._can_interact=false;
@@ -1348,8 +1350,9 @@ export class Human extends MovingBody{
         this.dead=true
         this.set_dirty_part()
 
-        if(this.loadout.emotes.die){
-            this.game.add_timeout(()=>this.loadout.emote=this.loadout.emotes.die,0.5)
+        if(this.loadout.emotes.death){
+            this.loadout.emote=this.loadout.emotes.death
+            this.loadout.emote_is_item=false
         }
 
         this.inventory.drop_all()
@@ -1360,7 +1363,6 @@ export class Human extends MovingBody{
             this.killed_by=this.downed_by
         }
 
-        this.destroy()
         if(this.killed_by){
             if(this.killed_by.id!==this.id&&!this.game.modeManager.is_ally(this,this.killed_by)){
                 this.killed_by.on_kill_enemy(this,params)
@@ -1377,6 +1379,8 @@ export class Human extends MovingBody{
         if(this.team_data.group)this.team_data.group.clear_downeds()
 
         if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
+
+        this.destroy()
     }
     revive(){
         if(!this.dead)return

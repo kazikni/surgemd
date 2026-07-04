@@ -469,6 +469,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(!obj.deleted)
         obj.deleted=true
         this.unregister_object(obj)
+        obj.on_net_update()
         obj.on_destroy()
     }
     get_object(id:number):GameObject|undefined{

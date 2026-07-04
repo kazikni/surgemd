@@ -221,7 +221,7 @@ export abstract class ModeManager{
     on_tick(dt:number){}
     on_net_update(){}
     on_start():void{}
-    on_finish():void{}
+    on_finish(winners:Human[]):void{}
 
     abstract can_join():boolean
     abstract can_start():boolean

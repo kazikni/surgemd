@@ -756,6 +756,14 @@ export class Game extends ClientGame<GameObject>{
             shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
         }
         packet.group_token=this.group_token
+        let emote=this.save.get_variable("sv_loadout_emote_victory")
+        if(emote!=""){
+            packet.victory_emote=this.definitions.emotes.getFromString(emote).idNumber!+1
+        }
+        emote=this.save.get_variable("sv_loadout_emote_death")
+        if(emote!=""){
+            packet.death_emote=this.definitions.emotes.getFromString(emote).idNumber!+1
+        }
         this.client.emit_packet(packet)
     }
     connect(url:string){

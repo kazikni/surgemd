@@ -492,8 +492,10 @@ export class Human extends MovingBody{
             }))
         }
 
-        this.container.destroy()
-        this.destroy()
+        this.game.add_timeout(()=>{
+            this.container.destroy()
+            this.destroy()
+        },5)
     }
     on_downed(){
         if(this.downed)return
@@ -1509,8 +1511,10 @@ export class Human extends MovingBody{
         this.shield=shield
         if(!dead&&this.dead){
             this.dead=false
+            this.container.visible=true
         }else if(dead){
             this.on_die()
+            this.container.visible=false
         }
         if(full||physical_dirty_part||physical_dirty){
             this.decode_physical_data(stream,full)

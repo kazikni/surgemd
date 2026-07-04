@@ -17,6 +17,9 @@ export class JoinPacket extends Packet{
         body_tint:number
         hair_tint:number
     }
+
+    victory_emote:number=0
+    death_emote:number=0
     constructor(){
         super()
     }
@@ -30,6 +33,8 @@ export class JoinPacket extends Packet{
             stream.write_uint32(this.skin.body_tint)
             stream.write_uint32(this.skin.hair_tint)
         }
+        stream.write_uint16(this.victory_emote)
+        stream.write_uint16(this.death_emote)
     }
     decode(stream: Stream): void {
         this.player_name=stream.read_string_sized(30)
@@ -49,5 +54,7 @@ export class JoinPacket extends Packet{
             this.skin.hair_tint=stream.read_uint32()
             this.skin.female=bg[1]
         }
+        this.victory_emote=stream.read_uint16()
+        this.death_emote=stream.read_uint16()
     }
 }

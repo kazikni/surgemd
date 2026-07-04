@@ -470,12 +470,13 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             if(cur_emote==""){
                 container.innerHTML=`
 <span class="name">${name}</span>
+<img class="icon"/>
 `
             }else{
                 const cur_emote_def=definitions.emotes.getFromString(cur_emote)
                 container.innerHTML=`
 <span class="name">${name}</span>
-<img class="icon" src=${resources.get_frame("emote_"+cur_emote_def.idString).src}></img>
+<img class="icon" src=${resources.get_frame("emote_"+cur_emote_def.idString).src}/>
 `
             }
 

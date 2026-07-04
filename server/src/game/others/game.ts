@@ -304,14 +304,14 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.update_data()
         console.log(`Game ${this.id} Clossed`)
     }
-    finish(){
+    finish(winners:Human[]=[]){
         if(this.fineshed)return
         console.log(`Game ${this.id} Fineshed`)
         this.fineshed=true
         this.update_data()
 
-        this.modeManager.on_finish()
-        this.signals.emit("finish",{})
+        this.modeManager.on_finish(winners)
+        this.signals.emit("finish",{winners})
 
         if(!this.can_finish){
             this.clock.timeScale=0

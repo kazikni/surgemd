@@ -186,23 +186,29 @@ export class BattleRoyale extends ModeManager{
             const status=p.team_data.group?.get_status() ?? [p.status]
             p.conn?.send_game_over(status as PlayerStatus[],false,p.killed_by?.id)
         }
-        if(p.killed_by&&p.conn&&p.killed_by instanceof Player)this.game.add_timeout(()=>{
-            p.conn!.set_spectator(p.killed_by! as Player)
-        },2)
         if(this.game.started){
             this.give_rank_score()
-            if(this.groups_manager&&this.groups_manager.get_living_groups().length<=1){
+            
+            let stopped:boolean=false
+            let winners:Player[]=[]
+            if(this.game.players.living_players.length<=1||(this.groups_manager&&this.groups_manager.get_living_groups().length<=1)){
+                winners=this.game.players.living_players
+                stopped=true
+            }
+            if(stopped){
+                for(const w of winners){
+                    if(w.loadout.emotes.victory){
+                        w.loadout.emote=w.loadout.emotes.victory
+                        w.loadout.emote_is_item=false
+                    }
+                }
                 this.game.add_timeout(()=>{
-                    this.game.finish()
-                },3)
-            }else if(this.game.players.living_players.length<=1){
-                this.game.add_timeout(()=>{
-                    this.game.finish()
-                },3)
+                    this.game.finish(winners)
+                },2)
             }
         }
     }
-    override on_finish(): void {
+    override on_finish(winners:Player[]): void {
         for(const p of this.game.players.living_players){
             this.give_rank_score()
             this.game.leaderboards.push({
@@ -213,7 +219,7 @@ export class BattleRoyale extends ModeManager{
             })
         }
         this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
-        for(const p of this.game.players.living_players){
+        for(const p of winners){
             p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
         }
     }

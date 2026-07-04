@@ -260,10 +260,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.started = false
         this.closed = false
         this.fineshed=false
+        this.clock.timeScale=1
         this.pings.length=0
     }
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.fineshed=false
+        this.clock.timeScale=1
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
@@ -311,7 +313,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.modeManager.on_finish()
         this.signals.emit("finish",{})
 
-        if(!this.can_finish)return
+        if(!this.can_finish){
+            this.clock.timeScale=0
+            return
+        }
         this.add_timeout(()=>{ 
             this.stop()
         },1)

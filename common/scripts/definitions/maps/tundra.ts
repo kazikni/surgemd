@@ -299,7 +299,7 @@ export const TundraMap:MapDef={
     ],
     generation:{
         island:{
-            size:v2(575,575),
+            size:v2(600,600),
             spawn:[
                 {def:"storehouse_1",count:4},
                 {def:map_spawns.containers,count:20},
@@ -329,7 +329,7 @@ export const TundraMap:MapDef={
             ],
             terrain:{
                 base:FloorType.Ice,
-                radius:250,
+                radius:265,
                 passes:3,
                 points:6,
                 variation:60,

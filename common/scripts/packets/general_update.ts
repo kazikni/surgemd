@@ -44,6 +44,7 @@ export interface MakeDeadZoneSettings{
     }
     damage:{
         add:number
+        initial:number
     }
     count:number
 }

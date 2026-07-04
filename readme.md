@@ -58,3 +58,14 @@ deno task dev
 ### 🎮 Play the Local Game
 Once the server is running, open:
 👉 [Local Game](http://localhost:3000)
+### Enable Playtime
+Insert in configurations at `api.game`:
+```json
+"play_time": {
+    "week_days": [
+        0,
+        6
+    ],
+    "hour": 17,
+    "duration": 7200
+}```

@@ -17,7 +17,6 @@ export function CalculatePlayerLevelProgress(xp:number,base_xp:number=10,factor:
 }
 export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStage[] {
     const stages: DeadZoneStage[] = []
-
     let radius = settings.radius.initial
     let wait_time = settings.wait_time.initial
     let adv_time = settings.advancing_time.initial
@@ -35,7 +34,8 @@ export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStag
             radius: radius,
             time: adv_time
         })
-        damage+=settings.damage.add
+        damage*=settings.damage.add
+        if(damage===0)damage=settings.damage.initial
         radius*=settings.radius.decay
         wait_time=Math.max(wait_time*settings.wait_time.decay,settings.wait_time.min)
         adv_time=Math.max(adv_time*settings.advancing_time.decay,settings.advancing_time.min)

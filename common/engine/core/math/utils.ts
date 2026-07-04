@@ -154,11 +154,11 @@ export class TicksProfiler {
     }
 }
 export class Clock {
-    private frameDuration: number;
-    private lastFrameTime: number;
+    private frameDuration: number
+    private lastFrameTime: number
     accumulator:number=0
-    public timeScale: number;
-    public callback: (dt:number)=>void;
+    public timeScale: number
+    public callback: (dt:number)=>void
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
     running:boolean=false

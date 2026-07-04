@@ -19,11 +19,24 @@ export interface GameDebugOptions{
         time_speed:number
     }
 }
+export interface PlayTimeCurrent{
+    day:number
+    hour:number
+}
+export interface PlayTimeConfig{
+    week_days:number[]
+    hour:number
+    duration:number
+}
 export interface ApiSettings{
     regions:string[]
     modes:ModeConfig[]
     database:{
         enabled:boolean
+    }
+    playtime?:{
+        config:PlayTimeConfig
+        current:PlayTimeCurrent
     }
 }
 export interface FindGameData{
@@ -52,11 +65,7 @@ export interface ApiServerConfig{
     }>
     game:{
         modes: ModeConfig[]
-        play_time?:{
-            week_days:number[]
-            hour:number
-            duration:number
-        }
+        play_time?:PlayTimeConfig
     }
     database?:{
         enabled?: boolean

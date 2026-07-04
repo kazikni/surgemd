@@ -133,22 +133,23 @@
                         ],
                         "boosts": [
                             {
-                                "weight": 8,
+                                "weight": 7,
                                 "boost_type": 0,
                                 "boost": 0
                             },
                             {
                                 "weight": 1,
-                                "boost_type": 1,
+                                "boost_type": 0,
                                 "boost": 1
                             },
                             {
                                 "weight": 1,
-                                "boost_type": 2,
+                                "boost_type": 1,
                                 "boost": 1
                             }
                         ],
                         "aitems": {
+                            "12g": 10,
                             "556mm": 100,
                             "762mm": 100,
                             "45acp": 100,

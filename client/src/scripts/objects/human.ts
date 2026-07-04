@@ -1344,6 +1344,7 @@ export class Human extends MovingBody{
                 this.sprites.emote_sprite.rotation=-0.523599
             }
         }else{
+            frame="emote_"+frame
             v2m.single(this.sprites.emote_sprite.scale,2.6)
         }
         this.sprites.emote_sprite.frame=this.game.resources.get_frame(frame)

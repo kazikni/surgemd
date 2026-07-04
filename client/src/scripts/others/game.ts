@@ -596,7 +596,6 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.zoom=6
         this.happening=false
         this.started=false
-        this.soft_close_game()
         this.local_server.stop()
         this.menu.game_end()
         this.ambient.on_game_close()
@@ -604,6 +603,7 @@ export class Game extends ClientGame<GameObject>{
         this.map_started=false
         this.cam_type=0
         this.language.clear("ingame")
+        this.soft_close_game()
     }
     soft_close_game(){
         this.clear()

@@ -61,7 +61,6 @@
             "ip": "localhost"
         },
         "authentication": {
-            "region": "local",
             "server": "ws://localhost:8000/regions/ws",
             "user": {
                 "name": "region",

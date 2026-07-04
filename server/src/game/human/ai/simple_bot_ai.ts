@@ -72,10 +72,10 @@ export class SimpleBotAi extends BotAi{
         this.rot_speed=random.float(-0.1,0.1)
 
         this.emotes=[
-            human.game.definitions.emotes.getFromString("emote_sad"),
-            human.game.definitions.emotes.getFromString("emote_happy"),
-            human.game.definitions.emotes.getFromString("emote_md_logo"),
-            human.game.definitions.emotes.getFromString("emote_neutral"),
+            human.game.definitions.emotes.getFromString("sad"),
+            human.game.definitions.emotes.getFromString("happy"),
+            human.game.definitions.emotes.getFromString("md_logo"),
+            human.game.definitions.emotes.getFromString("neutral"),
             ...Object.values(human.game.definitions.ammos.value),
             ...Object.values(human.game.definitions.consumibles.value)
         ]

@@ -1,13 +1,14 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 import { ModeConfig } from "common/scripts/config/config.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -392,7 +393,109 @@ export function make_menu_modes(modes:ModeConfig[]){
         }
     }
 }
+export function make_emotes_settings(save: GameSave,resources:ResourcesManager,definitions:GameDefinition,emotes: EmoteDef[],translation: TranslationManager){
+    return (parent: HTMLDivElement)=>{
+        let selected: string|null=null
+        let selected_elem: HTMLElement|null=null
+        let selected_elem_out: HTMLElement|null=null
 
+        function emote_selection(){
+            if(!selected||!selected_elem_out||!selected_elem)return
+
+            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,selected)
+            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+selected).src
+            selected=null
+            selected_elem.classList.remove("selected")
+            selected_elem_out.classList.remove("selected")
+            selected_elem=null
+            selected_elem_out=null
+        }
+
+        parent.innerHTML=`  
+<span class="span-text">Active Emotes</span>
+<div class="loadout-icons-group active-emotes">
+        
+</div>
+<span class="span-text">Emotes Inventory</span>
+<div class="loadout-icons-group emotes-inventory"></div>
+        `
+
+        parent.classList.add("big")
+
+        const emotes_g=parent.querySelector(".emotes-inventory") as HTMLDivElement
+        function emote_click(e:MouseEvent){
+            const t=e.currentTarget as HTMLDivElement
+            const id=t.dataset.idString as string
+            if(selected===id){
+                t.classList.remove("selected")
+                selected=null
+                selected_elem=null
+            }else{
+                if(selected_elem)selected_elem.classList.remove("selected")
+                selected_elem=t
+                selected=id
+                t.classList.add("selected")
+            }
+
+            emote_selection()
+        }
+        for(const e of emotes){
+            const container=document.createElement("div")
+            container.className="litem"
+            container.innerHTML=`
+<span class="name">${translation.get("emotes."+e.idString)}</span>
+<img class="icon" src="${resources.get_frame("emote_"+e.idString).src}"/>
+`
+            container.dataset.idString=e.idString
+            container.onclick=emote_click
+            emotes_g.appendChild(container)
+        }
+
+        const active_g=parent.querySelector(".active-emotes") as HTMLDivElement
+        const slots=[
+            "top",
+            "right",
+            "bottom",
+            "left",
+            "victory",
+            "death"
+        ]
+
+        for(const slot of slots){
+            const cur_emote=save.get_variable("sv_loadout_emote_"+slot)
+            const container=document.createElement("div")
+            container.className="litem emote-slot-"+slot
+            container.dataset.slot=slot
+            const name=translation.get("loadout.emotes."+slot)
+            if(cur_emote==""){
+                container.innerHTML=`
+<span class="name">${name}</span>
+`
+            }else{
+                const cur_emote_def=definitions.emotes.getFromString(cur_emote)
+                container.innerHTML=`
+<span class="name">${name}</span>
+<img class="icon" src=${resources.get_frame("emote_"+cur_emote_def.idString).src}></img>
+`
+            }
+
+            container.onclick=(e:MouseEvent)=>{
+                const t=e.currentTarget as HTMLDivElement
+                if(selected_elem_out===t){
+                    selected_elem_out=null
+                    t.classList.remove("selected")
+                }else{
+                    if(selected_elem_out)selected_elem_out.classList.remove("selected")
+                    selected_elem_out=t
+                    t.classList.add("selected")
+                }
+                emote_selection()
+            }
+
+            active_g.appendChild(container)
+        }
+    }
+}
 export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     normal:{
         title:"Normal Mode Settings",
@@ -493,7 +596,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     }
 }
 
-export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,mods?:CModsManager){
+export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager,mods?:CModsManager){
     const campaign_path="scripts/campaign"
     const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
     for(const c in campaign.charpters){
@@ -1029,6 +1132,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 btn.textContent=translation.get("keybinds."+name)
 
                                 btn.onclick=async()=>{
+                                    btn.blur()
                                     const key=await menu.game_popup(async(ctx)=>{
                                         ctx.parent.innerHTML=`
                                         <h2>Waiting Key</h2>
@@ -1074,6 +1178,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     type:"button",
                     name:"menu.loadout.character",
                     subtab:"character"
+                },
+                {
+                    id:"emotes",
+                    type:"button",
+                    name:"menu.loadout.emotes",
+                    subtab:"emotes"
                 },
             ],
             subtabs:{
@@ -1142,6 +1252,9 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "body":{
                     generate:make_menu_settings(menu.save,[
                     ],translation)
+                },
+                "emotes":{
+                    generate:make_emotes_settings(menu.save,resources,definitions,Object.values(definitions.emotes.value),translation)
                 },
             },
         },

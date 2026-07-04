@@ -274,9 +274,10 @@ export class MenuManager{
         this.input=input
         this.update_api()
 
-        MenuInitDefault(this,definitions,fs,transition,mods)
-
         ShowElement(this.content.menu_options,true)
+    }
+    async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
+        await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)
     }
     async update_api(){
         if(api){

@@ -146,6 +146,12 @@
                 "backpack": "Increases inventory capacity."
             }
         },
+        "emotes":{
+            "happy":"Happy",
+            "sad":"Sad",
+            "neutral":"Neutral",
+            "md_logo":"MD Logo"
+        },
         "characters": {
             "nick": "Nick",
             "justin": "Justin",
@@ -317,7 +323,8 @@
                 "keybinds": "Keybinds"
             },
             "loadout": {
-                "character": "Character"
+                "character": "Character",
+                "emotes": "Emotes"
             },
             "mods": {
                 "mods-list": "Mods List"
@@ -408,6 +415,15 @@
                 "body_tint": "Body Color",
                 "female": "Is Female",
                 "shirt": "Shirt"
+            },
+            "emotes":{
+                "left":"Left",
+                "right":"Right",
+                "bottom":"Bottom",
+                "top":"Top",
+
+                "victory":"Victory",
+                "death":"Death"
             }
         },
         "region": {

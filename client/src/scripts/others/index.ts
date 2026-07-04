@@ -76,8 +76,9 @@ import { FindGameResult } from "common/scripts/config/config.ts";
                 }
             }
             await this.game.bind(fs)
-            this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
-            this.game.load_resources(["main"],{})
+            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
+            await this.game.load_resources(["main"],{})
+            await this.menu_manager.reload(this.game.definitions,this.file,mods)
 
             /*sleep(10).then(async()=>{
                 this.game.final_screen.set_final_screen(island_final)

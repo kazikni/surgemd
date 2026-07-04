@@ -36,18 +36,14 @@ kl-md-submenu-options select {
 kl-md-extra {
     position: relative;
 }
-
 .emote-wheel{
     position: absolute;
-    width: fit-content;
-    height: fit-content;
-
     transform: translate(-50%, -50%);
+    background: url("./img/menu/gui/emote_wheel.svg");
     width: 300px;
     height: 300px;
-    background-size: cover;
-
-    background-image: url("./img/menu/gui/emote_wheel.svg");
+    background-repeat: no-repeat;
+    background-size: contain;
     .wheel-hover{
         position: absolute;
         transform: translate(-50%,-50%);

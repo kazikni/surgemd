@@ -84,9 +84,7 @@ export class GameDefinition{
     // Loadout
     loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
     badges=new Definitions<BadgeDef,{}>((i)=>{})
-    emotes=new Definitions<EmoteDef,{}>((e)=>{
-        e.idString="emote_"+e.idString
-    })
+    emotes=new Definitions<EmoteDef,{}>((e)=>{})
     ping=new Definitions<PingDef,{}>((e)=>{
         e.idString="ping_"+e.idString
     })

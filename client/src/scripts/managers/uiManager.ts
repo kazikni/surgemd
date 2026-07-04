@@ -266,10 +266,10 @@ export class UiManager{
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.emotes.getFromString("emote_neutral"), //Right
-                    this.game.definitions.emotes.getFromString("emote_md_logo"), //Bottom
-                    this.game.definitions.emotes.getFromString("emote_sad"), //Left
-                    this.game.definitions.emotes.getFromString("emote_happy"), //Top
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_right")), //Right
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_bottom")), //Bottom
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_left")), //Left
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_top")), //Top
                 ]
             }
             
@@ -350,7 +350,7 @@ export class UiManager{
             if(emote){
                 ShowElement(this.content.emote_wheel.emotes[ev])
                 this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
-                this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote.idString).src
+                this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).src
                 this.content.emote_wheel.emotes[ev].draggable=false
             }else{
                 HideElement(this.content.emote_wheel.emotes[ev])

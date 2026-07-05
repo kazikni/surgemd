@@ -9,7 +9,6 @@ export interface HostConfig {
     ssl?: boolean
     cert?: string
     key?: string
-    ca?: string
 }
 
 export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObject2D=BaseGameObject2D> extends AbstractGame<DefaultGameObject2D>{
@@ -39,21 +38,14 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
         //this.net_update_interval=undefined
     }
     private net_tick_delay:number=0
-    net_full_tick:number=0
     override update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): void {
         super.update(dt,new_list,destroy_queue)
         this.ticks++
 
         this.net_tick_delay+=dt
         if(this.net_tick_delay>=1/this.ntps){
-            this.net_full_tick-=this.net_tick_delay
-
-            this.net_update(this.net_full_tick<=0)
-
-            if(this.net_full_tick<=0)this.net_full_tick=this.ntps*10
-
-            this.net_full_tick=0
-            this.net_tick_delay=0
+            this.net_update(false)
+            this.net_tick_delay-=1/this.ntps
         }
     }
     handle_connection(client:Client,username:string):void{

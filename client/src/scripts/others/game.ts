@@ -767,6 +767,7 @@ export class Game extends ClientGame<GameObject>{
         this.client.emit_packet(packet)
     }
     connect(url:string){
+        if(this.happening)return
         this.set_socket(new WebSocket(url) as unknown as BasicSocket)
         this.offline=false
     }

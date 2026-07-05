@@ -266,15 +266,17 @@ export class Server extends Router {
     ssl: boolean = false;
     certFile: string;
     keyFile: string;
+    caFile?: string
     server: Deno.HttpServer | null;
 
     default_handlers:typeof default_handlers
-    constructor(port: number = 5000, ssl: boolean = false, certFile: string = "", keyFile: string = "") {
+    constructor(port: number = 5000, ssl: boolean = false, certFile: string = "", keyFile: string = "",caFile?:string) {
         super();
         this.port = port
         this.ssl = ssl
         this.certFile = certFile
         this.keyFile = keyFile
+        this.caFile=caFile
         this.server = null
         this.default_handlers=default_handlers
     }
@@ -285,6 +287,7 @@ export class Server extends Router {
                 hostname:"0.0.0.0",
                 cert: Deno.readTextFileSync(this.certFile),
                 key: Deno.readTextFileSync(this.keyFile),
+                
             }, async (req: Request, info: Deno.ServeHandlerInfo) => {
                 const url = new URL(req.url);
                 const path = [""];

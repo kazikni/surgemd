@@ -308,7 +308,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(this.fineshed)return
         console.log(`Game ${this.id} Fineshed`)
         this.fineshed=true
-        this.update_data()
 
         this.modeManager.on_finish(winners)
         this.signals.emit("finish",{winners})
@@ -321,6 +320,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             this.stop()
         },1)
         if(this.replay)this.replay.stopRecording()
+        this.update_data()
     }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{

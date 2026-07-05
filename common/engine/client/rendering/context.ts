@@ -262,6 +262,89 @@ export abstract class Context2D{
         this.current_model=model
     }
 
+    subdivide(iterations = 1) {
+        const closed =
+            this.path.length > 2 &&
+            v2.distance(this.path[0], this.path[this.path.length - 1]) < 0.0001;
+
+        let pts = closed
+            ? this.path.slice(0, -1)
+            : [...this.path];
+
+        for (let k = 0; k < iterations; k++) {
+            const out: Vec2[] = [];
+
+            const last = closed ? pts.length : pts.length - 1;
+
+            if (!closed)
+                out.push(v2.clone(pts[0]));
+
+            for (let i = 0; i < last; i++) {
+                const a = pts[i];
+                const b = pts[(i + 1) % pts.length];
+
+                out.push({
+                    x: a.x * 0.75 + b.x * 0.25,
+                    y: a.y * 0.75 + b.y * 0.25
+                });
+
+                out.push({
+                    x: a.x * 0.25 + b.x * 0.75,
+                    y: a.y * 0.25 + b.y * 0.75
+                });
+            }
+
+            if (!closed)
+                out.push(v2.clone(pts[pts.length - 1]));
+
+            pts = out;
+        }
+
+        if (closed)
+            pts.push(v2.clone(pts[0]));
+
+        this.path = pts;
+    }
+    round(strength = 0.5, iterations = 1) {
+        const closed =
+            this.path.length > 2 &&
+            v2.distance(this.path[0], this.path[this.path.length - 1]) < 0.0001;
+
+        let pts = closed
+            ? this.path.slice(0, -1)
+            : [...this.path];
+
+        for (let k = 0; k < iterations; k++) {
+            const out = pts.map((v)=>v2.clone(v));
+
+            const begin = closed ? 0 : 1;
+            const end = closed ? pts.length : pts.length - 1;
+
+            for (let i = begin; i < end; i++) {
+
+                const prev = pts[(i - 1 + pts.length) % pts.length];
+                const next = pts[(i + 1) % pts.length];
+
+                const avg = {
+                    x: (prev.x + next.x) * 0.5,
+                    y: (prev.y + next.y) * 0.5
+                };
+
+                out[i] = {
+                    x: pts[i].x * (1 - strength) + avg.x * strength,
+                    y: pts[i].y * (1 - strength) + avg.y * strength
+                };
+            }
+
+            pts = out;
+        }
+
+        if (closed)
+            pts.push(v2.clone(pts[0]));
+
+        this.path = pts;
+    }
+
     abstract fill():void
     abstract fill_model(model: Model2D,position:Vec2,scale:Vec2,rotation:number):void
 

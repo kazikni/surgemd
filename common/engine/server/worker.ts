@@ -87,7 +87,7 @@ export abstract class SelfGameWorker<
         case WorkerMsg.Begin:{
             this.id = msg.id
             this.config = msg.config
-            this.server = new Server(msg.port,msg.https,msg.certFile,msg.keyFile)
+            this.server = new Server(msg.port,msg.ssl,msg.certFile,msg.keyFile)
             this.onBegin()
             setTimeout(this.run.bind(this),300)
             break

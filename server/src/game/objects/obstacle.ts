@@ -442,6 +442,10 @@ export class Obstacle extends StaticBody{
             this.reset_scale()
         }
     }
+    override on_destroy(): void {
+        const idx=this.game.map.objects.indexOf(this)
+        if(idx!==-1)this.game.map.objects.splice(idx,1)
+    }
     override on_encode_net(stream: Stream, full: boolean): void {
         const door_dirty=this.door_data&&(full||this.door_data.dirty)
 

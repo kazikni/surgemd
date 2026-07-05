@@ -55,7 +55,7 @@ export const DefaultSignals={
 }
 export class Client{
     ws:BasicSocket
-    protected manager:PacketsManager
+    manager:PacketsManager
     opened:boolean // Client Is Connected
     ID:ID=0 // Client ID Sysed With Server And Client
     IP:string // Client IP

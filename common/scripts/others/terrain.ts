@@ -375,7 +375,7 @@ export class River{
         const dir = v2.normalizeSafe(v2.sub(point, center),v2(1,0))
         return v2.add(point,v2.scale(dir, amount))
     }
-    static generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 6,strength = 0.25): Vec2[] {
+    static generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 7,strength = 0.25): Vec2[] {
         let points: Vec2[] = [start, end]
         const globalDir = v2.normalizeSafe(v2.sub(end, start), v2(1, 0))
         const globalNormal = v2(-globalDir.y, globalDir.x)

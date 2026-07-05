@@ -206,6 +206,8 @@ export class GameMap{
 
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
         if(!p){
+            const idx=this.objects.indexOf(o)
+            if(idx!==-1)this.objects.splice(idx,1)
             o.destroy()
             return undefined
         }

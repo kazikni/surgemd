@@ -33,6 +33,8 @@ export class TerrainM extends TerrainManager{
 
                 graphic.ctx.begin_path()
                 graphic.ctx.set_hitbox(f.hb)
+                //graphic.ctx.subdivide(4)
+                //graphic.ctx.round(0.1,4)
                 graphic.ctx.end_path()
 
                 graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))

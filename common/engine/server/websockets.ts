@@ -51,7 +51,12 @@ export class ClientsManager extends OfflineClientsManager {
                 return new Response("Too many connections", { status: 429 })
             }
 
-            const { socket, response } = Deno.upgradeWebSocket(req)
+            const { socket, response } = Deno.upgradeWebSocket(req,{
+                idleTimeout:0,
+                protocol: req.headers.get('sec-websocket-protocol')??undefined,
+            })
+            //@ts-ignore
+            socket.remoteAddr && socket.remoteAddr.transport === "tcp" && socket.setNoDelay(true)
 
             // deno-lint-ignore ban-ts-comment
             //@ts-ignore

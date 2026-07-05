@@ -125,11 +125,14 @@ export class PlayerClient extends PlayerConnManager{
 
         this.client!.emit_packet(p)
     }
+    stream:DynamicStream=new DynamicStream()
     net_update(general_update:Stream){
+        this.stream.clear()
         if(this.client.opened){
             const packet=this.get_update_packet()
-            if(packet.objects)this.client!.emit_packet(packet)
-            this.client.send_stream(general_update)
+            if(packet.objects)this.client.manager.encode(packet,this.stream)
+            this.stream.write_stream(general_update)
+            this.client.send_stream(this.stream)
         }
     }
 }

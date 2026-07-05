@@ -464,26 +464,20 @@ export class UiManager{
             }
             case FeedMessageType.kill:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
+                let text=""
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("feed.kill.abstinence",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Explosion:
                     case DamageReason.Human:{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("feed.kill.player",{
-                            player1:this.players_name[msg.killer.id].full,
+                        text=this.game.language.get("feed.kill.player",{
+                            player:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString),
                         })
-                        if(msg.victimId===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-negative")
-                        }else if(msg.killer.id===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-good")
-                            this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
-                        }
-
                         if(this.leader&&msg.killer.id===this.leader.id){
                             this.leader.kills=msg.killer.kills
                             this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.killer.id].name}`
@@ -491,54 +485,72 @@ export class UiManager{
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("feed.kill.deadzone",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("feed.kill.side-effect",{player:this.players_name[msg.victimId].full})
+                        if(msg.killer){
+                            text=this.game.language.get("feed.kill.side-effect",{
+                                player1:this.players_name[msg.killer.id].full,
+                                player2:this.players_name[msg.victimId].full,
+                            })
+                        }else{
+                            text=this.game.language.get("feed.death.side-effect",{player:this.players_name[msg.victimId].full})
+                        }
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("feed.kill.disconnect",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("feed.kill.bleend",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.bleend",{player:this.players_name[msg.victimId].full})
                         break
+                }
+
+                elem.innerHTML=text
+                if(msg.victimId===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-negative")
+                }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-good")
+                    this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                 }
                 break
             }
             case FeedMessageType.down:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
+                let text=""
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("feed.down.abstinence",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Human:
                     case DamageReason.Explosion:{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("feed.down.player",{
+                        text=this.game.language.get("feed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString)
                         })
-                        if(msg.victimId===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-negative")
-                        }else if(msg.killer.id===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-good")
-                        }
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("feed.down.deadzone",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("feed.down.side-effect",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.side-effect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("feed.down.disconnect",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("feed.down.bleend",{})
+                        text=this.game.language.get("feed.down.bleend",{})
                         break
+                }
+                elem.innerHTML=text
+                if(msg.victimId===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-negative")
+                }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-good")
+                    this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                 }
                 break
             }
@@ -726,12 +738,13 @@ export class UiManager{
         }
     }
     normal_game_over(g:GameOverPacket){
-        ShowElement(this.content.normal_gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
         disableContextMenuPrevent()
         if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
+            ShowElement(this.content.normal_gameOver)
+            this.content.normal_gameOver.style.opacity="1"
         }else{
             this.game.ambient.last_music_pos=this.game.ambient.music.offset
             this.game.ambient.music.set(null)
@@ -739,6 +752,13 @@ export class UiManager{
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
+            this.game.scope_zoom*=0.75
+            this.game.zoom_speed*=0.05
+            this.content.normal_gameOver.style.opacity="0"
+            this.game.add_timeout(()=>{
+                ShowElement(this.content.normal_gameOver)
+                self.requestAnimationFrame(()=>this.content.normal_gameOver.style.opacity="1")
+            },3)
         }
         let content=""
         for(const status of g.status.status){
@@ -776,6 +796,9 @@ export class UiManager{
     }
     current_interaction?: GameObject
     update_active_player(player: Human,dt:number=0) {
+        if(player.dead){
+            HideElement(this.content.game_gui)
+        }
         const old_inter=this.current_interaction
 
         this.current_interaction = undefined

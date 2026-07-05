@@ -981,7 +981,6 @@ export class GInventory extends GInventoryBase<LItem>{
                 i--
             }
         }
-        this.owner.equipment_data.scope=this.owner.equipment_data.default_scope
 
         for(const s of this.accessorys.slots){
             if(s.item&&s.droppable){

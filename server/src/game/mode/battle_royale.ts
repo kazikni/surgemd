@@ -53,7 +53,7 @@ export class BattleRoyale extends ModeManager{
             players:{
                 limit:settings.players?.limit??100,
             },
-            join_time:settings.join_time??1,
+            join_time:settings.join_time??90,
             map:{
                 def:(settings.map?.def===undefined)?Maps["normal"]:(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def),
                 seed:settings.map?.seed
@@ -179,6 +179,9 @@ export class BattleRoyale extends ModeManager{
         }
     }
     override on_player_die(p:Player){
+        if(this.game.fineshed){
+            return
+        }
         this.game.leaderboards.push({
             id:p.id,
             kills:p.status.kills,
@@ -191,11 +194,11 @@ export class BattleRoyale extends ModeManager{
         }
         if(this.game.started){
             this.give_rank_score()
-            
+
             let stopped:boolean=false
             let winners:Player[]=[]
             if(this.game.players.living_players.length<=1||(this.groups_manager&&this.groups_manager.get_living_groups().length<=1)){
-                winners=this.game.players.living_players
+                winners=[...this.game.players.living_players]
                 stopped=true
             }
             if(stopped){
@@ -205,9 +208,7 @@ export class BattleRoyale extends ModeManager{
                         w.loadout.emote_is_item=false
                     }
                 }
-                this.game.add_timeout(()=>{
-                    this.game.finish(winners)
-                },2)
+                this.game.finish(winners,2)
             }
         }
     }

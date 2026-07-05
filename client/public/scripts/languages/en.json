@@ -167,8 +167,11 @@
         "feed": {
             "join": "${player} Joined",
             "kill": {
-                "abstinence": "${player} Died Of Abstinence",
                 "player": "${player1} Killed ${player2} With ${source}",
+                "explosion": "${player1} Explode ${player2} With ${source}"
+            },
+            "death": {
+                "abstinence": "${player} Died Of Abstinence",
                 "explosion": "${player1} Explode ${player2} With ${source}",
                 "deadzone": "${player} Was Caught By Deadzone",
                 "side-effect": "${player} Die For SideEffect",

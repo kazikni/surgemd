@@ -180,17 +180,13 @@ export class Player extends Human{
         if(this.dead)return
         super.die(params)
 
-        if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
-                params.owner.earned.coins+=3
-                params.owner.earned.xp+=1
-            }
+        if(this.killed_by&&this.killed_by instanceof Player){
             this.player_manager.send_feed_message({
-                killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
-                    id:params.owner.id,
-                    kills:params.owner.status.kills,
-                    used:this.game.definitions.game_items.keysString[params.source!.idString]
-                }:undefined,
+                killer:{
+                    id:this.killed_by.id,
+                    kills:this.killed_by.status.kills,
+                    used:this.game.definitions.game_items.keysString[params.source?.idString??""]??0
+                },
                 victimId:this.id,
                 type:FeedMessageType.kill,
                 damage_reason:params.reason,
@@ -208,7 +204,6 @@ export class Player extends Human{
             })
         }
 
-        //Respawn
         this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);
 
         this.game.modeManager.on_player_die(this)

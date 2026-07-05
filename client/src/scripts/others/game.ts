@@ -80,7 +80,7 @@ export class Game extends ClientGame<GameObject>{
     force_default_scope:boolean=false
     default_scope?:ScopeDef
     scope_zoom:number=0.5
-    dest_zoom:number=1
+    zoom_speed:number=4
 
     ui:UiManager
     menu:MenuManager
@@ -502,6 +502,7 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.position.y=-10000
         this.sounds.set_listener_position(this.cam2d.position)
         this.cam2d.zoom=6
+        this.zoom_speed=4
 
         this.ambient.music.set(undefined)
 
@@ -517,6 +518,8 @@ export class Game extends ClientGame<GameObject>{
             }
             this.local_server.init(this.start_with_intro)
         }
+
+        this.scope_zoom=(this.default_scope??this.definitions.scopes.getFromNumber(0)).scope_view
     }
     async show_final_screen(game_over:GameOverStatus){
         this.final_screen.set_final_screen(island_final)
@@ -537,7 +540,7 @@ export class Game extends ClientGame<GameObject>{
             messages.push(this.language.get("gameover.messages.status.kills", {
                 kills: status.kills.toString()
             }))
-        } else {
+        } else {this.default_scope??this.definitions.scopes.getFromNumber(0)
             messages.push(
                 this.language.get("gameover.messages.status.no-kills"),
                 this.language.get("gameover.messages.status.no-kills-dead")
@@ -594,6 +597,7 @@ export class Game extends ClientGame<GameObject>{
     close_game(){
         if(this.client&&this.client.opened)this.client.disconnect()
         this.cam2d.zoom=6
+        this.zoom_speed=4
         this.happening=false
         this.started=false
         this.local_server.stop()
@@ -655,7 +659,7 @@ export class Game extends ClientGame<GameObject>{
             if(this.active_entity){
                 this.cam2d.position=this.active_entity.position
                 this.sounds.set_listener_position(this.active_entity.position)
-                this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(4,dt))
+                this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
                 this.cam2d.layer=this.active_entity.layer
                 /*this.ui_gfx.ctx.clear()
                 if(this.aim_line.enabled){

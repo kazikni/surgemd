@@ -80,7 +80,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         }
 
         for(let i=0;i<=config.max_games;i++){
-            this.add_container(new SelfGameContainer())
+            this.add_container(config.use_workers?new WorkerGameContainer():new SelfGameContainer())
         }
     }
     get_game(config?:GameConfig):GameContainer|undefined{
@@ -96,21 +96,20 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     }
     make_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
-            if(!g.data?.running){
-                if(!config||!config.mode){
-                    config={
-                        mode:{
-                            mode:"normal",
-                            settings:{
-                                map:{
-                                }
+            if(g.data?.running)continue
+            if(!config||!config.mode){
+                config={
+                    mode:{
+                        mode:"normal",
+                        settings:{
+                            map:{
                             }
-                        },
-                    }
+                        }
+                    },
                 }
-                g.new_game(config)
-                return g
             }
+            g.new_game(config)
+            return g
         }
         return undefined
     }

@@ -236,7 +236,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             living_count:this.modeManager.get_living_count(),
 
             can_join:this.modeManager.can_join()&&!this.fineshed&&!this.closed,
-            running:this.running,
+            running:this.running&&!this.fineshed,
 
             started_time:this.started_time,
             started:this.started,
@@ -304,23 +304,21 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.update_data()
         console.log(`Game ${this.id} Clossed`)
     }
-    finish(winners:Human[]=[]){
+    finish(winners:Human[]=[],finish_time:number=0){
         if(this.fineshed)return
         console.log(`Game ${this.id} Fineshed`)
         this.fineshed=true
-
-        this.modeManager.on_finish(winners)
-        this.signals.emit("finish",{winners})
-
-        if(!this.can_finish){
+        this.add_timeout(()=>{
+            this.modeManager.on_finish(winners)
+            this.signals.emit("finish",{winners})
             this.clock.timeScale=0
-            return
-        }
-        this.add_timeout(()=>{ 
-            this.stop()
-        },1)
-        if(this.replay)this.replay.stopRecording()
-        this.update_data()
+            if(!this.can_finish){
+                return
+            }
+            this.add_timeout(this.stop.bind(this),1)
+            if(this.replay)this.replay.stopRecording()
+            this.update_data()
+        },finish_time)
     }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{

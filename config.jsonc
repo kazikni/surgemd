@@ -44,7 +44,7 @@
     },
     "game": {
         "max_games": 6,
-        "use_workers": true,
+        "use_workers": false,
         "tps": 100,
         "ntps": 32,
         "debug": {

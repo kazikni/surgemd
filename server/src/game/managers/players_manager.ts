@@ -17,6 +17,7 @@ import { Human } from "../objects/human.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
+        if(this.real_human)this.real_human.splashes=[]
         if(this.ai){
             this.ai.net_update(general_update)
         }

@@ -215,6 +215,7 @@ export class Human extends MovingBody{
         slot?:Slot<LItem>
     }
 
+    last_damage_by?:Human
     killed_by?:Human
 
     downed_time:number=0
@@ -1243,6 +1244,7 @@ export class Human extends MovingBody{
                 false
             )
             if(params.owner&&params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
+                this.last_damage_by=params.owner
                 params.owner.status.damage+=damage
                 params.owner.apply_score(ScoreApplyerType.DamageDealth,damage*this.game.modeManager.rules.score.damage_reward)
             }
@@ -1252,6 +1254,8 @@ export class Human extends MovingBody{
             }
         }
         if (this.health_data.health === 0) {
+            if(this.last_damage_by&&!this.last_damage_by.dead&&(!params.owner||params.owner===this))params.owner=this.last_damage_by
+
             if (!this.downed&&((this.game.modeManager.can_down(this)||this.human_data.self_revive))) {
                 this.down(params)
             } else {
@@ -1338,6 +1342,7 @@ export class Human extends MovingBody{
         this.downed=false
         this.downed_by=undefined
         this.killed_by=undefined
+        this.last_damage_by=undefined
         this.health_data.health=this.health_data.max_health*0.3
         this.health_data.boost=0
         this.being_helpup_by=undefined
@@ -1386,11 +1391,21 @@ export class Human extends MovingBody{
         if(!this.dead)return
         this.dead=false
         this.downed=false
+        this.killed_by=undefined
+        this.downed_by=undefined
+        this.last_damage_by=undefined
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Adrenaline]
         if(!this.registred)this.manager.registry_object(this)
         this.game.humans._add_human(this)
+        this.equipment_data.scope=this.equipment_data.default_scope
+        this.inventory.net_sync.aitems=true
+        this.inventory.net_sync.hand=true
+        this.inventory.net_sync.iitems=true
+        this.inventory.net_sync.items=true
+        this.inventory.net_sync.melee_world=true
+        this.inventory.net_sync.weapons=true
     }
     on_kill_enemy(victim:Human,params:DamageParams){
         if(this.game.modeManager.is_leader(victim)){

@@ -22,6 +22,7 @@ export interface GameDebugOptions{
 export interface PlayTimeCurrent{
     day:number
     hour:number
+    duration?:number
 }
 export interface PlayTimeConfig{
     week_days:number[]

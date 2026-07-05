@@ -76,6 +76,7 @@ export class Sprite2D extends Container2DObject{
         if(frame.tint!==undefined)this.tint=ColorM.number(frame.tint)
         if(frame.hotspot!==undefined)this.hotspot=frame.hotspot
         if(frame.alpha!==undefined)this.tint.a=frame.alpha
+        this.dirty_reals=true
     }
     override get_rect():Rect{
         return this._rect

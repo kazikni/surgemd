@@ -13,6 +13,8 @@ export class ApiServer {
     play_time?:{
         last_playtime?:number
         current_time?:number
+        day:number
+        hour:number
     }
     constructor(public config: ApiServerConfig){
         this.server = new Server(
@@ -27,7 +29,10 @@ export class ApiServer {
         this.routes()
 
         if(this.config.game.play_time){
-            this.play_time={}
+            this.play_time={
+                day:-1,
+                hour:-1
+            }
         }
     }
     can_play():boolean{
@@ -39,7 +44,15 @@ export class ApiServer {
                 enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
             },
             modes:this.modes,
-            regions:this.regions.regions
+            regions:this.regions.regions,
+            playtime:this.play_time?{
+                config:this.config.game.play_time!,
+                current:{
+                    day:this.play_time.day,
+                    hour:this.play_time.hour,
+                    duration:this.play_time.current_time
+                }
+            }:undefined
         }
     }
     get_game_config(mode:number,group_size:number):GameConfig{
@@ -79,6 +92,8 @@ export class ApiServer {
                 const now = new Date()
                 const week_day = now.getDay()
                 const hour = now.getHours()
+                this.play_time.day=week_day
+                this.play_time.hour=hour
                 if(this.config.game.play_time.hour===hour&&this.config.game.play_time.week_days.includes(week_day)){
                     this.play_time.current_time=this.config.game.play_time.duration
                     this.play_time.last_playtime=performance.now()

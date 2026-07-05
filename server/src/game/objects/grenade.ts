@@ -3,7 +3,7 @@ import { Projectile, ProjectileData, ProjectilePhysicalData } from "./projectile
 import { CircleHitbox2D, Stream, Numeric, v2, v2m, Vec2, CheckpointContext } from "common/engine/core.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { type Human } from "./human.ts";
-import { FloorType } from "common/scripts/others/terrain.ts";
+import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type Obstacle } from "./obstacle.ts";
@@ -91,14 +91,13 @@ export class Grenade extends Projectile{
             this.physical_data.zpos_speed=Numeric.clamp(this.physical_data.zpos_speed-this.def.gravity*dt,-3,3)
             this.physical_data.zpos=Numeric.clamp(this.physical_data.zpos+this.physical_data.zpos_speed*dt,0,1)
         }else{
+            const fd=Floors[this.physical_data.current_floor]
             const vel = this.physical_data.velocity
 
-            const speedDecay = Math.exp(-this.def.decays.ground_speed * dt)
-            const rotDecay   = Math.exp(-this.def.decays.ground_rotation * dt)
+            const drag=fd.acceleration*fd.drag
 
-            v2m.scale(vel, vel, speedDecay)
-
-            this.physical_data.angular_velocity *= rotDecay
+            v2m.scale(vel, vel, 1/(1+dt*(this.def.decays.ground_speed/drag)))
+            this.physical_data.angular_velocity *= 1/(1+dt*(this.def.decays.ground_rotation/drag))
 
             if(this.def.cook?.ground){
                 this.kill()
@@ -113,6 +112,8 @@ export class Grenade extends Projectile{
 
         if(!this.old_pos||!v2.is(this.position,this.old_pos)){
             this.old_pos=this.position
+            this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
+
             // Fall
             /*if(this.physical_data.current_floor===FloorType.Void){
                 if(this.layer>Layers.Normal){
@@ -175,7 +176,8 @@ export class Grenade extends Projectile{
         if (this.owner) {
             stream.write_id(ctx.idco[this.owner.id])
         }
-    }override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+    }
+    override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         const def = this.game.definitions.grenades.valueNumber[stream.read_uint16()]
         this.set_configuration(def, v2.zero())
         this.position = stream.read_pos2()

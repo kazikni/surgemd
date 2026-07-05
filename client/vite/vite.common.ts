@@ -1,10 +1,14 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path, { resolve } from "node:path";
+import fs from "node:fs"
 import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
 import { AudiosLists } from "./plugins/audio_list.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-export const config=(require("../../config.jsonc") as ConfigType).vite;
+import { parseJSONC } from "../../common/engine/core/math/utils.ts";
+const td=new TextDecoder()
+const txt=td.decode(fs.readFileSync("../config.jsonc"))
+export const config=(parseJSONC(txt) as ConfigType).vite;
 export const uconfig: UserConfig = {
     build: {
         rollupOptions: {

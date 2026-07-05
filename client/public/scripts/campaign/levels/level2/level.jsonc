@@ -63,6 +63,40 @@
                                 "weight": 0.1
                             }
                         ],
+                        "melee": [
+                            {
+                                "item": "fist",
+                                "weight": 30
+                            },
+                            {
+                                "item": "survival_knife",
+                                "weight": 10
+                            },
+                            {
+                                "item": "shovel",
+                                "weight": 10
+                            },
+                            {
+                                "item": "axe",
+                                "weight": 5
+                            },
+                            {
+                                "item": "katana",
+                                "weight": 1
+                            },
+                            {
+                                "item": "sledgehammer",
+                                "weight": 0.75
+                            },
+                            {
+                                "item": "bonesaw",
+                                "weight": 0.75
+                            },
+                            {
+                                "item": "pan",
+                                "weight": 0.75
+                            }
+                        ],
                         "gun1": [
                             {
                                 "item": "model94",

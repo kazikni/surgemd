@@ -209,7 +209,7 @@ export const bullets_factory={
     assault(power:number):BulletDef{
         return {
             damage:8*power,
-            range: 130*(1+(power-1) * 0.3),
+            range: 160*(1+(power-1) * 0.3),
             speed: 39*(1+(power-1) * 0.7),
 
             criticalMult: 1.25,
@@ -221,7 +221,7 @@ export const bullets_factory={
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
             damage: 45 * power,
-            range: 140 * (1 + (power - 1) * 0.5),
+            range: 180 * (1 + (power - 1) * 0.5),
             speed: 55 * (1 + (power - 1) * 0.3),
 
             criticalMult: 1.1,
@@ -233,7 +233,7 @@ export const bullets_factory={
     smg(power:number,tracer=tracers.small):BulletDef{
         return {
             damage:5 * power,
-            range:46 * (1 + (power - 1) * 0.4),
+            range:47 * (1 + (power - 1) * 0.4),
             speed:29 * (1 + (power - 1) * 0.7),
 
             falloff:0.7,
@@ -246,7 +246,7 @@ export const bullets_factory={
         return {
             damage:7 * power,
             speed:25 * (1 + (power - 1) * 0.4),
-            range:30 * (1 + (power - 1) * 0.4),
+            range:31 * (1 + (power - 1) * 0.4),
 
             falloff:0.7,
             criticalMult:1.2,
@@ -257,7 +257,7 @@ export const bullets_factory={
         return {
             damage:3*power,
             speed:25*(1+(power-1)*0.4),
-            range:30*(1+(power-1)*0.4),
+            range:31*(1+(power-1)*0.4),
 
             falloff:0.5,
             criticalMult:1.2,
@@ -268,7 +268,7 @@ export const bullets_factory={
         return {
             damage:5.6 * power,
             speed:29 * (1 + (power - 1) * 0.4),
-            range:50 * (1 + (power - 1) * 0.2),
+            range:52 * (1 + (power - 1) * 0.2),
 
             falloff:0.7,
             criticalMult:1.2,
@@ -641,7 +641,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:21,
-                    range:150,
+                    range:170,
                     falloff:0.8,
                     speed:45,
                     tracer:{
@@ -693,7 +693,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:55,
-                    range:160,
+                    range:190,
                     falloff:0.7,
                     speed:45,
                     obstacleMult:1.7,
@@ -1215,7 +1215,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:23,
                     falloff:0.75,
-                    range:110,
+                    range:165,
                     speed:55,
                     tracer:tracers.large
                 }
@@ -1243,7 +1243,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:14,
                     falloff:0.7,
-                    range:130,
+                    range:165,
                     speed:50,
                     pass_through_humans:true,
                     tracer:{
@@ -1276,7 +1276,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:15,
                     falloff:0.5,
-                    range:100,
+                    range:165,
                     speed:45,
                     pass_through_humans:true,
                     tracer:{
@@ -1346,8 +1346,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:14,
                     obstacleMult:1.5,
-                    range:130,
-                    speed:39,
+                    range:170,
+                    speed:42,
                     tracer:tracers.large
                 }
             },

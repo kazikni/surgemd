@@ -47,7 +47,7 @@ export class Camera2D{
     constructor(renderer:Renderer){
         this.renderer=renderer
         this.zoom=1
-        this.container.full_request=true
+        this.container.full_request=false
         this.ctx=renderer.make_context()
     }
 

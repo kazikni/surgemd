@@ -319,7 +319,7 @@ export class Vehicle extends MovingBody {
         this.current_floor = this.game.map.terrain.get_floor_type(
             this.position,
             this.layer,
-            this.game.map.def.default_floor ?? FloorType.Void
+            this.game.map.default_floor
         )
 
         this.update_surface()

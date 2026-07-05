@@ -2,6 +2,7 @@ import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
+import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     zpos:number
 }
@@ -38,6 +39,35 @@ export class Grenade extends MovingBody{
         this.sprite.rotation=this.physical_data.rotation
         this.sprite.scale=v2(s,s)
         if(this.physical_data.zpos===0){
+            if(this.sprite.zIndex===zIndexes.GrenadeAir){
+                const floor=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void) as FloorType
+                const floor_def=Floors[floor]
+                if(floor_def.footstep_sounds)this.game.sounds.play(this.game.resources.get_sound(random.choose(floor_def.footstep_sounds)),{
+                    position:this.position,
+                    max_distance: 15,
+                    volume:0.4,
+                    bus:"explosions"
+                })
+                if(floor_def.floor_kind===FloorKind.Liquid){
+                    this.game.particles.add_particle(new ABParticle2D({
+                        direction:0,
+                        frame:{
+                            image:"riple",
+                            hotspot:CenterHotspot,
+                            zIndex:zIndexes.Decals,
+                            layer:this.layer,
+                            scale:0,
+                        },
+                        life_time:0.5,
+                        position:this.position,
+                        speed:0,
+                        to:{
+                            scale:3,
+                            tint:ColorM.default.transparent
+                        }
+                    }))
+                }
+            }
             this.sprite.zIndex=zIndexes.GrenadeGround
         }else{
             this.sprite.zIndex=zIndexes.GrenadeAir

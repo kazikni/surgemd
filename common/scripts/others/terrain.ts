@@ -20,8 +20,11 @@ export enum FloorKind {
 }
 export interface FloorDef {
     default_color: number
-    speed_mult?: number
-    acceleration?:number
+
+    speed_mult: number
+    acceleration:number
+    drag: number
+
     floor_kind:FloorKind
     footstep_sounds?:string[]
     footstep_decal?:boolean
@@ -34,27 +37,49 @@ export interface FloorDef {
 export const Floors: Record<FloorType, FloorDef> = {
     [FloorType.Void]: {
         default_color: 0x0d131a,
+
+        speed_mult:1,
+        acceleration:1,
+        drag:1,
+
         floor_kind:FloorKind.Solid,
         footstep_sounds:[],
+
         traction: 1,
         rolling_resistance:0,
     },
     [FloorType.Grass]: {
         default_color: 0x4d9635,
+
+        speed_mult:1,
+        acceleration:1,
+        drag:1,
+
         floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_grass_1","footstep_grass_2"],
         traction: 1,
         rolling_resistance:0,
     },
     [FloorType.Snow]: {
-        default_color: 0xbec8cf,floor_kind:FloorKind.Solid,
+        default_color: 0xbec8cf,
+
+        speed_mult:1,
+        acceleration:0.9,
+        drag:0.5,
+
+        floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_snow_1","footstep_snow_2"],
         footstep_decal:true,
         skin_apply:"snow",
+
         traction: 0.8,
         rolling_resistance:-0.2,
     },
     [FloorType.Sand]: {
+        speed_mult:1,
+        acceleration:1,
+        drag:0.8,
+
         default_color: 0xb59924,floor_kind:FloorKind.Solid,
         footstep_sounds:["footstep_sand_1","footstep_sand_2"],
         traction: 0.9,
@@ -62,7 +87,11 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Water]: {
         default_color: 0x2466a2,
-        speed_mult: 0.7,
+
+        speed_mult: 0.65,
+        acceleration: 0.85,
+        drag:0.5,
+
         floor_kind:FloorKind.Liquid,
         footstep_sounds:["footstep_water_1","footstep_water_2"],
         traction: 1,
@@ -70,7 +99,11 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Ice]: {
         default_color: 0x4681a3,
+
+        speed_mult:1,
         acceleration:0.05,
+        drag:1,
+
         floor_kind:FloorKind.Ice,
         footstep_sounds:["footstep_ice_1","footstep_ice_2"],
         traction: 0.3,
@@ -78,6 +111,11 @@ export const Floors: Record<FloorType, FloorDef> = {
     },
     [FloorType.Metal]: {
         default_color: 0xb3c0c7,floor_kind:FloorKind.Solid,
+
+        speed_mult:1,
+        acceleration:1,
+        drag:1,
+
         footstep_sounds:["footstep_metal_1","footstep_metal_2"],
         traction: 1,
         rolling_resistance:0,

@@ -2,7 +2,6 @@ import { ServerGameObject } from "../others/gameObject.ts";
 import { Stream, v2, v2m, Vec2} from "common/engine/core.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-import { type Obstacle } from "./obstacle.ts";
 
 export interface MovingBodyPhysicalData{
     velocity:Vec2

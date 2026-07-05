@@ -23,6 +23,7 @@ export type ExplosionDef={
     },
     assets:{
         sound:string
+        liquid_sound?:string
     },
     projectiles?:{
         def:string
@@ -42,6 +43,7 @@ export type ExplosionDef={
         count:number
     }
     decal?:DecalInstanceDef
+    liquid_decal?:DecalInstanceDef
     cam_shake?:CamShake
 }&Definition
 export const explosion_cam_shakes={
@@ -64,23 +66,23 @@ export const explosions_decals={
         scale:6,
         tint:{
             color:0x000000,
-            alpha:200,
+            alpha:230,
         },
     },
     normal:{
         def:"explosion_decal",
-        scale:1,
+        scale:1.5,
         tint:{
             color:0x000000,
-            alpha:150,
+            alpha:230,
         },
     },
     small:{
         def:"explosion_decal",
-        scale:0.5,
+        scale:1,
         tint:{
             color:0x000000,
-            alpha:150,
+            alpha:190,
         },
     }
 } satisfies Record<string,DecalInstanceDef>
@@ -165,7 +167,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 count:10
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -239,17 +242,18 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     range:10,
                     tracer:tracers.mirv
                 },
-                count:5
+                count:10
             },
             projectiles:{
                 count:6,
                 def:"submirv_grenade",
-                speed:1,
+                speed:1.2,
                 angSpeed:15,
                 randomAng:3
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -276,10 +280,10 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
             tint:"#9c3932",
             size:{
                 begin:1,
-                end:4
+                end:3
             },
-            damage:40,
-            obstacle_mult:1.25,
+            damage:60,
+            obstacle_mult:1.1,
             bullet:{
                 def:{
                     damage:7,
@@ -287,10 +291,11 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                     range:10,
                     tracer:tracers.mirv
                 },
-                count:5
+                count:7
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_7",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -334,7 +339,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 count:10
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -375,7 +381,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 count:10
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {
@@ -440,7 +447,8 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 count:10
             },
             assets:{
-                sound:"explosion_1"
+                sound:"explosion_1",
+                liquid_sound:"explosion_1_liquid"
             },
             particles:[
                 {

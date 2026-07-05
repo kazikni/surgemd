@@ -8,6 +8,7 @@ import { StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { type Grenade } from "./grenade.ts";
 import { type Projectile } from "./projectile.ts";
+import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 
 export class Explosion extends ServerGameObject{
     string_type:string="explosion"
@@ -29,6 +30,8 @@ export class Explosion extends ServerGameObject{
     explode_base(){
         if(this.exploded_base)return
         this.exploded_base=true
+        const floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor) as FloorType
+        const floor_def=Floors[floor]
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){
                 const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.def,this.layer)
@@ -42,10 +45,11 @@ export class Explosion extends ServerGameObject{
                 this.game.add_synced_particle(this.position,def,this.owner,this.layer)
             }
         }
-        if(this.def.decal){
-            this.game.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+        if(floor_def.floor_kind!==FloorKind.Liquid){
+            if(this.def.decal)this.game.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+        }else{
+            if(this.def.liquid_decal)this.game.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.liquid_decal.def),this.def.liquid_decal.tint,this.def.liquid_decal.scale,this.layer)}
         }
-    }
     explode_damage(){
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.colliding_with(v.hitbox))
         objs.sort((a, b) =>v2.distanceSquared(this.position, a.position)-v2.distanceSquared(this.position, b.position))

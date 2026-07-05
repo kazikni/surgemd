@@ -81,7 +81,7 @@ export class Container2D extends Container2DObject{
             const c=this.visible_children[o]
             if(c.destroyed||!c._visible)continue
             const rect=c.get_rect()
-            if(this.full||!this.full_request||(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y))c.draw(cam)
+            if(c.full||!this.full_request||(rect.max.x>=cam.rect.min.x&&rect.min.x<=cam.rect.max.x&&rect.max.y>=cam.rect.min.y&&rect.min.y<=cam.rect.max.y))c.draw(cam)
         }
     }
     add_child(c:Container2DObject){

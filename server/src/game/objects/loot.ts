@@ -141,7 +141,7 @@ export class Loot extends ServerGameObject{
         }
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
-            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Water)
+            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
             this.set_dirty_part()
         }
     }

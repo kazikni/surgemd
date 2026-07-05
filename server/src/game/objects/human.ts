@@ -843,14 +843,14 @@ export class Human extends MovingBody{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let acceleration=40 * (this.downed?0.1:(current_floor.acceleration??1))
+        let acceleration=40*(this.downed?0.2:current_floor.acceleration)
         acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
             * this.modifiers.speed
             * (this.downed?0.25:1)
-            * (this.parachute?1:((current_floor.speed_mult??1)))
+            * (this.parachute?1:(current_floor.speed_mult))
             * (this.grenade_holding?0.7:1)
         if(this.recoil){
             this.recoil.delay-=dt
@@ -1011,7 +1011,7 @@ export class Human extends MovingBody{
         this._can_interact=this.human_data.movement_enabled&&!this.downed
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
-            this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.def.default_floor??FloorType.Void)
+            this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
         }
 
         if(this.downed&&!this.being_helpup_by){

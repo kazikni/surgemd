@@ -27,6 +27,8 @@ __                                                                              
 ### Others
 * Fix RIP Ammo dont split rpg7 bullet
 * Obstacles Particles Opacity Decay
+* Shed Ceiling Now Need Have At Least 3 Walls To Fall
+* Alternative Shed Ceiling
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

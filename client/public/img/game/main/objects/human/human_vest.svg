@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="149.00006"
-   height="149"
-   viewBox="0 0 39.423037 39.423021"
+   width="150.00002"
+   height="150"
+   viewBox="0 0 39.687609 39.687605"
    version="1.1"
    id="svg10"
    sodipodi:docname="human_vest.svg"
@@ -23,8 +23,8 @@
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#000000"
      inkscape:zoom="2.9226001"
-     inkscape:cx="28.741531"
-     inkscape:cy="126.25744"
+     inkscape:cx="-8.896188"
+     inkscape:cy="123.86231"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
      inkscape:window-x="0"
@@ -34,16 +34,16 @@
      showguides="true"
      showgrid="false" />
   <g
-     style="opacity:1;fill:#ffffff;fill-opacity:1"
+     style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none"
      id="g9"
-     transform="translate(1.4541567,2.5129482)">
+     transform="matrix(1.0416667,0,0,1.0416667,0.8257118,1.9286332)">
     <path
        id="path15"
-       style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#7a8385;stroke-width:1.32292;stroke-dasharray:none;stroke-opacity:1"
+       style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.32292;stroke-dasharray:none;stroke-opacity:1"
        d="M 16.899251,-0.5291672 A 2.6458405,2.6458402 0 0 0 14.314389,1.5756195 17.197962,17.197962 0 0 0 6.8553931,4.794553 2.6458402,2.6458404 57.436432 0 0 5.190374,4.2777873 2.6458402,2.6458404 57.436432 0 0 3.4287197,5.050352 2.6458402,2.6458404 57.436432 0 0 3.2158123,8.5250845 17.197962,17.197962 0 0 0 0.20151799,15.908116 a 2.6458403,2.6458404 0 0 0 -2.35231749,2.612767 2.6458403,2.6458404 0 0 0 2.35231749,2.612768 17.197962,17.197962 0 0 0 3.01429431,7.383031 2.6458404,2.6458402 32.563791 0 0 0.2129074,3.474733 2.6458404,2.6458402 32.563791 0 0 3.4240895,0.253732 17.197962,17.197962 0 0 0 7.4615798,3.221 2.6458405,2.6458402 0 0 0 2.584862,2.104787 2.6458405,2.6458402 0 0 0 2.563158,-2.010735 17.197962,17.197962 0 0 0 7.794377,-3.103695 2.6458402,2.6458404 57.436432 0 0 3.112996,-0.465089 2.6458402,2.6458404 57.436432 0 0 0.486277,-3.035482 17.197962,17.197962 0 0 0 3.35846,-7.968527 2.6458403,2.6458404 0 0 0 1.734783,-2.466523 A 2.6458403,2.6458404 0 0 0 34.214519,16.038341 17.197962,17.197962 0 0 0 30.870528,8.0904846 2.6458404,2.6458402 32.563791 0 0 30.369782,5.050352 2.6458404,2.6458402 32.563791 0 0 28.389536,4.2777873 2.6458404,2.6458402 32.563791 0 0 27.276423,4.5868132 17.197962,17.197962 0 0 0 19.464476,1.4732999 2.6458405,2.6458402 0 0 0 16.899251,-0.5291672 Z"
        transform="translate(1.3581162,-1.3223206)" />
     <g
-       style="display:none;fill:#ffffff;fill-opacity:1"
+       style="display:none;fill:#ffffff;fill-opacity:1;stroke:none"
        transform="matrix(0.80016,0,0,0.8,7.93,8.051)"
        id="g8">
       <ellipse
@@ -110,7 +110,7 @@
          transform="matrix(-0.70703607,0.70717748,-0.70703607,-0.70717748,0,0)" />
     </g>
     <circle
-       style="display:none;opacity:1;fill:#ffffff;fill-opacity:1;stroke-width:0.291519"
+       style="display:none;opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.291519"
        id="circle4148"
        cx="17.197962"
        cy="18.520882"

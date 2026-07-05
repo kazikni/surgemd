@@ -17,9 +17,8 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     public id:ID=1
     ticks:number=0
     ntps:number=30
-    constructor(tps:number,id:ID,clients:OfflineClientsManager,objects:Array<new()=>DefaultGameObject2D>){
+    constructor(tps:number,clients:OfflineClientsManager,objects:Array<new()=>DefaultGameObject2D>){
         super(tps,objects)
-        this.id=id
         this.allowJoin=true
         this.clients=clients
 
@@ -27,7 +26,7 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     }
     fpsShow(){
         if(!this.running)return
-        console.log(`TPS:${this.ticks}/${this.tps}`)
+        console.log(`[GAME-${this.id}] TPS:${this.ticks}/${this.tps}`)
         this.ticks=0
         setTimeout(this.fpsShow.bind(this),1000)
     }

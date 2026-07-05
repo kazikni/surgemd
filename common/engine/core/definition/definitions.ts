@@ -291,7 +291,7 @@ export interface FrameTransform{
     alpha?:number
     layer?:number
 }
-export type FrameDef={image?:string}&FrameTransform
+export type FrameDef={image?:string|string[]}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef

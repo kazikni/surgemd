@@ -956,6 +956,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         tint:0x5f3d07,
                     }
                 },
+                particles:{
+                    particle:"plank_particle",
+                    tint:0x583b08
+                },
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,

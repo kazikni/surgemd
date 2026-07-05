@@ -34,7 +34,7 @@ export class PacketsManager{
         return stream
     }
     decode(stream:Stream):Packet{
-        if(stream.index>=stream.data.byteLength)return new InvalidPacket()
+        if(stream.index>=stream.data.length)return new InvalidPacket()
         try{
             const id:PacketID=stream.read_uint16()
             if(this.packets.get(id)){

@@ -7,6 +7,7 @@ import { DecalTint } from "./decals.ts";
 //2mm  = 0.017619
 export type BuildingCeilingDef={
     frame:FrameDef
+    variations?:number[]
     hitbox:Hitbox2D
     below?:{
         deenabled?:boolean
@@ -84,6 +85,7 @@ export interface BuildingDef extends Definition{
 }
 export type JSONBuildingCeilingDef={
     frame:FrameDef
+    variations?:number[]
     hitbox:JsonHitbox2D
     below?:{
         duration?:number
@@ -193,7 +195,7 @@ export const buildings_factory={
     container:{
         type_1(id:string,tint:number=0xffffff,settings:{
             floor?:string,
-            ceiling?:string,
+            ceiling?:string|string[],
             b?:DeepPartial<BuildingDef>
         }={}){
             const min=v2(-2.44,-1.2)
@@ -236,7 +238,7 @@ export const buildings_factory={
         },
         type_2(id:string,tint:number=0xffffff,settings:{
             floor?:string,
-            ceiling?:string,
+            ceiling?:string|string[],
             b?:DeepPartial<BuildingDef>
         }={}){
             const min=v2(-2.44,-1.2)
@@ -287,15 +289,19 @@ export const buildings_factory={
                 }
             }
             return [
-                this.type_1(id+"_1",tint,{b}),
-                this.type_2(id+"_2",tint,{b}),
-                this.type_1(id+"_3",tint,{
+                this.type_1(id+"_1",tint,{
                     b,
-                    ceiling:"container_ceiling_3"
+                    ceiling:[
+                        "container_ceiling_1",
+                        "container_ceiling_3",
+                    ]
                 }),
-                this.type_2(id+"_4",tint,{
+                this.type_2(id+"_2",tint,{
                     b,
-                    ceiling:"container_ceiling_4"
+                    ceiling:[
+                        "container_ceiling_2",
+                        "container_ceiling_4",
+                    ]
                 }),
             ]
         }
@@ -516,7 +522,7 @@ export const buildings_factory={
                     ceiling:[ 
                         {
                             frame:{
-                                image:"shed_ceiling",
+                                image:["shed_ceiling_1","shed_ceiling_2"],
                                 position:v2.zero(),
                                 rotation:0
                             },
@@ -524,7 +530,7 @@ export const buildings_factory={
                             destroy:{
                                 frame:"shed_ceiling_break",
                                 sound:"ceiling_break_1",
-                                count:2,
+                                count:3,
                                 particles:{
                                     count:30
                                 }
@@ -535,7 +541,7 @@ export const buildings_factory={
                     floor_image:[
                         {
                             image:"shed_floor",
-                            position:v2(0.21,0)
+                            position:v2(0.21,0),
                         }
                     ],
                 },

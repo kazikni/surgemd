@@ -143,8 +143,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         assets:{},
         languages_path:"",
     }
-    constructor(main_config:GameServerConfig,clients:OfflineClientsManager,id:ID){
-        super(main_config.tps,id,clients,[
+    constructor(main_config:GameServerConfig,clients:OfflineClientsManager){
+        super(main_config.tps,clients,[
             Human,
             Loot,
             Grenade,

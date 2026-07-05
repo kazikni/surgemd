@@ -1,6 +1,9 @@
-import { FileManager } from "../core.ts";
+import { FileManager } from "../core/definition/file.ts";
+import { PacketsManager } from "../core/net/packets.ts";
+import { AbstractServerGame } from "../core/net/server_base.ts";
 import { DenoFileManager } from "./file.ts";
 import { Server } from "./server.ts"
+import { ClientsManager } from "./websockets.ts";
 
 export type WorkerMessageBase<GameConfig, GameData, MainConfig> =
     | {
@@ -81,22 +84,80 @@ export abstract class AbstractGameContainer<
     WorkerMessage extends WorkerMessageBase<GameConfig,GameData,MainConfig>
 > {
     id = 0
-    data!: GameData
+    data?: GameData
     config?:GameConfig
-    worker!: Worker
-    abstract worker_path: URL
 
     server!:AbstractGameServer<GameData,GameConfig,MainConfig,WorkerMessage>
-    port:number
 
     constructor(){
+    }
+    abstract on_message(msg:WorkerMessage):void
+    abstract begin():void
+    abstract new_game(config:GameConfig):void
+    abstract stop():void
+    abstract get_address():string
+}
+export abstract class AbstractSelfGameContainer<
+    Game extends AbstractServerGame<any>,
+    GameData extends GameDataBase,
+    GameConfig,
+    MainConfig,
+    WorkerMessage extends WorkerMessageBase<GameConfig,GameData,MainConfig>
+> extends AbstractGameContainer<GameData,GameConfig,MainConfig,WorkerMessage>{
+    game?:Game
+    clients_manager:ClientsManager
+    constructor(packet_manager:PacketsManager){
+        super()
+        this.clients_manager=new ClientsManager(packet_manager)
+    }
+    abstract make_game(config:GameConfig):Game
+    override new_game(config: GameConfig): void {
+        this.config=config
+        if(this.game)this.game.stop()
+        this.game=this.make_game(config)
+        this.clients_manager.onconnection=this.game.handle_connection.bind(this.game)
+        this.game!.signals.on("update_data", (d:GameData) => this.data=d)
+        this.game.id=this.id
+        this.game.mainloop()
+    }
+    override stop(): void {
+        if(this.game)this.game.stop()
+        this.game=undefined
+        this.config=undefined
+        this.clients_manager.clear()
+    }
+}
+export abstract class AbstractWorkerGameContainer<
+    GameData extends GameDataBase,
+    GameConfig,
+    MainConfig,
+    WorkerMessage extends WorkerMessageBase<GameConfig,GameData,MainConfig>
+> extends AbstractGameContainer<GameData,GameConfig,MainConfig,WorkerMessage>{
+    worker!: Worker
+    abstract worker_path: URL
+    port:number
+    constructor(){
+        super()
         this.port=8001
     }
+
     get_address(ip:string="localhost"):string{
         return `${ip}:${this.port}`
     }
     begin() {
         this.reset_worker()
+    }
+    
+    new_game(config:GameConfig){
+        this.worker.postMessage({
+            type: 1,
+            config:config
+        })
+        this.config=config
+    }
+    stop() {
+        this.worker.postMessage({ type: 3 })
+        this.config=undefined
     }
     protected reset_worker() {
         this.config=undefined
@@ -139,19 +200,5 @@ export abstract class AbstractGameContainer<
             }
             this.on_message(msg)
         }
-    }
-    on_message(msg:WorkerMessage){
-        
-    }
-    new_game(config:GameConfig){
-        this.worker.postMessage({
-            type: 1,
-            config:config
-        })
-        this.config=config
-    }
-    stop() {
-        this.worker.postMessage({ type: 3 })
-        this.config=undefined
     }
 }

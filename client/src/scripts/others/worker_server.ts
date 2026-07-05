@@ -26,7 +26,6 @@ self.onmessage = async(ev) => {
             server=new OfflineGameServer(
                 msg.config as GameServerConfig,
                 new OfflineClientsManager(PacketManager),
-                0,
             );
             break
         }

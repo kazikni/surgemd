@@ -17,6 +17,7 @@ export interface BattleRoyaleSettings{
     players?:{
         limit?:number
     }
+    join_time?:number
     map?:{
         def:MapDef|string
         seed?:number
@@ -33,6 +34,7 @@ export class BattleRoyale extends ModeManager{
         players:{
             limit:number
         }
+        join_time:number
         map:{
             def:MapDef
             seed?:number
@@ -51,6 +53,7 @@ export class BattleRoyale extends ModeManager{
             players:{
                 limit:settings.players?.limit??100,
             },
+            join_time:settings.join_time??1,
             map:{
                 def:(settings.map?.def===undefined)?Maps["normal"]:(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def),
                 seed:settings.map?.seed
@@ -63,7 +66,7 @@ export class BattleRoyale extends ModeManager{
                 spawn:[
                     20,150,301
                 ]
-            }
+            },
         }
         this.group_size=group_size
         if(group_size > 1){
@@ -97,7 +100,7 @@ export class BattleRoyale extends ModeManager{
         }
         this.game.add_timeout(()=>{
             this.game.close()
-        },120)
+        },this.settings.join_time)
     }
     override on_tick(dt: number): void {
         if(this.groups_manager)this.groups_manager.tick(dt)

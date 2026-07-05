@@ -110,6 +110,7 @@ export abstract class SelfGameWorker<
 
         this.game!.signals.on("update_data", (d:GameData) => this.sendData(d))
         this.game!.mainloop()
+        this.game.id=this.id
     }
 
     protected sendData(data: GameData) {

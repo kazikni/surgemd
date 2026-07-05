@@ -4,6 +4,7 @@ import { ColorM } from "../../core/math/color.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { Numeric } from "../../core/math/utils.ts"
 import { v2, Vec2, Vec2M } from "../../core/math/vec2.ts"
+import { random } from "../mod.ts";
 import { Frame, ResourcesManager } from "../resources/resources.ts"
 import { CamA, Container2DObject } from "./base.ts"
 export class Sprite2D extends Container2DObject{
@@ -62,8 +63,8 @@ export class Sprite2D extends Container2DObject{
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
         if(frame.image){
-            this.frame=resources.get_frame(frame.image)
-        }else{
+            this.frame=resources.get_frame(typeof frame.image==="string"?frame.image:random.choose(frame.image))
+        }else if(frame.image==""){
             this.frame=undefined
         }
         this.transform_frame(frame)

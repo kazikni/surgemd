@@ -82,6 +82,7 @@ export interface GameServerConfig{
     host: HostConfig
 
     max_games: number
+    use_workers: boolean
     ntps:number
     tps:number
 
@@ -147,6 +148,7 @@ export function ZeroGameServerConfig():GameServerConfig{
         tps:100,
         ntps:32,
         max_games:1,
+        use_workers:false,
     }
 }
 export function ZeroConfig():ConfigType{

@@ -296,7 +296,7 @@ export const guns_factory={
             barrel_length:0.8,
 
             fire_delay:1,
-            switch_delay:0.7,
+            switch_delay:0.6,
 
             gas_particles:GasParticles.pistols,
             muzzle_flash:MuzzleFlash.normal,
@@ -325,7 +325,7 @@ export const guns_factory={
             barrel_length:1,
 
             fire_delay:0.1,
-            switch_delay:0.7,
+            switch_delay:0.6,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -355,7 +355,7 @@ export const guns_factory={
             barrel_length:1,
 
             fire_delay:0.1,
-            switch_delay:0.5,
+            switch_delay:0.6,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -480,6 +480,40 @@ export const guns_factory={
             },
 
             speed_mod:0.95,
+        },extend??{})
+    },
+    lmg(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
+        return mergeDeep({
+            idString:id,
+            class:GunClasses.LMG,
+            rank:ItemRank.S,
+
+            barrel_length:1.3,
+
+            fire_mode:FireMode.Auto,
+            fire_on_release:true,
+            fire_delay:0.1,
+            switch_delay:0.6,
+
+            gas_particles:GasParticles.automatic,
+            case_particle:{
+                position:v2.new(0.7,0.1)
+            },
+            muzzle_flash:MuzzleFlash.normal,
+
+            ammo_type:ammo,
+
+            rig_arms:WeaponsArmRig[2],
+            rig_image:{
+                position:v2.new(0.75,0.0),
+                rotation:0,
+            },
+            assets:{
+                world:"weapon_large_world",
+                world_tint:0x22222f,
+            },
+
+            speed_mod:0.8,
         },extend??{})
     },
 }
@@ -1328,22 +1362,16 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 world_tint:0x573c05
             }
         }),
-        {
-            idString:"pkp",
-            class:GunClasses.LMG,
-            rank:ItemRank.S,
-
-            barrel_length:0.9,
-
+        guns_factory.lmg("pkp","762mm",{
             fire_delay:0.12,
             switch_delay:1,
             spread:2,
             move_spread:4,
 
-            ammo_type:"762mm",
             ammo_spawn:{
                 amount:200
             },
+
             bullet:{
                 def:{
                     damage:14,
@@ -1359,24 +1387,39 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:250,
             },
             recoil:{
-                duration:0.12,
-                speed:0.5
+                duration:0.13,
+                speed:0.75
+            },
+        }),
+        guns_factory.lmg("m249","556mm",{
+            fire_delay:0.1,
+            switch_delay:1,
+            spread:2,
+            move_spread:2.5,
+
+            ammo_spawn:{
+                amount:200
             },
 
-            gas_particles:GasParticles.automatic,
-            case_particle:{
-                position:v2.new(0.8,0.3)
+            bullet:{
+                def:{
+                    damage:10,
+                    obstacleMult:1.5,
+                    range:170,
+                    speed:42,
+                    tracer:tracers.medium
+                }
             },
-            muzzle_flash:MuzzleFlash.normal,
-
-            rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2.new(0.6,0.0),
-                rotation:0
+            reload:{
+                delay:6,
+                capacity:100,
+                extended_capacity:200,
             },
-
-            speed_mod:0.8,
-        },
+            recoil:{
+                duration:0.1,
+                speed:0.75
+            },
+        }),
         {
             idString:"rpg7",
             class:GunClasses.Miscellaneous,

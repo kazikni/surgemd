@@ -8,12 +8,13 @@ __                                                                              
 * Emotes Loadout
 __                                                                                                                 __
 ### Items
+* M249 - 556mm LMG
 * M2-2 Sprite
 * RPG7 Sprite
 * 50Cal Ammo Outline
 __                                                                                                                 __
 ### Others
-
+* Alternative Shed Ceiling
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __
@@ -28,7 +29,7 @@ __                                                                              
 * Fix RIP Ammo dont split rpg7 bullet
 * Obstacles Particles Opacity Decay
 * Shed Ceiling Now Need Have At Least 3 Walls To Fall
-* Alternative Shed Ceiling
+* If the player does not die to another player, the kill will go to the last player who dealt damage to them.
 __                                                                                                                 __
 # Play The Game
 [Web Version](https://surgemd.io)

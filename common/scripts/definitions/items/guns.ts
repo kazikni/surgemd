@@ -513,7 +513,7 @@ export const guns_factory={
                 world_tint:0x22222f,
             },
 
-            speed_mod:0.8,
+            speed_mod:0.75,
         },extend??{})
     },
 }
@@ -1418,6 +1418,30 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             recoil:{
                 duration:0.1,
                 speed:0.75
+            },
+        }),
+        guns_factory.lmg("xm556","556mm",{
+            fire_delay:0.045,
+            switch_delay:1,
+            spread:0.5,
+            move_spread:2.5,
+
+            ammo_spawn:{
+                amount:200
+            },
+
+            bullet:{
+                def:bullets_factory.assault(0.9)
+            },
+            reload:{
+                delay:6,
+                capacity:200,
+                extended_capacity:300,
+            },
+            speed_mod:0.5,
+            recoil:{
+                duration:0.1,
+                speed:0.7
             },
         }),
         {

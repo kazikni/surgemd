@@ -44,6 +44,21 @@ export function Wrapping_Default_Init(wrapping:Definitions<WrappingDef,{}>){
             replace:{
                 "weapon_small_world":{
                     image:"aqua_weapon_small",
+                },
+                "weapon_medium_world":{
+                    image:"aqua_weapon_medium",
+                },
+                "weapon_large_world":{
+                    image:"aqua_weapon_large",
+                }
+            }
+        },
+        {
+            idString:"aqua_blue",
+            rank:ItemRank.B,
+            replace:{
+                "weapon_small_world":{
+                    image:"aqua_weapon_small",
                     tint:0x2da0ed
                 },
                 "weapon_medium_world":{

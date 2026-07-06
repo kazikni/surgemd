@@ -8,6 +8,7 @@ __                                                                              
 * Emotes Loadout
 __                                                                                                                 __
 ### Items
+* XM556 - 556mm LMG
 * M249 - 556mm LMG
 * M2-2 Sprite
 * RPG7 Sprite

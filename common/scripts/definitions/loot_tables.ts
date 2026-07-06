@@ -38,6 +38,7 @@ export const LootTables={
         {item:"m249",weight:10},
         {item:"pkp",weight:10},
         {item:"awm",weight:8},
+        {item:"xm556",weight:7},
         {item:"rpg7",weight:3},
     ],
     //Guns Spawn

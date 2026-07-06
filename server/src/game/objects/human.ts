@@ -307,7 +307,11 @@ export class Human extends MovingBody{
                 this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
             ]:[],
             badge:this.game.definitions.badges.getFromString("stone_1_badge"),
-            colors:{}
+            colors:{},
+            wrapping:random.choose([
+                undefined,
+                ...Object.values(this.game.definitions.wrapping.value)
+            ])
         }
         const default_scope=this.game.definitions.scopes.getFromNumber(0)
         this.equipment_data={
@@ -1490,6 +1494,7 @@ export class Human extends MovingBody{
             .write_array(this.loadout.accessorys,(v)=>{
                 stream.write_uint16(v.idNumber!)
             },1)
+            .write_uint16(this.loadout.wrapping===undefined?0:(this.loadout.wrapping.idNumber!+1))
         }
         if(this.loadout.emote){
             const id=this.loadout.emote_is_item?

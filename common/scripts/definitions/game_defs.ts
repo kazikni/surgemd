@@ -12,6 +12,7 @@ import { BadgeDef, Badges_Default_Init } from "./loadout/badges.ts";
 import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
 import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
 import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
+import { Wrapping_Default_Init, WrappingDef } from "./loadout/wrapping.ts";
 import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { DecalDef, Decals_Default_Init } from "./objects/decals.ts";
@@ -85,6 +86,7 @@ export class GameDefinition{
     loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
     badges=new Definitions<BadgeDef,{}>((i)=>{})
     emotes=new Definitions<EmoteDef,{}>((e)=>{})
+    wrapping=new Definitions<WrappingDef,{}>((w)=>{})
     ping=new Definitions<PingDef,{}>((e)=>{
         e.idString="ping_"+e.idString
     })
@@ -121,6 +123,7 @@ export class GameDefinition{
         this.loadout.clear()
         this.badges.clear()
         this.emotes.clear()
+        this.wrapping.clear()
         this.ping.clear()
 
         this.buildings.clear()
@@ -149,6 +152,7 @@ export class GameDefinition{
         Loadout_Default_Init(this.loadout)
         Badges_Default_Init(this.badges)
         Emotes_Default_Init(this.emotes)
+        Wrapping_Default_Init(this.wrapping)
         Ping_Default_Init(this.ping)
 
         Buildings_Default_Init(this.buildings)

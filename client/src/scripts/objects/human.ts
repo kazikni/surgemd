@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { InventoryItemType } from "common/scripts/definitions/utils.ts"
@@ -135,8 +135,10 @@ export class Human extends MovingBody{
         footstep_sounds?:string[]
 
         consumible_particles:string
+        original_hand_frame:string
     }={
-        consumible_particles:""
+        consumible_particles:"",
+        original_hand_frame:""
     }
     melee?:MeleeDef
     current_weapon?:WeaponDef
@@ -557,6 +559,7 @@ export class Human extends MovingBody{
         this.sprites.weapon.visible=false
         this.sprites.weapon2.visible=false
         if(def?.rig_image){
+            const replace=this.loadout.wrapping?.replace[this.assets.original_hand_frame]
             const tint=def.assets?.world_tint?ColorM.number(def.assets.world_tint):ColorM.default.white
             if(def.rig_image){
                 this.sprites.weapon.visible=true
@@ -573,6 +576,7 @@ export class Human extends MovingBody{
                     this.sprites.weapon2.transform_frame(def.rig_image)
                     this.sprites.weapon.position.y=(def as GunDef&DualAdditional).dual_offset!
                     this.sprites.weapon2.position.y=-(def as GunDef&DualAdditional).dual_offset!
+                    if(replace)this.sprites.weapon2.transform_frame(replace)
                 }
 
                 this.sprites.left_arm.visible=true
@@ -585,6 +589,7 @@ export class Human extends MovingBody{
                 this.sprites.right_arm.position.x=xpos
                 this.sprites.right_arm.position.y=(def as GunDef&DualAdditional).dual_offset!
             }
+            if(replace)this.sprites.weapon.transform_frame(replace)
         }
     }
     set_current_weapon(weapon?:WeaponDef){
@@ -603,6 +608,7 @@ export class Human extends MovingBody{
             this.set_arms_rig(weapon.rig_arms)
             let original_name=weapon.idString
             let frame:string
+            let replace:FrameDef|undefined
             if(weapon.item_type===InventoryItemType.gun){
                 this.assets.weapon_reload_sound=this.game.resources.get_sound(weapon.assets?.reload_sound??weapon.idString+"_reload")
                 this.assets.weapon_reload_sound_alt=this.game.resources.get_sound(weapon.assets?.reload_sound_alt??weapon.idString+"_reload_alt")
@@ -617,6 +623,8 @@ export class Human extends MovingBody{
                         zIndex:2,
                         scale:2,
                     },this.game.resources)
+                    replace=this.loadout.wrapping?.replace[frame]
+                    if(replace)this.sprites.weapon2.set_frame(replace,this.game.resources)
                 }else{
                     frame=weapon.assets?.world??weapon.idString+"_world"
                 }
@@ -625,6 +633,7 @@ export class Human extends MovingBody{
             }else{
                 frame=weapon.assets?.world??weapon.idString
             }
+            replace=this.loadout.wrapping?.replace[frame]
             this.assets.weapon_fire_sound=this.game.resources.get_sound(weapon.assets?.use_sound??original_name+"_fire")
             this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets?.switch_sound??original_name+"_switch")
 
@@ -634,6 +643,7 @@ export class Human extends MovingBody{
                 this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
             }
 
+            this.assets.original_hand_frame=frame
             this.sprites.weapon.set_frame({
                 image:frame,
                 rotation:0,
@@ -641,6 +651,7 @@ export class Human extends MovingBody{
                 scale:2,
                 zIndex:2,
             },this.game.resources)
+            if(replace)this.sprites.weapon.set_frame(replace,this.game.resources)
         }else{
             this.set_arms_rig(undefined)
         }
@@ -1555,6 +1566,8 @@ export class Human extends MovingBody{
                 return this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef
             },1)
             this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
+            const wrapping=stream.read_uint16()
+            this.loadout.wrapping=wrapping>0?this.game.definitions.wrapping.valueNumber[wrapping-1]:undefined
         }
         if(has_emote){
             const id=stream.read_uint16()

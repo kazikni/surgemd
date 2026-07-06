@@ -497,6 +497,93 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
         }
     }
 }
+export function select_loadout_item(save: GameSave,resources: ResourcesManager,items: string[],slots:string[],icons: Record<string, string>,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
+    return (parent: HTMLDivElement) => {
+        let selected: string | null = null
+        let selectedElem: HTMLDivElement | null = null
+        let selectedSlot: HTMLDivElement | null = null
+
+        function updateSelection() {
+            if(selected===null || !selectedElem || !selectedSlot)return
+
+            save.set_variable(variable + selectedSlot.dataset.slot,selected)
+
+            const img = selectedSlot.querySelector(".icon") as HTMLImageElement
+            img.src = icons[selected]?resources.get_frame(icons[selected]).src:""
+
+            selectedElem.classList.remove("selected")
+            selectedSlot.classList.remove("selected")
+
+            selected = null
+            selectedElem = null
+            selectedSlot = null
+        }
+
+        parent.classList.add("big")
+
+        parent.innerHTML = `
+<span class="span-text">Active</span>
+<div class="loadout-icons-group active-items"></div>
+
+<span class="span-text">Inventory</span>
+<div class="loadout-icons-group items"></div>
+`
+        const inventory = parent.querySelector(".items") as HTMLDivElement
+        for (const id of items) {
+            const div = document.createElement("div")
+            div.className = "litem"
+            div.dataset.idString = id
+            const icon=icons[id]?resources.get_frame(icons[id]).src:""
+            div.innerHTML = `
+<span class="name">${translation.get(translation_item_begin + id)}</span>
+<img class="icon" src="${icon}">
+`
+
+            div.onclick = () => {
+                if (selectedElem === div) {
+                    div.classList.remove("selected")
+                    selectedElem = null
+                    selected = null
+                } else {
+                    selectedElem?.classList.remove("selected")
+                    selectedElem = div
+                    selected = id
+
+                    div.classList.add("selected")
+                }
+
+                updateSelection()
+            }
+
+            inventory.appendChild(div)
+        }
+        const active = parent.querySelector(".active-items") as HTMLDivElement
+
+        for (const slot of slots) {
+            const value = save.get_variable(variable + slot)
+            const div = document.createElement("div")
+            div.className = "litem"
+            div.dataset.slot = slot
+            const icon = (value!==""&&icons[value]!=undefined)?resources.get_frame(icons[value]).src:""
+            div.innerHTML = `
+<span class="name">${translation.get(translation_slot_begin + slot)}</span>
+<img class="icon" src="${icon}">
+`
+            div.onclick = () => {
+                if (selectedSlot === div) {
+                    div.classList.remove("selected")
+                    selectedSlot = null
+                } else {
+                    selectedSlot?.classList.remove("selected")
+                    selectedSlot = div
+                    div.classList.add("selected")
+                }
+                updateSelection()
+            }
+            active.appendChild(div)
+        }
+    }
+}
 export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     normal:{
         title:"Normal Mode Settings",
@@ -1186,6 +1273,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     name:"menu.loadout.emotes",
                     subtab:"emotes"
                 },
+                {
+                    id:"wrapping",
+                    type:"button",
+                    name:"menu.loadout.wrapping",
+                    subtab:"wrapping"
+                },
             ],
             subtabs:{
                 "character":{
@@ -1256,6 +1349,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 },
                 "emotes":{
                     generate:make_emotes_settings(menu.save,resources,definitions,Object.values(definitions.emotes.value),translation)
+                },
+                "wrapping":{
+                    generate:(()=>{
+                        const wrapping=Object.values(definitions.wrapping.value)
+                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],{},"sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                    })()
                 },
             },
         },

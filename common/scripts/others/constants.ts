@@ -1,4 +1,5 @@
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
+import { WrappingDef } from "../definitions/loadout/wrapping.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
 import { FloorType } from "./terrain.ts";
 
@@ -210,6 +211,7 @@ export interface HumanLoadoutData {
         tint:number
     }
     eyes?:LoadoutEyesDef
+    wrapping?:WrappingDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
     accessorys:LoadoutAccessoryDef[]

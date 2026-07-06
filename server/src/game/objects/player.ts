@@ -277,11 +277,8 @@ export class Player extends Human{
                 this.loadout.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
             }
         }
-        if(jp.victory_emote){
-            this.loadout.emotes.victory=this.game.definitions.emotes.getFromNumber(jp.victory_emote-1)
-        }
-        if(jp.death_emote){
-            this.loadout.emotes.death=this.game.definitions.emotes.getFromNumber(jp.death_emote-1)
-        }
+        this.loadout.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]
+        this.loadout.emotes.victory=this.game.definitions.emotes.valueNumber[jp.victory_emote-1]
+        this.loadout.emotes.death=this.game.definitions.emotes.valueNumber[jp.death_emote-1]
     }
 }

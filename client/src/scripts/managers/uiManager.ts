@@ -474,7 +474,7 @@ export class UiManager{
                         if(!msg.killer)break
                         const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
                         text=this.game.language.get("feed.kill.player",{
-                            player:this.players_name[msg.killer.id].full,
+                            player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get("items."+dsd.idString),
                         })

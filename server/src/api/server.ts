@@ -1,6 +1,6 @@
 import { ApiServerConfig, ApiSettings, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
-import { Server } from "common/engine/server.ts";
+import { default_handlers, Server } from "common/engine/server.ts";
 import { RegionManager } from "./game/regions.ts";
 export class ApiServer {
     server: Server
@@ -63,9 +63,7 @@ export class ApiServer {
     }
     routes(){
         this.server.route("/get-settings", () => {
-            return this.server.default_handlers.cors(
-                Response.json(this.api_settings)
-            )
+            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(this.api_settings)))
         })
         this.server.route("/find-game", async (req) => {
             if(req.method !== "POST"){
@@ -74,9 +72,7 @@ export class ApiServer {
             if(!this.can_play())return new Response("You Cant Play Now",{status:204})
             const body = await req.json()
             const game=await this.regions.find_game(body)
-            return this.server.default_handlers.cors(
-                Response.json(game)
-            )
+            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(game??{})))
         })
         this.groups.routes(this.server.router("group"))
         this.regions.routes(this.server.router("regions"))

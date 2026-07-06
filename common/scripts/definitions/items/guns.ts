@@ -1213,7 +1213,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.D,
 
             fire_delay:0.3,
-            spread:4,
+            spread:4.5,
             move_spread:1.5,
             jitter_radius:0.25,
 

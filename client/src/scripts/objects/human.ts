@@ -502,6 +502,7 @@ export class Human extends MovingBody{
     on_downed(){
         if(this.downed)return
         this.downed=true
+        this.container.zIndex=zIndexes.DownedPlayers
         this.sprites.chest.visible=true
         this.sprites.backpack.visible=false
         this.sprites.left_leg.visible=true
@@ -528,6 +529,7 @@ export class Human extends MovingBody{
         this.sprites.backpack.visible=true
         this.sprites.left_leg.visible=false
         this.sprites.right_leg.visible=false
+        this.container.zIndex=zIndexes.Players
         this.update_weapon(this.current_weapon)
     }
 

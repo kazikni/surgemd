@@ -668,8 +668,9 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             this.owner.equipment_data.dirty=true
             this.owner.equipment_data.dirty_part=true
-            this.owner.equipment_data.helmet?.events?.["drop"]?.({user:this.owner})
+            const helmet=this.owner.equipment_data.helmet
             this.owner.equipment_data.helmet=undefined
+            helmet.events?.["drop"]?.({user:this.owner})
             return loot
         }
         return
@@ -683,8 +684,9 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             this.owner.equipment_data.dirty=true
             this.owner.equipment_data.dirty_part=true
-            this.owner.equipment_data.vest?.events?.["drop"]?.({user:this.owner})
+            const vest=this.owner.equipment_data.vest
             this.owner.equipment_data.vest=undefined
+            vest.events?.["drop"]?.({user:this.owner})
             return loot
         }
         return
@@ -993,6 +995,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 loot.tick(1/30)
             }
         }
+        this.set_weapon_index(0)
 
         this.net_sync.weapons=true
         this.net_sync.items=true

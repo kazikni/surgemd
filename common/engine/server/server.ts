@@ -87,6 +87,12 @@ export const default_handlers={
         res.headers.append("Access-Control-Max-Age", "3600");
         return res;
     },
+    no_cache(res: Response): Response{
+        res.headers.append("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
+        res.headers.append("Pragma", "no-cache")
+        res.headers.append("Expires", "0")
+        return res
+    },
     async json_request(req:Request,method:string="POST"):Promise<{response?:Response,content:any}>{
         if(req.method!==method){
             return {

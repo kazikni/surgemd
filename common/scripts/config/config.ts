@@ -54,17 +54,20 @@ export type FindGameResult={
     success:false
     error:string
 }
+export type ApiUserDefinition={
+    password:string
+    permitions?:{
+        allow_moderate?:boolean // Ban, Unban, Kick
+        allow_region?:boolean // Give Region Access
+        allow_database?:boolean // Give Access To Database
+        allow_create_region?:boolean
+    }
+}
 export interface ApiServerConfig{
     host: HostConfig
-    users?: Record<string,{
-        password:string
-        permitions?:{
-            allow_moderate?:boolean // Ban, Unban, Kick
-            allow_region?:boolean // Give Region Access
-            allow_database?:boolean // Give Access To Database
-        }
-    }>
+    users?: Record<string,ApiUserDefinition>
     game:{
+        regions: string[]
         modes: ModeConfig[]
         play_time?:PlayTimeConfig
     }
@@ -133,7 +136,8 @@ export function ZeroApiServerConfig():ApiServerConfig{
             },
         },
         game:{
-            modes:[]
+            regions:[],
+            modes:[],
         }
     }
 }

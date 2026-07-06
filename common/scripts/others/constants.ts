@@ -93,6 +93,8 @@ export enum zIndexes{
     ClientDecals,
     DeadCreatures,
     PlayersBody,
+
+    DownedPlayers,
     Obstacles1,
     Obstacles2,
     Loots,
@@ -102,7 +104,6 @@ export enum zIndexes{
     Bullets,
     Vehicles,
     Creatures,
-    DownedPlayers,
     Players,
     Particles,
     GrenadeAir,

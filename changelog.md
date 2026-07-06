@@ -25,6 +25,7 @@ __                                                                              
 __                                                                                                                 __
 ### Menu
 * Lock Skins Color Selection
+* Game over Improvements
 __                                                                                                                 __
 ### Others
 * Fix RIP Ammo dont split rpg7 bullet

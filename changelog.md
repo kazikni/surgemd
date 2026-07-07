@@ -7,6 +7,7 @@ __                                                                              
 ### Menu
 * Emotes Loadout
 * Main Socials
+* On Die Sound
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

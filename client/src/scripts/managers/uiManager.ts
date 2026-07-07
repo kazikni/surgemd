@@ -720,6 +720,9 @@ export class UiManager{
             }
             case GameOverScreenType.Restart:
                 HideElement(this.content.game_gui)
+                this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                    bus:"ui"
+                })
                 this.content.restart_gameOver.classList.remove("hidden")
                 this.game.scope_zoom*=0.75
                 this.game.zoom_speed*=0.05
@@ -741,6 +744,9 @@ export class UiManager{
         }else{
             this.game.ambient.last_music_pos=this.game.ambient.music.offset
             this.game.ambient.music.set(null)
+                this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                    bus:"ui"
+                })
             if(!this.players_name[g.status.eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`

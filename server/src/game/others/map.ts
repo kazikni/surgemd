@@ -1,4 +1,4 @@
-import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, StaticStream, DynamicStream } from "common/engine/core.ts";
+import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, DynamicStream } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
@@ -7,7 +7,7 @@ import { Floors, FloorType, generate_terrain_shape, River, TerrainManager } from
 import { GameObjectType, Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
-import { building_from_json, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
+import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { Building } from "../objects/building.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Vehicle } from "../objects/vehicle.ts";
@@ -310,7 +310,8 @@ export class GameMap{
         this.game.loot_tables.clear()
         this.game.loot_tables.add_tables(definition.loot_tables)
 
-        this.game.definitions.buildings.insert(...((definition.buildings??[]).map(v=>building_from_json(v))))
+        this.game.definitions.buildings.insert(...(definition.buildings??[]))
+        this.game.definitions.obstacles.insert(...(definition.obstacles??[]))
         if(this.game.mods){
             for(const k of this.game.mods.getLoadOrder()){
                 const mod=this.game.mods.loaded.get(k)
@@ -384,6 +385,7 @@ export class GameMap{
             objects,
             biome:this.def.biome,
             buildings:this.def.buildings,
+            obstacles:this.def.obstacles,
             regions:this.regions
         }
         return p

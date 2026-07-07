@@ -1,6 +1,6 @@
 import { KDate } from "../definition/definitions.ts"
 import { PolarMovement } from "../math/geometry.ts"
-import { CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
+import { BaseHitbox2D, CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
 import { ID } from "../math/utils.ts"
 import { Vec2,v2 } from "../math/vec2.ts"
 import { v3 } from "../math/vec3.ts"
@@ -430,6 +430,9 @@ export abstract class Stream{
                 }else if (Array.isArray(obj)) {
                     this.write_uint8(6)
                     this.write_array(obj, (v) => this.write_object_advanced(v,bytes1,bytes2))
+                }else if(obj instanceof BaseHitbox2D){
+                    this.write_uint8(8)
+                    this.write_hitbox(obj as Hitbox2D)
                 }else{
                     this.write_uint8(7)
                     this.write_string_dict(obj,(v)=>this.write_object_advanced(v,bytes1,bytes2),bytes1,bytes2)
@@ -464,6 +467,9 @@ export abstract class Stream{
                 return this.read_array(_s => this.read_object_advanced(bytes1,bytes2),bytes1)
             case 7:
                 return this.read_string_dict(_s => this.read_object_advanced(bytes1,bytes2),bytes1,bytes2)
+            case 8:{
+                return this.read_hitbox()
+            }
         }
         throw new Error("Invalid type in readObject")
     }

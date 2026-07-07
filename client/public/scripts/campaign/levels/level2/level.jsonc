@@ -219,6 +219,9 @@
                             "iitems": [
                                 "scope_3"
                             ]
+                        },
+                        "loadout":{
+                            "wrapping":["aqua","shiny","aqua_blue","gradient"]
                         }
                     },
                     "count": 59

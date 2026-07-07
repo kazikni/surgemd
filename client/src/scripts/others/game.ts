@@ -37,10 +37,8 @@ import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
-import { DebugApp } from "../apps/debug.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import {building_from_json} from "common/scripts/definitions/objects/buildings_base.ts"
 import { load_kspr } from "common/engine/core/lang/kspx.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
@@ -596,8 +594,6 @@ export class Game extends ClientGame<GameObject>{
     }*/
     close_game(){
         if(this.client&&this.client.opened)this.client.disconnect()
-        this.cam2d.zoom=6
-        this.zoom_speed=4
         this.happening=false
         this.started=false
         this.local_server.stop()
@@ -617,6 +613,9 @@ export class Game extends ClientGame<GameObject>{
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
+        this.set_scope(this.default_scope||this.definitions.scopes.getFromNumber(0))
+        this.cam2d.zoom=6
+        this.zoom_speed=4
     }
     finish_game_over(){
         if(this.offline){
@@ -809,9 +808,10 @@ export class Game extends ClientGame<GameObject>{
             if(!this.map_started){
                 await this.signals.wait("_map_start")
             }
-            if(mp.map.buildings){
+            if(mp.map.buildings||mp.map.obstacles){
                 this.definitions.reset()
-                this.definitions.buildings.insert(...((mp.map.buildings??[]).map(v=>building_from_json(v))))
+                this.definitions.obstacles.insert(...(mp.map.obstacles??[]))
+                this.definitions.buildings.insert(...(mp.map.buildings??[]))
             }
             await this.terrain.process_map(mp.map)
             this.terrain.last_layer=0

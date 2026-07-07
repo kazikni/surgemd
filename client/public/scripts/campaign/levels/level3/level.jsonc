@@ -18,7 +18,7 @@
     "mode": {
         "type": "battle_royale",
         "deadzone": {
-            "stage": 3
+            "stage": 4
         },
         "teams":2,
         "settings":{
@@ -249,6 +249,9 @@
                                 "9mm": 200,
                                 "22lr": 200
                             }
+                        },
+                        "loadout":{
+                            "wrapping":["aqua","shiny","aqua_blue","gradient"]
                         },
                         "team":1
                     },

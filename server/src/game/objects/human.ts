@@ -308,10 +308,6 @@ export class Human extends MovingBody{
             ]:[],
             badge:this.game.definitions.badges.getFromString("stone_1_badge"),
             colors:{},
-            wrapping:random.choose([
-                undefined,
-                ...Object.values(this.game.definitions.wrapping.value)
-            ])
         }
         const default_scope=this.game.definitions.scopes.getFromNumber(0)
         this.equipment_data={
@@ -375,6 +371,9 @@ export class Human extends MovingBody{
             for(const v of Object.entries(preset.colors)){
                 this.loadout.colors[v[0]]=ColorM.hex2number(v[1])
             }
+        }
+        if(preset.wrapping){
+            this.loadout.wrapping=this.game.definitions.wrapping.getFromStringSafe(typeof preset.wrapping==="string"?preset.wrapping:random.choose(preset.wrapping))
         }
     }
     set_preset(preset:HumanDefinition|undefined){

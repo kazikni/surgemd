@@ -77,7 +77,8 @@
             "sheets": {
                 "main": "img/game/main",
                 "common": "img/game/common",
-                "snow": "img/game/snow"
+                "snow": "img/game/snow",
+                "tundra": "img/game/tundra"
             },
             "resolutions": [
                 {

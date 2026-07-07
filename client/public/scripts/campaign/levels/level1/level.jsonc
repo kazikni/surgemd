@@ -276,7 +276,8 @@
                             "iitems": [
                                 "scope_2"
                             ]
-                        }
+                        },
+                        "wrapping":["aqua","shiny","aqua_blue","gradient"]
                     },
                     "count": 40
                 },

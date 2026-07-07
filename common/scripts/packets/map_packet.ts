@@ -2,6 +2,7 @@ import { Stream, Packet, v2, Vec2 } from "../../engine/core.ts";
 import { MapBiomeDef } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
 import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
+import { ObstacleDef } from "../definitions/objects/obstacles.ts";
 import { PacketType } from "../definitions/utils.ts";
 import { Floor } from "../others/terrain.ts";
 export interface MapRegion{
@@ -26,6 +27,7 @@ export interface MapConfig{
     objects:MapObjectEncode[]
     regions:MapRegion[]
     buildings?:JSONBuildingDef[]
+    obstacles?:ObstacleDef[]
 }
 function write_biome(biome:MapBiomeDef,stream:Stream){
     stream.write_array(biome.musics??[],(i,_s)=>{
@@ -93,6 +95,7 @@ export class MapPacket extends Packet{
         .write_uint16(this.map.size.y)
         write_biome(this.map.biome,stream)
         stream.write_object_advanced(this.map.buildings)
+        .write_object_advanced(this.map.obstacles)
         .write_array(this.map.regions,(v)=>{
             stream.write_string(v.name,1)
             .write_pos2(v.position)
@@ -133,6 +136,7 @@ export class MapPacket extends Packet{
         this.map.size=v2(stream.read_uint16(),stream.read_uint16())
         this.map.biome=decode_biome(stream)
         this.map.buildings=stream.read_object_advanced()
+        this.map.obstacles=stream.read_object_advanced()
         this.map.regions=stream.read_array(()=>{
             return {
                 name:stream.read_string(1),

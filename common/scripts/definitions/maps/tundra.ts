@@ -1,16 +1,129 @@
-import { v2 } from "../../../engine/core.ts";
+import { DeepPartial, mergeDeep, RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
+import { BuildingDef, BuildingObstacles } from "../objects/buildings_base.ts";
+import { obstacles_factory } from "../objects/obstacles.ts";
+import { hit_sounds } from "../utils.ts";
 import { type MapBiomeDef, type MapDef } from "./base.ts";
 import { map_spawns, river_layers } from "./normal.ts";
+export function create_hunt_house(id:string,settings:{
+        walls_tint?:number
+        doors_tint?:number
+        b?:DeepPartial<BuildingDef>
+        content?:BuildingObstacles[]
+}={}){
+    const walls_tint=settings.walls_tint??1
+    const doors_tint=settings.doors_tint??walls_tint
+    return mergeDeep({
+        idString:id,
+        no_collisions:true,
+        no_bullet_collision:true,
+        assets:{
+            particles:{
+                particle:"plank_particle",
+                tint:0x656877,
+            }
+        },
+        content:{
+            obstacles:[
+                {
+                    def:"wood_door",
+                    position:v2(1.76,0.739998),
+                    rotation:3,
+                    id:1,
+                    variation:doors_tint
+                },
+                {
+                    def:"stone_wall_4x1",
+                    position:v2(1.76,-1.21),
+                    rotation:1,
+                    id:10,
+                    variation:walls_tint
+                },
+                {
+                    def:"stone_wall_4x1",
+                    position:v2(1.76,1.21),
+                    rotation:1,
+                    connections:[1],
+                    id:11,
+                    variation:walls_tint
+                },
 
+                {
+                    def:"stone_wall_14x1",
+                    position:v2(0,-1.57),
+                    rotation:0,
+                    id:12,
+                    variation:walls_tint
+                },
+                {
+                    def:"stone_wall_14x1",
+                    position:v2(0,1.57),
+                    rotation:0,
+                    id:13,
+                    variation:walls_tint
+                },
+
+                {
+                    def:"wood_door",
+                    position:v2(-1.76,0.739998),
+                    rotation:3,
+                    id:2,
+                    variation:doors_tint
+                },
+                {
+                    def:"stone_wall_4x1",
+                    position:v2(-1.76,-1.21),
+                    rotation:1,
+                    id:14,
+                    variation:walls_tint
+                },
+                {
+                    def:"stone_wall_4x1",
+                    position:v2(-1.76,1.21),
+                    rotation:1,
+                    connections:[2],
+                    id:15,
+                    variation:walls_tint
+                },
+                ...(settings.content??[])
+            ],
+            ceiling:[ 
+                {
+                    frame:{
+                        image:"hunt_house_ceiling_1",
+                        position:v2.zero(),
+                        rotation:0
+                    },
+                    connections:[10,11,12,13,14,15],
+                    destroy:{
+                        frame:"hunt_house_ceiling_break",
+                        sound:"ceiling_break_1",
+                        count:3,
+                        particles:{
+                            count:30
+                        }
+                    },
+                    hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+                }
+            ],
+            floor_image:[
+                {
+                    image:"hunt_house_floor",
+                    position:v2(0,0),
+                }
+            ],
+        },
+        hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
+    },settings.b??{})
+}
 export const TundraBiome:MapBiomeDef={
     floors:{
         [FloorType.Sand]:0x8a979e,
         [FloorType.Water]:0x274763
     },
     skin:"snow",
-    textures:["common","snow"],
+    textures:["common","snow","tundra"],
     musics:[
         "/sounds/musics/online/game_tundra_music_1.mp3",
         "/sounds/musics/online/game_tundra_music_2.mp3",
@@ -295,13 +408,68 @@ export const TundraMap:MapDef={
                     {def:"squared_bush",position:v2(4,2),allow_biome_skin:true},
                 ]
             }
-        }
+        },
+        create_hunt_house("hunt_house_1",{
+            walls_tint:6,
+            doors_tint:2,
+            content:[
+            ],
+            b:{
+                content:{
+                    loots:[
+                        {table:"scopes",position:v2.new(0,0)},
+                    ],
+                    obstacles:[
+                        {
+                            def:"large_drawer",
+                            position:v2(0,-1),
+                            rotation:1
+                        },
+                        {
+                            def:[
+                                {def:"rifle_cbc_mount",weight:10},
+                                {def:"vss_mount",weight:10},
+                                {def:"model94_mount",weight:8},
+                                {def:"blr81_mount",weight:8},
+                                {def:"kar98k_mount",weight:4},
+                                {def:"awp_mount",weight:0.05},
+                            ],
+                            position:v2(0,1.35),
+                        }
+                    ]
+                }
+            }
+        })
+    ],
+    obstacles:[
+        obstacles_factory.crate("tundra_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x3e58c4,
+                    },
+                    frame:{
+                        dead_transform:{
+                            tint:0x3e58c4,
+                        },
+                        biome_skins:["snow"],
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+                interactDestroy:true,
+            }
+        }),
     ],
     generation:{
         island:{
             size:v2(600,600),
             spawn:[
-                {def:"storehouse_1",count:4},
+                {def:[
+                    {def:"storehouse_1",weight:1},
+                    {def:"hunt_house_1",weight:1}
+                ],count:10},
                 {def:map_spawns.containers,count:20},
 
                 {def:"bunker_1",count:3},

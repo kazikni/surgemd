@@ -94,10 +94,10 @@ export enum zIndexes{
     DeadCreatures,
     PlayersBody,
 
+    Loots,
     DownedPlayers,
     Obstacles1,
     Obstacles2,
-    Loots,
     GrenadeGround,
     Rain2,
 

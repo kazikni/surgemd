@@ -1,4 +1,4 @@
-import { DeepPartial, Definition, Definitions, FrameDef, Hitbox2D, hitbox_from_json, HitboxGroup2D, JsonHitbox2D, mergeDeep, RectHitbox2D, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, FrameDef, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
@@ -81,108 +81,6 @@ export interface BuildingDef extends Definition{
     assets?:{
         sounds?:HitSoundsDef
         particles?:HitParticlesDef
-    }
-}
-export type JSONBuildingCeilingDef={
-    frame:FrameDef
-    variations?:number[]
-    hitbox:JsonHitbox2D
-    below?:{
-        duration?:number
-        alpha?:number
-    }
-    layer?:number
-    connections?:number[]
-    no_scope_block?:boolean
-    destroy?:{
-        frame:string
-        sound?:string
-        count:number
-        particles?:{
-            count:number
-        }
-    }
-}
-export type JSONBuildingDef={
-    no_collisions?: boolean
-    no_bullet_collision?: boolean
-    reflect_bullets?:boolean
-    spawnHitbox?:JsonHitbox2D
-    hitbox?:JsonHitbox2D
-    spawnMode?:SpawnMode
-    assets?:{
-        sounds?:HitSoundsDef
-        particles?:HitParticlesDef
-    }
-    content:{
-        ceiling?: JSONBuildingCeilingDef[]
-        floors?: {hitbox:JsonHitbox2D,type:FloorType,layer?:number}[]
-        obstacles?:BuildingObstacles[]
-        decals?:BuildingDecal[]
-        sub_building?:BuildingSubBuilding[]
-        loots?:BuildingLoot[]
-        floor_image?:(FrameDef&{layer?:number})[]
-    }
-}&Definition
-
-export function building_to_json(b: BuildingDef): JSONBuildingDef {
-    return {
-        idString:b.idString,
-        idNumber:b.idNumber,
-        no_collisions: b.no_collisions,
-        no_bullet_collision: b.no_bullet_collision,
-        reflect_bullets: b.reflect_bullets,
-
-        spawnHitbox: b.spawnHitbox?.to_json(),
-        hitbox: b.hitbox?.to_json(),
-
-        spawnMode: b.spawnMode,
-
-        assets: b.assets,
-
-        content: {
-            ceiling: b.content.ceiling?.map(c => ({
-                frame: c.frame,
-                hitbox: c.hitbox.to_json(),
-                below: c.below,
-                layer: c.layer,
-                connections: c.connections,
-                no_scope_block: c.no_scope_block,
-                destroy: c.destroy,
-            })),
-            floors: b.content.floors?.map(f => ({
-                hitbox: f.hitbox.to_json(),
-                type: f.type,
-                layer: f.layer
-            })),
-            obstacles: b.content.obstacles,
-            sub_building: b.content.sub_building,
-            loots: b.content.loots,
-            floor_image: b.content.floor_image
-        }
-    }
-}
-export function building_from_json(b: JSONBuildingDef): BuildingDef {
-    return {
-        ...b,
-        spawnHitbox: b.spawnHitbox ? hitbox_from_json(b.spawnHitbox) : undefined,
-        hitbox: b.hitbox ? hitbox_from_json(b.hitbox) : undefined,
-        content: {
-            ceiling: b.content.ceiling?.map(c => ({
-                ...c,
-                hitbox: hitbox_from_json(c.hitbox)
-            })),
-
-            floors: b.content.floors?.map(f => ({
-                ...f,
-                hitbox: hitbox_from_json(f.hitbox)
-            })),
-
-            obstacles: b.content.obstacles,
-            sub_building: b.content.sub_building,
-            loots: b.content.loots,
-            floor_image: b.content.floor_image
-        }
     }
 }
 export const buildings_spawns={
@@ -836,7 +734,6 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
 
         buildings_factory.house.shed("shed",{
             walls_tint:2,
-            doors_tint:2,
             content:[
                 {
                     def:"large_drawer",

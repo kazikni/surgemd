@@ -170,6 +170,7 @@ export interface LoadoutPreset{
     legs?:string
     accessorys?:string[]
     colors?:Record<string,string>
+    wrapping?:string|string[]
 }
 export type HumanAIDef={
     kind?:string

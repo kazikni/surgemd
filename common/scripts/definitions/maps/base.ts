@@ -7,11 +7,12 @@ import { DebugMap, SingleBuildMap } from "./debug.ts";
 import { Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
-import { JSONBuildingDef } from "../objects/buildings_base.ts"
 
-import {type GameMap} from "../../../../server/src/game/others/map.ts"
+import { type GameMap } from "../../../../server/src/game/others/map.ts"
 import { type Game } from "../../../../server/src/game/others/game.ts";
 import { MapRegion } from "../../packets/map_packet.ts";
+import { type ObstacleDef } from "../objects/obstacles.ts";
+import { type BuildingDef } from "../objects/buildings_base.ts";
 export interface Aditional{
     withammo:boolean
 }
@@ -100,7 +101,8 @@ export interface MapDef{
     generation:{
         island?:IslandDef
     }
-    buildings?:JSONBuildingDef[]
+    buildings?:BuildingDef[]
+    obstacles?:ObstacleDef[]
     seed?:number
     biome:MapBiomeDef
     deadzone_initial_size?:number

@@ -117,10 +117,11 @@ export interface ObstacleDef extends Definition{
     }[]
 }
 export const obstacles_factory={
-    gun_mount(id:string,gun:GunDef,settings:{
+    gun_mount(gun:GunDef,settings:{
         o?:DeepPartial<ObstacleDef>
+        id?:string
     }){
-        return mergeDeep({idString:id},{
+        return mergeDeep({idString:settings.id??(gun.idString+"_mount")},{
             health:65,
             height:1,
             hitbox:new RectHitbox2D(v2(-0.7,-0.2),v2(0.7,0.2)),
@@ -317,7 +318,7 @@ export const obstacles_factory={
                 }
             },settings.o??{})
         },
-        wall(id:string,frame:string,tint:number|(number[]),health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        wall(id:string,frame:string,tint:number|(number[]),health:number=200,width:number=0.2466,height:number=0.1233,particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 health:health,
                 idString:id,
@@ -391,7 +392,7 @@ export const obstacles_factory={
         }
     }
 }
-export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x00ff0d,0x4e4f50]
+export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x42a64a,0x4e4f50]
 export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>){
     obstacles.insert(
         {
@@ -614,25 +615,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 interactDestroy:true,
             }
         }),
-        obstacles_factory.crate("tundra_crate",{
-            o:{
-                assets:{
-                    particles:{
-                        particle:"plank_particle",
-                        tint:0x3e58c4,
-                    },
-                    frame:{
-                        dead_transform:{
-                            tint:0x3e58c4,
-                        },
-                        biome_skins:["snow"],
-                    },
-                    sounds:hit_sounds.wood
-                },
-                invisible_on_map:true,
-                interactDestroy:true,
-            }
-        }),
         obstacles_factory.crate("copper_crate",{
             o:{
                 health:130,
@@ -831,6 +813,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     sounds:hit_sounds.wood
                 }
             }
+        }),
+        ...obstacles_factory.walls.group("stone",WallColors,{
+            o:{
+                assets:{
+                    sounds:hit_sounds.rock,
+                    particles:{
+                        variations:2,
+                    }
+                },
+            },
+            particle:"rock_particle",
+            health:80,
         }),
         {
             idString:"iron_ladder_bottom",
@@ -1125,6 +1119,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             lootTable:"wood_crate",
             height:1,
         },
-        obstacles_factory.gun_mount("pkp_mounth",guns.getFromString("pkp"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("model94"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("blr81"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("kar98k"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("rifle_cbc"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("vss"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("awp"),{}),
     )
 }

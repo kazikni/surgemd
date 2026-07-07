@@ -78,7 +78,7 @@
                 "main": "img/game/main",
                 "common": "img/game/common",
                 "snow": "img/game/snow",
-                "tundra": "img/game/tundra"
+                "maps/tundra": "img/game/maps/tundra"
             },
             "resolutions": [
                 {

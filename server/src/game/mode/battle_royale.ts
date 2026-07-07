@@ -2,13 +2,16 @@ import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
-import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
+import { MapDef} from "common/scripts/definitions/maps/base.ts";
 import { v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
+import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
+import { NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
+import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -26,6 +29,14 @@ export interface BattleRoyaleSettings{
     deadzone?:DeadZoneConfig
     enemies?:LevelEnemys
     airdrops?:AirdropConfig
+}
+export const Maps:Record<string,MapDef>={
+    normal:NormalMap,
+    lobby:NormalLobby,
+    tundra:TundraMap,
+
+    debug:DebugMap,
+    single_building:SingleBuildMap,
 }
 export class BattleRoyale extends ModeManager{
     leader?:Player
@@ -282,7 +293,7 @@ export class BattleRoyaleDebug extends BattleRoyale{
     constructor(settings:BattleRoyaleSettings,group_size?:number) {
         const s={...settings}
         if(!s.map?.def){
-            s.map={def:Maps["debug"]}
+            s.map={def:DebugMap}
         }
         super(s,group_size)
     }

@@ -18,6 +18,7 @@ __                                                                              
 __                                                                                                                 __
 ### Others
 * Alternative Shed Ceiling
+* Hunt House on tundra map
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

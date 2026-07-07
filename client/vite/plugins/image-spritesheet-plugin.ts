@@ -3,7 +3,7 @@ import { buildKSPRGroup, CompilerOptions, Resolution } from "./utils/spritesheet
 
 const PLUGIN_NAME = "vite-spritesheet-plugin";
 
-export function spritesheet(base:string,atlas_list: Record<string, string>,dest_dir: string = "assets",resolutions: Resolution[] = [{ name: "low", scale: 0.5 }],options?:CompilerOptions): Plugin[] {
+export function spritesheet(base:string,atlas_list: Record<string, string>,dest_dir: string = "img/kspr",resolutions: Resolution[] = [{ name: "low", scale: 0.5 }],options?:CompilerOptions): Plugin[] {
     async function buildAll() {
         const outputs: Record<string, Uint8Array> = {}
         for (const [name, folder] of Object.entries(atlas_list)) {

@@ -2,7 +2,6 @@ import { BattleRoyale, LevelPlayer, OfflineGameServer } from "./offline.ts";
 import { GameServerConfig } from "common/scripts/config/config.ts";
 import { FetchFileManager, OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Maps } from "common/scripts/definitions/maps/base.ts";
 let server:OfflineGameServer
 let level:LevelPlayer
 function logError(e: unknown): never {
@@ -43,7 +42,7 @@ self.onmessage = async(ev) => {
         case "load_mode":{
             server.init(new BattleRoyale({
                 map:{
-                    def:Maps["normal"]
+                    def:"normal"
                 },
                 players:{
                     limit:100,

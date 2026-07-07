@@ -123,7 +123,7 @@ export const TundraBiome:MapBiomeDef={
         [FloorType.Water]:0x274763
     },
     skin:"snow",
-    textures:["common","snow","tundra"],
+    textures:["common","snow","maps/tundra"],
     musics:[
         "/sounds/musics/online/game_tundra_music_1.mp3",
         "/sounds/musics/online/game_tundra_music_2.mp3",
@@ -256,224 +256,228 @@ export const TundraMap:MapDef={
     },
     default_floor:FloorType.Water,
     biome:TundraBiome,
-    buildings:[
-        {
-            idString:"bush_group_1",
-            no_collisions:true,
-            no_bullet_collision:true,
-            /*hitbox:{
-                type:HitboxType2D.rect,
-                min:v2(-10,-10),
-                max:v2(10,10),
-            },*/
-            content:{
-                loots:[
-                    {
-                        table:"normal_loot",
-                        position:v2(0,0)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(3,0)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(3,3)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(-3,3)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(-3,-3)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(-6,-3)
+    definitions:{
+        objects:{
+            buildings:[
+                {
+                    idString:"bush_group_1",
+                    no_collisions:true,
+                    no_bullet_collision:true,
+                    /*hitbox:{
+                        type:HitboxType2D.rect,
+                        min:v2(-10,-10),
+                        max:v2(10,10),
+                    },*/
+                    content:{
+                        loots:[
+                            {
+                                table:"normal_loot",
+                                position:v2(0,0)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(3,0)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(3,3)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(-3,3)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(-3,-3)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(-6,-3)
+                            }
+                        ],
+                        obstacles:[
+                            {def:"squared_bush",position:v2(-8,-6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-8,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-8,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-8,0),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(-6,-6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-6,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-6,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-6,0),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(-4,-6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,4),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(-2,-6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,4),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(0,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,8),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(2,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,8),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(4,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(4,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(4,4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(4,6),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(4,8),allow_biome_skin:true},
+                        ]
                     }
-                ],
-                obstacles:[
-                    {def:"squared_bush",position:v2(-8,-6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-8,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-8,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-8,0),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(-6,-6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-6,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-6,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-6,0),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(-4,-6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,4),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(-2,-6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,4),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(0,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,8),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(2,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,8),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(4,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(4,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(4,4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(4,6),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(4,8),allow_biome_skin:true},
-                ]
-            }
-        },
-        {
-            idString:"bush_group_2",
-            no_collisions:true,
-            no_bullet_collision:true,
-            /*hitbox:{
-                type:HitboxType2D.rect,
-                min:v2(-10,-10),
-                max:v2(10,10),
-            },*/
-            content:{
-                loots:[
-                    {
-                        table:"normal_loot",
-                        position:v2(-3,0)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(3,0)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(3,3)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(-3,3)
-                    },
-                    {
-                        table:"normal_loot",
-                        position:v2(-3,-3)
-                    },
-                ],
-                obstacles:[
-                    {def:"squared_bush",position:v2(-2,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,4),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(-4,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-4,6),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(-2,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(-2,6),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(0,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(0,4),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(2,-4),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(2,2),allow_biome_skin:true},
-
-                    {def:"squared_bush",position:v2(4,-2),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(4,0),allow_biome_skin:true},
-                    {def:"squared_bush",position:v2(4,2),allow_biome_skin:true},
-                ]
-            }
-        },
-        create_hunt_house("hunt_house_1",{
-            walls_tint:6,
-            doors_tint:2,
-            content:[
-            ],
-            b:{
-                content:{
-                    loots:[
-                        {table:"scopes",position:v2.new(0,0)},
-                    ],
-                    obstacles:[
-                        {
-                            def:"large_drawer",
-                            position:v2(0,-1),
-                            rotation:1
-                        },
-                        {
-                            def:[
-                                {def:"rifle_cbc_mount",weight:10},
-                                {def:"vss_mount",weight:10},
-                                {def:"model94_mount",weight:8},
-                                {def:"blr81_mount",weight:8},
-                                {def:"kar98k_mount",weight:4},
-                                {def:"awp_mount",weight:0.05},
-                            ],
-                            position:v2(0,1.35),
-                        }
-                    ]
-                }
-            }
-        })
-    ],
-    obstacles:[
-        obstacles_factory.crate("tundra_crate",{
-            o:{
-                assets:{
-                    particles:{
-                        particle:"plank_particle",
-                        tint:0x3e58c4,
-                    },
-                    frame:{
-                        dead_transform:{
-                            tint:0x3e58c4,
-                        },
-                        biome_skins:["snow"],
-                    },
-                    sounds:hit_sounds.wood
                 },
-                invisible_on_map:true,
-                interactDestroy:true,
-            }
-        }),
-    ],
+                {
+                    idString:"bush_group_2",
+                    no_collisions:true,
+                    no_bullet_collision:true,
+                    /*hitbox:{
+                        type:HitboxType2D.rect,
+                        min:v2(-10,-10),
+                        max:v2(10,10),
+                    },*/
+                    content:{
+                        loots:[
+                            {
+                                table:"normal_loot",
+                                position:v2(-3,0)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(3,0)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(3,3)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(-3,3)
+                            },
+                            {
+                                table:"normal_loot",
+                                position:v2(-3,-3)
+                            },
+                        ],
+                        obstacles:[
+                            {def:"squared_bush",position:v2(-2,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,4),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(-4,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-4,6),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(-2,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(-2,6),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(0,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(0,4),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(2,-4),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(2,2),allow_biome_skin:true},
+
+                            {def:"squared_bush",position:v2(4,-2),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(4,0),allow_biome_skin:true},
+                            {def:"squared_bush",position:v2(4,2),allow_biome_skin:true},
+                        ]
+                    }
+                },
+                create_hunt_house("hunt_house_1",{
+                    walls_tint:6,
+                    doors_tint:2,
+                    content:[
+                    ],
+                    b:{
+                        content:{
+                            loots:[
+                                {table:"scopes",position:v2.new(0,0)},
+                            ],
+                            obstacles:[
+                                {
+                                    def:"large_drawer",
+                                    position:v2(0,-1),
+                                    rotation:1
+                                },
+                                {
+                                    def:[
+                                        {def:"rifle_cbc_mount",weight:10},
+                                        {def:"vss_mount",weight:10},
+                                        {def:"model94_mount",weight:8},
+                                        {def:"blr81_mount",weight:8},
+                                        {def:"kar98k_mount",weight:4},
+                                        {def:"awp_mount",weight:0.05},
+                                    ],
+                                    position:v2(0,1.35),
+                                }
+                            ]
+                        }
+                    }
+                })
+            ],
+            obstacles:[
+                obstacles_factory.crate("tundra_crate",{
+                    o:{
+                        assets:{
+                            particles:{
+                                particle:"plank_particle",
+                                tint:0x3e58c4,
+                            },
+                            frame:{
+                                dead_transform:{
+                                    tint:0x3e58c4,
+                                },
+                                biome_skins:["snow"],
+                            },
+                            sounds:hit_sounds.wood
+                        },
+                        invisible_on_map:true,
+                        interactDestroy:true,
+                    }
+                }),
+            ],
+        }
+    },
     generation:{
         island:{
             size:v2(600,600),
             spawn:[
-                {def:[
-                    {def:"storehouse_1",weight:1},
-                    {def:"hunt_house_1",weight:1}
-                ],count:10},
+                {def:"storehouse_1",count:5},
                 {def:map_spawns.containers,count:20},
 
                 {def:"bunker_1",count:3},
-                {def:"shed",count:7},
+                {def:[
+                    {def:"shed",weight:1},
+                    {def:"hunt_house_1",weight:1}
+                ],count:15},
                 {def:"sillo",count:3},
 
                 {def:"golden_stone",count:1},
@@ -484,15 +488,14 @@ export const TundraMap:MapDef={
                 {def:[
                     {def:"oak_tree",weight:100},
                     {def:"pine_tree",weight:75},
-                ],count:250},
-                {def:map_spawns.rocks,count:100},
-                {def:"river_rock",count:30},
-                {def:"bush",count:100},
+                ],count:230},
+                {def:map_spawns.rocks,count:90},
+                {def:"river_rock",count:20},
+                {def:"bush",count:80},
                 {def:"barrel",count:40},
                 {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:15},
 
                 {def:"jeep",count:5},
-                //{def:"bike",count:5},
                 {def:"normal_loot",count:150}
             ],
             terrain:{

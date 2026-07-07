@@ -5,14 +5,12 @@ import { SpawnMode, type Layers } from "../../others/constants.ts";
 import { NormalLobby, NormalMap } from "./normal.ts";
 import { DebugMap, SingleBuildMap } from "./debug.ts";
 import { Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
-import { GameDefinition, GameItem } from "../game_defs.ts";
+import { type GameADefinitions, GameDefinition, GameItem } from "../game_defs.ts";
 import { TundraMap } from "./tundra.ts";
 
 import { type GameMap } from "../../../../server/src/game/others/map.ts"
 import { type Game } from "../../../../server/src/game/others/game.ts";
-import { MapRegion } from "../../packets/map_packet.ts";
-import { type ObstacleDef } from "../objects/obstacles.ts";
-import { type BuildingDef } from "../objects/buildings_base.ts";
+import { type MapRegion } from "../../packets/map_packet.ts";
 export interface Aditional{
     withammo:boolean
 }
@@ -101,8 +99,7 @@ export interface MapDef{
     generation:{
         island?:IslandDef
     }
-    buildings?:BuildingDef[]
-    obstacles?:ObstacleDef[]
+    definitions?:GameADefinitions
     seed?:number
     biome:MapBiomeDef
     deadzone_initial_size?:number
@@ -110,12 +107,4 @@ export interface MapDef{
 }
 export interface CounterMapDef extends MapDef{
     spawn:Hitbox2D[]
-}
-export const Maps:Record<string,MapDef>={
-    normal:NormalMap,
-    lobby:NormalLobby,
-    tundra:TundraMap,
-
-    debug:DebugMap,
-    single_building:SingleBuildMap,
 }

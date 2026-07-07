@@ -442,7 +442,7 @@ export class Game extends ClientGame<GameObject>{
 
         for (const tt of textures) {
             this.menu.set_loading_current(`Loading ${tt}.kspr`)
-            const res = await fetch(`assets/${tt}.kspr`)
+            const res = await fetch(`/img/kspr/${tt}.kspr`)
             const buffer = await res.arrayBuffer()
             const kspr = load_kspr(buffer)
             let resolution = this.save.get_variable("sv_graphics_resolution")
@@ -808,10 +808,9 @@ export class Game extends ClientGame<GameObject>{
             if(!this.map_started){
                 await this.signals.wait("_map_start")
             }
-            if(mp.map.buildings||mp.map.obstacles){
+            if(mp.map.definitions){
                 this.definitions.reset()
-                this.definitions.obstacles.insert(...(mp.map.obstacles??[]))
-                this.definitions.buildings.insert(...(mp.map.buildings??[]))
+                this.definitions.add_definitions(mp.map.definitions)
             }
             await this.terrain.process_map(mp.map)
             this.terrain.last_layer=0

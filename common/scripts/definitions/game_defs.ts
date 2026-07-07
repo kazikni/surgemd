@@ -39,6 +39,9 @@ export interface GameADefinitions{
         melees?:MeleeDef[]
         scopes?:ScopeDef[]
     }
+    loadout?:{
+        
+    }
     objects?:{
         obstacles?:ObstacleDef[]
         buildings?:BuildingDef[]

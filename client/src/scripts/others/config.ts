@@ -19,17 +19,20 @@ export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
 export const sandbox_version=false
+export const socials={
+    discord:"https://discord.gg/7czkBvtmSU",
+    youtube:"https://youtube.com/@kazikni",
+    github:"https://github.com/kazikni/surgemd",
+} satisfies Record<string,string>
+export const Debug={
+    hitbox:false,
+    force_mobile:false
+}
 export enum GraphicsDConfig {
     None=0,
     Normal,
     Advanced,
 }
-
-export const Debug={
-    hitbox:false,
-    force_mobile:false
-}
-
 export const ConfigCasters=Object.freeze({
     sv_loadout_name:Casters.toString,
     sv_loadout_female:Casters.toBoolean,

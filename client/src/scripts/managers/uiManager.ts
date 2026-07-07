@@ -82,8 +82,6 @@ export class UiManager{
             ]
         },
 
-        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
-
         tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
@@ -137,13 +135,6 @@ export class UiManager{
         this.game.ui_manager.add(new InformationBoxModule())
         this.game.ui_manager.add(new AdditionalInfoModule())
         this.game.ui_manager.add(new GroupMembersModule())
-
-        this.update_content_creators([
-            {
-                name:"Kazikni",
-                url:"https://youtube.com/@kazikni",
-            },
-        ])
     }
     clear(){
         this.content.feed.innerHTML=""
@@ -730,6 +721,8 @@ export class UiManager{
             case GameOverScreenType.Restart:
                 HideElement(this.content.game_gui)
                 this.content.restart_gameOver.classList.remove("hidden")
+                this.game.scope_zoom*=0.75
+                this.game.zoom_speed*=0.05
                 await this.game.input_manager.wait_for_action("reload")
                 this.game.finish_game_over()
                 break
@@ -868,18 +861,6 @@ export class UiManager{
         }
         
         this.game.ui_manager.signal("active_player_update",{dt,player})
-    }
-    update_content_creators(content_creators:{name:string,url:string}[]){
-        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
-        for(const creator of content_creators){
-            this.content.content_creators.innerHTML+=`
-<a href="${creator.url}" target="_blank">
-    <div class="background-menu content-creator">
-        <img id="youtube-logo" src="./img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
-        <span>${creator.name}</span>
-    </div>
-</a>`
-        }
     }
 
     items: {id:number,count:number}[] = []

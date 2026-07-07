@@ -38,8 +38,9 @@
 #game-version{
     position: absolute;
     color: #fff;
-    left: 10px;
-    top: 10px;
+    right: 0px;
+    bottom: 0px;
+    transform: translate(-50%,-100%);
 }
 #both-ui{
     left: 0px;
@@ -283,9 +284,8 @@
         }
     }
 }
-#social-links {
+.social-links {
     display: flex;
-    justify-content: center;
     gap: 20px;
     padding: 15px;
 
@@ -299,14 +299,12 @@
         background: rgba(7, 170, 238, 0.1);
         border: 2px solid rgba(7, 170, 238, 0.3);
         transition: all 0.3s ease;
-        
         &:hover {
             transform: translateY(-2px);
             background: rgba(7, 170, 238, 0.2);
             border-color: rgba(7, 170, 238, 0.6);
             box-shadow: 0 4px 12px rgba(7, 170, 238, 0.2);
         }
-
         &:active {
             transform: translateY(1px);
         }
@@ -360,8 +358,36 @@
         }
     }
 }
+#main-social{
+    position: absolute;
+    background-color: #0004;
+    left: 0px;
+    top: 0px;
+    pointer-events: all;
+}
 #about-sm-social{
     align-content: center;
+}
+#featured-content-creators{
+    display: flex;
+    flex-direction: column;
+    gap:5px;
+    position: absolute;
+    left: 5px;
+    top: 85px;
+    pointer-events: all;
+    .content-creator{
+        text-align: center;
+        align-items: center;
+        padding: 10px;
+        border: 2px solid #07aaeeaa;
+        background: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
+        &:hover {
+            background: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
+            border-color: #07aaeeaa;
+            box-shadow: 0 0 20px #07aaeeaa;
+        }
+    }
 }
 .background-menu-md{
     display: flex;
@@ -774,27 +800,6 @@
     }
     @include main.small_screen {
         padding: 15px;
-    }
-}
-#featured-content-creators{
-    display: flex;
-    flex-direction: column;
-    gap:5px;
-    position: absolute;
-    left: 5px;
-    top: 100px;
-    pointer-events: all;
-    .content-creator{
-        text-align: center;
-        align-items: center;
-        padding: 10px;
-        border: 2px solid #07aaeeaa;
-        background: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
-        &:hover {
-            background: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
-            border-color: #07aaeeaa;
-            box-shadow: 0 0 20px #07aaeeaa;
-        }
     }
 }
 #final-screen{

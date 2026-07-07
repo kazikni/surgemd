@@ -2,10 +2,11 @@
 ## News
 __                                                                                                                 __
 ### Mains
-
+* No Hope Rework
 __                                                                                                                 __
 ### Menu
 * Emotes Loadout
+* Main Socials
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

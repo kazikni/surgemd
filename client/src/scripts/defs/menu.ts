@@ -3,7 +3,7 @@ import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, Transla
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/client.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
-import { sandbox_version } from "../others/config.ts";
+import { sandbox_version, socials } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
@@ -1388,22 +1388,22 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "social":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
                         parent.innerHTML=`
-<div id="social-links">
-<a href="https://discord.gg/7czkBvtmSU" target="_blank" class="social-link">
-    <i class="social-icon discord"></i>
-</a>
-<a href="https://youtube.com/@kazikni" target="_blank" class="social-link">
-    <i class="social-icon youtube"></i>
-</a>
-<a href="https://github.com/kazikni/surgemd" target="_blank" class="social-link">
-    <i class="social-icon github"></i>
-</a>
-<a href="/files/surgemd-windows-lasted.zip" target="_blank" class="social-link">
-    <i class="social-icon selfs"></i>
-</a>
-<a href="/files/surgemd-linux-lasted.zip" target="_blank" class="social-link">
-    <i class="social-icon linux"></i>
-</a>
+<div class="social-links">
+    <a href="${socials.discord}" target="_blank" class="social-link">
+        <i class="social-icon discord"></i>
+    </a>
+    <a href="${socials.youtube}" target="_blank" class="social-link">
+        <i class="social-icon youtube"></i>
+    </a>
+    <a href="${socials.github}" target="_blank" class="social-link">
+        <i class="social-icon github"></i>
+    </a>
+    <a href="/files/surgemd-windows-lasted.zip" target="_blank" class="social-link">
+        <i class="social-icon selfs"></i>
+    </a>
+    <a href="/files/surgemd-linux-lasted.zip" target="_blank" class="social-link">
+        <i class="social-icon linux"></i>
+    </a>
 </div>`
                     }
                 },

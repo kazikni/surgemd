@@ -1,4 +1,4 @@
-import { api, API_BASE, api_server } from "../others/config.ts";
+import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
@@ -9,15 +9,7 @@ import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } fro
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
-type PhaseIntroConfig = {
-    location: string
-    name: string
-    date?: string
-    style?: "glitch" | "clean"
-    description?: string
-    text_speed?: number
-    wait_time?:number
-}
+
 export class MenuManager{
     api_settings:ApiSettings
     account:AccountManager
@@ -46,6 +38,9 @@ export class MenuManager{
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
         history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
+
+        main_social:document.body.querySelector("#main-social") as HTMLDivElement,
+        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
     }
 
@@ -98,6 +93,24 @@ export class MenuManager{
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
         this.start_intro()
+
+        this.content.main_social.innerHTML=`
+<a href="${socials.discord}" target="_blank" class="social-link">
+    <i class="social-icon discord"></i>
+</a>
+<a href="${socials.youtube}" target="_blank" class="social-link">
+    <i class="social-icon youtube"></i>
+</a>
+<a href="${socials.github}" target="_blank" class="social-link">
+    <i class="social-icon github"></i>
+</a>
+`
+        this.update_content_creators([
+            {
+                name:"Kazikni",
+                url:"https://youtube.com/@kazikni",
+            },
+        ])
     }
     intro_fineshed:boolean=false
     start_intro(): Promise<void> {
@@ -677,6 +690,18 @@ export class MenuManager{
 
             update()
         })
+    }
+    update_content_creators(content_creators:{name:string,url:string}[]){
+        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
+        for(const creator of content_creators){
+            this.content.content_creators.innerHTML+=`
+<a href="${creator.url}" target="_blank">
+    <div class="background-menu content-creator">
+        <img id="youtube-logo" src="./img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
+        <span>${creator.name}</span>
+    </div>
+</a>`
+        }
     }
     game_start(){
         ShowElement(this.content.gameD)

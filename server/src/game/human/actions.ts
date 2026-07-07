@@ -89,6 +89,7 @@ export class HelpupAction extends Action<Human>{
     }
     override on_cancel(user: Human): void {
         this.human.actions.cancel()
+        this.human.being_helpup_by=undefined
     }
     on_execute(user:Human){
         this.human.help_up()

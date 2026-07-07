@@ -216,6 +216,40 @@
                                 {"item": "regular_helmet","weight": 10},
                                 {"item": "military_helmet","weight": 5}
                             ],
+                            "melee": [
+                                {
+                                    "item": "fist",
+                                    "weight": 11
+                                },
+                                {
+                                    "item": "survival_knife",
+                                    "weight": 10
+                                },
+                                {
+                                    "item": "shovel",
+                                    "weight": 10
+                                },
+                                {
+                                    "item": "axe",
+                                    "weight": 5
+                                },
+                                {
+                                    "item": "katana",
+                                    "weight": 1
+                                },
+                                {
+                                    "item": "sledgehammer",
+                                    "weight": 0.75
+                                },
+                                {
+                                    "item": "pan",
+                                    "weight": 0.75
+                                },
+                                {
+                                    "item": "bonesaw",
+                                    "weight": 0.25
+                                }
+                            ],
                             "gun1": [
                                 {"item": "m870","weight": 5},
                                 {"item": "hp18","weight": 5},
@@ -256,6 +290,56 @@
                         "team":1
                     },
                     "count": 24
+                },
+                {
+                    "def": {
+                        "name": "Gigi",
+                        "group_color": 5205751,
+                        "loadout": {
+                            "hair": "hair_2",
+                            "hair_tint": 1122066,
+                            "body": "body_1",
+                            "body_tint": 15771967,
+                            "eyes": "eyes_2",
+                            "shirt": "red_shirt",
+                            "legs": "jeans_pants",
+                            "accessorys": [],
+                            "wrapping":"aqua_blue"
+                        },
+                        "ai": {
+                            "kind": "advanced_legacy"
+                        },
+                        "inventory": {
+                            "infinity_ammo": true,
+                            "hand": 1,
+                            "backpack": [{"item": "military_pack","weight": 1}],
+                            "vest": [{"item": "military_vest","weight": 1}],
+                            "helmet": [{"item": "medic_helmet","weight": 1}],
+                            "melee": [{"item": "bonesaw","weight": 3},{"item": "pan","weight": 1}],
+                            "gun1": [
+                                {"item": "m870","weight": 5},
+                                {"item": "spas12","weight": 1.5},
+                                {"item": "kar98k","weight": 1.5},
+                                {"item": "awp","weight": 0.5},
+                                {"item": "awm","weight": 0.1}
+                            ],
+                            "gun2": [
+                                {"item": "kar98k","weight": 1},
+                                {"item": "awp","weight": 0.5},
+                                {"item": "awm","weight": 0.1}
+                            ],
+                            "aitems": {
+                                "12g": 80,
+                                "556mm": 320,
+                                "762mm": 320,
+                                "45acp": 320,
+                                "9mm": 400,
+                                "22lr": 400
+                            }
+                        },
+                        "team":1
+                    },
+                    "count": 1
                 }
             ]
         }

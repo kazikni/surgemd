@@ -107,6 +107,24 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                 },
             }
         },
+        {
+            idString:"medic_helmet",
+            defence:0,
+            level:4,
+            special:true,
+            reduction:0.25,
+            position:v2(0,0),
+            rank:ItemRank.S,
+            property:["self_revive"],
+            events:{
+                "pickup":(e)=>{
+                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                },
+                "drop":(e)=>{
+                    e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                }
+            }
+        },
     )
 }
 export function Vests_Default_Init(vests:Definitions<VestDef,{}>){

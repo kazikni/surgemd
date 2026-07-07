@@ -15,6 +15,7 @@ __                                                                              
 * M2-2 Sprite
 * RPG7 Sprite
 * 50Cal Ammo Outline
+* Medic Helmet
 __                                                                                                                 __
 ### Others
 * Alternative Shed Ceiling

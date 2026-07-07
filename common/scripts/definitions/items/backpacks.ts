@@ -29,9 +29,9 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
                 "explosive_ammo":5,
                 "gasoline":5,
 
-                "frag_grenade":9,
+                "frag_grenade":12,
                 "smoke_grenade":12,
-                "mirv_grenade":7,
+                "mirv_grenade":10,
                 "molotov":5,
                 "red_flare":6,
                 "blue_flare":6,

@@ -1,10 +1,12 @@
 import { type Game } from "../others/game.ts";
-import { Client, Numeric, random, v2, Vec2 } from "common/engine/core.ts";
+import { Client, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
+import { LevelEnemys } from "common/scripts/config/level_definition.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 
 export interface GameRules{
     humans:{
@@ -267,4 +269,21 @@ export abstract class ModeManager{
     }
 
     human_buy_item(human:Human,item:GameItem){}
+    
+    add_enemies(enemies?:LevelEnemys){
+        if(!enemies) return
+        for(const e of enemies){
+            const count = e.count ?? 1
+            for(let i = 0; i < count; i++){
+                const bot = this.game.players.add_enemy(e.def,new JoinPacket())
+                if(!bot) continue
+                if(e.position){
+                    v2m.set(bot.position, e.position.x, e.position.y)
+                }else{
+                    const pos = this.get_human_spawn_position(bot)
+                    if(pos) bot.position = pos
+                }
+            }
+        }
+    }
 }

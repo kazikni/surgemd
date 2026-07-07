@@ -132,7 +132,11 @@ export class GameMap{
             valid=this.point_is_valid
         }
         if(!gp){
-            gp=this.random_point_inside
+            if(mode.position_generator==="deadzone"){
+                gp=this.game.deadzone.random_point_inside_cb.bind(this.game.deadzone)
+            }else{
+                gp=this.random_point_inside
+            }
         }
         const hb=hitbox.clone()
         while(!pos){

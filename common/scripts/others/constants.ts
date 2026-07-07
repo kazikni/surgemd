@@ -149,14 +149,16 @@ export enum  SpawnModeType{
     river
 }
 export type SpawnMode={
+    position_generator?:"normal"|"deadzone"
+}&({
     type:SpawnModeType.any
 }|{
     type:SpawnModeType.blacklist|SpawnModeType.whitelist
     list:FloorType[]
 }|{
     type:SpawnModeType.river
-    list:FloorType[]
-}
+    list:FloorType[],
+})
 
 export const Spawn={
     any:{

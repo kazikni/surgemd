@@ -395,6 +395,12 @@ export class Human extends MovingBody{
         if(preset.inventory)this.inventory.load_preset(preset.inventory)
         if(preset.position)this.position=preset.position
         if(preset.group_color)this.team_data.color=preset.group_color
+        if(preset.team){
+            const team=this.game.modeManager.get_team(preset.team)
+            if(team){
+                team.add_human(this)
+            }
+        }
         this.update_modifiers()
         this.health_data.health=this.health_data.max_health
     }

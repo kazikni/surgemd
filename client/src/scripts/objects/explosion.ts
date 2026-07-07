@@ -131,7 +131,12 @@ export class Explosion extends GameObject{
 
         this.radius=stream.read_float(0,50,3)
 
-        this.set_definition(this.game.definitions.explosions.getFromNumber(stream.read_id()))
+        const def=this.game.definitions.explosions.getFromNumber(stream.read_id())
+        if(!def){
+            this.destroy()
+            return
+        }
+        this.set_definition(def)
 
         this._base_hitbox=new CircleHitbox2D(v2(0,0),this.radius)
 

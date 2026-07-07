@@ -4,7 +4,7 @@ import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
 import { MapDef, Maps } from "common/scripts/definitions/maps/base.ts";
 import { v2, v2m, Vec2 } from "common/engine/core.ts";
-import { GroupsManager} from "./teams.ts";
+import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
@@ -46,8 +46,10 @@ export class BattleRoyale extends ModeManager{
     }
     groups_manager?:GroupsManager
     group_size:number
+    teams_manager?:TeamsManager
+    teams:number
 
-    constructor(settings:BattleRoyaleSettings={},group_size:number=1){
+    constructor(settings:BattleRoyaleSettings={},group_size:number=1,teams:number=0){
         super()
         this.settings={
             players:{
@@ -69,11 +71,18 @@ export class BattleRoyale extends ModeManager{
             },
         }
         this.group_size=group_size
-        if(group_size > 1){
-            this.groups_manager = new GroupsManager()
+        if(group_size>1){
+            this.groups_manager=new GroupsManager()
+        }
+        this.teams=teams
+        if(teams>0){
+            this.teams_manager=new TeamsManager()
+            for(let i=0;i<teams;i++){
+                this.teams_manager.add_team()
+            }
         }
     }
-    add_enemies(enemies:LevelEnemys|undefined=this.settings.enemies){
+    override add_enemies(enemies:LevelEnemys|undefined=this.settings.enemies){
         if(!enemies) return
         for(const e of enemies){
             const count = e.count ?? 1
@@ -90,8 +99,15 @@ export class BattleRoyale extends ModeManager{
         }
     }
 
+    override get_group(group:number):Group|undefined{
+        if(!this.groups_manager)return undefined
+        return this.groups_manager.groups[group]
+    }
+    override get_team(team:number):Team|undefined{
+        if(!this.teams_manager)return undefined
+        return this.teams_manager.teams[team]
+    }
     override on_start(){
-        this.add_enemies()
         this.game.deadzone.start()
         for(const p of this.settings.airdrops.spawn){
             this.game.add_timeout(()=>{
@@ -104,26 +120,41 @@ export class BattleRoyale extends ModeManager{
     }
     override on_tick(dt: number): void {
         if(this.groups_manager)this.groups_manager.tick(dt)
+        if(this.teams_manager)this.teams_manager.tick(dt)
+    }
+    override on_net_update(){
+        if(this.groups_manager)this.groups_manager.net_update()
+        if(this.teams_manager)this.teams_manager.net_update()
     }
     override reset(): void {
         if(this.groups_manager)this.groups_manager.reset()
+        if(this.teams_manager)this.teams_manager.reset()
     }
     override can_down(human: Human): boolean {
-        if (!this.groups_manager) {
-            return false
+        if(this.teams_manager&&(human.team_data.team&&human.team_data.team.can_down(human))!){
+            return true
         }
-        return (human.team_data.group&&human.team_data.group.can_down(human))!
+        if(this.groups_manager&&(human.team_data.group&&human.team_data.group.can_down(human))!){
+            return true
+        }
+        return false
     }
     override is_ally(a: Human, b: Human): boolean {
-        if (!this.groups_manager) {
-            return false
+        if(this.teams_manager&&a.team_data.team_id===b.team_data.team_id){
+            return true
         }
-        return a.team_data.group_id === b.team_data.group_id
+        if(this.groups_manager&&a.team_data.group_id===b.team_data.group_id) {
+            return true
+        }
+        return false
     }
     can_join():boolean{
         return this.game.players.living_players.length<this.settings.players.limit
     }
     can_start(): boolean {
+        if (this.teams_manager) {
+            return this.teams_manager.get_living_teams().length > 1
+        }
         if (this.groups_manager) {
             return this.groups_manager.get_living_groups().length > 1
         }
@@ -165,9 +196,6 @@ export class BattleRoyale extends ModeManager{
     }
     give_rank_score(){
         this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward/this.game.players.match_players_count)
-    }
-    override on_net_update(){
-        if(this.groups_manager)this.groups_manager.net_update()
     }
     override on_player_join(p: Player): void {
         if(this.groups_manager){

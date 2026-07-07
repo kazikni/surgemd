@@ -15,18 +15,21 @@ export type LevelMode={
     map: {
         def:LevelMapDefinition
         seed?:number
-    };   
+    }
+    deadzone?:{
+        stage?:number
+    }
+    settings?:any
+    enemies:LevelEnemys[]
 }&({
     type:"kill_all_enemies",
-    enemies:LevelEnemys
 }|{
     type:"battle_royale"
     group_size:number
     teams?:number
-    enemies:LevelEnemys[]
-})|{
+}|{
     type:"debug"
-}
+})
 export enum GameOverScreenType{
     Normal,
     Restart,
@@ -41,7 +44,6 @@ export type GameOverScreen={
 }
 export type LevelCharacter=CharacterDefinition&{
     path?:string
-    ia?:LevelCharacterAI
 }
 export interface LevelDefinition{
     meta:{
@@ -57,9 +59,6 @@ export interface LevelDefinition{
         begin?:string
     }
     mode:LevelMode
-    deadzone?:{
-        stage?:number
-    }
     player: LevelCharacter
     characters_selection?:{
         spawn_other?:boolean
@@ -71,7 +70,7 @@ export interface LevelDefinition{
         textures?:string[]
     }
     definitions?:{
-        enemies?:Record<string,EnemyDef>
+        enemies?:Record<string,LevelCharacter>
         buildings?:Record<string,JSONBuildingDef>
     }
 }

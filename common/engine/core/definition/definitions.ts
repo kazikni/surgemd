@@ -32,6 +32,12 @@ export class DefinitionsSimple<Type,Base=null>{
         if(!this.valueNumber[id])throw new Error(`idNumber:${id} Dont Exist In Definition`)
         return this.valueNumber[id]
     }
+    getFromStringSafe(id:string):Type|undefined{
+        return this.value[id]
+    }
+    getFromNumberSafe(id:number):Type|undefined{
+        return this.valueNumber[id]
+    }
     exist(id:string):boolean{
         return Object.hasOwn(this.value,id)
     }

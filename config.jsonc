@@ -3,7 +3,7 @@
         "host": {
             "port": 8000,
             "ssl": false,
-            "cert": "./private/api/certificate.crt",
+            "cert": "./private/api/fullchain.crt",
             "key": "./private/api/private.key",
             "ca": "./private/api/ca_bundle.crt"
         },
@@ -54,7 +54,7 @@
         "host": {
             "port": 8080,
             "ssl": false,
-            "cert": "./private/game/certificate.crt",
+            "cert": "./private/game/fullcain.crt",
             "ca": "./private/game/ca_bundle.crt",
             "key": "./private/game/private.key"
         },

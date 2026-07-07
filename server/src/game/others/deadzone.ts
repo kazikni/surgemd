@@ -1,9 +1,10 @@
-import { CircleHitbox2D, cloneDeep, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, cloneDeep, Hitbox2D, Numeric, random, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Game } from "./game.ts";
 import { DeadZoneStage, DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MakeDeadZoneStages } from "common/scripts/others/functions.ts";
+import { type GameMap } from "./map.ts";
 
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     count:9,
@@ -151,18 +152,27 @@ export class DeadZoneManager {
     jump_stages(targetStage: number){
         if(targetStage <= 0) return
         targetStage = Math.min(targetStage, this.stages.length)
-        for(let i = 0; i < targetStage; i++){
+        for(let i = 0; i < targetStage-1; i++){
             this.advance()
 
-            this.state.radius = this.state.new_radius
-            this.state.position = v2.clone(this.state.new_position)
+            this.timer=0
+            if(this.state.state===DeadZoneState.Waiting){
+                this.state.radius = this.state.old_radius
+                this.state.position = v2.clone(this.state.old_position)
+            }else{
+                this.state.radius = this.state.new_radius
+                this.state.position = v2.clone(this.state.new_position)
+            }
 
             this.hitbox.radius = this.state.radius
             this.hitbox.position = this.state.position
         }
     }
     tick(dt:number){
-        if(!this.running||this.state.state===DeadZoneState.Deenabled) return
+        if(!this.running||this.state.state===DeadZoneState.Deenabled){
+            this.running=false
+            return
+        }
 
         if(this.state.state!==DeadZoneState.Finished){
             this.state.timer=Math.max(Math.floor(this.duration-this.timer),0)
@@ -270,5 +280,47 @@ export class DeadZoneManager {
     damageAt(position:Vec2){
         if(!this.is_on_deadzone(position))return 0
         return this.damage*(this.config.damage??1)
+    }
+
+    random_point_inside_cb(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
+        const angle = random.rad()
+        const maxLen = Math.max(this.state.radius, 0)
+        const len = random.float(0, maxLen)
+
+        const pos = v2(angle,len)
+
+        v2m.add(pos,pos,this.state.position)
+
+        return pos
+    }
+    write_checkpoint(stream:Stream){
+        stream.write_uint8(this.state.state)
+
+        .write_pos2(this.state.position)
+        .write_float32(this.state.radius)
+
+        .write_pos2(this.state.new_position)
+        .write_float32(this.state.new_radius)
+
+        .write_pos2(this.state.old_position)
+        .write_float32(this.state.old_radius)
+
+        .write_float32(this.timer)
+        .write_float32(this.duration)
+    }
+    decode_checkpoint(stream:Stream){
+        this.state.state=stream.read_uint8()
+
+        this.state.position=stream.read_pos2()
+        this.state.radius=stream.read_float32()
+
+        this.state.new_position=stream.read_pos2()
+        this.state.new_radius=stream.read_float32()
+
+        this.state.old_position=stream.read_pos2()
+        this.state.old_radius=stream.read_float32()
+
+        this.timer=stream.read_float32()
+        this.duration=stream.read_float32()
     }
 }

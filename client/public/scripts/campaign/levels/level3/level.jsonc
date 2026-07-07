@@ -15,509 +15,287 @@
             }
         }
     },
-    "deadzone": {
-        "stage": 0
-    },
     "mode": {
-        "type": "kill_all_enemies",
-        "teams": 2,
-        "map": {
-            "def": "lobby"
+        "type": "battle_royale",
+        "deadzone": {
+            "stage": 3
         },
-        "enemies": [
-            {
-                "def": "basic",
-                "count": 20
+        "teams":2,
+        "settings":{
+            "spawn_mode":{
+                "position_generator":"deadzone"
             },
-            {
-                "def": "advanced",
-                "count": 10
-            }
-        ]
-    },
-    "end": {
-        "next": {
-            "type": "level",
-            "charpter": 0,
-            "level": 1
-        },
-        "history": [
-            {
-                "type": 4,
-                "music": "history_music_1"
-            },
-            {
-                "type": 3,
-                "text": "Good Game"
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-3.png"
-            },
-            {
-                "type": 1
-            },
-            {
-                "type": 2,
-                "frame": ""
-            }
-        ]
-    },
-    "begin": {
-        "history": [
-            {
-                "type": 4,
-                "music": "history_music_1"
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-1.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 3,
-                "text": ""
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-2.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-3.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-4.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-5.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-6.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-7.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-9.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            },
-            {
-                "type": 2,
-                "frame": "/img/menu/gui/history/charpter-1/level-1/frame-10.png"
-            },
-            {
-                "type": 0,
-                "time": 4
-            }
-        ]
-    },
-    "definitions": {
-        "enemies": {
-            "basic": {
-                "ia": {
-                    "action": "random"
-                },
-                "inventory": {
-                    "infinity_ammo": true,
-                    "hand": 1,
-                    "backpack": [
-                        {
-                            "item": "",
-                            "weight": 28
+            "enemies": [
+                {
+                    "def": {
+                        "ai": {
+                            "kind": "dumb"
                         },
-                        {
-                            "item": "basic_pack",
-                            "weight": 20
+                        "inventory": {
+                            "infinity_ammo": true,
+                            "hand": 1,
+                            "backpack": [
+                                {
+                                    "item": "",
+                                    "weight": 28
+                                },
+                                {
+                                    "item": "basic_pack",
+                                    "weight": 20
+                                },
+                                {
+                                    "item": "regular_pack",
+                                    "weight": 15,
+                                    "drop_chance": 0.3
+                                },
+                                {
+                                    "item": "military_pack",
+                                    "weight": 10,
+                                    "drop_chance": 0.5
+                                }
+                            ],
+                            "vest": [
+                                {
+                                    "item": "",
+                                    "weight": 28
+                                },
+                                {
+                                    "item": "basic_vest",
+                                    "weight": 20,
+                                    "drop_chance": 0.3
+                                },
+                                {
+                                    "item": "regular_vest",
+                                    "weight": 15,
+                                    "drop_chance": 0.5
+                                },
+                                {
+                                    "item": "military_vest",
+                                    "weight": 10,
+                                    "drop_chance": 0.75
+                                }
+                            ],
+                            "helmet": [
+                                {
+                                    "item": "",
+                                    "weight": 28
+                                },
+                                {
+                                    "item": "basic_helmet",
+                                    "weight": 20,
+                                    "drop_chance": 0.3
+                                },
+                                {
+                                    "item": "regular_helmet",
+                                    "weight": 15,
+                                    "drop_chance": 0.5
+                                },
+                                {
+                                    "item": "military_helmet",
+                                    "weight": 10,
+                                    "drop_chance": 0.75
+                                }
+                            ],
+                            "melee": [
+                                {
+                                    "item": "fist",
+                                    "weight": 30
+                                },
+                                {
+                                    "item": "survival_knife",
+                                    "weight": 15
+                                },
+                                {
+                                    "item": "shovel",
+                                    "weight": 10
+                                },
+                                {
+                                    "item": "axe",
+                                    "weight": 5
+                                },
+                                {
+                                    "item": "katana",
+                                    "weight": 1
+                                },
+                                {
+                                    "item": "sledgehammer",
+                                    "weight": 0.75
+                                },
+                                {
+                                    "item": "pan",
+                                    "weight": 0.75
+                                }
+                            ],
+                            "gun1": [
+                                {
+                                    "item": "m9",
+                                    "weight": 20
+                                },
+                                {
+                                    "item": "m9_dual",
+                                    "weight": 15
+                                },
+                                {
+                                    "item": "taurustx",
+                                    "weight": 20
+                                },
+                                {
+                                    "item": "taurustx_dual",
+                                    "weight": 15
+                                },
+                                {
+                                    "item": "ak47",
+                                    "weight": 10
+                                },
+                                {
+                                    "item": "hp18",
+                                    "weight": 8
+                                },
+                                {
+                                    "item": "m870",
+                                    "weight": 5
+                                },
+                                {
+                                    "item": "spas12",
+                                    "weight": 1
+                                },
+                                {
+                                    "item": "kar98k",
+                                    "weight": 1
+                                },
+                                {
+                                    "item": "awp",
+                                    "weight": 0.5
+                                },
+                                {
+                                    "item": "m2_2",
+                                    "weight": 0.5
+                                },
+                                {
+                                    "item": "pkp",
+                                    "weight": 0.1
+                                },
+                                {
+                                    "item": "awm",
+                                    "weight": 0.1
+                                }
+                            ],
+                            "aitems": {
+                                "12g": 15,
+                                "556mm": 100,
+                                "762mm": 100,
+                                "45acp": 100,
+                                "9mm": 100,
+                                "22lr": 100
+                            }
                         },
-                        {
-                            "item": "regular_pack",
-                            "weight": 15,
-                            "drop_chance": 0.3
-                        },
-                        {
-                            "item": "military_pack",
-                            "weight": 10,
-                            "drop_chance": 0.5
-                        }
-                    ],
-                    "vest": [
-                        {
-                            "item": "",
-                            "weight": 28
-                        },
-                        {
-                            "item": "basic_vest",
-                            "weight": 20,
-                            "drop_chance": 0.3
-                        },
-                        {
-                            "item": "regular_vest",
-                            "weight": 15,
-                            "drop_chance": 0.5
-                        },
-                        {
-                            "item": "military_vest",
-                            "weight": 10,
-                            "drop_chance": 0.75
-                        }
-                    ],
-                    "helmet": [
-                        {
-                            "item": "",
-                            "weight": 28
-                        },
-                        {
-                            "item": "basic_helmet",
-                            "weight": 20,
-                            "drop_chance": 0.3
-                        },
-                        {
-                            "item": "regular_helmet",
-                            "weight": 15,
-                            "drop_chance": 0.5
-                        },
-                        {
-                            "item": "military_helmet",
-                            "weight": 10,
-                            "drop_chance": 0.75
-                        }
-                    ],
-                    "gun1": [
-                        {
-                            "item": "m9",
-                            "weight": 20
-                        },
-                        {
-                            "item": "ak47",
-                            "weight": 10
-                        },
-                        {
-                            "item": "hp18",
-                            "weight": 8
-                        },
-                        {
-                            "item": "m870",
-                            "weight": 5
-                        },
-                        {
-                            "item": "spas12",
-                            "weight": 1
-                        },
-                        {
-                            "item": "kar98k",
-                            "weight": 1
-                        },
-                        {
-                            "item": "awp",
-                            "weight": 0.5
-                        },
-                        {
-                            "item": "m2_2",
-                            "weight": 0.5
-                        },
-                        {
-                            "item": "pkp",
-                            "weight": 0.1
-                        },
-                        {
-                            "item": "awm",
-                            "weight": 0.1
-                        }
-                    ],
-                    "aitems": {
-                        "12g": 15,
-                        "556mm": 100,
-                        "762mm": 100,
-                        "9mm": 100
-                    }
-                },
-                "boosts": [
-                    {
-                        "weight": 10,
-                        "boost_type": 0,
-                        "boost": 0
+                        "team":1
                     },
-                    {
-                        "weight": 1,
-                        "boost_type": 1,
-                        "boost": 1
+                    "count": 12
+                },
+                {
+                    "def": {
+                        "ai": {
+                            "kind": "advanced_legacy"
+                        },
+                        "inventory": {
+                            "infinity_ammo": true,
+                            "hand": 1,
+                            "backpack": [
+                                {"item": "basic_pack","weight": 15},
+                                {"item": "regular_pack","weight": 10},
+                                {"item": "military_pack","weight": 5}
+                            ],
+                            "vest": [
+                                {"item": "basic_vest","weight": 15},
+                                {"item": "regular_vest","weight": 10},
+                                {"item": "military_vest","weight": 5}
+                            ],
+                            "helmet": [
+                                {"item": "basic_helmet","weight": 15},
+                                {"item": "regular_helmet","weight": 10},
+                                {"item": "military_helmet","weight": 5}
+                            ],
+                            "gun1": [
+                                {"item": "m870","weight": 5},
+                                {"item": "hp18","weight": 5},
+                                {"item": "model94","weight": 3},
+                                {"item": "blr81","weight": 3},
+                                {"item": "spas12","weight": 1.5},
+                                {"item": "kar98k","weight": 1.5},
+                                {"item": "awp","weight": 0.5},
+                                {"item": "awm","weight": 0.1}
+                            ],
+                            "gun2": [
+                                {"item": "m9_dual", "weight": 10},
+                                {"item": "taurustx_dual","weight": 10},
+                                {"item": "mp5","weight": 7},
+                                {"item": "ak47","weight": 7},
+                                {"item": "ar15","weight": 7},
+                                {"item": "colt1873_dual","weight": 6},
+                                {"item": "desert_eagle","weight": 6},
+                                {"item": "m1921","weight": 5},
+                                {"item": "famas","weight": 5},
+                                {"item": "kar98k","weight": 1},
+                                {"item": "awp","weight": 0.5},
+                                {"item": "desert_eagle_dual","weight": 0.5},
+                                {"item": "pkp","weight": 0.1}
+                            ],
+                            "aitems": {
+                                "12g": 30,
+                                "556mm": 160,
+                                "762mm": 160,
+                                "45acp": 160,
+                                "9mm": 200,
+                                "22lr": 200
+                            }
+                        },
+                        "team":1
                     },
-                    {
-                        "weight": 1,
-                        "boost_type": 2,
-                        "boost": 1
-                    }
-                ],
-                "team": 1
-            },
-            "advanced": {
-                "ia": {
-                    "kind": "advanced"
-                },
-                "inventory": {
-                    "infinity_ammo": true,
-                    "hand": 1,
-                    "backpack": [
-                        {
-                            "item": "basic_pack",
-                            "weight": 10
-                        },
-                        {
-                            "item": "regular_pack",
-                            "weight": 15,
-                            "drop_chance": 0.3
-                        },
-                        {
-                            "item": "military_pack",
-                            "weight": 10,
-                            "drop_chance": 0.5
-                        }
-                    ],
-                    "vest": [
-                        {
-                            "item": "basic_vest",
-                            "weight": 10,
-                            "drop_chance": 0.3
-                        },
-                        {
-                            "item": "regular_vest",
-                            "weight": 15,
-                            "drop_chance": 0.5
-                        },
-                        {
-                            "item": "military_vest",
-                            "weight": 10,
-                            "drop_chance": 0.75
-                        }
-                    ],
-                    "helmet": [
-                        {
-                            "item": "basic_helmet",
-                            "weight": 10,
-                            "drop_chance": 0.3
-                        },
-                        {
-                            "item": "regular_helmet",
-                            "weight": 15,
-                            "drop_chance": 0.5
-                        },
-                        {
-                            "item": "military_helmet",
-                            "weight": 10,
-                            "drop_chance": 0.75
-                        }
-                    ],
-                    "gun1": [
-                        {
-                            "item": "hp18",
-                            "weight": 1
-                        },
-                        {
-                            "item": "m870",
-                            "weight": 6
-                        },
-                        {
-                            "item": "spas12",
-                            "weight": 1.5
-                        },
-                        {
-                            "item": "kar98k",
-                            "weight": 1.5
-                        },
-                        {
-                            "item": "awp",
-                            "weight": 0.5
-                        },
-                        {
-                            "item": "awm",
-                            "weight": 0.1
-                        }
-                    ],
-                    "gun2": [
-                        {
-                            "item": "mp5",
-                            "weight": 7
-                        },
-                        {
-                            "item": "ak47",
-                            "weight": 7
-                        },
-                        {
-                            "item": "kar98k",
-                            "weight": 1
-                        },
-                        {
-                            "item": "awp",
-                            "weight": 0.5
-                        },
-                        {
-                            "item": "pkp",
-                            "weight": 0.1
-                        },
-                        {
-                            "item": "",
-                            "weight": 0.1
-                        }
-                    ],
-                    "boosts": [
-                        {
-                            "weight": 7,
-                            "boost_type": 0,
-                            "boost": 0
-                        },
-                        {
-                            "weight": 1,
-                            "boost_type": 0,
-                            "boost": 1
-                        },
-                        {
-                            "weight": 1,
-                            "boost_type": 1,
-                            "boost": 1
-                        }
-                    ],
-                    "aitems": {
-                        "12g": 30,
-                        "556mm": 150,
-                        "762mm": 150,
-                        "9mm": 200
-                    }
-                },
-                "team": 1
-            }
+                    "count": 24
+                }
+            ]
         }
     },
     "player": {
+        "path": "../../characters/vinii.jsonc",
         "inventory": {
             "hand": 1,
             "team": 0,
-            "backpack": [
-                {
-                    "item": "military_pack",
-                    "weight": 1
-                }
-            ],
-            "vest": [
-                {
-                    "item": "elite_vest",
-                    "weight": 10,
-                    "droppable": false
-                }
-            ],
-            "helmet": [
-                {
-                    "item": "lastman_helmet",
-                    "weight": 10,
-                    "droppable": false
-                }
-            ],
+            "backpack": [{"item": "military_pack","weight": 1}],
+            "vest": [{"item": "elite_vest","weight": 1,"droppable": false}],
+            "helmet": [{"item": "lastman_helmet","weight": 1,"droppable": false}],
             "melee": [
-                {
-                    "item": "sledgehammer",
-                    "weight": 20
-                },
-                {
-                    "item": "axe",
-                    "weight": 10
-                }
+                {"item": "bonesaw","weight": 1},
+                {"item": "pan","weight": 1}
             ],
             "gun1": [
-                {
-                    "item": "spas12",
-                    "weight": 20
-                }
+                {"item": "spas12","weight": 1},
+                {"item": "m870","weight": 1},
+                {"item": "awm","weight": 0.5},
+                {"item": "awp","weight": 0.5}
             ],
             "gun2": [
-                {
-                    "item": "pkp",
-                    "weight": 30
-                },
-                {
-                    "item": "m2_2",
-                    "weight": 10
-                },
-                {
-                    "item": "awm",
-                    "weight": 10
-                },
-                {
-                    "item": "awp",
-                    "weight": 10
-                }
+                {"item": "pkp","weight": 30},
+                {"item": "m249","weight": 27},
+                {"item": "xm556","weight": 25}
             ],
             "items": [
-                [
-                    {
-                        "item": "bandage",
-                        "count": 15,
-                        "weight": 1
-                    }
-                ],
-                [
-                    {
-                        "item": "medikit",
-                        "count": 4,
-                        "weight": 1
-                    }
-                ],
-                [
-                    {
-                        "item": "frag_grenade",
-                        "count": 9,
-                        "weight": 1
-                    }
-                ],
-                [
-                    {
-                        "item": "mirv_grenade",
-                        "count": 4,
-                        "weight": 1
-                    }
-                ],
-                [
-                    {
-                        "item": "red_flare",
-                        "count": 1,
-                        "weight": 1
-                    }
-                ]
+                [{"item": "bandage", "count": 15, "weight": 1}],
+                [{"item": "medikit", "count": 4, "weight": 1}],
+                [{"item": "frag_grenade", "count": 12, "weight": 1}],
+                [{"item": "mirv_grenade", "count": 10, "weight": 1}],
+                [{"item": "yellow_flare","count": 6,"weight": 1}]
             ],
+            "aitems":{
+                "12g":80,
+                "556mm":320,
+                "762mm":320,
+                "9mm":400,
+                "22lr":400,
+                "45acp":320,
+                "308sub":40
+            },
             "iitems": [
                 "scope_2",
                 "scope_3",
@@ -525,24 +303,12 @@
             ],
             "accessorys": [
                 [
-                    {
-                        "item": "rip_ammo",
-                        "weight": 1,
-                        "droppable": false
-                    },
-                    {
-                        "item": "high_quality_projectiles",
-                        "weight": 1,
-                        "droppable": false
-                    }
+                    {"item": "rip_ammo", "weight": 1, "droppable": false},
+                    {"item": "hp_bullets", "weight": 1,"droppable": false}
                 ]
             ],
             "boosts": [
-                {
-                    "weight": 1,
-                    "boost_type": 5,
-                    "boost": 1
-                }
+                {"weight": 1, "boost_type": 4, "boost": 1}
             ]
         }
     }

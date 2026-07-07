@@ -10,9 +10,10 @@ export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 */
 /*
 * GLOBAL
-export const api_server=new IPLocation("api.test.surgemd.io",443,true,true,"")
+export const api_server=new IPLocation("testm.surgemd.io",8000,true,true,"")
 */
-//export const api_server=new IPLocation("api.test.surgemd.io",443,true,true,"")
+//export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
+//export const api_server=new IPLocation("testm.surgemd.io",8000,true,true,"")
 export const api_server=new IPLocation("localhost",8000,false,true,"")
 export const API_BASE=api_server.toString("http")
 export const api=true

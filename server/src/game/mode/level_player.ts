@@ -115,13 +115,13 @@ export class LevelPlayer {
             case "kill_all_enemies":
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                this.game.init(new KillAllEnemiesMode(this.level.mode))
+                this.game.init(new KillAllEnemiesMode(this.level.mode.settings))
                 break
             case "battle_royale":
-                this.game.init(new BattleRoyale(this.level.mode as unknown as BattleRoyaleSettings,this.level.mode.group_size??1))
+                this.game.init(new BattleRoyale(this.level.mode.settings,this.level.mode.group_size,this.level.mode.teams))
                 break
             case "debug":{
-                this.game.init(new BattleRoyaleDebug(this.level.mode as unknown as BattleRoyaleSettings))
+                this.game.init(new BattleRoyaleDebug(this.level.mode.settings as unknown as BattleRoyaleSettings))
                 break
             }
         }
@@ -199,6 +199,11 @@ export class LevelPlayer {
         this.checkpoint.lock()
     }
     start(){
+        this.game.start(true)
+        if(this.level.mode.deadzone?.stage){
+            this.game.deadzone.jump_stages(this.level.mode.deadzone.stage)
+        }
+        this.game.modeManager.add_enemies()
         if(this.allies){
             for(const a of this.allies){
                 const bot = this.game.players.add_enemy(a,new JoinPacket())
@@ -206,10 +211,6 @@ export class LevelPlayer {
             }
         }
         this.spawn_players()
-        this.game.start(true)
-        if(this.level.deadzone?.stage){
-            this.game.deadzone.jump_stages(this.level.deadzone.stage)
-        }
     }
     spawn_players(){
         for(const conn of Object.values(this.game.players.connected_players)){
@@ -236,7 +237,7 @@ export class LevelPlayer {
         this.game.reset()
         this.checkpoint.index=0
         this.game.players.first_tick=true
-        this.game.scene_2d.load_checkpoint(this.checkpoint)
+        this.game.load_checkpoint(this.checkpoint)
         this.start()
     }
 }

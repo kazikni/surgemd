@@ -170,13 +170,18 @@ export class TeamsManager{
         return this.teams.filter((t)=>(t&&t!.get_living_humans().length>0))
     }
     add_team(team:Team=new Team):Team{
-        team.id=this.teams.length-1
+        team.id=this.teams.length
         this.teams.push(team)
         return team
     }
     net_update(){
         for(const t of this.teams){
             t.net_update()
+        }
+    }
+    reset(){
+        for(const t of Object.values(this.teams)){
+            if(t)t.clear()
         }
     }
 }

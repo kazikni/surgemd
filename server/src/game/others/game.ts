@@ -269,6 +269,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
+        this.deadzone.write_checkpoint(stream)
         this.scene_2d.make_checkpoint(stream,{
             save_id:true,
             orden:[
@@ -277,6 +278,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 GameObjectType.Building,
             ]
         })
+    }
+    load_checkpoint(stream:Stream){
+        this.deadzone.decode_checkpoint(stream)
+        this.scene_2d.load_checkpoint(stream)
     }
     start(force:boolean=false){
         if(this.started)return

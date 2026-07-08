@@ -19,6 +19,42 @@ export const NormalBiome:MapBiomeDef={
         "/sounds/musics/online/game_normal_music_4.mp3",
     ]
 }
+export const SnowBiome:MapBiomeDef={
+    floors:{
+        [FloorType.Sand]:0x505659
+    },
+    skin:"snow",
+    textures:["common","snow"],
+    ambient_sound:"snowstorm_ambience",
+    musics:[],
+    particles:[],
+    particles_tint:0
+}
+export const DesertBiome:MapBiomeDef={
+    floors:{
+        [FloorType.Sand]:0xa1761a
+    },
+    textures:["common"],
+    musics:[],
+    particles:[],
+}
+export const FallBiome:MapBiomeDef={
+    floors:{
+        [FloorType.Grass]:0x75782f,//97bf39
+    },
+    skin:"fall",
+    skins_replace:{
+        "oak_tree":["fall_1","fall_2"],
+        "pine_tree":["fall_1","fall_2"],
+        "bush":["fall_1","fall_2"],
+        "squared_bush":["fall_1","fall_2"],
+    },
+    skin_chance:0.2,
+    textures:["common","fall"],
+    musics:[
+    ],
+    particles:[],
+}
 export const map_spawns={
     trees:[
         {def:"oak_tree",weight:100},
@@ -51,15 +87,9 @@ export const map_spawns={
 export const NormalMap:MapDef={
     loot_tables:LootTables,
     biome:NormalBiome,
-    /*buildings:[
-        building_to_json(buildings_factory.house.small_house_1("small_house_1",{
-            walls_tint:7,
-            doors_tint:2,
-        }))
-    ],*/
+    size:v2(600,600),
     generation:{
-        island:{
-            size:v2(600,600),
+        islands:[{
             spawn:[
                 {def:"small_house_1",count:4},
                 {def:"storehouse_1",count:4},
@@ -184,14 +214,14 @@ export const NormalMap:MapDef={
                     },
                 ]
             }
-        }
+        }]
     },
 }
 export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
+    size:v2(100,100),
     generation:{
-        island:{
-            size:v2(100,100),
+        islands:[{
             spawn:[
                 {def:map_spawns.containers,count:2},
 
@@ -230,7 +260,7 @@ export const NormalLobby:MapDef={
                     }
                 ]
             }
-        },
+        }]
     },
     biome:NormalBiome,
 }
@@ -240,10 +270,10 @@ export const NormalCounterMD:CounterMapDef={
         RectHitbox2D.centered(v2(75,45),v2(1,6))
     ],
     seed:1000,
+    size:v2(90,90),
     loot_tables:NormalMap.loot_tables,
     generation:{
-        island:{
-            size:v2(90,90),
+        islands:[{
             spawn:[
                 {def:"sillo",count:2},
 
@@ -274,28 +304,9 @@ export const NormalCounterMD:CounterMapDef={
                     }
                 ]
             }
-        },
+        }]
     },
     biome:NormalBiome,
-}
-export const SnowBiome:MapBiomeDef={
-    floors:{
-        [FloorType.Sand]:0x505659
-    },
-    skin:"snow",
-    textures:["common","snow"],
-    ambient_sound:"snowstorm_ambience",
-    musics:[],
-    particles:[],
-    particles_tint:0
-}
-export const DesertBiome:MapBiomeDef={
-    floors:{
-        [FloorType.Sand]:0xa1761a
-    },
-    textures:["common"],
-    musics:[],
-    particles:[],
 }
 export const river_layers={
     ice:[

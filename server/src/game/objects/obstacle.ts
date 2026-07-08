@@ -261,8 +261,15 @@ export class Obstacle extends StaticBody{
 
         if(skin){
             this.visual_data.skin=skin
-        }else if(this.def.assets?.frame?.biome_skins){
-            if(allow_biome_skin)this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(this.game.map.def.biome.skin??"")+1
+        }if(allow_biome_skin&&this.def.assets?.frame?.biome_skins&&(this.game.map.def.biome.skin_chance===undefined||this.game.map.def.biome.skin_chance<=Math.random())){
+            const skin_replace=this.game.map.def.biome.skins_replace?.[this.def.idString]
+            let skin=""
+            if(skin_replace){
+                skin=(typeof skin_replace==="string")?skin_replace:random.choose(skin_replace)
+            }else if(this.game.map.def.biome.skin){
+                skin=this.game.map.def.biome.skin
+            }
+            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(skin)+1
         }
         if(rotation===undefined){
             if(this.def.rotation_mode===RotationMode.limited){

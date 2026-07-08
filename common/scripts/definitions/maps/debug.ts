@@ -1,4 +1,4 @@
-import { random, v2 } from "../../../engine/core.ts";
+import { v2 } from "../../../engine/core.ts";
 import { Layers } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { MapDef } from "./base.ts";
@@ -7,9 +7,9 @@ import { NormalBiome, NormalMap } from "./normal.ts";
 export const DebugMap:MapDef={
     biome:NormalBiome,
     loot_tables:NormalMap.loot_tables,
+    size:v2(550,550),
     generation:{
-        island:{
-            size:v2(550,550),
+        islands:[{
             terrain:{
                 base:FloorType.Water,
                 radius:230,
@@ -31,7 +31,7 @@ export const DebugMap:MapDef={
                     }
                 ]
             },
-        },
+        }]
     },
     gen_callback(map) {
         let x=map.size.x/2
@@ -93,9 +93,9 @@ export const DebugMap:MapDef={
 export const SingleBuildMap:MapDef={
     biome:NormalBiome,
     loot_tables:NormalMap.loot_tables,
+    size:v2(150,100),
     generation:{
-        island:{
-            size:v2(100,100),
+        islands:[{
             terrain:{
                 base:FloorType.Water,
                 radius:50,
@@ -117,7 +117,7 @@ export const SingleBuildMap:MapDef={
                     }
                 ]
             },
-        },
+        }]
     },
     gen_callback(map) {
         //const def=map.game.definitions.buildings.getFromString("shed")

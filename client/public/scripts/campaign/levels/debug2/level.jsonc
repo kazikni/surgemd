@@ -8,8 +8,10 @@
     },
     "mode":{
         "type":"debug",
-        "map":{
-            "def":"single_building"
+        "settings":{
+            "map":{
+                "def":"single_building"
+            }
         }
     },
     "player":{}

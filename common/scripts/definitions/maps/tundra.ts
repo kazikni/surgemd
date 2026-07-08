@@ -256,6 +256,7 @@ export const TundraMap:MapDef={
     },
     default_floor:FloorType.Water,
     biome:TundraBiome,
+    size:v2(600,600),
     definitions:{
         objects:{
             buildings:[
@@ -467,8 +468,7 @@ export const TundraMap:MapDef={
         }
     },
     generation:{
-        island:{
-            size:v2(600,600),
+        islands:[{
             spawn:[
                 {def:"storehouse_1",count:5},
                 {def:map_spawns.containers,count:20},
@@ -581,6 +581,6 @@ export const TundraMap:MapDef={
                     points:10,
                 },
             ],
-        }
+        }]
     },
 }

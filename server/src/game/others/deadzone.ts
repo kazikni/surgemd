@@ -96,7 +96,7 @@ export class DeadZoneManager {
     }
 
     reset(){
-        this.radius_size=this.game.map.size.x/100
+        this.radius_size=Math.max(this.game.map.size.x,this.game.map.size.y)/100
 
         this.state.position=v2.scale(this.game.map.size, 0.5)
         this.state.new_position=v2.scale(this.game.map.size, 0.5)

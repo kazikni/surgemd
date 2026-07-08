@@ -380,7 +380,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     add_plane(position:Vec2,args:Record<string,any>,plane?:Plane){
         if(!plane)plane=new Plane()
         const direction=random.rad()
-        const planePos = v2.from_RadAngle(direction,this.map.size.x+10)
+        const planePos = v2.from_RadAngle(direction,Math.min(this.map.size.x,this.map.size.y)+10)
         this.scene_2d.objects.add_object(
             plane,
             Layers.Normal,

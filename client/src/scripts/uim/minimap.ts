@@ -111,6 +111,16 @@ export class MinimapModule extends UIModule<Game>{
     toggle_fullscreen(){
         this.fullscreen=!this.fullscreen
         this.container.classList.toggle("fullscreen",this.fullscreen)
+        if(this.fullscreen){
+            let scale=this.mapHeight/this.mapWidth
+            if(Number.isNaN(scale))scale=1
+            const size=45
+            this.container.style.width=`${size}vw`
+            this.container.style.height=`${size*scale}vw`
+        }else{
+            this.container.style.width=""
+            this.container.style.height=""
+        }
     }
     zoom_in(){
         this.zoom=Math.min(this.zoom_max,this.zoom+this.zoom_step)

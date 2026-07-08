@@ -23,41 +23,42 @@ export interface MapStructure{
     position:Vec2
 }
 export const generation={
-    island:(def:IslandDef)=>{
+    island:(islands:IslandDef[])=>{
         return (map:GameMap,random:SeededRandom)=>{
-            //Terrain
-            map.size=def.size
-            map.terrain.add_floor({
-                type:def.terrain.base,
-                hb:new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),
-                layer:Layers.Normal,
-                visible:true,
-                smooth:false,
-            
-                tint:def.terrain.base_tint,
-            })
-            const center=v2.scale(map.size,0.5)
-            const base=generate_terrain_shape(def.terrain,map.terrain,random,Layers.Normal,center)
+            for(const def of islands){
+                //Terrain
+                map.terrain.add_floor({
+                    type:def.terrain.base,
+                    hb:new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),
+                    layer:Layers.Normal,
+                    visible:true,
+                    smooth:false,
 
-            if(def.terrain.rivers){
-                const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
-                map.rivers=rivers
-                for(const r of rivers){
-                    for(const layer of r.layers){
-                        map.terrain.add_floor({
-                            type:layer.floor,
-                            hb:layer.hb,
-                            visible:true,
-                            smooth:true,
-                            tint:layer.floor_tint,
-                            layer:layer.layer??Layers.Normal,
-                        })
+                    tint:def.terrain.base_tint,
+                })
+                const center=v2.scale(map.size,0.5)
+                const base=generate_terrain_shape(def.terrain,map.terrain,random,Layers.Normal,center)
+
+                if(def.terrain.rivers){
+                    const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
+                    map.rivers=rivers
+                    for(const r of rivers){
+                        for(const layer of r.layers){
+                            map.terrain.add_floor({
+                                type:layer.floor,
+                                hb:layer.hb,
+                                visible:true,
+                                smooth:true,
+                                tint:layer.floor_tint,
+                                layer:layer.layer??Layers.Normal,
+                            })
+                        }
                     }
                 }
-            }
-            map.generate_structures(def.structures??[],new CircleHitbox2D(center,map.size.x*0.3),random)
-            for(const spawn of def.spawn??[]){
-                map.generate_objects(spawn,random)
+                map.generate_structures(def.structures??[],new CircleHitbox2D(center,Math.max(map.size.x,map.size.y)*0.3),random)
+                for(const spawn of def.spawn??[]){
+                    map.generate_objects(spawn,random)
+                }
             }
         }
     }
@@ -310,8 +311,7 @@ export class GameMap{
         this.game.loot_tables.clear()
         this.game.loot_tables.add_tables(definition.loot_tables)
 
-        this.game.definitions.buildings.insert(...(definition.buildings??[]))
-        this.game.definitions.obstacles.insert(...(definition.obstacles??[]))
+        this.game.definitions.add_definitions(this.def.definitions??{})
         if(this.game.mods){
             for(const k of this.game.mods.getLoadOrder()){
                 const mod=this.game.mods.loaded.get(k)
@@ -321,7 +321,8 @@ export class GameMap{
             }
         }
 
-        if(definition.generation.island)generation.island(definition.generation.island)(this,random)
+        this.size=this.def.size
+        if(definition.generation.islands)generation.island(definition.generation.islands)(this,random)
         if(definition.gen_callback)definition.gen_callback(this)
 
         this.game.start_settings.textures.push(...definition.biome.textures)
@@ -384,8 +385,7 @@ export class GameMap{
             seed:seed,
             objects,
             biome:this.def.biome,
-            buildings:this.def.buildings,
-            obstacles:this.def.obstacles,
+            definitions:this.def.definitions,
             regions:this.regions
         }
         return p

@@ -2,11 +2,8 @@ import { InventoryItemType } from "../utils.ts";
 import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
-import { NormalLobby, NormalMap } from "./normal.ts";
-import { DebugMap, SingleBuildMap } from "./debug.ts";
 import { Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { type GameADefinitions, GameDefinition, GameItem } from "../game_defs.ts";
-import { TundraMap } from "./tundra.ts";
 
 import { type GameMap } from "../../../../server/src/game/others/map.ts"
 import { type Game } from "../../../../server/src/game/others/game.ts";
@@ -70,7 +67,6 @@ export interface MapStructureDef extends TerrainShapeDef{
     region?:MapRegion
 }
 export interface IslandDef{
-    size:Vec2
     spawn?:MapObjectGeneration[]
     structures?:MapStructureDef[]
     terrain:{
@@ -86,6 +82,8 @@ export interface IslandDef{
 }
 export interface MapBiomeDef{
     skin?:string
+    skin_chance?:number
+    skins_replace?:Record<string,string|string[]>
     floors:Partial<Record<FloorType,number>>
     particles:string[]
     particles_tint?:number
@@ -96,8 +94,9 @@ export interface MapBiomeDef{
 export interface MapDef{
     loot_tables:Record<string,LootTable>
     default_floor?:FloorType
+    size:Vec2
     generation:{
-        island?:IslandDef
+        islands?:IslandDef[]
     }
     definitions?:GameADefinitions
     seed?:number

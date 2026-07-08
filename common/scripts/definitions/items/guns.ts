@@ -967,8 +967,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("vector","9mm",false,{
             rank:ItemRank.A,
             fire_delay:0.03,
-            spread:1,
-            move_spread:2.3,
+            spread:0.5,
+            move_spread:3.2,
 
             ammo_spawn:{
                 amount:96
@@ -990,8 +990,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("p90","45acp",false,{
             rank:ItemRank.A,
             fire_delay:0.04,
-            spread:1.2,
-            move_spread:2.3,
+            spread:0.8,
+            move_spread:2.9,
 
             ammo_spawn:{
                 amount:90

@@ -483,7 +483,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             assets:{
                 particles:{},
                 frame:{
-                    biome_skins:["snow"],
+                    biome_skins:["snow","fall_1","fall_2"],
                 },
                 sounds:hit_sounds.tree
             },
@@ -513,7 +513,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 },
                 frame:{
                     dead:"oak_tree_dead",
-                    biome_skins:["snow"],
+                    biome_skins:["snow","fall_1","fall_2"],
                 },
                 sounds:hit_sounds.tree
             },
@@ -531,7 +531,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             o:{
                 assets:{
                     frame:{
-                        biome_skins:["snow"],
+                        biome_skins:["snow","fall_1","fall_2"],
                     },
                 }
             }
@@ -546,7 +546,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 },
                 assets:{
                     frame:{
-                        biome_skins:["snow"],
+                        biome_skins:["snow","fall_1","fall_2"],
                         dead:"bush_dead",
                     },
                 }

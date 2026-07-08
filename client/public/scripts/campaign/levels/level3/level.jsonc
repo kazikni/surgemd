@@ -22,8 +22,13 @@
         },
         "teams":2,
         "settings":{
+            "map": {
+                "def": "war"
+            },
             "spawn_mode":{
-                "position_generator":"deadzone"
+                "type":2,
+                "position_generator":"deadzone",
+                "list":[1,2]
             },
             "enemies": [
                 {

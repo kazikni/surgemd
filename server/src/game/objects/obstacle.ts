@@ -247,7 +247,7 @@ export class Obstacle extends StaticBody{
     override on_create(args?: {def:ObstacleDef}): void {
         if(args)this.set_definition(args.def)
     }
-    initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0,allow_biome_skin:boolean=false){
+    initialize(rotation?:number,variation?:number,skin?:number,parent_side:Orientation=0){
         this.physical_data.dirty=true
         this.physical_data.dirty_part=true
         this.physical_data.scale=this.max_scale
@@ -261,15 +261,6 @@ export class Obstacle extends StaticBody{
 
         if(skin){
             this.visual_data.skin=skin
-        }if(allow_biome_skin&&this.def.assets?.frame?.biome_skins&&(this.game.map.def.biome.skin_chance===undefined||this.game.map.def.biome.skin_chance<=Math.random())){
-            const skin_replace=this.game.map.def.biome.skins_replace?.[this.def.idString]
-            let skin=""
-            if(skin_replace){
-                skin=(typeof skin_replace==="string")?skin_replace:random.choose(skin_replace)
-            }else if(this.game.map.def.biome.skin){
-                skin=this.game.map.def.biome.skin
-            }
-            this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(skin)+1
         }
         if(rotation===undefined){
             if(this.def.rotation_mode===RotationMode.limited){
@@ -315,12 +306,26 @@ export class Obstacle extends StaticBody{
     }
 
     decal?:Decal
-    set_position(position:Vec2){
+    set_position(position:Vec2,allow_biome_skin:boolean=false){
         this.position=position
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){
             this.decal=this.game.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+        }
+
+        if(allow_biome_skin&&this.def.assets?.frame?.biome_skins){
+            const biome=this.game.map.get_biome(this.position)
+            if(biome.skin_chance===undefined||biome.skin_chance<=Math.random()){
+                const skin_replace=this.game.map.biome.skins_replace?.[this.def.idString]
+                let skin=""
+                if(skin_replace){
+                    skin=(typeof skin_replace==="string")?skin_replace:random.choose(skin_replace)
+                }else if(this.game.map.biome.skin){
+                    skin=this.game.map.biome.skin
+                }
+                this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(skin)+1
+            }
         }
     }
     reset_scale(){

@@ -9,9 +9,9 @@ export const DebugMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     size:v2(550,550),
     generation:{
+        base:FloorType.Water,
         islands:[{
             terrain:{
-                base:FloorType.Water,
                 radius:230,
                 passes:3,
                 points:5,
@@ -95,9 +95,9 @@ export const SingleBuildMap:MapDef={
     loot_tables:NormalMap.loot_tables,
     size:v2(150,100),
     generation:{
+        base:FloorType.Water,
         islands:[{
             terrain:{
-                base:FloorType.Water,
                 radius:50,
                 passes:1,
                 points:5,

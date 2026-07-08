@@ -28,6 +28,7 @@ export class MinimapManager {
         this.map_size=v2.zero()
     }
     async init(config:MapConfig){
+        this.clear()
         this.config=config
 
         const map_px_w=config.size.x*this.meter_size
@@ -211,6 +212,6 @@ export class MinimapManager {
         this.ctx.restore()
     }
     clear(){
-        
+        this.tiles.clear()
     }
 }

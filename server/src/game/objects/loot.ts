@@ -6,7 +6,6 @@ import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
-import { type Obstacle } from "./obstacle.ts";
 
 export class Loot extends ServerGameObject{
     string_type:string="loot"
@@ -111,7 +110,7 @@ export class Loot extends ServerGameObject{
                     if(other.id===this.id)continue
                     const col=this.hitbox.overlap_collision(other.hitbox)
                     if(col){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,4*dt))
+                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.6*dt))
                     }
                     break
                 }

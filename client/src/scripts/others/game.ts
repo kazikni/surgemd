@@ -418,8 +418,8 @@ export class Game extends ClientGame<GameObject>{
             this.ui.current_interaction.on_interact(this.active_entity)
         }
     }
-    set_scope(scope:ScopeDef,force_default:boolean=false){
-        if(this.inventory.scope&&this.inventory.scope===scope&&this.force_default_scope==force_default){
+    set_scope(scope:ScopeDef,force_default:boolean=false,force:boolean=false){
+        if(this.inventory.scope&&this.inventory.scope===scope&&this.force_default_scope==force_default&&!force){
             return
         }
         if(!this.default_scope)this.default_scope=this.definitions.scopes.getFromNumber(0)
@@ -613,7 +613,7 @@ export class Game extends ClientGame<GameObject>{
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
-        this.set_scope(this.default_scope||this.definitions.scopes.getFromNumber(0))
+        this.set_scope(this.default_scope||this.definitions.scopes.getFromNumber(0),true)
         this.cam2d.zoom=6
         this.zoom_speed=4
     }

@@ -89,29 +89,30 @@ export const NormalMap:MapDef={
     biome:NormalBiome,
     size:v2(600,600),
     generation:{
+        base:FloorType.Water,
+        spawn:[
+            {def:"small_house_1",count:4},
+            {def:"storehouse_1",count:4},
+            {def:"bunker_1",count:2},
+            {def:"shed",count:20},
+            {def:map_spawns.containers,count:20},
+
+            {def:"golden_stone",count:1},
+
+            {def:"sillo",count:7},
+            {def:map_spawns.crates,count:430},
+            {def:map_spawns.trees,count:700},
+            {def:"river_rock",count:50},
+            {def:map_spawns.rocks,count:500},
+            {def:"bush",count:300},
+            {def:"barrel",count:150},
+
+            {def:"normal_loot",count:100},
+            {def:"jeep",count:5},
+            {def:"bike",count:5},
+            {def:"boat",count:5},
+        ],
         islands:[{
-            spawn:[
-                {def:"small_house_1",count:4},
-                {def:"storehouse_1",count:4},
-                {def:"bunker_1",count:2},
-                {def:"shed",count:20},
-                {def:map_spawns.containers,count:20},
-
-                {def:"golden_stone",count:1},
-
-                {def:"sillo",count:7},
-                {def:map_spawns.crates,count:430},
-                {def:map_spawns.trees,count:700},
-                {def:"river_rock",count:50},
-                {def:map_spawns.rocks,count:500},
-                {def:"bush",count:300},
-                {def:"barrel",count:150},
-
-                {def:"normal_loot",count:100},
-                {def:"jeep",count:5},
-                {def:"bike",count:5},
-                {def:"boat",count:5},
-            ],
             structures:[
                 {
                     floors:[],
@@ -160,7 +161,6 @@ export const NormalMap:MapDef={
                 },
             ],
             terrain:{
-                base:FloorType.Water,
                 radius:265,
                 passes:3,
                 points:6,
@@ -221,26 +221,26 @@ export const NormalLobby:MapDef={
     loot_tables:NormalMap.loot_tables,
     size:v2(100,100),
     generation:{
+        base:FloorType.Water,
+        spawn:[
+            {def:map_spawns.containers,count:2},
+
+            {def:"sillo",count:2},
+
+            {def:"jeep",count:1},
+            {def:"bike",count:1},
+
+            {def:"oak_tree",count:80},
+            {def:"stone",count:50},
+            {def:"bush",count:30},
+
+            {def:"wood_crate",count:30},
+            {def:"copper_crate",count:6},
+            {def:"barrel",count:13},
+            {def:"normal_loot",count:20},
+        ],
         islands:[{
-            spawn:[
-                {def:map_spawns.containers,count:2},
-
-                {def:"sillo",count:2},
-
-                {def:"jeep",count:1},
-                {def:"bike",count:1},
-
-                {def:"oak_tree",count:80},
-                {def:"stone",count:50},
-                {def:"bush",count:30},
-
-                {def:"wood_crate",count:30},
-                {def:"copper_crate",count:6},
-                {def:"barrel",count:13},
-                {def:"normal_loot",count:20},
-            ],
             terrain:{
-                base:FloorType.Water,
                 radius:50,
                 passes:1,
                 points:5,
@@ -273,18 +273,18 @@ export const NormalCounterMD:CounterMapDef={
     size:v2(90,90),
     loot_tables:NormalMap.loot_tables,
     generation:{
+        base:FloorType.Water,
+        spawn:[
+            {def:"sillo",count:2},
+
+            {def:"oak_tree",count:80},
+            {def:"stone",count:60},
+            {def:"bush",count:40},
+
+            {def:"barrel",count:10},
+        ],
         islands:[{
-            spawn:[
-                {def:"sillo",count:2},
-
-                {def:"oak_tree",count:80},
-                {def:"stone",count:60},
-                {def:"bush",count:40},
-
-                {def:"barrel",count:10},
-            ],
             terrain:{
-                base:FloorType.Water,
                 radius:50,
                 passes:1,
                 points:5,

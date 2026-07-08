@@ -10,8 +10,9 @@ import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
-import { NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
+import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
+import { WarMap } from "common/scripts/definitions/maps/war.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -32,8 +33,16 @@ export interface BattleRoyaleSettings{
 }
 export const Maps:Record<string,MapDef>={
     normal:NormalMap,
+    normal_fall:{
+        ...NormalMap,
+        biome:FallBiome
+    },
+
     lobby:NormalLobby,
+
     tundra:TundraMap,
+
+    war:WarMap,
 
     debug:DebugMap,
     single_building:SingleBuildMap,

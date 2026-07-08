@@ -157,8 +157,8 @@ export class Building extends StaticBody {
             const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
             obj.parent=this
             if(o.id)this.objects_ids[o.id]=obj
-            obj.initialize(rotation,o.variation,o.skin,undefined,o.allow_biome_skin)
-            obj.set_position(p)
+            obj.initialize(rotation,o.variation,o.skin)
+            obj.set_position(p,o.allow_biome_skin)
             if(o.stairs_dest){
                 for(const s in o.stairs_dest){
                     obj.physical_data.stairs[s].dest_layer=o.stairs_dest[s]

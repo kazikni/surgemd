@@ -67,11 +67,11 @@ export interface MapStructureDef extends TerrainShapeDef{
     region?:MapRegion
 }
 export interface IslandDef{
+    position?:Vec2
+    size?:Vec2
     spawn?:MapObjectGeneration[]
     structures?:MapStructureDef[]
     terrain:{
-        base:FloorType
-        base_tint?:number
         rivers?:{
             defs:RiversDef[]
             expansion?:number
@@ -96,6 +96,9 @@ export interface MapDef{
     default_floor?:FloorType
     size:Vec2
     generation:{
+        base:FloorType
+        base_tint?:number
+        spawn?:MapObjectGeneration[]
         islands?:IslandDef[]
     }
     definitions?:GameADefinitions

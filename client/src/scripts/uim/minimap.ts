@@ -112,11 +112,11 @@ export class MinimapModule extends UIModule<Game>{
         this.fullscreen=!this.fullscreen
         this.container.classList.toggle("fullscreen",this.fullscreen)
         if(this.fullscreen){
-            let scale=this.mapHeight/this.mapWidth
+            let scale=this.mapWidth/this.mapHeight
             if(Number.isNaN(scale))scale=1
             const size=45
-            this.container.style.width=`${size}vw`
-            this.container.style.height=`${size*scale}vw`
+            this.container.style.width=`${size*scale}vw`
+            this.container.style.height=`${size}vw`
         }else{
             this.container.style.width=""
             this.container.style.height=""

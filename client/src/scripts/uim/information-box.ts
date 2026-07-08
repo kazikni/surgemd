@@ -31,7 +31,7 @@ export class InformationBoxModule extends UIModule<Game> {
                 this.interaction.innerHTML = state
                 ShowElement(this.interaction)
             }
-        }else if(signal==="info-kill"){
+        }else if(signal==="info-kill"||signal==="info-down"){
             this.push(state.msg)
         }
     }

@@ -329,7 +329,8 @@
             },
             "loadout": {
                 "character": "Character",
-                "emotes": "Emotes"
+                "emotes": "Emotes",
+                "wrapping": "Wrapping"
             },
             "mods": {
                 "mods-list": "Mods List"

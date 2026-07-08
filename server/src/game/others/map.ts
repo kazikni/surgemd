@@ -292,6 +292,7 @@ export class GameMap{
         this.size=definition.size
         this.biome=definition.biome
         //Terrain
+        this.rivers.length=0
         this.terrain.add_floor({
             type:definition.generation.base,
             hb:new RectHitbox2D(v2(0,0),v2(this.size.x,this.size.y)),
@@ -308,7 +309,7 @@ export class GameMap{
 
             if(def.terrain.rivers){
                 const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
-                this.rivers=rivers
+                this.rivers.push(...rivers)
                 for(const r of rivers){
                     for(const layer of r.layers){
                         this.terrain.add_floor({

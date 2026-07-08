@@ -55,7 +55,6 @@ const terrain={
         }
     ]
 }
-// No Shotguns And Pistols
 export const WarMap:MapDef={
     loot_tables:LootTables,
     biome:FallBiome,

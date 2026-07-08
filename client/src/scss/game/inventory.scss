@@ -15,12 +15,30 @@
     flex-direction: row;
     gap: 10px;
 
-    @include main.medium_screen {
-        bottom: 85px;
+    @include main.large_screen {
+        bottom: 102px;
         gap: 7px;
         .inventory-item-slot{
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
+            .slot-count{
+                font-size: 10px;
+            }
+            .slot-number{
+                font-size: 8px;
+            }
+            .slot-image {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+    @include main.medium_screen {
+        bottom: 80px;
+        gap: 6px;
+        .inventory-item-slot{
+            width: 34px;
+            height: 34px;
             .slot-count{
                 font-size: 10px;
             }
@@ -34,7 +52,7 @@
         }
     }
     @include main.small_screen {
-        bottom: 65px;
+        bottom: 64px;
         gap: 5px;
         .inventory-item-slot{
             width: 23px;
@@ -48,6 +66,24 @@
             .slot-image {
                 width: 20px;
                 height: 20px;
+            }
+        }
+    }
+    @include main.tiny_screen {
+        bottom: 44px;
+        gap: 3px;
+        .inventory-item-slot{
+            width: 20px;
+            height: 20px;
+            .slot-count{
+                font-size: 6px;
+            }
+            .slot-number{
+                font-size: 4px;
+            }
+            .slot-image {
+                width: 15px;
+                height: 15px;
             }
         }
     }
@@ -176,12 +212,32 @@
             transform: translateY(-50%) rotate(-10deg);
         }
     }
+    @include main.large_screen {
+        gap: 7px;
+        width: 35%;
+        .weapon-slot{
+            height: 85px;
+            font-size: 15px;
+            box-shadow: 0 0 3px var(--ui-theme-primary);
+            .weapon-slot-image{
+                min-width: 40px;
+                max-width: 90px;
+                max-height: 60px;
+            }
+            .weapon-slot-number{
+                left:86%;
+            }
+            .weapon-slot-name{
+                bottom: 3px;
+                right: 3px;
+            }
+        }
+    }
     @include main.medium_screen {
         gap: 5px;
         .weapon-slot{
-            height: 70px;
+            height: 65px;
             font-size: 10px;
-            box-shadow: 0 0 3px var(--ui-theme-primary);
             .weapon-slot-image{
                 min-width: 40px;
                 max-width: 90px;
@@ -213,6 +269,12 @@
                 bottom: 3px;
                 right: 3px;
             }
+        }
+    }
+    @include main.tiny_screen {
+        .weapon-slot{
+            height: 30px;
+            font-size: 7px;
         }
     }
 }
@@ -333,16 +395,32 @@
     .aitem-slot:hover{
         border: 2px solid var(--ui-theme-primary);
     }
+    @include main.large_screen{
+        .aitem-slot{
+            width: 65px;
+            height: 28px;
+            .count{
+                font-size: 12px;
+            }
+            .icon{
+                width: 22px;
+                height: 22px;
+            }
+        }
+        max-height: 160px;
+        gap: 3px;
+        right: 7px;
+    }
     @include main.medium_screen{
         .aitem-slot{
             width: 50px;
             height: 22px;
             .count{
-                font-size: 12px;
+                font-size: 10px;
             }
             .icon{
-                width: 20px;
-                height: 20px;
+                width: 19px;
+                height: 19px;
             }
         }
         max-height: 130px;
@@ -354,7 +432,7 @@
             width: 30px;
             height: 14px;
             .count{
-                font-size: 10px;
+                font-size: 7px;
             }
             .icon{
                 width: 12px;
@@ -364,6 +442,22 @@
         max-height: 80px;
         gap: 2px;
         right: 5px;
+    }
+    @include main.tiny_screen{
+        .aitem-slot{
+            width: 22px;
+            height: 10px;
+            .count{
+                font-size: 5px;
+            }
+            .icon{
+                width: 8px;
+                height: 8px;
+            }
+        }
+        max-height: 60px;
+        gap: 1px;
+        right: 3px;
     }
 }
 #ui-equipment{
@@ -412,16 +506,28 @@
         bottom: 2px;
         left: 2px;
     }
-    @include main.medium_screen {
-        right: 7px;
-        bottom: 7px;
+    @include main.large_screen {
+        right: 7.5px;
+        bottom: 7.5px;
         font-size: 10px;
         .equipment-fixed {
             gap: 7px;
         }
         .equipment-slot {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
+        }
+    }
+    @include main.medium_screen {
+        right: 6px;
+        bottom: 6px;
+        font-size: 10px;
+        .equipment-fixed {
+            gap: 7px;
+        }
+        .equipment-slot {
+            width: 45px;
+            height: 45px;
         }
     }
     @include main.small_screen {
@@ -433,6 +539,12 @@
         .equipment-slot {
             width: 35px;
             height: 35px;
+        }
+    }
+    @include main.tiny_screen {
+        .equipment-slot {
+            width: 20px;
+            height: 20px;
         }
     }
 }

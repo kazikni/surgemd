@@ -133,7 +133,7 @@ export const TundraBiome:MapBiomeDef={
     particles:[],
     ambient_sound:"snowstorm_ambience"
 }
-// No Shotguns And Pistols
+// No Shotguns
 export const TundraMap:MapDef={
     loot_tables:{
         ...LootTables,

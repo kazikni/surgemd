@@ -6,7 +6,7 @@
     cursor: pointer;
 
     padding: 8px 18px;
-    font-size: 28px;
+    font-size: 30px;
 
     border: 2px solid var(--item-border);
     background: var(--item-bg);
@@ -21,13 +21,22 @@
     &:active {
         transform: translateY(1px);
     }
-    @include main.medium_screen{
-        font-size: 20px;
-        padding: 6px 10px;
+
+    @include main.large_screen {
+        font-size: 23px;
+        padding: 6px 15px;
     }
-    @include main.small_screen{
-        font-size: 15px;
-        padding: 4px 7px;
+    @include main.medium_screen {
+        font-size: 18px;
+        padding: 5px 12px;
+    }
+    @include main.small_screen {
+        font-size: 14px;
+        padding: 4px 10px;
+    }
+    @include main.tiny_screen {
+        font-size: 10px;
+        padding: 3px 7px;
     }
 }
 .btn-blue {

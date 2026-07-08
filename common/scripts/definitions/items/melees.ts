@@ -70,7 +70,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:DefaultFistRig.right!.rotation+0.2,
-                        position:v2.add(DefaultFistRig.right!.position,v2(-0.07,0.05))
+                        position:v2.add(DefaultFistRig.right!.position,v2(-0.16,0.05))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -83,7 +83,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"weapon",
                     type:"tween",
                     to:{
-                        rotation:r-1.1,
+                        rotation:r-1,
                         position:v2(DefaultFistRig.left!.position.x+0.05,DefaultFistRig.left!.position.y)
                     },
                     ease:ease.quadraticInOut
@@ -101,8 +101,8 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"right_arm",
                     type:"tween",
                     to:{
-                        rotation:DefaultFistRig.right!.rotation-0.4,
-                        position:v2(DefaultFistRig.right!.position.x+0.3,DefaultFistRig.right!.position.y-0.3)
+                        rotation:DefaultFistRig.right!.rotation-0.35,
+                        position:v2(DefaultFistRig.right!.position.x+0.38,DefaultFistRig.right!.position.y-0.2)
                     },
                     ease:ease.quadraticInOut
                 },

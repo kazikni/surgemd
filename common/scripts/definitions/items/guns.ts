@@ -244,7 +244,7 @@ export const bullets_factory={
 
     buckshot(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:7 * power,
+            damage:7.2 * power,
             speed:25 * (1 + (power - 1) * 0.4),
             range:31 * (1 + (power - 1) * 0.4),
 

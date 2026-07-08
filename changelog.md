@@ -9,6 +9,7 @@ __                                                                              
 * Emotes Loadout
 * Main Socials
 * On Die Sound
+* More Screen Sizes
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG
@@ -27,6 +28,7 @@ __                                                                              
 ### Items
 * Some Balance Changes
 * Some Sprites Changes
+* Small Changes on melee swing animation
 __                                                                                                                 __
 ### Menu
 * Lock Skins Color Selection

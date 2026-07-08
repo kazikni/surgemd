@@ -5,11 +5,17 @@ kl-md-submenu{
     flex-direction: row;
     width: fit-content;
     height: fit-content;
+    @include main.large_screen {
+        gap: 40px;
+    }
     @include main.medium_screen {
-        gap: 35px;
+        gap: 30px;
     }
     @include main.small_screen {
-        gap: 25px;
+        gap: 20px;
+    }
+    @include main.tiny_screen {
+        gap: 10px;
     }
 }
 kl-md-submenu-options {
@@ -21,15 +27,19 @@ kl-md-submenu-options {
 kl-md-submenu-options button,
 kl-md-submenu-options select {
     width: 300px;
-    height: 50px;
     margin-top:-2px;
+
+    @include main.large_screen {
+        width: 260px;
+    }
     @include main.medium_screen {
-        width: 200px;
-        height: 35px;
+        width: 220px;
     }
     @include main.small_screen {
-        width: 150px;
-        height: 25px;
+        width: 160px;
+    }
+    @include main.tiny_screen {
+        width: 130px;
     }
 }
 

@@ -40,11 +40,17 @@
     font-family: "Russo-One", serif;
     border-radius: 4px;
     box-shadow: 0 0 5px var(--ui-theme-primary);
+    @include main.large_screen {
+        font-size: 16px;
+    }
     @include main.medium_screen {
-        font-size: 12px;
+        font-size: 13px;
     }
     @include main.small_screen {
         font-size: 10px;
+    }
+    @include main.tiny_screen {
+        font-size: 7px;
     }
 }
 #health-bar-container {
@@ -95,11 +101,17 @@
         left: 103%;
         transform: translateY(-50%);
     }
-    @include main.medium_screen{
-        height: 35px;
+    @include main.large_screen{
+        height: 40px;
     }
-    @include main.small_screen{
-        height: 25px;
+    @include main.medium_screen{
+        height: 30px;
+    }
+    @include main.medium_screen{
+        height: 20px;
+    }
+    @include main.tiny_screen{
+        height: 10px;
     }
 }
 #boost-bar-container {
@@ -122,11 +134,16 @@
         left: 103%;
         transform: translateY(-50%);
     }
-    @include main.medium_screen {
-        height: 10px;
+    @include main.large_screen{
+        height: 16px;
     }
-
-    @include main.small_screen {
+    @include main.medium_screen{
+        height: 12px;
+    }
+    @include main.medium_screen{
+        height: 9px;
+    }
+    @include main.tiny_screen{
         height: 5px;
     }
 }
@@ -187,17 +204,17 @@
             pointer-events: all;
         }
     }
-    @include main.medium_screen {
-        width: 190px;
+    @include main.large_screen {
+        width: 330px;
         gap: 7px;
         left: 7px;
         bottom: 7px;
         #hand-info{
             span{
-                font-size: 15px;
+                font-size: 16px;
             }
             img{
-                width: 20px;
+                width: 22px;
             }
         }
         #action-info{
@@ -206,9 +223,8 @@
             }
         }
     }
-
-    @include main.small_screen {
-        width: 150px;
+    @include main.medium_screen {
+        width: 230px;
         gap: 5px;
         left: 5px;
         bottom: 5px;
@@ -222,10 +238,47 @@
         }
         #action-info{
             span{
-                font-size: 10px;
+                font-size: 11px;
             }
         }
-
+    }
+    @include main.small_screen {
+        width: 150px;
+        gap: 5.5px;
+        left: 5.5px;
+        bottom: 5.5px;
+        #hand-info{
+            span{
+                font-size: 10px;
+            }
+            img{
+                width: 14px;
+            }
+        }
+        #action-info{
+            span{
+                font-size: 9px;
+            }
+        }
+    }
+    @include main.tiny_screen {
+        width: 90px;
+        gap: 3px;
+        left: 3px;
+        bottom: 3px;
+        #hand-info{
+            span{
+                font-size: 8px;
+            }
+            img{
+                width: 11px;
+            }
+        }
+        #action-info{
+            span{
+                font-size: 7px;
+            }
+        }
     }
 }
 #feed-container{
@@ -365,8 +418,8 @@
     #deadzone-info-state{
         margin-left:auto;
     }
-    @include main.medium_screen {
-        width: 185px;
+    @include main.large_screen {
+        width: 225px;
         padding: 7px;
         top: 7px;
         right: 7px;
@@ -376,9 +429,16 @@
             height:19px;
         }
     }
+    @include main.medium_screen {
+        width: 185px;
+        img{
+            width:19px;
+            height:19px;
+        }
+    }
     @include main.small_screen {
-        width: 119px;
-        padding: 5px;
+        width: 122px;
+        padding: 3px;
         top: 5px;
         right: 5px;
         font-size: 10px;
@@ -528,6 +588,12 @@
         }
     }
 
+    @include main.large_screen {
+        width: 240px;
+        height: 240px;
+        right: 7px;
+        top: 50px;
+    }
     @include main.medium_screen {
         width: 200px;
         height: 200px;
@@ -538,7 +604,7 @@
         width: 130px;
         height: 130px;
         right: 5px;
-        top: 47px;
+        top: 44px;
     }
 }
 #leader-container{
@@ -566,20 +632,28 @@
         width: fit-content;
         height: fit-content;
     }
-    @include main.medium_screen {
-        font-size: 15px;
-        top: 250px;
+    @include main.large_screen {
+        font-size: 16px;
+        top: 280px;
         #leader-container-icon{
             width: 30px;
             height: 30px;
         }
     }
-    @include main.small_screen {
+    @include main.medium_screen {
         font-size: 10px;
-        top: 170px;
+        top: 250px;
         #leader-container-icon{
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
+        }
+    }
+    @include main.small_screen {
+        font-size: 7px;
+        top: 160px;
+        #leader-container-icon{
+            width: 10px;
+            height: 10px;
         }
     }
 }

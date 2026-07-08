@@ -177,13 +177,22 @@
     user-select: none;
     margin-bottom: 100px;
     animation: TitleAnimation 23s infinite ease-in-out alternate;
+
+    @include main.large_screen {
+        width: 435px;
+        margin-bottom: 75px;
+    }
     @include main.medium_screen {
-        width: 300px;
-        margin-bottom: 30px;
+        width: 375px;
+        margin-bottom: 55px;
     }
     @include main.small_screen {
-        width: 200px;
-        margin-bottom: 15px;
+        width: 290px;
+        margin-bottom: 35px;
+    }
+    @include main.tiny_screen {
+        width: 170px;
+        margin-bottom: 25px;
     }
 }
 @keyframes TitleAnimation {
@@ -210,18 +219,28 @@
         padding-right: 40px;
         width: 300px;
     }
-    @include main.medium_screen {
-        gap:6px;
+    @include main.large_screen {
+        gap:7px;
         button{
-            font-size: 20px;
-            width: 250px;
+            width: 260px;
+        }
+    }
+    @include main.medium_screen {
+        gap:5px;
+        button{
+            width: 220px;
         }
     }
     @include main.small_screen {
         gap:3px;
         button{
-            font-size: 15px;
-            width: 200px;
+            width: 160px;
+        }
+    }
+    @include main.tiny_screen {
+        gap:1px;
+        button{
+            width: 130px;
         }
     }
 }
@@ -234,10 +253,10 @@
     margin: auto;
     transition: opacity 0.5s linear;
     .close-btn{
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         border-radius: 4px;
-        font-size: 15px;
+        font-size: 30px;
     }
     kl-md-submenu-content{
         gap:100px;
@@ -245,31 +264,29 @@
     kl-md-menu-options{
         button,select{
             border-radius: 0px;
-            font-size: 20px;
             width: 300px;
             padding-left: 3px;
             text-align: left;
         }
     }
-    @include main.medium_screen { 
+    @include main.large_screen { 
         kl-md-submenu-content{
             gap:75px;
         }
         kl-md-menu-options{
             button,select{
-                font-size: 15px;
-                width: 200px;
+                width: 260px;
             }
         }
         .close-btn{
             width: 50px;
             height: 50px;
-            font-size: 10px;
+            font-size: 25px;
         }
     }
-    @include main.small_screen { 
+    @include main.medium_screen { 
         kl-md-submenu-content{
-            gap:50px;
+            gap:55px;
         }
         kl-md-menu-options{
             button,select{
@@ -278,9 +295,41 @@
             }
         }
         .close-btn{
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+        }
+    }
+    @include main.small_screen { 
+        kl-md-submenu-content{
+            gap:37px;
+        }
+        kl-md-menu-options{
+            button,select{
+                font-size: 10px;
+                width: 110px;
+            }
+        }
+        .close-btn{
+            width: 31px;
+            height: 31px;
+            font-size: 15px;
+        }
+    }
+    @include main.tiny_screen { 
+        kl-md-submenu-content{
+            gap:19px;
+        }
+        kl-md-menu-options{
+            button,select{
+                font-size: 7px;
+                width: 80px;
+            }
+        }
+        .close-btn{
             width: 20px;
             height: 20px;
-            font-size: 7px;
+            font-size: 10px;
         }
     }
 }
@@ -344,7 +393,7 @@
             background-image: url("/img/menu/socials/linux.svg");
         }
     }
-    @include main.small_screen {
+    @include main.large_screen {
         gap: 10px;
         padding: 7px;
         .social-link {
@@ -401,22 +450,38 @@
         width: 500px;
         height: 500px;
     }
+
+    @include main.large_screen {
+        width: 355px;
+        height: 355px;
+        padding: 25px;
+        &.big{
+            width: 440px;
+            height: 440px;
+        }
+    }
     @include main.medium_screen {
-        width: 280px;
-        height: 280px;
-        padding: 20px;
-        font-size: 15px;
-        padding: 15px;
+        width: 305px;
+        height: 305px;
+        padding: 19px;
+        &.big{
+            width: 395px;
+            height: 395px;
+        }
+    }
+    @include main.small_screen {
+        width: 240px;
+        height: 240px;
+        padding: 14px;
         &.big{
             width: 320px;
             height: 320px;
         }
     }
-    @include main.small_screen {
-        width: 200px;
-        height: 200px;
+    @include main.tiny_screen {
+        width: 190px;
+        height: 190px;
         padding: 10px;
-        font-size: 10px;
         &.big{
             width: 250px;
             height: 250px;

@@ -351,6 +351,75 @@ export const buildings_factory={
             },settings.bottom??{})
         ]
     },
+    meat_bunker(id:string,settings:{
+        top?:DeepPartial<BuildingDef>
+        bottom?:DeepPartial<BuildingDef>
+        content?:BuildingObstacles[]
+    }={}):BuildingDef[]{
+        return [
+            mergeDeep({
+                idString:id,
+                content:{
+                    sub_building:[
+                        {
+                            def:"small_iron_stairs_down",
+                            position:v2.new(-3.5,0),
+                            rotation:0,
+                        },
+                        {
+                            def:id+"_bottom",
+                            position:v2.zero(),
+                            rotation:0,
+                            layer:-1
+                        }
+                    ],
+                },
+                no_bullet_collision:true,
+                no_collisions:true,
+                hitbox:RectHitbox2D.centered(v2(0,0),v2(1,1)),
+            },settings.top??{}),
+            mergeDeep({
+                idString:id+"_bottom",
+                reflect_bullets:true,
+                content:{
+                    sub_building:[
+                        {
+                            def:"small_iron_stairs_up",
+                            position:v2.new(-3.28,0),
+                            rotation:2,
+                        },
+                    ],
+                    floor_image:[
+                        {image:"meat_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
+                    ],
+                    ceiling:[
+                        {
+                            frame:{
+                                image:"small_bunker_ceiling_1",
+                                position:v2(0,0),
+                                rotation:Math.PI
+                            },
+                            hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
+                        }
+                    ],
+                    obstacles:[
+                        ...settings.content??[]
+                    ],
+                },
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x404143
+                    },
+                    sounds:hit_sounds,
+                },
+                hitbox:new HitboxGroup2D(
+                    new RectHitbox2D(v2(-2.65,-2.65),v2(-2.45,-0.85)),
+                    new RectHitbox2D(v2(-2.65,0.85),v2(-2.45,2.65))
+                ),
+            },settings.bottom??{})
+        ]
+    },
     house:{
         shed(id:string,settings:{
             walls_tint?:number

@@ -14,14 +14,10 @@ import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
-import { HealthModule } from "../uim/health.ts";
-import { BoostModule } from "../uim/boosts.ts";
 import { AItemsModule } from "../uim/aitems.ts";
 import { IItemsModule } from "../uim/iitems.ts";
 import { WeaponsModule } from "../uim/weapons.ts";
-import { HandInfoModule } from "../uim/hand_info.ts";
 import { ItemsModule } from "../uim/items.ts";
-import { ActionsModule } from "../uim/actions.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
@@ -31,6 +27,7 @@ import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { GroupMembersModule } from "../uim/groups.ts";
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
+import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -122,14 +119,11 @@ export class UiManager{
 
         this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game)
 
-        this.game.ui_manager.add(new HealthModule())
-        this.game.ui_manager.add(new BoostModule())
+        this.game.ui_manager.add(new BottomLeftModule())
         this.game.ui_manager.add(new AItemsModule())
         this.game.ui_manager.add(new IItemsModule())
         this.game.ui_manager.add(new WeaponsModule())
-        this.game.ui_manager.add(new HandInfoModule())
         this.game.ui_manager.add(new ItemsModule())
-        this.game.ui_manager.add(new ActionsModule())
         this.game.ui_manager.add(new EquipmentModule())
         this.game.ui_manager.add(new MinimapModule())
         this.game.ui_manager.add(new InformationBoxModule())
@@ -163,6 +157,8 @@ export class UiManager{
         this.content.game_gui.style.setProperty("--ui-theme-positive",this.game.get_theme_color("positive"))
         this.content.game_gui.style.setProperty("--ui-theme-negative",this.game.get_theme_color("negative"))
         this.content.game_gui.style.setProperty("--ui-theme-special",this.game.get_theme_color("special"))
+
+        this.game.ui_manager.signal("update_theme",{})
     }
     _makeHint(texts: string[]) {
         const div = document.createElement("div")

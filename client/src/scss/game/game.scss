@@ -36,10 +36,6 @@
     display: block;
     align-items: center;
     transform: translateY(-100%),translateX(-100%);
-    font-size: 20px;
-    font-family: "Russo-One", serif;
-    border-radius: 4px;
-    box-shadow: 0 0 5px var(--ui-theme-primary);
     @include main.large_screen {
         font-size: 16px;
     }
@@ -95,7 +91,6 @@
 
     #health-bar-amount {
         position: absolute;
-        color: var(--ui-theme-tertiary);
         font-style: italic;
         top:50%;
         left: 103%;
@@ -125,10 +120,8 @@
         width: 0%;
         transition: width ease-in-out 0.2s;
     }
-
     #boost-bar-amount {
         position: absolute;
-        color: var(--ui-theme-tertiary);
         font-style: italic;
         top:50%;
         left: 103%;
@@ -147,7 +140,6 @@
         height: 5px;
     }
 }
-
 #bottom-left-container{
     pointer-events: none;
     position: absolute;
@@ -159,12 +151,12 @@
     gap: 10px;
 
     width: 410px;
-    color: var(--ui-theme-tertiary);
 
-    > div{
+    .ui-panel{
         position: relative;
-        background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
-        backdrop-filter: var(--ui-backdrop-filter);
+        font-size: 20px;
+        font-family: "Russo-One", serif;
+        border-radius: 4px;
     }
 
     #action-info{
@@ -173,12 +165,9 @@
         align-items: center;
         justify-content: center;
         border-radius: 4px;
-        box-shadow: 0 0 5px var(--ui-theme-primary);
         span{
             position: static;
             transform: none;
-            font-size: 20px;
-            font-family: "Russo-One";
         }
     }
     #hand-info{
@@ -188,14 +177,12 @@
         align-items: center;
         justify-content: space-between;
         border-radius: 4px;
-        box-shadow: 0 0 5px var(--ui-theme-primary);
         span{
             position: static;
             transform: none;
             font-size: 20px;
             font-family: "Russo-One";
         }
-
         img{
             position: static;
             width: 28px;

@@ -1,7 +1,7 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { BasicSocket, FetchFileManager, FileManager, isMobile, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/client.ts";
+import { BasicSocket, FetchFileManager, FileManager, isMobile, OfflineClientsManager, random, ReplayWatcher, sleep, TranslationManager } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
 import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
@@ -10,6 +10,9 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
+import { island_final } from "common/scripts/config/final_screen.ts";
+import { ScoreApplyer, ScoreApplyerType } from "common/scripts/others/constants.ts";
+import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -79,70 +82,6 @@ import { FindGameResult } from "common/scripts/config/config.ts";
             await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
             await this.game.load_resources(["main"],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
-
-            /*sleep(10).then(async()=>{
-                this.game.final_screen.set_final_screen(island_final)
-                this.game.final_screen.show_final_screen()
-                const app:ScoreApplyer[]=[]
-                const leaderboard:LeaderboardPlayer[]=[]
-                for(let i=0;i<5;i++){
-                    app.push(
-                        {
-                            amount:100,
-                            multiplier:1,
-                            type:ScoreApplyerType.Kill
-                        },
-                        {
-                            amount:100,
-                            multiplier:1,
-                            type:ScoreApplyerType.KillLeader
-                        },
-                        {
-                            amount:10,
-                            multiplier:1,
-                            type:ScoreApplyerType.Rank
-                        },
-                        {
-                            amount:100,
-                            multiplier:1.2,
-                            type:ScoreApplyerType.DamageDealth
-                        },
-                        {
-                            amount:-100,
-                            multiplier:1.2,
-                            type:ScoreApplyerType.DamageTaken
-                        },
-                    )
-                }
-                const pc=500
-                for(let i=0;i<pc;i++){
-                    let name="player-"+(i+1)
-                    this.game.ui.players_name[i]={
-                        badge:"",
-                        full:name,
-                        name:name,
-                    }
-                    leaderboard.push(
-                        {
-                            id:i,
-                            kills:1,
-                            rank:pc-i,
-                            score:i*5
-                        }
-                    )
-                }
-                await this.game.final_screen.show_status({
-                    damage:1000,
-                    damage_taken:0,
-                    id:0,
-                    kills:5,
-                    score:1000,
-                    score_applyer:app,
-                    time_alive:1000
-                })
-                await this.game.final_screen.show_leaderboards(leaderboard)
-                await this.game.final_screen.hide_final_screen()
-            })*/
             this.game.mainloop(true)
         }
         join_on_game(url:string,password:string,attempts=0,delay=500){

@@ -31,6 +31,7 @@ __                                                                              
 * Small Changes on melee swing animation
 __                                                                                                                 __
 ### Menu
+* Final Screen Rework
 * Lock Skins Color Selection
 * Game over Improvements
 __                                                                                                                 __

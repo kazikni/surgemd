@@ -207,7 +207,7 @@ export class FinalScreenManager {
                 case FinalScreenLayerType.Tile:{
                     const speed=(layer.def.speed??0)*this.time*1000
                     for(const tile of layer.content){
-                        const dir=layer.def.inverted?1:-1
+                        const dir=layer.def.inverted?-1:1
                         tile.style.backgroundPositionX=`${speed*dir}px`
                     }
                     break

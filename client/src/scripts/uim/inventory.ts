@@ -3,32 +3,30 @@ import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
 
-export class ItemsModule extends UIModule<Game> {
-    container!: HTMLDivElement
-    cache: HTMLDivElement[] = []
+export class InventoryModule extends UIModule<Game> {
+    items_container!: HTMLDivElement
+    items_cache: HTMLDivElement[] = []
 
     override on_init(): void {
-        this.container = document.querySelector("#ui-items") as HTMLDivElement
+        this.items_container = document.querySelector("#ui-items") as HTMLDivElement
     }
-
     override on_signal(signal: string, state: SelfStateUpdate): void {
-        if (signal !== "self_state") return
-        if (!state.dirty.inventory.items) return
-
-        this.render(state.inventory.items)
+        if(signal==="self_state"){
+            if(state.dirty.inventory.items){
+                this.render_items(state.inventory.items)
+            }
+        }
     }
 
-    private render(slots: InventoryItemData[]) {
-        while (this.cache.length < slots.length) {
-            this.cache.push(this.create(this.cache.length))
+    private render_items(slots: InventoryItemData[]) {
+        while(this.items_cache.length<slots.length) {
+            this.items_cache.push(this.create_item(this.items_cache.length))
         }
-
         for (let i = 0; i < slots.length; i++) {
-            this.update_one(this.cache[i], slots[i], i)
+            this.items_update_one(this.items_cache[i], slots[i], i)
         }
     }
-
-    private create(index: number): HTMLDivElement {
+    private create_item(index: number): HTMLDivElement {
         const el = document.createElement("div")
         el.className = "inventory-item-slot"
 
@@ -51,11 +49,10 @@ export class ItemsModule extends UIModule<Game> {
             this.game.ui.tooltip_hide()
         }
 
-        this.container.appendChild(el)
+        this.items_container.appendChild(el)
         return el
     }
-
-    private update_one(el: HTMLDivElement, slot: InventoryItemData, index: number) {
+    private items_update_one(el: HTMLDivElement, slot: InventoryItemData, index: number) {
         const number = el.children[0] as HTMLDivElement
         const count = el.children[1] as HTMLDivElement
         const img = el.children[2] as HTMLImageElement
@@ -101,7 +98,7 @@ export class ItemsModule extends UIModule<Game> {
     override on_update(dt: number): void {}
     override on_destroy(): void {}
     override on_clear(): void {
-        this.container.innerHTML = ""
-        this.cache = []
+        this.items_container.innerHTML = ""
+        this.items_cache = []
     }
 }

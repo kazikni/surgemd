@@ -31,97 +31,95 @@
         <div id="game" style="display: none;">
             <canvas id="game-canvas" class="game-canvas"></canvas>
             <div id="tiltshift-gfx"></div>
-            <div>
-                <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
-                    <div id="game-mobile-gui" style="display: none; pointer-events: none;">
-                        <kl-joystick id="left-joystick"></kl-joystick>
-                        <kl-joystick id="right-joystick"></kl-joystick>
-                        <div id="mobile-action-buttons">
-                            <button id="btn-mobile-interact" class="btn-dark-green"></button>
-                            <button id="btn-mobile-reload" style="display:none;pointer-events: none;" class="btn-dark-green"></button>
-                            <button id="btn-mobile-emotes" class="btn-dark-green"></button>
+            <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
+                <div id="game-mobile-gui" style="display: none; pointer-events: none;">
+                    <kl-joystick id="left-joystick"></kl-joystick>
+                    <kl-joystick id="right-joystick"></kl-joystick>
+                    <div id="mobile-action-buttons">
+                        <button id="btn-mobile-interact" class="btn-dark-green"></button>
+                        <button id="btn-mobile-reload" style="display:none;pointer-events: none;" class="btn-dark-green"></button>
+                        <button id="btn-mobile-emotes" class="btn-dark-green"></button>
+                    </div>
+                </div>
+                <div id="help-gui"></div>
+                <div id="bottom-left-container">
+                    <div id="action-info" class="ui-panel">
+                        <span id="action-info-delay">1s</span>
+                    </div>
+                    <div id="hand-info" class="ui-panel">
+                        <img id="hand-info-consume-type"></img>
+                        <span id="hand-info-count"></span>
+                    </div>
+                    <div id="boost-bar-container" class="ui-panel">
+                        <div id="boost-bar"></div>
+                        <span id="boost-bar-amount">100/100</span>
+                    </div>
+                    <div id="health-bar-container" class="ui-panel">
+                        <div id="health-bar-basic-heal"></div>
+                        <div id="health-bar-animation"></div>
+                        <div id="health-bar"></div>
+                        <span id="health-bar-amount">100/100</span>
+                    </div>
+                </div>
+                <div id="information-container">
+                    <div id="feed-container"></div>
+                    <div id="information-box-container">
+                        <div id="information-killbox"></div>
+                        <div id="information-interaction"></div>
+                    </div>
+                    <div id="debug-show" class="span-text"></div>
+                </div>
+                <div id="inventory-container">
+                    <div id="ui-items"></div>
+                    <div id="ui-weapons"></div>
+                    <div id="ui-aitems"></div>
+                    <div id="ui-iitems"></div>
+                    <div id="ui-equipment"></div>
+                </div>
+                <div id="top-info-container">
+                    <div id="additional-info">
+                        <div>
+                            <div id="living-count-main"></div>
+                            <img src="/img/menu/icons/human.svg" draggable="false">
+                        </div>
+                        <div>
+                            <span  id="kills-info" class="span-text-base">0</span>
+                            <img src="/img/menu/icons/aim.svg" draggable="false">
+                        </div>
+                        <div id="deadzone-info">
+                            <span id="deadzone-info-timer"></span>
+                            <span id="deadzone-info-state"></span>
+                            <img draggable="false" id="deadzone-info-icon">
                         </div>
                     </div>
-                    <div id="help-gui"></div>
-                    <div id="bottom-left-container">
-                        <div id="action-info" class="ui-panel">
-                            <span id="action-info-delay">1s</span>
-                        </div>
-                        <div id="hand-info" class="ui-panel">
-                            <img id="hand-info-consume-type"></img>
-                            <span id="hand-info-count"></span>
-                        </div>
-                        <div id="boost-bar-container" class="ui-panel">
-                            <div id="boost-bar"></div>
-                            <span id="boost-bar-amount">100/100</span>
-                        </div>
-                        <div id="health-bar-container" class="ui-panel">
-                            <div id="health-bar-basic-heal"></div>
-                            <div id="health-bar-animation"></div>
-                            <div id="health-bar"></div>
-                            <span id="health-bar-amount">100/100</span>
-                        </div>
-                    </div>
-                    <div id="information-container">
-                        <div id="feed-container"></div>
-                        <div id="information-box-container">
-                            <div id="information-killbox"></div>
-                            <div id="information-interaction"></div>
-                        </div>
-                        <div id="debug-show" class="span-text"></div>
-                    </div>
-                    <div id="inventory-container">
-                        <div id="ui-items"></div>
-                        <div id="ui-weapons"></div>
-                        <div id="ui-aitems"></div>
-                        <div id="ui-iitems"></div>
-                        <div id="ui-equipment"></div>
-                    </div>
-                    <div id="top-info-container">
-                        <div id="additional-info">
-                            <div>
-                                <div id="living-count-main"></div>
-                                <img src="/img/menu/icons/human.svg" draggable="false">
-                            </div>
-                            <div>
-                                <span  id="kills-info" class="span-text-base">0</span>
-                                <img src="/img/menu/icons/aim.svg" draggable="false">
-                            </div>
-                            <div id="deadzone-info">
-                                <span id="deadzone-info-timer"></span>
-                                <span id="deadzone-info-state"></span>
-                                <img draggable="false" id="deadzone-info-icon">
-                            </div>
-                        </div>
-                        <div id="ui-map">
-                            <div class="map-viewport">
-                                <div class="map-tiles"></div>
+                    <div id="ui-map">
+                        <div class="map-viewport">
+                            <div class="map-tiles"></div>
 
-                                <div class="map-deadzone"></div>
-                                <div class="map-deadzone-dest"></div>
-                                <div class="map-deadzone-safe-line"></div>
+                            <div class="map-deadzone"></div>
+                            <div class="map-deadzone-dest"></div>
+                            <div class="map-deadzone-safe-line"></div>
 
-                                <div class="map-pings"></div>
-                                <div class="map-humans"></div>
-                            </div>
-                        </div>
-                        <div id="leader-container">
-                            <span id="leader-text">Waiting For The Leader</span>
-                            <div id="leader-container-icon"></div>
+                            <div class="map-pings"></div>
+                            <div class="map-humans"></div>
                         </div>
                     </div>
-                    <div id="groups-info"></div>
-                    <div id="item-tooltip">
-                        <div id="item-tooltip-title"></div>
-                        <div id="item-tooltip-description"></div>
+                    <div id="leader-container">
+                        <span id="leader-text">Waiting For The Leader</span>
+                        <div id="leader-container-icon"></div>
                     </div>
-                    <div id="emote-wheel" class="emote-wheel">
-                        <img id="emote-wheel-top" draggable="false" class="emote-wheel-part wheel-part-top"/>
-                        <img id="emote-wheel-bottom" draggable="false" class="emote-wheel-part wheel-part-bottom"/>
-                        <img id="emote-wheel-left" draggable="false" class="emote-wheel-part wheel-part-left"/>
-                        <img id="emote-wheel-right" draggable="false" class="emote-wheel-part wheel-part-right"/>
-                        <img id="emote-wheel-hover" draggable="false" class="wheel-hover wheel-hover-center"/>
-                    </div>
+                </div>
+                <div id="groups-info"></div>
+                <div id="item-tooltip">
+                    <div id="item-tooltip-title"></div>
+                    <div id="item-tooltip-description"></div>
+                </div>
+                <div id="emote-wheel" class="emote-wheel">
+                    <img id="emote-wheel-top" draggable="false" class="emote-wheel-part wheel-part-top"/>
+                    <img id="emote-wheel-bottom" draggable="false" class="emote-wheel-part wheel-part-bottom"/>
+                    <img id="emote-wheel-left" draggable="false" class="emote-wheel-part wheel-part-left"/>
+                    <img id="emote-wheel-right" draggable="false" class="emote-wheel-part wheel-part-right"/>
+                    <img id="emote-wheel-hover" draggable="false" class="wheel-hover wheel-hover-center"/>
                 </div>
             </div>
             <div id="normal-gameover-container">

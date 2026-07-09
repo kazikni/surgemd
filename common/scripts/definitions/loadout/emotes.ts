@@ -12,6 +12,7 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"md_logo",rank:ItemRank.E},
 
         {idString:"skull",rank:ItemRank.E},
+        {idString:"gg",rank:ItemRank.E},
 
         /*
         {idString:"flag_albania",rank:ItemRank.E},

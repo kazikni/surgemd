@@ -7,6 +7,7 @@ __                                                                              
 __                                                                                                                 __
 ### Menu
 * Emotes Loadout
+* Wrapping Loadout
 * Main Socials
 * On Die Sound
 * More Screen Sizes
@@ -18,6 +19,15 @@ __                                                                              
 * RPG7 Sprite
 * 50Cal Ammo Outline
 * Medic Helmet
+__                                                                                                                 __
+### Loadout
+* Wrappings
+* Gradient Wrapping
+* Shiny Wrapping
+* Aqua Wrapping
+* Aqua Blue Wrapping
+* Skull Emote
+* GG Emote
 __                                                                                                                 __
 ### Others
 * Alternative Shed Ceiling

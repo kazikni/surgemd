@@ -63,31 +63,6 @@ export class BottomLeftModule extends UIModule<Game>{
                     HideElement(this.action_container)
                 }
             }
-        }else if(signal==="update_theme"){
-            const primary=this.game.get_theme_color("primary")
-            const secondary=this.game.get_theme_color("secondary")
-            const tertiary=this.game.get_theme_color("tertiary")
-
-            this.container.style.color=tertiary
-            this.health_bar_amount.style.color=tertiary
-            this.boost_bar_amount.style.color=tertiary
-
-            let color=ColorM.hex(secondary)
-            color=ColorM.mult_rgba(color,1,1,1,0.4)
-            const background=ColorM.rgba2hex(color)
-
-            this.hand_info_container.style.background=background
-            this.action_container.style.background=background
-            this.health_bar_container.style.background=background
-            this.boost_bar_container.style.background=background
-
-            const boxShadow=this.game.save.get_variable("sv_ui_simple_mode")?"none":`0 0 5px ${primary}`
-            console.log(boxShadow,color)
-
-            this.hand_info_container.style.boxShadow=boxShadow
-            this.action_container.style.boxShadow=boxShadow
-            this.health_bar_container.style.boxShadow=boxShadow
-            this.boost_bar_container.style.boxShadow=boxShadow
         }
     }
     override on_init(): void {

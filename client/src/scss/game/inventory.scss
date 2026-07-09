@@ -90,8 +90,13 @@
 }
 .inventory-item-slot {
     position: relative;
-    background-color: color-mix(in srgb,var(--ui-theme-secondary) 40%, #0000);
-    box-shadow: 0 0 3px var(--ui-theme-primary);
+
+    background-color: var(--ui-panel-background);
+    box-shadow: var(--ui-panel-box-shadow);
+    backdrop-filter: var(--ui-panel-backdrop-filter);
+
+    font-family: "Russo-One", serif;
+
     width: 70px;
     height: 70px;
     border-radius: 4px;
@@ -100,11 +105,7 @@
     justify-content: center;
     overflow: hidden;
     pointer-events: all;
-    backdrop-filter: var(--ui-backdrop-filter);
 
-    font-family: "Russo-One", serif;
-
-    color: var(--ui-theme-tertiary);
     .slot-image {
         width: 50px;
         height: 50px;
@@ -112,7 +113,6 @@
         object-fit: contain;
         pointer-events: none;
     }
-
     .slot-count {
         position: absolute;
         bottom: 2px;
@@ -157,9 +157,6 @@
         }
     }
 }
-.weapon-slot-selected{
-    border: 2px solid var(--ui-theme-primary);
-}
 #ui-weapons{
     position: absolute;
     bottom: 5px;
@@ -180,9 +177,10 @@
         border-radius: 4px;
         font-size: 20px;
         font-family: "Russo-One", serif;
-        background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
-        box-shadow: 0 0 3px var(--ui-theme-primary);
-        backdrop-filter: var(--ui-backdrop-filter);
+
+        background: var(--ui-panel-background);
+        box-shadow: var(--ui-panel-box-shadow);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
         .weapon-slot-number {
             position: relative;
             top: 5px;
@@ -211,6 +209,9 @@
 
             transform: translateY(-50%) rotate(-10deg);
         }
+        &.weapon-slot-selected{
+            border:var(--ui-panel-border);
+        }
     }
     @include main.large_screen {
         gap: 7px;
@@ -218,7 +219,6 @@
         .weapon-slot{
             height: 85px;
             font-size: 15px;
-            box-shadow: 0 0 3px var(--ui-theme-primary);
             .weapon-slot-image{
                 min-width: 40px;
                 max-width: 90px;
@@ -291,19 +291,19 @@
     .scope-slot{
         display: flex;
         border-radius: 4px;
-        background-color: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
+        background: var(--ui-panel-background);
+        box-shadow: var(--ui-panel-box-shadow);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
         width: fit-content;
         height: fit-content;
-        box-shadow: 0 0 3px var(--ui-theme-primary);
         .icon{
             padding: 5px;
             width: 40px;
             height: 40px;
         }
-        backdrop-filter: var(--ui-backdrop-filter);
     }
     .scope-slot-selected{
-        border: 2px solid var(--ui-theme-primary);
+        border:var(--ui-panel-border);
         .icon{
             padding: 7px;
             width: 50px;
@@ -357,8 +357,9 @@
     pointer-events: none;
     .aitem-slot {
         color: var(--ui-theme-tertiary);
-        backdrop-filter: var(--ui-backdrop-filter);
-        background: color-mix(in srgb, var(--ui-theme-secondary) 40%, #0000);
+        background: var(--ui-panel-background);
+        box-shadow: var(--ui-panel-box-shadow);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
 
         display: flex;
         flex-direction: row-reverse;
@@ -373,8 +374,6 @@
         padding: 0 6px;
 
         pointer-events: auto;
-
-        box-shadow: 0 0 3px var(--ui-theme-primary);
 
         .count {
             font-family: "Russo-One", sans-serif;
@@ -393,7 +392,7 @@
         }
     }
     .aitem-slot:hover{
-        border: 2px solid var(--ui-theme-primary);
+        border:var(--ui-panel-border);
     }
     @include main.large_screen{
         .aitem-slot{
@@ -475,9 +474,10 @@
         flex-wrap: wrap;
     }
     .equipment-slot {
-        background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
-        box-shadow: 0 0 3px var(--ui-theme-primary);
-        backdrop-filter: var(--ui-backdrop-filter);
+        background: var(--ui-panel-background);
+        box-shadow: var(--ui-panel-box-shadow);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
+
         width: 70px;
         height: 70px;
         position: relative;
@@ -564,13 +564,14 @@
     padding:10px;
     border-radius:6px;
 
-    background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
-    box-shadow: 0 0 3px var(--ui-theme-primary);
+    color: var(--ui-theme-tertiary);
+    background: var(--ui-panel-background);
+    box-shadow: var(--ui-panel-box-shadow);
+    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     transition:opacity .15s;
     transform: translate(-100%,-100%);
 
-    color: var(--ui-theme-tertiary);
     #item-tooltip-title{
         font-weight:bold;
         margin-bottom:6px;

@@ -17,7 +17,6 @@ import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { AItemsModule } from "../uim/aitems.ts";
 import { IItemsModule } from "../uim/iitems.ts";
 import { WeaponsModule } from "../uim/weapons.ts";
-import { ItemsModule } from "../uim/items.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
@@ -28,6 +27,7 @@ import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_
 import { GroupMembersModule } from "../uim/groups.ts";
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
 import { BottomLeftModule } from "../uim/bottom_left_container.ts";
+import { InventoryModule } from "../uim/inventory.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -123,7 +123,7 @@ export class UiManager{
         this.game.ui_manager.add(new AItemsModule())
         this.game.ui_manager.add(new IItemsModule())
         this.game.ui_manager.add(new WeaponsModule())
-        this.game.ui_manager.add(new ItemsModule())
+        this.game.ui_manager.add(new InventoryModule())
         this.game.ui_manager.add(new EquipmentModule())
         this.game.ui_manager.add(new MinimapModule())
         this.game.ui_manager.add(new InformationBoxModule())
@@ -151,12 +151,22 @@ export class UiManager{
         this.hover_objects.clear()
     }
     update_theme(){
-        this.content.game_gui.style.setProperty("--ui-theme-primary",this.game.get_theme_color("primary"))
-        this.content.game_gui.style.setProperty("--ui-theme-secondary",this.game.get_theme_color("secondary"))
-        this.content.game_gui.style.setProperty("--ui-theme-tertiary",this.game.get_theme_color("tertiary"))
+        const primary=this.game.get_theme_color("primary")
+        const secondary=this.game.get_theme_color("secondary")
+        const tertiary=this.game.get_theme_color("tertiary")
+
+        this.content.game_gui.style.setProperty("--ui-theme-primary",primary)
+        this.content.game_gui.style.setProperty("--ui-theme-secondary",secondary)
+        this.content.game_gui.style.setProperty("--ui-theme-tertiary",tertiary)
         this.content.game_gui.style.setProperty("--ui-theme-positive",this.game.get_theme_color("positive"))
         this.content.game_gui.style.setProperty("--ui-theme-negative",this.game.get_theme_color("negative"))
         this.content.game_gui.style.setProperty("--ui-theme-special",this.game.get_theme_color("special"))
+
+        let color=ColorM.hex(secondary)
+        color=ColorM.mult_rgba(color,1,1,1,0.4)
+        this.content.game_gui.style.setProperty("--ui-panel-background",ColorM.rgba2hex(color))
+        this.content.game_gui.style.setProperty("--ui-panel-border",`2px solid ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.get_variable("sv_ui_simple_mode")?"":`0 0 5px ${primary}`)
 
         this.game.ui_manager.signal("update_theme",{})
     }

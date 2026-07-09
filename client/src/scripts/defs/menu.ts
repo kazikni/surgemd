@@ -1194,9 +1194,9 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             var:"sv_ui_blur_backdrop",
                             on_set(v:boolean){
                                 if(v){
-                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","blur(10px)")
+                                    menu.content.gameD.style.setProperty("--ui-panel-backdrop-filter","blur(10px)")
                                 }else{
-                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","none")
+                                    menu.content.gameD.style.setProperty("--ui-panel-backdrop-filter","none")
                                 }
                             }
                         }

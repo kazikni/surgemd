@@ -102,7 +102,7 @@
     @include main.medium_screen{
         height: 30px;
     }
-    @include main.medium_screen{
+    @include main.small_screen{
         height: 20px;
     }
     @include main.tiny_screen{
@@ -133,7 +133,7 @@
     @include main.medium_screen{
         height: 12px;
     }
-    @include main.medium_screen{
+    @include main.small_screen{
         height: 9px;
     }
     @include main.tiny_screen{
@@ -151,9 +151,13 @@
     gap: 10px;
 
     width: 410px;
+    color: var(--ui-theme-tertiary);
 
     .ui-panel{
         position: relative;
+        background: var(--ui-panel-background);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
+        box-shadow: var(--ui-panel-box-shadow);
         font-size: 20px;
         font-family: "Russo-One", serif;
         border-radius: 4px;
@@ -180,8 +184,6 @@
         span{
             position: static;
             transform: none;
-            font-size: 20px;
-            font-family: "Russo-One";
         }
         img{
             position: static;
@@ -196,6 +198,9 @@
         gap: 7px;
         left: 7px;
         bottom: 7px;
+        .ui-panel{
+            font-size: 15px;
+        }
         #hand-info{
             span{
                 font-size: 16px;
@@ -211,10 +216,13 @@
         }
     }
     @include main.medium_screen {
-        width: 230px;
+        width: 240px;
         gap: 5px;
         left: 5px;
         bottom: 5px;
+        .ui-panel{
+            font-size: 10px;
+        }
         #hand-info{
             span{
                 font-size: 10px;
@@ -230,7 +238,7 @@
         }
     }
     @include main.small_screen {
-        width: 150px;
+        width: 190px;
         gap: 5.5px;
         left: 5.5px;
         bottom: 5.5px;
@@ -249,7 +257,7 @@
         }
     }
     @include main.tiny_screen {
-        width: 90px;
+        width: 110px;
         gap: 3px;
         left: 3px;
         bottom: 3px;
@@ -280,10 +288,11 @@
     gap: 5px;
     width: 400px;
     .feed-message{
-        background: color-mix(in srgb, var(--ui-theme-secondary) 30%, #0000);
+        background: var(--ui-panel-background);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
+        color: var(--ui-theme-tertiary);
         border-radius: 4px;
         padding: 3px;
-        color: var(--ui-theme-tertiary);
         img{align-self: center}
     }
     .feed-message-good{
@@ -331,8 +340,10 @@
 #information-killbox,
 #information-interaction{
     pointer-events: none;
-    background: color-mix(in srgb,var(--ui-theme-secondary) 30%, #0000);
-    box-shadow: 0 0 3px var(--ui-theme-primary);
+
+    background: var(--ui-panel-background);
+    box-shadow: var(--ui-panel-box-shadow);
+    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     font-family: "Russo-One";
     width: fit-content;
@@ -382,11 +393,9 @@
 
     padding:10px;
 
-    background:color-mix(in srgb,var(--ui-theme-secondary) 30%,#0000);
-    box-shadow:0 0 3px var(--ui-theme-primary);
-    border:1px solid var(--ui-theme-primary);
-    color: var(--ui-theme-tertiary);
-    backdrop-filter: var(--ui-backdrop-filter);
+    background: var(--ui-panel-background);
+    box-shadow: var(--ui-panel-box-shadow);
+    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     font-size: 20px;
     pointer-events:none;
@@ -450,15 +459,15 @@
 
     pointer-events:all;
 
-    box-shadow: 0 0 3px var(--ui-theme-primary);
     opacity: var(--ui-minimap-opacity);
+    box-shadow: var(--ui-panel-box-shadow);
 
     .map-viewport{
         position: absolute;
         left: 0px;
         top: 0px;
         transform-origin:0 0;
-        backdrop-filter: var(--ui-backdrop-filter);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
     }
     .map-tile{
         position:absolute;
@@ -474,9 +483,10 @@
         height: 45vw;
 
         border-radius:0;
+
         opacity: var(--ui-minimap-full-opacity);
-        border:2px solid var(--ui-theme-primary);
-        box-shadow: 0 0 10px var(--ui-theme-primary);
+        box-shadow: var(--ui-panel-box-shadow-big);
+        border:var(--ui-panel-border);
     }
     .map-deadzone-safe-line{
         position:absolute;
@@ -659,11 +669,10 @@
         padding:8px;
         height: fit-content;
 
-        background:color-mix(in srgb,var(--ui-theme-secondary) 30%,#0000);
-        backdrop-filter:var(--ui-backdrop-filter);
 
-        border:1px solid var(--ui-theme-primary);
-        box-shadow:0 0 3px var(--ui-theme-primary);
+        background: var(--ui-panel-background);
+        border:var(--ui-panel-border);
+        backdrop-filter: var(--ui-panel-backdrop-filter);
 
         display:flex;
         flex-direction:column;

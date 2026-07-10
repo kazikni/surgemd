@@ -325,7 +325,7 @@ export const guns_factory={
             barrel_length:1,
 
             fire_delay:0.1,
-            switch_delay:0.6,
+            switch_delay:0.5,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -355,7 +355,7 @@ export const guns_factory={
             barrel_length:1,
 
             fire_delay:0.1,
-            switch_delay:0.6,
+            switch_delay:0.5,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -387,7 +387,7 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.2,
+            switch_delay:0.15,
 
             gas_particles:GasParticles.dmr,
             case_particle:{
@@ -421,7 +421,7 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_on_release:true,
             fire_delay:0.1,
-            switch_delay:0.15,
+            switch_delay:0.1,
 
             gas_particles:GasParticles.sniper,
             case_particle:{
@@ -493,7 +493,7 @@ export const guns_factory={
             fire_mode:FireMode.Auto,
             fire_on_release:true,
             fire_delay:0.1,
-            switch_delay:0.6,
+            switch_delay:0.5,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -1434,7 +1434,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:bullets_factory.assault(0.9)
             },
             reload:{
-                delay:6,
+                delay:6.2,
                 capacity:200,
                 extended_capacity:300,
             },

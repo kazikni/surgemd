@@ -166,7 +166,9 @@ export class AmbientManager{
             const menu_music=this.game.resources.get_sound(`menu_music`)
             this.music.set(menu_music)
             if(this.game.menu.intro_fineshed){
-                this.music.set(menu_music)
+                this.music.set(menu_music,{
+                    loop:true
+                })
             }else{
                 video.addEventListener("ended",()=>{
                     this.music.set(menu_music)

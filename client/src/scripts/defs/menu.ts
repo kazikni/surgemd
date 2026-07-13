@@ -324,9 +324,9 @@ export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupF
         }
     }
 }
-export function make_menu_settings(save: GameSave, defs: (SettingDef|undefined)[],translation:TranslationManager){
+export function make_menu_settings(save: GameSave,name:string, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
-        parent.innerHTML=""
+        parent.innerHTML=`<h1 class="span-text-base">${translation.get(name)}</h1>`
         for(const def of defs){
             if(!def)continue
             parent.appendChild(
@@ -1007,7 +1007,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             ],
             subtabs:{
                 "game":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.game",[
                         {
                             type:"choose",
                             name:"settings.game.region",
@@ -1042,7 +1042,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     ],translation)
                 },
                 "graphics":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.graphics",[
                         {
                             type:"choose",
                             name:"settings.graphics.resolution",
@@ -1098,7 +1098,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     ],translation),
                 },
                 "sounds":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.sounds",[
                         {
                             type:"range",
                             name:"settings.sounds.master_volume",
@@ -1140,7 +1140,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     ],translation),
                 },
                 "ui":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.ui",[
                         {
                             type:"color",
                             name:"settings.ui.primary_color",
@@ -1205,7 +1205,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "keybinds":{
                     generate:(parent,_m)=>{
                         const generate_actions=()=>{
-                            parent.innerHTML=""
+                            parent.innerHTML=`<h1 class="span-text-base">${translation.get("menu.settings.keybinds")}</h1>`
                             const actions=menu.save.input_manager?.actions ?? {}
                             for(const [name,action] of Object.entries(actions)){
                                 const row=document.createElement("div")
@@ -1282,7 +1282,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             ],
             subtabs:{
                 "character":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.loadout.character",[
                         {
                             type:"input",
                             name:"loadout.character.name",
@@ -1343,10 +1343,6 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                     ],translation)
                 },
-                "body":{
-                    generate:make_menu_settings(menu.save,[
-                    ],translation)
-                },
                 "emotes":{
                     generate:make_emotes_settings(menu.save,resources,definitions,Object.values(definitions.emotes.value),translation)
                 },
@@ -1388,6 +1384,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "social":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
                         parent.innerHTML=`
+<h1 class="span-text-base">${translation.get("menu.about.social")}</h1>
 <div class="social-links">
     <a href="${socials.discord}" target="_blank" class="social-link">
         <i class="social-icon discord"></i>
@@ -1410,7 +1407,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "news":{
                     generate:async(parent:HTMLDivElement,_m:MenuManager)=>{
                         const news_path="/scripts/news/"
-                        parent.innerHTML=""
+                        parent.innerHTML=`<h1 class="span-text-base">${translation.get("menu.about.news")}</h1>`
                         const news=await(await fetch(news_path+"main.json")).json() as {order:{title:string,id:string}[]}
                         for(const n of news.order){
                             parent.innerHTML+=`<h2 class="span-text">${n.title}</h2>`
@@ -1425,6 +1422,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "rules":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
                         parent.innerHTML=`
+<h1 class="span-text-base">${translation.get("menu.about.rules")}</h1>
 <span>
 <h2>Rules</h2>
 <hr>
@@ -1512,6 +1510,7 @@ copyright theft, scan, harassment, doxing
                         parent.innerHTML=`
 <span>
 ${formatToHtml(`
+<h1 class="span-text-base">${translation.get("menu.about.credits")}</h1>
 # Surgemd.io
 ___
 ## Created By

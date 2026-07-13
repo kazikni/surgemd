@@ -38,6 +38,14 @@
         #0b1630 45%,
         #050811 100%
     );
+    .stars{
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background:url("/img/menu/final_screen/stars.png") center/contain;
+        background-size: 30vw 30vw;
+        opacity: 20%;
+    }
     .moon{
         position:absolute;
         left:50%;
@@ -145,7 +153,7 @@
         overflow:hidden;
 
         transform:scaleY(-0.7);
-        filter: blur(7px) brightness(.75);
+        filter: blur(7px) brightness(.75) saturate(80%);
     }
     &#menu-background-islando{
         .mountains{
@@ -164,10 +172,10 @@
         }
         .city-back{
             height:40vw;
-            bottom: 12vw;
+            bottom: 15vw;
         }
         .reflection-city{
-            bottom: 0;
+            bottom: 2vw;
         }
         .ground{
             position: absolute;
@@ -413,6 +421,13 @@
         height: 60px;
         border-radius: 4px;
         font-size: 30px;
+    }
+    .tab-title{
+        position: fixed;
+        font-size: 10vh;
+        left: 50%;
+        top: 5vh;
+        transform: translateX(-50%);
     }
     kl-md-submenu-content{
         gap:100px;

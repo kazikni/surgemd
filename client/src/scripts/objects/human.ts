@@ -1636,7 +1636,7 @@ export class Human extends MovingBody{
         if(full||hand_dirty){
             const id = stream.read_int16()
             const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
-            if(current_weapon!==this.current_weapon){
+            if(current_weapon!==this.current_weapon&&!this.downed){
                 this.set_current_weapon(current_weapon)
             }
         }

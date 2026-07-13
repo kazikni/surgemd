@@ -89,32 +89,34 @@ export class Tween<T> {
         this.game.remove_tween(this as unknown as Tween<unknown>);
     }
 }
-export function HideElement(elem: HTMLElement, useOpacity = false) {
-    elem.style.pointerEvents = "none"
-    elem.style.userSelect = "none"
-
+export function HideElement(elem: HTMLElement, useOpacity = false,timeout:number=2000) {
     if (useOpacity) {
         elem.style.opacity = "0"
-        elem.style.visibility = "hidden"
-    } else {
+        elem.style.pointerEvents = "none"
+        elem.style.userSelect = "none"
+        setTimeout(()=>{
+            if(elem.style.opacity==="0"){
+                elem.style.display = "none"
+                elem.style.visibility = "hidden"
+            }
+        },timeout)
+    }else{
+        elem.style.pointerEvents = "none"
+        elem.style.userSelect = "none"
         elem.style.display = "none"
         elem.style.visibility = "hidden"
     }
 }
 export function ShowElement(elem: HTMLElement, useOpacity = false) {
+    elem.style.display = "" 
+    elem.style.pointerEvents = ""
+    elem.style.userSelect = ""
+    elem.style.visibility = "visible"
     if (useOpacity) {
-        elem.style.display = "" 
-        elem.style.visibility = "visible"
         requestAnimationFrame(() => {
             elem.style.opacity = "1"
         })
-    } else {
-        elem.style.display = ""
-        elem.style.visibility = "visible"
     }
-
-    elem.style.pointerEvents = ""
-    elem.style.userSelect = ""
 }
 export function ToggleElement(elem: HTMLElement, useOpacity = false) {
     if (useOpacity) {

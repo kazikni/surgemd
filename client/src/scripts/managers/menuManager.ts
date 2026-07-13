@@ -2,7 +2,7 @@ import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, Context2D, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
+import { AudioEngine, Camera2D, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -205,9 +205,14 @@ export class MenuManager{
             close_btn.textContent="X"
             close_btn.onclick=this.load_tab.bind(this,"")
 
+            const tab_title=document.createElement("span") as HTMLButtonElement
+            tab_title.className="tab-title span-text-base"
+            tab_title.textContent=btn.innerText
+
             tab_main.appendChild(options)
             tab_main.appendChild(content)
             tab_main.appendChild(close_btn)
+            tab_main.appendChild(tab_title)
             this.content.menu_content.appendChild(tab_main)
 
             for(const st of Object.keys(t.subtabs)){
@@ -721,3 +726,5 @@ export class MenuManager{
         this.cam2d.visible=false
     }
 }
+
+//ME MELHORE POR FAVOR

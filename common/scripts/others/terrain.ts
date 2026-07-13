@@ -8,6 +8,7 @@ export enum FloorType {
     Snow,
     Sand,
     Water,
+    DeepWater,
     Ice,
 
     Metal
@@ -26,6 +27,7 @@ export interface FloorDef {
     drag: number
 
     floor_kind:FloorKind
+    deep?:boolean
     footstep_sounds?:string[]
     footstep_decal?:boolean
     skin_apply?:string
@@ -91,6 +93,19 @@ export const Floors: Record<FloorType, FloorDef> = {
         speed_mult: 0.65,
         acceleration: 0.85,
         drag:0.5,
+
+        floor_kind:FloorKind.Liquid,
+        footstep_sounds:["footstep_water_1","footstep_water_2"],
+        traction: 1,
+        rolling_resistance:0,
+    },
+    [FloorType.DeepWater]: {
+        default_color: 0x163a63,
+
+        speed_mult: 0.3,
+        acceleration: 0.7,
+        drag:0.5,
+        deep:true,
 
         floor_kind:FloorKind.Liquid,
         footstep_sounds:["footstep_water_1","footstep_water_2"],
@@ -164,7 +179,7 @@ export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainMana
     const center=shape.position??position
     const base = polygon2.island_silhouette(center,shape.radius,shape.points ?? 6,shape.variation ?? 50,shape.passes ?? 3,shape.variation_decay ?? 0.6,random)
     let poly = polygon2.clone(base)
-    for(const floor of shape.floors.sort((a,b)=>a.padding-b.padding)){
+    for(const floor of shape.floors){
         poly = polygon2.offset_polygon(base,floor.padding)
         poly = polygon2.distort_polygon(poly,floor.variation,floor.spacing,0.9,random)
         const hb=new PolygonHitbox2D(poly)

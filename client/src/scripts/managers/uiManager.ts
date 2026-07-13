@@ -14,7 +14,6 @@ import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
-import { WeaponsModule } from "../uim/weapons.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
@@ -118,7 +117,6 @@ export class UiManager{
         this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game)
 
         this.game.ui_manager.add(new BottomLeftModule())
-        this.game.ui_manager.add(new WeaponsModule())
         this.game.ui_manager.add(new InventoryModule())
         this.game.ui_manager.add(new EquipmentModule())
         this.game.ui_manager.add(new MinimapModule())

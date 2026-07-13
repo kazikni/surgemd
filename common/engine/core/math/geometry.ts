@@ -398,9 +398,10 @@ export const polygon2={
             const normal1 = v2(-edge1.y, edge1.x)
             const normal2 = v2(-edge2.y, edge2.x)
 
-            const normal = v2.normalizeSafe(v2.add(normal1, normal2),normal1)
+            const normal = v2.normalizeSafe(v2.add(normal1, normal2), normal1)
+            const d = Math.max(0.15,v2.dot(normal, normal1))
 
-            out.push(v2.add(cur,v2.scale(normal, amount)))
+            out.push(v2.add(cur,v2.scale(normal, amount / d)))
         }
 
         return out

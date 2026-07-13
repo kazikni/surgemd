@@ -4,8 +4,10 @@ __                                                                              
 ### Mains
 * No Hope Rework
 * Fall Biome
+* Swimming
 __                                                                                                                 __
 ### Menu
+* Main Menu Rework
 * Emotes Loadout
 * Wrapping Loadout
 * Main Socials

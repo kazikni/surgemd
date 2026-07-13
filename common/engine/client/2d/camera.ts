@@ -12,6 +12,7 @@ export class Camera2D{
     container:Container2D=new Container2D()
     private _zoom = 1;
 
+    visible:boolean=true
     projectionMatrix!: Matrix;
     SubMatrix!: Matrix;
 
@@ -162,7 +163,7 @@ export class Camera2D{
             this.container.dirty_zindex=true
         }
         this.ctx.base_matrix=this.projectionMatrix
-        this.container.draw(cam)
+        if(this.visible)this.container.draw(cam)
         this.ctx.render(this.renderer)
         this.ctx.clear()
 

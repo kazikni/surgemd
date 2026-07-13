@@ -150,6 +150,9 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     e.bullet.pass_through_everthing=true
+                    e.bullet.modifiers.speed*=0.7
+                    e.bullet.damage*=0.7
+                    e.bullet.tracerAlpha*=0.5
                 }
             }
         },

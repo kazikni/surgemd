@@ -28,8 +28,8 @@
     </head>
     <body>
         <script type="module" src="./src/scripts/others/index.ts" async></script>
+        <canvas id="game-canvas" class="game-canvas"></canvas>
         <div id="game" style="display: none;">
-            <canvas id="game-canvas" class="game-canvas"></canvas>
             <div id="tiltshift-gfx"></div>
             <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
                 <div id="game-mobile-gui" style="display: none; pointer-events: none;">
@@ -134,7 +134,37 @@
             <div id="restart-gameover-container" class="hidden"><span id="go-message">Press R To Restart</span></div>
         </div>
         <div id="menu">
-            <div id="menu-background-effects"></div>
+            <!--<div id="menu-background-islando">
+                
+                <div class="sky-glow"></div>
+                <div class="moon"></div>
+
+                <div class="mountains"></div>
+
+                <div class="city city-back"></div>
+                <div class="palms palms-front"></div>
+
+                <div class="ground"></div>
+            </div>-->
+            <div id="menu-background-islando" class="menu-background-animated">
+                <div class="sky-glow"></div>
+                <div class="moon"></div>
+
+                <div class="mountains"></div>
+
+                <div class="city city-back"></div>
+                <div class="palms palms-front"></div>                
+                <div class="water">
+                    <div class="mountains reflection-mountains"></div>
+                    <div class="city city-back reflection-city"></div>
+                    <div class="palms palms-front reflection-palms"></div>
+                </div>
+                <div class="wave wave-1"></div>
+                <div class="wave wave-2"></div>
+                <div class="ground"></div>
+            </div>
+            <div id="menu-background-effects">
+            </div>
             <div id="menu-options"></div>
             <div id="menu-content"></div>
             <div id="featured-content-creators" class="span-text"></div>

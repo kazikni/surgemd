@@ -101,7 +101,7 @@ export class DeadZoneManager {
         this.state.position=v2.scale(this.game.map.size, 0.5)
         this.state.new_position=v2.scale(this.game.map.size, 0.5)
 
-        this.state.radius=this.radius_size*80*(this.game.map.size.x/this.game.map.size.y)
+        this.state.radius=this.radius_size*90*(this.game.map.size.x/this.game.map.size.y)
         this.state.new_radius=this.state.radius
         this.state.old_radius=this.state.radius
 

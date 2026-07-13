@@ -1,6 +1,5 @@
 import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
-import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
 
@@ -71,6 +70,5 @@ export interface LevelDefinition{
     }
     definitions?:{
         enemies?:Record<string,LevelCharacter>
-        buildings?:Record<string,JSONBuildingDef>
     }
 }

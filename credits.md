@@ -50,7 +50,7 @@ ___
 * @kazikni
 * @rapxtor_yt
 ___
-# Discord Server Developers
+# Discord Server
 @kazikni
 @Zahirralt2
 ___
@@ -63,9 +63,11 @@ ___
 * Fortnite
 ___
 ## Special Thanks To
+* surviv.io creators
 * @hasanger
 * @1092384
-* surviv.io creators
+* @mamoun0
+* @namerio
 * @guiz3rabrr2466._24385
 * @jgpow
 * Everyone Who Played

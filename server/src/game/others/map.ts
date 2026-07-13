@@ -1,4 +1,4 @@
-import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, DynamicStream } from "common/engine/core.ts";
+import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, DynamicStream, Rect } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { IslandDef, MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
@@ -26,9 +26,11 @@ export interface MapStructure{
 
 export class GameMap{
     size:Vec2
+    bounds:Rect
     game:Game
     constructor(game:Game,_seed:number=0){
         this.size=v2(10,10)
+        this.bounds={min:v2.zero(),max:v2.zero()}
         this.game=game
     }
     map_packet_stream:Stream=new DynamicStream()
@@ -118,7 +120,7 @@ export class GameMap{
         return this.biome
     }
     clamp_hitbox(position:Vec2,hb:Hitbox2D):Vec2{
-        return hb.clamp(position,v2(0,0),this.size)
+        return hb.clamp(position,this.bounds.min,this.bounds.max)
     }
     clamp(v:Vec2){
         v2m.clamp2(v,v2.zero,this.size)
@@ -289,13 +291,18 @@ export class GameMap{
             }
         }
 
+        const bounds_size=definition.bounds_size===undefined?100:definition.bounds_size
         this.size=definition.size
+        this.bounds=definition.bounds??{
+            min:v2(-bounds_size,-bounds_size),
+            max:v2(this.size.x+bounds_size,this.size.y+bounds_size)
+        }
         this.biome=definition.biome
         //Terrain
         this.rivers.length=0
         this.terrain.add_floor({
             type:definition.generation.base,
-            hb:new RectHitbox2D(v2(0,0),v2(this.size.x,this.size.y)),
+            hb:new RectHitbox2D(v2(0,0),this.size),
             layer:Layers.Normal,
             visible:true,
             smooth:false,

@@ -2,7 +2,7 @@ import { InventoryItemType } from "../utils.ts";
 import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { SpawnMode, type Layers } from "../../others/constants.ts";
-import { Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { Hitbox2D, LootTable, LootTableItemRet, Random1, Rect, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { type GameADefinitions, GameDefinition, GameItem } from "../game_defs.ts";
 
 import { type GameMap } from "../../../../server/src/game/others/map.ts"
@@ -95,6 +95,8 @@ export interface MapDef{
     loot_tables:Record<string,LootTable>
     default_floor?:FloorType
     size:Vec2
+    bounds?:Rect
+    bounds_size?:number
     generation:{
         base:FloorType
         base_tint?:number

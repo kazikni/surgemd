@@ -37,7 +37,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
     override on_signal(signal: string, content: SelfStateUpdate): void {
         if(signal==="self_state"){
-            const downed=!!this.game.active_entity?.downed
+            const downed=!!(this.game.active_entity?.downed&&!this.game.active_entity?.swimming)
             if(this.health!==content.health||this.max_health!==content.max_health||this.downed!==downed){
                 this.health=content.health
                 this.max_health=content.max_health

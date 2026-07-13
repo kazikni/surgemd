@@ -18,6 +18,8 @@ export class AmbientManager{
     fog_constrast:number=1
     fog_enabled:boolean=false
 
+    finalization:boolean=false
+
     //light_map:Lights2D=new Lights2D()
     // Temporaly
     _global_ilumination:number=1
@@ -179,15 +181,14 @@ export class AmbientManager{
         this.game.cam2d.add_object(this.light_map)*/
     }
     on_game_close(){
-        this.end_game=false
         this.music.set(this.game.resources.get_sound("menu_music"),{
             loop:true,
         })
         this.ambience.set(undefined)
         this.last_music_pos=0
+        this.finalization=false
     }
     on_game_start(){
-        this.end_game=false
         this.music.set(this.game.resources.get_sound("level_music"),{
             loop:true
         })
@@ -296,21 +297,23 @@ export class AmbientManager{
                 }
             }
 
-            if(!this.game.game_over){
-                if(this.game.save.get_variable("sv_sounds_gameplay_music")){
-                    if(this.finding_music&&!this.music.running&&this.musics.length>0){
-                        if(Math.random()<=0.01){
-                            const music=random.choose(this.musics)
-                            this.game.resources.unload_sound("gameplay_music")
-                            this.game.resources.load_sound("gameplay_music",{
-                                src:music,
-                                volume:1
-                            }).then((v)=>{
-                                this.music.set(v)
-                                this.finding_music=true
-                            })
-                            this.finding_music=false
-                        }
+            if(!this.game.game_over&&!this.game.game_over&&!this.finalization&&!this.music.running&&this.musics.length>0){
+                if(Math.random()<=0.01){
+                    if(this.finding_music&&this.game.save.get_variable("sv_sounds_gameplay_music")){
+                        const music=random.choose(this.musics)
+                        this.game.resources.unload_sound("gameplay_music")
+                        this.game.resources.load_sound("gameplay_music",{
+                            src:music,
+                            volume:1
+                        }).then((v)=>{
+                            if(this.finalization){
+                                this.game.resources.unload_sound("gameplay_music")
+                                return
+                            }
+                            this.music.set(v)
+                            this.finding_music=true
+                        })
+                        this.finding_music=false
                     }
                 }
             }
@@ -348,6 +351,28 @@ export class AmbientManager{
                 this.bolt_tween = undefined;
             },
         }) as unknown as Tween<Lights2D>
+        }
+    }
+    start_finalization(){
+        if(this.finalization)return
+        this.finalization=true
+        this.music.set(null)
+        this.game.sounds.play(this.game.resources.get_sound("ui_final"),{
+            bus:"ui",
+            volume:0.75
+        })
+        if(this.game.save.get_variable("sv_sounds_gameplay_music")){
+            this.game.resources.unload_sound("gameplay_music")
+            this.game.resources.load_sound("gameplay_music",{
+                src:"/sounds/musics/finalization_music_1.mp3",
+                volume:1
+            }).then((v)=>{
+                if(this.game.game_over){
+                    this.game.resources.unload_sound("gameplay_music")
+                    return
+                }
+                this.music.set(v)
+            })
         }
     }
 }

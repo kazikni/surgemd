@@ -9,10 +9,10 @@
     right: 0px;
     top: 0px;
     bottom: 0px;
-    background-image: url("/img/menu/background/background.png");
+    /*background-image: url("/img/menu/background/background.png");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat;*/
     overflow: hidden;
     padding: 20px;
     &::before {
@@ -26,7 +26,164 @@
         pointer-events: none;
     }
 }
-#menu-background-effects{
+.menu-background-animated{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+
+    background:linear-gradient(
+        to bottom,
+        #102540 0%,
+        #0b1630 45%,
+        #050811 100%
+    );
+    .moon{
+        position:absolute;
+        left:50%;
+        top:30%;
+
+        width:10vw;
+        height:10vw;
+
+        transform:translate(-50%,-50%);
+
+        background:url("/img/menu/final_screen/moon.png") center/contain no-repeat;
+    }
+    .sky-glow{
+        position:absolute;
+        left:50%;
+        top:30%;
+
+        width:30vw;
+        height:30vw;
+
+        transform:translate(-50%,-50%);
+
+        border-radius:50%;
+        background:#5dc9f044;
+        filter:blur(120px);
+    }
+    .mountains{
+        position:absolute;
+
+        left:0;
+        right:0;
+        bottom:0;
+
+        height:50vw;
+
+        background:
+            url("/img/menu/final_screen/mountains_1.png")
+            repeat-x bottom;
+
+        background-size:auto 100%;
+        animation:scroll-animation 180s linear infinite;
+    }
+    .city{
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:0;
+
+        background-image:url("/img/menu/final_screen/building_1.png");
+        background-repeat:repeat-x;
+        animation:scroll-animation 90s linear infinite;
+    }
+    .city-back{
+        height:40vw;
+
+        background-size:auto 100%;
+    }
+    .palms{
+        position:absolute;
+
+        background-image:url("/img/menu/final_screen/palm.png");
+        left: 0;
+        right: 0;
+        bottom: -1vw;
+
+        background-repeat:repeat-x;
+        animation:scroll-animation 60s linear infinite;
+    }
+    .palms-back{
+        height: 30vw;
+        background-size:auto 100%;
+    }
+    .palms-front{
+        height: 20vw;
+        background-size:auto 100%;
+    }
+    .wave{
+        position:absolute;
+        left:0;
+        right:0;
+        background-repeat:repeat-x;
+        background-image:url("/img/menu/final_screen/waves.svg");
+        background-size:auto 100%;
+        filter: brightness(.6);
+    }
+    .wave-1{
+        bottom:7vw;
+        height:2.5vw;
+        animation:scroll-animation 60s linear infinite;
+    }
+    .wave-2{
+        bottom:3vw;
+        height:2vw;
+        animation:scroll-animation 55s linear infinite
+    }
+    .water{
+        position:absolute;
+
+        left:0;
+        right:0;
+        bottom:0;
+
+        height:13vw;
+
+        overflow:hidden;
+
+        transform:scaleY(-0.7);
+        filter: blur(7px) brightness(.75);
+    }
+    &#menu-background-islando{
+        .mountains{
+            height: 80vw;
+            bottom: 12vw;
+        }
+        .reflection-mountains{
+            bottom: 0;
+        }
+        .palms{
+            height: 30vw;
+            bottom: 12vw;
+        }
+        .reflection-palms{
+            bottom: 0;
+        }
+        .city-back{
+            height:40vw;
+            bottom: 12vw;
+        }
+        .reflection-city{
+            bottom: 0;
+        }
+        .ground{
+            position: absolute;
+            width: 100%;
+            height: 5vw;
+            background:#050811;
+            left: 0;
+            right: 0;
+            bottom: 10vw;
+        }
+    }
+    @keyframes scroll-animation {
+        from { background-position-x: 0; }
+        to   { background-position-x: -100%; }
+    }
+}
+/*#menu-background-effects{
     position: absolute;
     pointer-events: none;
     left: 0px;
@@ -34,7 +191,7 @@
     width: 100%;
     height: 100%;
     backdrop-filter: blur(7px);
-}
+}*/
 #game-version{
     position: absolute;
     color: #fff;
@@ -172,32 +329,34 @@
     }
 }
 #title-section {
-    width: 500px;
+    width: 800px;
 
     user-select: none;
     margin-bottom: 100px;
-    animation: TitleAnimation 23s infinite ease-in-out alternate;
+    animation: TitleAnimation 46s infinite ease-in-out alternate;
 
     @include main.large_screen {
-        width: 435px;
+        width: 700px;
         margin-bottom: 75px;
     }
     @include main.medium_screen {
-        width: 375px;
+        width: 650px;
         margin-bottom: 55px;
     }
     @include main.small_screen {
-        width: 290px;
+        width: 430px;
         margin-bottom: 35px;
     }
     @include main.tiny_screen {
-        width: 170px;
+        width: 300px;
         margin-bottom: 25px;
     }
 }
 @keyframes TitleAnimation {
-    0% { transform:rotate(-3deg) scale(100%); }
-    100% { transform:rotate(3deg) scale(108%); }
+    0% { transform:rotate(-2deg) scale(100%); }
+    33% { transform:rotate(2deg) scale(108%); }
+    66% { transform:rotate(2deg) scale(100%); }
+    100% { transform:rotate(-2deg) scale(108%); }
 }
 #menu-options{
     display: flex;
@@ -213,7 +372,7 @@
     height: fit-content;
     align-items: center;
     opacity: 0;
-    transition: opacity 0.5s linear;
+    transition: opacity 2s linear;
     button{
         padding-left: 40px;
         padding-right: 40px;
@@ -251,7 +410,7 @@
     bottom: 0px;
     top: 0px;
     margin: auto;
-    transition: opacity 0.5s linear;
+    transition: opacity 2s linear;
     .close-btn{
         width: 60px;
         height: 60px;

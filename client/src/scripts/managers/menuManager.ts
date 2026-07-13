@@ -2,7 +2,7 @@ import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
+import { AudioEngine, Camera2D, Context2D, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -16,9 +16,11 @@ export class MenuManager{
     tabs:Record<string,MenuTab>={}
     tabs_html:Record<string,HTMLDivElement>={}
     current_tab?:string
+    cam2d!:Camera2D
     content={
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
+        gameCanvas:document.querySelector("#game-canvas") as HTMLDivElement,
 
         menu_options:document.body.querySelector("#menu-options") as HTMLDivElement,
         menu_content:document.body.querySelector("#menu-content") as HTMLDivElement,
@@ -279,12 +281,14 @@ export class MenuManager{
             this.content.menu_options.style.opacity="1"
         }
     }
-    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
         this.save=save
         this.resources=resources
         this.sounds=sounds
         this.translation=transition
         this.input=input
+        this.cam2d=cam2d
+        this.cam2d.visible=false
         this.update_api()
 
         ShowElement(this.content.menu_options,true)
@@ -703,12 +707,17 @@ export class MenuManager{
 </a>`
         }
     }
+
+    update(){
+    }
     game_start(){
         ShowElement(this.content.gameD)
         HideElement(this.content.menuD)
+        this.cam2d.visible=true
     }
     game_end(){
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
+        this.cam2d.visible=false
     }
 }

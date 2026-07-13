@@ -79,7 +79,7 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
                 }
             }
             await this.game.bind(fs)
-            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.definitions,this.game.language,mods)
+            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.cam2d,this.game.definitions,this.game.language,mods)
             await this.game.load_resources(["main"],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
             this.game.mainloop(true)

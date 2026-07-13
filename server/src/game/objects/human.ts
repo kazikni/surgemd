@@ -75,6 +75,7 @@ export class Human extends MovingBody{
 
     dead:boolean=false
     downed:boolean=false
+    swimming:boolean=false
     health_data:HumanHealthData&{boost_time:number,imortal:boolean,old_health:number,old_boost:number,old_boost_type:number}={
         imortal:false,
         invensibility_time:0,
@@ -855,7 +856,7 @@ export class Human extends MovingBody{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let acceleration=40*(this.downed?0.2:current_floor.acceleration)
+        let acceleration=40*(this.downed||this.swimming?0.2:current_floor.acceleration)
         acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.5*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
@@ -864,6 +865,7 @@ export class Human extends MovingBody{
             * (this.downed?0.25:1)
             * (this.parachute?1:(current_floor.speed_mult))
             * (this.grenade_holding?0.7:1)
+        this.swimming=current_floor.deep||false
         if(this.recoil){
             this.recoil.delay-=dt
             if(this.recoil.delay<=0)this.recoil=undefined
@@ -968,7 +970,7 @@ export class Human extends MovingBody{
                 const move=v2.from_PolarMovement(this.input.movement)
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
-                if(this.downed){
+                if(this.downed||this.swimming){
                     this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
                 }else{
                     this.physical_data.rotation=this.input.rotation
@@ -981,7 +983,7 @@ export class Human extends MovingBody{
             super.on_tick(dt)
             if(!this.parachute){
                 //Hand Use
-                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.downed){
+                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.downed&&!this.swimming){
                     if(this.input.using_item){
                         this.inventory.hand_item.on_fire(this)
                         this.input.using_item_down=false
@@ -1458,6 +1460,7 @@ export class Human extends MovingBody{
 
             this.dead,
             this.downed,
+            this.swimming,
 
             this.input.path===undefined,
             this.seat!==undefined

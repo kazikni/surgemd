@@ -144,6 +144,7 @@ export class Human extends MovingBody{
     current_weapon?:WeaponDef
     dead:boolean=true
     downed:boolean=false
+    swimming:boolean=false
     shield:boolean=false
     effects:{def:EffectDef,lifetime:number}[]=[]
     current_floor?:FloorType
@@ -530,7 +531,7 @@ export class Human extends MovingBody{
         this.sprites.left_leg.visible=false
         this.sprites.right_leg.visible=false
         this.container.zIndex=zIndexes.Players
-        this.update_weapon(this.current_weapon)
+        this.set_current_weapon(this.current_weapon,true)
     }
 
     // Weapon And Arm Rig
@@ -594,8 +595,8 @@ export class Human extends MovingBody{
             if(replace)this.sprites.weapon.transform_frame(replace)
         }
     }
-    set_current_weapon(weapon?:WeaponDef){
-        if(this.current_weapon===weapon)return
+    set_current_weapon(weapon?:WeaponDef,force:boolean=false){
+        if((this.current_weapon===weapon&&!force)||this.downed)return
         this.current_weapon=weapon
 
         this.assets.weapon_fire_sound=undefined
@@ -820,9 +821,10 @@ export class Human extends MovingBody{
                 this.current_floor=f
                 this.assets.footstep_sounds=Floors[f as FloorType].footstep_sounds
             }
+            const footstep_distance=2*(this.swimming?0.25:1)
             this.distance_since_last_footstep+=this.distance_walked
             // Play Footstep Sound And Do Water Riple
-            if(this.distance_since_last_footstep>=2){
+            if(this.distance_since_last_footstep>=footstep_distance){
                 const walk_dir:number=old_pos?v2.lookTo(this.position,old_pos):this.physical_data.rotation
                 this.distance_since_last_footstep=0
                 if(this.assets.footstep_sounds){
@@ -1514,7 +1516,7 @@ export class Human extends MovingBody{
             has_emote,
             emote_is_item,
 
-            dead,downed,
+            dead,downed,swimming,
 
             controlling,
             seat,
@@ -1528,6 +1530,12 @@ export class Human extends MovingBody{
         }else if(dead){
             this.on_die()
             this.container.visible=false
+        }
+        this.swimming=swimming
+        if(downed||swimming){
+            this.on_downed()
+        }else if(this.downed&&!(downed||swimming)){
+            this.on_help_up()
         }
         if(full||physical_dirty_part||physical_dirty){
             this.decode_physical_data(stream,full)
@@ -1640,11 +1648,6 @@ export class Human extends MovingBody{
             if(this.melee?.idNumber!==id){
                 this.update_melee(this.game.definitions.melees.getFromNumber(id))
             }
-        }
-        if(downed){
-            this.on_downed()
-        }else if(this.downed&&!downed){
-            this.on_help_up()
         }
         if(full){
             if(this.id!==this.game.active_entity_id&&this.game.ui.group_members[this.id])this.set_name(this.game.ui.players_name[this.id].name)

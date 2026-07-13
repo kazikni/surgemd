@@ -2,11 +2,16 @@ import { UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { GameItem } from "common/scripts/definitions/game_defs.ts";
+import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
+import { GunDef } from "common/scripts/definitions/items/guns.ts";
 
 export class InventoryModule extends UIModule<Game> {
     items_container!: HTMLDivElement
     items_cache: HTMLDivElement[] = []
+
+    weapons_container!: HTMLDivElement
+    weapons_elements: Record<number, HTMLDivElement> = {}
+    current_weapon: number = -1
 
     aitems_container!: HTMLDivElement
     aitems_cache: Map<string, HTMLDivElement> = new Map()
@@ -17,6 +22,7 @@ export class InventoryModule extends UIModule<Game> {
 
     override on_init(): void {
         this.items_container = document.querySelector("#ui-items") as HTMLDivElement
+        this.weapons_container = document.querySelector("#ui-weapons") as HTMLDivElement
         this.aitems_container = document.querySelector("#ui-aitems") as HTMLDivElement
         this.iitems_container = document.querySelector("#ui-iitems") as HTMLDivElement
     }
@@ -26,6 +32,8 @@ export class InventoryModule extends UIModule<Game> {
                 if(state.dirty.inventory.items)this.render_items(state.inventory.items)
                 if(state.dirty.inventory.aitems)this.render_aitems(this.game.inventory.aitems)
                 if(state.dirty.inventory.iitems)this.render_iitems(this.game.inventory.iitems)
+                if(state.dirty.inventory.weapons)this.render_weapons()
+                if(state.dirty.inventory.hand)this.update_current_weapon()
                 break
             case "backpack_dirty":
                 this.render_aitems(this.game.inventory.aitems)
@@ -112,8 +120,97 @@ export class InventoryModule extends UIModule<Game> {
             }
         }
     }
+    private render_weapons() {
+        for(const idx in this.game.inventory.weapons){
+            const i=parseInt(idx)
+            if(!this.weapons_elements[i]){
+                this.create_weapon_element(i)
+            }
 
-    
+            const item=this.game.inventory.weapons[i]
+
+            const name_el=this.weapons_elements[i].querySelector(".weapon-slot-name") as HTMLSpanElement
+            const img_el=this.weapons_elements[i].querySelector(".weapon-slot-image") as HTMLImageElement
+            if (item) {
+                const name=this.game.language.get("items."+item.def.idString)
+                const assets = item.assets(this.game.resources)
+                if((item.def as WeaponDef).description){
+                    let descriptionKey = `items.description.${(item.def as WeaponDef).idString}`
+                    if(typeof (item.def as WeaponDef).description === "string"){
+                        descriptionKey = (item.def as WeaponDef).description as string
+                    }
+                    this.weapons_elements[i].dataset.item_description=this.game.language.get(descriptionKey)
+                }
+                name_el.innerText = name
+                this.weapons_elements[i].dataset.item_name="items."+item.def.idString
+                img_el.src = assets.item.src
+                img_el.style.display = "block"
+            } else {
+                name_el.innerText = ""
+                img_el.style.display = "none"
+                this.weapons_elements[i].dataset.item_name=""
+                this.weapons_elements[i].dataset.item_description=""
+            }
+        }
+    }
+    create_weapon_element(i:number):HTMLDivElement{
+        const el = document.createElement("div")
+        el.className = "weapon-slot"
+        el.id = "weapon-slot-" + i
+
+        const number = document.createElement("span")
+        number.className = "weapon-slot-number"
+        number.innerText = (i + 1).toString()
+        el.appendChild(number)
+
+        const name = document.createElement("span")
+        name.className = "weapon-slot-name"
+        el.appendChild(name)
+
+        const img = document.createElement("img")
+        img.className = "weapon-slot-image"
+        el.appendChild(img)
+        
+        el.dataset.item_kind = "1"
+        el.dataset.item_value = i.toString()
+
+        el.addEventListener("mousedown", this.game.ui.handle_slot_click.bind(this.game.ui))
+        el.addEventListener("touchstart", this.game.ui.handle_slot_touch.bind(this.game.ui))
+        el.onmouseenter=(e)=>{
+            this.game.ui.tooltip_show(el.dataset.item_name,el.dataset.item_description??"")
+        }
+        el.onmouseleave=()=>{
+            this.game.ui.tooltip_hide()
+        }
+
+        if (this.current_weapon === i) {
+            el.classList.add("weapon-slot-selected")
+        }
+        this.weapons_elements[i] = el
+        this.weapons_container.appendChild(el)
+        return el
+    }
+
+    private update_current_weapon() {
+        if (this.current_weapon !== -1) {
+            this.weapons_elements[this.current_weapon]?.classList.remove("weapon-slot-selected")
+        }
+
+        this.current_weapon = this.game.inventory.weapon_idx
+        const item=this.game.inventory.weapons[this.game.inventory.weapon_idx]
+        this.weapons_elements[this.current_weapon]?.classList.add("weapon-slot-selected")
+
+        if(item&&item.item_type===InventoryItemType.gun){
+            const def=(item.def as GunDef)
+            this.game.aim_line.width=((def.bullet?.def.range??1000)*0.43)
+            /*const spread=def.spread??0
+            const jr=def.jitter_radius??0
+            this.game.aim_line.height=(spread*0.33)+jr*/
+        }else{
+            this.game.aim_line.width=10
+            this.game.aim_line.height=0.1
+        }
+    }
     private sort_html_aitems(keys:string[]){
         for(const key of keys){
             const el=this.aitems_cache.get(key)
@@ -239,6 +336,10 @@ export class InventoryModule extends UIModule<Game> {
     override on_clear(): void {
         this.items_container.innerHTML = ""
         this.items_cache = []
+        
+        this.weapons_container.innerHTML = ""
+        this.weapons_elements = {}
+        this.current_weapon = -1
 
         this.aitems_container.innerHTML=""
         this.aitems_cache.clear()

@@ -171,7 +171,7 @@ export class MenuManager{
         })
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
-        this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.png" draggable="false"></img>'
+        this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.svg" draggable="false"></img>'
         this.content.menu_content.innerHTML=""
         this.tabs={}
         this.tabs_html={}

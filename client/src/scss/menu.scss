@@ -27,6 +27,7 @@
     }
 }
 .menu-background-animated{
+    pointer-events: none;
     position:absolute;
     inset:0;
     overflow:hidden;
@@ -329,26 +330,22 @@
     }
 }
 #title-section {
-    width: 800px;
+    width: 45vw;
 
     user-select: none;
     margin-bottom: 100px;
     animation: TitleAnimation 46s infinite ease-in-out alternate;
 
     @include main.large_screen {
-        width: 700px;
         margin-bottom: 75px;
     }
     @include main.medium_screen {
-        width: 650px;
         margin-bottom: 55px;
     }
     @include main.small_screen {
-        width: 430px;
         margin-bottom: 35px;
     }
     @include main.tiny_screen {
-        width: 300px;
         margin-bottom: 25px;
     }
 }

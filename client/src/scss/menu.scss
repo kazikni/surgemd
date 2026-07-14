@@ -26,120 +26,220 @@
         pointer-events: none;
     }
 }
-.menu-background-animated{
+#menu-background{
     pointer-events: none;
     position:absolute;
     inset:0;
     overflow:hidden;
-
-    background:linear-gradient(
-        to bottom,
-        #102540 0%,
-        #0b1630 45%,
-        #050811 100%
-    );
-    .stars{
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background:url("/img/menu/final_screen/stars.png") center/contain;
-        background-size: 30vw 30vw;
-        opacity: 20%;
-    }
-    .moon{
+    .background-object{
         position:absolute;
-        left:50%;
-        top:30%;
-
-        width:10vw;
-        height:10vw;
-
-        transform:translate(-50%,-50%);
-
-        background:url("/img/menu/final_screen/moon.png") center/contain no-repeat;
-    }
-    .sky-glow{
-        position:absolute;
-        left:50%;
-        top:30%;
-
-        width:30vw;
-        height:30vw;
-
-        transform:translate(-50%,-50%);
-
-        border-radius:50%;
-        background:#5dc9f044;
-        filter:blur(120px);
-    }
-    .mountains{
-        position:absolute;
-
+        background-size:auto 100%;
+        background-repeat: repeat no-repeat;
         left:0;
         right:0;
+    }
+    .night-background{
+        position:absolute;
+        inset:0;
+        overflow:hidden;
+        transition: opacity linear 2s;
+        background:linear-gradient(
+            to bottom,
+            #102540 0%,
+            #0b1630 45%,
+            #050811 100%
+        );
+        .stars{
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background:url("/img/menu/final_screen/stars.png") center/contain;
+            background-size: 30vw 30vw;
+            opacity: 20%;
+        }
+        .moon{
+            position:absolute;
+            left:50%;
+            top:20%;
+
+            width:10vw;
+            height:10vw;
+
+            transform:translate(-50%,-50%);
+
+            background:url("/img/menu/final_screen/moon.png") center/contain no-repeat;
+        }
+        .sky-glow{
+            position:absolute;
+            left:50%;
+            top:20%;
+
+            width:30vw;
+            height:30vw;
+
+            transform:translate(-50%,-50%);
+
+            border-radius:50%;
+            background:#5dc9f044;
+            filter:blur(120px);
+        }
+    }
+    .day-background{
+        position:absolute;
+        inset:0;
+        overflow:hidden;
+        background: linear-gradient(
+            to bottom,
+            #5fd8ff 0%,
+            #4dbcf8 35%,
+            #6ca9ff 70%,
+            #f8d8a8 100%
+        );
+        transition: opacity linear 2s;
+        .sun{
+            position:absolute;
+            left:50%;
+            top:20%;
+
+            width:10vw;
+            height:10vw;
+
+            transform:translate(-50%,-50%);
+
+            background:url("/img/menu/final_screen/sun.svg") center/contain no-repeat;
+        }
+        .sky-glow{
+            position:absolute;
+            left:50%;
+            top:20%;
+
+            width:30vw;
+            height:30vw;
+
+            transform:translate(-50%,-50%);
+
+            border-radius:50%;
+            background:#ff510044;
+            filter:blur(120px);
+        }
+        .horizon-haze{
+            position:absolute;
+
+            left:0;
+            right:0;
+
+            bottom:18vw;
+
+            height:18vw;
+
+            background:
+                linear-gradient(
+                    to top,
+                    rgba(255,240,180,.25),
+                    transparent
+                );
+
+            filter:blur(30px);
+        }
+    }
+    .clouds{
+        top:4vw;
+        height:12vw;
+
+        background:url("/img/menu/final_screen/cloud_1.svg");
+        animation:scroll-right-animation 300s linear infinite;
+        opacity: 0.25;
+    }
+    .rain{
+        position:absolute;
+        inset:-50%;
+
+        background-image:url("/img/menu/final_screen/rain.svg");
+        background-repeat:repeat;
+
+        transform:rotate(-45deg);
+
+        pointer-events:none;
+        opacity:.35;
+        background-size:8vw 8vw;
+        animation:rain-scroll-front 20s linear infinite;
+    }
+    @keyframes scroll-left-animation {
+        from { background-position-x: 100%; }
+        to   { background-position-x: -100%; }
+    }
+    @keyframes scroll-right-animation {
+        from { background-position-x: -100%; }
+        to   { background-position-x: 100%; }
+    }
+    @keyframes rain-scroll-front{
+        from{
+            background-position:0 0;
+        }
+        to{
+            background-position:-450vw 5vw;
+        }
+    }
+}
+.menu-background-animated{
+    .mountains{
         bottom:0;
 
         height:50vw;
 
-        background:
-            url("/img/menu/final_screen/mountains_1.png")
-            repeat-x bottom;
+        background:url("/img/menu/final_screen/mountains_1.png");
+        animation:scroll-right-animation 360s linear infinite;
+    }
+    .mountains-ice{
+        bottom:0;
 
-        background-size:auto 100%;
-        animation:scroll-animation 180s linear infinite;
+        height:50vw;
+
+        background:url("/img/menu/final_screen/mountains_2.svg");
+        animation:scroll-right-animation 360s linear infinite;
     }
     .city{
-        position:absolute;
-        left:0;
-        right:0;
         bottom:0;
 
         background-image:url("/img/menu/final_screen/building_1.png");
-        background-repeat:repeat-x;
-        animation:scroll-animation 90s linear infinite;
+        animation:scroll-left-animation 180s linear infinite;
     }
     .city-back{
         height:40vw;
-
-        background-size:auto 100%;
     }
     .palms{
-        position:absolute;
-
         background-image:url("/img/menu/final_screen/palm.png");
-        left: 0;
-        right: 0;
         bottom: -1vw;
 
-        background-repeat:repeat-x;
-        animation:scroll-animation 60s linear infinite;
+        animation:scroll-left-animation 120s linear infinite;
     }
     .palms-back{
         height: 30vw;
-        background-size:auto 100%;
     }
     .palms-front{
         height: 20vw;
-        background-size:auto 100%;
     }
     .wave{
-        position:absolute;
         left:0;
         right:0;
-        background-repeat:repeat-x;
+        bottom: 0;
         background-image:url("/img/menu/final_screen/waves.svg");
-        background-size:auto 100%;
-        filter: brightness(.6);
+        filter: brightness(0.5) blur(3px);
     }
     .wave-1{
-        bottom:7vw;
-        height:2.5vw;
-        animation:scroll-animation 60s linear infinite;
+        bottom:8vw;
+        height:2vw;
+        animation:scroll-left-animation 130s linear infinite;
     }
     .wave-2{
+        bottom:5.5vw;
+        height:1.3vw;
+        animation:scroll-left-animation 120s linear infinite;
+    }
+    .wave-3{
         bottom:3vw;
-        height:2vw;
-        animation:scroll-animation 55s linear infinite
+        height:1vw;
+        animation:scroll-left-animation 110s linear infinite
     }
     .water{
         position:absolute;
@@ -154,6 +254,16 @@
 
         transform:scaleY(-0.7);
         filter: blur(7px) brightness(.75) saturate(80%);
+        backdrop-filter: blur(7px) brightness(.75) saturate(80%);
+    }
+    .ground{
+        position: absolute;
+        width: 100%;
+        height: 5vw;
+        background:#050811;
+        left: 0;
+        right: 0;
+        bottom: 10vw;
     }
     &#menu-background-islando{
         .mountains{
@@ -177,19 +287,22 @@
         .reflection-city{
             bottom: 2vw;
         }
-        .ground{
-            position: absolute;
-            width: 100%;
-            height: 5vw;
-            background:#050811;
-            left: 0;
-            right: 0;
-            bottom: 10vw;
-        }
     }
-    @keyframes scroll-animation {
-        from { background-position-x: 0; }
-        to   { background-position-x: -100%; }
+    &#menu-background-tundra{
+        .mountains-ice{
+            height: 80vw;
+            bottom: 12vw;
+        }
+        .reflection-mountains{
+            bottom: 0;
+        }
+        .palms{
+            height: 30vw;
+            bottom: 12vw;
+        }
+        .reflection-palms{
+            bottom: 0;
+        }
     }
 }
 /*#menu-background-effects{

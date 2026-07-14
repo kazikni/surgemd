@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="1920"
+   height="1080"
+   viewBox="0 0 1228.8 691.2"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="mountains_2.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient919">
+      <stop
+         style="stop-color:#a7bccc;stop-opacity:1;"
+         offset="0.00153846"
+         id="stop915" />
+      <stop
+         style="stop-color:#959ca8;stop-opacity:1;"
+         offset="1"
+         id="stop917" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient919"
+       id="linearGradient921"
+       x1="600.86011"
+       y1="548.27234"
+       x2="602.78796"
+       y2="693.38281"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.003125,0,0,1,-1.9200001,0)" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.71329397"
+     inkscape:cx="406.56449"
+     inkscape:cy="1142.5864"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     showgrid="false" />
+  <path
+     style="fill:url(#linearGradient921);fill-opacity:1;stroke:#62808e;stroke-width:3.84;stroke-dasharray:none;stroke-opacity:1"
+     d="m -1.9200001,442.2113 80.9759851,47.25302 43.246855,-71.78378 60.90185,37.8569 114.78753,-49.00176 119.96506,48.53561 56.12785,-42.1616 82.19577,42.63329 104.00248,-22.06508 51.55431,26.71385 46.03236,-44.55071 107.36588,29.96285 95.64261,-24.56839 128.88306,59.34068 140.9584,-38.16487 V 691.2 H -1.9200001 Z"
+     id="path1"
+     sodipodi:nodetypes="cccccccccccccccccc" />
+</svg>

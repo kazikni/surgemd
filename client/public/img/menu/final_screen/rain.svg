@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="500"
+   height="12.900177"
+   viewBox="0 0 320 8.2561139"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="rain.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#929292"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="true"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#000000"
+     inkscape:zoom="0.35664698"
+     inkscape:cx="-642.09152"
+     inkscape:cy="622.46426"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     showgrid="false" />
+  <g
+     id="g4"
+     transform="matrix(0.80511729,0,0,0.54067726,27.157959,-44.539872)"
+     style="fill:none;stroke-width:1.06187">
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;fill:#ffffff;stroke-width:1.03829;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="m 107.78774,82.377927 c -6.427,4.81e-4 -6.42696,15.269466 0,15.269947 H 222.2048 c 6.42927,0.0021 6.42931,-15.272014 0,-15.269947 z"
+       id="path17"
+       sodipodi:nodetypes="ccccc" />
+  </g>
+</svg>

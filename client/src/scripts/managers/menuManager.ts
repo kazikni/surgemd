@@ -44,6 +44,9 @@ export class MenuManager{
         main_social:document.body.querySelector("#main-social") as HTMLDivElement,
         content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
+
+        menu_background_night:document.querySelector(".night-background") as HTMLDivElement,
+        menu_background_day:document.querySelector(".day-background") as HTMLDivElement,
     }
 
     save!:GameSave
@@ -61,6 +64,10 @@ export class MenuManager{
     cutscene:HistoryCommand[]=[]
 
     params:URLSearchParams
+
+    menu_time_state=0
+    menu_time_timer:number=0
+    menu_time_delay:number=30
 
     constructor(definitions:GameDefinition){
         this.params = new URLSearchParams(self.location.search)
@@ -297,6 +304,9 @@ export class MenuManager{
         this.update_api()
 
         ShowElement(this.content.menu_options,true)
+        if(this.inverval===undefined){
+            this.inverval=setInterval(this.update.bind(this),1000)
+        }
     }
     async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
         await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)
@@ -713,17 +723,37 @@ export class MenuManager{
         }
     }
 
+    inverval?:any
     update(){
+        this.menu_time_timer-=1
+        if(this.menu_time_timer<=0){
+            this.menu_time_timer+=this.menu_time_delay
+            if(this.menu_time_state===0){
+                this.content.menu_background_day.style.opacity="0"
+                this.content.menu_background_night.style.opacity="1"
+                this.menu_time_state=1
+            }else{
+                this.content.menu_background_day.style.opacity="1"
+                this.content.menu_background_night.style.opacity="0"
+                this.menu_time_state=0
+            }
+        }
     }
     game_start(){
         ShowElement(this.content.gameD)
         HideElement(this.content.menuD)
         this.cam2d.visible=true
+        if(this.inverval!==undefined){
+            clearInterval(this.inverval)
+        }
     }
     game_end(){
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
         this.cam2d.visible=false
+        if(this.inverval===undefined){
+            this.inverval=setInterval(this.update.bind(this),1)
+        }
     }
 }
 

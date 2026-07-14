@@ -1,3 +1,5 @@
+import { ColorM } from "common/engine/core.ts";
+
 export interface Crosshair {
     color: string;
     size: number;
@@ -13,6 +15,9 @@ export interface Crosshair {
     pulse?:boolean
     pulseSpeed?:number
 
+    rainbow?: boolean,
+    rainbowSpeed?: number,
+
     gen_callback?: (
         crosshair: Crosshair,
         spread: number,
@@ -26,25 +31,22 @@ function getCrosshairDims(def: Crosshair) {
     return { width: size, height: size };
 }
 
-function makeSVGDataURL(def: Crosshair): string {
-    const { width, height } = getCrosshairDims(def);
-    const color = def.color
-    const stroke = def.stroke;
-
+function makeSVGDataURL(def: Crosshair,color = def.color,stroke_color = def.stroke_color): string {
+    const { width, height } = getCrosshairDims(def)
+    const stroke = def.stroke
     const svg = def.code
-        .replace(/fill="white"/g, `fill="${color}"`)
-        .replace(/stroke-width=".5"/g, `stroke-width="${stroke}"`)
-        .replace(/stroke="black"/g, `stroke="${def.stroke_color}"`)
+        .replace(/%FILL%/g, color)
+        .replace(/%STROKE%/g, stroke_color)
+        .replace(/%WIDTH%/g, `${stroke}`)
         .replace(/width="64"/g, `width="${width}"`)
         .replace(/height="64"/g, `height="${height}"`)
         .replace(/#/g, "%23");
-
     return `url('data:image/svg+xml;utf8,${svg.replace(/#/g, "%23")}')`;
 }
 
-function makeCursorCSS(def: Crosshair): string {
+function makeCursorCSS(def: Crosshair,fill = def.color,stroke = def.stroke_color): string {
     const { width, height } = getCrosshairDims(def);
-    return `${makeSVGDataURL(def)} ${width / 2} ${height / 2}, crosshair`;
+    return `${makeSVGDataURL(def,fill,stroke)} ${width / 2} ${height / 2}, crosshair`;
 }
 export abstract class CrosshairBase {
     protected spread = 0
@@ -72,13 +74,32 @@ export abstract class CrosshairBase {
     destroy() {}
 }
 export class StaticCrosshair extends CrosshairBase {
-    constructor(elem: HTMLElement, private def: Crosshair) {
+    private time = 0
+    rainbow?:boolean
+
+    constructor(elem: HTMLElement,private def: Crosshair){
         super(elem)
+    }
+
+    override tick(dt:number){
+        if(!this.def.rainbow&&!this.rainbow){
+            return
+        }
+        this.time += dt
         this.dirty = true
     }
 
-    protected build(): string {
-        return makeCursorCSS(this.def)
+    protected build():string{
+        if(!this.def.rainbow&&!this.rainbow){
+            return makeCursorCSS(this.def)
+        }
+        const speed = this.def.rainbowSpeed ?? 120
+        const color = ColorM.hsv((this.time * speed) % 360,1,1)
+        return makeCursorCSS(
+            this.def,
+            ColorM.rgba2hex(color),
+            ColorM.rgba2hex(ColorM.mult_hsv(color,undefined,undefined,0.25))
+        );
     }
 }
 export class DynamicCrosshairCursor extends CrosshairBase {

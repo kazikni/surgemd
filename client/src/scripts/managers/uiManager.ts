@@ -8,11 +8,11 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, random, ShowElement, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { DefaultCrosshair } from "../defs/crosshair.ts";
+import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
@@ -574,14 +574,15 @@ export class UiManager{
     crosshair=false
     crosshair_manager:CrosshairManager=new CrosshairManager(document.body)
     enableCrosshair() {
-        //CrosshairManager.setCursor(this.content.gameD,DynamicCrosshair)
-        this.crosshair_manager.set(new StaticCrosshair(document.body,DefaultCrosshair))
-        //this.crosshair_manager.set(new AnimatedCrosshair(document.body,DefaultCrosshair))
+        const v=new StaticCrosshair(document.body,random.choose([DefaultCrosshair,AimCrosshair]))
+        v.rainbow=Math.random()<=0.01
+        this.crosshair_manager.set(v)
         this.crosshair=true
     }
     disableCrosshair() {
         document.body.style.cursor = this.game.cursors.default
         this.crosshair=false
+        this.crosshair_manager.clear()
     }
     update_crosshair(dt:number){
         if(!this.crosshair)return

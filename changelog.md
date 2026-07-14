@@ -14,6 +14,8 @@ __                                                                              
 * On Die Sound
 * More Screen Sizes
 * Loading Screen Aim Training Minigame Easter Egg
+* Rainbow crosshair easter egg
+* Aim crosshair
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

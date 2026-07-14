@@ -365,6 +365,7 @@
     z-index: 101;
     transition: opacity 0.5s ease-in-out;
     pointer-events: all;
+    user-select: none;
 
     #loading-screen-logo-container {
         display: flex;
@@ -408,6 +409,20 @@
         transform: translateX(-50%);
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
+    }
+    #loading-minigame{
+        position:absolute;
+        inset:0;
+        pointer-events:auto;
+        #loading-target{
+            position: absolute;
+            width: 5vw;
+            height: 5vw;
+            background-image: url("/img/menu/logos/MD/MD.svg");
+            background-size: cover;
+            background-position: center;
+            transition: left 0.9s linear, top 0.9s linear;
+        }
     }
 
     @include main.medium_screen {

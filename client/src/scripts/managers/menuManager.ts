@@ -29,6 +29,11 @@ export class MenuManager{
 
         loading_screen:document.body.querySelector("#loading-screen") as HTMLDivElement,
         loading_screen_current:document.body.querySelector("#loading-current") as HTMLDivElement,
+        loading_screen_logo:document.body.querySelector("#loading-screen-logo") as HTMLDivElement,
+
+        loading_minigame:document.body.querySelector("#loading-minigame") as HTMLDivElement,
+        loading_target:document.querySelector("#loading-target") as HTMLDivElement,
+        loading_score:document.querySelector("#loading-score") as HTMLDivElement,
         
         gameover_text_screen:document.body.querySelector("#text-gameover-container") as HTMLDivElement,
         gameover_text_current:document.body.querySelector("#text-gameover") as HTMLSpanElement,
@@ -68,6 +73,14 @@ export class MenuManager{
     menu_time_state=0
     menu_time_timer:number=0
     menu_time_delay:number=30
+
+    loading_game = {
+        enabled:false,
+        clicks:0,
+        score:0,
+        target_x:0,
+        target_y:0,
+    }
 
     constructor(definitions:GameDefinition){
         this.params = new URLSearchParams(self.location.search)
@@ -120,6 +133,16 @@ export class MenuManager{
                 url:"https://youtube.com/@kazikni",
             },
         ])
+
+
+        this.content.loading_screen_logo.onclick=()=>{
+            this.enable_loading_game()
+        }
+        this.content.loading_target.onclick=()=>{
+            this.loading_game.score++
+            this.content.loading_score.innerText = this.loading_game.score.toString()
+            this.spawn_target()
+        }
     }
     intro_fineshed:boolean=false
     start_intro(): Promise<void> {
@@ -409,14 +432,32 @@ export class MenuManager{
     
     // Loading Screen
     show_loading_screen(){
+        this.loading_game.enabled=false
+        HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen,true)
+        ShowElement(this.content.loading_screen_logo)
     }
     hide_loading_screen(){
         HideElement(this.content.loading_screen,true)
+        this.loading_game.enabled=false
+        HideElement(this.content.loading_minigame)
+        ShowElement(this.content.loading_screen_logo)
     }
-    
     set_loading_current(text="",unloading:boolean=false){
         this.content.loading_screen_current.innerHTML=`<p class="span-medium">${this.translation.get("menu.loading-screen."+(unloading?"unload":"load"),{text:text})}</p>`
+    }
+    enable_loading_game(){
+        this.loading_game.enabled=true
+        ShowElement(document.querySelector("#loading-minigame") as HTMLDivElement,true)
+        this.spawn_target()
+    }
+    spawn_target(){
+        const size = 80
+        const x = Math.random() * (self.innerWidth-size)
+        const y = Math.random() * (self.innerHeight-size)
+        this.content.loading_target.style.left=x+"px"
+        this.content.loading_target.style.top=y+"px"
+        HideElement(this.content.loading_screen_logo)
     }
 
     show_gameover_text(){

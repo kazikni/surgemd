@@ -13,6 +13,7 @@ __                                                                              
 * Main Socials
 * On Die Sound
 * More Screen Sizes
+* Loading Screen Aim Training Minigame Easter Egg
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

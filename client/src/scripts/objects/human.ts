@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef, Shape2D, model2d } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
@@ -93,6 +93,7 @@ export class Human extends MovingBody{
 
         accessorys:Sprite2D[]
 
+        shadow?:Shape2D
         name?:Sprite2D
     }
     consumible_particles!:ParticlesEmitter2D<ClientParticle2D>
@@ -300,6 +301,15 @@ export class Human extends MovingBody{
         this.game.cam2d.add_object(this.sprites.emote_container)
         this.sprites.emote_container.visible=false
 
+        if(this.game.world_shadow.enabled){
+            this.sprites.shadow=new Shape2D()
+            this.sprites.shadow.model=model2d.hitbox(this.base_hitbox)
+            this.sprites.shadow.color=this.game.world_shadow.color
+            this.sprites.shadow.matrix=this.game.world_shadow.matrix
+            this.sprites.shadow.zIndex=this.container.zIndex-0.5
+            this.game.cam2d.add_object(this.sprites.shadow)
+        }
+
         this.set_skin(
             this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
             undefined,undefined,
@@ -314,10 +324,12 @@ export class Human extends MovingBody{
         this.container.destroy()
         this.sprites.emote_container.destroy()
         if(this.sprites.name)this.sprites.name.destroy()
+        if(this.sprites.shadow)this.sprites.shadow.destroy()
     }
     override on_layer_set(): void {
         this.container.layer=this.layer
         this.sprites.emote_container.layer=this.layer
+        if(this.sprites.shadow)this.sprites.shadow.layer=this.layer
     }
 
     on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
@@ -437,6 +449,7 @@ export class Human extends MovingBody{
     on_die(){
         if(this.dead&&this.container.destroyed)return
         this.dead=true
+        if(this.sprites.shadow)this.sprites.shadow.destroy()
 
         for(let i=0;i<5;i++){
             const angle=random.rad()
@@ -522,6 +535,7 @@ export class Human extends MovingBody{
 
         this.sprites.weapon.visible=false
         this.sprites.weapon2.visible=false
+        if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
     }
     on_help_up(){
         if(!this.downed)return
@@ -532,6 +546,7 @@ export class Human extends MovingBody{
         this.sprites.right_leg.visible=false
         this.container.zIndex=zIndexes.Players
         this.set_current_weapon(this.current_weapon,true)
+        if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
     }
 
     // Weapon And Arm Rig
@@ -805,11 +820,14 @@ export class Human extends MovingBody{
         this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.player.radius*scale)
     }
 
+    override on_render(_dt: number): void {
+    }
     override on_tick(dt:number): void {
         const old_pos=this.old_pos
         super.on_tick(dt)
         this.container.rotation=this.physical_data.rotation
         this.container._position.set(this.position.x,this.position.y)
+        if(this.sprites.shadow)this.sprites.shadow.position=this.position
         if(this.sprites.name){
             this.sprites.name.position.x=this.position.x
             this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)

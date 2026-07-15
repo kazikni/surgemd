@@ -150,8 +150,7 @@ export abstract class ModeManager{
         leader:{
             kills_min:3
         },
-        loot_settings:{
-        }
+        loot_settings:{}
     }
 
     constructor(){}

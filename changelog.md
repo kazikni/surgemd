@@ -5,6 +5,7 @@ __                                                                              
 * No Hope Rework
 * Fall Biome
 * Swimming
+* Shadows
 __                                                                                                                 __
 ### Menu
 * Main Menu Rework
@@ -16,6 +17,7 @@ __                                                                              
 * Loading Screen Aim Training Minigame Easter Egg
 * Rainbow crosshair easter egg
 * Aim crosshair
+* Menu Shadow Options
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

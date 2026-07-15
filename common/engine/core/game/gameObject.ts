@@ -86,6 +86,7 @@ export abstract class BaseObject2D{
     on_layer_set():void{}
     on_tick(_dt:number):void{}
     on_physics_tick(_dt:number):void{}
+    on_render(_dt:number):void{}
     on_net_update():void{}
     on_destroy():void{}
 
@@ -754,6 +755,19 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const obj=this.objects[o]
                 try{
                     obj.tick(dt)
+                }catch(err){
+                    console.error(err)
+                }
+            }
+        }
+        this.cells.update()
+    }
+    render(dt:number){
+        for(const l of this.layers_orden){
+            for(const o of this.layers[l].ticks){
+                const obj=this.objects[o]
+                try{
+                    obj.on_render(dt)
                 }catch(err){
                     console.error(err)
                 }

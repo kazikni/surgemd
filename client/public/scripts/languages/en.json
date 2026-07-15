@@ -362,6 +362,7 @@
             },
             "graphics": {
                 "resolution": "Textures Quality",
+                "shadows": "Shadows",
                 "particles": "Particles",
                 "lights": "Lights",
                 "post_proccess": "Post Proccess",

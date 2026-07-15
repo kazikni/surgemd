@@ -277,11 +277,11 @@ export const model2d={
             tex_coords: new Float32Array(),
         }
     },
-    hitbox(hb:Hitbox2D):Model2D{
+    hitbox(hb:Hitbox2D,segments?:number):Model2D{
         if(hb.type===HitboxType2D.rect){
             return this.rect(hb.min,hb.max)
         }else if(hb.type===HitboxType2D.circle){
-            return this.circle(hb.radius,undefined,hb.position)
+            return this.circle(hb.radius,segments,hb.position)
         }else if(hb.type===HitboxType2D.group){
             const vertices: number[] = []
             const tex: number[] = []

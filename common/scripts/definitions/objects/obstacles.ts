@@ -1,4 +1,5 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix } from "../../../engine/core.ts";
+import { matrix4 } from "../../../engine/core/math/matrix.ts";
 import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
 import { GameObjectDefinitionType, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
@@ -75,7 +76,9 @@ export interface ObstacleDef extends Definition{
         destroy?:number
     }
     world_shadow?:{
-        model:Model2D
+        disabled?:boolean
+        model?:Model2D
+        hitbox?:Hitbox2D
     }
 
     assets?:{
@@ -126,7 +129,7 @@ export const obstacles_factory={
         return mergeDeep({idString:settings.id??(gun.idString+"_mount")},{
             health:65,
             height:1,
-            hitbox:new RectHitbox2D(v2(-0.7,-0.2),v2(0.7,0.2)),
+            hitbox:new RectHitbox2D(v2(-0.6,-0.15),v2(0.6,0.15)),
             scale:{
                 destroy:0.8
             },
@@ -163,7 +166,7 @@ export const obstacles_factory={
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
             health:190,
-            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.82),
+            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.84),
             spawnHitbox:settings.spawn_hitbox,
             scale:{
                 destroy:0.7,
@@ -217,7 +220,7 @@ export const obstacles_factory={
             rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
             below:{
-                alpha:60
+                alpha:30
             },
             height:2
         },settings.o??{})
@@ -459,7 +462,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             idString:"sillo",
             health:1,
             imortal:true,
-            hitbox:new CircleHitbox2D(v2(0,0),3),
+            hitbox:new CircleHitbox2D(v2(0,0),3.05),
             onDestroyExplosion:"barrel_explosion",
             assets:{
                 particles:{
@@ -467,6 +470,9 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     tint:0x484848
                 },
                 sounds:hit_sounds.heavy_metal
+            },
+            zIndex:{
+                base:zIndexes.Obstacles3
             },
             rotation_mode:RotationMode.full,
             reflect_bullets:true,
@@ -482,6 +488,9 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 max:1.2,
                 destroy:0.75,
             },
+            world_shadow:{
+                hitbox:new CircleHitbox2D(v2(0,0),2),
+            },
             assets:{
                 particles:{},
                 frame:{
@@ -494,8 +503,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2.2),
-                alpha:60
+                hitbox:new CircleHitbox2D(v2(0,0),2),
+                alpha:30
             },
             spawnMode:Spawn.grass,
         },
@@ -503,11 +512,14 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             idString:"pine_tree",
             health:180,
             hitbox:new CircleHitbox2D(v2(0,0),0.5),
-            spawnHitbox:new CircleHitbox2D(v2(0,0),1.8),
+            spawnHitbox:new CircleHitbox2D(v2(0,0),2),
             scale:{
                 min:1,
                 max:1.2,
                 destroy:0.75,
+            },
+            world_shadow:{
+                hitbox:new CircleHitbox2D(v2(0,0),2.8),
             },
             assets:{
                 particles:{
@@ -524,8 +536,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2.5),
-                alpha:60
+                hitbox:new CircleHitbox2D(v2(0,0),2.8),
+                alpha:30
             },
             spawnMode:Spawn.grass,
         },
@@ -539,7 +551,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             }
         }),
         obstacles_factory.bush("squared_bush",{
-            hitbox:new RectHitbox2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
+            hitbox:new RectHitbox2D(v2.new(-1,-1),v2.new(1,1)),
             o:{
                 health:130,
                 scale:{
@@ -761,7 +773,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 ]
             }
         },
-
         obstacles_factory.chest("military_chest",{
             o:{
                 assets:{
@@ -1019,7 +1030,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         {
             idString:"large_kitchen_drawer",
             health:70,
-            hitbox:new RectHitbox2D(v2(-0.56,-1.12),v2(0.56,1.12)),
+            hitbox:new RectHitbox2D(v2(-0.56,-1.1),v2(0.56,1.1)),
             scale:{
                 destroy:0.9
             },

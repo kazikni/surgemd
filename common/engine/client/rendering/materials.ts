@@ -69,7 +69,7 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
         gl.gl.vertexAttribPointer(aTrans, 2, gl.gl.FLOAT, false, 32, 8) // F4, F4
         gl.gl.vertexAttribPointer(aScale, 2, gl.gl.FLOAT, false, 32, 16) // F4, F4
         gl.gl.vertexAttribPointer(aRotation, 1, gl.gl.FLOAT, false, 32, 24) // F4
-        gl.gl.vertexAttribPointer(aColor, 4, gl.gl.UNSIGNED_BYTE, true, 32, 24) //U1,U1,U1,U1
+        gl.gl.vertexAttribPointer(aColor, 4, gl.gl.UNSIGNED_BYTE, true, 32, 28) //U1,U1,U1,U1
 
         gl.gl.drawArrays(gl.gl.TRIANGLES,0,attr.data_count)
     }

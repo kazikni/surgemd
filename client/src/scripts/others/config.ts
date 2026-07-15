@@ -50,6 +50,7 @@ export const ConfigCasters=Object.freeze({
 
     sv_graphics_resolution:Casters.generateUnionCaster(["low","medium"]),
     sv_graphics_renderer:Casters.generateUnionCaster(["webgl1","webgl2"]),
+    sv_graphics_shadows:Casters.toBoolean,
     sv_graphics_particles:Casters.toInt,
     sv_graphics_lights:Casters.toInt,
     sv_graphics_post_proccess:Casters.toInt,
@@ -99,6 +100,7 @@ export const ConfigDefaultValues={
 
     sv_graphics_renderer:"webgl2",
     sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"medium",
+    sv_graphics_shadows:!(Debug.force_mobile||isMobile),
     sv_graphics_particles:GraphicsDConfig.Advanced,
     sv_graphics_lights:GraphicsDConfig.Advanced,
     sv_graphics_post_proccess:(Debug.force_mobile||isMobile)?GraphicsDConfig.None:GraphicsDConfig.Advanced,

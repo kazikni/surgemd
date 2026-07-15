@@ -128,6 +128,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         for(const c of this.components){
             c.on_render(dt)
         }
+        this.scene_2d.objects.render(dt)
     }
     update(dt:number,net_update:boolean=true,destroy_queue:boolean=true){
         this.clock.profiler.start(1)

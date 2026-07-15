@@ -1063,6 +1063,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             ],
                         },
                         {
+                            type:"toggle",
+                            name:"settings.graphics.shadows",
+                            var:"sv_graphics_shadows",
+                        },
+                        /*{
                             type:"choose",
                             name:"settings.graphics.lights",
                             var:"sv_graphics_lights",
@@ -1071,7 +1076,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 {name:"Minimum",value:"1"},
                                 {name:"Normal",value:"2"},
                             ],
-                        },
+                        },*/
                         {
                             type:"choose",
                             name:"settings.graphics.post_proccess",

@@ -47,6 +47,7 @@ import { HumanBody } from "../objects/human_body.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 import { yes_no_popup } from "../defs/menu.ts";
+import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -102,9 +103,11 @@ export class Game extends ClientGame<GameObject>{
     definitions!:GameDefinition
 
     world_shadow: {
-        color: Color,
-        radius: number,
-        offset:Vec2
+        enabled:boolean
+        color: Color
+        matrix: Matrix
+        offset: Vec2
+        scale: Vec2
     }
     fs?:FileManager
     watcher?:ReplayWatcher
@@ -179,9 +182,11 @@ export class Game extends ClientGame<GameObject>{
         this.hitboxes_gfx.zIndex=zIndexes.UI
 
         this.world_shadow={
-            color:ColorM.rgba(0,0,0,50),
-            radius:1,
-            offset:v2(0.1,0.1)
+            enabled:true,
+            color:ColorM.hex("#0013"),
+            matrix:matrix4.translation_2d(v2(0.1,0.1)),//matrix4.mult(),matrix4.translation_2d(v2(0.9,0.9)))
+            offset:v2(0.1,0.1),
+            scale:v2(1,1)
         }
 
         this.inventory.initialize(this.definitions,{
@@ -791,6 +796,7 @@ export class Game extends ClientGame<GameObject>{
         this.client=client
         client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
         client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
+        this.world_shadow.enabled=this.save.get_variable("sv_graphics_shadows")
 
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)

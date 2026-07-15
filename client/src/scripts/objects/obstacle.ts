@@ -1,4 +1,4 @@
-import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2, Shape2D, model2d, matrix4, v2m } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -39,6 +39,9 @@ export class Obstacle extends StaticBody{
 
     container:Container2D=new Container2D()
     sprite=new Sprite2D()
+    
+    shadow?:Container2D
+    shadow_sprite?:Sprite2D
     aditional_sprite:Sprite2D[]=[]
 
     health_data:{
@@ -90,6 +93,7 @@ export class Obstacle extends StaticBody{
     }
     override on_layer_set(): void {
         this.container.layer=this.layer
+        if(this.shadow)this.shadow.layer=this.layer
     }
     // deno-lint-ignore no-explicit-any
     override on_create(_args: Record<string,any>): void {
@@ -115,6 +119,7 @@ export class Obstacle extends StaticBody{
     override on_destroy(): void {
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
+        if(this.shadow)this.shadow.destroy()
     }
 
     update_frame(){
@@ -134,14 +139,26 @@ export class Obstacle extends StaticBody{
                 spr.visible=false
             }
             if(this.def.assets?.frame?.dead_transform)this.sprite.transform_frame(this.def.assets?.frame.dead_transform)
+            if(this.shadow)this.shadow.visible=false
         }else{
             this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
             this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
-
             this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
             this.physical_data.no_collision=this.def.no_collision??false
             for(const spr of this.aditional_sprite){
                 spr.visible=true
+            }
+            if(this.shadow){
+                this.shadow.visible=true
+                this.shadow.zIndex=this.container.zIndex-0.5
+                if(this.shadow_sprite){
+                    this.shadow_sprite.frame=this.sprite.frame
+                    this.shadow_sprite.transform_frame({
+                        scale:2,
+                        hotspot:v2.half_one
+                    })
+                    if(this.def.assets?.frame?.transform)this.shadow.transform_frame(this.def.assets.frame.transform)
+                }
             }
         }
 
@@ -220,6 +237,17 @@ export class Obstacle extends StaticBody{
             this.container.add_child(s)
             this.aditional_sprite.push(s)
         }
+        if(this.game.world_shadow.enabled&&!this.def.world_shadow?.disabled){
+            this.shadow=new Container2D()
+
+            this.shadow_sprite=new Sprite2D()
+            this.shadow_sprite.tint=this.game.world_shadow.color
+            this.shadow.add_child(this.shadow_sprite)
+
+            this.shadow.layer=this.layer
+            this.game.cam2d.add_object(this.shadow)
+        }
+
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
     }
 
@@ -249,6 +277,9 @@ export class Obstacle extends StaticBody{
         }
         if(this.def.below?.hitbox){
             this.below_hitbox=this.def.below.hitbox.transform(this.position,this.physical_data.scale)
+        }
+        if(this.shadow&&this.shadow instanceof Shape2D){
+            this.shadow.model=this.def.world_shadow?.model??model2d.hitbox(this.def.world_shadow?.hitbox??this.physical_data.hitbox,50)
         }
     }
     transform_into_update(def:number){
@@ -418,18 +449,25 @@ export class Obstacle extends StaticBody{
                     this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
                     this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
                 }
+
+                this.container.rotation=this.physical_data.rotation
+                this.container.position=this.position
             }
 
             this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
             this.container.scale.x=this.physical_data.scale
             this.container.scale.y=this.physical_data.scale
 
-            this.container.rotation=this.physical_data.rotation
-            this.container.position=this.position
+            if(this.shadow){
+                this.shadow.scale=v2.mult(this.container.scale,this.game.world_shadow.scale)
+                const vv=v2.scale(this.game.world_shadow.offset,this.container.scale.x)
+                v2m.add(vv,vv,this.position)
+                this.shadow.position=vv
+                this.shadow.rotation=this.physical_data.rotation
+            }
         }
         if(health_data||full){
             this.health_data.health=stream.read_float(0,1,1)
-
             if(dead){
                 this.die()
             }else if(!dead&&this.health_data.dead){

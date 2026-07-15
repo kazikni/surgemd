@@ -3,7 +3,7 @@ import { type Game } from "../others/game.ts";
 import { type SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { BoostDef, Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 
@@ -109,7 +109,7 @@ export class BottomLeftModule extends UIModule<Game>{
     }
     render_hand_info(){
         const weapon=this.game.inventory.weapons[this.game.inventory.weapon_idx]
-        if(this.game.inventory.hand_settings&&weapon&&weapon.item_type!==InventoryItemType.melee){
+        if(this.game.inventory.hand_settings&&weapon&&weapon.item_type!==GameItemType.melee){
             this.hand_info_container.style.visibility=""
             this.hand_info_container.style.display=""
             this.hand_info_count.innerText=`${this.game.inventory.hand_settings.ammo}/${(weapon.def as GunDef).reload?.capacity}`

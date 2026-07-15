@@ -1,5 +1,5 @@
-import { CircleHitbox2D, Definition, Definitions, Hitbox2D, LootTable, Stream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
-import { SpawnMode } from "../../others/constants.ts";
+import { CircleHitbox2D, Definition, Definitions, Hitbox2D,  Stream, Numeric, random, v2, Vec2 } from "../../../engine/core.ts";
+import { LootTable, SpawnMode } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 export type CreatureDef={
     loot_table?:LootTable

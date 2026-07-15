@@ -1,5 +1,4 @@
-import { LootTable } from "../../engine/core.ts";
-import { LootAditional } from "../others/constants.ts";
+import { LootAditional, LootTable } from "../others/constants.ts";
 
 export const LootTables={
     //Guns Quality

@@ -1,5 +1,5 @@
 import { Building } from "../../objects/building.ts"
-import { InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { GameItemType } from "common/scripts/definitions/utils.ts"
 import { GunItem } from "../inventory.ts"
 import { StatedBotAi } from "./simple_bot_ai.ts";
 import { Angle, astar_path2d, random, v2, Vec2 } from "common/engine/core.ts";
@@ -212,7 +212,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         }
 
         self.input.reload =
-            self.inventory.hand_item?.item_type === InventoryItemType.gun &&
+            self.inventory.hand_item?.item_type === GameItemType.gun &&
             (
                 (self.inventory.hand_item as GunItem).reloading ||
                 !(self.inventory.hand_item as GunItem).has_ammo(self)

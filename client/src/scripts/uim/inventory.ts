@@ -1,7 +1,7 @@
 import { UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
-import { InventoryItemData, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { InventoryItemData, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 
@@ -98,7 +98,7 @@ export class InventoryModule extends UIModule<Game> {
 
             count.classList.toggle("item-maximized",slot.count >= this.game.inventory.item_limit(def))
 
-            if(def.item_type===InventoryItemType.consumible||def.item_type===InventoryItemType.grenade){
+            if(def.item_type===GameItemType.consumible||def.item_type===GameItemType.grenade){
                 if(def.description){
                     let descriptionKey = `items.description.${def.idString}`
                     if(typeof def.description === "string"){
@@ -200,7 +200,7 @@ export class InventoryModule extends UIModule<Game> {
         const item=this.game.inventory.weapons[this.game.inventory.weapon_idx]
         this.weapons_elements[this.current_weapon]?.classList.add("weapon-slot-selected")
 
-        if(item&&item.item_type===InventoryItemType.gun){
+        if(item&&item.item_type===GameItemType.gun){
             const def=(item.def as GunDef)
             this.game.aim_line.width=((def.bullet?.def.range??1000)*0.43)
             /*const spread=def.spread??0
@@ -253,7 +253,7 @@ export class InventoryModule extends UIModule<Game> {
         el.className = "aitem-slot"
 
         el.innerHTML = `
-            <img class="icon" src="${this.game.resources.get_frame(def.idString).src}">
+            <img class="icon" draggable="false" src="${this.game.resources.get_frame(def.idString).src}">
             <span class="count"></span>
         `
 

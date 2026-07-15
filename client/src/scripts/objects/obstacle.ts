@@ -363,17 +363,17 @@ export class Obstacle extends StaticBody{
             switch(this.def.expanded_behavior.type){
                 case 0:
                     return h.game.language.get("interact.obstacles.door."+(this.door_data?.open?"open":"close"),{
-                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                        obstacle:(h.game.language.get("objects."+this.def.idString))
                     })
                 case 1:
                     return h.game.language.get("interact.obstacles.playaudio",{
-                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                        obstacle:(h.game.language.get("objects."+this.def.idString))
                     })
                 case 2:
                     return h.game.language.get("interact.obstacles.scalable",{})
                 case 3:
                     return h.game.language.get("interact.obstacles.transform-into."+this.def.idString,{
-                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                        obstacle:(h.game.language.get("objects."+this.def.idString))
                     })
             }
         }

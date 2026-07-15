@@ -1,6 +1,6 @@
 import { GameConstants, GameObjectType, LootData } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { CircleHitbox2D, cloneDeep, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
@@ -54,28 +54,28 @@ export class Loot extends ServerGameObject{
             aditional:loot.aditional
         }
         switch(this.loot_data.item.item_type){
-            case InventoryItemType.gun:
-            case InventoryItemType.melee:
+            case GameItemType.gun:
+            case GameItemType.melee:
                 this.real_radius=GameConstants.loot.radius.weapon
                 break
-            case InventoryItemType.ammo:
+            case GameItemType.ammo:
                 this.real_radius=GameConstants.loot.radius.ammo
                 break
-            case InventoryItemType.consumible:
+            case GameItemType.consumible:
                 this.real_radius=GameConstants.loot.radius.consumible
                 break
-            case InventoryItemType.backpack:
-            case InventoryItemType.helmet:
-            case InventoryItemType.vest:
+            case GameItemType.backpack:
+            case GameItemType.helmet:
+            case GameItemType.vest:
                 this.real_radius=GameConstants.loot.radius.equipament
                 break
-            case InventoryItemType.grenade:
+            case GameItemType.grenade:
                 this.real_radius=GameConstants.loot.radius.grenade
                 break
-            case InventoryItemType.accessory:
+            case GameItemType.accessory:
                 this.real_radius=GameConstants.loot.radius.accessory
                 break
-            case InventoryItemType.scope:
+            case GameItemType.scope:
                 this.real_radius=GameConstants.loot.radius.scopes
                 break
         }

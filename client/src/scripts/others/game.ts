@@ -28,7 +28,6 @@ import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
 import { MapApp } from "../apps/map.ts";
 import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
-import { FeedPacket } from "common/scripts/packets/feed_packet.ts";
 import { GameOverPacket, GameOverStatus } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
@@ -835,9 +834,6 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
             if(!this.game_over)this.close_game()
-        })
-        client.on("feed",(p:FeedPacket)=>{
-            this.ui.add_feed_message(p.message)
         })
         client.on("message",async(msg:OnlineMessage)=>{
             switch(msg.type){

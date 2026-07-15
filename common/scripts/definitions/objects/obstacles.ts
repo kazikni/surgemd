@@ -1,7 +1,7 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
-import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
-import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { GameObjectDefinitionType, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
 export interface ObstacleBehaviorDoor{
     type:0,
@@ -49,6 +49,8 @@ export interface ObstacleBehaviorTransformInto{
     sound?:string
 }
 export interface ObstacleDef extends Definition{
+    def_type?:GameObjectDefinitionType.obstacle
+
     // Life
     health?:number
     imortal?:boolean
@@ -100,7 +102,7 @@ export interface ObstacleDef extends Definition{
     onDestroyExplosion?:string
 
     decal?:DecalInstanceDef
-    lootTable?:LootTable
+    loot_table?:LootTable
 
     interactDestroy?:boolean
     reflect_bullets?:boolean
@@ -147,7 +149,7 @@ export const obstacles_factory={
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            lootTable:[{
+            loot_table:[{
                 weight:1,
                 item:gun.idString
             }],
@@ -230,7 +232,7 @@ export const obstacles_factory={
                 destroy:0.8,
             },
             rotation_mode:RotationMode.null,
-            lootTable:id,
+            loot_table:id,
             height:1,
             assets:{
                 frame:{
@@ -254,7 +256,7 @@ export const obstacles_factory={
                 destroy:0.7,
             },
             rotation_mode:RotationMode.null,
-            lootTable:id,
+            loot_table:id,
             height:1,
             assets:{
                 frame:{
@@ -277,7 +279,7 @@ export const obstacles_factory={
                 destroy:0.75,
             },
             rotation_mode:RotationMode.limited,
-            lootTable:id,
+            loot_table:id,
             height:1,
         },settings.o??{})
     },
@@ -446,11 +448,11 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             tint:0x353638,
         }),
         obstacles_factory.rock("golden_rock",{tint:0xffd92b,o:{
-            lootTable:"golden_rock",
+            loot_table:"golden_rock",
             health:200,
         }}),
         obstacles_factory.rock("platinum_rock",{tint:0x468edb,o:{
-            lootTable:"platinum_rock",
+            loot_table:"platinum_rock",
             health:230,
         }}),
         {
@@ -554,7 +556,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         }),
         obstacles_factory.box("box",{
             o:{
-                lootTable:"normal_loot",
+                loot_table:"normal_loot",
                 assets:{
                     frame:{
                         variations:2
@@ -704,7 +706,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     def:"wood_pallet",
                     scale:1.6
                 },
-                lootTable:"ammo_crate",
+                loot_table:"ammo_crate",
             }
         }),
 
@@ -957,7 +959,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"wood_crate",
+            loot_table:"wood_crate",
             height:1,
         },
         {
@@ -1039,7 +1041,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.wood,
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"wood_crate",
+            loot_table:"wood_crate",
             height:1,
         },
 
@@ -1116,7 +1118,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.tissue
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"wood_crate",
+            loot_table:"wood_crate",
             height:1,
         },
         obstacles_factory.gun_mount(guns.getFromString("model94"),{}),

@@ -1,6 +1,6 @@
 import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type Airstrike={
     count?:number
     delay:number
@@ -12,8 +12,10 @@ export type Airstrike={
     }
 }
 export type GrenadeDef={
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.grenade
     rank:ItemRank
-    item_type?:InventoryItemType.grenade
+
     description?:string|boolean
 
     explosion?:string

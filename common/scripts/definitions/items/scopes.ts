@@ -1,11 +1,13 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface ScopeDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.scope
+    rank:ItemRank
+
     scope_view:number
     droppable:boolean
-    rank:ItemRank
-    item_type?:InventoryItemType.scope
 }
 
 export function Scopes_Default_Init(scopes:Definitions<ScopeDef,{}>){

@@ -1,24 +1,30 @@
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
 import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 export interface VestDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.vest
+    rank:ItemRank
+
     defence:number
     reduction:number
     health?:number
     level:number
     special?:boolean
     tint:number
-    rank:ItemRank
     reflect_bullets?:boolean
-    item_type?:InventoryItemType.vest
 
     property?:string[]
     events?:Record<string,(e:any)=>void>
     modifiers?:Partial<HumanModifiers>
 }
 export interface HelmetDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.helmet
+    rank:ItemRank
+
     defence:number
     reduction:number
     health?:number
@@ -26,8 +32,6 @@ export interface HelmetDef extends Definition{
     level:number
     special?:boolean
     position?:Vec2
-    rank:ItemRank
-    item_type?:InventoryItemType.helmet
 
     property?:string[]
     events?:Record<string,(e:any)=>void>

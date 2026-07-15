@@ -1,7 +1,6 @@
 import { Game } from "../others/game.ts";
-import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItemType, GameObjectDefinitionType } from "common/scripts/definitions/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-import { FeedMessage, FeedMessageLeader, FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { GroupMemberState, MapHumanData, PrivateUpdate, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
@@ -17,7 +16,7 @@ import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, FeedMessageLeader, FeedMessageType, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
@@ -25,6 +24,7 @@ import { GroupMembersModule } from "../uim/groups.ts";
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
 import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
+import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -202,12 +202,12 @@ export class UiManager{
             rotating=true
             this.game.aim_line.enabled=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==InventoryItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
+            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==GameItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
                 
             }*/
 
             if(this.game.active_entity?.current_weapon){
-                if(this.game.active_entity.current_weapon.item_type===InventoryItemType.gun){
+                if(this.game.active_entity.current_weapon.item_type===GameItemType.gun){
                     if(dist>0.9){
                         this.game.input.use_weapon=true
                     }else{
@@ -394,6 +394,9 @@ export class UiManager{
         }
     }
     proccess_general_update(up:GeneralUpdate){
+        for(const msg of up.feed){
+            this.add_feed_message(msg)
+        }
     }
     state:HelpGuiState={
         driving:false,
@@ -463,11 +466,11 @@ export class UiManager{
                     case DamageReason.Explosion:
                     case DamageReason.Human:{
                         if(!msg.killer)break
-                        const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
+                        const dsd=this.game.definitions.game_objects.valueNumber[msg.killer.used] as DamageSourceDef
                         text=this.game.language.get("feed.kill.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get("items."+dsd.idString),
+                            source:this.game.language.get(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),
                         })
                         if(this.leader&&msg.killer.id===this.leader.id){
                             this.leader.kills=msg.killer.kills
@@ -515,11 +518,11 @@ export class UiManager{
                     case DamageReason.Human:
                     case DamageReason.Explosion:{
                         if(!msg.killer)break
-                        const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
+                        const dsd=this.game.definitions.game_objects.valueNumber[msg.killer.used] as DamageSourceDef
                         text=this.game.language.get("feed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get("items."+dsd.idString)
+                            source:this.game.language.get(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString)
                         })
                         break
                     }
@@ -582,7 +585,7 @@ export class UiManager{
     disableCrosshair() {
         document.body.style.cursor = this.game.cursors.default
         this.crosshair=false
-        this.crosshair_manager.clear()
+        this.crosshair_manager.clear("")
     }
     update_crosshair(dt:number){
         if(!this.crosshair)return
@@ -859,7 +862,7 @@ export class UiManager{
         if(!this.current_interaction&&old_inter){
             this.game.ui_manager.signal("interaction_hint", "")
         }
-        this.state.gun=player.current_weapon?.item_type===InventoryItemType.gun
+        this.state.gun=player.current_weapon?.item_type===GameItemType.gun
         this.update_hint()
 
         if(player.backpack?.idString!==this.game.inventory.backpack.idString){

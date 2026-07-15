@@ -1,3 +1,4 @@
+import { LootTable as LootTableBase } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts";
@@ -262,3 +263,5 @@ export interface LootAditional{
     without_ammo?:boolean
     include_ammo?:boolean
 }
+
+export type LootTable<A=LootAditional>=LootTableBase<A>

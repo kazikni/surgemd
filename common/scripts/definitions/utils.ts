@@ -90,7 +90,7 @@ export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
         tint:0x11ef45
     },
 }
-export enum InventoryItemType{
+export enum GameItemType{
     gun,
     ammo,
     consumible,
@@ -102,8 +102,15 @@ export enum InventoryItemType{
     backpack,
     scope
 }
+export enum GameObjectDefinitionType{
+    item,
+    emote,
+    obstacle,
+    explosion,
+}
 export interface GameItemBase extends Definition{
-    item_type:InventoryItemType
+    def_type:GameObjectDefinitionType.item
+    item_type:GameItemType
     rank:ItemRank
 }
 export enum DamageReason{
@@ -119,7 +126,7 @@ export enum DamageReason{
 }
 export interface InventoryItemData{
     count:number
-    type:InventoryItemType
+    type:GameItemType
     idNumber:number
 }
 export interface InventoryDroppable{

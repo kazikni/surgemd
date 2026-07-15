@@ -2,7 +2,7 @@ import { Angle, astar_path2d, BTState, Stream, Numeric, random, v2, Vec2, Circle
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItemType, GameObjectDefinitionType } from "common/scripts/definitions/utils.ts";
 import { GunItem } from "../inventory.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -17,7 +17,7 @@ export type BotExecutionContext = {
     human: Human
     target?: Human|Obstacle
     target_pos?: Vec2
-    emotes: Map<number,({is_item:true,item:GameItem}|{is_item:false,emote:EmoteDef})&{ally:boolean,human:Human}>
+    emotes: Map<number,{emote:GameItem|EmoteDef,ally:boolean,human:Human}>
 
     nearby_allies: Human[]
     nearby_enemies: Human[]
@@ -407,8 +407,8 @@ export class AttackingController extends BotExecutor {
     }
     quickswitable(weapon?:WeaponDef){
         return weapon && (
-            weapon.item_type===InventoryItemType.melee ||
-            (weapon.item_type===InventoryItemType.gun && weapon.fire_delay>=0.6)
+            weapon.item_type===GameItemType.melee ||
+            (weapon.item_type===GameItemType.gun && weapon.fire_delay>=0.6)
         )
     }
     choose_quickswitch(ctx:BotExecutionContext){
@@ -538,14 +538,14 @@ export class SupportAllyGoal extends GoalNode<BotExecutionContext> {
         if(this.requester)return 80
         for(const p of ctx.emotes.keys()){
             const emote=ctx.emotes.get(p)
-            if(!emote||!emote.ally||!emote.is_item)continue
-            if(emote.item.item_type !== InventoryItemType.ammo)continue
+            if(!emote||!emote.ally||emote.emote.def_type!==GameObjectDefinitionType.item)continue
+            if(emote.emote.item_type !== GameItemType.ammo)continue
 
-            const percent = ((ctx.human.inventory.aitems[emote.item.idString] ?? 0)/ctx.human.inventory.item_limit(emote.item))*100
+            const percent = ((ctx.human.inventory.aitems[emote.emote.idString] ?? 0)/ctx.human.inventory.item_limit(emote.emote))*100
             if(percent===0||percent>ctx.ai.params.team_work)continue
 
             this.requester = emote.human
-            this.item = emote.item
+            this.item = emote.emote
             this.timer=2
             return 80
         }
@@ -771,43 +771,35 @@ export class ADVHumanAI extends BotAi{
     override net_update(general_update: Stream): void {
         for(const player of this.ctx.nearby_allies){
             if(!player.loadout.emote)continue
-            if(player.loadout.emote_is_item){
-                this.ctx.emotes.set(player.id,{is_item:true,item:player.loadout.emote as GameItem,ally:true,human:player})
-            }else{
-                this.ctx.emotes.set(player.id,{is_item:false,emote:player.loadout.emote as EmoteDef,ally:true,human:player})
-            }
+            this.ctx.emotes.set(player.id,{emote:player.loadout.emote as GameItem,ally:true,human:player})
         }
         for(const player of this.ctx.nearby_enemies){
             if(!player.loadout.emote)continue
-            if(player.loadout.emote_is_item){
-                this.ctx.emotes.set(player.id,{is_item:true,item:player.loadout.emote as GameItem,ally:false,human:player})
-            }else{
-                this.ctx.emotes.set(player.id,{is_item:false,emote:player.loadout.emote as EmoteDef,ally:false,human:player})
-            }
+            this.ctx.emotes.set(player.id,{emote:player.loadout.emote as GameItem,ally:false,human:player})
         }
     }
     get_item_score(item:GameItem):number{
         switch(item.item_type!){
-            case InventoryItemType.gun:
+            case GameItemType.gun:
                 break
-            case InventoryItemType.ammo:{
+            case GameItemType.ammo:{
                 const percent=(this.human.inventory.aitems[item.idString]??0)/this.human.inventory.item_limit(item)
                 if(percent===1)return 0
                 return 1-percent*0.75
             }
-            case InventoryItemType.consumible:
+            case GameItemType.consumible:
                 break
-            case InventoryItemType.helmet:
+            case GameItemType.helmet:
                 return (this.human.equipment_data.helmet?.level??0)<(item as HelmetDef).level?1:0
-            case InventoryItemType.vest:
+            case GameItemType.vest:
                 return (this.human.equipment_data.vest?.level??0)<(item as VestDef).level?1:0
-            case InventoryItemType.backpack:
+            case GameItemType.backpack:
                 return (this.human.equipment_data.vest?.level??0)<(item as BackpackDef).level?1:0
-            case InventoryItemType.grenade:
-            case InventoryItemType.melee:
-            case InventoryItemType.accessory:
+            case GameItemType.grenade:
+            case GameItemType.melee:
+            case GameItemType.accessory:
                 break
-            case InventoryItemType.scope:
+            case GameItemType.scope:
                 return this.human.inventory.iitems.includes(item)?0:0.85
         }
         return 0
@@ -818,7 +810,7 @@ export class ADVHumanAI extends BotAi{
 
     will_reload(){
         const h=this.human
-        return h.inventory.hand_item?.item_type === InventoryItemType.gun && (
+        return h.inventory.hand_item?.item_type === GameItemType.gun && (
             (h.inventory.hand_item as GunItem).reloading ||
             !(h.inventory.hand_item as GunItem).has_ammo(h)
         )

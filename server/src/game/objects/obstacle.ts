@@ -212,8 +212,8 @@ export class Obstacle extends StaticBody{
         this.visual_data.dirty=false
     }
     load_loot(){
-        if(this.def.lootTable){
-            this.loot=this.game.get_loot_table(this.def.lootTable)
+        if(this.def.loot_table){
+            this.loot=this.game.get_loot_table(this.def.loot_table)
         }
     }
     set_definition(def:ObstacleDef){

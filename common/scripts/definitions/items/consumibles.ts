@@ -2,7 +2,7 @@ import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, Random1, v2
 import { DefaultFistRig, ItemRank } from "../../others/item.ts";
 import { Boosts, BoostType } from "../player/boosts.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type ConsumingAction={
     type:0,
     use_delay:number
@@ -26,7 +26,10 @@ export type ConsumingAction={
     }
 }
 export interface ConsumibleDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.consumible
     rank:ItemRank
+
     consuming:ConsumingAction
     condition?:ConsumibleCondition[]
     allow_merge?:boolean
@@ -35,7 +38,6 @@ export interface ConsumibleDef extends Definition{
         using_sound?:string
         pickup_sound?:string
     }
-    item_type?:InventoryItemType.consumible
     description?:string|boolean
 }
 export enum ConsumibleCondition{

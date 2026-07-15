@@ -1,10 +1,12 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
 export interface BackpackDef extends Definition{
+    item_type?:GameItemType.backpack
+    def_type?:GameObjectDefinitionType.item
+
     max:Record<string,number>
-    item_type?:InventoryItemType.backpack
     rank:ItemRank
     level:number
     special?:boolean

@@ -1,9 +1,10 @@
-import { AKeyFrame, Angle, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, Vec2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, Definition, Definitions, ease, FrameDef, FrameTransform, v2, Vec2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { GameObjectDefinitionType, type GameItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.melee
     rank:ItemRank
-    item_type?:InventoryItemType.melee
     description?:string|boolean
 
     offset:Vec2

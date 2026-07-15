@@ -2,7 +2,6 @@ import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { Human } from "./human.ts";
 import { DamageParams } from "../others/utils.ts";
 import { DamageReason, HumanDefinition } from "common/scripts/definitions/utils.ts";
-import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { type Game } from "../others/game.ts";
@@ -12,6 +11,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
+import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -156,18 +156,18 @@ export class Player extends Human{
     override down(params: DamageParams): void {
         super.down(params)
         if(params.owner&&params.owner instanceof Player){
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
-                    used:this.game.definitions.game_items.keysString[params.source!.idString]
+                    used:this.game.definitions.game_objects.keysString[params.source!.idString]
                 }:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
                 type:FeedMessageType.down,
             })
         }else{
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
@@ -181,11 +181,11 @@ export class Player extends Human{
         super.die(params)
 
         if(this.killed_by&&this.killed_by instanceof Player){
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:{
                     id:this.killed_by.id,
                     kills:this.killed_by.status.kills,
-                    used:this.game.definitions.game_items.keysString[params.source?.idString??""]??0
+                    used:this.game.definitions.game_objects.keysString[params.source?.idString??""]??0
                 },
                 victimId:this.id,
                 type:FeedMessageType.kill,
@@ -196,7 +196,7 @@ export class Player extends Human{
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
         }else{
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 type:FeedMessageType.kill,
@@ -219,7 +219,7 @@ export class Player extends Human{
         if(this.conn&&this.conn.real_human===this){
             this.conn.on_revive(this)
         }
-        this.game.players.send_feed_message({
+        this.game.feed_messages.push({
             type:FeedMessageType.set_name,
             playerId:this.id,
             playerName:this.name

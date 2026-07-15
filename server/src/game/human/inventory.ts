@@ -1,6 +1,6 @@
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { AmmoItemBase, ConsumibleItemBase, GInventoryBase, GrenadeItemBase, GunItemBase, MDItem, MeleeItemBase } from "common/scripts/others/inventory.ts";
-import { DamageReason, InventoryDroppable, InventoryItemType, InventoryPreset } from "common/scripts/definitions/utils.ts";
+import { DamageReason, InventoryDroppable, GameItemType, InventoryPreset } from "common/scripts/definitions/utils.ts";
 import { ConsumingActionA, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
@@ -281,7 +281,7 @@ export class GunItem extends GunItemBase implements LItem{
     override load(def?:WeaponDef): void {
         if(this.def.switch_delay&&this.use_delay<=this.def.switch_delay){
             this.use_delay=this.def.switch_delay
-            if(def?.item_type===InventoryItemType.gun&&this.def.class_switch_multiply){
+            if(def?.item_type===GameItemType.gun&&this.def.class_switch_multiply){
                 this.use_delay*=(this.def.class_switch_multiply)[def.class]??1
             }
         }else if(this.def.switch_multiply){
@@ -689,7 +689,7 @@ export class GInventory extends GInventoryBase<LItem>{
         if(!position)position=this.owner.position
         if(layer===undefined)layer=this.owner.layer
         switch(def.item_type){
-            case InventoryItemType.ammo:{
+            case GameItemType.ammo:{
                 this.net_sync.aitems=true
 
                 const max=this.item_limit(def)
@@ -707,7 +707,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return drop //Residue
             }
-            case InventoryItemType.consumible:{
+            case GameItemType.consumible:{
                 this.net_sync.items=true
 
                 const item=new ConsumibleItem(def as unknown as ConsumibleDef)
@@ -728,7 +728,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return ov
             }
-            case InventoryItemType.grenade:{
+            case GameItemType.grenade:{
                 this.net_sync.items=true
 
                 const item=new GrenadeItem(def as unknown as GrenadeDef)
@@ -749,7 +749,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return ov
             }
-            case InventoryItemType.vest:{
+            case GameItemType.vest:{
                 const d=def as unknown as VestDef
                 if(!this.owner.equipment_data.vest||this.owner.equipment_data.vest.level<d.level){
                     this.drop_vest()
@@ -766,7 +766,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 break
             }
-            case InventoryItemType.helmet:{
+            case GameItemType.helmet:{
                 const d=def as unknown as HelmetDef
                 if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level){
                     this.drop_helmet()
@@ -782,7 +782,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 break
             }
-            case InventoryItemType.backpack:{
+            case GameItemType.backpack:{
                 const d=def as unknown as BackpackDef
                 if(this.backpack.level<d.level){
                     this.owner.equipment_data.dirty=true
@@ -799,7 +799,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 break
             }
-            case InventoryItemType.gun:{
+            case GameItemType.gun:{
                 const d=def as unknown as GunDef
                 const g=this.add_gun(d,full_ammo)
                 this.net_sync.weapons=true
@@ -809,7 +809,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return count
             }
-            case InventoryItemType.melee:{
+            case GameItemType.melee:{
                 const s=this.set_weapon(0,def as unknown as MeleeDef)
                 this.net_sync.weapons=true
                 count=s?count-1:count
@@ -818,7 +818,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return count
             }
-            case InventoryItemType.accessory:{
+            case GameItemType.accessory:{
                 const r=this.accessorys.add_accessory(def)
                 if(r[0]){
                     this.owner.game.add_loot(this.owner.position,{item:r[0],count:1},this.owner.layer)
@@ -829,7 +829,7 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return count
             }
-            case InventoryItemType.scope:{
+            case GameItemType.scope:{
                 if(!this.iitems.includes(def)){
                     this.iitems.push(def)
                     this.iitems.sort((a, b) => a.idNumber! - b.idNumber!)
@@ -1036,7 +1036,7 @@ export class GInventory extends GInventoryBase<LItem>{
             if(!s.item)continue
             s.item.update(this.owner,dt)
         }
-        if(this.hand_item&&this.hand_item.item_type!==InventoryItemType.gun&&this.hand_item.item_type!==InventoryItemType.melee){
+        if(this.hand_item&&this.hand_item.item_type!==GameItemType.gun&&this.hand_item.item_type!==GameItemType.melee){
             this.hand_item.update(this.owner,dt)
         }
     }

@@ -5,7 +5,7 @@ import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/g
 import { type Game } from "../../../server/src/game/others/game.ts";
 import { type LootAditional, type LootData } from "./constants.ts";
 import { type GameDefinition } from "../definitions/game_defs.ts";
-import { InventoryItemType } from "../definitions/utils.ts";
+import { GameItemType } from "../definitions/utils.ts";
 import { type GunDef } from "../definitions/items/guns.ts";
 
 export function CalculateDoorHitbox(hitbox:Hitbox2D,door:ObstacleBehaviorDoor):Record<-1|0|1,Hitbox2D>{
@@ -68,7 +68,7 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
         console.error(item,"Not Founded")
         return []
     }
-    if(itemD.item_type===InventoryItemType.gun){
+    if(itemD.item_type===GameItemType.gun){
         const ret:LootData[]=[
             {
                 item:itemD,

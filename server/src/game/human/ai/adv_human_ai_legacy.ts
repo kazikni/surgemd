@@ -2,7 +2,7 @@ import { Angle, astar_path2d, BTAction, BTCondition, BTNode, BTSelector, BTSeque
 import { type Human } from "../../objects/human.ts";
 import { BotAi } from "./simple_bot_ai.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { GunItem } from "../inventory.ts";
 import { WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -419,8 +419,8 @@ export class AttackingController extends BotExecutor {
     }
     quickswitable(weapon?:WeaponDef){
         return weapon && (
-            weapon.item_type===InventoryItemType.melee ||
-            (weapon.item_type===InventoryItemType.gun && weapon.fire_delay>=0.6)
+            weapon.item_type===GameItemType.melee ||
+            (weapon.item_type===GameItemType.gun && weapon.fire_delay>=0.6)
         )
     }
     choose_quickswitch(ctx:BotExecutionContext){
@@ -591,7 +591,7 @@ export class ADVHumanAILegacy extends BotAi{
     }
     will_reload(){
         const h=this.human
-        return h.inventory.hand_item?.item_type === InventoryItemType.gun && (
+        return h.inventory.hand_item?.item_type === GameItemType.gun && (
             (h.inventory.hand_item as GunItem).reloading ||
             !(h.inventory.hand_item as GunItem).has_ammo(h)
         )

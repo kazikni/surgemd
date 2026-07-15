@@ -1,4 +1,4 @@
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { type LItem, type ConsumibleItem, type GunItem } from "./inventory.ts";
 import { ActionsType } from "common/scripts/others/constants.ts";
 import { type Human } from "../objects/human.ts";
@@ -23,7 +23,7 @@ export class ReloadAction extends Action{
         this.item=item
     }
     on_execute(user:Human){
-        if(this.item.item_type!=InventoryItemType.gun)return
+        if(this.item.item_type!=GameItemType.gun)return
         const def=this.item.def
         const capacity=this.item.get_capacity()
         const request=Math.min(

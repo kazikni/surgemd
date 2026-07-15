@@ -1,7 +1,9 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
+import { GameObjectDefinitionType } from "../utils.ts";
 
 export interface EmoteDef extends Definition{
+    def_type?:GameObjectDefinitionType.emote
     rank:ItemRank
 }
 export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){

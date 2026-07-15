@@ -8,11 +8,11 @@ import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
 import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
 import { WarMap } from "common/scripts/definitions/maps/war.ts";
+import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -193,7 +193,7 @@ export class BattleRoyale extends ModeManager{
     assign_leader(p:Human):boolean{
         if(this.can_be_leader(p)){
             this.leader=p as Player
-            this.game.players.send_feed_message({
+            this.game.feed_messages.push({
                 type:FeedMessageType.leader_assigned,
                 player:{
                     id:p.id,
@@ -206,7 +206,7 @@ export class BattleRoyale extends ModeManager{
     }
     leader_die(p:Human){
         this.leader=undefined
-        this.game.players.send_feed_message({
+        this.game.feed_messages.push({
             type:FeedMessageType.leader_dead,
             player:{
                 id:p.id,
@@ -253,7 +253,6 @@ export class BattleRoyale extends ModeManager{
                 for(const w of winners){
                     if(w.loadout.emotes.victory){
                         w.loadout.emote=w.loadout.emotes.victory
-                        w.loadout.emote_is_item=false
                     }
                 }
                 this.game.finish(winners,2)

@@ -1,7 +1,11 @@
 import { Definition, Definitions } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface AmmoDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.ammo
+    rank:ItemRank
+
     description?:string|boolean
     tint:number
     defaultTrail?:number
@@ -10,9 +14,6 @@ export interface AmmoDef extends Definition{
 
     liquid?:boolean
     drop_count?:number
-
-    item_type?:InventoryItemType.ammo
-    rank:ItemRank
 }
 export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
     ammos.insert(

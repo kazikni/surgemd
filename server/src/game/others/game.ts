@@ -1,9 +1,9 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTable,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-import { GameObjectType, Layers, LayersL, LootAditional, LootData, Spawn } from "common/scripts/others/constants.ts";
+import { GameObjectType, Layers, LayersL, LootAditional, LootData, LootTable, Spawn } from "common/scripts/others/constants.ts";
 import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
@@ -37,6 +37,7 @@ import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
+import { FeedMessage } from "common/scripts/packets/general_update.ts";
 export interface GameData {
     living_count: number[]
 
@@ -93,6 +94,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     loot_tables:LootTablesManager<LootData,LootAditional,LootAditional>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootAditional>)
 
     pings:PingData[]=[]
+    feed_messages:FeedMessage[]=[]
 
     mods?:ModsManager<any,any,any,ModResult,MDModModule<Game,any,ModResult>>
 
@@ -223,6 +225,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.players.net_update()
         this.modeManager.on_net_update()
         this.pings.length=0
+        this.feed_messages.length=0
         super.net_update(full)
     }
     override on_update(dt:number): void {
@@ -326,7 +329,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         },finish_time)
     }
 
-    get_loot_table(table:LootTable<LootAditional>,settings?:LootAditional):LootData[]{
+    get_loot_table(table:LootTable,settings?:LootAditional):LootData[]{
         return this.loot_tables.get_loot(table,settings??this.modeManager.rules.loot_settings,this)
     }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{

@@ -1,7 +1,7 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
-import { DamageReason, HumanAIDef, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
+import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
@@ -13,7 +13,6 @@ import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
-import { Loot } from "./loot.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type HumansManager } from "../managers/humans_manager.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "../human/inventory.ts";
@@ -30,12 +29,12 @@ import { ConsumibleCondition } from "common/scripts/definitions/items/consumible
 import { type Action, HelpupAction } from "../human/actions.ts";
 import { type SyncedParticle } from "./synced_particle.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
-import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { ADVHumanAI } from "../human/ai/adv_human_ai.ts";
 import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
+import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -102,7 +101,7 @@ export class Human extends MovingBody{
     }={
         color:0x11aa55
     }
-    
+
     equipment_data!:{
         helmet?:HelmetDef
         helmet_health?:number
@@ -127,7 +126,6 @@ export class Human extends MovingBody{
         dirty:boolean
         dirty_colors:boolean
 
-        emote_is_item:boolean
         emote?:GameItem|EmoteDef
         ping?:PingData
         emotes:{
@@ -301,8 +299,7 @@ export class Human extends MovingBody{
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
             shirt:this.game.definitions.loadout.getFromString(random.choose(female?["white_dress","blue_dress","yellow_dress","red_dress","blue_shirt","white_shirt","red_shirt","yellow_shirt"]:["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
             legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
-            
-            emote_is_item:false,
+
             emotes:{},
             accessorys:female?[
                 this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
@@ -383,7 +380,7 @@ export class Human extends MovingBody{
         if(preset.name){
             this.name = preset.name
             if(this.is_player){
-                this.game.players.send_feed_message({
+                this.game.feed_messages.push({
                     type:FeedMessageType.set_name,
                     playerId:this.id,
                     playerName:this.name,
@@ -653,7 +650,7 @@ export class Human extends MovingBody{
         this.input.path_move=undefined
     }
     update_input(){
-        if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===InventoryItemType.gun){
+        if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===GameItemType.gun){
             (this.inventory.hand_item as GunItem).reloading=true
         }
         if(this.input.swamp_guns){
@@ -723,16 +720,14 @@ export class Human extends MovingBody{
                     case InputActionType.emote_emote:{
                         if(this.emote_time>=0)break
                         const def=this.game.definitions.emotes.getFromNumber(a.emote)
-                        this.loadout.emote_is_item=false
                         this.loadout.emote=def
                         break
                     }
                     case InputActionType.emote_item:{
                         if(this.emote_time>=0)break
                         const def=this.game.definitions.game_items.valueNumber[a.item]
-                        this.loadout.emote_is_item=true
                         this.loadout.emote=def
-                        this.emote_time=2
+                        this.emote_time=1
                         break
                     }
                     case InputActionType.ping:
@@ -767,7 +762,7 @@ export class Human extends MovingBody{
                             const l=this.game.definitions.game_items.valueString[a.item]
                             if(!l)break
                             const aditional:LootData[]=[]
-                            if(l.item_type===InventoryItemType.gun){
+                            if(l.item_type===GameItemType.gun){
                                 aditional.push({
                                     item:this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),
                                     count:((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count
@@ -1167,7 +1162,7 @@ export class Human extends MovingBody{
             if(s.item){
                 ret.inventory!.items.push({count:s.quantity,idNumber:this.game.definitions.game_items.keysString[s.item!.def.idString!],type:s.item.item_type})
             }else{
-                ret.inventory!.items.push({count:0,idNumber:0,type:InventoryItemType.consumible})
+                ret.inventory!.items.push({count:0,idNumber:0,type:GameItemType.consumible})
             }
         }
         if(ret.dirty.inventory.weapons){
@@ -1178,7 +1173,7 @@ export class Human extends MovingBody{
             }
         }
         if(this.inventory.hand_item){
-            if(this.inventory.hand_item.item_type===InventoryItemType.gun){
+            if(this.inventory.hand_item.item_type===GameItemType.gun){
                 ret.inventory.hand={
                     slot:this.inventory.weapon_idx,
                     liquid:(this.inventory.hand_item as GunItem).liquid,
@@ -1388,7 +1383,6 @@ export class Human extends MovingBody{
 
         if(this.loadout.emotes.death){
             this.loadout.emote=this.loadout.emotes.death
-            this.loadout.emote_is_item=false
         }
 
         this.inventory.drop_all()
@@ -1476,7 +1470,6 @@ export class Human extends MovingBody{
 
             // State
             this.loadout.emote!==undefined, // 1
-            this.loadout.emote_is_item,
 
             this.dead,
             this.downed,
@@ -1525,10 +1518,7 @@ export class Human extends MovingBody{
             .write_uint16(this.loadout.wrapping===undefined?0:(this.loadout.wrapping.idNumber!+1))
         }
         if(this.loadout.emote){
-            const id=this.loadout.emote_is_item?
-            this.game.definitions.game_items.keysString[this.loadout.emote.idString]:
-            this.loadout.emote.idNumber!
-            stream.write_uint16(id)
+            stream.write_uint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])
         }
         if(full||this.effects_dirty){
             stream.write_array(Array.from(this.effects.values()),(e)=>{

@@ -2,7 +2,7 @@
 import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { InventoryItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
+import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { Human } from "./human.ts";
@@ -70,33 +70,33 @@ export class Loot extends GameObject{
 
     override on_interact(h:Human): void {
         switch(this.item.item_type!){
-            case InventoryItemType.gun:
-                if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.gun)))return
+            case GameItemType.gun:
+                if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===GameItemType.gun)))return
                 break
-            case InventoryItemType.ammo:
+            case GameItemType.ammo:
                 if(this.game.inventory.aitems[this.item.idString]>=this.game.inventory.item_limit(this.item))return
                 break
-            case InventoryItemType.consumible:
-            case InventoryItemType.grenade:
+            case GameItemType.consumible:
+            case GameItemType.grenade:
                 if(!this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item)))return
                 break
-            case InventoryItemType.helmet:
+            case GameItemType.helmet:
                 if(h.helmet&&h.helmet.level>=(this.item as HelmetDef).level)return
                 break
-            case InventoryItemType.vest:
+            case GameItemType.vest:
                 if(h.vest&&h.vest.level>=(this.item as VestDef).level)return
                 break
-            case InventoryItemType.backpack:
+            case GameItemType.backpack:
                 if(h.backpack&&h.backpack.level>=(this.item as BackpackDef).level)return
                 break
 
-            case InventoryItemType.melee:
-                if(!((this.game.ui.melee_free())||(h.current_weapon&&h.current_weapon.item_type===InventoryItemType.melee)))return
+            case GameItemType.melee:
+                if(!((this.game.ui.melee_free())||(h.current_weapon&&h.current_weapon.item_type===GameItemType.melee)))return
                 break
-            case InventoryItemType.scope:
+            case GameItemType.scope:
                 if(h.game.inventory.iitems.includes(this.item))return
                 break
-            case InventoryItemType.accessory:
+            case GameItemType.accessory:
                 break
         }
         if(this.pickup_sound)this.game.sounds.play(this.pickup_sound,{
@@ -105,22 +105,22 @@ export class Loot extends GameObject{
     }
     override auto_interact(h: Human): boolean {
         switch(this.item.item_type!){
-            case InventoryItemType.melee:
+            case GameItemType.melee:
                 return this.game.ui.melee_free()
-            case InventoryItemType.gun:
+            case GameItemType.gun:
                 return this.game.ui.gun_free()
-            case InventoryItemType.ammo:
+            case GameItemType.ammo:
                 return (this.game.inventory.aitems[this.item.idString]??0)<(h.backpack?.max[this.item.idString]??9999)
-            case InventoryItemType.consumible:{
+            case GameItemType.consumible:{
                 return false//return this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item))
             }
-            case InventoryItemType.helmet:
+            case GameItemType.helmet:
                 return !h.helmet||h.helmet.level<(this.item as HelmetDef).level
-            case InventoryItemType.vest:
+            case GameItemType.vest:
                 return !h.vest||h.vest.level<(this.item as VestDef).level
-            case InventoryItemType.backpack:
+            case GameItemType.backpack:
                 return !h.backpack||h.backpack.level<(this.item as BackpackDef).level
-            case InventoryItemType.scope:
+            case GameItemType.scope:
                 if(!h.game.inventory.iitems.includes(this.item))return true
         }
         return false
@@ -138,7 +138,7 @@ export class Loot extends GameObject{
             this.count=stream.read_uint8()
             let radius=0.3
             switch(this.item.item_type!){
-                case InventoryItemType.gun:
+                case GameItemType.gun:
                     this.sprite_main.frame=this.game.resources.get_frame((this.item as GunDef).assets?.item??this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
@@ -158,7 +158,7 @@ export class Loot extends GameObject{
 
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.ammo:
+                case GameItemType.ammo:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true;
                     this.sprite_main.scale=v2(1.2,1.2)
@@ -166,7 +166,7 @@ export class Loot extends GameObject{
                     this.pickup_sound=this.game.resources.get_sound("ammo_pickup")
                     radius=GameConstants.loot.radius.ammo
                     break
-                case InventoryItemType.consumible:
+                case GameItemType.consumible:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
@@ -177,7 +177,7 @@ export class Loot extends GameObject{
                     radius=GameConstants.loot.radius.consumible
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.helmet:
+                case GameItemType.helmet:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
@@ -188,7 +188,7 @@ export class Loot extends GameObject{
                     this.pickup_sound=this.game.resources.get_sound(`helmet_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.vest:
+                case GameItemType.vest:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
@@ -199,7 +199,7 @@ export class Loot extends GameObject{
                     radius=GameConstants.loot.radius.equipament
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.backpack:
+                case GameItemType.backpack:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
@@ -210,7 +210,7 @@ export class Loot extends GameObject{
                     radius=GameConstants.loot.radius.equipament
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.scope:
+                case GameItemType.scope:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
@@ -221,7 +221,7 @@ export class Loot extends GameObject{
                     this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.grenade:
+                case GameItemType.grenade:
                     this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)
@@ -232,7 +232,7 @@ export class Loot extends GameObject{
                     radius=GameConstants.loot.radius.grenade
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.melee:
+                case GameItemType.melee:
                     this.sprite_main.frame=this.game.resources.get_frame((this.item as MeleeDef).assets?.item??this.item.idString)
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
@@ -243,7 +243,7 @@ export class Loot extends GameObject{
                     radius=GameConstants.loot.radius.weapon
                     this.container.add_child(this.sprite_outline)
                     break
-                case InventoryItemType.accessory:
+                case GameItemType.accessory:
                     this.sprite_main.frame=this.game.resources.get_frame((this.item as MeleeDef).assets?.item??this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)

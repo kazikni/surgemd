@@ -20,12 +20,12 @@ import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
 import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
 import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
-import { InventoryItemType } from "./utils.ts";
+import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
 export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef|LoadoutItemDef|PingDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
-export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
+export type DamageSourceDef=WeaponDef|ObstacleDef
 
 export interface GameADefinitions{
     items?:{
@@ -50,45 +50,57 @@ export interface GameADefinitions{
 export class GameDefinition{
     //Items
     ammos=new Definitions<AmmoDef,{}>((i)=>{
-        i.item_type=InventoryItemType.ammo
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.ammo
     })
-    backpacks=new Definitions<BackpackDef,{}>((g)=>{
-        g.item_type=InventoryItemType.backpack
+    backpacks=new Definitions<BackpackDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.backpack
     })
     consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
-        i.item_type=InventoryItemType.consumible
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.consumible
     })
-    vests=new Definitions<VestDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.vest
+    vests=new Definitions<VestDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.vest
     })
-    helmets=new Definitions<HelmetDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.helmet
+    helmets=new Definitions<HelmetDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.helmet
     })
-    accessorys=new Definitions<AccessoryDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.accessory
+    accessorys=new Definitions<AccessoryDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.accessory
     })
-    grenades=new Definitions<GrenadeDef,{}>((v)=>{
-        v.item_type=InventoryItemType.grenade
+    grenades=new Definitions<GrenadeDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.grenade
     })
-    guns=new Definitions<GunDef,{}>((g)=>{
-        g.item_type=InventoryItemType.gun
-        if(g.dual&&!g.dual_from){
-            const dd=mergeDeep({},g,g.dual,{dual_from:g.idString}) as GunDef
+    guns=new Definitions<GunDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.gun
+        if(i.dual&&!i.dual_from){
+            const dd=mergeDeep({},i,i.dual,{dual_from:i.idString}) as GunDef
             dd.idString=dd.idString+"_dual"
             this.guns.insert(dd)
         }
     })
-    melees=new Definitions<MeleeDef,{}>((g)=>{
-        g.item_type=InventoryItemType.melee
+    melees=new Definitions<MeleeDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.melee
     })
     scopes=new Definitions<ScopeDef,{}>((i)=>{
-        i.item_type=InventoryItemType.scope
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.scope
     })
 
     // Loadout
     loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
     badges=new Definitions<BadgeDef,{}>((i)=>{})
-    emotes=new Definitions<EmoteDef,{}>((e)=>{})
+    emotes=new Definitions<EmoteDef,{}>((e)=>{
+        e.def_type=GameObjectDefinitionType.emote
+    })
     wrapping=new Definitions<WrappingDef,{}>((w)=>{})
     ping=new Definitions<PingDef,{}>((e)=>{
         e.idString="ping_"+e.idString
@@ -99,7 +111,9 @@ export class GameDefinition{
     creatures=new Definitions<CreatureDef,{}>((i)=>{})
     decals=new Definitions<DecalDef,{}>((_v)=>{})
     explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
-    obstacles=new Definitions<ObstacleDef,{}>((_v)=>{})
+    obstacles=new Definitions<ObstacleDef,{}>((o)=>{
+        o.def_type=GameObjectDefinitionType.obstacle
+    })
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
     synced_particle=new Definitions<SyncedParticleDef,{}>((_v)=>{})
 

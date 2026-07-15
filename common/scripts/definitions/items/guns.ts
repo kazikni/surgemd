@@ -1,14 +1,16 @@
 import { DeepPartial, Definition, Definitions, FrameTransform, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
-import { BulletDef, InventoryItemType } from "../utils.ts";
+import { type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface GunRecoilDef{
     duration:number
     speed:number
 }
 export type GunDef={
-    item_type?:InventoryItemType.gun
-    class:GunClasses
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.gun
     rank:ItemRank
+
+    class:GunClasses
     description?:string|boolean
 
     barrel_length:number

@@ -2,7 +2,7 @@
 import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
-import { InventoryItemType } from "common/scripts/definitions/utils.ts"
+import { GameItemType } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
 import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
@@ -570,7 +570,7 @@ export class Human extends MovingBody{
                 this.sprites.weapon.tint=tint
                 this.sprites.weapon.transform_frame(def.rig_image)
             }
-            if((def as GameItem).item_type===InventoryItemType.gun&&(def as GunDef).dual_from){
+            if((def as GameItem).item_type===GameItemType.gun&&(def as GunDef).dual_from){
                 //const original_def=this.game.definitions.guns.getFromString((def as GunDef).dual_from!)
                 const xpos=def.rig_arms?.right?.position.x??this.animation.base_left_arm_position.x
                 if(def.rig_image){
@@ -612,7 +612,7 @@ export class Human extends MovingBody{
             let original_name=weapon.idString
             let frame:string
             let replace:FrameDef|undefined
-            if(weapon.item_type===InventoryItemType.gun){
+            if(weapon.item_type===GameItemType.gun){
                 this.assets.weapon_reload_sound=this.game.resources.get_sound(weapon.assets?.reload_sound??weapon.idString+"_reload")
                 this.assets.weapon_reload_sound_alt=this.game.resources.get_sound(weapon.assets?.reload_sound_alt??weapon.idString+"_reload_alt")
                 if(weapon.dual_from){
@@ -1216,14 +1216,14 @@ export class Human extends MovingBody{
         for(const a of animations){
             switch(a.type){
                 case HumanAnimationType.Fire:{
-                    if(this.current_weapon!.item_type===InventoryItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last,a.alt_func)
+                    if(this.current_weapon!.item_type===GameItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last,a.alt_func)
                     break
                 }
                 case HumanAnimationType.Melee:
-                    if(this.current_weapon!.item_type===InventoryItemType.melee)this.play_melee_animation(this.current_weapon as MeleeDef)
+                    if(this.current_weapon!.item_type===GameItemType.melee)this.play_melee_animation(this.current_weapon as MeleeDef)
                     break
                 case HumanAnimationType.Reloading:{
-                    if((this.current_weapon as unknown as GameItem).item_type!==InventoryItemType.gun)break
+                    if((this.current_weapon as unknown as GameItem).item_type!==GameItemType.gun)break
                     const d=this.current_weapon as GunDef
                     const sound=(d.reload?.reload_alt&&a.alt_reload)?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
                     if(sound){
@@ -1352,12 +1352,12 @@ export class Human extends MovingBody{
         this.sprites.emote_sprite.rotation=0
         if((emote as GameItem).item_type!==undefined){
             const item=(emote as GameItem)
-            if(item.item_type===InventoryItemType.ammo){
+            if(item.item_type===GameItemType.ammo){
                 v2m.single(this.sprites.emote_sprite.scale,1)
             }else{
                 v2m.single(this.sprites.emote_sprite.scale,1.75)
             }
-            if(item.item_type===InventoryItemType.gun||item.item_type===InventoryItemType.melee){
+            if(item.item_type===GameItemType.gun||item.item_type===GameItemType.melee){
                 this.sprites.emote_sprite.rotation=-0.523599
             }
         }else{
@@ -1514,7 +1514,6 @@ export class Human extends MovingBody{
             melee_wold_dirty,
 
             has_emote,
-            emote_is_item,
 
             dead,downed,swimming,
 
@@ -1580,12 +1579,7 @@ export class Human extends MovingBody{
             this.loadout.wrapping=wrapping>0?this.game.definitions.wrapping.valueNumber[wrapping-1]:undefined
         }
         if(has_emote){
-            const id=stream.read_uint16()
-            if(emote_is_item){
-                this.add_emote(this.game.definitions.game_items.valueNumber[id])
-            }else{
-                this.add_emote(this.game.definitions.emotes.getFromNumber(id))
-            }
+            this.add_emote(this.game.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)
         }
         if(full||effects_dirty){
             const effects=stream.read_array(()=>{

@@ -106,6 +106,7 @@ export class MenuManager{
         }
 
         HideElement(this.content.gameD)
+        HideElement(this.content.gameCanvas)
         ShowElement(this.content.menuD)
 
         HideElement(this.content.loading_screen)
@@ -782,6 +783,7 @@ export class MenuManager{
     }
     game_start(){
         ShowElement(this.content.gameD)
+        ShowElement(this.content.gameCanvas)
         HideElement(this.content.menuD)
         this.cam2d.visible=true
         if(this.inverval!==undefined){
@@ -791,6 +793,7 @@ export class MenuManager{
     game_end(){
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
+        HideElement(this.content.gameCanvas)
         this.cam2d.visible=false
         if(this.inverval===undefined){
             this.inverval=setInterval(this.update.bind(this),1)

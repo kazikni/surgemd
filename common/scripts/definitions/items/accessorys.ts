@@ -2,14 +2,16 @@ import { Definition, Definitions } from "../../../engine/core.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { InventoryItemType } from "../utils.ts";
+import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
 export interface AccessoryDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.accessory
     rank:ItemRank
+
     property?:string[]
     modifiers?:Partial<HumanModifiers>
     events?:Record<string,(e:any)=>void>
-    item_type?:InventoryItemType.accessory
 }
 
 export function AccessoryDropLootFromObstacle(table:string){

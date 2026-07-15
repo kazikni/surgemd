@@ -1,13 +1,12 @@
 import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
-import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
-import { FeedMessage, FeedMessageType, FeedPacket } from "common/scripts/packets/feed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
@@ -205,7 +204,7 @@ export class PlayersManager{
             this.match_players_count=this.living_players.length
         }
 
-        this.send_feed_message({
+        this.game.feed_messages.push({
             type:FeedMessageType.join,
             playerId:p.id,
             playerName:p.name,
@@ -276,10 +275,10 @@ export class PlayersManager{
         s.clear()
 
         this.general_update.content.started=this.game.started
-        this.general_update.content.deadzone=undefined
+        this.general_update.content.feed=this.game.feed_messages
+        this.general_update.content.deadzone=this.game.deadzone.state
         this.general_update.content.ambient=this.game.ambient
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
-        this.general_update.content.deadzone=this.game.deadzone.state
 
         this.game.clients.packets_manager.encode(this.general_update,s)
 
@@ -292,11 +291,6 @@ export class PlayersManager{
 
         if(this.game.replay)this.game.replay.update()
         this.first_tick=false
-    }
-    send_feed_message(msg:FeedMessage){
-        const p=new FeedPacket()
-        p.message=msg
-        this.game.clients.emit_packet(p)
     }
     connection(client:Client,username:string){
         if(this.connected_players[client.ID])return

@@ -1,7 +1,13 @@
 {
     "values": {
         "game-name": "Surgemd.io",
-        "barrel": "Barrel",
+        "objects":{
+            "barrel": "Barrel",
+            "wood_crate":"Wood Crate",
+            "wood_door":"Wood Door",
+            "small_stove":"Stove",
+            "stove":"Stove"
+        },
         "items": {
             "scope_1": "Scope 1x",
             "scope_2": "Scope 2x",

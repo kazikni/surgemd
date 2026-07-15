@@ -257,6 +257,7 @@ export interface PlayerStatus extends HumanStatus{
 export interface LootData{
     count:number
     item:GameItem
+    skin?:number
     aditional?:LootData[]
 }
 export interface LootAditional{

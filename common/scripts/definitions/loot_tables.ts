@@ -134,13 +134,13 @@ export const LootTables={
     ],
     //Armors And Backpacks
     helmets:[
-        {item:"basic_helmet",weight:10},
-        {item:"regular_helmet",weight:1},
-        {item:"military_helmet",weight:0.1},
+        {item:"bike_helmet",weight:10},
+        {item:"military_helmet",weight:1},
+        {item:"tactical_helmet",weight:0.1},
     ],
     vests:[
-        {item:"basic_vest",weight:10},
-        {item:"regular_vest",weight:1},
+        {item:"civil_vest",weight:10},
+        {item:"police_vest",weight:1},
         {item:"military_vest",weight:0.1},
     ],
     backpacks:[
@@ -159,7 +159,7 @@ export const LootTables={
     ],
     military_equipments:[
         {item:"military_vest",weight:1},
-        {item:"military_helmet",weight:1},
+        {item:"tactical_helmet",weight:1},
         {item:"military_pack",weight:1},
     ],
     accessorys:[
@@ -272,7 +272,7 @@ export const LootTables={
         [{weight:1,item:"awp"}],
     ],
     black_container:[
-        [{weight:1,item:"military_helmet"}],
+        [{weight:1,item:"tactical_helmet"}],
         [{weight:1,table:"mythic_guns"}],
         [
             {item:"scope_5",weight:10},

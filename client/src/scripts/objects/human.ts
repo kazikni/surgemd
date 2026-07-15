@@ -42,10 +42,12 @@ export class Human extends MovingBody{
     ////////////////////////////
     // Equipment              //
     ////////////////////////////
-    vest?:VestDef
     helmet?:HelmetDef
-    helmet_health:number=0
-    vest_health:number=0
+    helmet_skin?:number
+    helmet_health?:number
+
+    vest?:VestDef
+    vest_health?:number
     backpack?:BackpackDef
     ////////////////////////////
     // Visual                 //
@@ -1394,8 +1396,9 @@ export class Human extends MovingBody{
             ease:ease.elasticOut
         })
     }
-    set_helmet(helmet:number){
-        if(helmet-1===this.helmet?.idNumber!)return
+    set_helmet(helmet:number,skin?:number){
+        if(helmet-1===this.helmet?.idNumber!&&this.helmet_skin===skin)return
+        this.helmet_skin=skin
         if(helmet>0){
             this.helmet=this.game.definitions.helmets.getFromNumber(helmet-1)
             const h=this.helmet
@@ -1405,7 +1408,7 @@ export class Human extends MovingBody{
             }else{
                 this.sprites.helmet.position=v2(0,0)
             }
-            this.sprites!.helmet.frame=this.game.resources.get_frame(h.idString+"_world")
+            this.sprites!.helmet.frame=this.game.resources.get_frame((h.skins?.[skin??0]??h.idString)+"_world")
         }else{
             this.helmet=undefined
             this.sprites.helmet.frame=undefined
@@ -1428,7 +1431,7 @@ export class Human extends MovingBody{
             return
         }
         let frame = this.helmet.idString + "_world"
-        if(this.helmet.health_frames && this.helmet.health){
+        /*if(this.helmet.health_frames&&this.helmet.health){
             const hp = this.helmet_health / this.helmet.health
             for(const h of this.helmet.health_frames){
                 if(hp <= h.health){
@@ -1436,7 +1439,7 @@ export class Human extends MovingBody{
                     break
                 }
             }
-        }
+        }*/
 
         this.sprites.helmet.frame = this.game.resources.get_frame(frame)
     }
@@ -1562,12 +1565,18 @@ export class Human extends MovingBody{
             }
         }
         if(full||equipment_dirty||equipment_dirty_part){
-            const helmet_health=stream.read_uint16()
-            const vest_health=stream.read_uint16()
-            this.helmet_health=helmet_health
-            this.vest_health=vest_health
+            const [
+                has_helmet_skin,has_helmet_health,
+
+                has_vest_health
+            ]=stream.read_boolean_group()
+
+            this.helmet_health=has_helmet_health?stream.read_uint16():undefined
+            this.vest_health=has_vest_health?stream.read_uint16():undefined
+
             if(full||equipment_dirty){
-                this.set_helmet(stream.read_uint8())
+                const skin=has_helmet_skin?stream.read_uint8():undefined
+                this.set_helmet(stream.read_uint8(),skin)
                 this.set_vest(stream.read_uint8())
                 this.set_backpack(stream.read_uint8())
             }

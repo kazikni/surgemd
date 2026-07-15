@@ -2,9 +2,10 @@ import { GameConstants, GameObjectType, LootData } from "common/scripts/others/c
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, cloneDeep, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
+import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
 
 export class Loot extends ServerGameObject{
     string_type:string="loot"
@@ -36,7 +37,7 @@ export class Loot extends ServerGameObject{
         return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
     override on_interact(user: Human): void {
-        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)
+        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,undefined,this.loot_data)
         for(const l of this.loot_data.aditional??[]){
             user.inventory.give_loot(l,undefined,undefined,this.position,this.layer)
         }
@@ -51,9 +52,10 @@ export class Loot extends ServerGameObject{
         this.loot_data={
             item:loot.item,
             count:loot.count,
-            aditional:loot.aditional
+            aditional:loot.aditional,
+            skin:loot.skin
         }
-        switch(this.loot_data.item.item_type){
+        switch(loot.item.item_type){
             case GameItemType.gun:
             case GameItemType.melee:
                 this.real_radius=GameConstants.loot.radius.weapon
@@ -64,8 +66,11 @@ export class Loot extends ServerGameObject{
             case GameItemType.consumible:
                 this.real_radius=GameConstants.loot.radius.consumible
                 break
-            case GameItemType.backpack:
             case GameItemType.helmet:
+                if(this.loot_data.skin===undefined&&loot.item.skins)this.loot_data.skin=random.int(0,loot.item.skins.length-1)
+                this.real_radius=GameConstants.loot.radius.equipament
+                break
+            case GameItemType.backpack:
             case GameItemType.vest:
                 this.real_radius=GameConstants.loot.radius.equipament
                 break
@@ -147,35 +152,21 @@ export class Loot extends ServerGameObject{
         const a=v2.from_RadAngle(angle)
         v2m.add_component(this.velocity,a.x*speed,a.y*speed)
     }
+
     override on_encode_net(stream: Stream, full: boolean): void {
         stream.write_pos2(this.position)
         if(full){
-            stream.write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
-            .write_uint8(this.loot_data.count)
-        }
-    }
-
-    encode_loot_data(data:LootData,stream:Stream):void{
-        stream.write_boolean_group(data.aditional!==undefined)
-        .write_uint16(this.game.definitions.game_items.keysString[data.item.idString])
-        .write_float32(data.count)
-    }
-    decode_loot_data(stream:Stream):LootData{
-        const [aditional]=stream.read_boolean_group()
-        return {
-            item:this.game.definitions.game_items.valueNumber[stream.read_uint16()],
-            count:stream.read_float32(),
-            aditional:aditional?stream.read_array(()=>this.decode_loot_data(stream),1):undefined
+            encode_loot_data(this.game.definitions,this.loot_data,stream)
         }
     }
     override on_encode_checkpoint(stream: Stream): void {
         stream.write_pos2(this.position)
         .write_pos2(this.velocity)
-        this.encode_loot_data(this.loot_data,stream)
+        encode_loot_data(this.game.definitions,this.loot_data,stream)
     }
     override on_decode_checkpoint(stream: Stream): void {
         const position=stream.read_pos2()
         this.velocity=stream.read_pos2()
-        this.set_loot(position,this.decode_loot_data(stream))
+        this.set_loot(position,decode_loot_data(this.game.definitions,stream))
     }
 }

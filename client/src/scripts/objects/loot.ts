@@ -11,6 +11,7 @@ import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { Debug } from "../others/config.ts";
+import { decode_loot_data } from "common/scripts/others/functions.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -20,6 +21,7 @@ export class Loot extends GameObject{
     name:string=""
     item!:GameItem
     count:number=1
+    skin?:number
     ////////////////////////////
     // Visual                 //
     ////////////////////////////
@@ -81,7 +83,7 @@ export class Loot extends GameObject{
                 if(!this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item)))return
                 break
             case GameItemType.helmet:
-                if(h.helmet&&h.helmet.level>=(this.item as HelmetDef).level)return
+                if(h.helmet&&h.helmet.level>=(this.item as HelmetDef).level&&!(h.helmet===this.item&&h.helmet_skin!==this.skin))return
                 break
             case GameItemType.vest:
                 if(h.vest&&h.vest.level>=(this.item as VestDef).level)return
@@ -134,8 +136,10 @@ export class Loot extends GameObject{
     override on_decode_net(stream: Stream, full: boolean): void {
         const position=stream.read_pos2()
         if(full){
-            this.item=this.game.definitions.game_items.valueNumber[stream.read_uint16()]
-            this.count=stream.read_uint8()
+            const data=decode_loot_data(this.game.definitions,stream)
+            this.item=data.item
+            this.count=data.count
+            this.skin=data.skin
             let radius=0.3
             switch(this.item.item_type!){
                 case GameItemType.gun:
@@ -178,12 +182,12 @@ export class Loot extends GameObject{
                     this.container.add_child(this.sprite_outline)
                     break
                 case GameItemType.helmet:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_frame((this.item as HelmetDef).skins?.[this.skin??0]??this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(0.8,0.8);
-                    this.sprite_outline.scale=v2(1.4,1.4);
+                    this.sprite_outline.visible=true
+                    this.sprite_main.scale=v2(0.8,0.8)
+                    this.sprite_outline.scale=v2(1.4,1.4)
                     radius=GameConstants.loot.radius.equipament
                     this.pickup_sound=this.game.resources.get_sound(`helmet_pickup`)
                     this.container.add_child(this.sprite_outline)

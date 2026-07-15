@@ -1,9 +1,12 @@
-import { UIModule } from "common/engine/client.ts";
+import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { InventoryItemData, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
+import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
+import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
+import { type Human } from "../objects/human.ts";
 
 export class InventoryModule extends UIModule<Game> {
     items_container!: HTMLDivElement
@@ -19,14 +22,43 @@ export class InventoryModule extends UIModule<Game> {
     iitems_container!: HTMLDivElement
     iitems_elements: Record<string,HTMLDivElement>={}
     current_scope?: string
+    
+    equipments_container!: HTMLDivElement
+
+    helmet?:HelmetDef
+    helmet_skin?:number
+    helmet_el!: HTMLDivElement
+
+    vest?:VestDef
+    vest_el!: HTMLDivElement
+
+    backpack?:BackpackDef
+    backpack_el!: HTMLDivElement
 
     override on_init(): void {
         this.items_container = document.querySelector("#ui-items") as HTMLDivElement
         this.weapons_container = document.querySelector("#ui-weapons") as HTMLDivElement
         this.aitems_container = document.querySelector("#ui-aitems") as HTMLDivElement
         this.iitems_container = document.querySelector("#ui-iitems") as HTMLDivElement
+        
+        this.equipments_container = document.querySelector("#ui-equipment") as HTMLDivElement
+        this.equipments_container.innerHTML = `
+            <div class="equipment-fixed">
+                <div class="equipment-slot" data-type="helmet"></div>
+                <div class="equipment-slot" data-type="vest"></div>
+                <div class="equipment-slot" data-type="backpack"></div>
+            </div>
+        `
+        this.helmet_el = this.equipments_container.querySelector(`[data-type="helmet"]`)!
+        this.vest_el = this.equipments_container.querySelector(`[data-type="vest"]`)!
+        this.backpack_el = this.equipments_container.querySelector(`[data-type="backpack"]`)!
+
+        this.helmet_el.dataset.item_kind  = "6"
+        this.helmet_el.dataset.item_value = "0"
+        this.vest_el.dataset.item_kind  = "6"
+        this.vest_el.dataset.item_value = "1"
     }
-    override on_signal(signal: string, state: SelfStateUpdate): void {
+    override on_signal(signal: string, state: any): void {
         switch(signal){
             case "self_state":
                 if(state.dirty.inventory.items)this.render_items(state.inventory.items)
@@ -37,6 +69,9 @@ export class InventoryModule extends UIModule<Game> {
                 break
             case "backpack_dirty":
                 this.render_aitems(this.game.inventory.aitems)
+                break
+            case "active_player_update":
+                this.render_equipments(state.player)
                 break
             case "current_scope_dirty":
                 this.update_scope()
@@ -331,6 +366,60 @@ export class InventoryModule extends UIModule<Game> {
         const el = this.iitems_container.querySelector(`#scope-${this.current_scope}`)
         el?.classList.add("scope-slot-selected")
     }
+    private render_equipments(player: Human) {
+        const hasAny=player.helmet||player.vest||player.backpack
+        this.equipments_container.style.display = hasAny ? "" : "none"
+
+        if(player.helmet===this.helmet&&player.helmet_skin===this.helmet_skin&&player.vest===this.vest&&player.backpack===this.backpack){
+            return
+        }
+        this.helmet=player.helmet
+        this.helmet_skin=player.helmet_skin
+        this.vest=player.vest
+        this.backpack=player.backpack
+        if(this.helmet){
+            this.render_equipment_slot(this.helmet_el,this.helmet.idString,this.helmet.skins?.[this.helmet_skin??0]??this.helmet.idString,`<span class="span-text-base${this.helmet.special?" item-maximized":""}">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
+        }else{
+            this.render_equipment_slot(this.helmet_el,undefined,undefined,"")
+        }
+        if(this.vest){
+            this.render_equipment_slot(this.vest_el,this.vest.idString,this.vest.idString,`<span class="span-text-base${this.vest.special?" item-maximized":""}">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
+        }else{
+            this.render_equipment_slot(this.vest_el,undefined,undefined,"")
+        }
+        if(this.backpack){
+            this.render_equipment_slot(this.backpack_el,this.backpack.idString,this.backpack.idString,`<span class="span-text-base${this.backpack.special?" item-maximized":""}">Level ${this.backpack.level}</span>`,"items.description.backpack")
+        }else{
+            this.render_equipment_slot(this.backpack_el,undefined,undefined,"")
+        }
+    }
+    
+    private render_equipment_slot(el: HTMLDivElement, id?: string,frame?:string,span="",description_def:string="items.description.vest",replace?:Record<string,string>) {
+        if (!id||!frame) {
+            el.onmousedown = null
+            el.onmouseenter = null
+            el.onmouseleave = null
+            el.innerHTML = ""
+            HideElement(el)
+            return
+        }
+        const description=this.game.language.get(description_def,replace)
+        el.onmousedown=this.game.ui.handle_slot_click.bind(this.game.ui)
+        el.onmouseenter=(e)=>{
+            this.game.ui.tooltip_show("items."+id,description,el)
+        }
+        el.onmouseleave=()=>{
+            this.game.ui.tooltip_hide()
+        }
+        const sprite = this.game.resources.get_frame(frame)
+        if (!sprite?.src) {
+            HideElement(el)
+            return
+        }
+        ShowElement(el)
+        el.style.display = ""
+        el.innerHTML = `${span}<img class="slot-image" draggable="false" src="${sprite.src}">`
+    }
     override on_update(dt: number): void {}
     override on_destroy(): void {}
     override on_clear(): void {
@@ -347,5 +436,14 @@ export class InventoryModule extends UIModule<Game> {
         this.iitems_container.innerHTML = ""
         this.iitems_elements = {}
         this.current_scope = undefined
+
+        this.helmet=undefined
+        this.helmet_skin=undefined
+        this.vest=undefined
+        this.backpack=undefined
+        this.render_equipment_slot(this.helmet_el,undefined,"")
+        this.render_equipment_slot(this.vest_el,undefined,"")
+        this.render_equipment_slot(this.backpack_el,undefined,"")
+        HideElement(this.equipments_container)
     }
 }

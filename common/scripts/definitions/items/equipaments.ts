@@ -1,8 +1,110 @@
 import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
-import { Definition, Definitions, v2, Vec2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { HumanModifiers } from "../../others/constants.ts";
+export const equipment_factorys={
+    vest_1(id:string,e:DeepPartial<VestDef>={}):VestDef{
+        return mergeDeep({
+            idString:id+"_vest",
+            defence:0,
+            level:1,
+            reduction:0.1,
+            rank:ItemRank.E,
+
+            tint:0xffffff
+        },e)
+    },
+    vest_2(id:string,e:DeepPartial<VestDef>={}):VestDef{
+        return mergeDeep({
+            idString:id+"_vest",
+            defence:0,
+            level:2,
+            reduction:0.15,
+            rank:ItemRank.E,
+
+            tint:0x556655
+        },e)
+    },
+    vest_3(id:string,e:DeepPartial<VestDef>={}):VestDef{
+        return mergeDeep({
+            idString:id+"_vest",
+            defence:0,
+            level:3,
+            reduction:0.2,
+            rank:ItemRank.E,
+
+            special:true,
+            tint:0x111122
+        },e)
+    },
+    vest_4(id:string,e:DeepPartial<VestDef>={}):VestDef{
+        return mergeDeep({
+            idString:id+"_vest",
+            defence:0,
+            level:4,
+            reduction:0.25,
+            rank:ItemRank.E,
+
+            special:true,
+            tint:0x5C322E
+        },e)
+    },
+
+    helmet_1(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
+        return mergeDeep({
+            idString:id+"_helmet",
+            defence:0,
+            level:1,
+            reduction:0.1,
+            position:v2(0,0),
+            rank:ItemRank.E
+        },e)
+    },
+    helmet_2(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
+        return mergeDeep({
+            idString:id+"_helmet",
+            defence:0,
+            level:2,
+            reduction:0.15,
+            position:v2(0,0),
+            rank:ItemRank.D
+        },e)
+    },
+    helmet_3(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
+        return mergeDeep({
+            idString:id+"_helmet",
+            defence:0,
+            level:3,
+            reduction:0.2,
+            position:v2(0,0),
+            special:true,
+            rank:ItemRank.A
+        },e)
+    },
+    helmet_4(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
+        return mergeDeep({
+            idString:id+"_helmet",
+            defence:0,
+            level:4,
+            reduction:0.25,
+            position:v2(0,0),
+            special:true,
+            rank:ItemRank.S
+        },e)
+    },
+    helmet_5(id:string,e:DeepPartial<HelmetDef>={}):HelmetDef{
+        return mergeDeep({
+            idString:id+"_helmet",
+            defence:0,
+            level:5,
+            reduction:0.3,
+            position:v2(0,0),
+            special:true,
+            rank:ItemRank.S
+        },e)
+    }
+}
 export interface VestDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.vest
@@ -33,60 +135,22 @@ export interface HelmetDef extends Definition{
     special?:boolean
     position?:Vec2
 
+    skins?:string[]
+
     property?:string[]
     events?:Record<string,(e:any)=>void>
     modifiers?:Partial<HumanModifiers>
 }
 export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
     helmets.insert(
-        {
-            idString:"basic_helmet",
-            defence:0,
-            level:1,
-            health:1000,
-            reduction:0.1,
-            position:v2(0,0),
-            rank:ItemRank.E
-        },
-        {
-            idString:"regular_helmet",
-            defence:0,
-            level:2,
-            health:300,
-            health_frames:[
-                {
-                    frame:"regular_helmet_world_1",
-                    health:0.6666666
-                },
-                {
-                    frame:"regular_helmet_world_2",
-                    health:0.3333333
-                }
-            ],
-            reduction:0.15,
-            position:v2(0,0),
-            rank:ItemRank.D
-        },
-        {
-            idString:"military_helmet",
-            defence:0,
-            level:3,
-            special:true,
-            health:1600,
-            reduction:0.2,
-            position:v2(0,0),
-            rank:ItemRank.C
-        },
+        equipment_factorys.helmet_1("bike",{
+            skins:["blue_bike_helmet","red_bike_helmet","yellow_bike_helmet","green_bike_helmet"]
+        }),
 
-        {
-            idString:"lastman_helmet",
-            defence:0,
-            level:5,
-            special:true,
-            reduction:0.3,
-            position:v2(0,0),
-            rank:ItemRank.S,
+        equipment_factorys.helmet_2("military"),
+        equipment_factorys.helmet_3("tactical"),
 
+        equipment_factorys.helmet_5("lastman",{
             modifiers:{
                 health:2
             },
@@ -110,15 +174,8 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                     e.user.inventory.infinity_ammo=e.user.inventory.accessorys.has_property("infinity_ammo")
                 },
             }
-        },
-        {
-            idString:"medic_helmet",
-            defence:0,
-            level:4,
-            special:true,
-            reduction:0.25,
-            position:v2(0,0),
-            rank:ItemRank.S,
+        }),
+        equipment_factorys.helmet_4("medic",{
             property:["self_revive"],
             events:{
                 "pickup":(e)=>{
@@ -128,49 +185,17 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                     e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
                 }
             }
-        },
+        })
     )
 }
 export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
     vests.insert(
         //Normals Vest
-        {
-            idString:"basic_vest",
-            defence:0,
-            level:1,
-            health:2000,
-            reduction:0.1,
-            tint:0xffffff,
-            rank:ItemRank.E
-        },
-        {
-            idString:"regular_vest",
-            defence:0,
-            level:2,
-            health:2300,
-            reduction:0.15,
-            tint:0x556655,
-            rank:ItemRank.D
-        },
-        {
-            idString:"military_vest",
-            defence:0,
-            level:3,
-            special:true,
-            health:2600,
-            reduction:0.2,
-            tint:0x111122,
-            rank:ItemRank.C
-        },
-        {
-            idString:"elite_vest",
-            defence:0,
-            level:4,
-            special:true,
-            reflect_bullets:true,
-            reduction:0.25,
-            tint:0x5C322E,
-            rank:ItemRank.A
-        },
+        equipment_factorys.vest_1("civil"),
+        equipment_factorys.vest_2("police"),
+        equipment_factorys.vest_3("military"),
+        equipment_factorys.vest_4("elite",{
+            reflect_bullets:true
+        }),
     )
 }

@@ -658,7 +658,7 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.owner.equipment_data.helmet){
             let loot:Loot|undefined
             if(this.droppable.vest){
-                loot=this.owner.game.add_loot(this.owner.position,{item:this.owner.equipment_data.helmet,count:1},this.owner.layer)
+                loot=this.owner.game.add_loot(this.owner.position,{item:this.owner.equipment_data.helmet,count:1,skin:this.owner.equipment_data.helmet_skin},this.owner.layer)
             }
             this.owner.equipment_data.dirty=true
             this.owner.equipment_data.dirty_part=true
@@ -685,7 +685,7 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         return
     }
-    give_item(def:GameItem,count:number,drop_overflow:boolean=true,full_ammo:boolean=false,position?:Vec2,layer?:number):number{
+    give_item(def:GameItem,count:number,drop_overflow:boolean=true,full_ammo:boolean=false,loot?:LootData,position?:Vec2,layer?:number):number{
         if(!position)position=this.owner.position
         if(layer===undefined)layer=this.owner.layer
         switch(def.item_type){
@@ -768,12 +768,13 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             case GameItemType.helmet:{
                 const d=def as unknown as HelmetDef
-                if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level){
+                if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level||(this.owner.equipment_data.helmet===def&&this.owner.equipment_data.helmet_skin!==loot?.skin)){
                     this.drop_helmet()
                     this.owner.equipment_data.dirty=true
                     this.owner.equipment_data.dirty_part=true
                     this.owner.equipment_data.helmet=d
                     this.owner.equipment_data.helmet_health=d.health
+                    this.owner.equipment_data.helmet_skin=def.skins&&loot?.skin===undefined?random.int(0,def.skins.length-1):loot?.skin
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(position,{item:def,count:count-1},layer)
                     }
@@ -850,7 +851,7 @@ export class GInventory extends GInventoryBase<LItem>{
         return count
     }
     give_loot(loot:LootData,drop_overflow?:boolean,full_ammo?:boolean,position?:Vec2,layer?:number){
-        this.give_item(loot.item,loot.count,drop_overflow,full_ammo,position,layer)
+        this.give_item(loot.item,loot.count,drop_overflow,full_ammo,loot,position,layer)
         if(loot.aditional){
             for(const l of loot.aditional){
                 this.give_loot(l)

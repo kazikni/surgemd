@@ -104,7 +104,9 @@ export class Human extends MovingBody{
 
     equipment_data!:{
         helmet?:HelmetDef
+        helmet_skin?:number
         helmet_health?:number
+
         vest?:VestDef
         vest_health?:number
         scope:ScopeDef
@@ -1487,9 +1489,17 @@ export class Human extends MovingBody{
         }
         // Equipment
         if(full||this.equipment_data.dirty||this.equipment_data.dirty_part){
-            stream.write_uint16(this.equipment_data.helmet_health??0)
-            stream.write_uint16(this.equipment_data.vest_health??0)
+            stream.write_boolean_group(
+                this.equipment_data.helmet_skin!==undefined,
+                this.equipment_data.helmet_health!==undefined,
+
+                this.equipment_data.vest_health!==undefined,
+            )
+            if(this.equipment_data.helmet_health!==undefined)stream.write_uint16(this.equipment_data.helmet_health??0)
+            if(this.equipment_data.vest_health!==undefined)stream.write_uint16(this.equipment_data.vest_health??0)
             if(full||this.equipment_data.dirty){
+                if(this.equipment_data.helmet_skin!==undefined)stream.write_uint8(this.equipment_data.helmet_skin)
+
                 stream.write_uint8(this.equipment_data.helmet?this.equipment_data.helmet.idNumber!+1:0)
                 .write_uint8(this.equipment_data.vest?this.equipment_data.vest.idNumber!+1:0)
                 .write_uint8(this.inventory.backpack.idNumber!)

@@ -1,6 +1,7 @@
 import { v2 } from "../../../engine/core.ts";
 import { Layers } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
+import { GameItemType } from "../utils.ts";
 import { MapDef } from "./base.ts";
 import { NormalBiome, NormalMap } from "./normal.ts";
 
@@ -38,14 +39,28 @@ export const DebugMap:MapDef={
         let y=map.size.y/2
         let i=0
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
-            map.game.add_loot(v2(x,y),{item,count:Infinity})
-            i++
-            if(i>=10){
-                i=0
-                x=map.size.x/2
-                y+=2
+            if(item.item_type===GameItemType.helmet&&item.skins){
+                for(let skin=0;skin<item.skins.length;skin++){
+                    map.game.add_loot(v2(x,y),{item,count:Infinity,skin})
+                    i++
+                    if(i>=10){
+                        i=0
+                        x=map.size.x/2
+                        y+=2
+                    }else{
+                        x+=2
+                    }
+                }
             }else{
-                x+=2
+                map.game.add_loot(v2(x,y),{item,count:Infinity})
+                i++
+                if(i>=10){
+                    i=0
+                    x=map.size.x/2
+                    y+=2
+                }else{
+                    x+=2
+                }
             }
         }
         x=map.size.x/2

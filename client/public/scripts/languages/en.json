@@ -33,15 +33,19 @@
             "red_pills": "Red Pills",
             "green_soda": "Green Soda",
             "black_soda": "Black Soda",
-            "basic_vest": "Basic Vest",
-            "basic_helmet": "Basic Helmet",
-            "basic_pack": "Small Backpack",
-            "regular_vest": "Regular Vest",
-            "regular_helmet": "Regular Helmet",
-            "regular_pack": "Regular Backpack",
-            "military_vest": "Military Vest",
+
+            "bike_helmet": "Bike Helmet",
+            "civil_vest": "Civil Vest",
+            "basic_pack": "Basic Backpack",
+
             "military_helmet": "Military Helmet",
+            "police_vest": "Police Vest",
+            "regular_pack": "Regular Backpack",
+
+            "military_vest": "Military Vest",
+            "tactical_helmet": "Tactical Helmet",
             "military_pack": "Military Backpack",
+
             "12g": "12G",
             "762mm": "7.62MM",
             "556mm": "5.56MM",
@@ -132,6 +136,7 @@
                 "explosive_ammo": "Boom Boom Motherfucker!",
                 "gasoline": "A good fuel.",
                 "mana_mm": "Mana-MM I'm tired of creating descriptions. It's already 18:50.",
+
                 "bandage": "A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
                 "medikit": "This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",
                 "yellow_soda": "A delicious soda that tastes like pure energy.<br>Grants 25 adrenaline.",
@@ -149,6 +154,7 @@
                 "blue_flare": "Call a airdrop",
                 "yellow_flare": "Call a airstrike",
                 "red_flare": "Call a nuke",
+
                 "helmet": "Reduces incoming damage by ${reduction}%.",
                 "vest": "Reduces incoming damage by ${reduction}%.",
                 "backpack": "Increases inventory capacity."

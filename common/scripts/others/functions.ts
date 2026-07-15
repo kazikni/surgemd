@@ -1,4 +1,4 @@
-import { Hitbox2D } from "../../engine/core.ts";
+import { Hitbox2D, Stream } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
 import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/general_update.ts";
 
@@ -96,5 +96,21 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
                 count:count
             }
         ]
+    }
+}
+
+export function encode_loot_data(definitions:GameDefinition,data:LootData,stream:Stream):void{
+    stream.write_boolean_group(data.aditional!==undefined,data.skin!==undefined)
+    .write_uint16(definitions.game_items.keysString[data.item.idString])
+    .write_float32(data.count)
+    if(data.skin!==undefined)stream.write_uint8(data.skin)
+}
+export function decode_loot_data(definitions:GameDefinition,stream:Stream):LootData{
+    const [has_aditional,has_skin]=stream.read_boolean_group()
+    return {
+        item:definitions.game_items.valueNumber[stream.read_uint16()],
+        count:stream.read_float32(),
+        aditional:has_aditional?stream.read_array(()=>decode_loot_data(definitions,stream),1):undefined,
+        skin:has_skin?stream.read_uint8():undefined
     }
 }

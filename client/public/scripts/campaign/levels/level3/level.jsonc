@@ -65,12 +65,12 @@
                                     "weight": 28
                                 },
                                 {
-                                    "item": "basic_vest",
+                                    "item": "civil_vest",
                                     "weight": 20,
                                     "drop_chance": 0.3
                                 },
                                 {
-                                    "item": "regular_vest",
+                                    "item": "police_vest",
                                     "weight": 15,
                                     "drop_chance": 0.5
                                 },
@@ -86,17 +86,17 @@
                                     "weight": 28
                                 },
                                 {
-                                    "item": "basic_helmet",
+                                    "item": "military_helmet",
                                     "weight": 20,
                                     "drop_chance": 0.3
                                 },
                                 {
-                                    "item": "regular_helmet",
+                                    "item": "bike_helmet",
                                     "weight": 15,
                                     "drop_chance": 0.5
                                 },
                                 {
-                                    "item": "military_helmet",
+                                    "item": "tactical_helmet",
                                     "weight": 10,
                                     "drop_chance": 0.75
                                 }
@@ -212,14 +212,14 @@
                                 {"item": "military_pack","weight": 5}
                             ],
                             "vest": [
-                                {"item": "basic_vest","weight": 15},
-                                {"item": "regular_vest","weight": 10},
+                                {"item": "civil_vest","weight": 15},
+                                {"item": "police_vest","weight": 10},
                                 {"item": "military_vest","weight": 5}
                             ],
                             "helmet": [
-                                {"item": "basic_helmet","weight": 15},
-                                {"item": "regular_helmet","weight": 10},
-                                {"item": "military_helmet","weight": 5}
+                                {"item": "military_helmet","weight": 15},
+                                {"item": "bike_helmet","weight": 10},
+                                {"item": "tactical_helmet","weight": 5}
                             ],
                             "melee": [
                                 {

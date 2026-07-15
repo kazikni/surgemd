@@ -38,11 +38,11 @@
                             ],
                             "vest": [
                                 {
-                                    "item": "basic_vest",
+                                    "item": "civil_vest",
                                     "weight": 10
                                 },
                                 {
-                                    "item": "regular_vest",
+                                    "item": "police_vest",
                                     "weight": 1
                                 },
                                 {
@@ -52,15 +52,15 @@
                             ],
                             "helmet": [
                                 {
-                                    "item": "basic_helmet",
+                                    "item": "military_helmet",
                                     "weight": 10
                                 },
                                 {
-                                    "item": "regular_helmet",
+                                    "item": "bike_helmet",
                                     "weight": 1
                                 },
                                 {
-                                    "item": "military_helmet",
+                                    "item": "tactical_helmet",
                                     "weight": 0.1
                                 }
                             ],

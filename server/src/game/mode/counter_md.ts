@@ -144,12 +144,12 @@ export class CounterMD extends ModeManager {
                 {id:"frag_grenade",cost:50},
                 {id:"mirv_grenade",cost:150},
 
-                {id:"basic_helmet",cost:100},
-                {id:"regular_helmet",cost:400},
-                {id:"military_helmet",cost:800},
+                {id:"military_helmet",cost:100},
+                {id:"bike_helmet",cost:400},
+                {id:"tactical_helmet",cost:800},
 
-                {id:"basic_vest",cost:100},
-                {id:"regular_vest",cost:400},
+                {id:"civil_vest",cost:100},
+                {id:"police_vest",cost:400},
                 {id:"military_vest",cost:800},
 
                 {id:"basic_pack",cost:100},

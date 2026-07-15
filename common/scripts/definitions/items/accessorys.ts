@@ -14,10 +14,10 @@ export interface AccessoryDef extends Definition{
 
 export function AccessoryDropLootFromObstacle(table:string){
     return (e:any)=>{
-        const loot=e.human.game.loot_tables.get_loot(table,{withammo:true},e.human.game)
+        const loot=e.human.game.get_loot_table(table)
 
         for(const l of loot){
-            e.human.game.add_loot(e.obstacle.hitbox.random_point(),l.item,l.count,e.obstacle.layer)
+            e.human.game.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
         }
     }
 }

@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, InventoryItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
@@ -766,10 +766,14 @@ export class Human extends MovingBody{
                         if(this.game.debug.debug_menu){
                             const l=this.game.definitions.game_items.valueString[a.item]
                             if(!l)break
-                            this.game.add_loot(this.position,l,a.count,this.layer)
+                            const aditional:LootData[]=[]
                             if(l.item_type===InventoryItemType.gun){
-                                this.game.add_loot(this.position,this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count,this.layer)
+                                aditional.push({
+                                    item:this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),
+                                    count:((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count
+                                })
                             }
+                            this.game.add_loot(this.position,{item:l,count:a.count,aditional},this.layer)
                         }
                         break
                 }
@@ -781,7 +785,8 @@ export class Human extends MovingBody{
         this.input.actions.length=0
     }
 
-    _can_interact=true
+    _interact_object?:ServerGameObject
+    _interact_score:number=Infinity
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
@@ -790,11 +795,14 @@ export class Human extends MovingBody{
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
                     }
                 }
-                if((obj as StaticBody).physical_data.no_collision)break
-                if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
-                    this._can_interact=false;
-                    (obj as Loot).on_interact(this)
+                if(this.input.interaction&&obj.can_interact(this)){
+                    const dist=v2.distance(this.position,obj.position)
+                    if(dist<this._interact_score){
+                        this._interact_object=obj
+                        this._interact_score=dist
+                    }
                 }
+                if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
                 for(const col of collision){
                     v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
@@ -814,21 +822,28 @@ export class Human extends MovingBody{
                         }
                     }
                 }
-                if((obj as StaticBody).physical_data.no_collision)break
-                if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
-                    this._can_interact=false;
-                    (obj as Loot).on_interact(this)
+                if(this.input.interaction&&obj.can_interact(this)){
+                    const dist=v2.distance(this.position,obj.position)
+                    if(dist<this._interact_score){
+                        this._interact_object=obj
+                        this._interact_score=dist
+                    }
                 }
+                if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
                 for(const col of collision){
                     v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
                 }
                 break
             }
+            case GameObjectType.Loot:
             case GameObjectType.Vehicle:{
-                if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
-                    this._can_interact=false;
-                    (obj as Loot).on_interact(this)
+                if(this.input.interaction&&obj.can_interact(this)){
+                    const dist=v2.distance(this.position,obj.position)
+                    if(dist<this._interact_score){
+                        this._interact_object=obj
+                        this._interact_score=dist
+                    }
                 }
                 break
             }
@@ -838,13 +853,14 @@ export class Human extends MovingBody{
                 }
                 break
             }
-            // deno-lint-ignore no-fallthrough
             case GameObjectType.Human:
                 if((obj as Human).dead)break
-            case GameObjectType.Loot:
-                if(this._can_interact&&this.input.interaction&&obj.can_interact(this)){
-                    this._can_interact=false;
-                    obj.on_interact(this)
+                if(this.input.interaction&&obj.can_interact(this)){
+                    const dist=v2.distance(this.position,obj.position)
+                    if(dist<this._interact_score){
+                        this._interact_object=obj
+                        this._interact_score=dist
+                    }
                 }
                 break
         }
@@ -980,7 +996,12 @@ export class Human extends MovingBody{
                 this.physical_data.velocity=v2.zero()
             }
             this.equipment_data.force_default_scope=false
+            this._interact_object=undefined
+            this._interact_score=Infinity
             super.on_tick(dt)
+            if(this.human_data.movement_enabled&&!this.downed&&this._interact_object){
+                (this._interact_object as ServerGameObject).on_interact(this)
+            }
             if(!this.parachute){
                 //Hand Use
                 if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.downed&&!this.swimming){
@@ -1021,7 +1042,6 @@ export class Human extends MovingBody{
         this.physical_data.dirty_part=true
         this.set_dirty_part()
 
-        this._can_interact=this.human_data.movement_enabled&&!this.downed
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)

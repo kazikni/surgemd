@@ -7,6 +7,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { LootAditional } from "common/scripts/others/constants.ts";
 
 export interface GameRules{
     humans:{
@@ -74,6 +75,7 @@ export interface GameRules{
     leader:{
         kills_min:number
     }
+    loot_settings:LootAditional
 }
 export abstract class ModeManager{
     game!:Game
@@ -147,6 +149,8 @@ export abstract class ModeManager{
         },
         leader:{
             kills_min:3
+        },
+        loot_settings:{
         }
     }
 

@@ -1,9 +1,9 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTable,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-import { GameObjectType, Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
+import { GameObjectType, Layers, LayersL, LootAditional, LootData, Spawn } from "common/scripts/others/constants.ts";
 import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
@@ -11,7 +11,6 @@ import { HumansManager } from "../managers/humans_manager.ts";
 import { Loot } from "../objects/loot.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { Vehicle } from "../objects/vehicle.ts";
-import { Aditional, loot_table_get_item } from "common/scripts/definitions/maps/base.ts";
 import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
@@ -22,7 +21,7 @@ import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Building } from "../objects/building.ts";
 import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
 import { BattleRoyale, BattleRoyaleDebug } from "../mode/battle_royale.ts";
-import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
+import { DamageSourceDef, GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
@@ -37,6 +36,7 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
+import { loot_table_get_item } from "common/scripts/others/functions.ts";
 export interface GameData {
     living_count: number[]
 
@@ -90,7 +90,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     can_start:boolean=true
     can_finish:boolean=true
     
-    loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item as (id: string, count: number, aditional: Aditional) => LootTableItemRet<GameItem>[])
+    loot_tables:LootTablesManager<LootData,LootAditional,LootAditional>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootAditional>)
 
     pings:PingData[]=[]
 
@@ -325,6 +325,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             this.update_data()
         },finish_time)
     }
+
+    get_loot_table(table:LootTable<LootAditional>,settings?:LootAditional):LootData[]{
+        return this.loot_tables.get_loot(table,settings??this.modeManager.rules.loot_settings,this)
+    }
     add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
             def,
@@ -353,10 +357,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const p=this.scene_2d.objects.add_object(new Grenade(),layer,undefined,{def:def,owner,position:position}) as Grenade
         return p
     }
-    add_loot(position:Vec2,def:GameItem,count:number,layer:number=Layers.Normal):Loot{
-        const l=this.scene_2d.objects.add_object(new Loot(),layer,undefined,{item:def,count:count,position:position}) as Loot
+    add_loot(position:Vec2,data:LootData,layer:number=Layers.Normal):Loot{
+        const l=this.scene_2d.objects.add_object(new Loot(),layer,undefined,{loot:data,position}) as Loot
         if(this.statistics){
-            this.statistics.items.dropped[def.idString]=(this.statistics.items.dropped[def.idString]??0)+count
+            this.statistics.items.dropped[data.item.idString]=(this.statistics.items.dropped[data.item.idString]??0)+data.count
         }
         return l
     }

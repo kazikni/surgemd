@@ -38,7 +38,7 @@ export const DebugMap:MapDef={
         let y=map.size.y/2
         let i=0
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
-            map.game.add_loot(v2(x,y),item,Infinity)
+            map.game.add_loot(v2(x,y),{item,count:Infinity})
             i++
             if(i>=10){
                 i=0

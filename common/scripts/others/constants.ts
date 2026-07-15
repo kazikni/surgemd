@@ -1,3 +1,4 @@
+import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts";
 import { type BoostDef } from "../definitions/player/boosts.ts";
@@ -251,4 +252,13 @@ export interface PlayerStatus extends HumanStatus{
     id:number
     time_alive:number
     score_applyer:ScoreApplyer[]
+}
+export interface LootData{
+    count:number
+    item:GameItem
+    aditional?:LootData[]
+}
+export interface LootAditional{
+    without_ammo?:boolean
+    include_ammo?:boolean
 }

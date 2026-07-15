@@ -126,10 +126,10 @@ export class Building extends StaticBody {
             this.game.map.terrain.add_floor(f.type,hb,l)
         }*/
         for (const l of this.def.content.loots ?? []) {
-            const items = this.game.loot_tables.get_loot(l.table, { withammo: true },this.game)
+            const items = this.game.get_loot_table(l.table)
             const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
-                this.game.add_loot(p, li.item, li.count, this.layer)
+                this.game.add_loot(p, {item:li.item, count:li.count}, this.layer)
             }
         }
         for (const d of this.def.content.decals ?? []) {

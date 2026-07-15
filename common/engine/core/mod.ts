@@ -7,6 +7,7 @@ export * from "./definition/inventory.ts"
 export * from "./definition/models.ts"
 export * from "./definition/modsManager.ts"
 export * from "./definition/replay.ts"
+export * from "./definition/tables.ts"
 
 export * from "./game/console.ts"
 export * from "./game/game.ts"

@@ -1,4 +1,5 @@
 import { LootTable } from "../../engine/core.ts";
+import { LootAditional } from "../others/constants.ts";
 
 export const LootTables={
     //Guns Quality
@@ -196,17 +197,15 @@ export const LootTables={
         {weight:0.04,table:"melees"},
     ],
     loot_drawer:[
-        {weight:2,count:2,table:"normal_loot"},
-        {weight:1,count:3,table:"normal_loot"},
-        {weight:0.5,count:4,table:"normal_loot"},
-        {weight:0.5,count:1,table:"normal_loot"},
+        {weight:1,table:"civil_loot",count:3},
+        {weight:0.1,table:"civil_loot",count:4},
     ],
     //Crates
     wood_crate:[
-        {weight:2,count:1,table:"normal_loot"},
+        {weight:3,count:1,table:"normal_loot"},
         {weight:1,count:2,table:"normal_loot"},
-        {weight:0.5,count:3,table:"normal_loot"},
-        {weight:0.2,count:4,table:"normal_loot"},
+        {weight:0.25,count:3,table:"normal_loot"},
+        {weight:0.05,count:4,table:"normal_loot"},
     ],
     campfire_crate:[
         [{weight:1,table:"ammos"}],
@@ -282,4 +281,4 @@ export const LootTables={
             {item:"scope_7",weight:2},
         ]
     ]
-} satisfies Record<string,LootTable>
+} satisfies Record<string,LootTable<LootAditional>>

@@ -155,11 +155,11 @@ export class GameMap{
             obj=this.generate_vehicle(def,random,spawn,layer)
             if(obj)(obj as Vehicle).physical_data.rotation=random.rad()
         }else if(this.game.loot_tables.tables.has(name)){
-            const loot=this.game.loot_tables.get_loot(name,{withammo:true},this.game)
+            const loot=this.game.get_loot_table(name)
             const pos:Vec2|undefined=this.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer??Layers.Normal,Spawn.grass,random,gen_position,gen_valid)
             if(!pos)return
             for(const ll of loot){
-                const l = this.game.add_loot(pos,ll.item,ll.count,layer)
+                const l = this.game.add_loot(pos,ll,layer)
                 if(!obj)obj=l
             }
         }

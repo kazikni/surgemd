@@ -1,23 +1,19 @@
-import { GameConstants, GameObjectType } from "common/scripts/others/constants.ts";
+import { GameConstants, GameObjectType, LootData } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { InventoryItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, cloneDeep, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
-import { GameItem } from "common/scripts/definitions/game_defs.ts";
 
 export class Loot extends ServerGameObject{
     string_type:string="loot"
     number_type: number=GameObjectType.Loot
 
     current_floor:FloorType=FloorType.Water
-    loot_data!:{
-        real_radius:number
 
-        count:number
-        item:GameItem
-    }
+    real_radius:number=0
+    loot_data!:LootData
 
     old_position:Vec2=v2(-1,-1)
     velocity:Vec2
@@ -27,14 +23,13 @@ export class Loot extends ServerGameObject{
 
         this.velocity=v2.zero()
         this.old_position=v2.clone(this.position)
-
         this.allow_tick=true
     }
     reduce_count(count:number){
         this.loot_data.count-=count
         this.destroy()
         if(this.loot_data.count>0){
-            this.game.add_loot(this.position,this.loot_data.item,this.loot_data.count,this.layer)
+            this.game.add_loot(this.position,this.loot_data,this.layer)
         }
     }
     override can_interact(user: Human): boolean {
@@ -42,49 +37,53 @@ export class Loot extends ServerGameObject{
     }
     override on_interact(user: Human): void {
         const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false)
+        for(const l of this.loot_data.aditional??[]){
+            user.inventory.give_loot(l,undefined,undefined,this.position,this.layer)
+        }
+        this.loot_data.aditional=[]
         if(c!==this.loot_data.count){
             this.reduce_count(this.loot_data.count-c)
         }
         return
     }
-    set_loot(position:Vec2,item:GameItem,count:number){
+    set_loot(position:Vec2,loot:LootData){
         this.position=position
         this.loot_data={
-            item:item,
-            count:count,
-            real_radius:0
+            item:loot.item,
+            count:loot.count,
+            aditional:loot.aditional
         }
         switch(this.loot_data.item.item_type){
             case InventoryItemType.gun:
             case InventoryItemType.melee:
-                this.loot_data.real_radius=GameConstants.loot.radius.weapon
+                this.real_radius=GameConstants.loot.radius.weapon
                 break
             case InventoryItemType.ammo:
-                this.loot_data.real_radius=GameConstants.loot.radius.ammo
+                this.real_radius=GameConstants.loot.radius.ammo
                 break
             case InventoryItemType.consumible:
-                this.loot_data.real_radius=GameConstants.loot.radius.consumible
+                this.real_radius=GameConstants.loot.radius.consumible
                 break
             case InventoryItemType.backpack:
             case InventoryItemType.helmet:
             case InventoryItemType.vest:
-                this.loot_data.real_radius=GameConstants.loot.radius.equipament
+                this.real_radius=GameConstants.loot.radius.equipament
                 break
             case InventoryItemType.grenade:
-                this.loot_data.real_radius=GameConstants.loot.radius.grenade
+                this.real_radius=GameConstants.loot.radius.grenade
                 break
             case InventoryItemType.accessory:
-                this.loot_data.real_radius=GameConstants.loot.radius.accessory
+                this.real_radius=GameConstants.loot.radius.accessory
                 break
             case InventoryItemType.scope:
-                this.loot_data.real_radius=GameConstants.loot.radius.scopes
+                this.real_radius=GameConstants.loot.radius.scopes
                 break
         }
-        (this.base_hitbox as CircleHitbox2D).radius=this.loot_data.real_radius
+        (this.base_hitbox as CircleHitbox2D).radius=this.real_radius
     }
-    override on_create(args?: {position:Vec2,item:GameItem,count:number,pre_proccess?:number}): void {
+    override on_create(args?: {position:Vec2,loot:LootData,pre_proccess?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),1)
-        if(args)this.set_loot(args.position,args.item,args.count)
+        if(args)this.set_loot(args.position,args.loot)
     }
     override on_tick(dt:number): void {
         const cf=Floors[this.current_floor]
@@ -155,15 +154,28 @@ export class Loot extends ServerGameObject{
             .write_uint8(this.loot_data.count)
         }
     }
+
+    encode_loot_data(data:LootData,stream:Stream):void{
+        stream.write_boolean_group(data.aditional!==undefined)
+        .write_uint16(this.game.definitions.game_items.keysString[data.item.idString])
+        .write_float32(data.count)
+    }
+    decode_loot_data(stream:Stream):LootData{
+        const [aditional]=stream.read_boolean_group()
+        return {
+            item:this.game.definitions.game_items.valueNumber[stream.read_uint16()],
+            count:stream.read_float32(),
+            aditional:aditional?stream.read_array(()=>this.decode_loot_data(stream),1):undefined
+        }
+    }
     override on_encode_checkpoint(stream: Stream): void {
         stream.write_pos2(this.position)
         .write_pos2(this.velocity)
-        .write_uint16(this.game.definitions.game_items.keysString[this.loot_data.item.idString])
-        .write_float32(this.loot_data.count)
+        this.encode_loot_data(this.loot_data,stream)
     }
     override on_decode_checkpoint(stream: Stream): void {
         const position=stream.read_pos2()
         this.velocity=stream.read_pos2()
-        this.set_loot(position,this.game.definitions.game_items.valueNumber[stream.read_uint16()],stream.read_float32())
+        this.set_loot(position,this.decode_loot_data(stream))
     }
 }

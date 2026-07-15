@@ -1,6 +1,13 @@
 import { Hitbox2D } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
 import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/general_update.ts";
+
+import { type Game } from "../../../server/src/game/others/game.ts";
+import { type LootAditional, type LootData } from "./constants.ts";
+import { type GameDefinition } from "../definitions/game_defs.ts";
+import { InventoryItemType } from "../definitions/utils.ts";
+import { type GunDef } from "../definitions/items/guns.ts";
+
 export function CalculateDoorHitbox(hitbox:Hitbox2D,door:ObstacleBehaviorDoor):Record<-1|0|1,Hitbox2D>{
     return {
         [-1]:hitbox.transform(undefined,undefined,undefined,1),
@@ -54,4 +61,40 @@ export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStag
     })
 
     return stages
+}
+export function loot_table_get_item(item:string,count:number,aditional:LootAditional,settings:LootAditional,game:Game):LootData[]{
+    const itemD=(game.definitions as GameDefinition).game_items.valueString[item]
+    if(!itemD){
+        console.error(item,"Not Founded")
+        return []
+    }
+    if(itemD.item_type===InventoryItemType.gun){
+        const ret:LootData[]=[
+            {
+                item:itemD,
+                count:count
+            }
+        ]
+        if(itemD.ammo_spawn&&!(aditional.without_ammo||settings.without_ammo)){
+            const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammo_spawn?.type??(itemD as unknown as GunDef).ammo_type]
+            
+            const data={
+                item:ammo_def,
+                count:(itemD as GunDef).ammo_spawn!.amount
+            }
+            if(settings.include_ammo||aditional.include_ammo){
+                ret[0].aditional=[data]
+            }else{
+                ret.push(data)
+            }
+        }
+        return ret
+    }else{
+        return [
+            {
+                item:itemD,
+                count:count
+            }
+        ]
+    }
 }

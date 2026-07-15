@@ -232,11 +232,6 @@ export const TundraMap:MapDef={
             ],
             [{weight:1,table:"scopes"}],
         ],
-        wood_crate:[
-            {weight:2,count:3,table:"normal_loot"},
-            {weight:1,count:4,table:"normal_loot"},
-            {weight:0.5,count:5,table:"normal_loot"},
-        ],
         iron_crate:[
             ...LootTables.iron_crate,
             [

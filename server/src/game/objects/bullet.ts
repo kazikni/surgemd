@@ -1,7 +1,7 @@
 import { BulletDef, BulletReflection, DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
 import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { CircleHitbox2D, Collision, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";

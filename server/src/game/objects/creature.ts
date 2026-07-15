@@ -1,11 +1,9 @@
-import { Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, v2, Vec2 } from "common/engine/core.ts";
+import { Hitbox2D, Stream, NullHitbox2D, v2, Vec2 } from "common/engine/core.ts";
 import { type CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { DamageParams } from "../others/utils.ts";
-import { GameObjectType } from "common/scripts/others/constants.ts";
+import { GameObjectType, LootData } from "common/scripts/others/constants.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
-import { Human } from "./human.ts";
 export type CreaturePhysicalData=MovingBodyPhysicalData&{
     spawn_hitbox:Hitbox2D
     hitbox:Hitbox2D
@@ -23,7 +21,7 @@ export class Creature extends MovingBody {
 
     spawn_hitbox!:Hitbox2D
     override physical_data: CreaturePhysicalData&{dirty:boolean}
-    loot: LootTableItemRet<GameItem>[] = []
+    loot: LootData[] = []
 
     old_pos?:Vec2
     old_rot?:number
@@ -54,11 +52,7 @@ export class Creature extends MovingBody {
         this.health = this.def.health
 
         if (this.def.loot_table) {
-            this.loot = this.game.loot_tables.get_loot(
-                this.def.loot_table,
-                { withammo: true },
-                this.game
-            )
+            this.loot = this.game.get_loot_table(this.def.loot_table)
         }
 
         this.def.on_start?.(this, args, false)
@@ -70,7 +64,7 @@ export class Creature extends MovingBody {
         this.def.on_die?.(false)
 
         for (const l of this.loot) {
-            this.game.add_loot(this.position, l.item, l.count)
+            this.game.add_loot(this.position, {item:l.item, count:l.count})
         }
     }
     damage(params: DamageParams) {

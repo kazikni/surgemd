@@ -1,12 +1,11 @@
 import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
-import { GameObjectType, ObstacleVisualData } from "common/scripts/others/constants.ts";
-import { Angle, Hitbox2D, LootTableItemRet, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, Vec2, CheckpointContext } from "common/engine/core.ts";
+import { GameObjectType, LootData, ObstacleVisualData } from "common/scripts/others/constants.ts";
+import { Angle, Hitbox2D, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, Vec2, CheckpointContext } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { DamageParams } from "../others/utils.ts";
-import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Loot } from "./loot.ts";
 import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
 import { type Building } from "./building.ts";
@@ -75,7 +74,7 @@ export class Obstacle extends StaticBody{
         stairs:[]
     }
 
-    loot:LootTableItemRet<GameItem>[]=[]
+    loot:LootData[]=[]
     door_data?:ObstacleDoorData&{dirty:boolean,only_side?:number}
     transform_into_data?:{
         activated:boolean
@@ -214,7 +213,7 @@ export class Obstacle extends StaticBody{
     }
     load_loot(){
         if(this.def.lootTable){
-            this.loot=this.game.loot_tables.get_loot(this.def.lootTable,{withammo:true},this.game)
+            this.loot=this.game.get_loot_table(this.def.lootTable)
         }
     }
     set_definition(def:ObstacleDef){
@@ -400,7 +399,7 @@ export class Obstacle extends StaticBody{
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
-            loots.push(this.game.add_loot(this.hitbox.random_point(),l.item,l.count,this.layer))
+            loots.push(this.game.add_loot(this.hitbox.random_point(),l,this.layer))
         }
 
         this.set_dirty_part()

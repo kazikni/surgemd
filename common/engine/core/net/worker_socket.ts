@@ -34,7 +34,6 @@ export class WorkerSocket extends BasicSocket {
         this.close = (code, reason) => {
             this.readyState = this.CLOSED
             this.onclose?.(code, reason)
-            if (this.port instanceof Worker) this.port.terminate()
         };
 
         this.readyState = this.OPEN

@@ -10,9 +10,6 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
-import { island_final } from "common/scripts/config/final_screen.ts";
-import { ScoreApplyer, ScoreApplyerType } from "common/scripts/others/constants.ts";
-import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -133,7 +130,7 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
                 }
                 case "campaign":{
                     this.game.start_with_intro=play.start_with_intro
-                    this.game.local_server.begin_level(play.path)
+                    this.game.local_server.begin_level("/"+play.path)
                     break
                 }
                 case "join":{

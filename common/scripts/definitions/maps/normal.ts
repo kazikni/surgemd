@@ -106,7 +106,7 @@ export const NormalMap:MapDef={
             {def:"river_rock",count:50},
             {def:map_spawns.rocks,count:500},
             {def:"bush",count:300},
-            {def:"barrel",count:150},
+            {def:"barrel",count:130},
 
             {def:"normal_loot",count:100},
             {def:"jeep",count:5},

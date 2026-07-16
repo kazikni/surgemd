@@ -50,11 +50,18 @@ export class LocalGameServer{
         this.run()
         this.worker!.postMessage({type:"load_level",path})
     }
+    next_level(name:string,start_with_intro?:boolean){
+        if(!this.worker)return
+        this.worker.postMessage({type:"next_level",name,start_with_intro})
+    }
 
     handle_messages(msg:any){
         switch(msg.type){
             case "server_created":
                 this.connect()
+                break
+            case "start_level":
+                this.begin_level(msg.path)
                 break
         }
     }

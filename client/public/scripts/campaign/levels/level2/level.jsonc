@@ -237,6 +237,9 @@
             ]
         }
     },
+    "next_level":{
+        "complete":"../level3"
+    },
     "characters_selection": {
         "spawn_other": true,
         "characters": [

@@ -18,6 +18,7 @@ __                                                                              
 * Rainbow crosshair easter egg
 * Aim crosshair
 * Menu Shadow Options
+* Prologue Level
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

@@ -16,12 +16,15 @@
     "cutscenes": {
         "begin": "cutscenes/begin.jsonc"
     },
+    "next_level":{
+        "complete":"../level2"
+    },
     "mode": {
         "type": "battle_royale",
-        "map": {
-            "def": "normal"
-        },
         "settings":{
+            "map": {
+                "def": "normal"
+            },
             "enemies": [
                 {
                     "def": {

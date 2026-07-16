@@ -53,6 +53,9 @@ export interface LevelDefinition{
         location: string
         date:string
     }
+    next_level?:{
+        complete?:string
+    }
     game_over?:GameOverScreen
     cutscenes?:{
         begin?:string

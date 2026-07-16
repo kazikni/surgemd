@@ -793,11 +793,7 @@ export class Human extends MovingBody{
                     }
                 }
                 if(this.input.interaction&&obj.can_interact(this)){
-                    const dist=v2.distance(this.position,obj.position)
-                    if(dist<this._interact_score){
-                        this._interact_object=obj
-                        this._interact_score=dist
-                    }
+                    obj.on_interact(this)
                 }
                 if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
@@ -820,11 +816,7 @@ export class Human extends MovingBody{
                     }
                 }
                 if(this.input.interaction&&obj.can_interact(this)){
-                    const dist=v2.distance(this.position,obj.position)
-                    if(dist<this._interact_score){
-                        this._interact_object=obj
-                        this._interact_score=dist
-                    }
+                    obj.on_interact(this)
                 }
                 if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)

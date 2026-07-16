@@ -529,78 +529,12 @@ export class Game extends ClientGame<GameObject>{
         await this.final_screen.show_status(game_over.status[0] as PlayerStatus)
         if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)
         await this.final_screen.hide_final_screen()
-
     }
-    make_green_light_death_message(status:HumanStatus):string[]{
-        const messages: string[] = []
-        // INTRO
-        messages.push(this.language.get(`gameover.messages.introductions.${random.int(0, 2)}`))
-        // DEATH
-        messages.push(this.language.get(`gameover.messages.death.${random.int(0, 10)}`))
-        // STATUS
-        if (status.kills >= 1) {
-            messages.push(this.language.get("gameover.messages.status.kills", {
-                kills: status.kills.toString()
-            }))
-        } else {this.default_scope??this.definitions.scopes.getFromNumber(0)
-            messages.push(
-                this.language.get("gameover.messages.status.no-kills"),
-                this.language.get("gameover.messages.status.no-kills-dead")
-            )
-        }
-        // HINTS
-        const hintGroups:[string,number][] = [
-            ["quickswitch", 5],
-            ["movement", 2],
-            ["cover", 3],
-            ["healing", 3],
-            ["grenade", 2]
-        ]
-        const chosenHint = random.choose(hintGroups)
-        for (let i = 0; i < chosenHint[1]; i++) {
-            messages.push(
-                this.language.get(`gameover.messages.hints.${chosenHint[0]}.${i}`)
-            )
-        }
-        // MOTIVATIONAL
-        const motivational:number[]=[
-            1,
-            1,
-            1,
-            1,
-            2,
-            1,
-            2,
-            2
-        ]
-        const msg=random.int(0,motivational.length-1)
-        for(let i=0;i<motivational[i];i++){
-            messages.push(this.language.get(`gameover.messages.motivational.${msg}.${i}`))
-        }
-        // FINAL
-        messages.push(this.language.get(`gameover.messages.final.${random.int(0, 3)}`))
-        // END
-        messages.push(this.language.get("gameover.messages.death-end"))
-        return messages
-    }
-    /*async on_die_level(p:GameOverPacket){
-        if(!this.level)return
-        this.add_timeout(()=>{
-            this.local_server.reset_level()
-        },2)
-        await this.game_over_messages(this.make_green_light_death_message(p.status.status[0]),this.resources.get_sound("gameover_music")!)
-        this.ambient.music.set(this.resources.get_sound("level_music"),{
-            loop:true,
-            offset:this.ambient.last_music_pos
-        })
-        this.ui.hide_game_over()
-        this.local_server.start()
-    }*/
-    close_game(){
+    close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
+        if(hard)this.local_server.stop()
         this.happening=false
         this.started=false
-        this.local_server.stop()
         this.menu.game_end()
         this.ambient.on_game_close()
         this.client=undefined
@@ -621,10 +555,17 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.zoom=6
         this.zoom_speed=4
     }
-    finish_game_over(){
+    finish_game_over(win:boolean){
         if(this.offline){
-            this.soft_close_game()
-            this.local_server.reset_level()
+            if(win){
+                this.menu.show_loading_screen()
+                this.close_game(false)
+                this.start_with_intro=true
+                this.local_server.next_level("complete")
+            }else{
+                this.soft_close_game()
+                this.local_server.reset_level()
+            }
         }else{
             this.close_game()
         }

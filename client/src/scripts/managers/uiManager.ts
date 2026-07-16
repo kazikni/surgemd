@@ -113,7 +113,7 @@ export class UiManager{
             this.mobile_init()
         }
 
-        this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game)
+        this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game,false)
 
         this.game.ui_manager.add(new BottomLeftModule())
         this.game.ui_manager.add(new InventoryModule())
@@ -721,15 +721,17 @@ export class UiManager{
                 break
             }
             case GameOverScreenType.Restart:
-                HideElement(this.content.game_gui)
-                this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
-                    bus:"ui"
-                })
-                this.content.restart_gameOver.classList.remove("hidden")
-                this.game.scope_zoom*=0.75
-                this.game.zoom_speed*=0.05
-                await this.game.input_manager.wait_for_action("reload")
-                this.game.finish_game_over()
+                if(!g.status.win){
+                    HideElement(this.content.game_gui)
+                    this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                        bus:"ui"
+                    })
+                    this.content.restart_gameOver.classList.remove("hidden")
+                    this.game.scope_zoom*=0.75
+                    this.game.zoom_speed*=0.05
+                    await this.game.input_manager.wait_for_action("reload")
+                }
+                    this.game.finish_game_over(g.status.win)
                 break
             case GameOverScreenType.Light:
                 break

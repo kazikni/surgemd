@@ -1,0 +1,40 @@
+{
+    "meta": {
+        "name": "Prologue",
+        "location": "Soldier Training Camp",
+        "description": "After A Misterious Call. You Decide Go To The Marked Place. Unfineshed level",
+        "size": "medium",
+        "dificulty": "easy"
+    },
+    "assets": {
+        "load": {
+            "assets": {
+                "history_music_1": "/sounds/musics/history_music_1.mp3"
+            }
+        }
+    },
+    "next_level":{
+        "complete":"../level1"
+    },
+    "mode": {
+        "type": "battle_royale",
+        "settings":{
+            "map":{
+                "def":"lobby"
+            },
+            "enemies": [
+                {
+                    "def": {
+                        "ai": {
+                            "kind": "dumb"
+                        }
+                    },
+                    "count": 1
+                }
+            ]
+        }
+    },
+    "player": {
+        "path": "../../characters/vinii.jsonc"
+    }
+}

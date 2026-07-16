@@ -7,6 +7,7 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts"
 export class LevelPlayer {
     game: Game
     level!: LevelDefinition
+    path!:string
     started:boolean=false
     fs:FileManager
 
@@ -22,6 +23,7 @@ export class LevelPlayer {
     }
 
     async begin(path:string){
+        this.path=path
         this.level = parseJSONC(await this.fs.read_file("level.jsonc"))
 
         this.game.start_settings.background_music=this.level.assets?.background_music

@@ -239,12 +239,14 @@ export class TranslationManager {
         this.language_layers=this.language_layers.filter(v=>v.tag!==tag)
         this.default_layers=this.default_layers.filter(v=>v.tag!==tag)
     }
-    get(key:string,replace:Record<string,string>={}){
+    get(key:string,replace:Record<string,string>={},default_value?:string){
         let value=this.get_value(this.language_layers,key)
         if(value===undefined){
             value=this.get_value(this.default_layers,key)
         }
-        if(typeof value!=="string"){
+        if(default_value!==undefined){
+            return default_value
+        }else if(typeof value!=="string"){
             console.error(`[TranslationManager] Missing translation "${key}"`)
             return key
         }

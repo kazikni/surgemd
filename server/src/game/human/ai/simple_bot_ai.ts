@@ -74,7 +74,7 @@ export class SimpleBotAi extends BotAi{
         this.emotes=[
             human.game.definitions.emotes.getFromString("sad"),
             human.game.definitions.emotes.getFromString("happy"),
-            human.game.definitions.emotes.getFromString("md_logo"),
+            human.game.definitions.emotes.getFromString("logo_md"),
             human.game.definitions.emotes.getFromString("neutral"),
             ...Object.values(human.game.definitions.ammos.value),
             ...Object.values(human.game.definitions.consumibles.value)

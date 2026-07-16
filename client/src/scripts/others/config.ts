@@ -90,7 +90,7 @@ export const ConfigDefaultValues={
     sv_loadout_hair:"hair_1",
     sv_loadout_hair_tint:"#222222",
     sv_loadout_shirt:"blue_shirt",
-    sv_loadout_emote_top:"md_logo",
+    sv_loadout_emote_top:"logo_md",
     sv_loadout_emote_bottom:"neutral",
     sv_loadout_emote_left:"sad",
     sv_loadout_emote_right:"happy",

@@ -8,12 +8,19 @@ export interface EmoteDef extends Definition{
 }
 export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
     emotes.insert(
+        // Face
         {idString:"happy",rank:ItemRank.E},
         {idString:"sad",rank:ItemRank.E},
         {idString:"neutral",rank:ItemRank.E},
-        {idString:"md_logo",rank:ItemRank.E},
-
+        {idString:"angry",rank:ItemRank.E},
         {idString:"skull",rank:ItemRank.E},
+
+        // Logo
+        {idString:"logo_md",rank:ItemRank.E},
+        {idString:"logo_campfire",rank:ItemRank.E},
+        {idString:"logo_knife",rank:ItemRank.E},
+
+        // Text
         {idString:"gg",rank:ItemRank.E},
 
         /*

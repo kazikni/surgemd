@@ -57,6 +57,7 @@
             "explosive_ammo": "Explosive Ammo",
             "gasoline": "Gasoline",
             "mana_mm": "Mana-MM LOL",
+
             "fist": "Fists",
             "survival_knife": "Survival Knife",
             "axe": "Axe",
@@ -64,6 +65,7 @@
             "sledgehammer": "Sledgehammer",
             "katana": "Katana",
             "bonesaw": "Bonesaw",
+
             "pan": "Pan",
             "m9": "M9",
             "m9_dual": "Dual M9",
@@ -105,6 +107,7 @@
             "rpg7": "RPG-7",
             "m79": "M79",
             "m2_2": "M2-2",
+
             "rip_ammo": "R.I.P Ammo",
             "high_quality_projectiles": "High Quality Projectiles",
             "first_last_great": "First Last Great",
@@ -164,7 +167,17 @@
             "happy":"Happy",
             "sad":"Sad",
             "neutral":"Neutral",
-            "md_logo":"MD Logo"
+            "angry":"Angry",
+            "skull":"Skull",
+
+            "logo_md":"MD Logo",
+            "logo_campfire":"Campfire Logo",
+            "logo_knife":"Knife Logo",
+
+            "gg":"GG"
+        },
+        "wrapping":{
+
         },
         "characters": {
             "nick": "Nick",

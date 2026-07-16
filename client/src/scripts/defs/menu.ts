@@ -462,21 +462,20 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
         ]
 
         for(const slot of slots){
-            const cur_emote=save.get_variable("sv_loadout_emote_"+slot)
+            const cur_emote=definitions.emotes.getFromStringSafe(save.get_variable("sv_loadout_emote_"+slot))
             const container=document.createElement("div")
             container.className="litem emote-slot-"+slot
             container.dataset.slot=slot
             const name=translation.get("loadout.emotes."+slot)
-            if(cur_emote==""){
+            if(cur_emote){
+                container.innerHTML=`
+<span class="name">${name}</span>
+<img class="icon" src="${resources.get_frame("emote_"+cur_emote.idString).src}"/>
+`
+            }else{
                 container.innerHTML=`
 <span class="name">${name}</span>
 <img class="icon"/>
-`
-            }else{
-                const cur_emote_def=definitions.emotes.getFromString(cur_emote)
-                container.innerHTML=`
-<span class="name">${name}</span>
-<img class="icon" src=${resources.get_frame("emote_"+cur_emote_def.idString).src}/>
 `
             }
 

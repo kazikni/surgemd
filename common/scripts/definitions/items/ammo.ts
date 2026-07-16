@@ -4,6 +4,8 @@ import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface AmmoDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.ammo
+    name?:string
+    tname?:string
     rank:ItemRank
 
     description?:string|boolean
@@ -20,6 +22,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         //Main
         {
             idString:"12g",
+            name:"12G",
             ammoType:"12g",
             description:true,
             defaultTrail:0xcfada0,
@@ -30,6 +33,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         },
         {
             idString:"762mm",
+            name:"7.62-MM",
             ammoType:"762mm",
             description:true,
             defaultTrail:0xb8ccde,
@@ -39,6 +43,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         },
         {
             idString:"556mm",
+            name:"5.56-MM",
             ammoType:"556mm",
             description:true,
             defaultTrail:0xa7f2b2,
@@ -48,6 +53,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         },
         {
             idString:"45acp",
+            name:".45-ACP",
             ammoType:"45acp",
             description:true,
             defaultTrail:0xcea2e0,
@@ -57,6 +63,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         },
         {
             idString:"9mm",
+            name:"9-MM",
             ammoType:"9mm",
             description:true,
             defaultTrail:0xefef9f,
@@ -66,6 +73,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         },
         {
             idString:"22lr",
+            name:"22-LR",
             ammoType:"22lr",
             description:true,
             defaultTrail:0xaaaaaa,
@@ -77,6 +85,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         //Exotic
         {
             idString:"50cal",
+            name:".50-Cal",
             ammoType:"50cal",
             description:true,
             defaultTrail:0x555555,
@@ -86,6 +95,7 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
         },
         {
             idString:"308sub",
+            name:".308 Sub-Sonic",
             ammoType:"308sub",
             description:true,
             defaultTrail:0x222835,

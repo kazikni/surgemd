@@ -4,6 +4,8 @@ import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface ScopeDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.scope
+    name?:string
+    tname?:string
     rank:ItemRank
 
     scope_view:number

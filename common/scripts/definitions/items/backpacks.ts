@@ -5,9 +5,11 @@ import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface BackpackDef extends Definition{
     item_type?:GameItemType.backpack
     def_type?:GameObjectDefinitionType.item
+    name?:string
+    tname?:string
+    rank:ItemRank
 
     max:Record<string,number>
-    rank:ItemRank
     level:number
     special?:boolean
     no_world_image?:boolean

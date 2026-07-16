@@ -7,6 +7,8 @@ import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export interface AccessoryDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.accessory
+    name?:string
+    tname?:string
     rank:ItemRank
 
     property?:string[]

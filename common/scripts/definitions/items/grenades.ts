@@ -14,6 +14,8 @@ export type Airstrike={
 export type GrenadeDef={
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.grenade
+    name?:string
+    tname?:string
     rank:ItemRank
 
     description?:string|boolean

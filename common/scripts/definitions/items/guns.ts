@@ -8,6 +8,8 @@ export interface GunRecoilDef{
 export type GunDef={
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.gun
+    name?:string
+    tname?:string
     rank:ItemRank
 
     class:GunClasses
@@ -522,6 +524,7 @@ export const guns_factory={
 export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
     guns.insert(
         guns_factory.pistol("m9","9mm",{
+            name:"M9",
             fire_delay:0.2,
             fire_mode:FireMode.Single,
             spread:1,
@@ -566,6 +569,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.pistol("taurustx","22lr",{
+            name:"Taurus-TX 22",
             fire_delay:0.4,
             fire_mode:FireMode.Burst,
             burst:{
@@ -617,6 +621,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.pistol("colt1873","45acp",{
+            name:"Colt 1873",
             fire_delay:0.3,
             switch_delay:0.2,
             fire_mode:FireMode.Single,
@@ -665,6 +670,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.pistol("desert_eagle","50cal",{
+            name:"Desert-Eagle",
             fire_delay:0.3,
             fire_mode:FireMode.Single,
             rank:ItemRank.A,
@@ -715,6 +721,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.pistol("pfeifer_zeliska","308sub",{
+            name:"Pfeifer-Zeliska",
             rank:ItemRank.S,
 
             fire_delay:1.5,
@@ -759,6 +766,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             speed_mod:0.95,
         }),
         guns_factory.assault("ak47","762mm",{
+            name:"AK-47",
             fire_delay:0.1,
             spread:2,
             move_spread:3,
@@ -784,6 +792,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.assault("ar15","556mm",{
+            name:"AR-15",
             fire_delay:0.07,
             spread:4,
             move_spread:2,
@@ -806,6 +815,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.assault("m4a1","556mm",{
+            name:"M4A1",
             fire_delay:0.08,
             spread:1,
             move_spread:2.5,
@@ -828,6 +838,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.assault("m16_gl","556mm",{
+            name:"M16-GL",
             fire_delay:0.07,
             spread:4,
             move_spread:2,
@@ -865,6 +876,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.assault("mp5","9mm",{
+            name:"MP5",
             fire_delay:0.1,
             spread:1,
             move_spread:3,
@@ -888,6 +900,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.assault("m1921","45acp",{
+            name:"M1921",
             fire_delay:0.1,
             spread:3,
             move_spread:2,
@@ -914,6 +927,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.assault("famas","556mm",{
+            name:"FAMAS",
             rank:ItemRank.B,
 
             fire_delay:0.4,
@@ -944,6 +958,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.smg("micro_uzi","9mm",true,{
+            name:"Micro-Uzi",
             rank:ItemRank.D,
             fire_delay:0.03,
             spread:4,
@@ -967,6 +982,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.smg("vector","9mm",false,{
+            name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.03,
             spread:0.5,
@@ -990,6 +1006,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.smg("p90","45acp",false,{
+            name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
             spread:0.8,
@@ -1013,6 +1030,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.sniper("kar98k","762mm",{
+            name:"Kar98-K",
             fire_delay:1.3,
             spread:0.2,
             move_spread:2,
@@ -1044,6 +1062,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.sniper("awp","762mm",{
+            name:"AWP",
             rank:ItemRank.S,
             fire_delay:1.4,
             spread:0.3,
@@ -1070,6 +1089,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.sniper("awm","308sub",{
+            name:"AWM",
             rank:ItemRank.S,
 
             fire_delay:1.5,
@@ -1105,6 +1125,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.sniper("blr81","556mm",{
+            name:"BLR-81",
             rank:ItemRank.B,
 
             fire_delay:1,
@@ -1129,6 +1150,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.sniper("model94","45acp",{
+            name:"Model-94",
             rank:ItemRank.B,
 
             fire_delay:1,
@@ -1154,6 +1176,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.shotgun("m870","12g",{
+            name:"M870",
             fire_delay:1,
             spread:3,
             move_spread:1.7,
@@ -1182,6 +1205,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.shotgun("spas12","12g",{
+            name:"Spas12",
             rank:ItemRank.B,
 
             fire_delay:1,
@@ -1212,6 +1236,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.shotgun("hp18","12g",{
+            name:"HP-18",
             rank:ItemRank.D,
 
             fire_delay:0.3,
@@ -1243,6 +1268,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.dmr("sr25","762mm",{
+            name:"sr25",
             fire_delay:0.3,
             spread:1,
             move_spread:2,
@@ -1269,6 +1295,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.dmr("vss","9mm",{
+            name:"VSS Vintorez",
             fire_delay:0.2,
             spread:1,
             move_spread:3,
@@ -1302,6 +1329,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.dmr("rifle_cbc","22lr",{
+            name:"Rifle-CBC",
             fire_delay:0.2,
             spread:1.5,
             move_spread:3,
@@ -1338,6 +1366,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.dmr("m1_garand","762mm",{
+            name:"M1-Garand",
             fire_delay:0.3,
             spread:1.5,
             move_spread:2,
@@ -1365,6 +1394,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             }
         }),
         guns_factory.lmg("pkp","762mm",{
+            name:"PKP Pecheneg",
             fire_delay:0.12,
             switch_delay:1,
             spread:2,
@@ -1394,6 +1424,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.lmg("m249","556mm",{
+            name:"M249",
             fire_delay:0.1,
             switch_delay:1,
             spread:2,
@@ -1423,6 +1454,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
         }),
         guns_factory.lmg("xm556","556mm",{
+            name:"XM556-Minigun",
             fire_delay:0.045,
             switch_delay:1,
             spread:0.5,
@@ -1448,6 +1480,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         {
             idString:"rpg7",
+            name:"RPG-7",
             class:GunClasses.Miscellaneous,
             rank:ItemRank.S,
 
@@ -1511,6 +1544,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"m79",
+            name:"M79",
             class:GunClasses.Miscellaneous,
             rank:ItemRank.A,
 
@@ -1563,6 +1597,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         },
         {
             idString:"m2_2",
+            name:"M2-2",
             class:GunClasses.Miscellaneous,
             rank:ItemRank.A,
 

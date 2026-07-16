@@ -28,6 +28,8 @@ export type ConsumingAction={
 export interface ConsumibleDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.consumible
+    name?:string
+    tname?:string
     rank:ItemRank
 
     consuming:ConsumingAction

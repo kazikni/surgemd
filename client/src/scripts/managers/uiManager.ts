@@ -468,7 +468,7 @@ export class UiManager{
                         text=this.game.language.get("feed.kill.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),
+                            source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
                         if(this.leader&&msg.killer.id===this.leader.id){
                             this.leader.kills=msg.killer.kills
@@ -520,7 +520,7 @@ export class UiManager{
                         text=this.game.language.get("feed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString)
+                            source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
                         break
                     }
@@ -793,6 +793,9 @@ export class UiManager{
         if(this.content.tooltip.classList.contains("tooltip-visible")){
             this.content.tooltip.style.left=`${this.game.input_manager.real_mouse_position.x-10}px`
             this.content.tooltip.style.top=`${this.game.input_manager.real_mouse_position.y-10}px`
+            if(this.tooltip_element&&(this.tooltip_element.style.visibility==="hidden"||!this.tooltip_element.isConnected)){
+                this.tooltip_hide()
+            }
         }
         this.update_emote_wheel()
         this.update_crosshair(dt)
@@ -888,7 +891,7 @@ export class UiManager{
 
     tooltip_show(title:string|null|undefined,description:string,element?:HTMLElement){
         if(!title)return
-        this.content.tooltip_title.innerText=this.game.language.get(title)
+        this.content.tooltip_title.innerText=title
         this.content.tooltip_description.innerHTML=description
         this.tooltip_element=element
         this.content.tooltip.classList.add("tooltip-visible")

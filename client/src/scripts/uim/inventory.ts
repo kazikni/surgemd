@@ -129,7 +129,7 @@ export class InventoryModule extends UIModule<Game> {
             img.style.display = "block"
 
             el.classList.remove("slot-empty")
-            el.dataset.item_name="items."+def.idString
+            el.dataset.item_name=this.game.language.get(def.tname??("items."+def.idString),undefined,def.name)
 
             count.classList.toggle("item-maximized",slot.count >= this.game.inventory.item_limit(def))
 
@@ -167,7 +167,7 @@ export class InventoryModule extends UIModule<Game> {
             const name_el=this.weapons_elements[i].querySelector(".weapon-slot-name") as HTMLSpanElement
             const img_el=this.weapons_elements[i].querySelector(".weapon-slot-image") as HTMLImageElement
             if (item) {
-                const name=this.game.language.get("items."+item.def.idString)
+                const name=this.game.language.get(item.def.tname??("items."+item.def.idString),undefined,item.def.name)
                 const assets = item.assets(this.game.resources)
                 if((item.def as WeaponDef).description){
                     let descriptionKey = `items.description.${(item.def as WeaponDef).idString}`
@@ -177,7 +177,7 @@ export class InventoryModule extends UIModule<Game> {
                     this.weapons_elements[i].dataset.item_description=this.game.language.get(descriptionKey)
                 }
                 name_el.innerText = name
-                this.weapons_elements[i].dataset.item_name="items."+item.def.idString
+                this.weapons_elements[i].dataset.item_name=this.game.language.get(item.def.tname??("items."+item.def.idString),undefined,item.def.name)
                 img_el.src = assets.item.src
                 img_el.style.display = "block"
             } else {
@@ -315,7 +315,7 @@ export class InventoryModule extends UIModule<Game> {
         const span = el.querySelector(".count") as HTMLSpanElement
         span.innerText = `${count}${def.liquid ? "L" : ""}`
         span.classList.toggle("item-maximized",count >= this.game.inventory.item_limit(def))
-        el.dataset.item_name = "items." + def.idString
+        el.dataset.item_name = this.game.language.get(def.tname??("items."+def.idString),undefined,def.name)
         let description = ""
         if (def.description) {
             let descriptionKey = typeof def.description==="string"?def.description:`items.description.${def.idString}`
@@ -378,24 +378,24 @@ export class InventoryModule extends UIModule<Game> {
         this.vest=player.vest
         this.backpack=player.backpack
         if(this.helmet){
-            this.render_equipment_slot(this.helmet_el,this.helmet.idString,this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins![this.helmet_skin]:this.helmet.idString,`<span class="span-text-base${this.helmet.special?" item-maximized":""}">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
+            this.render_equipment_slot(this.helmet_el,this.helmet,this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins![this.helmet_skin]:this.helmet.idString,`<span class="span-text-base${this.helmet.special?" item-maximized":""}">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
         }else{
             this.render_equipment_slot(this.helmet_el,undefined,undefined,"")
         }
         if(this.vest){
-            this.render_equipment_slot(this.vest_el,this.vest.idString,this.vest.idString,`<span class="span-text-base${this.vest.special?" item-maximized":""}">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
+            this.render_equipment_slot(this.vest_el,this.vest,this.vest.idString,`<span class="span-text-base${this.vest.special?" item-maximized":""}">Level ${this.vest.level}</span>`,"items.description.vest",{"reduction":(this.vest.reduction*100).toString()})
         }else{
             this.render_equipment_slot(this.vest_el,undefined,undefined,"")
         }
         if(this.backpack){
-            this.render_equipment_slot(this.backpack_el,this.backpack.idString,this.backpack.idString,`<span class="span-text-base${this.backpack.special?" item-maximized":""}">Level ${this.backpack.level}</span>`,"items.description.backpack")
+            this.render_equipment_slot(this.backpack_el,this.backpack,this.backpack.idString,`<span class="span-text-base${this.backpack.special?" item-maximized":""}">Level ${this.backpack.level}</span>`,"items.description.backpack")
         }else{
             this.render_equipment_slot(this.backpack_el,undefined,undefined,"")
         }
     }
     
-    private render_equipment_slot(el: HTMLDivElement, id?: string,frame?:string,span="",description_def:string="items.description.vest",replace?:Record<string,string>) {
-        if (!id||!frame) {
+    private render_equipment_slot(el: HTMLDivElement, def?:GameItem,frame?:string,span="",description_def:string="items.description.vest",replace?:Record<string,string>) {
+        if (!def||!frame) {
             el.onmousedown = null
             el.onmouseenter = null
             el.onmouseleave = null
@@ -406,7 +406,7 @@ export class InventoryModule extends UIModule<Game> {
         const description=this.game.language.get(description_def,replace)
         el.onmousedown=this.game.ui.handle_slot_click.bind(this.game.ui)
         el.onmouseenter=(e)=>{
-            this.game.ui.tooltip_show("items."+id,description,el)
+            this.game.ui.tooltip_show(this.game.language.get(def.tname??("items."+def.idString),undefined,def.name),description,el)
         }
         el.onmouseleave=()=>{
             this.game.ui.tooltip_hide()

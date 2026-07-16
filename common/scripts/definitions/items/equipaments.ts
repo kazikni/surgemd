@@ -108,6 +108,8 @@ export const equipment_factorys={
 export interface VestDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.vest
+    name?:string
+    tname?:string
     rank:ItemRank
 
     defence:number
@@ -125,6 +127,8 @@ export interface VestDef extends Definition{
 export interface HelmetDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.helmet
+    name?:string
+    tname?:string
     rank:ItemRank
 
     defence:number

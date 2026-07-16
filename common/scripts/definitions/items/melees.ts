@@ -4,6 +4,8 @@ import { GameObjectDefinitionType, type GameItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.melee
+    name?:string
+    tname?:string
     rank:ItemRank
     description?:string|boolean
 
@@ -24,6 +26,7 @@ export interface MeleeDef extends Definition{
     animation?:AKeyFrame[]
     alt_animation?:AKeyFrame[]
 
+    kill_transform_into?:string
     assets?:WeaponAssets&{
         hit_sound?:string
     }
@@ -670,7 +673,9 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             }
         },
         melees_factorys.bonesaw("bonesaw"),
-        melees_factorys.bonesaw("bonesaw_bloody"),
+        melees_factorys.bonesaw("bonesaw_bloody",{
+            tname:"items.bonesaw"
+        }),
         {
             idString:"pan",
             damage:25,

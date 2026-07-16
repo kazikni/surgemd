@@ -1,5 +1,4 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix } from "../../../engine/core.ts";
-import { matrix4 } from "../../../engine/core/math/matrix.ts";
 import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
 import { GameObjectDefinitionType, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
@@ -51,6 +50,8 @@ export interface ObstacleBehaviorTransformInto{
 }
 export interface ObstacleDef extends Definition{
     def_type?:GameObjectDefinitionType.obstacle
+    name?:string
+    tname?:string
 
     // Life
     health?:number

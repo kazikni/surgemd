@@ -26,6 +26,9 @@ __                                                                              
 * RPG7 Sprite
 * 50Cal Ammo Outline
 * Medic Helmet
+* Knife Crate
+* Bonesaw Bloody
+* Bike Helmets Variations
 __                                                                                                                 __
 ### Loadout
 * Wrappings

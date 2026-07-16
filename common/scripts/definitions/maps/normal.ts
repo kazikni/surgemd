@@ -74,7 +74,8 @@ export const map_spawns={
     crates:[
         {def:"wood_crate",weight:1000},
         {def:"copper_crate",weight:100},
-        {def:"campfire_crate",weight:10},
+        {def:"campfire_crate",weight:20},
+        {def:"knife_crate",weight:10},
         {def:"iron_crate",weight:1},
         {def:"gold_crate",weight:0.05},
     ],

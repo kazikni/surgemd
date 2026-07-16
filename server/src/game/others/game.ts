@@ -3,7 +3,7 @@ import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-import { GameObjectType, Layers, LayersL, LootAditional, LootData, LootTable, Spawn } from "common/scripts/others/constants.ts";
+import { GameObjectType, Layers, LayersL, LootAditional, LootData, LootSetting, LootTable, Spawn } from "common/scripts/others/constants.ts";
 import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
@@ -91,7 +91,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     can_start:boolean=true
     can_finish:boolean=true
     
-    loot_tables:LootTablesManager<LootData,LootAditional,LootAditional>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootAditional>)
+    loot_tables:LootTablesManager<LootData,LootAditional,LootSetting>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootSetting>)
 
     pings:PingData[]=[]
     feed_messages:FeedMessage[]=[]

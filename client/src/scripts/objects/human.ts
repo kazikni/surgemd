@@ -145,6 +145,7 @@ export class Human extends MovingBody{
     }
     melee?:MeleeDef
     current_weapon?:WeaponDef
+    current_weapon_skin:number=0
     dead:boolean=true
     downed:boolean=false
     swimming:boolean=false
@@ -547,7 +548,7 @@ export class Human extends MovingBody{
         this.sprites.left_leg.visible=false
         this.sprites.right_leg.visible=false
         this.container.zIndex=zIndexes.Players
-        this.set_current_weapon(this.current_weapon,true)
+        this.set_current_weapon(this.current_weapon)
         if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
     }
 
@@ -612,8 +613,8 @@ export class Human extends MovingBody{
             if(replace)this.sprites.weapon.transform_frame(replace)
         }
     }
-    set_current_weapon(weapon?:WeaponDef,force:boolean=false){
-        if((this.current_weapon===weapon&&!force)||this.downed)return
+    set_current_weapon(weapon?:WeaponDef){
+        if(this.downed)return
         this.current_weapon=weapon
 
         this.assets.weapon_fire_sound=undefined
@@ -1408,7 +1409,7 @@ export class Human extends MovingBody{
             }else{
                 this.sprites.helmet.position=v2(0,0)
             }
-            this.sprites!.helmet.frame=this.game.resources.get_frame((h.skins?.[skin??0]??h.idString)+"_world")
+            this.sprites!.helmet.frame=this.game.resources.get_frame((skin!==undefined&&h.skins?.[skin]?h.skins![skin]:h.idString)+"_world")
         }else{
             this.helmet=undefined
             this.sprites.helmet.frame=undefined
@@ -1655,9 +1656,9 @@ export class Human extends MovingBody{
             this.set_animations(animations)
         }
         if(full||hand_dirty){
-            const id = stream.read_int16()
+            const id=stream.read_int16()
             const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
-            if(current_weapon!==this.current_weapon&&!this.downed){
+            if(current_weapon!==this.current_weapon){
                 this.set_current_weapon(current_weapon)
             }
         }

@@ -39,8 +39,17 @@ export const DebugMap:MapDef={
         let y=map.size.y/2
         let i=0
         for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
-            if(item.item_type===GameItemType.helmet&&item.skins){
-                for(let skin=0;skin<item.skins.length;skin++){
+            map.game.add_loot(v2(x,y),{item,count:Infinity})
+            i++
+            if(i>=10){
+                i=0
+                x=map.size.x/2
+                y+=2
+            }else{
+                x+=2
+            }
+            if((item as any).skins){
+                for(let skin=0;skin<((item as any).skins as string[]).length;skin++){
                     map.game.add_loot(v2(x,y),{item,count:Infinity,skin})
                     i++
                     if(i>=10){
@@ -50,16 +59,6 @@ export const DebugMap:MapDef={
                     }else{
                         x+=2
                     }
-                }
-            }else{
-                map.game.add_loot(v2(x,y),{item,count:Infinity})
-                i++
-                if(i>=10){
-                    i=0
-                    x=map.size.x/2
-                    y+=2
-                }else{
-                    x+=2
                 }
             }
         }

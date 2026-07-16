@@ -144,9 +144,8 @@ export interface HelmetDef extends Definition{
 export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
     helmets.insert(
         equipment_factorys.helmet_1("bike",{
-            skins:["blue_bike_helmet","red_bike_helmet","yellow_bike_helmet","green_bike_helmet"]
+            skins:["red_bike_helmet","yellow_bike_helmet","green_bike_helmet"]
         }),
-
         equipment_factorys.helmet_2("military"),
         equipment_factorys.helmet_3("tactical"),
 

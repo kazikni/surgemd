@@ -629,6 +629,25 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 interactDestroy:true,
             }
         }),
+        obstacles_factory.crate("knife_crate",{
+            o:{
+                assets:{
+                    particles:{
+                        particle:"plank_particle",
+                        tint:0x414860
+                    },
+                    frame:{
+                        dead_transform:{
+                            tint:0x414860,
+                        },
+                        biome_skins:["snow"],
+                    },
+                    sounds:hit_sounds.wood
+                },
+                invisible_on_map:true,
+                interactDestroy:true,
+            }
+        }),
         obstacles_factory.crate("copper_crate",{
             o:{
                 health:130,

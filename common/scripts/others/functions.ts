@@ -1,12 +1,13 @@
-import { Hitbox2D, Stream } from "../../engine/core.ts";
+import { Hitbox2D, random, Stream } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
 import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/general_update.ts";
 
 import { type Game } from "../../../server/src/game/others/game.ts";
-import { type LootAditional, type LootData } from "./constants.ts";
+import { LootSetting, type LootAditional, type LootData } from "./constants.ts";
 import { type GameDefinition } from "../definitions/game_defs.ts";
 import { GameItemType } from "../definitions/utils.ts";
 import { type GunDef } from "../definitions/items/guns.ts";
+import { HelmetDef } from "../definitions/items/equipaments.ts";
 
 export function CalculateDoorHitbox(hitbox:Hitbox2D,door:ObstacleBehaviorDoor):Record<-1|0|1,Hitbox2D>{
     return {
@@ -62,17 +63,24 @@ export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStag
 
     return stages
 }
-export function loot_table_get_item(item:string,count:number,aditional:LootAditional,settings:LootAditional,game:Game):LootData[]{
+export function loot_table_get_item(item:string,count:number,aditional:LootAditional,settings:LootSetting,game:Game):LootData[]{
     const itemD=(game.definitions as GameDefinition).game_items.valueString[item]
     if(!itemD){
         console.error(item,"Not Founded")
         return []
     }
+    let skin:number|undefined=aditional.skin
+    if(skin===undefined&&(settings.all_skins||aditional.all_skins)&&(itemD as HelmetDef).skins){
+        skin=random.int(0,(itemD as HelmetDef).skins!.length)-1
+        if(skin===-1)skin=undefined
+        
+    }
     if(itemD.item_type===GameItemType.gun){
         const ret:LootData[]=[
             {
                 item:itemD,
-                count:count
+                count:count,
+                skin
             }
         ]
         if(itemD.ammo_spawn&&!(aditional.without_ammo||settings.without_ammo)){
@@ -93,7 +101,8 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
         return [
             {
                 item:itemD,
-                count:count
+                count:count,
+                skin
             }
         ]
     }

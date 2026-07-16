@@ -260,9 +260,15 @@ export interface LootData{
     skin?:number
     aditional?:LootData[]
 }
-export interface LootAditional{
+export interface LootSetting{
     without_ammo?:boolean
     include_ammo?:boolean
+    all_skins?:boolean
+}
+export interface LootAditional extends LootSetting{
+    without_ammo?:boolean
+    include_ammo?:boolean
+    skin?:number
 }
 
 export type LootTable<A=LootAditional>=LootTableBase<A>

@@ -378,7 +378,7 @@ export class InventoryModule extends UIModule<Game> {
         this.vest=player.vest
         this.backpack=player.backpack
         if(this.helmet){
-            this.render_equipment_slot(this.helmet_el,this.helmet.idString,this.helmet.skins?.[this.helmet_skin??0]??this.helmet.idString,`<span class="span-text-base${this.helmet.special?" item-maximized":""}">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
+            this.render_equipment_slot(this.helmet_el,this.helmet.idString,this.helmet_skin!==undefined&&this.helmet.skins?.[this.helmet_skin]?this.helmet.skins![this.helmet_skin]:this.helmet.idString,`<span class="span-text-base${this.helmet.special?" item-maximized":""}">Level ${this.helmet.level}</span>`,"items.description.vest",{"reduction":(this.helmet.reduction*100).toString()})
         }else{
             this.render_equipment_slot(this.helmet_el,undefined,undefined,"")
         }

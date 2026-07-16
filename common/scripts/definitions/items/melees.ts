@@ -1,4 +1,4 @@
-import { AKeyFrame, Angle, Definition, Definitions, ease, FrameDef, FrameTransform, v2, Vec2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, DeepPartial, Definition, Definitions, ease, FrameDef, FrameTransform, mergeDeep, v2, Vec2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
 import { GameObjectDefinitionType, type GameItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -23,6 +23,7 @@ export interface MeleeDef extends Definition{
     rig_image?:FrameTransform
     animation?:AKeyFrame[]
     alt_animation?:AKeyFrame[]
+
     assets?:WeaponAssets&{
         hit_sound?:string
     }
@@ -261,6 +262,45 @@ export function AnimationBonesaw(time:number):AKeyFrame[]{
             ]
         },
     ]
+}
+
+export const melees_factorys={
+    bonesaw(id:string,e:DeepPartial<MeleeDef>={}):MeleeDef{
+        return mergeDeep({
+            idString:id,
+            rank:ItemRank.S,
+            offset:v2(0.5,0),
+            radius:0.35,
+            damage:20,
+            attack_delay:0.65,
+            switch_delay:0.5,
+            damage_delays:[0.4,0.7],
+            rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
+                right:{
+                    position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                    rotation:DefaultFistRig.right!.rotation+0.4,
+                    zIndex:2,
+                },
+            },
+            rig_image:{
+                position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                rotation:Angle.deg2rad(-13),
+                zIndex:1,
+                hotspot:v2(0.18,0.4)
+            },
+            animation:AnimationBonesaw(0.6),
+            assets:{
+                use_sound:"light_swing",
+                hit_sound:"bonesaw_hit",
+                switch_sound:"knife_switch"
+            }
+        },e)
+    },
 }
 export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
     melees.insert({
@@ -629,40 +669,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 }
             }
         },
-        {
-            idString:"bonesaw",
-            rank:ItemRank.S,
-            offset:v2(0.5,0),
-            radius:0.35,
-            damage:20,
-            attack_delay:0.65,
-            switch_delay:0.5,
-            damage_delays:[0.4,0.7],
-            rig_arms:{
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                },
-                right:{
-                    position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
-                    rotation:DefaultFistRig.right!.rotation+0.4,
-                    zIndex:2,
-                },
-            },
-            rig_image:{
-                position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
-                rotation:Angle.deg2rad(-13),
-                zIndex:1,
-                hotspot:v2(0.18,0.4)
-            },
-            animation:AnimationBonesaw(0.6),
-            assets:{
-                use_sound:"light_swing",
-                hit_sound:"bonesaw_hit",
-                switch_sound:"knife_switch"
-            }
-        },
+        melees_factorys.bonesaw("bonesaw"),
+        melees_factorys.bonesaw("bonesaw_bloody"),
         {
             idString:"pan",
             damage:25,

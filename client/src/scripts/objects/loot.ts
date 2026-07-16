@@ -12,6 +12,7 @@ import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { Debug } from "../others/config.ts";
 import { decode_loot_data } from "common/scripts/others/functions.ts";
+import { AccessoryDef } from "common/scripts/definitions/items/accessorys.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -182,7 +183,7 @@ export class Loot extends GameObject{
                     this.container.add_child(this.sprite_outline)
                     break
                 case GameItemType.helmet:
-                    this.sprite_main.frame=this.game.resources.get_frame((this.item as HelmetDef).skins?.[this.skin??0]??this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_frame(this.skin!==undefined&&(this.item as HelmetDef).skins?.[this.skin]?(this.item as HelmetDef).skins![this.skin]:this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
                     this.sprite_outline.visible=true
@@ -237,7 +238,7 @@ export class Loot extends GameObject{
                     this.container.add_child(this.sprite_outline)
                     break
                 case GameItemType.melee:
-                    this.sprite_main.frame=this.game.resources.get_frame((this.item as MeleeDef).assets?.item??this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_frame(((this.item as MeleeDef).assets?.item??this.item.idString))
                     this.sprite_main.rotation=Angle.deg2rad(-30)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)
@@ -248,7 +249,7 @@ export class Loot extends GameObject{
                     this.container.add_child(this.sprite_outline)
                     break
                 case GameItemType.accessory:
-                    this.sprite_main.frame=this.game.resources.get_frame((this.item as MeleeDef).assets?.item??this.item.idString)
+                    this.sprite_main.frame=this.game.resources.get_frame(this.item.idString)
                     this.sprite_main.visible=true
                     this.sprite_main.scale=v2(2,2)
                     this.sprite_outline.frame=this.game.resources.get_frame(`accessory_outline`)

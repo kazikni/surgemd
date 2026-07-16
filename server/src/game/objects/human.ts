@@ -1499,7 +1499,6 @@ export class Human extends MovingBody{
             if(this.equipment_data.vest_health!==undefined)stream.write_uint16(this.equipment_data.vest_health??0)
             if(full||this.equipment_data.dirty){
                 if(this.equipment_data.helmet_skin!==undefined)stream.write_uint8(this.equipment_data.helmet_skin)
-
                 stream.write_uint8(this.equipment_data.helmet?this.equipment_data.helmet.idNumber!+1:0)
                 .write_uint8(this.equipment_data.vest?this.equipment_data.vest.idNumber!+1:0)
                 .write_uint8(this.inventory.backpack.idNumber!)

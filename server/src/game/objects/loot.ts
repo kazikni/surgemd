@@ -2,7 +2,7 @@ import { GameConstants, GameObjectType, LootData } from "common/scripts/others/c
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
 import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
@@ -37,7 +37,7 @@ export class Loot extends ServerGameObject{
         return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
     override on_interact(user: Human): void {
-        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,undefined,this.loot_data)
+        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,undefined,this.loot_data.skin)
         for(const l of this.loot_data.aditional??[]){
             user.inventory.give_loot(l,undefined,undefined,this.position,this.layer)
         }
@@ -67,7 +67,6 @@ export class Loot extends ServerGameObject{
                 this.real_radius=GameConstants.loot.radius.consumible
                 break
             case GameItemType.helmet:
-                if(this.loot_data.skin===undefined&&loot.item.skins)this.loot_data.skin=random.int(0,loot.item.skins.length-1)
                 this.real_radius=GameConstants.loot.radius.equipament
                 break
             case GameItemType.backpack:

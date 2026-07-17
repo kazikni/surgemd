@@ -424,15 +424,16 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         if(!this.slot||this.slot?.quantity<=0)return
         user.grenade_holding={
             def:this.def,
-            time:this.def.cook?.fuse_time??10,
-            slot:this.slot
+            time:this.def.fuse?.time??10,
+            active_time:this.def.throw_time??0.25,
+            cook_time:this.def.cook_time??0.5,
+            slot:this.slot,
+            activated:false
         }
         user.animation_data.dirty=true
-        user.animation_data.current_animation.push(
-            {
-                type:HumanAnimationType.Cook,
-            }
-        )
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Cook,
+        })
     }
     on_fire_alt(user:Human):void{}
     update(_user: Human,dt:number): void {
@@ -552,7 +553,7 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.hand_item!==this.weapons[idx]||force){
             this.owner.recoil=undefined
             this.owner.actions.cancel()
-            this.owner.throw_using_projectile()
+            this.owner.grenade_holding=undefined
             this.owner.animation_data.dirty=true
             this.owner.animation_data.switching=true
         }

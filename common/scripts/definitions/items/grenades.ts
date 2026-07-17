@@ -48,12 +48,15 @@ export type GrenadeDef={
         ground_rotation:number
     }
 
-    cook?:{
+    throw_time?:number
+    cook_time?:number
+    fuse?:{
         allow_hand:boolean
-        fuse_time?:number
+        time?:number
         ground?:boolean
         impact?:boolean
     }
+    throw_position?:Vec2
     throw_max_speed?:number
 
     frames:{
@@ -68,7 +71,7 @@ export type GrenadeDef={
     assets?:WeaponAssets
 }&Definition
 const GrenadeRig={
-    position:v2(0.6,0.23),
+    position:DefaultFistRig.right?.position,
     rotation:-0.5
 }
 export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
@@ -87,9 +90,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:true,
-                fuse_time:5
+                time:5
             },
             throw_max_speed:15,
             frames:{
@@ -115,9 +118,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
-                fuse_time:4
+                time:4
             },
             throw_max_speed:17,
             rig_arms:DefaultFistRig,
@@ -143,7 +146,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
                 ground:true
             },
@@ -173,9 +176,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
+            fuse:{
                 allow_hand:true,
-                fuse_time:5
+                time:5
             },
             throw_max_speed:15,
             frames:{
@@ -198,9 +201,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
-                fuse_time:2
+                time:2
             },
             frames:{
                 world:{
@@ -244,9 +247,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
-                fuse_time:20
+                time:20
             },
             throw_max_speed:20,
             frames:{
@@ -296,9 +299,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
-                fuse_time:4
+                time:4
             },
             throw_max_speed:20,
             frames:{
@@ -351,9 +354,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
-                fuse_time:3
+                time:3
             },
             throw_max_speed:20,
             frames:{
@@ -379,7 +382,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:true,
                 ground:true,
                 impact:true,
@@ -404,7 +407,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
                 ground:true,
             },
@@ -430,7 +433,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
+            fuse:{
                 allow_hand:false,
                 ground:true,
             },

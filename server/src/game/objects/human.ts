@@ -213,7 +213,10 @@ export class Human extends MovingBody{
     grenade_holding?:{
         def:GrenadeDef
         time:number
+        active_time:number
+        cook_time:number
         slot?:Slot<LItem>
+        activated:boolean
     }
 
     last_damage_by?:Human
@@ -583,7 +586,10 @@ export class Human extends MovingBody{
             this.grenade_holding=undefined
             return
         }
-        const proj=this.game.add_grenade(this.position,this.grenade_holding!.def,this,this.layer)
+        const position=v2.scale(this.grenade_holding.def.throw_position??v2(0.3,0.4),this.physical_data.scale)
+        v2m.rotate_RadAngle(position,this.physical_data.rotation)
+        v2m.add(position,position,this.position)
+        const proj=this.game.add_grenade(position,this.grenade_holding!.def,this,this.layer)
         proj.physical_data.zpos=0.01
         proj.physical_data.zpos_speed=1.8
         const limit=(this.grenade_holding.def.throw_max_speed??0)
@@ -603,11 +609,6 @@ export class Human extends MovingBody{
         }
         this.grenade_holding=undefined
         this.inventory.net_sync.items=true
-
-        this.animation_data.dirty=true
-        this.animation_data.current_animation.push({
-            type:HumanAnimationType.Throw
-        })
     }
     isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
         for (const obj of manager.cells.get_objects(hb, layer)) {
@@ -1002,28 +1003,38 @@ export class Human extends MovingBody{
                     }
                 }
                 if(this.grenade_holding){
-                    this.grenade_holding.time-=dt
-                    if(this.grenade_holding.time<=0){
-                        if(this.grenade_holding.def.explosion)this.game.add_explosion(this.position,this.game.definitions.explosions.getFromString(this.grenade_holding.def.explosion!),this,this.grenade_holding.def,this.layer)
-
-                        if(this.grenade_holding.slot){
-                            this.grenade_holding.slot.remove(1)
-
-                            this.inventory.net_sync.items=true
-
-                            if(this.grenade_holding.slot.quantity<=0){
-                                let idx=this.inventory.weapon_idx
-                                if(!this.inventory.weapons[this.inventory.weapon_idx]){
-                                    idx=0
+                    if(this.grenade_holding.cook_time>0){
+                        this.grenade_holding.cook_time-=dt
+                    }else{
+                        if(!this.input.using_item&&!this.grenade_holding.activated){
+                            this.grenade_holding.activated=true
+                            this.animation_data.dirty=true
+                            this.animation_data.current_animation.push({
+                                type:HumanAnimationType.Throw
+                            })
+                        }
+                        this.grenade_holding.time-=dt
+                        if(this.grenade_holding.activated){
+                            this.grenade_holding.active_time-=dt
+                            this.throw_using_projectile()
+                        }else{
+                            if(this.grenade_holding.time<=0){
+                                if(this.grenade_holding.def.explosion)this.game.add_explosion(this.position,this.game.definitions.explosions.getFromString(this.grenade_holding.def.explosion!),this,this.grenade_holding.def,this.layer)
+                                if(this.grenade_holding.slot){
+                                    this.grenade_holding.slot.remove(1)
+                                    this.inventory.net_sync.items=true
+                                    if(this.grenade_holding.slot.quantity<=0){
+                                        let idx=this.inventory.weapon_idx
+                                        if(!this.inventory.weapons[this.inventory.weapon_idx]){
+                                            idx=0
+                                        }
+                                        this.inventory.weapon_idx=-1
+                                        this.inventory.set_weapon_index(idx)
+                                    }
                                 }
-                                this.inventory.weapon_idx=-1
-                                this.inventory.set_weapon_index(idx)
+                                this.grenade_holding=undefined
                             }
                         }
-                        this.grenade_holding=undefined
-                    }
-                    if(!this.input.using_item){
-                        this.throw_using_projectile()
                     }
                 }
             }

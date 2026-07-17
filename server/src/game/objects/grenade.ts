@@ -57,7 +57,7 @@ export class Grenade extends Projectile{
                     const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
 
                     this.physical_data.velocity=v2.scale(reflected, 0.4)
-                    if(this.def.cook?.impact){
+                    if(this.def.fuse?.impact){
                         this.kill()
                         break
                     }
@@ -75,7 +75,7 @@ export class Grenade extends Projectile{
                     const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
 
                     this.physical_data.velocity=v2.scale(reflected, 0.4)
-                    if(this.def.cook?.impact){
+                    if(this.def.fuse?.impact){
                         this.kill()
                         break
                     }
@@ -99,11 +99,11 @@ export class Grenade extends Projectile{
             v2m.scale(vel, vel, 1/(1+dt*(this.def.decays.ground_speed/drag)))
             this.physical_data.angular_velocity *= 1/(1+dt*(this.def.decays.ground_rotation/drag))
 
-            if(this.def.cook?.ground){
+            if(this.def.fuse?.ground){
                 this.kill()
             }
         }
-        if(this.def.cook&&this.def.cook.fuse_time){
+        if(this.def.fuse&&this.def.fuse?.time){
             this.fuse_delay-=dt
             if(this.fuse_delay<=0){
                 this.kill()
@@ -127,8 +127,8 @@ export class Grenade extends Projectile{
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.position=position
-        if(this.def.cook){
-            this.fuse_delay=this.def.cook.fuse_time??0
+        if(this.def.fuse){
+            this.fuse_delay=this.def.fuse.time??0
         }
         this.owner=owner
         if(this.def.explosion)this.projectile_data.explosion=this.game.definitions.explosions.getFromString(this.def.explosion)

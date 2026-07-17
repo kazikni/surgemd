@@ -1284,21 +1284,50 @@ export class Human extends MovingBody{
                                     type:"tween",
                                     fuser:"left_arm",
                                     to:{
-                                        position:v2(DefaultFistRig.left!.position.x,0.2),
+                                        position:v2(DefaultFistRig.left!.position.x+0.1,-0.05),
+                                        rotation:0.3
+                                    }
+                                },
+                                {
+                                    type:"tween",
+                                    fuser:"right_arm",
+                                    to:{
+                                        position:v2(DefaultFistRig.right!.position.x+0.1,0.05),
+                                        rotation:0.3
+                                    }
+                                },
+                                {
+                                    type:"tween",
+                                    fuser:"weapon",
+                                    to:{
+                                        position:v2(DefaultFistRig.right!.position.x+0.1,0.05),
                                         rotation:0.3
                                     }
                                 }
                             ]
                         },
                         {
-                            time:0.23,
+                            time:0.05,
                             actions:[
                                 {
                                     type:"tween",
                                     fuser:"left_arm",
                                     to:{
-                                        position:DefaultFistRig.left!.position,
-                                        rotation:DefaultFistRig.left!.rotation
+                                        position:v2(DefaultFistRig.left!.position.x+0.15,-0.1),
+                                        rotation:0.3
+                                    }
+                                },
+                            ]
+                        },
+                        {
+                            time:0.2,
+                            actions:[
+                                {
+                                    type:"tween",
+                                    fuser:"left_arm",
+                                    to:{
+                                        position:v2(DefaultFistRig.left!.position.x,DefaultFistRig.left!.position.y-0.1),
+                                        rotation:DefaultFistRig.left!.rotation-0.3
                                     }
                                 },
                                 {
@@ -1324,8 +1353,16 @@ export class Human extends MovingBody{
                 case HumanAnimationType.Throw:
                     this.container.play_animation([
                         {
-                            time:0.1,
+                            time:0.075,
                             actions:[
+                                {
+                                    type:"tween",
+                                    fuser:"left_arm",
+                                    to:{
+                                        position:DefaultFistRig.left!.position,
+                                        rotation:DefaultFistRig.left!.rotation
+                                    }
+                                },
                                 {
                                     type:"tween",
                                     fuser:"right_arm",

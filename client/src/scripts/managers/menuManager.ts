@@ -773,7 +773,7 @@ export class MenuManager{
             if(this.menu_time_state===0){
                 this.content.menu_background_day.style.opacity="0"
                 this.content.menu_background_night.style.opacity="1"
-                this.menu_time_state=1
+                this.menu_time_state=0
             }else{
                 this.content.menu_background_day.style.opacity="1"
                 this.content.menu_background_night.style.opacity="0"

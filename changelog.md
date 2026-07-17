@@ -43,6 +43,7 @@ __                                                                              
 ### Others
 * Alternative Shed Ceiling
 * Hunt House on tundra map
+* Increse critical chance if you dont walk from 15% to 25%
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

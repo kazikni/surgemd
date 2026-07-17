@@ -188,7 +188,7 @@
         height:50vw;
 
         background:url("/img/menu/final_screen/mountains_1.png");
-        animation:scroll-right-animation 360s linear infinite;
+        animation:scroll-right-animation 500s linear infinite;
     }
     .mountains-ice{
         bottom:0;
@@ -201,17 +201,23 @@
     .city{
         bottom:0;
 
-        background-image:url("/img/menu/final_screen/building_1.png");
-        animation:scroll-left-animation 180s linear infinite;
+        background-image:url("/img/menu/final_screen/buildings_1.svg");
+        animation:scroll-right-animation 400s linear infinite;
     }
     .city-back{
         height:40vw;
     }
     .palms{
-        background-image:url("/img/menu/final_screen/palm.png");
+        background-image:url("/img/menu/final_screen/beach_front_1.svg");
         bottom: -1vw;
 
         animation:scroll-left-animation 120s linear infinite;
+    }
+    .utility-poles{
+        bottom:0;
+
+        background-image:url("/img/menu/final_screen/utility_poles_1.svg");
+        animation:scroll-left-animation 360s linear infinite;
     }
     .palms-back{
         height: 30vw;
@@ -276,6 +282,13 @@
         .palms{
             height: 30vw;
             bottom: 12vw;
+        }
+        .utility-poles{
+            height: 13vw;
+            bottom: 12vw;
+        }
+        .reflection-utility-poles{
+            bottom: 0;
         }
         .reflection-palms{
             bottom: 0;

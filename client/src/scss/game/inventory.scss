@@ -93,7 +93,6 @@
 
     background-color: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
-    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     font-family: "Russo-One", serif;
 
@@ -180,7 +179,6 @@
 
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
         .weapon-slot-number {
             position: relative;
             top: 5px;
@@ -293,7 +291,6 @@
         border-radius: 4px;
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
         width: fit-content;
         height: fit-content;
         .icon{
@@ -359,7 +356,6 @@
         color: var(--ui-theme-tertiary);
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
 
         display: flex;
         flex-direction: row-reverse;
@@ -476,7 +472,6 @@
     .equipment-slot {
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
 
         width: 70px;
         height: 70px;
@@ -567,7 +562,6 @@
     color: var(--ui-theme-tertiary);
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
-    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     transition:opacity .15s;
     transform: translate(-100%,-100%);

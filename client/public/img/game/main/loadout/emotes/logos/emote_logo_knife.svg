@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="10mm"
-   height="9.9998684mm"
-   viewBox="0 0 9.9999997 9.9998687"
+   width="15mm"
+   height="14.999802mm"
+   viewBox="0 0 15 14.999802"
    xml:space="preserve"
    version="1.1"
    id="svg12"
@@ -23,7 +23,7 @@
      inkscape:deskcolor="#000000"
      inkscape:document-units="mm"
      inkscape:zoom="2.6689844"
-     inkscape:cx="-96.291308"
+     inkscape:cx="-180.59304"
      inkscape:cy="90.296519"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
@@ -82,7 +82,7 @@
        only_selected="false"
        hide_knots="false" /></defs><g
      id="g9721"
-     transform="matrix(0.26233761,-0.26233761,0.26233761,0.26233761,0.20987009,8.8917539)"
+     transform="matrix(0.39350641,-0.39350641,0.39350641,0.39350641,0.31480513,13.337631)"
      style="stroke-width:2.69541"><path
        id="rect1912"
        style="fill:#ffffff;stroke-width:1.42632;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"

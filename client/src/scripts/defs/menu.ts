@@ -440,12 +440,19 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             emote_selection()
         }
         for(const e of emotes){
+            const frame=resources.get_frame("emote_"+e.idString)
             const container=document.createElement("div")
             container.className="litem"
-            container.innerHTML=`
+            if(frame){
+                container.innerHTML=`
 <span class="name">${translation.get("emotes."+e.idString)}</span>
-<img class="icon" src="${resources.get_frame("emote_"+e.idString).src}"/>
+<img class="icon" src="${frame.src}"/>
 `
+            }else{
+                container.innerHTML=`
+<span class="name">${translation.get("emotes."+e.idString)}</span>
+`
+            }
             container.dataset.idString=e.idString
             container.onclick=emote_click
             emotes_g.appendChild(container)
@@ -496,7 +503,7 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
         }
     }
 }
-export function select_loadout_item(save: GameSave,resources: ResourcesManager,items: string[],slots:string[],icons: Record<string, string>,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
+export function select_loadout_item(save: GameSave,resources: ResourcesManager,items: string[],slots:string[],icon_placeholder:string,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
     return (parent: HTMLDivElement) => {
         let selected: string | null = null
         let selectedElem: HTMLDivElement | null = null
@@ -508,7 +515,7 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
             save.set_variable(variable + selectedSlot.dataset.slot,selected)
 
             const img = selectedSlot.querySelector(".icon") as HTMLImageElement
-            img.src = icons[selected]?resources.get_frame(icons[selected]).src:""
+            img.src = icon_placeholder+selected+".svg"
 
             selectedElem.classList.remove("selected")
             selectedSlot.classList.remove("selected")
@@ -532,12 +539,11 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
             const div = document.createElement("div")
             div.className = "litem"
             div.dataset.idString = id
-            const icon=icons[id]?resources.get_frame(icons[id]).src:""
+            const icon=icon_placeholder+id+".svg"
             div.innerHTML = `
 <span class="name">${translation.get(translation_item_begin + id)}</span>
 <img class="icon" src="${icon}">
 `
-
             div.onclick = () => {
                 if (selectedElem === div) {
                     div.classList.remove("selected")
@@ -563,7 +569,7 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
             const div = document.createElement("div")
             div.className = "litem"
             div.dataset.slot = slot
-            const icon = (value!==""&&icons[value]!=undefined)?resources.get_frame(icons[value]).src:""
+            const icon = (value!=="")?icon_placeholder+value+".svg":""
             div.innerHTML = `
 <span class="name">${translation.get(translation_slot_begin + slot)}</span>
 <img class="icon" src="${icon}">
@@ -1191,18 +1197,6 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             type:"toggle",
                             name:"settings.ui.interactive",
                             var:"sv_ui_interactive",
-                        },
-                        {
-                            type:"toggle",
-                            name:"settings.ui.blur_backdrop",
-                            var:"sv_ui_blur_backdrop",
-                            on_set(v:boolean){
-                                if(v){
-                                    menu.content.gameD.style.setProperty("--ui-panel-backdrop-filter","blur(10px)")
-                                }else{
-                                    menu.content.gameD.style.setProperty("--ui-panel-backdrop-filter","none")
-                                }
-                            }
                         }
                     ],translation),
                 },
@@ -1353,7 +1347,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "wrapping":{
                     generate:(()=>{
                         const wrapping=Object.values(definitions.wrapping.value)
-                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],{},"sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
                     })()
                 },
             },

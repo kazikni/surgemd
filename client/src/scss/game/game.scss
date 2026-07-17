@@ -156,7 +156,6 @@
     .ui-panel{
         position: relative;
         background: var(--ui-panel-background);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
         box-shadow: var(--ui-panel-box-shadow);
         font-size: 20px;
         font-family: "Russo-One", serif;
@@ -289,7 +288,6 @@
     width: 400px;
     .feed-message{
         background: var(--ui-panel-background);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
         color: var(--ui-theme-tertiary);
         border-radius: 4px;
         padding: 3px;
@@ -343,7 +341,6 @@
 
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
-    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     font-family: "Russo-One";
     width: fit-content;
@@ -395,7 +392,6 @@
 
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
-    backdrop-filter: var(--ui-panel-backdrop-filter);
 
     font-size: 20px;
     pointer-events:none;
@@ -467,7 +463,6 @@
         left: 0px;
         top: 0px;
         transform-origin:0 0;
-        backdrop-filter: var(--ui-panel-backdrop-filter);
     }
     .map-tile{
         position:absolute;
@@ -672,7 +667,6 @@
 
         background: var(--ui-panel-background);
         border:var(--ui-panel-border);
-        backdrop-filter: var(--ui-panel-backdrop-filter);
 
         display:flex;
         flex-direction:column;

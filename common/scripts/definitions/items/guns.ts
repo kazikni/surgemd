@@ -768,8 +768,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ak47","762mm",{
             name:"AK-47",
             fire_delay:0.1,
-            spread:6,
-            idle_spread:0.33333,
+            spread:5,
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:60
@@ -794,8 +794,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ar15","556mm",{
             name:"AR-15",
             fire_delay:0.07,
-            spread:8,
-            idle_spread:0.5,
+            spread:6,
+            idle_spread:0.33333,
 
             ammo_spawn:{
                 amount:60
@@ -879,7 +879,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"MP5",
             rank:ItemRank.D,
 
-            fire_delay:0.1,
+            fire_delay:0.08,
             spread:3,
             idle_spread:0.33333,
 

@@ -37,7 +37,12 @@ __                                                                              
 * Shiny Wrapping
 * Aqua Wrapping
 * Aqua Blue Wrapping
+* Angry Emote
+* Angry Swearing
 * Skull Emote
+* Heart Emote
+* Knife Logo Emote
+* Campfire Logo Emote
 * GG Emote
 __                                                                                                                 __
 ### Others
@@ -51,11 +56,14 @@ __                                                                              
 * Some Balance Changes
 * Some Sprites Changes
 * Small Changes on melee swing animation
+* Improve Grenades Animation
+* Fix Drinking Animation Reset
 __                                                                                                                 __
 ### Menu
 * Final Screen Rework
 * Lock Skins Color Selection
 * Game over Improvements
+* Remove Blur Backdrop
 __                                                                                                                 __
 ### Others
 * Fix RIP Ammo dont split rpg7 bullet

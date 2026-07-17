@@ -767,7 +767,7 @@ export class MenuManager{
 
     inverval?:any
     update(){
-        this.menu_time_timer-=1
+        /*this.menu_time_timer-=1
         if(this.menu_time_timer<=0){
             this.menu_time_timer+=this.menu_time_delay
             if(this.menu_time_state===0){
@@ -779,7 +779,7 @@ export class MenuManager{
                 this.content.menu_background_night.style.opacity="0"
                 this.menu_time_state=0
             }
-        }
+        }*/
     }
     game_start(){
         ShowElement(this.content.gameD)
@@ -788,6 +788,7 @@ export class MenuManager{
         this.cam2d.visible=true
         if(this.inverval!==undefined){
             clearInterval(this.inverval)
+            this.inverval=undefined
         }
     }
     game_end(){

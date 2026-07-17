@@ -35,7 +35,8 @@
         position:absolute;
         background-size:auto 100%;
         background-repeat: repeat no-repeat;
-        left:0;
+        width:500%;
+        left:-200%;
         right:0;
     }
     .night-background{
@@ -147,7 +148,7 @@
         height:12vw;
 
         background:url("/img/menu/final_screen/cloud_1.svg");
-        animation:scroll-right-animation 300s linear infinite;
+        animation:scroll-right-animation 600s linear infinite;
         opacity: 0.25;
     }
     .rain{
@@ -165,6 +166,15 @@
         animation:rain-scroll-front 20s linear infinite;
     }
     @keyframes scroll-left-animation {
+        from { transform: translateX(33%); }
+        to   { transform: translateX(-33%); }
+    }
+    @keyframes scroll-right-animation {
+        from { transform: translateX(-33%); }
+        to   { transform: translateX(33%); }
+    }
+    /*
+    @keyframes scroll-left-animation {
         from { background-position-x: 100%; }
         to   { background-position-x: -100%; }
     }
@@ -172,6 +182,7 @@
         from { background-position-x: -100%; }
         to   { background-position-x: 100%; }
     }
+    */
     @keyframes rain-scroll-front{
         from{
             background-position:0 0;
@@ -188,7 +199,7 @@
         height:50vw;
 
         background:url("/img/menu/final_screen/mountains_1.png");
-        animation:scroll-right-animation 500s linear infinite;
+        animation:scroll-left-animation 1000s linear infinite;
     }
     .mountains-ice{
         bottom:0;
@@ -196,13 +207,13 @@
         height:50vw;
 
         background:url("/img/menu/final_screen/mountains_2.svg");
-        animation:scroll-right-animation 360s linear infinite;
+        animation:scroll-left-animation 720s linear infinite;
     }
     .city{
         bottom:0;
 
         background-image:url("/img/menu/final_screen/buildings_1.svg");
-        animation:scroll-right-animation 400s linear infinite;
+        animation:scroll-left-animation 800s linear infinite;
     }
     .city-back{
         height:40vw;
@@ -211,13 +222,13 @@
         background-image:url("/img/menu/final_screen/beach_front_1.svg");
         bottom: -1vw;
 
-        animation:scroll-left-animation 120s linear infinite;
+        animation:scroll-left-animation 240s linear infinite;
     }
     .utility-poles{
         bottom:0;
 
         background-image:url("/img/menu/final_screen/utility_poles_1.svg");
-        animation:scroll-left-animation 360s linear infinite;
+        animation:scroll-left-animation 720s linear infinite;
     }
     .palms-back{
         height: 30vw;
@@ -403,8 +414,6 @@
 
         background: rgba(0,0,0,.35);
         padding: 10px 16px;
-
-        backdrop-filter: blur(6px);
 
         max-width: 40%;
     }
@@ -1036,7 +1045,6 @@
     justify-content:center;
     align-items:center;
     background:rgba(0,0,0,0.6);
-    backdrop-filter:blur(4px);
     opacity:0;
     transition:opacity .2s;
     z-index:102;
@@ -1130,8 +1138,6 @@
             );
 
             border: 2px solid rgba(7, 170, 238, 0.5);
-
-            backdrop-filter: blur(4px);
 
             white-space: pre-wrap;
             overflow-wrap: break-word;

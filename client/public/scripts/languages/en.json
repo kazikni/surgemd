@@ -126,7 +126,10 @@
             "sad":"Sad",
             "neutral":"Neutral",
             "angry":"Angry",
+            "angry_swearing":"Angry Swearing",
             "skull":"Skull",
+
+            "heart":"Heart",
 
             "logo_md":"MD Logo",
             "logo_campfire":"Campfire Logo",
@@ -135,7 +138,11 @@
             "gg":"GG"
         },
         "wrapping":{
-
+            "":"None",
+            "gradient":"Gradient",
+            "shiny":"Shiny",
+            "aqua":"Aqua",
+            "aqua_blue":"Aqua Blue"
         },
         "characters": {
             "nick": "Nick",
@@ -360,8 +367,7 @@
                 "negative_color": "Negative Color",
                 "special_color": "Special Color",
                 "translation": "Translation",
-                "interactive": "Interactive UI",
-                "blur_backdrop": "Blur Backdrop"
+                "interactive": "Interactive UI"
             }
         },
         "keybinds": {
@@ -414,6 +420,9 @@
 
                 "victory":"Victory",
                 "death":"Death"
+            },
+            "wrapping": {
+                "weapons":"Weapons"
             }
         },
         "region": {

@@ -13,6 +13,7 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"sad",rank:ItemRank.E},
         {idString:"neutral",rank:ItemRank.E},
         {idString:"angry",rank:ItemRank.E},
+        {idString:"angry_swearing",rank:ItemRank.D},
         {idString:"skull",rank:ItemRank.E},
 
         // Logo
@@ -20,8 +21,11 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"logo_campfire",rank:ItemRank.E},
         {idString:"logo_knife",rank:ItemRank.E},
 
+        // Objects
+        {idString:"heart",rank:ItemRank.D},
+
         // Text
-        {idString:"gg",rank:ItemRank.E},
+        {idString:"gg",rank:ItemRank.D},
 
         /*
         {idString:"flag_albania",rank:ItemRank.E},

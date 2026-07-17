@@ -237,9 +237,9 @@ export class UiManager{
         active:false,
         up_enable:true,
         current_side:-1,
-        emotes:[] as (EmoteDef|PingDef)[],
+        emotes:[] as (EmoteDef|PingDef|undefined)[],
     }
-    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef)[]){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef|undefined)[]){
         ShowElement(this.content.emote_wheel.main)
         HideElement(this.mobile_content.btn_emotes)
         this.content.emote_wheel.main.style.left=`${position.x}px`
@@ -333,14 +333,17 @@ export class UiManager{
             }
         }
     }
-    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef)[]){
+    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef|undefined)[]){
         for(const ev in this.content.emote_wheel.emotes){
             const emote=emotes[ev]
             if(emote){
-                ShowElement(this.content.emote_wheel.emotes[ev])
-                this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
-                this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).src
-                this.content.emote_wheel.emotes[ev].draggable=false
+                const frame=this.game.resources.get_frame("emote_"+emote.idString)
+                if(frame){
+                    ShowElement(this.content.emote_wheel.emotes[ev])
+                    this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
+                    this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).src
+                    this.content.emote_wheel.emotes[ev].draggable=false
+                }
             }else{
                 HideElement(this.content.emote_wheel.emotes[ev])
             }

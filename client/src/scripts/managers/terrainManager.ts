@@ -14,6 +14,7 @@ export class TerrainM extends TerrainManager{
     }
     process_map(mp:MapConfig):Promise<void>{
         return new Promise<void>((resolve, _reject) => {
+            this.clear()
             this.game.minimap.biome=mp.biome
             this.map=mp
             for(const f of mp.terrain){

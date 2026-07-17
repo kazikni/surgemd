@@ -1354,6 +1354,7 @@ export class Human extends MovingBody{
 
         this.inventory.set_weapon_index(0)
 
+        if(this.seat)this.seat.clear_human()
         this.push(-10,params.direction)
     }
     help_up(){
@@ -1380,6 +1381,7 @@ export class Human extends MovingBody{
         }
 
         this.inventory.drop_all()
+        if(this.seat)this.seat.clear_human()
         this.killed_by=params.owner
         if(!this.downed_by||(params.owner&&this.downed_by===params.owner&&!this.game.modeManager.is_ally(this.downed_by!,params.owner))){
             this.killed_by=params.owner
@@ -1413,6 +1415,7 @@ export class Human extends MovingBody{
         this.killed_by=undefined
         this.downed_by=undefined
         this.last_damage_by=undefined
+        if(this.seat)this.seat.clear_human()
         this.health_data.health=this.health_data.max_health
         this.health_data.boost=0
         this.health_data.boost_def=Boosts[BoostType.Adrenaline]

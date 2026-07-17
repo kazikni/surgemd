@@ -14,6 +14,10 @@ export class BasicTerrainManager<Floor extends FloorBase> {
     constructor(){
         
     }
+    clear(){
+        this.floors.length=0
+        this.grid.clear()
+    }
     add_floor(floor:Floor) {
         this.floors.push(floor);
 

@@ -118,8 +118,6 @@ export class Human extends MovingBody{
         base_left_arm_position:v2.zero(),
         base_right_arm_position:v2.zero(),
 
-        consumibles_time:-1,
-
         walk_speed:1,
         walk_cycle:0,
         walk_time:0,
@@ -954,7 +952,7 @@ export class Human extends MovingBody{
     }
 
     // Animation
-    reset_anim(){
+    reset_anim(hard:boolean=true){
         if(this.animation.sound_animation){
             this.animation.sound_animation.stop()
             this.animation.sound_animation=undefined
@@ -963,10 +961,14 @@ export class Human extends MovingBody{
         this.animation.recoil_state=-1
 
         this.animation.cycle_sound_time=undefined
-        this.animation.consumibles_time=-1
         this.consumible_particles.enabled=false
         this.container.stop_all_animations()
-        this.update_weapon(this.current_weapon)
+
+        if(hard){
+            this.set_current_weapon(this.current_weapon)
+        }else{
+            this.update_weapon(this.current_weapon)
+        }
     }
     update_animations(dt:number){
         if(this.animation.recoil_state!==-1){
@@ -1016,14 +1018,6 @@ export class Human extends MovingBody{
             if(this.animation.muzzle_flash_time<=0){
                 this.sprites.muzzle_flash.visible=false
                 this.animation.muzzle_flash_time=-1
-            }
-        }
-        if(this.animation.consumibles_time!==-1){
-            this.animation.consumibles_time-=dt
-            if(this.animation.consumibles_time<=0){
-                this.animation.consumibles_time=-1
-                this.consumible_particles.enabled=false
-                this.update_weapon(this.current_weapon)
             }
         }
         if(!this.downed){
@@ -1275,7 +1269,6 @@ export class Human extends MovingBody{
                     }else{
                         this.assets.consumible_particles=`boost_${Boosts[consuming.boost_type].name}_particle`
                     }
-                    this.animation.consumibles_time=consuming.use_delay
                     this.consumible_particles.enabled=true
                     if(consuming.animation){
                         this.container.play_animation(consuming.animation)
@@ -1356,6 +1349,8 @@ export class Human extends MovingBody{
                     })
                     break
                 case HumanAnimationType.Reset:
+                    this.reset_anim()
+                    break
             }
         }
     }

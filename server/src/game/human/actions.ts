@@ -1,6 +1,6 @@
 import { GameItemType } from "common/scripts/definitions/utils.ts";
-import { type LItem, type ConsumibleItem, type GunItem } from "./inventory.ts";
-import { ActionsType } from "common/scripts/others/constants.ts";
+import { GunItem, type LItem, type ConsumibleItem } from "./inventory.ts";
+import { ActionsType, HumanAnimationType } from "common/scripts/others/constants.ts";
 import { type Human } from "../objects/human.ts";
 import { BaseAction, v2, type Slot } from "common/engine/core.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
@@ -12,6 +12,7 @@ export class ReloadAction extends Action{
     delay:number
     item:GunItem
     alt_reload:boolean=false
+    type: number=ActionsType.Reload
     constructor(item:GunItem){
         super()
         if(item.def.reload?.reload_alt&&item.ammo===0){
@@ -45,7 +46,14 @@ export class ReloadAction extends Action{
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
     }
-    type: number=ActionsType.Reload
+    override on_cancel(user: Human): void {
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Reset
+        })
+        if(user.inventory.hand_item instanceof GunItem){
+            user.inventory.hand_item.reloading=false
+        }
+    }
 }
 export class ConsumingActionA extends Action{
     delay:number
@@ -71,6 +79,14 @@ export class ConsumingActionA extends Action{
         user.animation_data.dirty=true
 
         this.slot.remove(1)
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Reset
+        })
+    }
+    override on_cancel(user: Human): void {
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Reset
+        })
     }
 }
 export class HelpupAction extends Action<Human>{

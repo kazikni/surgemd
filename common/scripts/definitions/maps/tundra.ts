@@ -470,8 +470,8 @@ export const TundraMap:MapDef={
             {def:"bunker_1",count:3},
             {def:[
                 {def:"shed",weight:1},
-                {def:"hunt_house_1",weight:1}
-            ],count:15},
+                {def:"hunt_house_1",weight:2}
+            ],count:20},
             {def:"sillo",count:3},
 
             {def:"golden_stone",count:1},

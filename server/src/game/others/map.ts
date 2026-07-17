@@ -1,7 +1,7 @@
 import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, DynamicStream, Rect } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
-import { IslandDef, MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
+import { MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
 import { MapPacket,MapObjectEncode, MapRegion } from "common/scripts/packets/map_packet.ts"
 import { Floors, FloorType, generate_terrain_shape, River, TerrainManager } from "common/scripts/others/terrain.ts"
 import { GameObjectType, Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
@@ -298,6 +298,7 @@ export class GameMap{
             max:v2(this.size.x+bounds_size,this.size.y+bounds_size)
         }
         this.biome=definition.biome
+        this.definitions=definition.definitions??{}
         //Terrain
         this.rivers.length=0
         this.terrain.add_floor({

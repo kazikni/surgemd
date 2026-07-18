@@ -530,7 +530,6 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
         parent.innerHTML = `
 <span class="span-text">Active</span>
 <div class="loadout-icons-group active-items"></div>
-
 <span class="span-text">Inventory</span>
 <div class="loadout-icons-group items"></div>
 `

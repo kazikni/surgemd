@@ -74,10 +74,17 @@ Effects.insert(
         side_effects:[
             {
                 type:SideEffectType.Damage,
-                amount:4,
+                amount:8,
                 piercing:true,
             },
         ],
+        particles:{
+            delay:0.35,
+            frame:{
+                scale:1,
+                image:"fire_particle"
+            },
+        },
     },
     {
         idString:"well_fed",
@@ -112,7 +119,7 @@ Effects.insert(
         },
         assets:{
             sounds:{
-                when_take:"effect_take_1"
+                when_take:"effect_take_2"
             }
         },
     },

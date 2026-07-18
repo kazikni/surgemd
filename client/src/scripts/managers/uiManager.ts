@@ -130,6 +130,7 @@ export class UiManager{
 
         this.players_name={}
         this.group_members={}
+        this.game.theme_colors={}
         this.map_humans.length=0
 
         HideElement(this.content.game_gui)

@@ -1,4 +1,4 @@
-import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2, Shape2D, model2d, matrix4, v2m } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2, Shape2D, model2d, v2m } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -115,6 +115,9 @@ export class Obstacle extends StaticBody{
                 a:below?this.def.below.alpha:255
             }
         })
+        if(this.shadow){
+            this.shadow.tint.a=below?0:255
+        }
     }
     override on_destroy(): void {
         this.container.destroy()

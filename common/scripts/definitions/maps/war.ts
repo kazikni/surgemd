@@ -96,3 +96,4 @@ export const WarMap:MapDef={
         ]
     },
 }
+export const map=WarMap

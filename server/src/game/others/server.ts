@@ -1,8 +1,8 @@
-import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer} from "common/engine/server.ts"
+import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer, DenoFileManager} from "common/engine/server.ts"
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
 import { Game, GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
-import { deepEqual, random } from "common/engine/core.ts";
+import { deepEqual, FileManager, GameConsole, random } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 export class ApiConnection {
     socket?: WebSocket
@@ -71,14 +71,14 @@ export class ApiConnection {
 }
 export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     api_conn?:ApiConnection
+    fs:FileManager
     constructor(server: Server,config:GameServerConfig){
         super(server,config)
-
+        this.fs=new DenoFileManager()
         if(config.authentication&&config.region){
             this.api_conn=new ApiConnection(this,config)
             this.api_conn.connect()
         }
-
         for(let i=0;i<=config.max_games;i++){
             this.add_container(config.use_workers?new WorkerGameContainer():new SelfGameContainer())
         }
@@ -119,10 +119,10 @@ export class SelfGameContainer extends AbstractSelfGameContainer<Game,GameData,G
     constructor(){
         super(PacketManager)
     }
-    override make_game(config: GameConfig): Game {
-        const game=new Game(this.server.config,this.clients_manager)
+    override async make_game(config: GameConfig): Promise<Game> {
+        const game=new Game(this.server.config,this.clients_manager,(this.server as unknown as GameServer).fs)
         game.string_id=random.code(20)
-        game.auto_init(config!)
+        await game.auto_init(config!)
         game.update_data()
         return game
     }

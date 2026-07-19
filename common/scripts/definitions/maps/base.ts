@@ -1,6 +1,6 @@
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { LootAditional, SpawnMode, type Layers } from "../../others/constants.ts";
-import { Hitbox2D, LootTable, Random1, Rect, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { Hitbox2D, LootTable, Random1, Rect, Stream, Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { type GameADefinitions } from "../game_defs.ts";
 
 import { type GameMap } from "../../../../server/src/game/others/map.ts"
@@ -67,12 +67,12 @@ export interface MapDef{
         base_tint?:number
         spawn?:MapObjectGeneration[]
         islands?:IslandDef[]
+        callback?:(map:GameMap)=>void
     }
     definitions?:GameADefinitions
     seed?:number
     biome:MapBiomeDef
     deadzone_initial_size?:number
-    gen_callback?:(map:GameMap)=>void
 }
 export interface CounterMapDef extends MapDef{
     spawn:Hitbox2D[]

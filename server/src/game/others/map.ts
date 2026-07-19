@@ -338,7 +338,7 @@ export class GameMap{
                 })
             }
         }
-        if(definition.gen_callback)definition.gen_callback(this)
+        if(definition.generation.callback)definition.generation.callback(this)
         for(const spawn of definition.generation.spawn??[]){
             this.generate_objects(spawn,random)
         }

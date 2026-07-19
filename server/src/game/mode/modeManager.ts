@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts";
-import { Client, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Client, Numeric, random, StaticStream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -7,8 +7,12 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { LootAditional, LootSetting } from "common/scripts/others/constants.ts";
-
+import { LootSetting } from "common/scripts/others/constants.ts";
+import { MapDef } from "common/scripts/definitions/maps/base.ts";
+import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
+import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
+import { WarMap } from "common/scripts/definitions/maps/war.ts";
+import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -76,6 +80,22 @@ export interface GameRules{
         kills_min:number
     }
     loot_settings:LootSetting
+}
+export const Maps:Record<string,MapDef>={
+    normal:NormalMap,
+    normal_fall:{
+        ...NormalMap,
+        biome:FallBiome
+    },
+
+    lobby:NormalLobby,
+
+    tundra:TundraMap,
+
+    war:WarMap,
+
+    debug:DebugMap,
+    single_building:SingleBuildMap,
 }
 export abstract class ModeManager{
     game!:Game
@@ -258,8 +278,6 @@ export abstract class ModeManager{
 
     }
 
-    abstract generate_map():void
-
     get_living_count():number[]{
         return [this.game.players.living_players.length]
     }
@@ -287,6 +305,24 @@ export abstract class ModeManager{
                     if(pos) bot.position = pos
                 }
             }
+        }
+    }
+    abstract generate_map():Promise<void>
+    async load_map(map:string|MapDef):Promise<MapDef|undefined>{
+        if(typeof map==="string"){
+            if(Maps[map])return Maps[map]
+            else{
+                const stream=new StaticStream((await this.game.fs.read_fileb(map)).buffer as ArrayBuffer)
+                const magic=stream.read_string_sized(4)
+                if(magic!==".MAP"){
+                    return undefined
+                }
+                const version=stream.read_uint16()
+                const result=stream.read_object(2,2)
+                return result
+            }
+        }else{
+            return map
         }
     }
 }

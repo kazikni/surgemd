@@ -100,11 +100,11 @@ export abstract class SelfGameWorker<
             break
         }
     }
-    protected restartGame(config?: GameConfig) {
+    protected async restartGame(config?: GameConfig) {
         if (this.game) {
             this.stopGame()
         }
-        this.game = this.createGame(config)
+        this.game = await this.create_game(config)
         this.clients_manager.onconnection=this.game.handle_connection.bind(this.game)
         this.clients_manager.canConnect = this.canConnect.bind(this)
 
@@ -142,5 +142,5 @@ export abstract class SelfGameWorker<
         return true
     }
     protected abstract onBegin(): void
-    protected abstract createGame(config?: GameConfig): Game
+    protected abstract create_game(config?: GameConfig): Promise<Game>
 }

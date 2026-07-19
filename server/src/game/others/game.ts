@@ -1,4 +1,4 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, FileManager, ID,  KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -65,6 +65,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     game_config!:GameConfig
     string_id=""
 
+    fs:FileManager
     map:GameMap
 
     alt_db?:Record<string,{
@@ -145,7 +146,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         assets:{},
         languages_path:"",
     }
-    constructor(main_config:GameServerConfig,clients:OfflineClientsManager){
+    constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
             Human,
             Loot,
@@ -164,6 +165,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.ntps=main_config.ntps
         this.main_config=main_config
+        this.fs=fs
 
         for(const i of LayersL){
             this.scene_2d.objects.add_layer(i)
@@ -175,7 +177,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.deadzone=new DeadZoneManager(this)
     }
-    init(mode:ModeManager){
+    async init(mode:ModeManager){
         this.definitions.init_default()
         if(this.mods){
             for(const k of this.mods.getLoadOrder()){
@@ -189,11 +191,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.modeManager=mode
         mode.init(this)
-        mode.generate_map()
+        await mode.generate_map()
 
         this.players.encode_start_packet()
     }
-    auto_init(game_config:GameConfig){
+    async auto_init(game_config:GameConfig){
         this.game_config=game_config
         let has_mode=false
         if(this.mods){
@@ -210,13 +212,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(!has_mode){
             switch(game_config.mode.mode){
                 case "normal":
-                    this.init(new BattleRoyale(game_config.mode.settings,game_config.group_size??1))
+                    await this.init(new BattleRoyale(game_config.mode.settings,game_config.group_size??1))
                     break
                 case "counter_md":
                     //this.init(new CounterMD(game_config.mode_settings))
                     break
                 case "debug":
-                    this.init(new BattleRoyaleDebug(game_config.mode.settings,game_config.group_size??1))
+                    await this.init(new BattleRoyaleDebug(game_config.mode.settings,game_config.group_size??1))
                     break
             }
         }

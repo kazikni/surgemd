@@ -8,11 +8,9 @@ import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
-import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
-import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
-import { WarMap } from "common/scripts/definitions/maps/war.ts";
+import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
+import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -31,22 +29,6 @@ export interface BattleRoyaleSettings{
     enemies?:LevelEnemys
     airdrops?:AirdropConfig
 }
-export const Maps:Record<string,MapDef>={
-    normal:NormalMap,
-    normal_fall:{
-        ...NormalMap,
-        biome:FallBiome
-    },
-
-    lobby:NormalLobby,
-
-    tundra:TundraMap,
-
-    war:WarMap,
-
-    debug:DebugMap,
-    single_building:SingleBuildMap,
-}
 export class BattleRoyale extends ModeManager{
     leader?:Player
 
@@ -56,7 +38,7 @@ export class BattleRoyale extends ModeManager{
         }
         join_time:number
         map:{
-            def:MapDef
+            def:MapDef|string
             seed?:number
         }
         spawn_mode:SpawnMode
@@ -77,7 +59,7 @@ export class BattleRoyale extends ModeManager{
             },
             join_time:settings.join_time??90,
             map:{
-                def:(settings.map?.def===undefined)?Maps["normal"]:(typeof settings.map.def==="string"?Maps[settings.map.def]:settings.map.def),
+                def:settings.map?.def??"normal",
                 seed:settings.map?.seed
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
@@ -284,8 +266,8 @@ export class BattleRoyale extends ModeManager{
             g.add_human(p)
         }
     }
-    override generate_map(): void {
-        this.game.map.generate(this.settings.map.def,this.settings.map.seed)
+    override async generate_map(): Promise<void> {
+        this.game.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed)
         this.game.deadzone.set_config(this.settings.deadzone)
         //this.game.deadzone.start()
     }
@@ -307,8 +289,8 @@ export class BattleRoyaleDebug extends BattleRoyale{
     }
     override on_start(){
     }
-    override generate_map(): void {
-        this.game.map.generate(this.settings.map.def,this.settings.map.seed)
+    override async generate_map(): Promise<void> {
+        this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed)
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.game.map.size,2)

@@ -36,13 +36,13 @@ export class LevelPlayer {
             case "kill_all_enemies":
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                this.game.init(new KillAllEnemiesMode(this.level.mode.settings))
+                await this.game.init(new KillAllEnemiesMode(this.level.mode.settings))
                 break
             case "battle_royale":
-                this.game.init(new BattleRoyale(this.level.mode.settings,this.level.mode.group_size,this.level.mode.teams))
+                await this.game.init(new BattleRoyale(this.level.mode.settings,this.level.mode.group_size,this.level.mode.teams))
                 break
             case "debug":{
-                this.game.init(new BattleRoyaleDebug(this.level.mode.settings as unknown as BattleRoyaleSettings))
+                await this.game.init(new BattleRoyaleDebug(this.level.mode.settings as unknown as BattleRoyaleSettings))
                 break
             }
         }

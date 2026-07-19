@@ -1,5 +1,3 @@
-import { type AbstractGame } from "../game/game.ts";
-import { random, type WeightDefinition } from "../math/random.ts";
 import { Numeric, Tags, hasTag, hasTags } from "../math/utils.ts"
 
 export abstract class Item{

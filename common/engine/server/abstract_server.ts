@@ -93,7 +93,7 @@ export abstract class AbstractGameContainer<
     }
     abstract on_message(msg:WorkerMessage):void
     abstract begin():void
-    abstract new_game(config:GameConfig):void
+    abstract new_game(config:GameConfig):Promise<void>
     abstract stop():void
     abstract get_address():string
 }
@@ -110,11 +110,11 @@ export abstract class AbstractSelfGameContainer<
         super()
         this.clients_manager=new ClientsManager(packet_manager)
     }
-    abstract make_game(config:GameConfig):Game
-    override new_game(config: GameConfig): void {
+    abstract make_game(config:GameConfig):Promise<Game>
+    override async new_game(config: GameConfig): Promise<void> {
         this.config=config
         if(this.game)this.game.stop()
-        this.game=this.make_game(config)
+        this.game=await this.make_game(config)
         this.clients_manager.onconnection=this.game.handle_connection.bind(this.game)
         this.game!.signals.on("update_data", (d:GameData) => this.data=d)
         this.game.id=this.id
@@ -148,7 +148,7 @@ export abstract class AbstractWorkerGameContainer<
         this.reset_worker()
     }
     
-    new_game(config:GameConfig){
+    async new_game(config:GameConfig){
         this.worker.postMessage({
             type: 1,
             config:config

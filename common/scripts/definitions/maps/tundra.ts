@@ -578,3 +578,4 @@ export const TundraMap:MapDef={
         }]
     },
 }
+export const map=TundraMap

@@ -34,7 +34,7 @@ export const DesertBiome:MapBiomeDef={
     floors:{
         [FloorType.Sand]:0xa1761a
     },
-    textures:["common"],
+    textures:["common","desert"],
     musics:[],
     particles:[],
 }
@@ -317,3 +317,4 @@ export const river_layers={
         }
     ]
 } satisfies Record<string,RiverLayerDef[]>
+export const map=NormalMap

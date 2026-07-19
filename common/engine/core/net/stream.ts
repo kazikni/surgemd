@@ -373,6 +373,11 @@ export abstract class Stream{
                     this.write_array(obj, (v) => this.write_object(v,bytes1,bytes2), bytes1)
                     return this
                 }
+                if(obj instanceof BaseHitbox2D){
+                    this.write_uint8(6)
+                    this.write_hitbox(obj as Hitbox2D)
+                    return this
+                }
                 this.write_uint8(5)
                 this.write_string_dict(obj, (v) => this.write_object(v,bytes1,bytes2), bytes1, bytes2)
                 return this
@@ -394,6 +399,8 @@ export abstract class Stream{
                 return this.read_array(_s => this.read_object(bytes1,bytes2),bytes1)
             case 5:
                 return this.read_string_dict(_s => this.read_object(bytes1,bytes2),bytes1,bytes2)
+            case 6:
+                return this.read_hitbox()
         }
         throw new Error("Invalid type in readObject")
     }

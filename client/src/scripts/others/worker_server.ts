@@ -4,6 +4,7 @@ import { FetchFileManager, OfflineClientsManager, Path, WorkerSocket } from "com
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 let server:OfflineGameServer
 let level:LevelPlayer
+let fs:FetchFileManager=new FetchFileManager()
 function logError(e: unknown): never {
     if (e instanceof Error) {
         throw e
@@ -20,7 +21,6 @@ self.onunhandledrejection = (ev) => {
 
 
 async function load_level(path:string){
-    const fs=new FetchFileManager()
     fs.base=path
     level=new LevelPlayer(server,fs)
     await level.begin(path)
@@ -35,6 +35,7 @@ self.onmessage = async(ev) => {
             server=new OfflineGameServer(
                 msg.config as GameServerConfig,
                 new OfflineClientsManager(PacketManager),
+                fs
             );
             break
         }

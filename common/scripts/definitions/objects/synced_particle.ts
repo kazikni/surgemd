@@ -130,7 +130,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                         duration:2,
                     },
                     scale:{
-                        to:2,
+                        to:3,
                         duration:0.5,
                     }
                 },

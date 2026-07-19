@@ -421,12 +421,12 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         this.slot=slot
     }
     on_fire(user: Human): void {
-        if(!this.slot||this.slot?.quantity<=0)return
+        if(!this.slot||this.slot?.quantity<=0||!user.input.using_item_down)return
         user.grenade_holding={
             def:this.def,
             time:this.def.fuse?.time??10,
-            active_time:this.def.throw_time??0.25,
-            cook_time:this.def.cook_time??0.5,
+            active_time:this.def.throw_time??0.1,
+            cook_time:this.def.cook_time??0.2,
             slot:this.slot,
             activated:false
         }

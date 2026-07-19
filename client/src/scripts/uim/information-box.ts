@@ -7,7 +7,7 @@ export class InformationBoxModule extends UIModule<Game> {
     killbox!: HTMLDivElement
     interaction!: HTMLDivElement
 
-    queue: string[] = []
+    queue: {msg:string,player_id?:number}[] = []
     time = 0
 
     override on_init(): void {
@@ -19,8 +19,20 @@ export class InformationBoxModule extends UIModule<Game> {
         HideElement(this.interaction)
     }
 
-    push(msg: string) {
-        this.queue.push(msg)
+    push(msg: string,player_id?:number) {
+        if(player_id!==undefined){
+            for(let i=0;i<this.queue.length;i++){
+                if(this.queue[i].player_id===player_id){
+                    this.queue.splice(i,1)
+                    i--
+                }
+            }
+        }
+        if(this.queue.length===0)this.time=0
+        this.queue.push({
+            msg:msg,
+            player_id:player_id
+        })
     }
 
     override on_signal(signal: string, state: any): void {
@@ -32,14 +44,14 @@ export class InformationBoxModule extends UIModule<Game> {
                 ShowElement(this.interaction)
             }
         }else if(signal==="info-kill"||signal==="info-down"){
-            this.push(state.msg)
+            this.push(state.msg,state.player_id)
         }
     }
 
     override on_update(dt: number): void {
         if (this.queue.length > 0) {
             if (this.time <= 0) {
-                this.killbox.innerHTML = this.queue[0]
+                this.killbox.innerHTML = this.queue[0].msg
                 ShowElement(this.killbox)
             }
             this.time += dt

@@ -51,7 +51,7 @@ export type GrenadeDef={
     throw_time?:number
     cook_time?:number
     fuse?:{
-        allow_hand:boolean
+        allow_hand?:boolean
         time?:number
         ground?:boolean
         impact?:boolean
@@ -119,7 +119,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2,
             },
             fuse:{
-                allow_hand:false,
                 time:4
             },
             throw_max_speed:17,
@@ -147,7 +146,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2,
             },
             fuse:{
-                allow_hand:false,
                 ground:true
             },
             throw_max_speed:10,
@@ -202,7 +200,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2
             },
             fuse:{
-                allow_hand:false,
                 time:2
             },
             frames:{
@@ -248,7 +245,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2,
             },
             fuse:{
-                allow_hand:false,
                 time:20
             },
             throw_max_speed:20,
@@ -300,7 +296,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2,
             },
             fuse:{
-                allow_hand:false,
                 time:4
             },
             throw_max_speed:20,
@@ -355,7 +350,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2,
             },
             fuse:{
-                allow_hand:false,
                 time:3
             },
             throw_max_speed:20,
@@ -408,7 +402,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2
             },
             fuse:{
-                allow_hand:false,
                 ground:true,
             },
             explosion:"nuke_explosion",
@@ -434,7 +427,6 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_speed:2
             },
             fuse:{
-                allow_hand:false,
                 ground:true,
             },
             explosion:"mini_nuke_explosion",

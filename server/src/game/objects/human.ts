@@ -358,6 +358,7 @@ export class Human extends MovingBody{
                 }
             }
         }
+        if(preset.hair_tint!==undefined&&this.loadout.hair)this.loadout.hair.tint=preset.hair_tint
         if(preset.body)this.loadout.body={
             def:this.game.definitions.loadout.getFromString(preset.body) as LoadoutBodyDef,
             tint:0
@@ -595,7 +596,7 @@ export class Human extends MovingBody{
         const limit=(this.grenade_holding.def.throw_max_speed??0)
         proj.push(Numeric.clamp(this.input.dist_to_pointer*limit,0,limit),this.physical_data.rotation,10)
         v2m.add(proj.physical_data.velocity,proj.physical_data.velocity,this.physical_data.velocity)
-        proj.fuse_delay=this.grenade_holding.time
+        proj.fuse_delay=this.grenade_holding.def.fuse?.allow_hand?this.grenade_holding.time:(this.grenade_holding.def.fuse?.time??this.grenade_holding.time)
         if(this.grenade_holding.slot){
             this.grenade_holding.slot.remove(1)
             this.inventory.net_sync.items=true
@@ -1013,26 +1014,18 @@ export class Human extends MovingBody{
                                 type:HumanAnimationType.Throw
                             })
                         }
-                        this.grenade_holding.time-=dt
                         if(this.grenade_holding.activated){
                             this.grenade_holding.active_time-=dt
                             this.throw_using_projectile()
-                        }else{
-                            if(this.grenade_holding.time<=0){
-                                if(this.grenade_holding.def.explosion)this.game.add_explosion(this.position,this.game.definitions.explosions.getFromString(this.grenade_holding.def.explosion!),this,this.grenade_holding.def,this.layer)
-                                if(this.grenade_holding.slot){
-                                    this.grenade_holding.slot.remove(1)
-                                    this.inventory.net_sync.items=true
-                                    if(this.grenade_holding.slot.quantity<=0){
-                                        let idx=this.inventory.weapon_idx
-                                        if(!this.inventory.weapons[this.inventory.weapon_idx]){
-                                            idx=0
-                                        }
-                                        this.inventory.weapon_idx=-1
-                                        this.inventory.set_weapon_index(idx)
-                                    }
-                                }
-                                this.grenade_holding=undefined
+                        }else if(this.grenade_holding.def.fuse?.allow_hand){
+                            this.grenade_holding.time-=dt
+                            if(this.grenade_holding.time<=0&&!this.grenade_holding.activated){
+                                this.grenade_holding.cook_time=0
+                                this.grenade_holding.activated=true
+                                this.animation_data.dirty=true
+                                this.animation_data.current_animation.push({
+                                    type:HumanAnimationType.Reset
+                                })
                             }
                         }
                     }
@@ -1365,6 +1358,7 @@ export class Human extends MovingBody{
 
         this.inventory.set_weapon_index(0)
 
+        this.grenade_holding=undefined
         if(this.seat)this.seat.clear_human()
         this.push(-10,params.direction)
     }

@@ -506,7 +506,7 @@ export class UiManager{
                     elem.classList.add("feed-message-negative")
                 }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
                     elem.classList.add("feed-message-good")
-                    this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
+                    this.game.ui_manager.signal("info-kill",{player_id:msg.victimId,msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                 }
                 break
             }
@@ -546,7 +546,7 @@ export class UiManager{
                     elem.classList.add("feed-message-negative")
                 }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
                     elem.classList.add("feed-message-good")
-                    this.game.ui_manager.signal("info-down",{msg:`You Knockout ${this.game.ui.players_name[msg.victimId].name}`})
+                    this.game.ui_manager.signal("info-down",{player_id:msg.victimId,msg:`You Knockout ${this.game.ui.players_name[msg.victimId].name}`})
                 }
                 break
             }

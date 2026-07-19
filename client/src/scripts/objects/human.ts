@@ -810,6 +810,7 @@ export class Human extends MovingBody{
             },this.game.resources)
             if(a.frame)spr.transform_frame(a.frame)
             this.container.add_child(spr)
+            this.sprites.accessorys.push(spr)
         }
 
         this.reset_anim()
@@ -1278,7 +1279,7 @@ export class Human extends MovingBody{
                 case HumanAnimationType.Cook:
                     this.container.play_animation([
                         {
-                            time:0.1,
+                            time:0.075,
                             actions:[
                                 {
                                     type:"tween",
@@ -1286,7 +1287,8 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(DefaultFistRig.left!.position.x+0.1,-0.05),
                                         rotation:0.3
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 },
                                 {
                                     type:"tween",
@@ -1294,7 +1296,8 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(DefaultFistRig.right!.position.x+0.1,0.05),
                                         rotation:0.3
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 },
                                 {
                                     type:"tween",
@@ -1302,12 +1305,13 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(DefaultFistRig.right!.position.x+0.1,0.05),
                                         rotation:0.3
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 }
-                            ]
+                            ],
                         },
                         {
-                            time:0.05,
+                            time:0.025,
                             actions:[
                                 {
                                     type:"tween",
@@ -1315,12 +1319,13 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(DefaultFistRig.left!.position.x+0.15,-0.1),
                                         rotation:0.3
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 },
                             ]
                         },
                         {
-                            time:0.2,
+                            time:0.1,
                             actions:[
                                 {
                                     type:"tween",
@@ -1328,7 +1333,8 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(DefaultFistRig.left!.position.x,DefaultFistRig.left!.position.y-0.1),
                                         rotation:DefaultFistRig.left!.rotation-0.3
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 },
                                 {
                                     type:"tween",
@@ -1336,7 +1342,8 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(0.15,0.6),
                                         rotation:1.2
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 },
                                 {
                                     type:"tween",
@@ -1344,7 +1351,8 @@ export class Human extends MovingBody{
                                     to:{
                                         position:v2(0.15,0.6),
                                         rotation:0.3
-                                    }
+                                    },
+                                    ease:ease.quadraticInOut
                                 }
                             ]
                         },
@@ -1585,11 +1593,6 @@ export class Human extends MovingBody{
             this.container.visible=false
         }
         this.swimming=swimming
-        if(downed||swimming){
-            this.on_downed()
-        }else if(this.downed&&!(downed||swimming)){
-            this.on_help_up()
-        }
         if(full||physical_dirty_part||physical_dirty){
             this.decode_physical_data(stream,full)
             if(full||physical_dirty){
@@ -1686,6 +1689,11 @@ export class Human extends MovingBody{
                 return animation
             },1)
             this.set_animations(animations)
+        }
+        if(downed||swimming){
+            this.on_downed()
+        }else if(this.downed&&!(downed||swimming)){
+            this.on_help_up()
         }
         if(full||hand_dirty){
             const id=stream.read_int16()

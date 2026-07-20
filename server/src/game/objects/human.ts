@@ -49,6 +49,7 @@ export class Human extends MovingBody{
     is_player:boolean=false
     is_bot:boolean=false
     is_npc:boolean=false
+    advanced_permitions:boolean=false
 
     humans_manager!:HumansManager
 
@@ -128,7 +129,6 @@ export class Human extends MovingBody{
         dirty:boolean
         dirty_colors:boolean
 
-        ping?:PingData
         emotes:{
             death?:EmoteDef
             victory?:EmoteDef
@@ -188,6 +188,7 @@ export class Human extends MovingBody{
 
         actions:InputAction[]
         emote?:GameItem|EmoteDef
+        ping?:PingData
         message?:string
 
         reload:boolean
@@ -724,13 +725,13 @@ export class Human extends MovingBody{
                         }
                         break
                     case InputActionType.emote_emote:{
-                        if(this.emote_time>=0)break
+                        if(this.emote_time>=0&&!this.advanced_permitions)break
                         const def=this.game.definitions.emotes.getFromNumber(a.emote)
                         this.input.emote=def
                         break
                     }
                     case InputActionType.emote_item:{
-                        if(this.emote_time>=0)break
+                        if(this.emote_time>=0&&!this.advanced_permitions)break
                         const def=this.game.definitions.game_items.valueNumber[a.item]
                         this.input.emote=def
                         this.input.message=undefined
@@ -738,7 +739,7 @@ export class Human extends MovingBody{
                         break
                     }
                     case InputActionType.message:{
-                        if(this.emote_time>=0&&a.value.length>0)break
+                        if(this.emote_time>=0&&a.value.length>0&&!this.advanced_permitions)break
                         this.emote_time=1.5
                         this.input.message=a.value
                         this.input.emote=undefined
@@ -753,7 +754,7 @@ export class Human extends MovingBody{
                                 position:a.position,
                             })
                         }else{
-                            this.loadout.ping={
+                            this.input.ping={
                                 color:this.team_data.color,
                                 def:a.ping,
                                 id:this.id,
@@ -1111,7 +1112,7 @@ export class Human extends MovingBody{
         this.loadout.dirty_colors=false
         this.input.emote=undefined
         this.input.message=undefined
-        this.loadout.ping=undefined
+        this.input.ping=undefined
 
         this.equipment_data.dirty=false
 

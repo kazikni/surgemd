@@ -119,6 +119,10 @@
                                     "weight": 5
                                 },
                                 {
+                                    "item": "crowbar",
+                                    "weight": 4
+                                },
+                                {
                                     "item": "katana",
                                     "weight": 1
                                 },
@@ -236,6 +240,10 @@
                                 },
                                 {
                                     "item": "axe",
+                                    "weight": 5
+                                },
+                                {
+                                    "item": "crowbar",
                                     "weight": 5
                                 },
                                 {

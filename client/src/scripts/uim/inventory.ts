@@ -1,6 +1,5 @@
 import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
-import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { InventoryItemData, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -175,6 +174,8 @@ export class InventoryModule extends UIModule<Game> {
                         descriptionKey = (item.def as WeaponDef).description as string
                     }
                     this.weapons_elements[i].dataset.item_description=this.game.language.get(descriptionKey)
+                }else{
+                    this.weapons_elements[i].dataset.item_description=""
                 }
                 name_el.innerText = name
                 this.weapons_elements[i].dataset.item_name=this.game.language.get(item.def.tname??("items."+item.def.idString),undefined,item.def.name)

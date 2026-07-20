@@ -28,6 +28,7 @@ __                                                                              
 * 50Cal Ammo Outline
 * Medic Helmet
 * Knife Crate
+* Crowbar
 * Bonesaw Bloody
 * Bike Helmets Variations
 __                                                                                                                 __

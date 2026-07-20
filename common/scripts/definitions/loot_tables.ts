@@ -51,6 +51,7 @@ export const LootTables={
         {item:"survival_knife",weight:15},
         {item:"shovel",weight:15},
         {item:"axe",weight:10},
+        {item:"crowbar",weight:7},
         {item:"katana",weight:3},
         {item:"sledgehammer",weight:3},
         {item:"pan",weight:2},

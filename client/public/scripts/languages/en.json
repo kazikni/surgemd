@@ -53,6 +53,7 @@
             "fist": "Fists",
             "survival_knife": "Survival Knife",
             "axe": "Axe",
+            "crowbar": "Crowbar",
             "shovel": "Shovel",
             "sledgehammer": "Sledgehammer",
             "katana": "Katana",
@@ -97,6 +98,8 @@
                 "explosive_ammo": "Boom Boom Motherfucker!",
                 "gasoline": "A good fuel.",
                 "mana_mm": "Mana-MM I'm tired of creating descriptions. It's already 18:50.",
+
+                "crowbar": "Rise and shine...",
 
                 "bandage": "A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
                 "medikit": "This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",

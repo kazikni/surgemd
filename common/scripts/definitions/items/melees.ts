@@ -524,6 +524,43 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             }
         },
         {
+            idString:"crowbar",
+            description:true,
+            rank:ItemRank.C,
+            offset:v2(0.7,0),
+            radius:0.4,
+            damage:40,
+            resistence_damage:1,
+            fire_mode:FireMode.Single,
+            attack_delay:0.3,
+            switch_delay:0.5,
+            damage_delays:[0.3],
+            rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+            },
+            rig_image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.1,0.7)
+            },
+            animation:AnimationSwing(0.3),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"crowbar_hit",
+                switch_sound:"medium_switch"
+            }
+        },
+        {
             idString:"katana",
             rank:ItemRank.B,
             offset:v2(0.8,0.25),

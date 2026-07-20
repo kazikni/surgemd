@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef, Shape2D, model2d } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef, Shape2D, model2d, KeyFrameSpriteDef } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
@@ -122,6 +122,8 @@ export class Human extends MovingBody{
         walk_speed:1,
         walk_cycle:0,
         walk_time:0,
+
+        mounth:[] as KeyFrameSpriteDef[]
     }
     assets:{
         arm_frame_small?:Frame
@@ -782,7 +784,12 @@ export class Human extends MovingBody{
             this.sprites.mounth.scale.x=1.4
             this.sprites.mounth.position=body_def.mounth.position
             this.sprites.mounth.frame=this.game.resources.get_frame(body_def.mounth.normal)
+            this.animation.mounth=[
+                {image:body_def.mounth.normal,delay:0.15},
+                {image:body_def.mounth.open,delay:0.15},
+            ]
         }else{
+            this.animation.mounth.length=0
             this.sprites.mounth.visible=false
         }
 
@@ -896,7 +903,7 @@ export class Human extends MovingBody{
             v2m.add_component(this.sprites.emote_container.position,0,-1.5)
             if(this.animation.emote_time>0){
                 this.animation.emote_time-=dt
-            }else{
+            }else if(!this.animation.emote_tween){
                 this.animation.emote_tween=this.game.add_tween({
                     target:this.sprites.emote_container.scale,
                     duration:0.8,
@@ -906,6 +913,10 @@ export class Human extends MovingBody{
                         this.sprites.emote_container.visible=false
                         this.animation.emote_tween=undefined
                         if(this.animation.emote_is_message)this.sprites.emote_sprite.frame?.free?.()
+                        this.sprites.mounth.frames=undefined
+                        this.sprites.mounth.current_frame=0
+                        this.sprites.mounth.current_delay=0
+                        this.sprites.mounth.frame=this.game.resources.get_frame(this.animation.mounth[0].image as string)
                     },
                     ease:ease.circOut
                 })
@@ -1425,9 +1436,16 @@ export class Human extends MovingBody{
             target:this.sprites.emote_container.scale,
             duration:1,
             to:v2.one,
-            ease:ease.elasticOut
+            ease:ease.elasticOut,
+            onComplete:()=>{
+                this.animation.emote_tween=undefined
+            }
         })
         this.animation.emote_is_message=false
+
+        this.sprites.mounth.frames=this.animation.mounth
+        this.sprites.mounth.current_frame=0
+        this.sprites.mounth.current_delay=0
     }
     add_message(msg:string){
         this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
@@ -1460,6 +1478,10 @@ export class Human extends MovingBody{
             to:v2.one,
             ease:ease.elasticOut
         })
+
+        this.sprites.mounth.frames=this.animation.mounth
+        this.sprites.mounth.current_frame=0
+        this.sprites.mounth.current_delay=0
     }
     set_helmet(helmet:number,skin?:number){
         if(helmet-1===this.helmet?.idNumber!&&this.helmet_skin===skin)return

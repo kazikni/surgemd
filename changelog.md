@@ -40,10 +40,12 @@ __                                                                              
 * Aqua Blue Wrapping
 * Angry Emote
 * Angry Swearing
+* Very Love Emote
 * Skull Emote
 * Heart Emote
 * Knife Logo Emote
 * Campfire Logo Emote
+* Vasco Da Gama Emote
 * GG Emote
 __                                                                                                                 __
 ### Others

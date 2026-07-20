@@ -39,6 +39,20 @@
                             }
                         }
                     }
+                },
+                {
+                    "group_size": [
+                        2
+                    ],
+                    "mode": {
+                        "mode": "debug",
+                        "name": "modes.debug",
+                        "settings": {
+                            "map": {
+                                "def": "debug"
+                            }
+                        }
+                    }
                 }
             ]
         }

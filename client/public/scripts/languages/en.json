@@ -130,13 +130,15 @@
             "neutral":"Neutral",
             "angry":"Angry",
             "angry_swearing":"Angry Swearing",
-            "skull":"Skull",
+            "very_love":"Very Love",
 
             "heart":"Heart",
+            "skull":"Skull",
 
             "logo_md":"MD Logo",
             "logo_campfire":"Campfire Logo",
             "logo_knife":"Knife Logo",
+            "logo_vasco_da_gama":"Vasco Da Gama",
 
             "gg":"GG"
         },

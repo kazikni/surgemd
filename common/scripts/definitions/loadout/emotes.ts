@@ -14,15 +14,17 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"neutral",rank:ItemRank.E},
         {idString:"angry",rank:ItemRank.E},
         {idString:"angry_swearing",rank:ItemRank.D},
-        {idString:"skull",rank:ItemRank.E},
+        {idString:"very_love",rank:ItemRank.C},
 
         // Logo
         {idString:"logo_md",rank:ItemRank.E},
         {idString:"logo_campfire",rank:ItemRank.E},
         {idString:"logo_knife",rank:ItemRank.E},
+        {idString:"logo_vasco_da_gama",rank:ItemRank.E},
 
         // Objects
         {idString:"heart",rank:ItemRank.D},
+        {idString:"skull",rank:ItemRank.E},
 
         // Text
         {idString:"gg",rank:ItemRank.D},

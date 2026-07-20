@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="353.77951"
+   height="108.4315"
+   viewBox="0 0 93.603268 28.688895"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="dialog_background_1.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.2970642"
+     inkscape:cx="196.77291"
+     inkscape:cy="100.56314"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <radialGradient
+       xlink:href="#a"
+       id="b"
+       cx="10.857"
+       cy="10.857"
+       fx="10.857"
+       fy="10.857"
+       r="10.964"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.5016725,0,0,1.5016725,0.99999036,0.99999036)" />
+    <linearGradient
+       id="a">
+      <stop
+         style="stop-color:#a9c1c0;stop-opacity:0.5;"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#4e5252;stop-opacity:0.5;"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#a"
+       id="radialGradient928"
+       cx="39.309307"
+       cy="14.655964"
+       fx="39.309307"
+       fy="14.655964"
+       r="17.210361"
+       gradientTransform="matrix(2.6021779,0.0114972,-0.00438015,0.99136378,-54.024626,0.41373079)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <path
+     id="rect366"
+     style="fill:url(#radialGradient928);stroke:#3f4242;stroke-width:1.99997;stroke-linecap:round;stroke-linejoin:round;paint-order:normal"
+     d="M 0.99998498,0.99998498 H 92.603283 V 27.688911 H 0.99998498 Z"
+     sodipodi:nodetypes="ccccc" />
+</svg>

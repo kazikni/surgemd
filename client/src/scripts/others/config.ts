@@ -161,6 +161,10 @@ export const ConfigDefaultActions={
         buttons:[GamepadButtonID.Y],
         keys:[Key.V]
     },
+    "message":{
+        buttons:[],
+        keys:[Key.T]
+    },
     "comunication_mode":{
         buttons:[GamepadButtonID.Y],
         keys:[Key.C]

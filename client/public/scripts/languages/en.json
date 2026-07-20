@@ -378,6 +378,7 @@
             "fire": "Fire/Use",
             "alt_fire": "Fire Alt/Use Alt",
             "emote_wheel": "Emote Wheel",
+            "message": "Message",
             "comunication_mode": "Comunication Mode",
             "reload": "Reload",
             "interact": "Interact",

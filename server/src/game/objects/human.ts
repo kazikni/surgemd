@@ -128,7 +128,6 @@ export class Human extends MovingBody{
         dirty:boolean
         dirty_colors:boolean
 
-        emote?:GameItem|EmoteDef
         ping?:PingData
         emotes:{
             death?:EmoteDef
@@ -188,6 +187,9 @@ export class Human extends MovingBody{
         using_item_down:boolean
 
         actions:InputAction[]
+        emote?:GameItem|EmoteDef
+        message?:string
+
         reload:boolean
         interaction:boolean
         swamp_guns:boolean
@@ -724,14 +726,22 @@ export class Human extends MovingBody{
                     case InputActionType.emote_emote:{
                         if(this.emote_time>=0)break
                         const def=this.game.definitions.emotes.getFromNumber(a.emote)
-                        this.loadout.emote=def
+                        this.input.emote=def
                         break
                     }
                     case InputActionType.emote_item:{
                         if(this.emote_time>=0)break
                         const def=this.game.definitions.game_items.valueNumber[a.item]
-                        this.loadout.emote=def
+                        this.input.emote=def
+                        this.input.message=undefined
                         this.emote_time=1
+                        break
+                    }
+                    case InputActionType.message:{
+                        if(this.emote_time>=0&&a.value.length>0)break
+                        this.emote_time=1.5
+                        this.input.message=a.value
+                        this.input.emote=undefined
                         break
                     }
                     case InputActionType.ping:
@@ -1099,7 +1109,8 @@ export class Human extends MovingBody{
 
         this.loadout.dirty=false
         this.loadout.dirty_colors=false
-        this.loadout.emote=undefined
+        this.input.emote=undefined
+        this.input.message=undefined
         this.loadout.ping=undefined
 
         this.equipment_data.dirty=false
@@ -1382,7 +1393,7 @@ export class Human extends MovingBody{
         this.set_dirty_part()
 
         if(this.loadout.emotes.death){
-            this.loadout.emote=this.loadout.emotes.death
+            this.input.emote=this.loadout.emotes.death
         }
 
         this.inventory.drop_all()
@@ -1471,7 +1482,8 @@ export class Human extends MovingBody{
             this.inventory.net_sync.hand,this.inventory.net_sync.melee_world, // 2
 
             // State
-            this.loadout.emote!==undefined, // 1
+            this.input.emote!==undefined, // 1
+            this.input.message!==undefined,
 
             this.dead,
             this.downed,
@@ -1526,8 +1538,11 @@ export class Human extends MovingBody{
             },1)
             .write_uint16(this.loadout.wrapping===undefined?0:(this.loadout.wrapping.idNumber!+1))
         }
-        if(this.loadout.emote){
-            stream.write_uint16(this.game.definitions.game_objects.keysString[this.loadout.emote.idString])
+        if(this.input.emote){
+            stream.write_uint16(this.game.definitions.game_objects.keysString[this.input.emote.idString])
+        }
+        if(this.input.message!==undefined){
+            stream.write_string_sized(this.input.message,50)
         }
         if(full||this.effects_dirty){
             stream.write_array(Array.from(this.effects.values()),(e)=>{

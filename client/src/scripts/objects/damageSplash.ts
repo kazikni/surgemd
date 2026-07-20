@@ -52,7 +52,7 @@ export class DamageSplashOBJ extends GameObject{
             human.broke_shield()
         }
 
-        this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color)
+        this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color,"Russo-One")
         this.position = args.position
         this.lifetime += Math.random()
 

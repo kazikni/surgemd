@@ -234,7 +234,7 @@ export class BattleRoyale extends ModeManager{
             if(stopped){
                 for(const w of winners){
                     if(w.loadout.emotes.victory){
-                        w.loadout.emote=w.loadout.emotes.victory
+                        w.input.emote=w.loadout.emotes.victory
                     }
                 }
                 this.game.finish(winners,2)

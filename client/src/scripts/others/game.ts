@@ -46,13 +46,13 @@ import { island_final } from "common/scripts/config/final_screen.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
-import { yes_no_popup } from "../defs/menu.ts";
+import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
     comunication_mode:boolean=false
-    escape_menu:boolean=false
+    showing_menu:boolean=false
 
     offline:boolean=false
     can_act:boolean=true
@@ -231,6 +231,10 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
             if(a.action==="movement"){
+                if(!this.can_act){
+                    this.input.movement={dir:0,scale:0}
+                    return
+                }
                 if(a.value.x==0&&a.value.y==0){
                     this.input.movement={dir:0,scale:0}
                 }else{
@@ -253,6 +257,23 @@ export class Game extends ClientGame<GameObject>{
                     break
                 case "emote_wheel":
                     this.ui.begin_emote_wheel(this.input_manager.mouse_position)
+                    break
+                case "message":
+                    if(this.happening&&!this.showing_menu){
+                        this.showing_menu=true
+                        this.can_act=false
+                        this.input.movement={dir:0,scale:0}
+                        this.menu.game_popup(input_popup("Message")).then((v)=>{
+                            this.can_act=true
+                            this.showing_menu=false
+                            if(v.length>0){
+                                this.input.actions.push({
+                                    type:InputActionType.message,
+                                    value:v
+                                })
+                            }
+                        })
+                    }
                     break
                 case "comunication_mode":
                     this.comunication_mode=true
@@ -343,13 +364,13 @@ export class Game extends ClientGame<GameObject>{
                     }*/
                     break
                 case "escape":
-                    if(this.happening&&!this.escape_menu){
-                        this.escape_menu=true
+                    if(this.happening&&!this.showing_menu){
+                        this.showing_menu=true
                         this.menu.game_popup(yes_no_popup("Exit?")).then((v)=>{
                             if(v){
                                 this.close_game()
                             }
-                            this.escape_menu=false
+                            this.showing_menu=false
                         })
                     }
                     break

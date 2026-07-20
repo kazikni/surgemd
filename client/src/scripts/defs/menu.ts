@@ -324,6 +324,24 @@ export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupF
         }
     }
 }
+export function input_popup(msg:string,placeholder="message",enter_msg="Enter",limit?:number): PopupFunction {
+    return (popup) => {
+        popup.parent.innerHTML=`
+<p class="span-text">${msg}</p>
+<div style="display:flex;flex-direction:column;gap:3px">
+    <input id="popup-input" class="text-input-green" placeholder="${placeholder}"></input>
+    <button id="popup-enter" class="btn-green">${enter_msg}</button>
+</div>`
+        const input = popup.parent.querySelector("#popup-input") as HTMLInputElement
+        const enter = popup.parent.querySelector("#popup-enter") as HTMLButtonElement
+        input.onkeydown=(e)=>{
+            if(e.keyCode===13)popup.resolve(input.value)
+        }
+        enter.onclick = () => {
+            popup.resolve(input.value)
+        }
+    }
+}
 export function make_menu_settings(save: GameSave,name:string, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
         parent.innerHTML=`<h1 class="span-text-base">${translation.get(name)}</h1>`

@@ -102,6 +102,7 @@ export class Human extends MovingBody{
     animation={
         emote_tween:undefined as Tween<Vec2>|undefined,
         emote_time:0,
+        emote_is_message:false,
 
         sound_animation:undefined as AudioVoice|undefined,
         footsteps:undefined as AudioVoice|undefined,
@@ -150,7 +151,7 @@ export class Human extends MovingBody{
     shield:boolean=false
     effects:{def:EffectDef,lifetime:number}[]=[]
     current_floor?:FloorType
-    
+
     distance_since_last_footstep=0
     footstep_alternate:boolean=false
 
@@ -285,18 +286,11 @@ export class Human extends MovingBody{
         })
 
         // Emote
-        this.sprites.emote_bg.set_frame({
-            image:"emote_background",
-            hotspot:CenterHotspot,
-            scale:2
-        },this.game.resources)
-        this.sprites.emote_sprite.transform_frame({
-            hotspot:CenterHotspot,
-            scale:2.6
-        })
         this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
         this.sprites.emote_container.sync_rotation=false
         this.sprites.emote_container.position=v2(0,-1.5)
+        this.sprites.emote_sprite.hotspot=v2.half_one
+        this.sprites.emote_bg.hotspot=v2.half_one
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
         this.game.cam2d.add_object(this.sprites.emote_container)
@@ -775,10 +769,6 @@ export class Human extends MovingBody{
         this.sprites.right_leg.rotation=3.19
         this.sprites.left_leg.position=v2(-0.6,-0.2)
         this.sprites.right_leg.position=v2(0.6,0.2)
-        //this.sprites.left_leg.position=v2(-0.75,-0.22)
-        //this.sprites.right_leg.position=v2(-0.75,0.22)
-        //this.sprites.left_leg.rotation=0.1
-        //this.sprites.right_leg.rotation=-0.1
         this.sprites.left_leg.zIndex=1
         this.sprites.right_leg.zIndex=1
 
@@ -904,20 +894,18 @@ export class Human extends MovingBody{
         if(this.sprites.emote_container.visible){
             this.sprites.emote_container.position=this.position
             v2m.add_component(this.sprites.emote_container.position,0,-1.5)
-            if(this.animation.emote_time<2.5){
-                this.animation.emote_time+=dt
+            if(this.animation.emote_time>0){
+                this.animation.emote_time-=dt
             }else{
                 this.animation.emote_tween=this.game.add_tween({
                     target:this.sprites.emote_container.scale,
                     duration:0.8,
-                    to:{
-                        x:0,
-                        y:0
-                    },
+                    to:v2.zero,
                     onComplete:()=>{
-                        if(this.animation.emote_time<2.5)return
+                        if(this.animation.emote_time>0)return
                         this.sprites.emote_container.visible=false
                         this.animation.emote_tween=undefined
+                        if(this.animation.emote_is_message)this.sprites.emote_sprite.frame?.free?.()
                     },
                     ease:ease.circOut
                 })
@@ -1407,8 +1395,14 @@ export class Human extends MovingBody{
             volume: 0.7,
             bus:"humans"
         })
-        this.animation.emote_time=0
+        this.animation.emote_time=2.5
         this.sprites.emote_container.visible=true
+        this.sprites.emote_container.scale=v2(0,0)
+        this.sprites.emote_bg.set_frame({
+            image:"emote_background",
+            scale:2
+        },this.game.resources)
+        v2m.single(this.sprites.emote_sprite.scale,1)
         let frame=emote.idString
         this.sprites.emote_sprite.rotation=0
         if((emote as GameItem).item_type!==undefined){
@@ -1426,14 +1420,44 @@ export class Human extends MovingBody{
             v2m.single(this.sprites.emote_sprite.scale,2.6)
         }
         this.sprites.emote_sprite.frame=this.game.resources.get_frame(frame)
-        this.sprites.emote_container.scale=v2(0,0)
-        this.game.add_tween({
+        if(this.animation.emote_tween)this.animation.emote_tween.kill()
+        this.animation.emote_tween=this.game.add_tween({
             target:this.sprites.emote_container.scale,
             duration:1,
-            to:{
-                x:1,
-                y:1
-            },
+            to:v2.one,
+            ease:ease.elasticOut
+        })
+        this.animation.emote_is_message=false
+    }
+    add_message(msg:string){
+        this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
+            position:this.position,
+            max_distance: 50,
+            volume: 0.7,
+            bus:"humans"
+        })
+        this.animation.emote_time=5
+        this.sprites.emote_container.visible=true
+        this.sprites.emote_container.scale=v2(0,0)
+        this.sprites.emote_bg.set_frame({
+            image:"dialog_background_1",
+            scale:2
+        },this.game.resources)
+        this.sprites.emote_sprite.rotation=0
+        v2m.single(this.sprites.emote_sprite.scale,1)
+
+        this.sprites.emote_sprite.frame=undefined
+        this.game.resources.render_text(msg,40,this.game.get_theme_color("tertiary"),"Russo-One",620).then((frame)=>{
+            if(this.animation.emote_is_message&&this.sprites.emote_sprite.frame)this.sprites.emote_sprite.frame.free()
+            this.sprites.emote_sprite!.frame=frame
+            this.animation.emote_is_message=true
+        })
+
+        if(this.animation.emote_tween)this.animation.emote_tween.kill()
+        this.animation.emote_tween=this.game.add_tween({
+            target:this.sprites.emote_container.scale,
+            duration:1,
+            to:v2.one,
             ease:ease.elasticOut
         })
     }
@@ -1502,7 +1526,7 @@ export class Human extends MovingBody{
             this.game.cam2d.add_object(this.sprites.name)
         }
         const color=this.game.get_theme_color("primary")
-        this.game.resources.render_text(name,60,color).then((frame)=>{
+        this.game.resources.render_text(name,60,color,"Russo-One").then((frame)=>{
             if(this.sprites.name!.frame)this.sprites.name!.frame.free()
             this.sprites.name!.frame=frame
         })
@@ -1576,6 +1600,7 @@ export class Human extends MovingBody{
             melee_wold_dirty,
 
             has_emote,
+            has_message,
 
             dead,downed,swimming,
 
@@ -1643,6 +1668,9 @@ export class Human extends MovingBody{
         }
         if(has_emote){
             this.add_emote(this.game.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)
+        }
+        if(has_message){
+            this.add_message(stream.read_string_sized(50))
         }
         if(full||effects_dirty){
             const effects=stream.read_array(()=>{

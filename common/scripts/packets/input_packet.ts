@@ -8,6 +8,7 @@ export enum InputActionType{
     set_scope,
     emote_emote,
     emote_item,
+    message,
     ping,
     buy_on_shop,
     debug_spawn,
@@ -34,6 +35,9 @@ export type InputAction=({
 }|{
     type:InputActionType.emote_item
     item:number
+}|{
+    type:InputActionType.message
+    value:string
 }|{
     type:InputActionType.ping
     ping:number
@@ -75,34 +79,37 @@ export class InputPacket extends Packet{
             .write_array(this.actions,(i,_s)=>{
                 stream.write_uint8(i.type)
                 switch(i.type){
-                  case InputActionType.drop:
+                    case InputActionType.drop:
                         stream.write_uint8(i.drop)
                         .write_uint8(i.drop_kind)
                         break
-                  case InputActionType.use_item:
+                    case InputActionType.use_item:
                         stream.write_uint8(i.slot)
                         break
-                  case InputActionType.set_hand:
+                    case InputActionType.set_hand:
                         stream.write_uint8(i.hand)
                         break
-                  case InputActionType.set_scope:
+                    case InputActionType.set_scope:
                         stream.write_uint8(i.scope_id)
                         break
-                  case InputActionType.emote_emote:
+                    case InputActionType.emote_emote:
                         stream.write_uint16(i.emote)
                         break
-                  case InputActionType.emote_item:
+                    case InputActionType.emote_item:
                         stream.write_uint16(i.item)
                         break
-                  case InputActionType.ping:
+                    case InputActionType.message:
+                        stream.write_string_sized(i.value,50)
+                        break
+                    case InputActionType.ping:
                         stream.write_uint16(i.ping)
                         .write_pos2(i.position)
                         break
-                  case InputActionType.buy_on_shop:
+                    case InputActionType.buy_on_shop:
                         stream.write_uint16(i.item_id)
                         break
-                  case InputActionType.debug_give:
-                  case InputActionType.debug_spawn:
+                    case InputActionType.debug_give:
+                    case InputActionType.debug_spawn:
                         stream.write_string_sized(i.item,32)
                         .write_uint8(i.count)
                         break
@@ -144,6 +151,9 @@ export class InputPacket extends Packet{
                     break
                 case InputActionType.emote_item:
                     ret["item"]=stream.read_uint16()
+                    break
+                case InputActionType.message:
+                    ret["value"]=stream.read_string_sized(50)
                     break
                 case InputActionType.ping:
                     ret["ping"]=stream.read_uint16()

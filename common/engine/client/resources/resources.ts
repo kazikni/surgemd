@@ -242,18 +242,80 @@ export class ResourcesManager {
 
         return sound
     }
-    async render_text(text:string,size=32,color="white",font="Arial"){
-        const canvas=this.canvas
-        const ctx=this.ctx
-        ctx.font=`${size}px ${font}`
-        const metrics=ctx.measureText(text)
-        canvas.width=Math.max(1,Math.ceil(metrics.width))
-        canvas.height=Math.max(1,Math.ceil(size*1.5))
-        ctx.clearRect(0,0,canvas.width,canvas.height)
-        ctx.font=`${size}px ${font}`
-        ctx.fillStyle=color
-        ctx.textBaseline="top"
-        ctx.fillText(text,0,0)
+    async render_text(text: string, size = 32, color = "white", font = "Arial",max_width?: number,line_height:number=1){
+        const canvas = this.canvas
+        const ctx = this.ctx
+
+        ctx.font = `${size}px ${font}`
+        const lines: string[] = []
+
+        const pushWord = (word: string) => {
+            if (!max_width || ctx.measureText(word).width <= max_width) {
+                return [word]
+            }
+            const result: string[] = []
+            let current = ""
+
+            for (const ch of word) {
+                const test = current + ch
+
+                if (ctx.measureText(test).width <= max_width || current.length === 0) {
+                    current = test
+                } else {
+                    result.push(current)
+                    current = ch
+                }
+            }
+
+            if (current.length > 0) {
+                result.push(current)
+            }
+
+            return result
+        }
+
+        if (max_width === undefined) {
+            lines.push(...text.split("\n"))
+        } else {
+            for (const paragraph of text.split("\n")) {
+                let line = ""
+                for (const originalWord of paragraph.split(" ")) {
+                    const words = pushWord(originalWord)
+                    for (const word of words) {
+                        if (line.length === 0) {
+                            line = word
+                            continue
+                        }
+                        const test = line + " " + word
+                        if (ctx.measureText(test).width <= max_width) {
+                            line = test
+                        } else {
+                            lines.push(line)
+                            line = word
+                        }
+                    }
+                }
+                lines.push(line)
+            }
+        }
+        let width = 0
+        for (const line of lines) {
+            width = Math.max(width, ctx.measureText(line).width)
+        }
+        canvas.width = Math.max(1,Math.ceil(max_width ?? width))
+
+        const lineHeight = size * line_height
+        canvas.height = Math.max(1,Math.ceil(lines.length * lineHeight))
+
+        ctx.font = `${size}px ${font}`
+        ctx.fillStyle = color
+        ctx.textBaseline = "top"
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], 0, i * lineHeight)
+        }
+
         return await this.load_frame_from_canvas(canvas)
     }
     load_frame_from_canvas(canvas:HTMLCanvasElement){

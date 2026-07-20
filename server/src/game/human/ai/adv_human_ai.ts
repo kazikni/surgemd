@@ -770,12 +770,12 @@ export class ADVHumanAI extends BotAi{
     }
     override net_update(general_update: Stream): void {
         for(const player of this.ctx.nearby_allies){
-            if(!player.loadout.emote)continue
-            this.ctx.emotes.set(player.id,{emote:player.loadout.emote as GameItem,ally:true,human:player})
+            if(!player.input.emote)continue
+            this.ctx.emotes.set(player.id,{emote:player.input.emote as GameItem,ally:true,human:player})
         }
         for(const player of this.ctx.nearby_enemies){
-            if(!player.loadout.emote)continue
-            this.ctx.emotes.set(player.id,{emote:player.loadout.emote as GameItem,ally:false,human:player})
+            if(!player.input.emote)continue
+            this.ctx.emotes.set(player.id,{emote:player.input.emote as GameItem,ally:false,human:player})
         }
     }
     get_item_score(item:GameItem):number{

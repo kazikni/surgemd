@@ -6,6 +6,7 @@ __                                                                              
 * Fall Biome
 * Swimming
 * Shadows
+* Dialogs
 __                                                                                                                 __
 ### Menu
 * Main Menu Rework
@@ -41,8 +42,10 @@ __                                                                              
 * Angry Emote
 * Angry Swearing
 * Very Love Emote
+* Demon Emote
 * Skull Emote
 * Heart Emote
+* Ghost Emote
 * Knife Logo Emote
 * Campfire Logo Emote
 * Vasco Da Gama Emote

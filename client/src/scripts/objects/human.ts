@@ -1400,7 +1400,7 @@ export class Human extends MovingBody{
     }
 
     add_emote(emote:EmoteDef|GameItem){
-        this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
+        this.game.sounds.play(this.game.resources.get_sound((emote as EmoteDef).use_sound??"emote_play"),{
             position:this.position,
             max_distance: 50,
             volume: 0.7,

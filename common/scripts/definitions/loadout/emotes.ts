@@ -5,6 +5,7 @@ import { GameObjectDefinitionType } from "../utils.ts";
 export interface EmoteDef extends Definition{
     def_type?:GameObjectDefinitionType.emote
     rank:ItemRank
+    use_sound?:string
 }
 export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
     emotes.insert(
@@ -14,17 +15,20 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"neutral",rank:ItemRank.E},
         {idString:"angry",rank:ItemRank.E},
         {idString:"angry_swearing",rank:ItemRank.D},
-        {idString:"very_love",rank:ItemRank.C},
+        {idString:"very_love",rank:ItemRank.B},
+        {idString:"demon",rank:ItemRank.B},
+        {idString:"peading",rank:ItemRank.B},
+
+        // Objects
+        {idString:"heart",rank:ItemRank.D},
+        {idString:"skull",rank:ItemRank.E},
+        {idString:"ghost",rank:ItemRank.E},
 
         // Logo
         {idString:"logo_md",rank:ItemRank.E},
         {idString:"logo_campfire",rank:ItemRank.E},
         {idString:"logo_knife",rank:ItemRank.E},
-        {idString:"logo_vasco_da_gama",rank:ItemRank.E},
-
-        // Objects
-        {idString:"heart",rank:ItemRank.D},
-        {idString:"skull",rank:ItemRank.E},
+        {idString:"logo_vasco_da_gama",rank:ItemRank.S,use_sound:"emote_play_vasco_da_gama"},
 
         // Text
         {idString:"gg",rank:ItemRank.D},

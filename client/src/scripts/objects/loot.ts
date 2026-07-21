@@ -1,5 +1,5 @@
 
-import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, model2d, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
@@ -12,7 +12,6 @@ import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { Debug } from "../others/config.ts";
 import { decode_loot_data } from "common/scripts/others/functions.ts";
-import { AccessoryDef } from "common/scripts/definitions/items/accessorys.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //

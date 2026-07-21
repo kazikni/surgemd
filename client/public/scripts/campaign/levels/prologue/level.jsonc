@@ -35,6 +35,9 @@
         }
     },
     "player": {
-        "path": "../../characters/vinii.jsonc"
+        "path": "../../characters/vinii.jsonc",
+        "boosts": [
+            {"weight": 1, "def": "green_bless", "value": 1}
+        ]
     }
 }

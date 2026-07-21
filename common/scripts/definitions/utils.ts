@@ -1,7 +1,6 @@
-import { Definition, Stream, Vec2, WeightDefinition } from "../../engine/core.ts";
-import { type HumanModifiers } from "../others/constants.ts";
-import { ItemRank } from "../others/item.ts";
-import { BoostType } from "./player/boosts.ts";
+import { Definition, Stream, Vec2, WeightDefinition } from "../../engine/core.ts"
+import { type HumanModifiers } from "../others/constants.ts"
+import { ItemRank } from "../others/item.ts"
 export enum PacketType{
     Feed=1,
     GameOver,
@@ -160,11 +159,6 @@ export interface InventoryPreset{
     hand?:number
     infinity_ammo?:boolean
     droppables?:Partial<InventoryDroppable>
-
-    boosts?:(WeightDefinition&{
-        boost:number
-        boost_type:BoostType
-    })[]
 }
 export interface LoadoutPreset{
     badge?:string
@@ -189,6 +183,10 @@ export type HumanDefinition={
     position?:Vec2
     loadout?:LoadoutPreset
     inventory?:InventoryPreset
+    boosts?:(WeightDefinition&{
+        value:number
+        def:string
+    })[]
     team?:number
     group?:number
     group_color?:number

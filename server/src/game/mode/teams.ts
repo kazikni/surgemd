@@ -73,9 +73,9 @@ export class Team{
         for(const m of this.humans){
             ret[m.id]={
                 color:m.team_data.color,
-                boost:m.health_data.boost/m.health_data.max_boost,
-                boost_type:m.health_data.boost_def.type,
-                health:m.health_data.health/m.health_data.max_health,
+                boost:m.boost.value/m.health.max,
+                boost_def:m.boost.def.idNumber!,
+                health:m.health.value/m.health.max,
             }
         }
         this.state=ret

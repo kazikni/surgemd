@@ -19,6 +19,11 @@
                         "ai": {
                             "kind": "advanced_legacy"
                         },
+                        "boosts": [
+                            {"weight": 7,"def": "adrenaline","value": 0},
+                            {"weight": 1,"def": "adrenaline","value": 1},
+                            {"weight": 1,"def": "shield","value": 1}
+                        ],
                         "inventory": {
                             "infinity_ammo": true,
                             "hand": 1,
@@ -168,23 +173,6 @@
                                 {
                                     "item": "awm",
                                     "weight": 0.1
-                                }
-                            ],
-                            "boosts": [
-                                {
-                                    "weight": 7,
-                                    "boost_type": 0,
-                                    "boost": 0
-                                },
-                                {
-                                    "weight": 1,
-                                    "boost_type": 0,
-                                    "boost": 1
-                                },
-                                {
-                                    "weight": 1,
-                                    "boost_type": 1,
-                                    "boost": 1
                                 }
                             ],
                             "aitems": {

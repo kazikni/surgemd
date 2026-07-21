@@ -6,6 +6,7 @@ export interface EmoteDef extends Definition{
     def_type?:GameObjectDefinitionType.emote
     rank:ItemRank
     use_sound?:string
+    block_old_sound?:boolean
 }
 export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
     emotes.insert(
@@ -28,7 +29,7 @@ export function Emotes_Default_Init(emotes:Definitions<EmoteDef,{}>){
         {idString:"logo_md",rank:ItemRank.E},
         {idString:"logo_campfire",rank:ItemRank.E},
         {idString:"logo_knife",rank:ItemRank.E},
-        {idString:"logo_vasco_da_gama",rank:ItemRank.S,use_sound:"emote_play_vasco_da_gama"},
+        {idString:"logo_vasco_da_gama",rank:ItemRank.S,use_sound:"emote_play_vasco_da_gama",block_old_sound:true},
 
         // Text
         {idString:"gg",rank:ItemRank.D},

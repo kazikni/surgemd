@@ -18,6 +18,7 @@ export interface AirdropConfig{
 export interface BattleRoyaleSettings{
     players?:{
         limit?:number
+        group_spawn?:boolean
     }
     join_time?:number
     map?:{
@@ -35,6 +36,7 @@ export class BattleRoyale extends ModeManager{
     settings:{
         players:{
             limit:number
+            group_spawn:boolean
         }
         join_time:number
         map:{
@@ -56,6 +58,7 @@ export class BattleRoyale extends ModeManager{
         this.settings={
             players:{
                 limit:settings.players?.limit??100,
+                group_spawn:settings.players?.group_spawn===undefined?true:settings.players.group_spawn,
             },
             join_time:settings.join_time??90,
             map:{
@@ -272,7 +275,8 @@ export class BattleRoyale extends ModeManager{
         //this.game.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
-        if(h.team_data.group){
+        if(h.team_data.group&&this.settings.players.group_spawn){
+            console.log(h.position)
             const c=h.team_data.group.choose_human(h)
             if(c?.position)return c.position
         }

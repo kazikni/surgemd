@@ -129,9 +129,9 @@ export class PlayerClient extends PlayerConnManager{
     net_update(general_update:Stream){
         this.stream.clear()
         if(this.client.opened){
+            this.stream.write_stream(general_update)
             const packet=this.get_update_packet()
             if(packet.objects)this.client.manager.encode(packet,this.stream)
-            this.stream.write_stream(general_update)
             this.client.send_stream(this.stream)
         }
     }

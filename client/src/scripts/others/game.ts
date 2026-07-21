@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, random, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -10,7 +10,7 @@ import { Human } from "../objects/human.ts";
 import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { HumanStatus, Layers, PlayerStatus, zIndexes } from "common/scripts/others/constants.ts";
+import { Layers, PlayerStatus, zIndexes } from "common/scripts/others/constants.ts";
 import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -259,7 +259,7 @@ export class Game extends ClientGame<GameObject>{
                     this.ui.begin_emote_wheel(this.input_manager.mouse_position)
                     break
                 case "message":
-                    if(this.happening&&!this.showing_menu){
+                    if(this.happening&&!this.showing_menu&&!this.game_over){
                         this.showing_menu=true
                         this.can_act=false
                         this.input.movement={dir:0,scale:0}
@@ -357,14 +357,8 @@ export class Game extends ClientGame<GameObject>{
                     })
                     break
                 }
-                case "debug_menu":
-                    /*if((!this.menu.api_settings.debug.debug_menu)&&!this.offline)break
-                    if(!this.device.apps.some((a)=>a instanceof DebugApp)){
-                        this.device.add_app(new DebugApp)
-                    }*/
-                    break
                 case "escape":
-                    if(this.happening&&!this.showing_menu){
+                    if(this.happening&&!this.showing_menu&&!this.game_over){
                         this.showing_menu=true
                         this.menu.game_popup(yes_no_popup("Exit?")).then((v)=>{
                             if(v){

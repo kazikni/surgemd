@@ -1,7 +1,6 @@
 import { Numeric, UpdatePacketBase, Vec2 } from "../../engine/core.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
-import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData, PacketType } from "../definitions/utils.ts";
 import { ActionsType } from "../others/constants.ts";
 export interface PingData{
@@ -41,8 +40,8 @@ export interface PrivateUpdate{
 }
 export interface GroupMemberState{
     color:number
-    boost_type:BoostType
     boost:number
+    boost_def:number
     health:number
 }
 export interface SelfStateUpdate{
@@ -63,7 +62,7 @@ export interface SelfStateUpdate{
 
     boost:number
     max_boost:number
-    boost_type:BoostType
+    boost_def:number
 
     money:number
 
@@ -92,7 +91,7 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
     .write_uint8(state.max_health)
     .write_uint8(state.boost)
     .write_uint8(state.max_boost)
-    .write_uint8(state.boost_type)
+    .write_uint8(state.boost_def)
 
     .write_uint16(state.money)
 
@@ -163,7 +162,7 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
             stream.write_uint32(i.color)
             stream.write_float(i.health,0,1,1)
             stream.write_float(i.boost,0,1,1)
-            stream.write_uint8(i.boost_type)
+            stream.write_uint8(i.boost_def)
         },3)
     }
     if(state.colors!==undefined){
@@ -176,7 +175,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
     state.max_health=stream.read_uint8()
     state.boost=stream.read_uint8()
     state.max_boost=stream.read_uint8()
-    state.boost_type=stream.read_uint8()
+    state.boost_def=stream.read_uint8()
     state.money=stream.read_uint16()
     const [
         dirtyItems,
@@ -269,7 +268,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
                 color:stream.read_uint32(),
                 health:stream.read_float(0,1,1),
                 boost:stream.read_float(0,1,1),
-                boost_type:stream.read_uint8(),
+                boost_def:stream.read_uint8(),
             }
         },3)
     }
@@ -371,7 +370,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
 
                 max_boost:0,
                 boost:0,
-                boost_type:BoostType.Shield,
+                boost_def:0,
 
                 money:0,
 

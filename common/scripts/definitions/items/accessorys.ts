@@ -110,7 +110,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "kill":(e)=>{
                     e.owner.give_boost(25)
-                    e.owner.health_data.health+=25
+                    e.owner.health.value+=25
                     e.owner.side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,

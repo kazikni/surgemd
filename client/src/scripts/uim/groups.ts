@@ -1,6 +1,5 @@
 import { ColorM, HideElement, ShowElement, UIModule } from "common/engine/client.ts"
 import { Game } from "../others/game.ts"
-import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
 
 type GroupElement = {
@@ -78,9 +77,9 @@ export class GroupMembersModule extends UIModule<Game>{
             }
             member.health.style.width = `${state.health*100}%`
             member.boost.style.width = `${state.boost*100}%`
-            if(member.boost_type!==state.boost_type){
-                member.boost_type=state.boost_type
-                member.boost.style.backgroundColor=Boosts[member.boost_type as BoostType].color
+            if(member.boost_type!==state.boost_def){
+                member.boost_type=state.boost_def
+                member.boost.style.backgroundColor=this.game.definitions.boosts.getFromNumber(member.boost_type).color
             }
         }
 

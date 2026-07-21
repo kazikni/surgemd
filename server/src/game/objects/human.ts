@@ -1,12 +1,11 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameConstants, GameObjectType, HumanAnimationData, HumanHealthData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData } from "common/scripts/others/constants.ts"
+import { GameConstants, GameObjectType, HumanAnimationData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
 import { Floors, FloorType } from "common/scripts/others/terrain.ts"
-import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -35,6 +34,7 @@ import { EnemyNPCAI } from "../human/ai/enemy_npc_ai.ts";
 import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
+import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -76,21 +76,23 @@ export class Human extends MovingBody{
     dead:boolean=false
     downed:boolean=false
     swimming:boolean=false
-    health_data:HumanHealthData&{boost_time:number,imortal:boolean,old_health:number,old_boost:number,old_boost_type:number}={
-        imortal:false,
-        invensibility_time:0,
 
-        health:100,
-        max_health:100,
+    health!:{
+        value:number
+        max:number
+        old:number
 
-        boost:0,
-        max_boost:100,
-        boost_def:Boosts[BoostType.Adrenaline],
-        boost_time:0,
+        invensibility:number
+    }
+    boost!:{
+        value:number
+        max:number
+        old:number
 
-        old_health:-1,
-        old_boost:-1,
-        old_boost_type:-1
+        old_def?:BoostDef
+        def:BoostDef
+
+        time:number
     }
     team_data:{
         team?:Team
@@ -328,6 +330,15 @@ export class Human extends MovingBody{
             1:GunItem as (new(item:GameItem)=>LItem),
             2:GunItem as (new(item:GameItem)=>LItem),
         })
+
+        this.health={
+            invensibility:0,
+            max:100,
+            value:100,
+            old:-1,
+        }
+        this.clear_boost()
+        this.update_modifiers()
     }
     override can_interact(user: Human): boolean {
         return this.downed&&this.game.modeManager.is_ally(this,user)
@@ -407,8 +418,18 @@ export class Human extends MovingBody{
                 team.add_human(this)
             }
         }
+        if(preset.boosts){
+            const choose=random.weight2(preset.boosts)
+            if(choose){
+                const choose_def=this.game.definitions.boosts.getFromStringSafe(choose.def)
+                if(choose_def){
+                    this.boost.def=choose_def
+                    this.boost.value=this.boost.max*choose.value
+                }
+            }
+        }
         this.update_modifiers()
-        this.health_data.health=this.health_data.max_health
+        this.health.value=this.health.max
     }
     make_ai_from_def(def:HumanAIDef):BotAi|undefined{
         let ai:BotAi|undefined
@@ -446,26 +467,7 @@ export class Human extends MovingBody{
         this.apply_modifiers(this.temp_modifiers)
         if(this.equipment_data.helmet?.modifiers)this.apply_modifiers(this.equipment_data.helmet.modifiers)
         if(this.equipment_data.vest?.modifiers)this.apply_modifiers(this.equipment_data.vest.modifiers)
-        const rules=this.game.modeManager.rules.humans
-
-        switch(this.health_data.boost_def.type){
-            case BoostType.Adrenaline:
-            case BoostType.Shield:
-            case BoostType.Mana:
-                break
-            case BoostType.Addiction:
-                this.modifiers.damage+=(1-(this.health_data.boost/this.health_data.max_boost))*rules.boosts.addiction.damage
-                break
-            case BoostType.GreenBless:
-                this.modifiers.damage_reduction*=1-(rules.boosts.green_bless.damage_reduction*(this.health_data.boost/this.health_data.max_boost))
-                break
-            case BoostType.Death:
-                this.modifiers.damage+=(this.health_data.boost/this.health_data.max_boost)*rules.boosts.death.damage
-                this.modifiers.speed+=(this.health_data.boost/this.health_data.max_boost)*rules.boosts.death.speed
-                this.modifiers.damage_reduction*=0.8
-                this.modifiers.damage_reduction-=(this.health_data.boost/this.health_data.max_boost)*rules.boosts.death.damage_reduction
-                break
-        }
+        if(this.boost.def.se?.update_modifiers)this.apply_modifiers(this.boost.def.se.update_modifiers(this))
         this.inventory.accessorys.apply_modifiers(this)
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
@@ -474,9 +476,9 @@ export class Human extends MovingBody{
                 }
             }
         }
-        this.health_data.max_health=100*this.modifiers.health
-        this.health_data.max_boost=100*this.modifiers.boost
-        this.health_data.health=Math.min(this.health_data.health,this.health_data.max_health)
+        this.health.max=100*this.modifiers.health
+        this.boost.max=100*this.modifiers.boost
+        this.health.value=Math.min(this.health.value,this.health.max)
         if(this.physical_data.scale!==this.modifiers.size){
             this.physical_data.dirty=true
             this.physical_data.scale=this.modifiers.size
@@ -487,6 +489,7 @@ export class Human extends MovingBody{
         }
     }
     side_effect(sf:SideEffect,owner?:Human){
+        if(this.boost.def.se?.can_apply&&!this.boost.def.se.can_apply(sf,this))return
         switch(sf.type){
             case SideEffectType.AddEffect:{
                 const def=Effects.getFromString(sf.effect)
@@ -527,39 +530,28 @@ export class Human extends MovingBody{
                 })
                 break
             case SideEffectType.Heal:
-                if(this.health_data.boost_def.type===BoostType.Death){
-                    if(sf.boost){
-                        if(sf.boost.def.type===BoostType.Death){
-                            this.health_data.boost+=sf.boost.amount
-                            break
-                        }else if(sf.boost.def.type!==BoostType.GreenBless){
-                            break
-                        }
-                    }else{
-                        break
-                    }
-                }
                 if(sf.health){
-                    this.health_data.health=Math.min(this.health_data.health+sf.health.amount,this.health_data.max_health*(sf.health.max??1))
+                    this.health.value=Math.min(this.health.value+sf.health.amount,this.health.max*(sf.health.max??1))
                 }
                 if(sf.boost){
-                    if(this.health_data.boost_def.type===sf.boost.def.type){
-                        this.health_data.boost=Math.min(this.health_data.boost+sf.boost.amount,this.health_data.max_boost*(sf.boost.max??1))
-                    }else{
-                        this.health_data.boost_def=sf.boost.def
-                        this.health_data.boost=sf.boost.amount
+                    const def=this.game.definitions.boosts.getFromStringSafe(sf.boost.def)
+                    if(this.boost.def.idString===sf.boost.def){
+                        this.boost.value=Math.min(this.boost.value+sf.boost.amount,this.boost.max*(sf.boost.max??1))
+                    }else if(def){
+                        this.boost.def=def
+                        this.boost.value=sf.boost.amount
                     }
                 }
                 if(sf.global){
-                    if(this.health_data.health<this.health_data.max_health){
-                        this.health_data.health=Math.min(this.health_data.health+sf.global.amount,this.health_data.max_health)
-                    }else if(this.health_data.boost>0&&!sf.boost){
-                        this.health_data.boost=Math.min(this.health_data.boost+sf.global.amount,this.health_data.max_boost)
-                    }else if(this.health_data.boost_def.type===sf.global.boost?.type){
-                        this.health_data.boost=Math.min(this.health_data.boost+sf.global.amount,this.health_data.max_boost)
+                    if(this.health.value<this.health.max){
+                        this.health.value=Math.min(this.health.value+sf.global.amount,this.health.max)
+                    }else if(this.boost.value>0&&!sf.boost){
+                        this.boost.value=Math.min(this.boost.value+sf.global.amount,this.boost.max)
+                    }else if(this.boost.def.idString===sf.global.boost){
+                        this.boost.value=Math.min(this.boost.value+sf.global.amount,this.boost.max)
                     }else if(sf.global.boost){
-                        this.health_data.boost=Math.min(sf.global.amount,this.health_data.max_boost)
-                        this.health_data.boost_def=sf.global.boost
+                        this.boost.value=Math.min(sf.global.amount,this.boost.max)
+                        this.boost.def=this.game.definitions.boosts.getFromString(sf.global.boost)
                     }
                 }
                 break
@@ -572,12 +564,12 @@ export class Human extends MovingBody{
                 switch(c){
                     case ConsumibleCondition.UnfullHealth:
                         if(
-                            this.health_data.health>=this.health_data.max_health*(se.health?.max??1)
+                            this.health.value>=this.health.max*(se.health?.max??1)
                         )return false
                         break
                     case ConsumibleCondition.UnfullExtra:
                         if(
-                            (this.health_data.boost_def.type===se.boost?.def.type&&this.health_data.boost>=this.health_data.max_boost*(se.boost?.max??1))
+                            (this.boost.def.idString===se.boost?.def&&this.boost.value>=this.boost.max*(se.boost?.max??1))
                         )return false
                         break
                 }
@@ -888,63 +880,7 @@ export class Human extends MovingBody{
             this.recoil.delay-=dt
             if(this.recoil.delay<=0)this.recoil=undefined
         }
-        const rules=this.game.modeManager.rules.humans
-        switch(this.health_data.boost_def.type){
-            case BoostType.Adrenaline:
-                if(this.health_data.boost>this.health_data.max_boost/2){
-                    speed*=1+rules.boosts.adrenaline.speed
-                }
-                this.health_data.boost=Math.max(this.health_data.boost-rules.boosts.adrenaline.decay*dt,0)
-                this.health_data.health=Math.min(this.health_data.health+(this.health_data.boost*dt)*rules.boosts.adrenaline.regen,this.health_data.max_health)
-                break
-            case BoostType.Shield:
-                break
-            case BoostType.Mana:
-                this.health_data.boost=Numeric.lerp(this.health_data.boost,this.health_data.max_boost,rules.boosts.mana.regen*dt)
-                break
-            case BoostType.Addiction:{
-                speed*=1+(rules.boosts.addiction.speed*(this.health_data.boost/this.health_data.max_boost))
-                this.health_data.boost=Math.max(this.health_data.boost-rules.boosts.addiction.decay*dt,0)
-                if(this.health_data.boost_time<=0){
-                    this.health_data.boost_time=3
-                    this.piercing_damage({
-                        amount:((this.health_data.max_boost/this.health_data.boost)*rules.boosts.addiction.abstinence)*100,
-                        reason:DamageReason.Abstinence,
-                        position:this.position,
-                        critical:false,
-                        direction:0,
-                        penetration:1,
-                    })
-                }else{
-                    this.health_data.boost_time-=dt
-                }
-                break
-            }
-            case BoostType.GreenBless:{
-                speed*=1+(rules.boosts.green_bless.speed*(this.health_data.boost/this.health_data.max_boost))
-                this.health_data.health=Math.min(this.health_data.health+(this.health_data.boost*dt)*rules.boosts.green_bless.regen,this.health_data.max_health)
-                break
-            }
-            case BoostType.Death:{
-                if(this.health_data.boost>=this.health_data.max_boost){
-                    this.die({
-                        amount:this.health_data.health,
-                        critical:true,
-                        position:this.position,
-                        reason:DamageReason.Abstinence,
-                        direction:0,
-                        penetration:1,
-                    })
-                }
-                if(this.health_data.boost_time<=0){
-                    this.health_data.boost_time=1
-                    this.health_data.boost=Math.min(this.health_data.boost+((this.health_data.max_boost/rules.boosts.death.life_time)),this.health_data.max_boost)
-                }else{
-                    this.health_data.boost_time-=dt
-                }
-                break
-            }
-        }
+        if(this.boost.def.se?.tick)speed*=this.boost.def.se.tick(dt,this)
         for(const e of this.effects.values()){
             e.tick_time-=dt
             e.time-=dt
@@ -1073,7 +1009,7 @@ export class Human extends MovingBody{
         this.inventory.update(dt)
         this.update_input()
 
-        this.health_data.invensibility_time-=dt
+        if(this.health.invensibility>0)this.health.invensibility-=dt
 
         this.actions.update(dt)
 
@@ -1089,14 +1025,13 @@ export class Human extends MovingBody{
             })
         }
 
-        if(this.health_data.health!==this.health_data.old_health||this.health_data.boost!==this.health_data.old_boost||this.health_data.boost_def.type!==this.health_data.old_boost_type){
-            this.health_data.old_health=this.health_data.health
-            this.health_data.old_boost=this.health_data.boost
-            this.health_data.old_boost_type=this.health_data.boost_def.type
+        if(this.health.value!==this.health.old||this.boost.value!==this.boost.old||this.boost.def!==this.boost.old_def){
+            this.health.old=this.health.value
+            this.boost.old=this.boost.value
+            this.boost.old_def=this.boost.def
             if(this.team_data.group)this.team_data.group.dirty=true
             if(this.team_data.team)this.team_data.team.dirty=true
         }
-
     }
     override on_net_update(): void {
         super.on_net_update()
@@ -1121,12 +1056,14 @@ export class Human extends MovingBody{
         this.inventory.net_update()
     }
     self_state(full:boolean):SelfStateUpdate{
+
         const ret:SelfStateUpdate={
-            health:Math.ceil(this.health_data.health),
-            max_health:this.health_data.max_health,
-            boost:this.health_data.boost,
-            max_boost:this.health_data.max_boost,
-            boost_type:this.health_data.boost_def.type,
+            health:Math.ceil(this.health.value),
+            max_health:this.health.max,
+
+            boost:this.boost.value,
+            max_boost:this.boost.max,
+            boost_def:this.boost.def.idNumber!,
 
             money:0,
 
@@ -1200,24 +1137,25 @@ export class Human extends MovingBody{
         return ret
     }
     give_boost(amount:number){
-        if(this.health_data.boost_def.type===BoostType.Death){
-            this.health_data.boost=Math.max(this.health_data.boost-(amount/5),0)
-        }else{
-            this.health_data.boost=Math.min(this.health_data.boost+amount,this.health_data.max_boost)
-        }
+        this.boost.value=Math.min(this.boost.value+amount,this.boost.max)
     }
     clear_boost(){
-        this.health_data.boost=0
-        this.health_data.boost_time=0
-        this.health_data.boost_def=Boosts[0]
+        this.boost={
+            value:0,
+            max:100,
+            def:this.game.definitions.boosts.getFromNumber(0),
+            old:-1,
+            time:0,
+        }
     }
+
     clear(){
         this.inventory.clear()
         this.clear_boost()
         this.set_dirty_full()
     }
     damage(params:DamageParams){
-        if(this.dead||!this.human_data.combat_enabled||this.parachute||this.health_data.imortal||this.health_data.invensibility_time>0)return
+        if(this.dead||!this.human_data.combat_enabled||this.parachute||this.health.invensibility>0)return
         const penetration=params.penetration
         let damage=params.amount
         let mod=1
@@ -1246,39 +1184,25 @@ export class Human extends MovingBody{
         let shieldDamage = 0
         let healthDamage = 0
         const pos = params.position ?? this.position
-        if (this.health_data.boost_def.type === BoostType.Shield && this.health_data.boost > 0) {
-            shieldDamage = Math.min(this.health_data.boost, params.amount*this.game.modeManager.rules.humans.boosts.shield.damage_multiplier)
-            if (params.amount >= this.health_data.boost * 2) {
-                healthDamage = params.amount - this.health_data.boost
-                this.health_data.boost = 0
+        if(this.boost.def.shield&&this.boost.value>0){
+            shieldDamage = Math.min(this.boost.value, params.amount*this.boost.def.shield.multiplier)
+            if (params.amount >= this.boost.value*this.boost.def.shield.penetrate) {
+                healthDamage = params.amount - this.boost.value
+                this.boost.value=0
             } else {
-                this.health_data.boost -= shieldDamage
+                this.boost.value-=shieldDamage
             }
-            this.add_damage_splash(
-                params.owner,
-                shieldDamage,
-                true,
-                params.critical,
-                pos,
-                this.health_data.boost === 0
-            )
-            if (this.health_data.boost === 0) {
-                this.health_data.invensibility_time = 0.35
+            if(this.boost.value===0){
+                this.health.invensibility+=this.boost.def.shield.break_invensibility
             }
-        } else {
-            healthDamage = params.amount
+            this.add_damage_splash(params.owner, shieldDamage, true, params.critical, pos,this.boost.value===0)
+        }else{
+            healthDamage=params.amount
         }
-        if (healthDamage > 0) {
-            const damage=Math.min(healthDamage,this.health_data.health)
-            this.health_data.health = Math.max(this.health_data.health - healthDamage, 0)
-            this.add_damage_splash(
-                params.owner,
-                healthDamage,
-                false,
-                params.critical,
-                pos,
-                false
-            )
+        if (healthDamage>0) {
+            const damage=Math.min(healthDamage,this.health.value)
+            this.health.value=Math.max(this.health.value-healthDamage,0)
+            this.add_damage_splash(params.owner,healthDamage,false,params.critical,pos,false)
             if(params.owner&&params.owner.id!==this.id&&!this.game.modeManager.is_ally(this,params.owner)){
                 this.last_damage_by=params.owner
                 params.owner.status.damage+=damage
@@ -1289,9 +1213,8 @@ export class Human extends MovingBody{
                 this.apply_score(ScoreApplyerType.DamageTaken,damage*-this.game.modeManager.rules.score.damage_taken_penalty)
             }
         }
-        if (this.health_data.health === 0) {
+        if(this.health.value===0){
             if(this.last_damage_by&&!this.last_damage_by.dead&&(!params.owner||params.owner===this))params.owner=this.last_damage_by
-
             if (!this.downed&&((this.game.modeManager.can_down(this)||this.human_data.self_revive))) {
                 this.down(params)
             } else {
@@ -1363,10 +1286,10 @@ export class Human extends MovingBody{
         this.downed_time=0
 
         this.actions.cancel()
-        this.health_data.health=this.health_data.max_health
+        this.health.value=this.health.max
         this.clear_boost()
 
-        this.health_data.invensibility_time=1
+        this.health.invensibility=1
 
         this.inventory.set_weapon_index(0)
 
@@ -1381,8 +1304,8 @@ export class Human extends MovingBody{
         this.downed_by=undefined
         this.killed_by=undefined
         this.last_damage_by=undefined
-        this.health_data.health=this.health_data.max_health*0.3
-        this.health_data.boost=0
+        this.health.value=this.health.max*0.3
+        this.clear_boost()
         this.being_helpup_by=undefined
         this.actions.cancel()
     }
@@ -1433,9 +1356,8 @@ export class Human extends MovingBody{
         this.downed_by=undefined
         this.last_damage_by=undefined
         if(this.seat)this.seat.clear_human()
-        this.health_data.health=this.health_data.max_health
-        this.health_data.boost=0
-        this.health_data.boost_def=Boosts[BoostType.Adrenaline]
+        this.health.value=this.health.max
+        this.clear_boost()
         if(!this.registred)this.manager.registry_object(this)
         this.game.humans._add_human(this)
         this.equipment_data.scope=this.equipment_data.default_scope
@@ -1475,7 +1397,7 @@ export class Human extends MovingBody{
             this.loadout.dirty, // 1
             this.animation_data.dirty, // 1
             this.effects_dirty,
-            this.health_data.boost_def.type===BoostType.Shield&&this.health_data.boost>0,
+            this.boost.def.shield&&this.boost.value>0,
 
             this.animation_data.switching,
 

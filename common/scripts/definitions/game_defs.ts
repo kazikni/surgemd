@@ -20,6 +20,7 @@ import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
 import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
 import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
+import { Boosts_Default_Init, BoostDef } from "./player/boosts.ts";
 import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
@@ -117,6 +118,9 @@ export class GameDefinition{
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
     synced_particle=new Definitions<SyncedParticleDef,{}>((_v)=>{})
 
+    // Player
+    boosts=new Definitions<BoostDef,{}>((_v)=>{})
+
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
     valueString: any;
@@ -179,6 +183,8 @@ export class GameDefinition{
         Obstacles_Default_Init(this.obstacles,this.guns)
         Vehicles_Default_Init(this.vehicles)
         SyncedParticle_Default_Init(this.synced_particle)
+
+        Boosts_Default_Init(this.boosts)
 
         this.game_items.insert_def(this.melees.value)
         this.game_items.insert_def(this.guns.value)

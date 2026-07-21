@@ -7,7 +7,6 @@ import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { BackpackDef, } from "common/scripts/definitions/items/backpacks.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
-import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameObjectType, HumanAnimationType, LootData } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -672,6 +671,16 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         return
     }
+    set_helmet(helmet:HelmetDef,skin?:number):Loot|undefined{
+        const ret=this.drop_helmet()
+        this.owner.equipment_data.dirty=true
+        this.owner.equipment_data.dirty_part=true
+        this.owner.equipment_data.helmet=helmet
+        this.owner.equipment_data.helmet_health=helmet.health
+        this.owner.equipment_data.helmet_skin=skin
+        this.owner.equipment_data.helmet.events?.["pickup"]?.({user:this.owner})
+        return ret
+    }
     drop_vest(force:boolean=false):Loot|undefined{
         if(!force&&!this.droppable.vest)return
         if(this.owner.equipment_data.vest){
@@ -687,6 +696,15 @@ export class GInventory extends GInventoryBase<LItem>{
             return loot
         }
         return
+    }
+    set_vest(vest:VestDef):Loot|undefined{
+        const ret=this.drop_vest()
+        this.owner.equipment_data.dirty=true
+        this.owner.equipment_data.dirty_part=true
+        this.owner.equipment_data.vest=vest
+        this.owner.equipment_data.vest_health=vest.health
+        this.owner.equipment_data.vest.events?.[name]?.({user:this})
+        return ret
     }
     give_item(def:GameItem,count:number,drop_overflow:boolean=true,full_ammo:boolean=false,skin?:number,position?:Vec2,layer?:number):number{
         if(!position)position=this.owner.position
@@ -752,16 +770,10 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 return ov
             }
-            case GameItemType.vest:{
-                const d=def as unknown as VestDef
-                if(!this.owner.equipment_data.vest||this.owner.equipment_data.vest.level<d.level){
-                    this.drop_vest()
-                    this.owner.equipment_data.dirty=true
-                    this.owner.equipment_data.dirty_part=true
-                    this.owner.equipment_data.vest=d
-                    this.owner.equipment_data.vest_health=d.health
-                    this.owner.equipment_data.vest.events?.[name]?.({user:this})
-
+            case GameItemType.helmet:{
+                const d=def as unknown as HelmetDef
+                if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level||(this.owner.equipment_data.helmet===def&&this.owner.equipment_data.helmet_skin!==skin)){
+                    this.set_helmet(d,skin)
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(position,{item:def,count:count-1,skin},layer)
                     }
@@ -769,19 +781,12 @@ export class GInventory extends GInventoryBase<LItem>{
                 }
                 break
             }
-            case GameItemType.helmet:{
-                const d=def as unknown as HelmetDef
-                if(!this.owner.equipment_data.helmet||this.owner.equipment_data.helmet.level<d.level||(this.owner.equipment_data.helmet===def&&this.owner.equipment_data.helmet_skin!==skin)){
-                    this.drop_helmet()
-                    this.owner.equipment_data.dirty=true
-                    this.owner.equipment_data.dirty_part=true
-                    this.owner.equipment_data.helmet=d
-                    this.owner.equipment_data.helmet_health=d.health
-                    this.owner.equipment_data.helmet_skin=skin
+            case GameItemType.vest:{
+                const d=def as unknown as VestDef
+                if(!this.owner.equipment_data.vest||this.owner.equipment_data.vest.level<d.level){
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(position,{item:def,count:count-1,skin},layer)
                     }
-                    this.owner.equipment_data.helmet.events?.["pickup"]?.({user:this.owner})
                     return count-1
                 }
                 break
@@ -888,7 +893,7 @@ export class GInventory extends GInventoryBase<LItem>{
         if(preset.helmet){
             const choose=random.weight2(preset.helmet)
             if(choose&&choose.item){
-                this.owner.equipment_data.helmet=this.owner.game.definitions.helmets.getFromString(choose.item)
+                this.set_helmet(this.owner.game.definitions.helmets.getFromString(choose.item))
                 if(choose.drop_chance)this.droppable.helmet=(Math.random()<=choose.drop_chance)
                 else if(choose.droppable!==undefined)this.droppable.helmet=choose.droppable
             }
@@ -896,7 +901,7 @@ export class GInventory extends GInventoryBase<LItem>{
         if(preset.vest){
             const choose=random.weight2(preset.vest)
             if(choose&&choose.item){
-                this.owner.equipment_data.vest=this.owner.game.definitions.vests.getFromString(choose.item)
+                this.set_vest(this.owner.game.definitions.vests.getFromString(choose.item))
                 if(choose.drop_chance)this.droppable.vest=(Math.random()<=choose.drop_chance)
                 else if(choose.droppable!==undefined)this.droppable.vest=choose.droppable
             }
@@ -945,13 +950,6 @@ export class GInventory extends GInventoryBase<LItem>{
             if(preset.droppables.helmet!==undefined)this.droppable.helmet=preset.droppables.helmet
             if(preset.droppables.vest!==undefined)this.droppable.vest=preset.droppables.vest
             if(preset.droppables.backpack!==undefined)this.droppable.backpack=preset.droppables.backpack
-        }
-        if(preset.boosts){
-            const choose=random.weight2(preset.boosts)
-            if(choose){
-                this.owner.health_data.boost_def=Boosts[choose.boost_type]
-                this.owner.health_data.boost=this.owner.health_data.max_boost*choose.boost
-            }
         }
         for(const slot of preset.items??[]){
             const choose=random.weight2(slot)

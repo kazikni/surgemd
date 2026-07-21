@@ -1,8 +1,7 @@
 import { LootTable as LootTableBase } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
-import { WrappingDef } from "../definitions/loadout/wrapping.ts";
-import { type BoostDef } from "../definitions/player/boosts.ts";
+import { WrappingDef } from "../definitions/loadout/wrapping.ts"
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
@@ -195,17 +194,6 @@ export const Spawn={
         list:[FloorType.Water,FloorType.Ice]
     },
 } satisfies Record<string,SpawnMode>
-
-export interface HumanHealthData{
-    health:number
-    max_health:number
-
-    boost:number
-    max_boost:number
-    boost_def:BoostDef
-
-    invensibility_time:number
-}
 export interface HumanLoadoutData {
     body:{
         def:LoadoutBodyDef

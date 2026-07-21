@@ -107,9 +107,9 @@ export class LevelPlayer {
             this.player_preset=mergeDeep({},this.player_preset??{},characters[idx])
             characters.splice(idx,1)
             this.allies=characters
-            for(const p in this.game.players.living_players){
-                this.game.players.living_players[p].set_preset(this.player_preset)
-            }
+        }
+        for(const p of this.game.players.living_players){
+            p.set_preset(this.player_preset)
         }
         this.game.clock.timeScale=1
         this.start()
@@ -124,14 +124,14 @@ export class LevelPlayer {
         if(this.level.mode.deadzone?.stage){
             this.game.deadzone.jump_stages(this.level.mode.deadzone.stage)
         }
-        this.game.modeManager.add_enemies()
+        this.spawn_players()
         if(this.allies){
             for(const a of this.allies){
                 const bot = this.game.players.add_enemy(a,new JoinPacket())
                 if(!bot) continue
             }
         }
-        this.spawn_players()
+        this.game.modeManager.add_enemies()
     }
     spawn_players(){
         for(const conn of Object.values(this.game.players.connected_players)){

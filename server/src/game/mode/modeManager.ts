@@ -16,14 +16,6 @@ import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.
 export interface GameRules{
     humans:{
         boosts:{
-            shield:{
-                damage_multiplier:number
-            }
-            adrenaline:{
-                decay:number
-                speed:number
-                regen:number
-            }
             mana:{
                 regen:number
             }
@@ -31,17 +23,6 @@ export interface GameRules{
                 decay:number
                 damage:number
                 abstinence:number
-                speed:number
-            }
-            green_bless:{
-                regen:number
-                speed:number
-                damage_reduction:number
-            }
-            death:{
-                life_time:number
-                damage:number
-                damage_reduction:number
                 speed:number
             }
         },
@@ -99,18 +80,9 @@ export const Maps:Record<string,MapDef>={
 }
 export abstract class ModeManager{
     game!:Game
-
     rules:GameRules={
         humans:{
             boosts:{
-                shield:{
-                    damage_multiplier:1.25
-                },
-                adrenaline:{
-                    decay:0.25,
-                    speed:0.15,
-                    regen:0.01
-                },
                 mana:{
                     regen:0.03
                 },
@@ -119,17 +91,6 @@ export abstract class ModeManager{
                     damage:0.7,
                     speed:0.25,
                     abstinence:0.009
-                },
-                green_bless:{
-                    regen:0.01,
-                    speed:0.05,
-                    damage_reduction:0.2,
-                },
-                death:{
-                    life_time:160,
-                    damage:0.5,
-                    damage_reduction:0.5,
-                    speed:0.5
                 },
             },
             keep_inventory:false,

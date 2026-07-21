@@ -66,7 +66,10 @@ export class Parachute extends GameObject{
                 }))
             }
         }else{
-            this.game.sounds.play(this.game.resources.get_sound("airdrop_landed"))
+            this.game.sounds.play(this.game.resources.get_sound("airdrop_landed"),{
+                position:this.position,
+                max_distance:30,
+            })
         }
     }
     override on_tick(dt: number): void {

@@ -17,7 +17,6 @@ import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
-import { Boosts } from "common/scripts/definitions/player/boosts.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
@@ -101,6 +100,7 @@ export class Human extends MovingBody{
     consumible_particles!:ParticlesEmitter2D<ClientParticle2D>
     animation={
         emote_tween:undefined as Tween<Vec2>|undefined,
+        emote_sound:undefined as AudioVoice|undefined,
         emote_time:0,
         emote_is_message:false,
 
@@ -123,7 +123,7 @@ export class Human extends MovingBody{
         walk_cycle:0,
         walk_time:0,
 
-        mounth:[] as KeyFrameSpriteDef[]
+        mounth:[] as KeyFrameSpriteDef[],
     }
     assets:{
         arm_frame_small?:Frame
@@ -1264,10 +1264,10 @@ export class Human extends MovingBody{
                     }
                     if(def.assets?.using_particle){
                         this.assets.consumible_particles=def.assets.using_particle
-                    }if(consuming.boost_type===undefined){
+                    }if(consuming.boost_def===undefined){
                         this.assets.consumible_particles="healing_particle"
                     }else{
-                        this.assets.consumible_particles=`boost_${Boosts[consuming.boost_type].name}_particle`
+                        this.assets.consumible_particles=this.game.definitions.boosts.getFromString(consuming.boost_def).particle
                     }
                     this.consumible_particles.enabled=true
                     if(consuming.animation){
@@ -1400,12 +1400,19 @@ export class Human extends MovingBody{
     }
 
     add_emote(emote:EmoteDef|GameItem){
-        this.game.sounds.play(this.game.resources.get_sound((emote as EmoteDef).use_sound??"emote_play"),{
+        const sound=this.game.sounds.play(this.game.resources.get_sound((emote as EmoteDef).use_sound??"emote_play"),{
             position:this.position,
             max_distance: 50,
             volume: 0.7,
-            bus:"humans"
+            bus:"humans",
+            on_complete:()=>{
+                if(this.animation.emote_sound===sound)this.animation.emote_sound=undefined
+            }
         })
+        if((emote as EmoteDef).block_old_sound){
+            if(this.animation.emote_sound)this.animation.emote_sound.stop()
+            this.animation.emote_sound=sound
+        }
         this.animation.emote_time=2.5
         this.sprites.emote_container.visible=true
         this.sprites.emote_container.scale=v2(0,0)
@@ -1452,7 +1459,7 @@ export class Human extends MovingBody{
             position:this.position,
             max_distance: 50,
             volume: 0.7,
-            bus:"humans"
+            bus:"humans",
         })
         this.animation.emote_time=5
         this.sprites.emote_container.visible=true

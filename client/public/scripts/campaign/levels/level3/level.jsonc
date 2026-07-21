@@ -22,6 +22,9 @@
         },
         "teams":2,
         "settings":{
+            "players":{
+                "group_spawn":false
+            },
             "map": {
                 "def": "war"
             },
@@ -36,6 +39,11 @@
                         "ai": {
                             "kind": "dumb"
                         },
+                        "boosts": [
+                            {"weight": 7,"def": "adrenaline","value": 0},
+                            {"weight": 1,"def": "adrenaline","value": 1},
+                            {"weight": 1,"def": "shield","value": 1}
+                        ],
                         "inventory": {
                             "infinity_ammo": true,
                             "hand": 1,
@@ -207,6 +215,11 @@
                         "ai": {
                             "kind": "advanced_legacy"
                         },
+                        "boosts": [
+                            {"weight": 1,"def": "adrenaline","value": 0},
+                            {"weight": 1,"def": "adrenaline","value": 1},
+                            {"weight": 1,"def": "shield","value": 1}
+                        ],
                         "inventory": {
                             "infinity_ammo": true,
                             "hand": 1,
@@ -322,6 +335,10 @@
                         "ai": {
                             "kind": "advanced_legacy"
                         },
+                        "boosts": [
+                            {"weight": 1,"def": "adrenaline","value": 1},
+                            {"weight": 1,"def": "shield","value": 1}
+                        ],
                         "inventory": {
                             "infinity_ammo": true,
                             "hand": 1,
@@ -359,6 +376,9 @@
     },
     "player": {
         "path": "../../characters/vinii.jsonc",
+        "boosts": [
+            {"weight": 1, "def": "green_bless", "value": 1}
+        ],
         "inventory": {
             "hand": 1,
             "team": 0,
@@ -385,7 +405,9 @@
                 [{"item": "medikit", "count": 4, "weight": 1}],
                 [{"item": "frag_grenade", "count": 12, "weight": 1}],
                 [{"item": "mirv_grenade", "count": 10, "weight": 1}],
-                [{"item": "yellow_flare","count": 6,"weight": 1}]
+                [{"item": "molotov", "count": 5, "weight": 1}],
+                [{"item": "yellow_flare","count": 6,"weight": 1}],
+                [{"item": "red_flare","count": 1,"weight": 1}]
             ],
             "aitems":{
                 "12g":80,
@@ -406,9 +428,6 @@
                     {"item": "rip_ammo", "weight": 1, "droppable": false},
                     {"item": "hp_bullets", "weight": 1,"droppable": false}
                 ]
-            ],
-            "boosts": [
-                {"weight": 1, "boost_type": 4, "boost": 1}
             ]
         }
     }

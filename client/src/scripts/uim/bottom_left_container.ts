@@ -1,7 +1,7 @@
-import { ColorM, HideElement, Numeric, ShowElement, UIModule } from "common/engine/client.ts";
+import { HideElement, Numeric, ShowElement, UIModule } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
 import { type SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
-import { BoostDef, Boosts } from "common/scripts/definitions/player/boosts.ts";
+import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
@@ -33,7 +33,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
     boost:number=0
     max_boost:number=100
-    boost_def:BoostDef=Boosts[0]
+    boost_def!:BoostDef
 
     override on_signal(signal: string, content: SelfStateUpdate): void {
         if(signal==="self_state"){
@@ -44,10 +44,10 @@ export class BottomLeftModule extends UIModule<Game>{
                 this.downed=downed
                 this.render_health()
             }
-            if(this.boost!==content.boost||this.max_boost!==content.max_boost||this.boost_def.type===content.boost_type){
+            if(this.boost!==content.boost||this.max_boost!==content.max_boost||this.boost_def.idNumber===content.boost_def){
                 this.boost=content.boost
                 this.max_boost=content.max_boost
-                this.boost_def=Boosts[content.boost_type]
+                this.boost_def=this.game.definitions.boosts.getFromNumber(content.boost_def)
                 this.render_boost()
             }
             if(content.dirty.inventory.hand)this.render_hand_info()
@@ -152,7 +152,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
         this.boost=0
         this.max_boost=0
-        this.boost_def=Boosts[0]
+        this.boost_def=this.game.definitions.boosts.getFromNumber(0)
 
         this.health_bar_interior.style.width = "100%"
         this.health_bar_animation.style.width = "100%"

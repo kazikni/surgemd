@@ -51,8 +51,7 @@ export const FallBiome:MapBiomeDef={
     },
     skin_chance:0.2,
     textures:["common","fall"],
-    musics:[
-    ],
+    musics:[],
     particles:[],
 }
 export const map_spawns={

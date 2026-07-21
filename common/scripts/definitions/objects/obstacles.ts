@@ -115,9 +115,8 @@ export interface ObstacleDef extends Definition{
 
     height?:0|1|2 // 0 = Invisible | 1 = Mayble | 2 = All
 
-    expanded_behavior?:(
-        ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto
-    )
+    expanded_behavior?:(ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto)
+
     stair_data?:{
         hitbox:Hitbox2D
     }[]

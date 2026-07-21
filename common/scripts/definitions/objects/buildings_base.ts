@@ -69,7 +69,7 @@ export interface BuildingDef extends Definition{
         sub_building?:BuildingSubBuilding[]
         loots?:BuildingLoot[]
         floors?:{hitbox:Hitbox2D,type:FloorType,layer?:number}[]
-        floor_image?:(FrameDef&{layer?:number})[]
+        floor_image?:(FrameDef&{create_shadow?:boolean})[]
         stair_data?:{
             hitbox:Hitbox2D
             dest:number
@@ -93,7 +93,7 @@ export const buildings_factory={
     container:{
         type_1(id:string,tint:number=0xffffff,settings:{
             floor?:string,
-            ceiling?:string|string[],
+            ceiling?:string,
             b?:DeepPartial<BuildingDef>
         }={}){
             const min=v2(-2.44,-1.2)
@@ -117,10 +117,8 @@ export const buildings_factory={
                 },
                 content:{
                     floor_image:[
-                        {
-                            image:settings.floor??"container_floor_1",
-                            tint:tint
-                        }
+                        {image:settings.floor??"container_floor",tint:tint,scale:3},
+                        {image:settings.floor??"container_walls_1",tint:tint,zIndex:zIndexes.BuildingsWalls1}
                     ],
                     ceiling:[
                         {
@@ -136,7 +134,7 @@ export const buildings_factory={
         },
         type_2(id:string,tint:number=0xffffff,settings:{
             floor?:string,
-            ceiling?:string|string[],
+            ceiling?:string,
             b?:DeepPartial<BuildingDef>
         }={}){
             const min=v2(-2.44,-1.2)
@@ -160,10 +158,8 @@ export const buildings_factory={
                 },
                 content:{
                     floor_image:[
-                        {
-                            image:settings.floor??"container_floor_2",
-                            tint:tint
-                        }
+                        {image:settings.floor??"container_floor",tint:tint,scale:3},
+                        {image:settings.floor??"container_walls_2",tint:tint,zIndex:zIndexes.BuildingsWalls1}
                     ],
                     ceiling:[
                         {
@@ -189,17 +185,11 @@ export const buildings_factory={
             return [
                 this.type_1(id+"_1",tint,{
                     b,
-                    ceiling:[
-                        "container_ceiling_1",
-                        "container_ceiling_3",
-                    ]
+                    ceiling:"container_ceiling_1",
                 }),
                 this.type_2(id+"_2",tint,{
                     b,
-                    ceiling:[
-                        "container_ceiling_2",
-                        "container_ceiling_4",
-                    ]
+                    ceiling:"container_ceiling_2",
                 }),
             ]
         }
@@ -489,7 +479,7 @@ export const buildings_factory={
                     ceiling:[ 
                         {
                             frame:{
-                                image:["shed_ceiling_1","shed_ceiling_2"],
+                                image:"shed_ceiling_1",
                                 position:v2.zero(),
                                 rotation:0
                             },

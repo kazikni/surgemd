@@ -1148,12 +1148,6 @@ export class Human extends MovingBody{
             time:0,
         }
     }
-
-    clear(){
-        this.inventory.clear()
-        this.clear_boost()
-        this.set_dirty_full()
-    }
     damage(params:DamageParams){
         if(this.dead||!this.human_data.combat_enabled||this.parachute||this.health.invensibility>0)return
         const penetration=params.penetration
@@ -1355,9 +1349,11 @@ export class Human extends MovingBody{
         this.killed_by=undefined
         this.downed_by=undefined
         this.last_damage_by=undefined
-        if(this.seat)this.seat.clear_human()
         this.health.value=this.health.max
         this.clear_boost()
+        this.set_dirty_full()
+        if(this.seat)this.seat.clear_human()
+        this.effects.clear()
         if(!this.registred)this.manager.registry_object(this)
         this.game.humans._add_human(this)
         this.equipment_data.scope=this.equipment_data.default_scope

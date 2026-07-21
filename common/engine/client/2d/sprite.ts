@@ -63,7 +63,7 @@ export class Sprite2D extends Container2DObject{
     
     set_frame(frame:FrameDef,resources:ResourcesManager){
         if(frame.image){
-            this.frame=resources.get_frame(typeof frame.image==="string"?frame.image:random.choose(frame.image))
+            this.frame=resources.get_frame(frame.image)
         }else if(frame.image==""){
             this.frame=undefined
         }

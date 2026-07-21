@@ -109,6 +109,7 @@ export enum zIndexes{
     Particles,
     GrenadeAir,
     Obstacles3,
+    BuildingsWalls1,
     Explosions,
     SyncedParticle,
     BuildingsCeiling,

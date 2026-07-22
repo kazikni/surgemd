@@ -1,4 +1,5 @@
 import { Definitions, DefinitionsMerge, mergeDeep } from "../../engine/core.ts";
+import { TD, TDType } from "../../engine/core/lang/td.ts";
 import { AccessoryDef, Accessorys_Default_Init } from "./items/accessorys.ts";
 import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
 import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
@@ -13,11 +14,11 @@ import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
 import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
 import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
 import { Wrapping_Default_Init, WrappingDef } from "./loadout/wrapping.ts";
-import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
+import { BuildingDef, Buildings_Default_Init, BuildingTD } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { DecalDef, Decals_Default_Init } from "./objects/decals.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
-import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
+import { ObstacleDef, Obstacles_Default_Init, ObstacleTD } from "./objects/obstacles.ts";
 import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
 import { Boosts_Default_Init, BoostDef } from "./player/boosts.ts";
@@ -49,6 +50,15 @@ export interface GameADefinitions{
     }
 }
 export class GameDefinition{
+    static add_td:TD={type:TDType.onu,content:{
+        type: TDType.object,
+        content: [
+            {name: "objects",content: {type:TDType.onu,content:{type:TDType.object,content:[
+                {name:"obstacles",content:{type:TDType.array,content:ObstacleTD,len_bytes:2}},
+                {name:"buildings",content:{type:TDType.array,content:BuildingTD,len_bytes:2}},
+            ]}}}
+        ]
+    }} satisfies TD
     //Items
     ammos=new Definitions<AmmoDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item

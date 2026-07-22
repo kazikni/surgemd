@@ -1,6 +1,6 @@
-import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type Airstrike={
     count?:number
     delay:number
@@ -10,6 +10,41 @@ export type Airstrike={
         radius?:number
         def:string
     }
+}
+export const GrenadeTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"description",content:tdm.any},
+
+        {name:"explosion",content:tdm.string1},
+
+        {name:"call_airdrop",content:tdm.any},
+        {name:"call_airstrike",content:tdm.any},
+        {name:"particles",content:tdm.any},
+
+        {name:"push_force_resistence",content:tdm.float32},
+        {name:"zindex_set_resistence",content:tdm.boolean},
+
+        {name:"gravity",content:tdm.float32},
+        {name:"radius",content:tdm.float32},
+        {name:"zBaseScale",content:tdm.float32},
+        {name:"zScaleAdd",content:tdm.float32},
+
+        {name:"decays",content:tdm.any},
+
+        {name:"throw_time",content:tdm.float32},
+        {name:"cook_time",content:tdm.float32},
+        {name:"fuse",content:tdm.any},
+
+        {name:"throw_position",content:tdm.any},
+        {name:"throw_max_speed",content:tdm.float32},
+
+        {name:"collision_damage",content:tdm.float32},
+
+        {name:"speed_mod",content:tdm.float32},
+    ]
 }
 export type GrenadeDef={
     def_type?:GameObjectDefinitionType.item

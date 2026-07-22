@@ -1,10 +1,261 @@
-import { DeepPartial, Definition, Definitions, FrameDef, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, FrameDef, FrameTD, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, TD, tdm, TDType, v2, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 import { DecalTint } from "./decals.ts";
 //20mm = 0.17619
 //2mm  = 0.017619
+export const BuildingTD: TD = {
+    type: TDType.object,
+    content: [
+        ...GameObjectDefTD,
+
+        { name: "no_collisions", content: tdm.boolean_onu },
+        { name: "no_bullet_collision", content: tdm.boolean_onu },
+        { name: "reflect_bullets", content: tdm.boolean_onu },
+
+        {
+            name: "content",
+            content: {
+                type: TDType.object,
+                content: [
+                    // Ceiling
+                    {
+                        name: "ceiling",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "frame", content: FrameTD },
+                                        { name: "variations", content: tdm.any },
+                                        { name: "hitbox", content: tdm.any },
+
+                                        {
+                                            name: "below",
+                                            content: {
+                                                type: TDType.onu,
+                                                content: {
+                                                    type: TDType.object,
+                                                    content: [
+                                                        { name: "deenabled", content: tdm.boolean_onu },
+                                                        { name: "duration", content: tdm.float32_onu },
+                                                        { name: "alpha", content: tdm.float32_onu },
+                                                    ]
+                                                }
+                                            }
+                                        },
+
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "connections", content: tdm.any },
+                                        { name: "no_scope_block", content: tdm.boolean_onu },
+
+                                        {
+                                            name: "destroy",
+                                            content: {
+                                                type: TDType.onu,
+                                                content: {
+                                                    type: TDType.object,
+                                                    content: [
+                                                        { name: "frame", content: tdm.string1 },
+                                                        { name: "sound", content: tdm.string1_onu },
+                                                        { name: "count", content: tdm.uint8 },
+                                                        {
+                                                            name: "particles",
+                                                            content: {
+                                                                type: TDType.onu,
+                                                                content: {
+                                                                    type: TDType.object,
+                                                                    content: [
+                                                                        { name: "count", content: tdm.uint8 }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    // Obstacles
+                    {
+                        name: "obstacles",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "def", content: tdm.any },
+                                        { name: "id", content: tdm.uint16_onu },
+                                        { name: "position", content: Vec2TD },
+                                        { name: "connections", content: tdm.any },
+                                        { name: "skin", content: tdm.uint8_onu },
+                                        { name: "variation", content: tdm.uint8_onu },
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "rotation", content: tdm.float32_onu },
+                                        { name: "scale", content: tdm.float32_onu },
+                                        { name: "stairs_dest", content: tdm.any },
+                                        { name: "only_side", content: tdm.uint8_onu },
+                                        { name: "allow_biome_skin", content: tdm.boolean_onu },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Decals
+                    {
+                        name: "decals",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "def", content: tdm.string1 },
+                                        { name: "position", content: Vec2TD },
+                                        { name: "rotation", content: tdm.float32_onu },
+                                        { name: "scale", content: tdm.float32_onu },
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "tint", content: tdm.any },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Sub Buildings
+                    {
+                        name: "sub_building",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "def", content: tdm.any },
+                                        { name: "position", content: Vec2TD },
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "rotation", content: tdm.uint8_onu },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Loots
+                    {
+                        name: "loots",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "table", content: tdm.string1 },
+                                        { name: "position", content: Vec2TD },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Floors
+                    {
+                        name: "floors",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "hitbox", content: tdm.any },
+                                        { name: "type", content: tdm.uint8 },
+                                        { name: "layer", content: tdm.int8_onu },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Floor Images
+                    {
+                        name: "floor_image",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 1,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        ...FrameTD.content,
+                                        { name: "create_shadow", content: tdm.boolean_onu }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    // Stair Data
+                    {
+                        name: "stair_data",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 1,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "hitbox", content: tdm.any },
+                                        { name: "dest", content: tdm.uint8 },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+
+        { name: "spawnHitbox", content: tdm.any },
+        { name: "hitbox", content: tdm.any },
+        { name: "spawnMode", content: tdm.any },
+
+        {
+            name: "assets",
+            content: {
+                type: TDType.onu,
+                content: {
+                    type: TDType.object,
+                    content: [
+                        { name: "sounds", content: tdm.any },
+                        { name: "particles", content: tdm.any },
+                    ]
+                }
+            }
+        }
+    ]
+}
 export type BuildingCeilingDef={
     frame:FrameDef
     variations?:number[]

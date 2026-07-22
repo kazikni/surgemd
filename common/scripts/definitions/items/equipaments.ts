@@ -1,6 +1,6 @@
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
-import { DeepPartial, Definition, Definitions, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, mergeDeep, TD, tdm, TDType, v2, Vec2, Vec2TD } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 export const equipment_factorys={
@@ -123,6 +123,66 @@ export interface VestDef extends Definition{
     property?:string[]
     events?:Record<string,(e:any)=>void>
     modifiers?:Partial<HumanModifiers>
+}
+export const HelmetTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"defence",content:tdm.float32},
+        {name:"reduction",content:tdm.float32},
+        {name:"health",content:tdm.float32},
+
+        {name:"level",content:tdm.uint8},
+        {name:"special",content:tdm.boolean_onu},
+
+        {name:"position",content:Vec2TD},
+
+        {
+            name:"skins",
+            content:{
+                type:TDType.array,
+                len_bytes:1,
+                content:tdm.string1
+            }
+        },
+        {
+            name:"property",
+            content:{
+                type:TDType.array,
+                len_bytes:1,
+                content:tdm.string1
+            }
+        },
+
+        {name:"modifiers",content:tdm.any},
+    ]
+}
+export const VestTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"defence",content:tdm.float32},
+        {name:"reduction",content:tdm.float32},
+        {name:"health",content:tdm.float32},
+
+        {name:"level",content:tdm.uint8},
+        {name:"special",content:tdm.boolean},
+        {name:"tint",content:tdm.uint32},
+        {name:"reflect_bullets",content:tdm.boolean},
+
+        {
+            name:"property",
+            content:{
+                type:TDType.array,
+                len_bytes:1,
+                content:tdm.string1
+            }
+        },
+
+        {name:"modifiers",content:tdm.any},
+    ]
 }
 export interface HelmetDef extends Definition{
     def_type?:GameObjectDefinitionType.item

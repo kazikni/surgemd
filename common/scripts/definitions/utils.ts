@@ -1,4 +1,4 @@
-import { Definition, Stream, Vec2, WeightDefinition } from "../../engine/core.ts"
+import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD } from "../../engine/core.ts"
 import { type HumanModifiers } from "../others/constants.ts"
 import { ItemRank } from "../others/item.ts"
 export enum PacketType{
@@ -89,6 +89,15 @@ export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
         tint:0x11ef45
     },
 }
+export const GameObjectDefTD:TDObjectProperty[]=[
+    ...DefinitionTD.content,
+    {name:"name",content:tdm.string1_onu},
+    {name:"tname",content:tdm.string1_onu},
+]
+export const GameItemDefTD:TDObjectProperty[]=[
+    ...GameObjectDefTD,
+    {name:"rank",content:tdm.uint8},
+]
 export enum GameItemType{
     gun,
     ammo,

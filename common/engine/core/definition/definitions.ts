@@ -1,6 +1,11 @@
+import { TD, tdm, TDObject, TDType } from "../lang/td.ts";
 import { EaseFunction, mergeDeep, splitPath } from "../math/utils.ts"
-import { Vec2 } from "../math/vec2.ts"
+import { v2, Vec2 } from "../math/vec2.ts"
 
+export const DefinitionTD:TDObject={
+    type:TDType.object,
+    content:[{name:"idString",content:tdm.string1}]
+}
 export interface Definition{
     idString:string,
     idNumber?:number

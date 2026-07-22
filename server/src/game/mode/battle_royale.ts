@@ -276,7 +276,6 @@ export class BattleRoyale extends ModeManager{
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         if(h.team_data.group&&this.settings.players.group_spawn){
-            console.log(h.position)
             const c=h.team_data.group.choose_human(h)
             if(c?.position)return c.position
         }

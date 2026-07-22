@@ -1,6 +1,15 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+export const ScopeTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"scope_view",content:tdm.float32},
+        {name:"droppable",content:tdm.boolean},
+    ]
+}
 export interface ScopeDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.scope

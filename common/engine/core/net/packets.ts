@@ -182,13 +182,13 @@ export class MessagePacket extends Packet {
         header |= (this.bytes1 - 1)       // bits 0-1
         header |= (this.bytes2 - 1) << 2  // bits 2-3
         stream.write_uint8(header)
-        stream.write_object(this.msg,this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+        stream.write_any(this.msg,this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
     }
     decode(stream: Stream): void {
         const header = stream.read_uint8()
         this.bytes1 = ((header & 0b11) + 1)
         this.bytes2 = (((header >> 2) & 0b11) + 1)
-        this.msg=stream.read_object(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+        this.msg=stream.read_any(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
     }
 }
 export class SignalMessagePacket extends Packet {
@@ -210,14 +210,14 @@ export class SignalMessagePacket extends Packet {
         header |= (this.bytes2 - 1) << 2  // bits 2-3
         stream.write_uint8(header)
         stream.write_string(this.signal,1)
-        stream.write_object(this.msg,this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+        stream.write_any(this.msg,this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
     }
     decode(stream: Stream): void {
         const header = stream.read_uint8()
         this.bytes1 = ((header & 0b11) + 1)
         this.bytes2 = (((header >> 2) & 0b11) + 1)
         this.signal=stream.read_string(1)
-        this.msg=stream.read_object(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+        this.msg=stream.read_any(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
     }
 }
 export class InvalidPacket extends Packet {

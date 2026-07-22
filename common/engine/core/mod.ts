@@ -16,6 +16,7 @@ export * from "./game/terrain.ts"
 export * from "./game/particles.ts"
 
 export * from "./lang/kspx.ts"
+export * from "./lang/td.ts"
 export * from "./lang/xml.ts"
 
 export * from "./math/color.ts"

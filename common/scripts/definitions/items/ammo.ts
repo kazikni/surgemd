@@ -1,6 +1,20 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+export const AmmoTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+        {name:"ammoType",content:tdm.string1},
+        {name:"description",content:tdm.any},
+        {name:"tint",content:tdm.uint32},
+        {name:"defaultTrail",content:tdm.uint32},
+        {name:"strongTrail",content:{type:TDType.array,content:tdm.uint32,len_bytes:1}},
+
+        {name:"liquid",content:tdm.boolean},
+        {name:"drop_count",content:tdm.uint8},
+    ]
+}
 export interface AmmoDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.ammo
@@ -8,11 +22,11 @@ export interface AmmoDef extends Definition{
     tname?:string
     rank:ItemRank
 
+    ammoType:string
     description?:string|boolean
     tint:number
     defaultTrail?:number
     strongTrail?:number[]
-    ammoType:string
 
     liquid?:boolean
     drop_count?:number

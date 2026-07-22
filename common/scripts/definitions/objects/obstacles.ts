@@ -1,8 +1,128 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
 import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
-import { GameObjectDefinitionType, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { GameObjectDefinitionType, GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
+export const ObstacleTD:TD={
+    type: TDType.object,
+    content: [
+        ...GameObjectDefTD,
+
+        // Life
+        { name: "health", content: tdm.float32_onu },
+        { name: "imortal", content: tdm.boolean_onu },
+        { name: "resistence", content: tdm.float32_onu },
+
+        // Collision
+        { name: "hitbox", content: tdm.any },
+        { name: "spawnHitbox", content: tdm.any },
+        {
+            name: "below",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "hitbox", content: tdm.any },
+                    { name: "duration", content: tdm.float32_onu },
+                    { name: "alpha", content: tdm.float32 },
+                ]
+            }}
+        },
+
+        { name: "no_collision", content: tdm.boolean_onu },
+        { name: "passable_by_bullets", content: tdm.boolean_onu },
+        { name: "no_bullets_collision", content: tdm.boolean_onu },
+
+        { name: "invisible_on_map", content: tdm.boolean_onu },
+
+        {
+            name: "scale",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "min", content: tdm.float32_onu },
+                    { name: "max", content: tdm.float32_onu },
+                    { name: "destroy", content: tdm.float32_onu },
+                ]
+            }}
+        },
+
+        {
+            name: "world_shadow",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "disabled", content: tdm.boolean_onu },
+                    { name: "model", content: tdm.any },
+                    { name: "hitbox", content: tdm.any },
+                ]
+            }}
+        },
+
+        {
+            name: "assets",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    {
+                        name: "aditional_sprites",
+                        content: {
+                            type: TDType.array,
+                            len_bytes: 1,
+                            content: FrameTD
+                        }
+                    },
+                    {
+                        name: "frame",
+                        content: {type:TDType.onu,content:{
+                            type: TDType.object,
+                            content: [
+                                { name: "base", content: tdm.string1_onu },
+                                { name: "dead", content: tdm.string1_onu },
+                                { name: "transform", content: {type:TDType.onu,content:FrameTransformTD} },
+                                { name: "dead_transform", content: {type:TDType.onu,content:FrameTransformTD} },
+                                { name: "variations", content: tdm.any },
+                                { name: "tint_variations", content: tdm.any },
+                                { name: "sprite_variations", content: tdm.boolean_onu },
+                                { name: "biome_skins", content: tdm.any },
+                            ]
+                        }}
+                    },
+
+                    { name: "sounds", content: tdm.any },
+                    { name: "particles", content: tdm.any },
+                ]
+            }}
+        },
+
+        {
+            name: "zIndex",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "base", content: tdm.float32_onu },
+                    { name: "dead", content: tdm.float32_onu },
+                ]
+            }}
+        },
+
+        { name: "rotation_mode", content: tdm.uint8_onu },
+
+        { name: "onDestroyExplosion", content: tdm.string1_onu },
+
+        { name: "decal", content: tdm.any },
+        { name: "loot_table", content: tdm.any },
+
+        { name: "interactDestroy", content: tdm.boolean_onu },
+        { name: "reflect_bullets", content: tdm.boolean_onu },
+
+        { name: "spawnMode", content: tdm.any },
+
+        { name: "height", content: tdm.uint8_onu },
+
+        { name: "expanded_behavior", content: tdm.any },
+        { name: "stair_data", content: tdm.any },
+    ]
+}
 export interface ObstacleBehaviorDoor{
     type:0,
     open_delay?:number

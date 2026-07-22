@@ -1,7 +1,7 @@
-import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
+import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, Random1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, ItemRank } from "../../others/item.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type ConsumingAction={
     type:0,
     use_delay:number
@@ -23,6 +23,30 @@ export type ConsumingAction={
         speed?:Random1
         self_speed?:Random1
     }
+}
+export const ConsumibleTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"consuming",content:tdm.any},
+        {name:"condition",content:{
+            type:TDType.array,
+            len_bytes:1,
+            content:tdm.uint8
+        }},
+
+        {name:"allow_merge",content:tdm.boolean},
+        {name:"assets",content:{
+            type:TDType.object,
+            content:[
+                {name:"using_particle",content:tdm.string1_onu},
+                {name:"using_sound",content:tdm.string1_onu},
+                {name:"pickup_sound",content:tdm.string1_onu},
+            ]
+        }},
+        {name:"description",content:tdm.any},
+    ]
 }
 export interface ConsumibleDef extends Definition{
     def_type?:GameObjectDefinitionType.item

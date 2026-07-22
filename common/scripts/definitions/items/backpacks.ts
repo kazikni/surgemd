@@ -1,6 +1,6 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
 export interface BackpackDef extends Definition{
     item_type?:GameItemType.backpack
@@ -14,6 +14,18 @@ export interface BackpackDef extends Definition{
     special?:boolean
     no_world_image?:boolean
     slots:number
+}
+export const BackpackTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"max",content:tdm.any},
+        {name:"level",content:tdm.uint8},
+        {name:"special",content:tdm.boolean},
+        {name:"no_world_image",content:tdm.boolean},
+        {name:"slots",content:tdm.uint8},
+    ]
 }
 export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
     backpacks.insert(

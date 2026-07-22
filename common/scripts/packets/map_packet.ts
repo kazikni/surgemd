@@ -1,5 +1,5 @@
-import { Stream, Packet, v2, Vec2 } from "../../engine/core.ts";
-import { GameADefinitions } from "../definitions/game_defs.ts";
+import { Stream, Packet, v2, Vec2, tdm } from "../../engine/core.ts";
+import { GameADefinitions, GameDefinition } from "../definitions/game_defs.ts";
 import { MapBiomeDef } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
 import { PacketType } from "../definitions/utils.ts";
@@ -92,8 +92,13 @@ export class MapPacket extends Packet{
         .write_uint16(this.map.size.x)
         .write_uint16(this.map.size.y)
         write_biome(this.map.biome,stream)
-        stream.write_object_advanced(this.map.definitions)
-        .write_array(this.map.regions,(v)=>{
+
+        //const old_len=stream.length
+        //stream.write_td(this.map.definitions,GameDefinition.add_td)
+        stream.write_any(this.map.definitions)
+        //console.log(stream.length-old_len)
+
+        stream.write_array(this.map.regions,(v)=>{
             stream.write_string(v.name,1)
             .write_pos2(v.position)
         },1)
@@ -132,7 +137,10 @@ export class MapPacket extends Packet{
         this.map.seed=stream.read_uint32()
         this.map.size=v2(stream.read_uint16(),stream.read_uint16())
         this.map.biome=decode_biome(stream)
-        this.map.definitions=stream.read_object_advanced()
+
+        this.map.definitions=stream.read_td(GameDefinition.add_td)
+        //this.map.definitions=stream.read_any()
+
         this.map.regions=stream.read_array(()=>{
             return {
                 name:stream.read_string(1),

@@ -59,7 +59,7 @@ export class JoinnedPacket extends Packet{
             stream.write_id(e.id)
         },1)
         stream.write_array(this.mode.shop??[],(n)=>{
-            stream.write_object(n,1,1)
+            stream.write_any(n,1,1)
         },1)
         stream.write_kdate(this.date)
     }
@@ -81,7 +81,7 @@ export class JoinnedPacket extends Packet{
             }
         },1)
         this.mode.shop=stream.read_array(()=>{
-            return stream.read_object(1,1) as ShopNode
+            return stream.read_any(1,1) as ShopNode
         },1)
         this.date=stream.read_kdate()
     }

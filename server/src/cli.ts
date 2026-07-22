@@ -144,7 +144,7 @@ export const game_command:CommandDef={
                         if(module.map.generation.callback)module.map.generation.callback=undefined
                         stream.write_string_sized(".MAP",4)
                         .write_uint16(0)
-                        .write_object(module.map,2,2)
+                        .write_any(module.map,2,2)
                         await Deno.writeFile(ctx.args.output,stream.data.slice(0,stream.length))
                     }
                 }

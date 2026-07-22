@@ -1,9 +1,18 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, tdm } from "../../../engine/core.ts";
+import { TD, TDType } from "../../../engine/core/lang/td.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
+export const AccessoryTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+        {name:"property",content:{type:TDType.array,content:tdm.string1,len_bytes:1}},
+        {name:"modifiers",content:tdm.any},
+    ]
+}
 export interface AccessoryDef extends Definition{
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.accessory

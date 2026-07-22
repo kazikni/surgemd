@@ -5,6 +5,7 @@ export enum TDType{
     string,
     boolean,
     onu,
+    map,
     object,
     array,
     options,
@@ -30,6 +31,12 @@ export type TDBoolean={
 export type TDONU={
     type:TDType.onu
     content:TD
+}
+export type TDMap={
+    type:TDType.map
+    key:TD
+    value:TD
+    len_bytes?:1|2|3|4
 }
 export type TDObjectProperty={
     name:any
@@ -62,8 +69,7 @@ export type TDAnyType={
     bytes1?:number
     bytes2?:number
 }
-export type TD=TDInt|TDFloat|TDString|TDBoolean|TDONU|TDObject|TDArray|TDOptions|TDAdvanced|TDAnyType
-
+export type TD=TDInt|TDFloat|TDString|TDBoolean|TDONU|TDMap|TDObject|TDArray|TDOptions|TDAdvanced|TDAnyType
 
 export enum TDTokenType{
     EOF,
@@ -77,6 +83,9 @@ export enum TDTokenType{
     LBracket,
     RBracket,
 
+    Less,
+    Greater,
+
     Colon,
     Comma,
 
@@ -89,6 +98,10 @@ export interface TDToken{
     value?:string
     line:number
     column:number
+}
+export type TDContextNamespace={
+    td:Record<string,TD>
+    factories:Record<string, TDFactory>
 }
 export class TDLexer{
     private index=0
@@ -172,6 +185,10 @@ export class TDLexer{
                 return {type:TDTokenType.LBracket,line,column}
             case "]":
                 return {type:TDTokenType.RBracket,line,column}
+            case "<":
+                return { type: TDTokenType.Less, line, column }
+            case ">":
+                return { type: TDTokenType.Greater, line, column }
             case ":":
                 return {type:TDTokenType.Colon,line,column}
             case ",":
@@ -213,16 +230,22 @@ export class TDParser{
         return token
     }
 
-    parse(current:Record<string,TD>={}):TD{
-        return this.parseObject(current)
+    parse(local:TDContextNamespace):TD{
+        return this.parseObject(local)
     }
-    private parseObject(current:Record<string,TD>={}):TDObject{
+    private parseFactory(factory:TDFactory,local:TDContextNamespace):TD{
+        this.expect(TDTokenType.Less)
+        const ret=factory(this,local)
+        this.expect(TDTokenType.Greater)
+        return ret
+    }
+    private parseObject(local:TDContextNamespace):TDObject{
         this.expect(TDTokenType.LBrace)
         const content:TDObjectProperty[]=[]
         while(this.peek().type!=TDTokenType.RBrace){
             const name=this.expect(TDTokenType.Identifier).value!
             this.expect(TDTokenType.Colon)
-            const td=this.parseType(current)
+            const td=this.parseType(local)
             content.push({name,content:td})
             if(this.peek().type==TDTokenType.Comma){
                 this.consume()
@@ -247,15 +270,20 @@ export class TDParser{
             content
         }
     }
-    private parseType(current: Record<string, TD> = {}): TD {
+    private parseType(local:TDContextNamespace): TD {
         let td: TD
         if (this.peek().type === TDTokenType.LBrace) {
-            td = this.parseObject(current)
+            td = this.parseObject(local)
         } else {
             const name = this.expect(TDTokenType.Identifier).value!
-            td = this.ctx.get(name, current)
+            const factory=(local.factories[name]??this.ctx.namespace.factories[name]) as TDFactory|undefined
+            if(factory){
+                td=this.parseFactory(factory,local)
+            }else{
+                td=this.ctx.get_td(name,local)
+            }
         }
-        while (true) {
+        while(true){
             switch (this.peek().type) {
                 case TDTokenType.Question:
                     this.consume()
@@ -265,7 +293,7 @@ export class TDParser{
                     }
                     break
                 case TDTokenType.LBracket:
-                    td = this.parseArray(td)
+                    td=this.parseArray(td)
                     break
                 default:
                     return td
@@ -273,33 +301,64 @@ export class TDParser{
         }
     }
 }
+export type TDFactory=(parser: TDParser,local:TDContextNamespace)=>TD
 export class TDContext{
-    readonly content:Record<string,TD>={}
+    namespace:TDContextNamespace={
+        td:{},
+        factories:{}
+    }
     constructor(){
+        this.namespace.factories["map"]=(parser,local):TD=>{
+            const key = parser["parseType"](local)
+            parser.expect(TDTokenType.Comma)
+            const value = parser["parseType"](local)
+            let len_bytes: 1 | 2 | 3 | 4 | undefined
+            if (parser.peek().type === TDTokenType.Comma) {
+                parser.consume()
+                const len = Number(parser.expect(TDTokenType.Number).value)
+                if (len < 1 || len > 4) {
+                    throw new Error("Map length bytes must be 1..4")
+                }
+                len_bytes = len as 1 | 2 | 3 | 4
+            }
+            return {
+                type: TDType.map,
+                key,
+                value,
+                len_bytes
+            }
+        }
     }
-    register(name:string,td:TD){
-        this.content[name]=td
+    register_td(name:string,td:TD){
+        this.namespace.td[name]=td
     }
-    get(name:string,current:Record<string,TD>={}){
-        const td=current[name]??this.content[name]
+    get_td(name:string,local:TDContextNamespace){
+        const td=local.td[name]??this.namespace.td[name]
         if(!td){
             throw new Error(`Unknown TD '${name}'`)
         }
         return td
     }
-    parse(text:string,current:Record<string,TD>={}){
+    get_factory(name:string,local:TDContextNamespace):TDFactory{
+        const td=local.factories[name]??this.namespace.factories[name]
+        if(!td){
+            throw new Error(`Unknown TD Factory '${name}'`)
+        }
+        return td
+    }
+    parse(text:string,td:Record<string,TD>={},factories:Record<string,TDFactory>={}){
         const lexer=new TDLexer(text)
         const parser=new TDParser(this,lexer.tokenize())
-        return parser.parse(current)
+        return parser.parse({td,factories})
     }
-    stringify(td: TD,before="",current:Record<string,TD>={}): string {
-        for(const name in current) {
-            if(this.content[name]===td){
+    stringify(td: TD,before="",local:TDContextNamespace={factories:{},td:{}}): string {
+        for(const name in local.td) {
+            if(local.td[name]===td){
                 return name
             }
         }
-        for(const name in this.content) {
-            if(this.content[name]===td){
+        for(const name in this.namespace.td){
+            if(this.namespace.td[name]===td){
                 return name
             }
         }
@@ -311,27 +370,29 @@ export class TDContext{
             case TDType.string:
                 return `string${td.len_bytes}`
             case TDType.boolean:
-                return  "boolean"
+                return "boolean"
             case TDType.any:
-                return  "any"
+                return "any"
 
             case TDType.onu:
-                return  this.stringify(td.content,before,current)+"?"
+                return this.stringify(td.content,before,local)+"?"
+            case TDType.map:
+                return `map<${this.stringify(td.key,before,local)}, ${this.stringify(td.value,before,local)}${td.len_bytes===undefined?", "+td.len_bytes:""}>`
             case TDType.object: {
                 const out: string[] = []
                 const old_before=before
                 before=before+"    "
                 out.push("{")
                 for (const field of td.content) {
-                    out.push(before+`${field.name}:${this.stringify(field.content,before,current)},`)
+                    out.push(before+`${field.name}:${this.stringify(field.content,before,local)},`)
                 }
                 out.push(old_before+"}")
                 return out.join("\n")
             }
             case TDType.array:
-                return `${this.stringify(td.content,before,current)}[${td.len_bytes}]`
+                return `${this.stringify(td.content,before,local)}[${td.len_bytes}]`
             case TDType.options:
-                return td.options.map(x => this.stringify(x,before,current)).join("|")
+                return td.options.map(x => this.stringify(x,before,local)).join("|")
             case TDType.advanced:
                 return "<advanced>"
         }
@@ -417,26 +478,26 @@ export const tdm=Object.freeze({
     ctx:new TDContext(),
 })
 
-tdm.ctx.register("int8",tdm.int8)
-tdm.ctx.register("int16",tdm.int16)
-tdm.ctx.register("int24",tdm.int24)
-tdm.ctx.register("int32",tdm.int32)
+tdm.ctx.register_td("int8",tdm.int8)
+tdm.ctx.register_td("int16",tdm.int16)
+tdm.ctx.register_td("int24",tdm.int24)
+tdm.ctx.register_td("int32",tdm.int32)
 
-tdm.ctx.register("uint8",tdm.uint8)
-tdm.ctx.register("uint16",tdm.uint16)
-tdm.ctx.register("uint24",tdm.uint24)
-tdm.ctx.register("uint32",tdm.uint32)
+tdm.ctx.register_td("uint8",tdm.uint8)
+tdm.ctx.register_td("uint16",tdm.uint16)
+tdm.ctx.register_td("uint24",tdm.uint24)
+tdm.ctx.register_td("uint32",tdm.uint32)
 
-tdm.ctx.register("float32",tdm.float32)
-tdm.ctx.register("float64",tdm.float64)
+tdm.ctx.register_td("float32",tdm.float32)
+tdm.ctx.register_td("float64",tdm.float64)
 
-tdm.ctx.register("string1",tdm.string1)
-tdm.ctx.register("string2",tdm.string2)
-tdm.ctx.register("string3",tdm.string3)
-tdm.ctx.register("string4",tdm.string4)
+tdm.ctx.register_td("string1",tdm.string1)
+tdm.ctx.register_td("string2",tdm.string2)
+tdm.ctx.register_td("string3",tdm.string3)
+tdm.ctx.register_td("string4",tdm.string4)
 
-tdm.ctx.register("boolean",tdm.boolean)
-tdm.ctx.register("any",tdm.any)
+tdm.ctx.register_td("boolean",tdm.boolean)
+tdm.ctx.register_td("any",tdm.any)
 
 export const Vec2TD={
     type:TDType.object,
@@ -446,7 +507,7 @@ export const Vec2TD={
     ]
 } satisfies TD
 export const Vec2TDONU:TDONU={type:TDType.onu,content:Vec2TD}
-tdm.ctx.register("vec2",Vec2TD)
+tdm.ctx.register_td("vec2",Vec2TD)
 const Vec3TD={
     type:TDType.object,
     content:[
@@ -456,8 +517,8 @@ const Vec3TD={
     ]
 } satisfies TD
 export const Vec3TDONU:TDONU={type:TDType.onu,content:Vec2TD}
-tdm.ctx.register("vec3",Vec3TD)
-tdm.ctx.register("color",{
+tdm.ctx.register_td("vec3",Vec3TD)
+tdm.ctx.register_td("color",{
     type:TDType.object,
     content:[
         {name:"r",content:tdm.uint8},
@@ -481,7 +542,7 @@ export const FrameTransformTD:TDObject={
         {name:"layer",content:tdm.uint8_onu},
     ]
 }
-tdm.ctx.register("frame_transform",FrameTransformTD)
+tdm.ctx.register_td("frame_transform",FrameTransformTD)
 export const FrameTD:TDObject={
     type:TDType.object,
     content:[
@@ -489,4 +550,4 @@ export const FrameTD:TDObject={
         {name:"image",content:tdm.string1_onu}
     ]
 }
-tdm.ctx.register("frame_def",FrameTD)
+tdm.ctx.register_td("frame_def",FrameTD)

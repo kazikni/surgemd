@@ -1,7 +1,7 @@
 import { GameServer } from "./others/server.ts"
 import { Server } from "common/engine/server.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
-import { parseJSONC } from "common/engine/core.ts";
+import { parseJSONC, tdm } from "common/engine/core.ts";
 
 if (import.meta.main) {
     const txt = Deno.readTextFileSync("../config.jsonc")

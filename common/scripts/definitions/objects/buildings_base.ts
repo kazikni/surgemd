@@ -256,6 +256,105 @@ export const BuildingTD: TD = {
         }
     ]
 }
+/*
+export const BuildingTD: TD = tdm.ctx.parse(`{
+    idString:string,
+    name:string?,
+    tname:string?,
+
+    no_collisions:boolean?,
+    no_bullet_collision:boolean?,
+    reflect_bullets:boolean?,
+
+    content:{
+        ceiling:array<{
+            frame:frame_def,
+            variations:any,
+            hitbox:any,
+
+            below:{
+                deenabled:boolean?,
+                duration:float32?,
+                alpha:float32?,
+            }?,
+
+            layer:int8?,
+            connections:any,
+            no_scope_block:boolean?,
+
+            destroy:{
+                frame:string1,
+                sound:string1?,
+                count:uint8,
+
+                particles:{
+                    count:uint8,
+                }?
+            }?
+        },2>?
+
+        obstacles:array<{
+            def:any,
+            id:uint16?,
+            position:vec2,
+            connections:any,
+            skin:uint8?,
+            variation:uint8?,
+            layer:int8?,
+            rotation:float32?,
+            scale:float32?,
+            stairs_dest:any,
+            only_side:uint8?,
+            allow_biome_skin:boolean?,
+        },2>?,
+
+        decals:array<{
+            def:string1,
+            position:vec2,
+            rotation:float32?,
+            scale:float32?,
+            layer:int8?,
+            tint:any,
+        },2>?
+
+        sub_building:array<{
+            def:any,
+            position:vec2,
+            layer:int8?,
+            rotation:uint8?,
+        },2>?
+
+        loots:array<{
+            table:string1,
+            position:vec2,
+        },2>?
+
+        floors:array<{
+            hitbox:any,
+            type:uint8,
+            layer:int8?,
+        },2>?
+
+        floor_image:array<{
+            create_shadow:boolean?,
+        },1>?,
+
+        stair_data:array<{
+            hitbox:any,
+            dest:uint8,
+        },1>?
+    }
+
+    spawnHitbox:any
+    hitbox:any
+    spawnMode:any
+
+    assets:{
+        sounds:any
+        particles:any
+    }?
+}`)
+*/
 export type BuildingCeilingDef={
     frame:FrameDef
     variations?:number[]
@@ -278,7 +377,7 @@ export type BuildingCeilingDef={
     }
 }
 export type BuildingObstacles={
-    def:string|((WeightDefinition&{def:string})[])
+    def:string|((WeightDefinition&{def?:string})[])
     id?:number
     position:Vec2
     connections?:number[]
@@ -709,6 +808,7 @@ export const buildings_factory={
                             position:v2(0,-1.57),
                             rotation:0,
                             id:12,
+                            connections:[5],
                             variation:walls_tint
                         },
                         {
@@ -1048,6 +1148,11 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                 {
                     def:"large_drawer",
                     position:v2(-1.21,0)
+                },
+                {
+                    def:[{weight:5},{weight:1,def:"hp18_mount"},{weight:0.5,def:"m870_mount"}],
+                    position:v2(0.3,-1.35),
+                    id:5,
                 }
             ],
             b:{

@@ -1,4 +1,4 @@
-import { Hitbox2D, random, Stream } from "../../engine/core.ts";
+import { Hitbox2D, Numeric, random, Stream } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
 import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/general_update.ts";
 
@@ -36,14 +36,15 @@ export function MakeDeadZoneStages(settings: MakeDeadZoneSettings): DeadZoneStag
             radius: radius,
             time: wait_time
         })
+        damage=Numeric.clamp(damage*settings.damage.advancing_scale,settings.damage.initial,settings.damage.limit)
         stages.push({
             state: DeadZoneState.Advancing,
             damage: damage,
             radius: radius,
             time: adv_time
         })
-        damage*=settings.damage.add
-        if(damage===0)damage=settings.damage.initial
+        damage=Numeric.clamp(damage*settings.damage.waiting_scale,settings.damage.initial,settings.damage.limit)
+
         radius*=settings.radius.decay
         wait_time=Math.max(wait_time*settings.wait_time.decay,settings.wait_time.min)
         adv_time=Math.max(adv_time*settings.advancing_time.decay,settings.advancing_time.min)

@@ -1,7 +1,7 @@
 import { DeepPartial, mergeDeep, RectHitbox2D, v2 } from "../../../engine/core.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
-import { BuildingDef, BuildingObstacles } from "../objects/buildings_base.ts";
+import { BuildingDef, BuildingObstacles, buildings_factory } from "../objects/buildings_base.ts";
 import { obstacles_factory } from "../objects/obstacles.ts";
 import { hit_sounds } from "../utils.ts";
 import { type MapBiomeDef, type MapDef } from "./base.ts";
@@ -61,6 +61,7 @@ export function create_hunt_house(id:string,settings:{
                     position:v2(0,1.57),
                     rotation:0,
                     id:13,
+                    connections:[5],
                     variation:walls_tint
                 },
 
@@ -432,11 +433,41 @@ export const TundraMap:MapDef={
                                         {def:"awp_mount",weight:0.05},
                                     ],
                                     position:v2(0,1.35),
+                                    id:5
                                 }
                             ]
                         }
                     }
-                })
+                }),
+                buildings_factory.house.shed("shed_t",{
+                    walls_tint:2,
+                    content:[
+                        {
+                            def:"large_drawer",
+                            position:v2(-1.21,0)
+                        },
+                        {
+                            def:[
+                                {weight:15},
+                                {def:"rifle_cbc_mount",weight:10},
+                                {def:"vss_mount",weight:10},
+                                {def:"model94_mount",weight:8},
+                                {def:"blr81_mount",weight:8},
+                                {def:"kar98k_mount",weight:4},
+                                {def:"awp_mount",weight:0.05},
+                            ],
+                            id:5,
+                            position:v2(0.3,-1.35)
+                        }
+                    ],
+                    b:{
+                        content:{
+                            loots:[
+                                {table:"normal_loot",position:v2.new(0.5,0)},
+                            ]
+                        }
+                    }
+                }),
             ],
             obstacles:[
                 obstacles_factory.crate("tundra_crate",{
@@ -469,7 +500,7 @@ export const TundraMap:MapDef={
 
             {def:"bunker_1",count:3},
             {def:[
-                {def:"shed",weight:1},
+                {def:"shed_t",weight:1},
                 {def:"hunt_house_1",weight:2}
             ],count:20},
             {def:"sillo",count:3},

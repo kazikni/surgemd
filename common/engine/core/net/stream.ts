@@ -446,6 +446,33 @@ export abstract class Stream{
                     this.write_td(val,td.content)
                 }
                 break
+            case TDType.map: {
+                const lenBytes = td.len_bytes ?? 1
+                const max = (1 << (lenBytes * 8)) - 1
+
+                const keys = Object.keys(val ?? {})
+                const length = Math.min(keys.length, max)
+
+                this.write_uint(length, lenBytes)
+
+                for (let i = 0; i < length; i++) {
+                    let key: any = keys[i]
+                    switch (td.key.type) {
+                        case TDType.int:
+                            key = Number(key)
+                            break
+                        case TDType.float:
+                            key = Number(key)
+                            break
+                        case TDType.boolean:
+                            key = key === "true"
+                            break
+                    }
+                    this.write_td(key, td.key)
+                    this.write_td(val[keys[i]], td.value)
+                }
+                break
+            }
             case TDType.object:
                 for (const field of td.content) {
                     this.write_td(val[field.name], field.content)
@@ -489,6 +516,15 @@ export abstract class Stream{
                     return this.read_td(td.content)
                 }
                 return undefined
+            }
+            case TDType.map:{
+                const length=this.read_uint(td.len_bytes??1)
+                const ret:Record<any,any>={}
+                for(let i=0;i<length;i++){
+                    const key=this.read_td(td.key)
+                    ret[key]=this.read_td(td.key)
+                }
+                return ret
             }
             case TDType.object: {
                 const obj: Record<string, any>={}

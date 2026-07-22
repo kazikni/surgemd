@@ -190,7 +190,7 @@ export class GameDefinition{
         Creatures_Default_Init(this.creatures)
         Decals_Default_Init(this.decals)
         Explosions_Default_Init(this.explosions)
-        Obstacles_Default_Init(this.obstacles,this.guns)
+        Obstacles_Default_Init(this.obstacles,this.guns,this.melees)
         Vehicles_Default_Init(this.vehicles)
         SyncedParticle_Default_Init(this.synced_particle)
 

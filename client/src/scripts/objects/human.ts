@@ -1231,11 +1231,11 @@ export class Human extends MovingBody{
         for(const a of animations){
             switch(a.type){
                 case HumanAnimationType.Fire:{
-                    if(this.current_weapon!.item_type===GameItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last,a.alt_func)
+                    if(this.current_weapon?.item_type===GameItemType.gun)this.play_fire_animation(this.current_weapon!,a.alt,a.last,a.alt_func)
                     break
                 }
                 case HumanAnimationType.Melee:
-                    if(this.current_weapon!.item_type===GameItemType.melee)this.play_melee_animation(this.current_weapon as MeleeDef)
+                    if(this.current_weapon?.item_type===GameItemType.melee)this.play_melee_animation(this.current_weapon as MeleeDef)
                     break
                 case HumanAnimationType.Reloading:{
                     if((this.current_weapon as unknown as GameItem).item_type!==GameItemType.gun)break

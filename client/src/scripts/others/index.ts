@@ -11,6 +11,7 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { BuildingTD } from "common/scripts/definitions/objects/buildings_base.ts";
+import { bullets_factory } from "common/scripts/definitions/items/guns.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -169,7 +170,6 @@ import { BuildingTD } from "common/scripts/definitions/objects/buildings_base.ts
                 }
             }
         }
-
     }
     const app=new App()
     await app.init()

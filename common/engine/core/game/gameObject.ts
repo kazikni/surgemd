@@ -389,7 +389,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         let ret=0
         do {
             ret = random.id()
-        } while (this.objects[ret])
+        } while (this.objects[ret]||ret===0)
         return ret
     }
     // deno-lint-ignore no-explicit-any

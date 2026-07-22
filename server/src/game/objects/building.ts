@@ -99,7 +99,7 @@ export class Building extends StaticBody {
         for(const c of this.def.content.ceiling??[]){
             const conns:Obstacle[]=[]
             for(const conn of c.connections??[]){
-                conns.push(this.objects_ids[conn])
+                if(this.objects_ids[conn])conns.push(this.objects_ids[conn])
             }
             this.ceilings.push(new BuildingCeiling(c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),conns))
         }
@@ -182,7 +182,8 @@ export class Building extends StaticBody {
         for(const child of this.children){
             if(child.type!==0)continue
             for(const conn of child.def.connections??[]){
-                child.obj.connections.push(this.objects_ids[conn])
+                const connection=this.objects_ids[conn]
+                if(conn)child.obj.connections.push(connection)
             }
         }
         this.after_generate()

@@ -44,8 +44,10 @@ export interface MakeDeadZoneSettings{
         decay:number
     }
     damage:{
-        add:number
+        advancing_scale:number
+        waiting_scale:number
         initial:number
+        limit:number
     }
     count:number
 }

@@ -506,7 +506,14 @@ export class Obstacle extends StaticBody{
         .write_boolean_group(this.health_data.dead,this.actived)
         .write_uint8(this.visual_data.variation)
         .write_uint8(this.visual_data.skin)
-        .write_array(this.connections,(i)=>{
+        
+        for(let i=0;i<this.connections.length;i++){
+            if(!this.connections[i]){
+                this.connections.splice(i,1)
+                i--
+            }
+        }
+        stream.write_array(this.connections,(i)=>{
             stream.write_id(ctx.idco[i.id])
         },1)
         .write_array(this.physical_data.stairs,(i)=>{

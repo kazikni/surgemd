@@ -1,6 +1,7 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
 import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
+import { MeleeDef } from "../items/melees.ts";
 import { GameObjectDefinitionType, GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
 export const ObstacleTD:TD={
@@ -242,11 +243,11 @@ export interface ObstacleDef extends Definition{
     }[]
 }
 export const obstacles_factory={
-    gun_mount(gun:GunDef,settings:{
+    gun_mount(weapon:GunDef,settings:{
         o?:DeepPartial<ObstacleDef>
         id?:string
     }){
-        return mergeDeep({idString:settings.id??(gun.idString+"_mount")},{
+        return mergeDeep({idString:settings.id??(weapon.idString+"_mount")},{
             health:65,
             height:1,
             hitbox:new RectHitbox2D(v2(-0.6,-0.15),v2(0.6,0.15)),
@@ -261,9 +262,9 @@ export const obstacles_factory={
                     }
                 },
                 aditional_sprites:[{
-                    ...gun.rig_image,
-                    image:gun.assets?.world??gun.idString+"_world",
-                    tint:gun.assets?.world_tint,
+                    ...weapon.rig_image,
+                    image:weapon.assets?.world??weapon.idString+"_world",
+                    tint:weapon.assets?.world_tint,
                     hotspot:v2.half_one,
                     scale:2,
                     zIndex:1,
@@ -274,7 +275,7 @@ export const obstacles_factory={
             rotation_mode:RotationMode.limited,
             loot_table:[{
                 weight:1,
-                item:gun.idString
+                item:weapon.idString
             }],
         },settings.o??{})
     },
@@ -518,7 +519,7 @@ export const obstacles_factory={
     }
 }
 export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x42a64a,0x4e4f50]
-export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>){
+export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>,melees:Definitions<MeleeDef,{}>){
     obstacles.insert(
         {
             idString:"barrel",
@@ -1271,6 +1272,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             loot_table:"wood_crate",
             height:1,
         },
+        obstacles_factory.gun_mount(guns.getFromString("hp18"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("m870"),{}),
         obstacles_factory.gun_mount(guns.getFromString("model94"),{}),
         obstacles_factory.gun_mount(guns.getFromString("blr81"),{}),
         obstacles_factory.gun_mount(guns.getFromString("kar98k"),{}),

@@ -212,9 +212,9 @@ export const GasParticles={
 export const bullets_factory={
     assault(power:number):BulletDef{
         return {
-            damage:8*power,
-            range: 160*(1+(power-1) * 0.3),
-            speed: 37*(1+(power-1) * 0.7),
+            damage:10*power,
+            range: 160*(1+(power-1) * 0.6),
+            speed: 36*(1+(power-1) * 0.6),
 
             criticalMult: 1.25,
             obstacleMult: 1,
@@ -236,9 +236,9 @@ export const bullets_factory={
     },
     smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5 * power,
-            range:47 * (1 + (power - 1) * 0.4),
-            speed:29 * (1 + (power - 1) * 0.7),
+            damage:7 * power,
+            range:45* (1 + (power - 1) * 0.1),
+            speed:25 * (1 + (power - 1) * 0.3),
 
             falloff:0.7,
             criticalMult:1.2,
@@ -793,15 +793,15 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ar15","556mm",{
             name:"AR-15",
             fire_delay:0.07,
-            spread:6,
-            idle_spread:0.33333,
+            spread:6.5,
+            idle_spread:0.2,
 
             ammo_spawn:{
                 amount:60
             },
 
             bullet:{
-                def:bullets_factory.assault(1)
+                def:bullets_factory.assault(0.85)
             },
             reload:{
                 delay:2.5,
@@ -824,7 +824,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.assault(1.1)
+                def:bullets_factory.assault(1.12)
             },
             reload:{
                 delay:2.7,
@@ -862,7 +862,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.assault(1)
+                def:bullets_factory.assault(0.85)
             },
             reload:{
                 delay:2.5,
@@ -921,7 +921,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
             bullet:{
-                def:bullets_factory.assault(0.95)
+                def:bullets_factory.assault(0.9)
             },
             assets:{
                 world_tint:0x573c05
@@ -946,7 +946,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.assault(1.15)
+                def:bullets_factory.assault(1.25)
             },
             reload:{
                 delay:2.5,
@@ -962,7 +962,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Micro-Uzi",
             rank:ItemRank.D,
             fire_delay:0.03,
-            spread:8,
+            spread:9,
             idle_spread:0.5,
 
             ammo_spawn:{
@@ -986,7 +986,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.03,
-            spread:1.5,
+            spread:2,
             idle_spread:0.3,
 
             ammo_spawn:{
@@ -994,7 +994,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.smg(1)
+                def:bullets_factory.smg(0.9)
             },
             reload:{
                 delay:1.7,
@@ -1010,7 +1010,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
-            spread:1.75,
+            spread:2.5,
             idle_spread:0.3,
 
             ammo_spawn:{
@@ -1018,7 +1018,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.smg(1.25)
+                def:bullets_factory.smg(1)
             },
             reload:{
                 delay:2.6,

@@ -2,7 +2,7 @@ import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameCo
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
 import { Game, GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
-import { deepEqual, FileManager, GameConsole, random } from "common/engine/core.ts";
+import { deepEqual, FileManager, random } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 export class ApiConnection {
     socket?: WebSocket

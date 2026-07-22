@@ -69,6 +69,7 @@ export enum TDTokenType{
     EOF,
 
     Identifier,
+    Number,
 
     LBrace,
     RBrace,
@@ -149,6 +150,18 @@ export class TDLexer{
                 column
             }
         }
+        if(/[0-9]/.test(c)){
+            let text=""
+            while(/[0-9]/.test(this.peek())){
+                text+=this.advance()
+            }
+            return {
+                type:TDTokenType.Number,
+                value:text,
+                line,
+                column
+            }
+        }
         this.advance()
         switch(c){
             case "{":
@@ -200,16 +213,16 @@ export class TDParser{
         return token
     }
 
-    parse():TD{
-        return this.parseObject()
+    parse(current:Record<string,TD>={}):TD{
+        return this.parseObject(current)
     }
-    private parseObject():TDObject{
+    private parseObject(current:Record<string,TD>={}):TDObject{
         this.expect(TDTokenType.LBrace)
         const content:TDObjectProperty[]=[]
         while(this.peek().type!=TDTokenType.RBrace){
             const name=this.expect(TDTokenType.Identifier).value!
             this.expect(TDTokenType.Colon)
-            const td=this.parseType()
+            const td=this.parseType(current)
             content.push({name,content:td})
             if(this.peek().type==TDTokenType.Comma){
                 this.consume()
@@ -221,44 +234,72 @@ export class TDParser{
             content
         }
     }
-    private parseType():TD{
-        if(this.peek().type==TDTokenType.LBrace){
-            return this.parseObject()
+    private parseArray(content:TD):TD{
+        this.expect(TDTokenType.LBracket)
+        const len=parseInt(this.expect(TDTokenType.Number).value!)
+        this.expect(TDTokenType.RBracket)
+        if(len<1||len>4){
+            throw new Error("Array length bytes must be 1..4")
         }
-        const name=this.expect(TDTokenType.Identifier).value!
-        let td=this.ctx.get(name)
-        if(this.peek().type==TDTokenType.Question){
-            this.consume()
-            td={
-                type:TDType.onu,
-                content:td
+        return{
+            type:TDType.array,
+            len_bytes:len as 1|2|3|4,
+            content
+        }
+    }
+    private parseType(current: Record<string, TD> = {}): TD {
+        let td: TD
+        if (this.peek().type === TDTokenType.LBrace) {
+            td = this.parseObject(current)
+        } else {
+            const name = this.expect(TDTokenType.Identifier).value!
+            td = this.ctx.get(name, current)
+        }
+        while (true) {
+            switch (this.peek().type) {
+                case TDTokenType.Question:
+                    this.consume()
+                    td = {
+                        type: TDType.onu,
+                        content: td
+                    }
+                    break
+                case TDTokenType.LBracket:
+                    td = this.parseArray(td)
+                    break
+                default:
+                    return td
             }
         }
-        return td
     }
 }
 export class TDContext{
-    readonly content=new Map<string,TD>()
+    readonly content:Record<string,TD>={}
     constructor(){
     }
     register(name:string,td:TD){
-        this.content.set(name,td)
+        this.content[name]=td
     }
-    get(name:string){
-        const td=this.content.get(name)
+    get(name:string,current:Record<string,TD>={}){
+        const td=current[name]??this.content[name]
         if(!td){
             throw new Error(`Unknown TD '${name}'`)
         }
         return td
     }
-    parse(text:string){
+    parse(text:string,current:Record<string,TD>={}){
         const lexer=new TDLexer(text)
         const parser=new TDParser(this,lexer.tokenize())
-        return parser.parse()
+        return parser.parse(current)
     }
-    stringify(td: TD,before=""): string {
-        for(const [name, registered] of this.content) {
-            if(registered===td){
+    stringify(td: TD,before="",current:Record<string,TD>={}): string {
+        for(const name in current) {
+            if(this.content[name]===td){
+                return name
+            }
+        }
+        for(const name in this.content) {
+            if(this.content[name]===td){
                 return name
             }
         }
@@ -275,22 +316,22 @@ export class TDContext{
                 return  "any"
 
             case TDType.onu:
-                return  this.stringify(td.content,before)+"?"
+                return  this.stringify(td.content,before,current)+"?"
             case TDType.object: {
                 const out: string[] = []
                 const old_before=before
                 before=before+"    "
                 out.push("{")
                 for (const field of td.content) {
-                    out.push(before+`${field.name}:${this.stringify(field.content,before)},`)
+                    out.push(before+`${field.name}:${this.stringify(field.content,before,current)},`)
                 }
                 out.push(old_before+"}")
                 return out.join("\n")
             }
             case TDType.array:
-                return `${this.stringify(td.content,before)}[${td.len_bytes}]`
+                return `${this.stringify(td.content,before,current)}[${td.len_bytes}]`
             case TDType.options:
-                return td.options.map(x => this.stringify(x,before)).join("|")
+                return td.options.map(x => this.stringify(x,before,current)).join("|")
             case TDType.advanced:
                 return "<advanced>"
         }
@@ -378,12 +419,22 @@ export const tdm=Object.freeze({
 
 tdm.ctx.register("int8",tdm.int8)
 tdm.ctx.register("int16",tdm.int16)
+tdm.ctx.register("int24",tdm.int24)
+tdm.ctx.register("int32",tdm.int32)
+
 tdm.ctx.register("uint8",tdm.uint8)
 tdm.ctx.register("uint16",tdm.uint16)
+tdm.ctx.register("uint24",tdm.uint24)
+tdm.ctx.register("uint32",tdm.uint32)
+
 tdm.ctx.register("float32",tdm.float32)
 tdm.ctx.register("float64",tdm.float64)
+
 tdm.ctx.register("string1",tdm.string1)
 tdm.ctx.register("string2",tdm.string2)
+tdm.ctx.register("string3",tdm.string3)
+tdm.ctx.register("string4",tdm.string4)
+
 tdm.ctx.register("boolean",tdm.boolean)
 tdm.ctx.register("any",tdm.any)
 
@@ -395,7 +446,7 @@ export const Vec2TD={
     ]
 } satisfies TD
 export const Vec2TDONU:TDONU={type:TDType.onu,content:Vec2TD}
-tdm.ctx.register("v2",Vec2TD)
+tdm.ctx.register("vec2",Vec2TD)
 const Vec3TD={
     type:TDType.object,
     content:[
@@ -405,7 +456,7 @@ const Vec3TD={
     ]
 } satisfies TD
 export const Vec3TDONU:TDONU={type:TDType.onu,content:Vec2TD}
-tdm.ctx.register("v3",Vec3TD)
+tdm.ctx.register("vec3",Vec3TD)
 tdm.ctx.register("color",{
     type:TDType.object,
     content:[

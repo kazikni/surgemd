@@ -784,6 +784,7 @@ export class GInventory extends GInventoryBase<LItem>{
             case GameItemType.vest:{
                 const d=def as unknown as VestDef
                 if(!this.owner.equipment_data.vest||this.owner.equipment_data.vest.level<d.level){
+                    this.set_vest(d)
                     if(drop_overflow&&count>1){
                         this.owner.game.add_loot(position,{item:def,count:count-1,skin},layer)
                     }

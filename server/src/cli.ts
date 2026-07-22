@@ -3,6 +3,7 @@ import { CommandDef, DynamicStream, GameConsole, KSPRImageFormat, load_kspr } fr
 import { ClientsManager, DenoFileManager, Server } from "common/engine/server.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Game } from "./game/others/game.ts";
+import { MapTD } from "common/scripts/definitions/maps/base.ts";
 
 function ensureDir(path: string) {
     try {
@@ -144,7 +145,8 @@ export const game_command:CommandDef={
                         if(module.map.generation.callback)module.map.generation.callback=undefined
                         stream.write_string_sized(".MAP",4)
                         .write_uint16(0)
-                        .write_any(module.map,2,2)
+                        .write_td(module.map,MapTD)
+                        //.write_any(module.map)
                         await Deno.writeFile(ctx.args.output,stream.data.slice(0,stream.length))
                     }
                 }
@@ -183,7 +185,6 @@ export const kspr_command: CommandDef = {
                 "input"
             ],
             async execute(ctx) {
-                console.log(ctx.args)
                 const buffer = await Deno.readFile(ctx.args.input)
                 const kspr = load_kspr(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset + buffer.byteLength))
                 ctx.console.log("Resolutions:")

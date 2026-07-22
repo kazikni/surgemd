@@ -1,6 +1,6 @@
-import { Stream, Packet, v2, Vec2, tdm } from "../../engine/core.ts";
+import { Stream, Packet, v2, Vec2 } from "../../engine/core.ts";
 import { GameADefinitions, GameDefinition } from "../definitions/game_defs.ts";
-import { MapBiomeDef } from "../definitions/maps/base.ts";
+import { MapBiomeDef, MapBiomeTD } from "../definitions/maps/base.ts";
 import { NormalBiome } from "../definitions/maps/normal.ts";
 import { PacketType } from "../definitions/utils.ts";
 import { Floor } from "../others/terrain.ts";
@@ -26,38 +26,6 @@ export interface MapConfig{
     objects:MapObjectEncode[]
     regions:MapRegion[]
     definitions?:GameADefinitions
-}
-function write_biome(biome:MapBiomeDef,stream:Stream){
-    stream.write_array(biome.musics??[],(i,_s)=>{
-        stream.write_string(i,1)
-    })
-    .write_uint32(biome.particles_tint??0)
-    .write_array(biome.particles,(i,_s)=>{
-        stream.write_string(i,1)
-    })
-    .write_string(biome.ambient_sound??"",1)
-    .write_number_dict(biome.floors as Record<number,number>,(i)=>{
-        stream.write_uint32(i)
-    },1)
-}
-function decode_biome(stream:Stream):MapBiomeDef{
-    const biome:MapBiomeDef={
-        floors:{},
-        skin:"",
-        musics:[],
-        particles:[],
-        textures:[]
-    }
-    biome.musics=stream.read_array(()=>{
-        return stream.read_string(1)
-    },1)
-    biome.particles_tint=stream.read_uint32()
-    biome.particles=stream.read_array(()=>stream.read_string(1),1)
-    biome.ambient_sound=stream.read_string(1)
-    biome.floors=stream.read_number_dict((_s)=>{
-        return stream.read_uint32()
-    },1)
-    return biome
 }
 export class MapPacket extends Packet{
     ID=PacketType.Map
@@ -91,11 +59,12 @@ export class MapPacket extends Packet{
         .write_uint32(this.map.seed)
         .write_uint16(this.map.size.x)
         .write_uint16(this.map.size.y)
-        write_biome(this.map.biome,stream)
+        .write_td(this.map.biome,MapBiomeTD)
+        //write_biome(this.map.biome,stream)
 
         //const old_len=stream.length
-        //stream.write_td(this.map.definitions,GameDefinition.add_td)
-        stream.write_any(this.map.definitions)
+        stream.write_td(this.map.definitions,GameDefinition.add_td)
+        //stream.write_any(this.map.definitions)
         //console.log(stream.length-old_len)
 
         stream.write_array(this.map.regions,(v)=>{
@@ -136,7 +105,7 @@ export class MapPacket extends Packet{
         },2)
         this.map.seed=stream.read_uint32()
         this.map.size=v2(stream.read_uint16(),stream.read_uint16())
-        this.map.biome=decode_biome(stream)
+        this.map.biome=stream.read_td(MapBiomeTD)
 
         this.map.definitions=stream.read_td(GameDefinition.add_td)
         //this.map.definitions=stream.read_any()

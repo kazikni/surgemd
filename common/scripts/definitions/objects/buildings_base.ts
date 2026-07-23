@@ -389,6 +389,11 @@ export type BuildingObstacles={
     stairs_dest?:Record<number,number>
     only_side?:number
     allow_biome_skin?:boolean
+    press_data?:{
+        activated?:boolean
+        locked?:boolean
+        allow_switch?:boolean
+    }
 }
 export type BuildingDecal={
     def:string
@@ -1222,6 +1227,14 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,
             doors_tint:2,
-        })
+        }),
+        /*{
+            idString:"puzzle_test",
+            content:{
+                obstacles:[
+                    {def:"red_button",position:v2(0,0),rotation:1,press_data:{allow_switch:false}}
+                ]
+            }
+        }*/
     )
 }

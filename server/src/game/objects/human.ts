@@ -35,6 +35,7 @@ import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
+import { type Bullet } from "./bullet.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -1369,7 +1370,11 @@ export class Human extends MovingBody{
             this.apply_score(ScoreApplyerType.KillLeader,this.game.modeManager.rules.score.kill_leader)
         }
         this.status.kills++
-        this.apply_score(ScoreApplyerType.Kill,this.game.modeManager.rules.score.kill_reward)
+        let kill_reward=this.game.modeManager.rules.score.kill_reward
+        if(params.object&&params.object.number_type===GameObjectType.Bullet){
+            if((params.object as Bullet).reflectionCount>0)kill_reward+=this.game.modeManager.rules.score.bounce_kill
+        }
+        this.apply_score(ScoreApplyerType.Kill,kill_reward)
         this.game.modeManager.assign_leader(this)
         this.inventory.accessorys.call_event("kill",{
             ...params,

@@ -109,10 +109,11 @@ export class Bullet extends ServerGameObject{
                         ;(obj as Human).damage({
                             amount:dmg,
                             owner:this.owner,
+                            source:this.source as unknown as DamageSourceDef,
+                            object:this,
                             reason:DamageReason.Human,
                             position:v2.clone(chosen.point),
                             critical:this.critical,
-                            source:this.source as unknown as DamageSourceDef,
                             direction:this.angle+3.1415,
                             penetration:this.penetration
                         })
@@ -159,6 +160,7 @@ export class Bullet extends ServerGameObject{
                         position:v2.clone(this.position),
                         critical:this.critical,
                         source:this.source as unknown as DamageSourceDef,
+                        object:this,
                         direction:Math.atan2(col1.dir.y,col1.dir.x),
                         penetration:this.penetration
                     })

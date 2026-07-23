@@ -168,6 +168,11 @@ export class Building extends StaticBody {
             if(obj.door_data&&o.only_side){
                 obj.door_data.only_side=o.only_side
             }
+            if(obj.def.expanded_behavior?.type===4&&o.press_data&&obj.press_data){
+                if(o.press_data.activated!==undefined)obj.press_data.activated=o.press_data.activated
+                if(o.press_data.locked!==undefined)obj.press_data.activated=o.press_data.locked
+                if(o.press_data.allow_switch!==undefined)obj.press_data.allow_switch=o.press_data.allow_switch
+            }
             this.children.push({obj,def:o,type:0})
         }
         for (const b of this.def.content.sub_building ?? []) {

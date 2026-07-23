@@ -56,6 +56,8 @@ export interface GameRules{
         //Special
         kill_leader:number
         leader_multiplier:number
+
+        bounce_kill:number
     }
     leader:{
         kills_min:number
@@ -125,8 +127,9 @@ export abstract class ModeManager{
             damage_taken_penalty:0.5,
             kill_reward:100,
 
-            kill_leader:100,
-            leader_multiplier:1.2
+            kill_leader:200,
+            leader_multiplier:1.2,
+            bounce_kill:200
         },
         leader:{
             kills_min:3
@@ -279,7 +282,7 @@ export abstract class ModeManager{
                     return undefined
                 }
                 const version=stream.read_uint16()
-                const result=stream.read_object(2,2)
+                const result=stream.read_any(2,2)
                 return result
             }
         }else{

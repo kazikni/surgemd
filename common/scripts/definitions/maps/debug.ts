@@ -133,6 +133,7 @@ export const SingleBuildMap:MapDef={
         }],
         callback(map) {
             const def=map.game.definitions.buildings.getFromString("shed")
+            //const def=map.game.definitions.buildings.getFromString("puzzle_test")
             //const def=map.game.definitions.buildings.getFromString("storehouse_1")
             //const def=map.game.definitions.buildings.getFromString("bunker_1")
             //const def=map.game.definitions.buildings.getFromString("small_house_1")

@@ -1,5 +1,5 @@
 import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2, Shape2D, model2d, v2m } from "common/engine/client.ts";
-import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
+import { ObstacleBehaviorDoor, ObstacleBehaviorPress, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -55,6 +55,12 @@ export class Obstacle extends StaticBody{
 
     transform_into_data?:{
         activated:boolean
+    }
+    press_data?:{
+        activated:boolean
+        old_data?:boolean
+        locked:boolean
+        allow_switch:boolean
     }
 
     ////////////////////////////
@@ -250,8 +256,14 @@ export class Obstacle extends StaticBody{
             this.shadow.layer=this.layer
             this.game.cam2d.add_object(this.shadow)
         }
-
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        if(this.def.expanded_behavior?.type===4){
+            this.press_data={
+                activated:false,
+                allow_switch:false,
+                locked:false
+            }
+        }
     }
 
     override set_hit_sounds_def(sounds: HitSoundsDef): void {
@@ -373,9 +385,27 @@ export class Obstacle extends StaticBody{
             }
         }
     }
+    update_press_data(){
+        if(this.press_data!.old_data!==this.press_data?.activated){
+            const old=this.press_data!.old_data
+            this.press_data!.old_data=this.press_data?.activated
+            if(old!==undefined){
+                this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorPress).press_sound??""),{
+                    bus:"obstacles",
+                    max_distance:20,
+                    position:this.position
+                })
+            }
+            if(this.press_data!.activated){
+                this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorPress).pressed_frame??{},this.game.resources)
+            }else{
+                this.update_frame()
+            }
+        }
+    }
     override on_interact(h:Human){
         if(this.def.expanded_behavior){
-            if(this.def.expanded_behavior.type==1){
+            if(this.def.expanded_behavior.type===1){
                 if(this.interacted)return
                 this.interacted=true
                 this.game.sounds.play(this.game.resources.get_sound(this.def.expanded_behavior.click_sound),{
@@ -428,7 +458,8 @@ export class Obstacle extends StaticBody{
             dead,
 
             door_dirty,
-            transform_into_active
+            transform_into_active,
+            press_active
         ]=stream.read_boolean_group()
         if(visual||full){
             this.variation=stream.read_uint8()
@@ -448,10 +479,6 @@ export class Obstacle extends StaticBody{
                 this.physical_data.side=stream.read_uint8()
 
                 this.initialize_hitboxes()
-                if(Debug.hitbox){
-                    this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-                    this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
-                }
 
                 this.container.rotation=this.physical_data.rotation
                 this.container.position=this.position
@@ -492,6 +519,20 @@ export class Obstacle extends StaticBody{
             }else if(transform_into_active){
                 this.transform_into_update(stream.read_uint8())
             }
+        }
+        if(this.press_data&&(press_active||full)){
+            const bg=stream.read_boolean_group()
+            this.press_data.activated=bg[0]
+            this.press_data.locked=bg[1]
+            this.press_data.allow_switch=bg[2]
+            this.update_press_data()
+        }
+        if(Debug.hitbox&&full){
+            this.game.hitboxes_gfx.ctx.begin_path()
+            this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.end_path()
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.fill()
         }
     }
 }

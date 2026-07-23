@@ -187,10 +187,6 @@ export class Building extends StaticBody{
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,0,this.def.assets.particles)
 
-        if(Debug.hitbox){
-            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-            this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
-        }
     }
     override on_decode_net(stream: Stream, full: boolean): void {
         const [physical_data]=stream.read_boolean_group()
@@ -209,5 +205,12 @@ export class Building extends StaticBody{
             }
         },1)
         this.update_ceilings(ceilings)
+        if(Debug.hitbox&&full){
+            this.game.hitboxes_gfx.ctx.begin_path()
+            this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.end_path()
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.fill()
+        }
     }
 }

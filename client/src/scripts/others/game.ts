@@ -173,8 +173,8 @@ export class Game extends ClientGame<GameObject>{
 
         this.cam2d.add_object(this.terrain_gfx)
         this.cam2d.add_object(this.grid)
+        this.cam2d.add_object(this.hitboxes_gfx)
         //this.cam2d.add_object(this.ui_gfx)
-        //this.cam2d.add_object(this.hitboxes_gfx)
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid.zIndex=zIndexes.Grid
@@ -202,6 +202,7 @@ export class Game extends ClientGame<GameObject>{
         this.grid.stroke=ColorM.rgba(0,0,0,25)
 
         this.terrain_gfx.initialize(this.cam2d.ctx)
+        this.hitboxes_gfx.initialize(this.cam2d.ctx)
         this.dead_zone.append()
     }
     get_theme_color(name:string):string{
@@ -537,6 +538,8 @@ export class Game extends ClientGame<GameObject>{
         }
 
         this.scope_zoom=(this.default_scope??this.definitions.scopes.getFromNumber(0)).scope_view
+
+        this.hitboxes_gfx.ctx.clear()
     }
     async show_final_screen(game_over:GameOverStatus){
         this.final_screen.set_final_screen(island_final)

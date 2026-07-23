@@ -70,7 +70,6 @@ export class Human extends MovingBody{
         velocity:v2.zero(),
 
         current_floor:0,
-        substeps:2,
     }
 
     dead:boolean=false
@@ -789,6 +788,7 @@ export class Human extends MovingBody{
 
     _interact_object?:ServerGameObject
     _interact_score:number=Infinity
+    _interacted_objects:Set<number>=new Set()
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
@@ -797,8 +797,9 @@ export class Human extends MovingBody{
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
                     }
                 }
-                if(this.input.interaction&&obj.can_interact(this)){
+                if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
                     obj.on_interact(this)
+                    this._interacted_objects.add(obj.id)
                 }
                 if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
@@ -820,8 +821,9 @@ export class Human extends MovingBody{
                         }
                     }
                 }
-                if(this.input.interaction&&obj.can_interact(this)){
+                if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
                     obj.on_interact(this)
+                    this._interacted_objects.add(obj.id)
                 }
                 if((obj as StaticBody).physical_data.no_collision)break
                 const collision=this.hitbox.overlap_collisions(obj.hitbox)
@@ -849,12 +851,9 @@ export class Human extends MovingBody{
             }
             case GameObjectType.Human:
                 if((obj as Human).dead)break
-                if(this.input.interaction&&obj.can_interact(this)){
-                    const dist=v2.distance(this.position,obj.position)
-                    if(dist<this._interact_score){
-                        this._interact_object=obj
-                        this._interact_score=dist
-                    }
+                if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
+                    obj.on_interact(this)
+                    this._interacted_objects.add(obj.id)
                 }
                 break
         }
@@ -935,6 +934,7 @@ export class Human extends MovingBody{
             }
             this.equipment_data.force_default_scope=false
             this._interact_object=undefined
+            this._interacted_objects.clear()
             this._interact_score=Infinity
             super.on_tick(dt)
             if(this.human_data.movement_enabled&&!this.downed&&this._interact_object){

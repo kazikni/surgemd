@@ -76,9 +76,12 @@ export class Obstacle extends StaticBody{
 
     loot:LootData[]=[]
     door_data?:ObstacleDoorData&{dirty:boolean,only_side?:number}
-    transform_into_data?:{
+    transform_into_data?:{activated:boolean,def:number}
+    press_data?:{
+        dirty:boolean
         activated:boolean
-        def:number
+        locked:boolean
+        allow_switch:boolean
     }
 
     constructor(){
@@ -196,6 +199,17 @@ export class Obstacle extends StaticBody{
                     }
                     break
                 }
+                case 4:{
+                    if(!this.press_data||this.press_data.locked)break
+                    if(this.press_data.allow_switch){
+                        this.press_data.activated=!this.press_data.activated
+                    }else if(!this.press_data.activated){
+                        this.press_data.activated=true
+                    }
+                    this.press_data.dirty=true
+                    this.set_dirty_part()
+                    break
+                }
             }
         }
     }
@@ -295,6 +309,14 @@ export class Obstacle extends StaticBody{
                 case 1:
                     break
                 case 2:
+                    break
+                case 4:
+                    this.press_data={
+                        dirty:true,
+                        activated:false,
+                        allow_switch:true,
+                        locked:false
+                    }
                     break
             }
         }
@@ -467,7 +489,8 @@ export class Obstacle extends StaticBody{
             this.health_data.dead,
 
             door_dirty,
-            this.transform_into_data?.activated
+            this.transform_into_data?.activated,
+            this.press_data?.dirty
         )
         if(full||this.visual_data.dirty){
             stream.write_uint8(this.visual_data.variation)
@@ -493,6 +516,9 @@ export class Obstacle extends StaticBody{
         }
         if(this.transform_into_data?.activated){
             stream.write_uint8(this.transform_into_data.def)
+        }
+        if(this.press_data&&(full||this.press_data.dirty)){
+            stream.write_boolean_group(this.press_data.activated,this.press_data.locked,this.press_data.allow_switch)
         }
     }
     override on_encode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
@@ -520,13 +546,16 @@ export class Obstacle extends StaticBody{
             stream.write_uint8(i.index)
             stream.write_int8(i.dest_layer)
         })
-        stream.write_boolean_group(this.door_data!==undefined,this.transform_into_data!==undefined)
+        stream.write_boolean_group(this.door_data!==undefined,this.transform_into_data!==undefined,this.press_data!==undefined)
         if(this.door_data){
             stream.write_boolean_group(this.door_data.open===1,this.door_data.open===0,this.door_data.locked,this.door_data.only_side!==undefined)
             if(this.door_data.only_side!==undefined)stream.write_int8(this.door_data.only_side)
         }
         if(this.transform_into_data){
             stream.write_uint8(this.transform_into_data.def)
+        }
+        if(this.press_data){
+            stream.write_boolean_group(this.press_data.activated,this.press_data.locked,this.press_data.allow_switch)
         }
     }
     override on_decode_checkpoint(stream: Stream,ctx:CheckpointContext): void {
@@ -556,7 +585,7 @@ export class Obstacle extends StaticBody{
             const idx=stream.read_uint8()
             this.physical_data.stairs[idx].dest_layer=stream.read_int8()
         })
-        const [door_data,transform_into_data]=stream.read_boolean_group()
+        const [door_data,transform_into_data,press_data]=stream.read_boolean_group()
 
         if(door_data){
             const [open_negative,open_positive,locked,only_side]=stream.read_boolean_group()
@@ -569,6 +598,15 @@ export class Obstacle extends StaticBody{
             this.transform_into_data = {
                 activated: true,
                 def: stream.read_uint8()
+            }
+        }
+        if(press_data){
+            const bg=stream.read_boolean_group()
+            this.press_data={
+                dirty:true,
+                activated:bg[0],
+                locked:bg[1],
+                allow_switch:bg[2]
             }
         }
         this.reset_scale()

@@ -6,7 +6,6 @@ import { GameObjectType } from "common/scripts/others/constants.ts";
 export interface MovingBodyPhysicalData{
     velocity:Vec2
     rotation:number
-    substeps?:number
 }
 export abstract class MovingBody extends ServerGameObject{
     abstract physical_data:MovingBodyPhysicalData
@@ -43,28 +42,13 @@ export abstract class MovingBody extends ServerGameObject{
         }
     }
     override on_tick(dt: number): void {
-        const substeps = this.physical_data.substeps ?? 0
-        if (substeps > 1) {
-            const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
-            const step_dt = dt / substeps
-            for (let i = 0; i < substeps; i++) {
-                const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, step_dt))
-                if(this.clamp_hitbox)this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
-                else this.position=pos
-                for (const obj of objs) {
-                    if (obj.id === this.id) continue
-                    this.on_collided(obj, step_dt)
-                }
-            }
-        } else {
-            const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, dt))
-                if(this.clamp_hitbox)this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
-                else this.position=pos
-            const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
-            for (const obj of objs) {
-                if (obj.id === this.id) continue
-                this.on_collided(obj, dt)
-            }
+        const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, dt))
+            if(this.clamp_hitbox)this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+            else this.position=pos
+        const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
+        for (const obj of objs) {
+            if (obj.id === this.id) continue
+            this.on_collided(obj, dt)
         }
         if(v2.len(this.physical_data.velocity)<=0.000001){
             v2m.zero(this.physical_data.velocity)

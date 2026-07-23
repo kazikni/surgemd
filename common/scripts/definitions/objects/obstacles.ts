@@ -169,6 +169,11 @@ export interface ObstacleBehaviorTransformInto{
     delay:number
     sound?:string
 }
+export interface ObstacleBehaviorPress{
+    type:4
+    pressed_frame?:FrameDef
+    press_sound?:string
+}
 export interface ObstacleDef extends Definition{
     def_type?:GameObjectDefinitionType.obstacle
     name?:string
@@ -236,7 +241,7 @@ export interface ObstacleDef extends Definition{
 
     height?:0|1|2 // 0 = Invisible | 1 = Mayble | 2 = All
 
-    expanded_behavior?:(ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto)
+    expanded_behavior?:(ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto|ObstacleBehaviorPress)
 
     stair_data?:{
         hitbox:Hitbox2D
@@ -401,6 +406,43 @@ export const obstacles_factory={
             hitbox:new RectHitbox2D(v2(-0.71,-1),v2(0.71,1)),
             scale:{
                 destroy:0.75,
+            },
+            rotation_mode:RotationMode.limited,
+            loot_table:id,
+            height:1,
+        },settings.o??{})
+    },
+    button(id:string,settings:{
+        o?:DeepPartial<ObstacleDef>,
+    }={}){
+        return mergeDeep({idString:id},{
+            health:1,
+            expanded_behavior:{
+                type:4,
+                press_sound:"button_press_1",
+                pressed_frame:{
+                    image:id+"_pressed"
+                }
+            },
+            imortal:true,
+            reflect_bullets:true,
+            hitbox:new RectHitbox2D(v2(0,-0.2),v2(0.17,0.2)),
+            scale:{
+                destroy:0.75,
+            },
+            assets:{
+                frame:{
+                    transform:{hotspot:v2(0,0.5)},
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0x484848,
+                    }
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x484848
+                },
+                sounds:hit_sounds.heavy_metal
             },
             rotation_mode:RotationMode.limited,
             loot_table:id,
@@ -861,7 +903,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 loot_table:"ammo_crate",
             }
         }),
-
+        obstacles_factory.button("red_button"),
         {
             idString:"airdrop_locked",
             imortal:true,
@@ -1272,6 +1314,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             loot_table:"wood_crate",
             height:1,
         },
+
         obstacles_factory.gun_mount(guns.getFromString("hp18"),{}),
         obstacles_factory.gun_mount(guns.getFromString("m870"),{}),
         obstacles_factory.gun_mount(guns.getFromString("model94"),{}),

@@ -213,8 +213,8 @@ export const bullets_factory={
     assault(power:number):BulletDef{
         return {
             damage:10*power,
-            range: 160*(1+(power-1) * 0.6),
-            speed: 36*(1+(power-1) * 0.6),
+            range: 170*(1+(power-1) * 0.6),
+            speed: 35*(1+(power-1) * 0.6),
 
             criticalMult: 1.25,
             obstacleMult: 1,
@@ -225,8 +225,8 @@ export const bullets_factory={
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
             damage: 45 * power,
-            range: 180 * (1 + (power - 1) * 0.5),
-            speed: 55 * (1 + (power - 1) * 0.3),
+            range: 200 * (1 + (power - 1) * 0.5),
+            speed: 55 * (1 + (power - 1) * 0.4),
 
             criticalMult: 1.1,
             obstacleMult: 1.25,
@@ -247,7 +247,7 @@ export const bullets_factory={
     },
     buckshot(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:7.2 * power,
+            damage:7.5 * power,
             speed:25 * (1 + (power - 1) * 0.4),
             range:31 * (1 + (power - 1) * 0.4),
 
@@ -522,6 +522,9 @@ export const guns_factory={
 }
 export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
     guns.insert(
+        /////////////////////////////////////////////
+        //                 PISTOLS                 //
+        /////////////////////////////////////////////
         guns_factory.pistol("m9","9mm",{
             name:"M9",
             fire_delay:0.2,
@@ -557,9 +560,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
                 fire_delay:0.1,
                 spread:2,
-                ammo_spawn:{
-                    amount:90,
-                },
                 reload:{
                     capacity:30,
                     extended_capacity:50,
@@ -586,7 +586,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:7,
                     range:70,
                     falloff:0.5,
-                    speed:22,
+                    speed:20,
                     tracer:tracers.tiny
                 }
             },
@@ -605,9 +605,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 fire_delay:0.2,
                 spread:3,
 
-                ammo_spawn:{
-                    amount:120
-                },
                 burst:{
                     delay:0.06,
                     sequence:8
@@ -653,11 +650,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             dual:{
                 spread:1,
                 dual_offset:0.2,
-
                 fire_delay:0.2,
-                ammo_spawn:{
-                    amount:60
-                },
                 reload:{
                     capacity:12,
                     extended_capacity:20,
@@ -706,9 +699,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 dual_offset:0.2,
                 fire_delay:0.15,
                 spread:2,
-                ammo_spawn:{
-                    amount:94,
-                },
                 reload:{
                     capacity:14,
                     extended_capacity:30,
@@ -754,7 +744,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             dual:{
                 dual_offset:0.2,
-
                 fire_delay:0.8,
                 reload:{
                     capacity:10,
@@ -764,11 +753,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.95,
         }),
+        /////////////////////////////////////////////
+        //                 ASSAULT                 //
+        /////////////////////////////////////////////
         guns_factory.assault("ak47","762mm",{
             name:"AK-47",
             fire_delay:0.1,
-            spread:5,
-            idle_spread:0.3,
+            spread:6,
+            idle_spread:0.15,
 
             ammo_spawn:{
                 amount:60
@@ -793,8 +785,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ar15","556mm",{
             name:"AR-15",
             fire_delay:0.07,
-            spread:6.5,
-            idle_spread:0.2,
+            spread:7,
+            idle_spread:0.15,
 
             ammo_spawn:{
                 amount:60
@@ -817,7 +809,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M4A1",
             fire_delay:0.08,
             spread:2.5,
-            idle_spread:0.4,
+            idle_spread:0.15,
 
             ammo_spawn:{
                 amount:60
@@ -840,7 +832,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M16-GL",
             fire_delay:0.07,
             spread:8,
-            idle_spread:0.5,
+            idle_spread:0.15,
             rank:ItemRank.S,
 
             alt_func:{
@@ -880,8 +872,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.08,
             spread:3,
-            idle_spread:0.33333,
-
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:96
@@ -904,7 +895,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M1921",
             fire_delay:0.1,
             spread:6,
-            idle_spread:0.5,
+            idle_spread:0.35,
             rank:ItemRank.B,
 
             ammo_spawn:{
@@ -932,7 +923,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.B,
 
             fire_delay:0.4,
-            spread:3,
+            spread:2,
             idle_spread:0.5,
 
             fire_mode:FireMode.Burst,
@@ -958,12 +949,15 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
         }),
+        /////////////////////////////////////////////
+        //                   SMG                   //
+        /////////////////////////////////////////////
         guns_factory.smg("micro_uzi","9mm",true,{
             name:"Micro-Uzi",
             rank:ItemRank.D,
             fire_delay:0.03,
-            spread:9,
-            idle_spread:0.5,
+            spread:8,
+            idle_spread:0.75,
 
             ammo_spawn:{
                 amount:96
@@ -986,8 +980,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.03,
-            spread:2,
-            idle_spread:0.3,
+            spread:1.5,
+            idle_spread:0.75,
 
             ammo_spawn:{
                 amount:96
@@ -1010,8 +1004,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
-            spread:2.5,
-            idle_spread:0.3,
+            spread:2,
+            idle_spread:0.75,
 
             ammo_spawn:{
                 amount:90
@@ -1030,11 +1024,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.7
             },
         }),
+        /////////////////////////////////////////////
+        //                 SNIPERS                 //
+        /////////////////////////////////////////////
         guns_factory.sniper("kar98k","762mm",{
             name:"Kar98-K",
             fire_delay:1.3,
             spread:0.4,
-            idle_spread:0.5,
+            idle_spread:0,
 
             ammo_spawn:{
                 amount:20
@@ -1067,7 +1064,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.S,
             fire_delay:1.4,
             spread:0.6,
-            idle_spread:0.5,
+            idle_spread:0,
 
             ammo_spawn:{
                 amount:32
@@ -1095,7 +1092,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1.5,
             spread:0.7,
-            idle_spread:0.5,
+            idle_spread:0.25,
 
             ammo_spawn:{
                 amount:25
@@ -1106,7 +1103,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:105,
                     range:160,
                     falloff:0.7,
-                    speed:50,
+                    speed:40,
                     criticalMult:1.1,
                     obstacleMult:2,
                     tracer:tracers.large
@@ -1131,7 +1128,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1,
             spread:1,
-            idle_spread:0.5,
+            idle_spread:0.25,
 
             ammo_spawn:{
                 amount:15
@@ -1156,7 +1153,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1,
             spread:1,
-            idle_spread:0.5,
+            idle_spread:0.25,
 
             ammo_spawn:{
                 amount:12
@@ -1176,11 +1173,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.75
             },
         }),
+        /////////////////////////////////////////////
+        //                SHOTGUNS                 //
+        /////////////////////////////////////////////
         guns_factory.shotgun("m870","12g",{
             name:"M870",
             fire_delay:1,
             spread:6,
-            idle_spread:0.6,
+            idle_spread:0.75,
             jitter_radius:0.4,
 
             ammo_spawn:{
@@ -1268,6 +1268,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 cycle_sound:false
             }
         }),
+        /////////////////////////////////////////////
+        //                   DMR                   //
+        /////////////////////////////////////////////
         guns_factory.dmr("sr25","762mm",{
             name:"sr25",
             fire_delay:0.3,
@@ -1281,7 +1284,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:23,
                     falloff:0.75,
                     range:165,
-                    speed:55,
+                    speed:50,
                     tracer:tracers.large
                 }
             },
@@ -1299,7 +1302,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"VSS Vintorez",
             fire_delay:0.2,
             spread:3,
-            idle_spread:0.333333,
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:80
@@ -1310,7 +1313,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:14,
                     falloff:0.7,
                     range:165,
-                    speed:50,
+                    speed:45,
                     pass_through_humans:true,
                     tracer:{
                         ...tracers.medium,
@@ -1333,7 +1336,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Rifle-CBC",
             fire_delay:0.2,
             spread:4.5,
-            idle_spread:0.33333,
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:54
@@ -1344,7 +1347,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:15,
                     falloff:0.5,
                     range:165,
-                    speed:45,
+                    speed:40,
                     pass_through_humans:true,
                     tracer:{
                         ...tracers.small,
@@ -1394,6 +1397,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 world_tint:0x573c05
             }
         }),
+        /////////////////////////////////////////////
+        //                   LMG                   //
+        /////////////////////////////////////////////
         guns_factory.lmg("pkp","762mm",{
             name:"PKP Pecheneg",
 
@@ -1482,6 +1488,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 speed:0.7
             },
         }),
+        /////////////////////////////////////////////
+        //                  MISC                   //
+        /////////////////////////////////////////////
         {
             idString:"rpg7",
             name:"RPG-7",
@@ -1518,7 +1527,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:70,
                     falloff:0.5,
                     on_hit_explosion:"rocket_explosion",
-                    speed:26,
+                    speed:20,
                     criticalMult:1.2,
                     obstacleMult:3,
                     tracer:{

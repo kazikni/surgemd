@@ -134,12 +134,6 @@ export interface ObstacleBehaviorDoor{
     open_sound?:string
     close_sound?:string
 }
-export interface ObstacleDoorData{
-    open:-1|0|1
-    hitboxes:Record<number,Hitbox2D>
-    locked:boolean
-    opening:boolean
-}
 export interface ObstacleBehaviorPlaySound{
     type:1
     duration:number
@@ -904,6 +898,9 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             }
         }),
         obstacles_factory.button("red_button"),
+        obstacles_factory.button("blue_button"),
+        obstacles_factory.button("green_button"),
+        obstacles_factory.button("yellow_button"),
         {
             idString:"airdrop_locked",
             imortal:true,
@@ -998,7 +995,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 imortal:true,
                 reflect_bullets:true,
                 assets:{
-                    sounds:hit_sounds.light_metal
+                    sounds:hit_sounds.heavy_metal
                 }
             }
         }),

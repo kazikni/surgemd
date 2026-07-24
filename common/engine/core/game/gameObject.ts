@@ -36,11 +36,10 @@ export abstract class BaseObject2D{
     public id!:GameObjectID
     public layer!:number
 
-
     allow_tick:boolean=false
     allow_physics_update:boolean=false
-    allow_net_update:boolean=false
     allow_render:boolean=false
+    allow_net_update:boolean=false
     allow_checkpoint:boolean=true
 
     net_sync_deletion:boolean=true

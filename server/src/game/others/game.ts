@@ -18,7 +18,7 @@ import { Explosion } from "../objects/explosion.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
-import { Building } from "../objects/building.ts";
+import { Building, BuildingPuzzle } from "../objects/building.ts";
 import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
 import { BattleRoyale, BattleRoyaleDebug } from "../mode/battle_royale.ts";
 import { DamageSourceDef, GameDefinition } from "common/scripts/definitions/game_defs.ts";
@@ -96,6 +96,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     pings:PingData[]=[]
     feed_messages:FeedMessage[]=[]
+    puzzles:Record<string,BuildingPuzzle>={}
 
     mods?:ModsManager<any,any,any,ModResult,MDModModule<Game,any,ModResult>>
 

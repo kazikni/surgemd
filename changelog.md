@@ -56,11 +56,13 @@ __                                                                              
 * Hunt House on tundra map
 * Increse critical chance if you dont walk from 15% to 25%
 * Bounce Kill Score Reward
+* Red, Yellow, Green And Blue Buttons
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __
 ### Items
 * Some Balance Changes
+* Some Loot Table Changes
 * Some Sprites Changes
 * Small Changes on melee swing animation
 * Improve Grenades Animation

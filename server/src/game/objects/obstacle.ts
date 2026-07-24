@@ -1,4 +1,4 @@
-import { ObstacleBehaviorScalable, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
+import { ObstacleBehaviorDoor, ObstacleBehaviorScalable, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType, LootData, ObstacleVisualData } from "common/scripts/others/constants.ts";
 import { Angle, Hitbox2D, Stream, NullHitbox2D, Numeric, Orientation, random, RotationMode, v2, Vec2, CheckpointContext } from "common/engine/core.ts";
@@ -8,7 +8,7 @@ import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type Loot } from "./loot.ts";
 import { SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { type Building } from "./building.ts";
+import { type BuildingPuzzle, type Building } from "./building.ts";
 import { type Decal } from "./decals.ts";
 
 export class Obstacle extends StaticBody{
@@ -17,11 +17,13 @@ export class Obstacle extends StaticBody{
 
     def!:ObstacleDef
     parent?:Building
+    puzzle?:BuildingPuzzle
+    puzzle_value?:string
+    puzzle_last_time?:number
     connections:Obstacle[]=[]
 
     max_scale:number=1
 
-    actived:boolean=false
     visual_data:ObstacleVisualData&{dirty:boolean}={
         dirty:true,
         skin:0,
@@ -75,7 +77,15 @@ export class Obstacle extends StaticBody{
     }
 
     loot:LootData[]=[]
-    door_data?:ObstacleDoorData&{dirty:boolean,only_side?:number}
+    door_data?:{
+        dirty:boolean
+        open:-1|0|1
+        hitboxes:Record<number,Hitbox2D>
+        locked:boolean
+        cant_close:boolean
+        opening:boolean
+        only_side?:number
+    }
     transform_into_data?:{activated:boolean,def:number}
     press_data?:{
         dirty:boolean
@@ -96,8 +106,28 @@ export class Obstacle extends StaticBody{
         const local = v2.rotate_RadAngle(toPlayer, -this.physical_data.rotation)
         return local.y >= 0 ? 1 : -1
     }
+    set_door_open_state(val:-1|0|1):void{
+        this.door_data!.open=val
+        this.set_dirty_part()
+        this.door_data!.dirty=true
+        this.base_hitbox=this.door_data!.hitboxes[val]
+        this.door_data!.opening=false
+    }
+    door_open(val:-1|0|1){
+        if(this.door_data!.opening||val===this.door_data!.open)return
+        if((this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay){
+            this.door_data!.opening=true
+            this.game.add_timeout(()=>this.set_door_open_state(val),(this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay!)
+        }else{
+            this.door_data!.opening=true
+            this.set_door_open_state(val)
+        }
+        if(this.puzzle){
+            this.puzzle_last_time=performance.now()
+            this.puzzle.input_piece(this)
+        }
+    }
     override on_interact(user: Human): void {
-        if(this.actived)return
         if(this.def.interactDestroy){
             this.die({
                 amount:this.health_data.health,
@@ -112,32 +142,10 @@ export class Obstacle extends StaticBody{
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 0:{
-                    if(!this.door_data?.opening&&!this.door_data?.locked){
-                        if(this.def.expanded_behavior.open_delay){
-                            this.door_data!.opening=true
-
-                            if(this.door_data!.open===0){
-                                this.door_data!.open=this.choose_door_side(user.position)
-                            }else{
-                                this.door_data!.open=0
-                            }
-
-                            this.game.add_timeout(()=>{
-                                this.set_dirty_part()
-                                this.door_data!.dirty=true
-                                this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
-                                this.door_data!.opening=false
-                            },this.def.expanded_behavior.open_delay)
-                        }else{
-                            if(this.door_data!.open===0){
-                                this.door_data!.open=this.choose_door_side(user.position)
-                            }else{
-                                this.door_data!.open=0
-                            }
-                            this.set_dirty_part()
-                            this.door_data!.dirty=true
-                            this.base_hitbox=this.door_data!.hitboxes[this.door_data!.open]
-                        }
+                    if(this.door_data&&!this.door_data.locked){
+                        if(this.door_data.cant_close&&this.door_data!.open!==0)break
+                        const val=this.door_data!.open===0?this.choose_door_side(user.position):0
+                        this.door_open(val)
                     }
                     break
                 }
@@ -208,6 +216,10 @@ export class Obstacle extends StaticBody{
                     }
                     this.press_data.dirty=true
                     this.set_dirty_part()
+                    if(this.puzzle){
+                        this.puzzle_last_time=performance.now()
+                        this.puzzle.input_piece(this)
+                    }
                     break
                 }
             }
@@ -264,7 +276,7 @@ export class Obstacle extends StaticBody{
         this.physical_data.dirty=true
         this.physical_data.dirty_part=true
         this.physical_data.scale=this.max_scale
-    
+
         this.load_loot()
         if(variation){
             this.visual_data.variation=variation
@@ -302,8 +314,9 @@ export class Obstacle extends StaticBody{
                         dirty:true,
                         hitboxes:CalculateDoorHitbox(this.physical_data.hitbox,this.def.expanded_behavior),
                         locked:false,
+                        opening:false,
+                        cant_close:false,
                         open:0,
-                        opening:false
                     }
                     break
                 case 1:
@@ -529,7 +542,7 @@ export class Obstacle extends StaticBody{
         .write_float32(this.max_scale)
         .write_float32(this.health_data.health)
         .write_float32(this.health_data.max_health)
-        .write_boolean_group(this.health_data.dead,this.actived)
+        .write_boolean_group(this.health_data.dead)
         .write_uint8(this.visual_data.variation)
         .write_uint8(this.visual_data.skin)
         
@@ -571,8 +584,7 @@ export class Obstacle extends StaticBody{
         this.physical_data.side = side
         this.health_data.health = stream.read_float32()
         this.health_data.max_health = stream.read_float32()
-        const [dead, actived] = stream.read_boolean_group()
-        this.actived = actived
+        const [dead] = stream.read_boolean_group()
         this.visual_data.variation=stream.read_uint8()
         this.visual_data.skin=stream.read_uint8()
         const connections=stream.read_array(()=>{

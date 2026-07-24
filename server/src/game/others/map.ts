@@ -219,7 +219,6 @@ export class GameMap{
             b.destroy()
             return undefined
         }
-        
         this.game.scene_2d.objects.add_object(b,b.layer,undefined,{
             def:def
         })
@@ -367,8 +366,8 @@ export class GameMap{
     }
     add_building(def:BuildingDef,layer:number=Layers.Normal){
         const b=new Building()
-        this.game.scene_2d.objects.add_object(b,layer,undefined,{})
         b.set_definition(def)
+        this.game.scene_2d.objects.add_object(b,layer,undefined,{})
         return b
     }
     add_region(position:Vec2,name:string):MapRegion{

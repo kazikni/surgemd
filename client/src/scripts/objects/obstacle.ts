@@ -1,5 +1,5 @@
 import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2, Shape2D, model2d, v2m } from "common/engine/client.ts";
-import { ObstacleBehaviorDoor, ObstacleBehaviorPress, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
+import { ObstacleBehaviorDoor, ObstacleBehaviorPress, ObstacleBehaviorTransformInto, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -34,7 +34,13 @@ export class Obstacle extends StaticBody{
         rotation:0,
         side:0
     }
-    door_data?:ObstacleDoorData&{tween?:Tween<any>}
+    door_data?:{
+        open:-1|0|1
+        hitboxes:Record<number,Hitbox2D>
+        locked:boolean
+        opening:boolean
+        tween?:Tween<any>
+    }
     def!:ObstacleDef
 
     container:Container2D=new Container2D()
@@ -166,7 +172,7 @@ export class Obstacle extends StaticBody{
                         scale:2,
                         hotspot:v2.half_one
                     })
-                    if(this.def.assets?.frame?.transform)this.shadow.transform_frame(this.def.assets.frame.transform)
+                    if(this.def.assets?.frame?.transform)this.shadow_sprite.transform_frame(this.def.assets.frame.transform)
                 }
             }
         }
@@ -176,6 +182,15 @@ export class Obstacle extends StaticBody{
         const tid=this.def.assets?.frame?.tint_variations
         if(tid){
             this.sprite.tint=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+        }
+    }
+    update_shadow(){
+        if(this.shadow){
+            this.shadow.scale=v2.mult(this.container.scale,this.game.world_shadow.scale)
+            const vv=v2.scale(this.game.world_shadow.offset,this.container.scale.x)
+            v2m.add(vv,vv,this.container.position)
+            this.shadow.position=vv
+            this.shadow.rotation=this.container.rotation
         }
     }
     die(){
@@ -360,6 +375,7 @@ export class Obstacle extends StaticBody{
             if(ne===1)new_rot-=(Math.PI/2)
             if(ne===-1)new_rot+=(Math.PI/2)
             this.physical_data.hitbox=this.door_data!.hitboxes[this.door_data!.open]
+            this.base_hitbox=this.physical_data.hitbox
             if(force){
                 this.container.rotation=new_rot
             }else{
@@ -380,6 +396,7 @@ export class Obstacle extends StaticBody{
                     to:{rotation:new_rot},
                     onComplete:()=>{
                         this.door_data!.tween=undefined
+                        this.update_shadow()
                     }
                 })
             }
@@ -488,13 +505,7 @@ export class Obstacle extends StaticBody{
             this.container.scale.x=this.physical_data.scale
             this.container.scale.y=this.physical_data.scale
 
-            if(this.shadow){
-                this.shadow.scale=v2.mult(this.container.scale,this.game.world_shadow.scale)
-                const vv=v2.scale(this.game.world_shadow.offset,this.container.scale.x)
-                v2m.add(vv,vv,this.position)
-                this.shadow.position=vv
-                this.shadow.rotation=this.physical_data.rotation
-            }
+            this.update_shadow()
         }
         if(health_data||full){
             this.health_data.health=stream.read_float(0,1,1)

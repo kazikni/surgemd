@@ -376,6 +376,10 @@ export type BuildingCeilingDef={
         }
     }
 }
+export type PuzzlePiece={
+    id?:string
+    value?:string
+}
 export type BuildingObstacles={
     def:string|((WeightDefinition&{def?:string})[])
     id?:number
@@ -387,13 +391,19 @@ export type BuildingObstacles={
     rotation?:number
     scale?:number
     stairs_dest?:Record<number,number>
-    only_side?:number
     allow_biome_skin?:boolean
     press_data?:{
         activated?:boolean
         locked?:boolean
         allow_switch?:boolean
     }
+    door_data?:{
+        locked?:boolean
+        cant_close?:boolean
+        only_side?:-1|1
+        open_state?:-1|0|1
+    }
+    puzzle_piece?:PuzzlePiece
 }
 export type BuildingDecal={
     def:string
@@ -413,6 +423,59 @@ export type BuildingSubBuilding={
     layer?:number
     rotation?:0|1|2|3
 }
+export type PuzzleCondition=({
+    type:"code"
+    value?:string
+    dont_need_orden?:boolean
+}|{
+    type:"break"
+    id?:number|number[]
+}|{
+    type:"press"
+    id?:number|number[]
+})&{
+    negate?:boolean
+}
+export type PuzzleAction={
+    type:"door"
+    id:number|number[]
+    locked?:boolean
+    cant_close?:boolean
+    only_side?:-1|1
+    open_state?:-1|0|1
+}|{
+    type:"press"
+    id:number|number[]
+    locked?:boolean
+    can_switch?:boolean
+    activated?:boolean
+}|{
+    type:"wait"
+    time:number
+}|{
+    type:"puzzle"
+    id?:string // undefined = self
+    lock?:boolean
+    solved?:boolean
+}|{
+    type:"check_fail"
+}
+export interface BuildingPuzzleDef{
+    idString?:string // Default = "main"
+    global?:boolean
+    code?:{
+        value?:string
+        size:number
+    }
+
+    complete_actions?:PuzzleAction[]
+    complete_conditions?:PuzzleCondition[]
+
+    fail_actions?:PuzzleAction[]
+    fail_conditions?:PuzzleCondition[]
+
+    check_actions?:PuzzleAction[]
+}
 export interface BuildingDef extends Definition{
     no_collisions?: boolean
     no_bullet_collision?: boolean
@@ -429,6 +492,7 @@ export interface BuildingDef extends Definition{
             hitbox:Hitbox2D
             dest:number
         }[]
+        puzzles?:BuildingPuzzleDef[]
     }
     spawnHitbox?:Hitbox2D
     hitbox?:Hitbox2D
@@ -1228,13 +1292,42 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
             walls_tint:7,
             doors_tint:2,
         }),
-        /*{
+        {
             idString:"puzzle_test",
             content:{
                 obstacles:[
-                    {def:"red_button",position:v2(0,0),rotation:1,press_data:{allow_switch:false}}
-                ]
-            }
-        }*/
+                    {def:"red_button",position:v2(-2,-2),rotation:1,id:1,press_data:{allow_switch:false},puzzle_piece:{value:"r"}},
+                    {def:"green_button",position:v2(0,-2),rotation:1,id:2,press_data:{allow_switch:false},puzzle_piece:{value:"g"}},
+                    {def:"blue_button",position:v2(-2,2),rotation:3,id:3,press_data:{allow_switch:false},puzzle_piece:{value:"b"}},
+                    {def:"yellow_button",position:v2(0,2),rotation:3,id:4,press_data:{allow_switch:false},puzzle_piece:{value:"y"}},
+
+                    {def:"metal_door",position:v2(1,-0.6),rotation:1,variation:7,id:10,door_data:{
+                        locked:true,
+                    }},
+                ],
+                puzzles:[{
+                    code:{
+                        value:"rgby",
+                        size:4
+                    },
+                    complete_conditions:[
+                        {type:"code"},
+                    ],
+                    complete_actions:[
+                        {type:"press",id:[1,2,3,4],activated:true,locked:true},
+                        {type:"wait",time:2},
+                        {type:"door",id:10,locked:true,open_state:1}
+                    ],
+                    fail_conditions:[
+                        {type:"code",negate:true}
+                    ],
+                    fail_actions:[
+                        {type:"wait",time:1},
+                        {type:"press",id:[1,2,3,4],activated:false},
+                        {type:"puzzle",lock:false}
+                    ]
+                }]
+            },
+        }
     )
 }

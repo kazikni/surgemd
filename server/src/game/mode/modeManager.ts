@@ -54,13 +54,14 @@ export interface GameRules{
         damage_taken_penalty:number
 
         //Special
-        kill_leader:number
-        leader_multiplier:number
-
+        leader_kill:number
         bounce_kill:number
+        
+        leader_multiplier:number
     }
     leader:{
         kills_min:number
+        search:boolean
     }
     loot_settings:LootSetting
 }
@@ -125,14 +126,16 @@ export abstract class ModeManager{
             rank_reward:500,
             damage_reward:0.5,
             damage_taken_penalty:0.5,
-            kill_reward:100,
+            kill_reward:50,
 
-            kill_leader:200,
+            leader_kill:2,
+            bounce_kill:2,
+
             leader_multiplier:1.2,
-            bounce_kill:200
         },
         leader:{
-            kills_min:3
+            kills_min:3,
+            search:true
         },
         loot_settings:{}
     }
@@ -220,6 +223,7 @@ export abstract class ModeManager{
     abstract is_leader(p:Human):boolean
     abstract get_leader():Human|undefined
     abstract can_be_leader(p:Human):boolean
+    abstract search_leader():Human|undefined
     abstract assign_leader(p:Human):boolean
     abstract leader_die(p:Human):void
 

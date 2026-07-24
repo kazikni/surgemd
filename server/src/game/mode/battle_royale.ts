@@ -199,6 +199,18 @@ export class BattleRoyale extends ModeManager{
             }
         })
     }
+    override search_leader(): Human | undefined {
+        let selected:Player|undefined
+        let selected_kills:number=0
+        for(const p of this.game.players.living_players){
+            if(!p.dead&&(!selected||selected_kills<selected.status.kills)){
+                selected_kills=p.status.kills
+                selected=p
+            }
+        }
+        if(selected)this.assign_leader(selected)
+        return selected
+    }
     give_rank_score(){
         this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward/this.game.players.match_players_count)
     }

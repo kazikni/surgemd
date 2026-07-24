@@ -173,6 +173,7 @@ export class Obstacle extends StaticBody{
                         hotspot:v2.half_one
                     })
                     if(this.def.assets?.frame?.transform)this.shadow_sprite.transform_frame(this.def.assets.frame.transform)
+                    this.shadow_sprite.tint=this.game.world_shadow.color
                 }
             }
         }

@@ -1334,6 +1334,7 @@ export class Human extends MovingBody{
         this.game.signals.emit("human_die",{human:this})
         if(this.game.modeManager.is_leader(this)){
             this.game.modeManager.leader_die(this)
+            if(this.game.modeManager.rules.leader.search)this.game.modeManager.search_leader()
         }
 
         if(this.team_data.team)this.team_data.team.clear_downeds()
@@ -1366,15 +1367,18 @@ export class Human extends MovingBody{
         this.inventory.net_sync.weapons=true
     }
     on_kill_enemy(victim:Human,params:DamageParams){
-        if(this.game.modeManager.is_leader(victim)){
-            this.apply_score(ScoreApplyerType.KillLeader,this.game.modeManager.rules.score.kill_leader)
-        }
+        const rules=this.game.modeManager.rules
         this.status.kills++
-        let kill_reward=this.game.modeManager.rules.score.kill_reward
+
+        let kill_reward=rules.score.kill_reward
+        if(this.game.modeManager.is_leader(victim)){
+            kill_reward*=rules.score.leader_kill
+        }
         if(params.object&&params.object.number_type===GameObjectType.Bullet){
-            if((params.object as Bullet).reflectionCount>0)kill_reward+=this.game.modeManager.rules.score.bounce_kill
+            if((params.object as Bullet).reflectionCount>0)kill_reward+=rules.score.bounce_kill
         }
         this.apply_score(ScoreApplyerType.Kill,kill_reward)
+
         this.game.modeManager.assign_leader(this)
         this.inventory.accessorys.call_event("kill",{
             ...params,

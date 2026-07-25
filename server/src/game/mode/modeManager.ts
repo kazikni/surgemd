@@ -280,14 +280,18 @@ export abstract class ModeManager{
         if(typeof map==="string"){
             if(Maps[map])return Maps[map]
             else{
-                const stream=new StaticStream((await this.game.fs.read_fileb(map)).buffer as ArrayBuffer)
-                const magic=stream.read_string_sized(4)
-                if(magic!==".MAP"){
-                    return undefined
+                if(map.endsWith(".wasm")){
+                    
+                }else{
+                    const stream=new StaticStream((await this.game.fs.read_fileb(map)).buffer as ArrayBuffer)
+                    const magic=stream.read_string_sized(4)
+                    if(magic!==".MAP"){
+                        return undefined
+                    }
+                    const version=stream.read_uint16()
+                    const result=stream.read_any(2,2)
+                    return result
                 }
-                const version=stream.read_uint16()
-                const result=stream.read_any(2,2)
-                return result
             }
         }else{
             return map

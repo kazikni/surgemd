@@ -268,8 +268,8 @@ export const kxml = Object.freeze({
                     attrs: {
                         x: String(rect.min.x),
                         y: String(rect.min.y),
-                        width: String(rect.min.x+rect.max.x),
-                        height: String(rect.min.y+rect.max.y),
+                        width: String(rect.max.x-rect.min.x),
+                        height: String(rect.max.y-rect.min.y),
                         ...attrs
                     },
                     children:[]

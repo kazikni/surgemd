@@ -1,40 +1,29 @@
-import { kxml, rect, v2 } from "../../engine/core.ts";
-import { MakeBuilding } from "./builder.ts";
-const b=MakeBuilding({
-    size:v2(1500,1500),
+import { HitboxGroup2D, rect, v2 } from "../../engine/core.ts";
+import { kxml } from "../../engine/core/lang/xml.ts";
+import { MakeBuilding, MakeBuildingWallsHitbox } from "./builder.ts";
+const def={
+    size:v2(1622,1350),
     walls:[
         {
             walls:[
                 [
-                    v2(700,12),
-                    v2(700,210),
+                    v2(79,210),
+                    v2(79,14),
+                    v2(1565,14),
+                    v2(1557,1036),
                 ],
                 [
-                    v2(700,350),
-                    v2(700,700),
-                    v2(12,700),
+                    v2(1557,1204),
+                    v2(1557,1336),
+                    v2(79,1336),
+                    v2(79,374),
                 ]
             ],
             width:20,
+            swidth:4,
             attr:{
-                ...kxml.svg.fill.color("#ffee00"),
-            }
-        },
-        {
-            walls:[
-                [
-                    v2(12,80),
-                    v2(12,12),
-                    v2(1490,12),
-                    v2(1490,1490),
-                    v2(12,1490),
-                    v2(12,210),
-                ],
-            ],
-            width:20,
-            attr:{
-                ...kxml.svg.fill.color("#f0e3c0"),
-                ...kxml.svg.stroke.color("#684f0a",4)
+                ...kxml.svg.fill.color("#a99589"),
+                ...kxml.svg.stroke.color("#796b57",8)
             }
         },
     ],
@@ -44,19 +33,20 @@ const b=MakeBuilding({
             size:v2(100,30),
         },*/
         "wood-pattern-1":{
-            children:[kxml.svg.create.grid_floor("#f5c08e",v2(200,60),kxml.svg.stroke.color("#8b4320", 1))],
-            size:v2(200,60),
+            children:[kxml.svg.create.grid_floor("#b27d3e",v2(150,45),kxml.svg.stroke.color("#8c5f31",2))],
+            size:v2(150,45),
         }
     },
     floors:[
         {
-            rect:rect.create(0,0,1490,1490),
+            rect:rect.create(65,0,1500,1350),
             pattern:{
                 id:"wood-pattern-1",
             }
         }
     ],
-})
+}
+const b=MakeBuilding(def,2,85)
 /*MakeBuilding({
     size:v2(1500,1500),
     walls:[
@@ -114,3 +104,4 @@ const b=MakeBuilding({
     ],
 })*/
 console.log(kxml.stringify(b.svg.floor))
+console.log((new HitboxGroup2D(...MakeBuildingWallsHitbox(def.walls[0],b.ctx))).to_json())

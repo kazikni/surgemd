@@ -349,6 +349,10 @@ export class GameMap{
             obj.init(b.side)
             obj.generate(b.position)
         }
+        for(const i of definition.generation.objects?.items??[]){
+            const obj=this.game.add_loot(i.position,{count:i.count,item:this.game.definitions.game_items.valueString[i.def],skin:i.skin},i.layer)
+            if(i.velocity)obj.velocity=v2.clone(i.velocity)
+        }
 
         this.game.start_settings.textures.push(...definition.biome.textures)
         this.game.start_settings.musics.push(...definition.biome.musics)

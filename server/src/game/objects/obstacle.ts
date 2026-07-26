@@ -19,7 +19,6 @@ export class Obstacle extends StaticBody{
     parent?:Building
     puzzle?:BuildingPuzzle
     puzzle_value?:string
-    puzzle_last_time?:number
     connections:Obstacle[]=[]
 
     max_scale:number=1
@@ -122,10 +121,7 @@ export class Obstacle extends StaticBody{
             this.door_data!.opening=true
             this.set_door_open_state(val)
         }
-        if(this.puzzle){
-            this.puzzle_last_time=performance.now()
-            this.puzzle.input_piece(this)
-        }
+        if(this.puzzle)this.puzzle.input_piece(this)
     }
     override on_interact(user: Human): void {
         if(this.def.interactDestroy){
@@ -216,10 +212,7 @@ export class Obstacle extends StaticBody{
                     }
                     this.press_data.dirty=true
                     this.set_dirty_part()
-                    if(this.puzzle){
-                        this.puzzle_last_time=performance.now()
-                        this.puzzle.input_piece(this)
-                    }
+                    if(this.puzzle)this.puzzle.input_piece(this)
                     break
                 }
             }
@@ -466,6 +459,7 @@ export class Obstacle extends StaticBody{
         }
 
         if(this.parent)this.parent.verify_childrens()
+        if(this.puzzle)this.puzzle.input_piece(this)
     }
     revive(){
         if(!this.health_data.dead)return

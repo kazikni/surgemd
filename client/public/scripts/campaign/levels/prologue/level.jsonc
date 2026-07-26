@@ -39,7 +39,7 @@
     },
     "player": {
         "path": "../../characters/vinii.jsonc",
-        "position":{"x":10,"y":50},
+        "position":{"x":10,"y":51},
         "boosts": [
             {"weight": 1, "def": "green_bless", "value": 1}
         ]

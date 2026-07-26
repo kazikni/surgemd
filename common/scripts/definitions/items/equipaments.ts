@@ -255,8 +255,8 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
     vests.insert(
         //Normals Vest
         equipment_factorys.vest_1("civil"),
-        equipment_factorys.vest_2("police"),
-        equipment_factorys.vest_3("military"),
+        equipment_factorys.vest_2("military"),
+        equipment_factorys.vest_3("tactical"),
         equipment_factorys.vest_4("elite",{
             reflect_bullets:true
         }),

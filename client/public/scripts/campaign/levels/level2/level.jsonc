@@ -33,11 +33,11 @@
                                     "weight": 10
                                 },
                                 {
-                                    "item": "regular_pack",
+                                    "item": "military_pack",
                                     "weight": 1
                                 },
                                 {
-                                    "item": "military_pack",
+                                    "item": "tactical_pack",
                                     "weight": 0.1
                                 }
                             ],
@@ -47,11 +47,11 @@
                                     "weight": 10
                                 },
                                 {
-                                    "item": "police_vest",
+                                    "item": "military_vest",
                                     "weight": 1
                                 },
                                 {
-                                    "item": "military_vest",
+                                    "item": "tactical_vest",
                                     "weight": 0.1
                                 }
                             ],

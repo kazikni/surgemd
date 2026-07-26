@@ -57,12 +57,12 @@
                                     "weight": 20
                                 },
                                 {
-                                    "item": "regular_pack",
+                                    "item": "military_pack",
                                     "weight": 15,
                                     "drop_chance": 0.3
                                 },
                                 {
-                                    "item": "military_pack",
+                                    "item": "tactical_pack",
                                     "weight": 10,
                                     "drop_chance": 0.5
                                 }
@@ -78,12 +78,12 @@
                                     "drop_chance": 0.3
                                 },
                                 {
-                                    "item": "police_vest",
+                                    "item": "military_vest",
                                     "weight": 15,
                                     "drop_chance": 0.5
                                 },
                                 {
-                                    "item": "military_vest",
+                                    "item": "tactical_vest",
                                     "weight": 10,
                                     "drop_chance": 0.75
                                 }
@@ -225,13 +225,13 @@
                             "hand": 1,
                             "backpack": [
                                 {"item": "basic_pack","weight": 15},
-                                {"item": "regular_pack","weight": 10},
-                                {"item": "military_pack","weight": 5}
+                                {"item": "military_pack","weight": 10},
+                                {"item": "tactical_pack","weight": 5}
                             ],
                             "vest": [
                                 {"item": "civil_vest","weight": 15},
-                                {"item": "police_vest","weight": 10},
-                                {"item": "military_vest","weight": 5}
+                                {"item": "military_vest","weight": 10},
+                                {"item": "tactical_vest","weight": 5}
                             ],
                             "helmet": [
                                 {"item": "military_helmet","weight": 15},
@@ -342,8 +342,8 @@
                         "inventory": {
                             "infinity_ammo": true,
                             "hand": 1,
-                            "backpack": [{"item": "military_pack","weight": 1}],
-                            "vest": [{"item": "military_vest","weight": 1}],
+                            "backpack": [{"item": "tactical_pack","weight": 1}],
+                            "vest": [{"item": "tactical_vest","weight": 1}],
                             "helmet": [{"item": "medic_helmet","weight": 1}],
                             "melee": [{"item": "bonesaw","weight": 3},{"item": "pan","weight": 1}],
                             "gun1": [
@@ -382,7 +382,7 @@
         "inventory": {
             "hand": 1,
             "team": 0,
-            "backpack": [{"item": "military_pack","weight": 1}],
+            "backpack": [{"item": "tactical_pack","weight": 1}],
             "vest": [{"item": "elite_vest","weight": 1,"droppable": false}],
             "helmet": [{"item": "lastman_helmet","weight": 1,"droppable": false}],
             "melee": [

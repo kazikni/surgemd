@@ -65,12 +65,13 @@ export class BuildingPuzzle{
         return this.parent.objects_ids[id]
     }
     input_piece(value:Obstacle) {
-        if(!(value.press_data?.activated||value.door_data))return
-        if(value.puzzle_value){
-            this.current_code+=value.puzzle_value??""
-            if(this.code_size!==undefined&&this.current_code.length>=this.code_size){
-                this.check()
-                this.current_code=""
+        if(value.puzzle_value&&this.code_size){
+            if(value.press_data?.activated||value.door_data){
+                this.current_code+=value.puzzle_value??""
+                if(this.code_size!==undefined&&this.current_code.length>=this.code_size){
+                    this.check()
+                    this.current_code=""
+                }
             }
         }else{
             this.check()
@@ -123,11 +124,12 @@ export class BuildingPuzzle{
                     ok=true
                     for(const id of ids) {
                         const obj=this.get_object(id)
-                        if (!obj.health_data.dead) {
+                        if(!obj.health_data.dead){
                             ok = false
                             break
                         }
                     }
+
                     break
                 }
             }

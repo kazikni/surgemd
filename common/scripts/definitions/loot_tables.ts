@@ -143,13 +143,13 @@ export const LootTables={
     ],
     vests:[
         {item:"civil_vest",weight:10},
-        {item:"police_vest",weight:1},
-        {item:"military_vest",weight:0.1},
+        {item:"military_vest",weight:1},
+        {item:"tactical_vest",weight:0.1},
     ],
     backpacks:[
         {item:"basic_pack",weight:10},
-        {item:"regular_pack",weight:1},
-        {item:"military_pack",weight:0.1},
+        {item:"military_pack",weight:1},
+        {item:"tactical_pack",weight:0.1},
     ],
     armors:[
         {table:"helmets",weight:1},
@@ -161,9 +161,9 @@ export const LootTables={
         {table:"backpacks",weight:1},
     ],
     military_equipments:[
-        {item:"military_vest",weight:1},
+        {item:"tactical_vest",weight:1},
         {item:"tactical_helmet",weight:1},
-        {item:"military_pack",weight:1},
+        {item:"tactical_pack",weight:1},
     ],
     accessorys:[
         {weight:5,item:"lucky_coin"},

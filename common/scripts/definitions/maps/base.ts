@@ -118,8 +118,11 @@ export const MapTD = tdm.ctx.parse(`{
 export interface MapObjectItem{
     def:string
     position:Vec2
+    layer?:number
     count:number
     velocity?:Vec2
+    skin?:number
+    aditional?:{count:number,item:string}[]
 }
 export interface MapObjectBuilding{
     def:string
@@ -140,7 +143,8 @@ export interface MapDef{
         islands?:IslandDef[]
         callback?:(map:GameMap)=>void
         objects?:{
-            buildings:MapObjectBuilding[]
+            buildings?:MapObjectBuilding[]
+            items?:MapObjectItem[]
         }
     }
     players_spawn?:SpawnMode

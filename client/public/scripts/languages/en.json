@@ -39,12 +39,12 @@
             "basic_pack": "Basic Backpack",
 
             "military_helmet": "Military Helmet",
-            "police_vest": "Police Vest",
-            "regular_pack": "Regular Backpack",
-
             "military_vest": "Military Vest",
-            "tactical_helmet": "Tactical Helmet",
             "military_pack": "Military Backpack",
+
+            "tactical_vest": "Tactical Vest",
+            "tactical_helmet": "Tactical Helmet",
+            "tactical_pack": "Tactical Backpack",
 
             "explosive_ammo": "Explosive Ammo",
             "gasoline": "Gasoline",

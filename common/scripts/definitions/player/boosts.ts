@@ -29,7 +29,7 @@ export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
                 tick(dt,h){
                     h.health.value=Math.min(h.health.value+(h.boost.value*dt)*0.01,h.health.max)
                     h.boost.value=Math.max(h.boost.value-0.3*dt,0)
-                    return h.boost.value>h.boost.max/2?1.2:1
+                    return h.boost.value>h.boost.max/2?1.15:1
                 }
             }
         },

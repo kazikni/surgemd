@@ -34,7 +34,7 @@ export class Explosion extends ServerGameObject{
         const floor_def=Floors[floor]
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){
-                const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.def,this.layer)
+                const b=this.game.add_bullet(this.position,this.def.bullet.def,this.owner,undefined,this.source,this.layer)
                 b.hit_owner=true
                 b.set_direction(random.rad())
             }
@@ -77,11 +77,22 @@ export class Explosion extends ServerGameObject{
                     case GameObjectType.StaticBody:
                     case GameObjectType.Obstacle:
                     case GameObjectType.Building:
-                    case GameObjectType.Human: {
                         (obj as Human | StaticBody).damage({
                             amount: damage*(this.def.obstacle_mult??1),
                             reason: DamageReason.Explosion,
-                            source: this.source ?? this.def,
+                            source: this.source,
+                            owner: this.owner,
+                            position: v2.clone(obj.position),
+                            critical: false,
+                            direction: v2.lookTo(obj.position, this.position),
+                            penetration:1
+                        })
+                        break
+                    case GameObjectType.Human: {
+                        (obj as Human | StaticBody).damage({
+                            amount: damage,
+                            reason: DamageReason.Explosion,
+                            source: this.source,
                             owner: this.owner,
                             position: v2.clone(obj.position),
                             critical: false,
@@ -92,15 +103,15 @@ export class Explosion extends ServerGameObject{
                     }
                     case GameObjectType.Loot: {
                         const dir = v2.lookTo(this.position,obj.position)
-                        const force = Math.max(0, (this.def.size.end - dist) / this.def.size.end)*(this.def.push_force===undefined?8:this.def.push_force)
+                        const force = Math.max(0, (this.def.size.end - dist) / this.def.size.end)*(this.def.push_force===undefined?15:this.def.push_force)
                         obj.push(force*blockFactor, dir)
                         break
                     }
                     case GameObjectType.Grenade: {
-                        const pf=(obj as Grenade).def.push_force_resistence!==undefined?(obj as Grenade).def.push_force_resistence!:1
+                        const pf=(obj as Grenade).def.push_force_resistence!==undefined?(obj as Grenade).def.push_force_resistence!:0.75
                         if(pf){
                             const dir = v2.lookTo(this.position,obj.position)
-                            const force = Math.max(0, (this.def.size.end - dist) / this.def.size.end)*(this.def.push_force===undefined?8:this.def.push_force)
+                            const force = Math.max(0, (this.def.size.end - dist) / this.def.size.end)*(this.def.push_force===undefined?15:this.def.push_force)
                             obj.push(force*blockFactor*pf, dir)
                             obj.physical_data.angular_velocity=random.neg_float(2,10)
                         }

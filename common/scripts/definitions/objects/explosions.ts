@@ -58,6 +58,10 @@ export const explosion_cam_shakes={
     small:{
         duration:0.25,
         intensity:0.4,
+    },
+    tiny:{
+        duration:0.25,
+        intensity:0.2,
     }
 } satisfies Record<string,CamShake>
 export const explosions_decals={
@@ -84,7 +88,16 @@ export const explosions_decals={
             color:0x000000,
             alpha:190,
         },
-    }
+    },
+    tiny:{
+        def:"explosion_decal",
+        scale:1,
+        lifetime:15,
+        tint:{
+            color:0x000000,
+            alpha:100,
+        },
+    } as DecalInstanceDef
 } satisfies Record<string,DecalInstanceDef>
 export const explostion_factory={
     flare_explosion(id:string,tint:string){
@@ -100,8 +113,8 @@ export const explostion_factory={
             assets:{
                 sound:"explosion_3"
             },
-            decal:explosions_decals.small,
-            cam_shake:explosion_cam_shakes.small,
+            decal:explosions_decals.tiny,
+            cam_shake:explosion_cam_shakes.tiny,
         }
     }
 }
@@ -216,6 +229,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:1,
                 end:5
             },
+            push_force:8,
             damage:5,
             assets:{
                 sound:"explosion_6"
@@ -369,7 +383,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 begin:2,
                 end:5
             },
-            damage:70,
+            damage:100,
             obstacle_mult:1.5,
             bullet:{
                 def:{
@@ -412,6 +426,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 end:25
             },
             damage:500,
+            push_force:55,
             bullet:{
                 def:{
                     damage:30,
@@ -436,6 +451,7 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 visual:1.5
             },
             damage:115,
+            push_force:25,
             obstacle_mult:1.25,
             bullet:{
                 def:{

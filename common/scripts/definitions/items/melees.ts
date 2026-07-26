@@ -33,6 +33,7 @@ export interface MeleeDef extends Definition{
     character_frame?:{
         equipped_frame:FrameDef
         unequipped_frame:FrameDef
+        downed?:FrameDef
     }
 
     reflective?:{
@@ -706,7 +707,14 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     hotspot:v2(1,0.5),
                     scale:2,
                     rotation:3.3
-                }
+                },
+                downed:{
+                    image:"katana_bag",
+                    position:v2.new(-1.1,0.27),
+                    hotspot:v2(1,0.5),
+                    scale:1.5,
+                    rotation:3.14
+                },
             }
         },
         melees_factorys.bonesaw("bonesaw"),
@@ -837,6 +845,13 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     hotspot:v2(0.5,0.5),
                     scale:2,
                     image:"pan_world"
+                },
+                downed:{
+                    position:v2(-0.25,0.05),
+                    rotation:1.1,
+                    image:"pan",
+                    scale:2,
+                    hotspot:v2(0.5,0.5),
                 }
             }
         },

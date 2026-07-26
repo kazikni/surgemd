@@ -79,13 +79,18 @@
             "ghost_bullets": "Ghost Bullets",
             "biggest_magazine": "Biggest Magazine",
             "self_revive": "Self Revive",
+
             "frag_grenade": "Frag Grenade",
             "smoke_grenade": "Smoke Grenade",
             "molotov": "Molotov Cocktail",
             "mirv_grenade": "Mirv Grenade",
+            "submirv_grenade": "Mirv Grenade",
+            "m79_grenade": "M79",
             "blue_flare": "Blue flare",
             "yellow_flare": "Yellow flare",
             "red_flare": "Red Flare",
+            "nuke":"Nuke-333",
+            "mini_nuke":"Nuke-126",
             "description": {
                 "12g": "12 Gauge. Used in shotguns",
                 "762mm": "7.62mm used in snipers and AR.",
@@ -151,6 +156,14 @@
             "shiny":"Shiny",
             "aqua":"Aqua",
             "aqua_blue":"Aqua Blue"
+        },
+        "badges":{
+            "stone_1":"Stone-1",
+            "stone_2":"Stone-2",
+            "stone_3":"Stone-3",
+
+            "md":"MD",
+            "campfire":"Campfire"
         },
         "characters": {
             "nick": "Nick",
@@ -328,7 +341,8 @@
             "loadout": {
                 "character": "Character",
                 "emotes": "Emotes",
-                "wrapping": "Wrapping"
+                "wrapping": "Wrapping",
+                "badges": "Badges"
             },
             "mods": {
                 "mods-list": "Mods List"

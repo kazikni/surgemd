@@ -325,7 +325,7 @@ export const guns_factory={
             class:GunClasses.Assault,
             rank:ItemRank.C,
 
-            barrel_length:1,
+            barrel_length:1.06,
 
             fire_delay:0.1,
             switch_delay:0.5,

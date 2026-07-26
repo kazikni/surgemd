@@ -283,7 +283,7 @@ export class Human extends MovingBody{
         if(this.status.score<0)this.status.score=0
     }
     get_reflect_segment(): Hitbox2D|undefined {
-        if(!(this.inventory.weapons[0]?.def as MeleeDef).reflective)return undefined
+        if(this.downed||!(this.inventory.weapons[0]?.def as MeleeDef).reflective)return undefined
         const reflect=this.inventory.weapon_idx===0?(this.inventory.weapons[0]!.def as MeleeDef).reflective!.equipped:(this.inventory.weapons[0]!.def as MeleeDef).reflective!.unequipped
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
@@ -314,7 +314,6 @@ export class Human extends MovingBody{
             accessorys:female?[
                 this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
             ]:[],
-            badge:this.game.definitions.badges.getFromString("stone_1_badge"),
             colors:{},
         }
         const default_scope=this.game.definitions.scopes.getFromNumber(0)
@@ -868,7 +867,7 @@ export class Human extends MovingBody{
         const current_floor=Floors[this.physical_data.current_floor]
         let acceleration=40*(this.downed||this.swimming?0.2:current_floor.acceleration)
         acceleration=Numeric.dt_expo_inter(acceleration,dt)
-        let speed=5.5*(this.recoil?this.recoil.speed:1)
+        let speed=5.3*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
             * this.modifiers.speed

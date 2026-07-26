@@ -278,6 +278,8 @@ export class Player extends Human{
             }
         }
         this.loadout.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]
+        if(jp.badge)this.loadout.badge=this.game.definitions.badges.valueNumber[jp.badge]
+        else this.loadout.badge=undefined
         this.loadout.emotes.victory=this.game.definitions.emotes.valueNumber[jp.victory_emote-1]
         this.loadout.emotes.death=this.game.definitions.emotes.valueNumber[jp.death_emote-1]
     }

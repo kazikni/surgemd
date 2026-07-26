@@ -19,6 +19,7 @@ export class JoinPacket extends Packet{
     }
 
     wrapping:number=0
+    badge?:number
     victory_emote:number=0
     death_emote:number=0
     constructor(){
@@ -27,7 +28,7 @@ export class JoinPacket extends Packet{
     encode(stream: Stream): void {
         stream.write_string_sized(this.player_name,30)
         stream.write_string_sized(this.group_token,20)
-        stream.write_boolean_group(this.skin!==undefined,this.skin?.female)
+        stream.write_boolean_group(this.skin!==undefined,this.skin?.female,this.badge!==undefined)
         if(this.skin!==undefined){
             stream.write_uint16(this.skin.shirt)
             stream.write_uint16(this.skin.hair)
@@ -35,6 +36,9 @@ export class JoinPacket extends Packet{
             stream.write_uint32(this.skin.hair_tint)
         }
         stream.write_uint16(this.wrapping)
+        if(this.badge!==undefined){
+            stream.write_uint16(this.badge)
+        }
         stream.write_uint16(this.victory_emote)
         stream.write_uint16(this.death_emote)
     }
@@ -57,6 +61,11 @@ export class JoinPacket extends Packet{
             this.skin.female=bg[1]
         }
         this.wrapping=stream.read_uint16()
+        if(bg[2]){
+            this.badge=stream.read_uint16()
+        }else{
+            this.badge=undefined
+        }
         this.victory_emote=stream.read_uint16()
         this.death_emote=stream.read_uint16()
     }

@@ -47,6 +47,7 @@ export const ConfigCasters=Object.freeze({
     sv_loadout_emote_death:Casters.toString,
     sv_loadout_emote_victory:Casters.toString,
     sv_loadout_wrapping_weapons:Casters.toString,
+    sv_loadout_badge:Casters.toString,
 
     sv_graphics_resolution:Casters.generateUnionCaster(["low","medium"]),
     sv_graphics_renderer:Casters.generateUnionCaster(["webgl1","webgl2"]),
@@ -96,6 +97,7 @@ export const ConfigDefaultValues={
     sv_loadout_emote_death:"",
     sv_loadout_emote_victory:"",
     sv_loadout_wrapping_weapons:"",
+    sv_loadout_badge:"",
 
     sv_graphics_renderer:"webgl2",
     sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"medium",

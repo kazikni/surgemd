@@ -5,6 +5,7 @@ import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
 import { Rect } from "../math/geometry.ts";
+import { type WasmModule } from "../lang/wasm.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -104,10 +105,10 @@ export abstract class BaseObject2D{
 }
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cell_size: number;
-    cells: Map<bigint,GameObject[]> = new Map();
-    object_cells: Map<number, bigint[]> = new Map();
-
+    cells: Map<bigint,GameObject[]> = new Map()
+    object_cells: Map<number, bigint[]> = new Map()
     dirty_objects:Set<GameObject>=new Set()
+    modules?:WebAssembly.Module
 
     constructor(cell_size = 5) {
         this.cell_size = cell_size;
@@ -328,8 +329,7 @@ export type CheckpointContext={
     idco:Record<number,number> // Record<ObjectID, CheckpointObjectID>
     coid:Record<number,number> // Record<CheckpointObjectID, ObjectID>
 }
-export interface Layer2D<GameObject extends BaseObject2D> {
-    //objects:Record<GameObjectID,GameObject>
+export interface Layer2D{
     orden:number[]
     ticks:number[]
     physics_update:number[]
@@ -339,9 +339,10 @@ export interface Layer2D<GameObject extends BaseObject2D> {
 export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
 export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number|undefined,layer:number,type:number)=>GameObject|undefined
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
+    modules?:WebAssembly.Module
     cells:CellsManager2D<GameObject>
 
-    layers:Record<number,Layer2D<GameObject>>={}
+    layers:Record<number,Layer2D>={}
     layers_orden:number[]=[]
 
     objects:Record<number,GameObject>={}

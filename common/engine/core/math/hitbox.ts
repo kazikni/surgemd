@@ -1,5 +1,4 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
-
 import { random } from "./random.ts";
 import { Stream } from "../net/stream.ts";
 import { Numeric } from "./utils.ts";
@@ -55,8 +54,13 @@ export interface JsonHitbox2DMapping {
 }
 export type Hitbox2D = Hitbox2DMapping[HitboxType2D]
 export type JsonHitbox2D = JsonHitbox2DMapping[HitboxType2D]
+type WasmFunctions={
+    circle_cw_rect(cx:number,cy:number,cr:number,minx:number,miny:number,maxx:number,maxy:number):boolean
+}
 export abstract class BaseHitbox2D{
     abstract type: HitboxType2D
+
+    static wasm?:WasmFunctions
 
     abstract colliding_with(other: Hitbox2D):boolean
     abstract colliding_with_line(a:Vec2,b:Vec2):boolean
@@ -176,6 +180,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
             case HitboxType2D.circle:
                 return v2.distance(this.position,other.position)<this.radius+other.radius
             case HitboxType2D.rect:
+                if(BaseHitbox2D.wasm)return BaseHitbox2D.wasm.circle_cw_rect(this.position.x,this.position.y,this.radius,other.min.x,other.min.y,other.max.x,other.max.y)
                 return Collision.circle_with_rect(this.position,this.radius,other.min,other.max)
             case HitboxType2D.group:
                 return other.hitboxes.some(hitbox => hitbox.colliding_with(this));

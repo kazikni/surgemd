@@ -125,6 +125,7 @@ export class Grenade extends Projectile{
     }
     set_configuration(def:GrenadeDef,position:Vec2,owner?:Human){
         this.def=def
+        this.source=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.position=position
         if(this.def.fuse){

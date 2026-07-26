@@ -9,6 +9,7 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 import { ModeConfig } from "common/scripts/config/config.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -518,6 +519,56 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             }
 
             active_g.appendChild(container)
+        }
+    }
+}
+export function make_badges_settings(save: GameSave,resources: ResourcesManager,badges:BadgeDef[],translation: TranslationManager) {
+    return (parent: HTMLDivElement) => {
+        let selected: string=save.get_variable("sv_loadout_badge")
+
+        parent.classList.add("big")
+        parent.innerHTML = `
+<div class="loadout-icons-group items">
+    <div class="litem" idString=""></div>
+</div>
+`
+
+        const null_elem=parent.querySelector(".litem") as HTMLDivElement
+        null_elem.onclick=(e)=>{
+            if(selectedElem)selectedElem.classList.remove("selected")
+            selected=null_elem.dataset.idString!
+            selectedElem=null_elem
+            null_elem.classList.add("selected")
+            save.set_variable("sv_loadout_badge",selected)
+        }
+        let selectedElem: HTMLDivElement|null
+        if(!selected){
+            selectedElem=null_elem
+            selectedElem.classList.add("selected")
+        }
+        const inventory = parent.querySelector(".items") as HTMLDivElement
+        for (const b of badges) {
+            const div = document.createElement("div")
+            div.className = "litem"
+            div.dataset.idString = b.idString
+            const icon=resources.get_frame("badge_"+b.idString)?.src
+            div.innerHTML = `
+<span class="name">${translation.get("badges."+b.idString)}</span>
+<img class="icon" src="${icon}">`
+
+            if(b.idString===selected){
+                selectedElem=div
+                div.classList.add("selected")
+            }
+            div.onclick = () => {
+                if(selectedElem)selectedElem.classList.remove("selected")
+                selected=div.dataset.idString!
+                selectedElem=div
+                div.classList.add("selected")
+                save.set_variable("sv_loadout_badge",selected)
+            }
+
+            inventory.appendChild(div)
         }
     }
 }
@@ -1294,6 +1345,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     name:"menu.loadout.wrapping",
                     subtab:"wrapping"
                 },
+                {
+                    id:"badge",
+                    type:"button",
+                    name:"menu.loadout.badges",
+                    subtab:"badges"
+                },
             ],
             subtabs:{
                 "character":{
@@ -1365,6 +1422,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:(()=>{
                         const wrapping=Object.values(definitions.wrapping.value)
                         return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                    })()
+                },
+                "badges":{
+                    generate:(()=>{
+                        const badges=Object.values(definitions.badges.value)
+                        return make_badges_settings(menu.save,resources,badges,translation)
                     })()
                 },
             },

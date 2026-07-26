@@ -734,6 +734,10 @@ export class Game extends ClientGame<GameObject>{
         if(sv!=""){
             packet.wrapping=this.definitions.wrapping.getFromString(sv).idNumber!+1
         }
+        sv=this.save.get_variable("sv_loadout_badge")
+        if(sv!=""){
+            packet.badge=this.definitions.badges.getFromStringSafe(sv)?.idNumber
+        }
         this.client.emit_packet(packet)
     }
     connect(url:string){

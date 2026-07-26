@@ -14,6 +14,7 @@ export interface DecalDef extends Definition{
 }
 export interface DecalInstanceDef{
     def:string
+    lifetime?:number
     tint?:DecalTint
     scale?:number
 }

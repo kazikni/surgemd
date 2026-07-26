@@ -8,7 +8,7 @@ export class ApiConnection {
     socket?: WebSocket
     logged:boolean=false
     constructor(public game: GameServer,public config: GameServerConfig) {}
-    connect(attempts=5) {
+    connect(attempts=20) {
         if(attempts<=0)return
         this.logged=false
         const ws = new WebSocket(this.config.authentication!.server)

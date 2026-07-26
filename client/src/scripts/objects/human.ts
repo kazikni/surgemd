@@ -525,6 +525,8 @@ export class Human extends MovingBody{
         this.sprites.left_leg_foot.position=v2(0.05,0)
         this.sprites.right_leg_foot.position=v2(0.05,0)
 
+        this.sprites.left_arm.visible=true
+        this.sprites.right_arm.visible=true
         this.sprites.left_arm.position=DefaultFistRig.left!.position
         this.sprites.right_arm.position=DefaultFistRig.right!.position
         this.sprites.left_arm.rotation=DefaultFistRig.left!.rotation
@@ -533,6 +535,7 @@ export class Human extends MovingBody{
         this.sprites.weapon.visible=false
         this.sprites.weapon2.visible=false
         if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
+        this.update_melee(this.melee)
     }
     on_help_up(){
         if(!this.downed)return
@@ -544,6 +547,7 @@ export class Human extends MovingBody{
         this.container.zIndex=zIndexes.Players
         this.set_current_weapon(this.current_weapon)
         if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
+        this.update_melee(this.melee)
     }
 
     // Weapon And Arm Rig
@@ -690,7 +694,9 @@ export class Human extends MovingBody{
         this.melee=def
         if(def?.character_frame){
             this.sprites.melee_world.visible=true
-            if(this.current_weapon?.item_type===def.item_type){
+            if(this.downed&&def.character_frame.downed){
+                this.sprites.melee_world.set_frame(def.character_frame.downed,this.game.resources)
+            }else if(this.current_weapon?.item_type===def.item_type){
                 this.sprites.melee_world.set_frame(def.character_frame.equipped_frame,this.game.resources)
             }else{
                 this.sprites.melee_world.set_frame(def.character_frame.unequipped_frame,this.game.resources)
@@ -1483,7 +1489,10 @@ export class Human extends MovingBody{
             target:this.sprites.emote_container.scale,
             duration:1,
             to:v2.one,
-            ease:ease.elasticOut
+            ease:ease.elasticOut,
+            onComplete:()=>{
+                this.animation.emote_tween=undefined
+            }
         })
 
         this.sprites.mounth.frames=this.animation.mounth

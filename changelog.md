@@ -12,6 +12,7 @@ __                                                                              
 * Main Menu Rework
 * Emotes Loadout
 * Wrapping Loadout
+* Badges Loadout
 * Main Socials
 * On Die Sound
 * More Screen Sizes
@@ -32,13 +33,9 @@ __                                                                              
 * Crowbar
 * Bonesaw Bloody
 * Bike Helmets Variations
+* TaurusTx sounds
 __                                                                                                                 __
 ### Loadout
-* Wrappings
-* Gradient Wrapping
-* Shiny Wrapping
-* Aqua Wrapping
-* Aqua Blue Wrapping
 * Angry Emote
 * Angry Swearing
 * Very Love Emote
@@ -50,6 +47,14 @@ __                                                                              
 * Campfire Logo Emote
 * Vasco Da Gama Emote
 * GG Emote
+* Wrappings
+* Gradient Wrapping
+* Shiny Wrapping
+* Aqua Wrapping
+* Aqua Blue Wrapping
+* Stone-2 And Stone-3 Badge
+* MD Badge
+* Campfire Badge
 __                                                                                                                 __
 ### Others
 * Alternative Shed Ceiling

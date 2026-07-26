@@ -384,8 +384,8 @@ export class UiManager{
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     proccess_joinned_packet(jp:JoinnedPacket){
         for(const p of jp.players){
-            const badge_frame=p.badge!==undefined?this.game.definitions.badges.getFromNumber(p.badge).idString:""
-            const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
+            const badge_frame=this.game.resources.get_frame(p.badge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(p.badge).idString:"")
+            const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
         if(jp.leader){
@@ -452,8 +452,8 @@ export class UiManager{
             case FeedMessageType.set_name:
                 block_message=true
             case FeedMessageType.join:{
-                const badge_frame=msg.playerBadge!==undefined?this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:""
-                const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
+                const badge_frame=this.game.resources.get_frame(msg.playerBadge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:"")
+                const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
                 elem.innerHTML=this.game.language.get("feed.join",{"player":this.players_name[msg.playerId].full})
                 break

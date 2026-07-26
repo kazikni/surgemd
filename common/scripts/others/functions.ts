@@ -91,6 +91,7 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
                 item:ammo_def,
                 count:(itemD as GunDef).ammo_spawn!.amount
             }
+            if(itemD.dual_from!==undefined)data.count*=2
             if(settings.include_ammo||aditional.include_ammo){
                 ret[0].aditional=[data]
             }else{

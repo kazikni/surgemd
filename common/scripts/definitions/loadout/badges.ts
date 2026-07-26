@@ -7,9 +7,11 @@ export interface BadgeDef extends Definition{
 
 export function Badges_Default_Init(badges:Definitions<BadgeDef,{}>){
     badges.insert(
-        {
-            idString:"stone_1_badge",
-            rank:ItemRank.E
-        },
+        {idString:"stone_1", rank:ItemRank.E},
+        {idString:"stone_2", rank:ItemRank.E},
+        {idString:"stone_3", rank:ItemRank.E},
+
+        {idString:"md", rank:ItemRank.S},
+        {idString:"campfire", rank:ItemRank.D},
     )
 }

@@ -2,8 +2,8 @@
 @use "./md.scss";
 @use "./components/text.scss" as text;
 #menu {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     position: absolute;
     left: 0px;
     right: 0px;
@@ -714,25 +714,40 @@
             background-image: url("/img/menu/socials/linux.svg");
         }
     }
+    
     @include main.large_screen {
+        gap: 12px;
+        padding: 16px;
+        .social-link {
+            width: 33px;
+            height: 33px;
+        }
+        .social-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 5px;
+        }
+    }
+    @include main.medium_screen {
         gap: 10px;
         padding: 7px;
         .social-link {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
         }
         .social-icon {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             font-size: 5px;
         }
     }
 }
 #main-social{
     position: absolute;
-    background-color: #0004;
     left: 0px;
-    top: 0px;
+    bottom: 35px;
+    background-color: #0004;
+    border-radius: 0 10px 0 0;
     pointer-events: all;
 }
 #about-sm-social{
@@ -740,23 +755,18 @@
 }
 #featured-content-creators{
     display: flex;
+    background-color: #0004;
     flex-direction: column;
     gap:5px;
     position: absolute;
-    left: 5px;
-    top: 85px;
+    left: 0;
+    top: 0;
+    padding: 15px;
+    border-radius: 0 0 10px 0;
     pointer-events: all;
     .content-creator{
         text-align: center;
         align-items: center;
-        padding: 10px;
-        border: 2px solid #07aaeeaa;
-        background: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
-        &:hover {
-            background: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
-            border-color: #07aaeeaa;
-            box-shadow: 0 0 20px #07aaeeaa;
-        }
     }
 }
 .background-menu-md{

@@ -13,6 +13,9 @@
             }
         }
     },
+    "cutscenes": {
+        "begin": "cutscenes/begin.jsonc"
+    },
     "next_level":{
         "complete":"../level1"
     },

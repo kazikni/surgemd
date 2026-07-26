@@ -42,8 +42,8 @@
 .btn-blue {
     @extend .btn-base;
 
-    --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
-    --item-bg-hover: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
+    --item-bg: linear-gradient(135deg, #07aaee30 0%, #07aaee44 100%);
+    --item-bg-hover: linear-gradient(135deg, #07aaee44 0%, #07aaee5f 100%);
 
     --item-border: #07aaeeaa;
     --item-border-hover: #07aaeeaa;
@@ -51,8 +51,8 @@
 .btn-green {
     @extend .btn-base;
 
-    --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
-    --item-bg-hover: linear-gradient(135deg, #00aa7733 0%, #00aa774d 100%);
+    --item-bg: linear-gradient(135deg, #00aa7730 0%, #00aa7744 100%);
+    --item-bg-hover: linear-gradient(135deg, #00aa7744 0%, #00aa775f 100%);
 
     --item-border: #00aa77aa;
     --item-border-hover: #00aa77aa;

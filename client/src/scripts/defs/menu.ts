@@ -414,27 +414,13 @@ export function make_menu_modes(modes:ModeConfig[]){
 }
 export function make_emotes_settings(save: GameSave,resources:ResourcesManager,definitions:GameDefinition,emotes: EmoteDef[],translation: TranslationManager){
     return (parent: HTMLDivElement)=>{
-        let selected: string|null=null
         let selected_elem: HTMLElement|null=null
         let selected_elem_out: HTMLElement|null=null
-
-        function emote_selection(){
-            if(!selected||!selected_elem_out||!selected_elem)return
-
-            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,selected)
-            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+selected).src
-            selected=null
-            selected_elem.classList.remove("selected")
-            selected_elem_out.classList.remove("selected")
-            selected_elem=null
-            selected_elem_out=null
-        }
+        const vv:Record<string, HTMLDivElement>={}
 
         parent.innerHTML=`  
 <span class="span-text">Active Emotes</span>
-<div class="loadout-icons-group active-emotes">
-        
-</div>
+<div class="loadout-icons-group active-emotes"></div>
 <span class="span-text">Emotes Inventory</span>
 <div class="loadout-icons-group emotes-inventory"></div>
         `
@@ -443,20 +429,16 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
 
         const emotes_g=parent.querySelector(".emotes-inventory") as HTMLDivElement
         function emote_click(e:MouseEvent){
+            if(!selected_elem_out)return
             const t=e.currentTarget as HTMLDivElement
             const id=t.dataset.idString as string
-            if(selected===id){
-                t.classList.remove("selected")
-                selected=null
-                selected_elem=null
-            }else{
-                if(selected_elem)selected_elem.classList.remove("selected")
-                selected_elem=t
-                selected=id
-                t.classList.add("selected")
-            }
 
-            emote_selection()
+            if(selected_elem)selected_elem.classList.remove("selected")
+            selected_elem=t
+            selected_elem.classList.add("selected")
+
+            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,id)
+            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+id).src
         }
         for(const e of emotes){
             const frame=resources.get_frame("emote_"+e.idString)
@@ -475,6 +457,7 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             container.dataset.idString=e.idString
             container.onclick=emote_click
             emotes_g.appendChild(container)
+            vv[e.idString]=container
         }
 
         const active_g=parent.querySelector(".active-emotes") as HTMLDivElement
@@ -510,12 +493,17 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
                 if(selected_elem_out===t){
                     selected_elem_out=null
                     t.classList.remove("selected")
+                    if(selected_elem)selected_elem.classList.remove("selected")
                 }else{
                     if(selected_elem_out)selected_elem_out.classList.remove("selected")
                     selected_elem_out=t
                     t.classList.add("selected")
+
+                    const sv=save.get_variable("sv_loadout_emote_"+container.dataset.slot!)
+                    if(selected_elem)selected_elem.classList.remove("selected")
+                    selected_elem=vv[sv]
+                    selected_elem.classList.add("selected")
                 }
-                emote_selection()
             }
 
             active_g.appendChild(container)
@@ -574,25 +562,8 @@ export function make_badges_settings(save: GameSave,resources: ResourcesManager,
 }
 export function select_loadout_item(save: GameSave,resources: ResourcesManager,items: string[],slots:string[],icon_placeholder:string,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
     return (parent: HTMLDivElement) => {
-        let selected: string | null = null
         let selectedElem: HTMLDivElement | null = null
         let selectedSlot: HTMLDivElement | null = null
-
-        function updateSelection() {
-            if(selected===null || !selectedElem || !selectedSlot)return
-
-            save.set_variable(variable + selectedSlot.dataset.slot,selected)
-
-            const img = selectedSlot.querySelector(".icon") as HTMLImageElement
-            img.src = icon_placeholder+selected+".svg"
-
-            selectedElem.classList.remove("selected")
-            selectedSlot.classList.remove("selected")
-
-            selected = null
-            selectedElem = null
-            selectedSlot = null
-        }
 
         parent.classList.add("big")
 
@@ -603,6 +574,7 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
 <div class="loadout-icons-group items"></div>
 `
         const inventory = parent.querySelector(".items") as HTMLDivElement
+        const vv:Record<string,HTMLDivElement>={}
         for (const id of items) {
             const div = document.createElement("div")
             div.className = "litem"
@@ -613,22 +585,19 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
 <img class="icon" src="${icon}">
 `
             div.onclick = () => {
-                if (selectedElem === div) {
-                    div.classList.remove("selected")
-                    selectedElem = null
-                    selected = null
-                } else {
-                    selectedElem?.classList.remove("selected")
-                    selectedElem = div
-                    selected = id
+                if(!selectedSlot)return
 
-                    div.classList.add("selected")
-                }
+                const img = selectedSlot.querySelector(".icon") as HTMLImageElement
+                img.src = icon_placeholder+id+".svg"
 
-                updateSelection()
+                if(selectedElem)selectedElem.classList.remove("selected")
+                selectedElem=div
+                div.classList.add("selected")
+                save.set_variable(variable+selectedSlot.dataset.slot,id)
             }
 
             inventory.appendChild(div)
+            vv[id]=div
         }
         const active = parent.querySelector(".active-items") as HTMLDivElement
 
@@ -646,12 +615,17 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
                 if (selectedSlot === div) {
                     div.classList.remove("selected")
                     selectedSlot = null
+                    if(selectedElem)selectedElem.classList.remove("selected")
                 } else {
                     selectedSlot?.classList.remove("selected")
                     selectedSlot = div
                     div.classList.add("selected")
+                    
+                    const sv=save.get_variable(variable+selectedSlot.dataset.slot)
+                    if(selectedElem)selectedElem.classList.remove("selected")
+                    selectedElem=vv[sv]
+                    selectedElem.classList.add("selected")
                 }
-                updateSelection()
             }
             active.appendChild(div)
         }

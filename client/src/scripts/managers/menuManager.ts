@@ -757,7 +757,7 @@ export class MenuManager{
         for(const creator of content_creators){
             this.content.content_creators.innerHTML+=`
 <a href="${creator.url}" target="_blank">
-    <div class="background-menu content-creator">
+    <div class="btn-blue content-creator">
         <img id="youtube-logo" src="./img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
         <span>${creator.name}</span>
     </div>

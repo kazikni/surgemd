@@ -21,7 +21,7 @@ import { FireMode } from "common/scripts/others/item.ts";
 export abstract class LItem extends MDItem{
     declare inventory:GInventory
     abstract on_use(user:Human,slot?:Slot<LItem>):void
-    abstract on_fire(user:Human):void
+    abstract on_fire(user:Human):boolean
     abstract on_fire_alt(user:Human):void
     abstract update(user:Human,dt:number):void
     abstract drop():Loot[]
@@ -48,7 +48,7 @@ export class GunItem extends GunItemBase implements LItem{
         
     }
     on_fire(user:Human){
-        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
+        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return false
         if(this.has_ammo(user)){
             if(this.use_delay<=0){
                 if(this.def.fire_mode===FireMode.Burst&&this.def.burst&&!this.burst){
@@ -61,10 +61,12 @@ export class GunItem extends GunItemBase implements LItem{
                     this.shot(user)
                     this.use_delay=this.def.fire_delay
                 }
+                return true
             }
         }else{
             this.burst=undefined
         }
+        return false
     }
     on_fire_alt(user:Human):void{
         if(this.def.alt_func){
@@ -289,6 +291,7 @@ export class GunItem extends GunItemBase implements LItem{
     override unload(): void {
         this.reloading=false
         this.burst=undefined
+        if(this.def.unload_multiply!==undefined)this.use_delay=this.def.fire_delay*this.def.unload_multiply
     }
     drop(): Loot[] {
         if(this.ammo>0&&!this.infinity_ammo()){
@@ -311,7 +314,8 @@ export class AmmoItem extends AmmoItemBase implements LItem{
     }
     on_use(_user: Human,_slot?: Slot<LItem>): void {
     }
-    on_fire(_user: Human):void{
+    on_fire(_user: Human):boolean{
+        return true
     }
     on_fire_alt(user:Human):void{}
     update(_user: Human,dt:number): void {
@@ -352,10 +356,12 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
                 break
         }
     }
-    on_fire(user:Human):void{
+    on_fire(user:Human):boolean{
         if(this.use_delay<=0){
             this.fire(user,true)
+            return true
         }
+        return false
     }
     on_fire_alt(user:Human):void{
         if(this.use_delay<=0){
@@ -419,8 +425,8 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         this.inventory.weapon_idx=-1
         this.slot=slot
     }
-    on_fire(user: Human): void {
-        if(!this.slot||this.slot?.quantity<=0||!user.input.using_item_down)return
+    on_fire(user: Human): boolean{
+        if(!this.slot||this.slot?.quantity<=0||!user.input.using_item_down)return true
         user.grenade_holding={
             def:this.def,
             time:this.def.fuse?.time??10,
@@ -433,6 +439,7 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         user.animation_data.current_animation.push({
             type:HumanAnimationType.Cook,
         })
+        return true
     }
     on_fire_alt(user:Human):void{}
     update(_user: Human,dt:number): void {
@@ -454,8 +461,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     on_use(_user: Human, _slot?: Slot<LItem>): void {
       
     }
-    on_fire(user: Human,_slot?: Slot<LItem>): void {
-        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return
+    on_fire(user: Human,_slot?: Slot<LItem>):boolean{
+        if(this.def.fire_mode===FireMode.Single&&!user.input.using_item_down)return false
         if(this.use_delay<=0){
             user.actions.cancel()
 
@@ -471,7 +478,9 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                 this.use_delay=this.def.attack_delay
             }
             this.firing=true
+            return true
         }
+        return false
     }
     on_fire_alt(user:Human):void{}
     attack(user:Human):void{

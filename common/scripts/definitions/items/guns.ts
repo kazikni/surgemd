@@ -21,6 +21,7 @@ export type GunDef={
     fire_delay:number
     switch_delay?:number
     switch_multiply?:number
+    unload_multiply?:number
     class_switch_multiply?:Partial<Record<GunClasses,number>>
 
     spread?:number
@@ -231,7 +232,7 @@ export const bullets_factory={
             criticalMult: 1.1,
             obstacleMult: 1.25,
             falloff: 0.7,
-            tracer: tracer
+            tracer: tracer,
         }
     },
     smg(power:number,tracer=tracers.small):BulletDef{
@@ -424,7 +425,8 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_on_release:true,
             fire_delay:0.1,
-            switch_delay:0.1,
+            switch_delay:0.25,
+            unload_multiply:0.65,
 
             gas_particles:GasParticles.sniper,
             case_particle:{
@@ -458,9 +460,10 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.1,
+            switch_delay:0.25,
+            unload_multiply:1.1,
             class_switch_multiply:{
-                [GunClasses.Shotgun]:8
+                [GunClasses.Shotgun]:10
             },
 
             gas_particles:GasParticles.shotgun,
@@ -1029,7 +1032,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         /////////////////////////////////////////////
         guns_factory.sniper("kar98k","762mm",{
             name:"Kar98-K",
-            fire_delay:1.3,
+            fire_delay:1.6,
             spread:0.4,
             idle_spread:0,
 
@@ -1050,7 +1053,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 },
             },
             recoil:{
-                duration:1.4,
+                duration:1.8,
                 speed:0.5
             },
 
@@ -1062,7 +1065,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.sniper("awp","762mm",{
             name:"AWP",
             rank:ItemRank.S,
-            fire_delay:1.4,
+            fire_delay:1.6,
             spread:0.6,
             idle_spread:0,
 
@@ -1079,7 +1082,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 extended_capacity:12,
             },
             recoil:{
-                duration:1.5,
+                duration:1.7,
                 speed:0.6
             },
             assets:{
@@ -1090,7 +1093,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"AWM",
             rank:ItemRank.S,
 
-            fire_delay:1.5,
+            fire_delay:1.7,
             spread:0.7,
             idle_spread:0.25,
 
@@ -1128,6 +1131,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1,
             spread:1,
+            unload_multiply:0.9,
             idle_spread:0.25,
 
             ammo_spawn:{

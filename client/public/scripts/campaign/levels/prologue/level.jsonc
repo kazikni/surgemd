@@ -27,12 +27,23 @@
             },
             "enemies": [
                 {
+                    "position":{"x":10,"y":43},
+                    "def": {
+                        "modifiers":{
+                            "speed":0.5
+                        },
+                        "ai": {
+                            "kind": "dumb"
+                        }
+                    }
+                },
+                {
+                    "position":{"x":10,"y":57},
                     "def": {
                         "ai": {
                             "kind": "dumb"
                         }
-                    },
-                    "count": 1
+                    }
                 }
             ]
         }
@@ -40,6 +51,9 @@
     "player": {
         "path": "../../characters/vinii.jsonc",
         "position":{"x":10,"y":51},
+        "modifiers":{
+            "speed":0.5
+        },
         "boosts": [
             {"weight": 1, "def": "green_bless", "value": 1}
         ]

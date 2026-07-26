@@ -1157,6 +1157,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1,
             spread:1,
+            unload_multiply:0.9,
             idle_spread:0.25,
 
             ammo_spawn:{

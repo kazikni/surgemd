@@ -30,11 +30,10 @@ export const TutorialMap:MapDef={
                     ],
                     generate:{
                         obstacles:[
-                            {def:"green_button",position:v2(0.5,-2.45),rotation:1,id:1,press_data:{allow_switch:false},puzzle_piece:{}},
-                            {def:"metal_door",position:v2(2.55,-0.7),rotation:1,variation:7,id:2,door_data:{
+                            {def:"green_button",position:v2(2.65,-1),rotation:0,id:1,press_data:{allow_switch:false},puzzle_piece:{}},
+                            {def:"metal_door",position:v2(2.55,0.75),rotation:3,variation:7,id:2,door_data:{
                                 locked:true,
                             }},
-
 
                             {def:"small_bed",position:v2(-1.5,1.1),rotation:0},
                             {def:"large_drawer",position:v2(-1,-1.97),rotation:1},
@@ -46,7 +45,7 @@ export const TutorialMap:MapDef={
                                 ],
                                 complete_actions:[
                                     {type:"wait",time:1},
-                                    {type:"door",id:2,locked:true,open_state:1}
+                                    {type:"door",id:2,locked:true,open_state:-1}
                                 ],
                             },
                         ]
@@ -62,10 +61,10 @@ export const TutorialMap:MapDef={
                             {def:"part_1",position:v2(10,57),rotation:0},
                         ],
                         obstacles:[
-                            {def:"wood_crate",position:v2(18,50),id:1,puzzle_piece:{id:"puzzle_2"}},
+                            /*{def:"wood_crate",position:v2(18,50),id:1,puzzle_piece:{id:"puzzle_2"}},
                             {def:"metal_door",position:v2(20,49.5),rotation:1,variation:7,id:2,door_data:{
                                 locked:true,
-                            }},
+                            }},*/
                             
                         ],
                         puzzles:[

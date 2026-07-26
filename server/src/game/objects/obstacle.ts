@@ -66,10 +66,12 @@ export class Obstacle extends StaticBody{
 
         hitbox:new NullHitbox2D(v2.new(0,0)),
         spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
+        interaction_hitbox:new NullHitbox2D(v2.new(0,0)),
 
         reflect_bullets:false,
         no_collision:true,
         no_bullets_collision:true,
+        no_pathfinding_collision:true,
         passable_by_bullets:false,
 
         stairs:[]
@@ -219,7 +221,7 @@ export class Obstacle extends StaticBody{
         }
     }
     override can_interact(user: Human): boolean {
-        return (this.def.interactDestroy||this.def.expanded_behavior)as boolean&&!this.destroyed&&user.hitbox.colliding_with(this.hitbox)&&!this.health_data.dead
+        return (this.def.interactDestroy||this.def.expanded_behavior)as boolean&&!this.destroyed&&(user.hitbox.colliding_with(this.interaction_hitbox)||user.hitbox.colliding_with(this.hitbox))&&!this.health_data.dead
     }
     override on_net_update(): void {
         if(this.door_data)this.door_data.dirty=false
@@ -241,6 +243,7 @@ export class Obstacle extends StaticBody{
 
         this.physical_data.no_collision=this.def.no_collision??false
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
+        this.physical_data.no_pathfinding_collision=this.def.no_pathfinding_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
 
@@ -300,6 +303,8 @@ export class Obstacle extends StaticBody{
         if(this.def.spawnHitbox)this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,this.physical_data.side)
         else this.physical_data.spawn_hitbox=this.physical_data.hitbox
 
+        this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
+
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 0:
@@ -335,6 +340,8 @@ export class Obstacle extends StaticBody{
     decal?:Decal
     set_position(position:Vec2,allow_biome_skin:boolean=false){
         this.position=position
+        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
+        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position,undefined,undefined,undefined)
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){

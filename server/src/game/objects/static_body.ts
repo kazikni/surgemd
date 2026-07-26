@@ -13,9 +13,11 @@ export interface StairData{
 export type StaticBodyPhysicalData={
     spawn_hitbox:Hitbox2D
     hitbox:Hitbox2D
+    interaction_hitbox:Hitbox2D
 
     reflect_bullets:boolean
     no_collision:boolean
+    no_pathfinding_collision:boolean
     no_bullets_collision:boolean
     passable_by_bullets:boolean
 
@@ -26,6 +28,7 @@ export abstract class StaticBody extends ServerGameObject{
     number_type:number=GameObjectType.StaticBody
 
     spawn_hitbox!:Hitbox2D
+    interaction_hitbox!:Hitbox2D
 
     abstract physical_data:StaticBodyPhysicalData
 

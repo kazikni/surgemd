@@ -240,9 +240,11 @@ export class Building extends StaticBody {
 
         hitbox:new NullHitbox2D(v2.new(0,0)),
         spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
+        interaction_hitbox:new NullHitbox2D(v2.new(0,0)),
 
         reflect_bullets:false,
         no_collision:true,
+        no_pathfinding_collision:false,
         no_bullets_collision:true,
         passable_by_bullets:false,
         stairs:[]

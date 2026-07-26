@@ -30,6 +30,7 @@ export const ObstacleTD:TD={
         },
 
         { name: "no_collision", content: tdm.boolean_onu },
+        { name: "no_pathfinding_collision", content: tdm.boolean_onu },
         { name: "passable_by_bullets", content: tdm.boolean_onu },
         { name: "no_bullets_collision", content: tdm.boolean_onu },
 
@@ -187,6 +188,7 @@ export interface ObstacleDef extends Definition{
         alpha:number
     }
     no_collision?:boolean
+    no_pathfinding_collision?:boolean
     passable_by_bullets?:boolean
     no_bullets_collision?:boolean
 
@@ -420,6 +422,7 @@ export const obstacles_factory={
             },
             imortal:true,
             reflect_bullets:true,
+            no_pathfinding_collision:true,
             hitbox:new RectHitbox2D(v2(0,-0.2),v2(0.17,0.2)),
             scale:{
                 destroy:0.75,

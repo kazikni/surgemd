@@ -410,6 +410,7 @@ export class Human extends MovingBody{
         if(preset.modifiers)this.temp_modifiers=preset.modifiers
         if(preset.inventory)this.inventory.load_preset(preset.inventory)
         if(preset.position)this.position=preset.position
+        if(preset.layer!==undefined)this.manager.set_layer(this,preset.layer)
         if(preset.group_color)this.team_data.color=preset.group_color
         if(preset.team){
             const team=this.game.modeManager.get_team(preset.team)

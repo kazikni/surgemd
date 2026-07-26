@@ -1415,8 +1415,8 @@
 
         background:linear-gradient(
             135deg,
-            #07aaee1a 0%,
-            #07aaee33 100%
+            #07aaee44 0%,
+            #07aaee66 100%
         );
 
         .name{
@@ -1438,7 +1438,7 @@
         }
 
         &.selected{
-            border:1px solid #07aaeeaa;
+            border:2px solid #07aaeeaa;
             box-shadow:0 0 20px #07aaeeaa;
         }
     }

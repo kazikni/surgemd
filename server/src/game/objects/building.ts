@@ -279,7 +279,7 @@ export class Building extends StaticBody {
             this.physical_data.spawn_hitbox=this.physical_data.hitbox
         }
 
-        this.allow_tick=this.def.content.puzzles!==undefined
+        this.allow_tick=this.def.generate.puzzles!==undefined
         this.physical_data.no_collision=this.def.no_collisions??false
         this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
@@ -301,7 +301,7 @@ export class Building extends StaticBody {
         this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
     }
     after_generate(){
-        for(const c of this.def.content.ceiling??[]){
+        for(const c of this.def.ceiling??[]){
             const conns:Obstacle[]=[]
             for(const conn of c.connections??[]){
                 if(this.objects_ids[conn])conns.push(this.objects_ids[conn])
@@ -310,7 +310,7 @@ export class Building extends StaticBody {
         }
 
         let idx=0
-        for(const s of this.def.content.stair_data??[]){
+        for(const s of this.def.generate.stair_data??[]){
             const base_hb=s.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
             this.physical_data.stairs.push({
                 index:idx,
@@ -325,7 +325,7 @@ export class Building extends StaticBody {
     generate(position: Vec2){
         this.begin_generate(position)
 
-        for(const p of this.def.content.puzzles??[]){
+        for(const p of this.def.generate.puzzles??[]){
             const puzzle=new BuildingPuzzle(this,p)
             this.puzzles[puzzle.id]=puzzle
             if(p.global)this.game.puzzles[puzzle.id]=puzzle
@@ -336,21 +336,21 @@ export class Building extends StaticBody {
             const l=this.layer+(f.layer??0)
             this.game.map.terrain.add_floor(f.type,hb,l)
         }*/
-        for (const l of this.def.content.loots ?? []) {
+        for (const l of this.def.generate.loots ?? []) {
             const items = this.game.get_loot_table(l.table)
             const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
                 this.game.add_loot(p, {item:li.item, count:li.count}, this.layer)
             }
         }
-        for (const d of this.def.content.decals ?? []) {
+        for (const d of this.def.generate.decals ?? []) {
             const def=this.game.definitions.decals.getFromString(d.def)
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, d.position, side)
             const rotation=(d.rotation??0)+Angle.side_rad(this.physical_data.side)
             this.game.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
         }
-        for(const o of this.def.content.obstacles ?? []) {
+        for(const o of this.def.generate.obstacles ?? []) {
             const def_name=typeof o.def==="string"?o.def:random.weight2(o.def)!.def
             if(!def_name||def_name==="")continue
             const def=this.game.definitions.obstacles.getFromString(def_name)
@@ -395,7 +395,7 @@ export class Building extends StaticBody {
 
             this.children.push({obj,def:o,type:0})
         }
-        for (const b of this.def.content.sub_building ?? []) {
+        for (const b of this.def.generate.sub_building ?? []) {
             const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, b.position, side)

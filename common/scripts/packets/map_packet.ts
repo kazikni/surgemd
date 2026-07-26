@@ -63,7 +63,7 @@ export class MapPacket extends Packet{
         //write_biome(this.map.biome,stream)
 
         //const old_len=stream.length
-        stream.write_td(this.map.definitions,GameDefinition.add_td)
+        stream.write_td(this.map.definitions,GameDefinition.add_client_td)
         //stream.write_any(this.map.definitions)
         //console.log(stream.length-old_len)
 
@@ -107,7 +107,7 @@ export class MapPacket extends Packet{
         this.map.size=v2(stream.read_uint16(),stream.read_uint16())
         this.map.biome=stream.read_td(MapBiomeTD)
 
-        this.map.definitions=stream.read_td(GameDefinition.add_td)
+        this.map.definitions=stream.read_td(GameDefinition.add_client_td)
         //this.map.definitions=stream.read_any()
 
         this.map.regions=stream.read_array(()=>{

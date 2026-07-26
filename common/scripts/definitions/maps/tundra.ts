@@ -24,7 +24,32 @@ export function create_hunt_house(id:string,settings:{
                 tint:0x656877,
             }
         },
-        content:{
+        ceiling:[ 
+            {
+                frame:{
+                    image:"hunt_house_ceiling_1",
+                    position:v2.zero(),
+                    rotation:0
+                },
+                connections:[10,11,12,13,14,15],
+                destroy:{
+                    frame:"hunt_house_ceiling_break",
+                    sound:"ceiling_break_1",
+                    count:3,
+                    particles:{
+                        count:30
+                    }
+                },
+                hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+            }
+        ],
+        floor_image:[
+            {
+                image:"hunt_house_floor",
+                position:v2(0,0),
+            }
+        ],
+        generate:{
             obstacles:[
                 {
                     def:"wood_door",
@@ -88,31 +113,6 @@ export function create_hunt_house(id:string,settings:{
                     variation:walls_tint
                 },
                 ...(settings.content??[])
-            ],
-            ceiling:[ 
-                {
-                    frame:{
-                        image:"hunt_house_ceiling_1",
-                        position:v2.zero(),
-                        rotation:0
-                    },
-                    connections:[10,11,12,13,14,15],
-                    destroy:{
-                        frame:"hunt_house_ceiling_break",
-                        sound:"ceiling_break_1",
-                        count:3,
-                        particles:{
-                            count:30
-                        }
-                    },
-                    hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
-                }
-            ],
-            floor_image:[
-                {
-                    image:"hunt_house_floor",
-                    position:v2(0,0),
-                }
             ],
         },
         hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
@@ -264,7 +264,7 @@ export const TundraMap:MapDef={
                         min:v2(-10,-10),
                         max:v2(10,10),
                     },*/
-                    content:{
+                    generate:{
                         loots:[
                             {
                                 table:"normal_loot",
@@ -349,7 +349,7 @@ export const TundraMap:MapDef={
                         min:v2(-10,-10),
                         max:v2(10,10),
                     },*/
-                    content:{
+                    generate:{
                         loots:[
                             {
                                 table:"normal_loot",
@@ -413,7 +413,7 @@ export const TundraMap:MapDef={
                     content:[
                     ],
                     b:{
-                        content:{
+                        generate:{
                             loots:[
                                 {table:"scopes",position:v2.new(0,0)},
                             ],
@@ -461,7 +461,7 @@ export const TundraMap:MapDef={
                         }
                     ],
                     b:{
-                        content:{
+                        generate:{
                             loots:[
                                 {table:"normal_loot",position:v2.new(0.5,0)},
                             ]

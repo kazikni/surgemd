@@ -1,4 +1,4 @@
-import { LootTable as LootTableBase } from "../../engine/core.ts";
+import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
@@ -146,6 +146,7 @@ export type HumanModifiers={
 }
 export enum  SpawnModeType{
     any,
+    fixed,
     blacklist,
     whitelist,
     river
@@ -154,6 +155,9 @@ export type SpawnMode={
     position_generator?:"normal"|"deadzone"
 }&({
     type:SpawnModeType.any
+}|{
+    type:SpawnModeType.fixed
+    position:Vec2
 }|{
     type:SpawnModeType.blacklist|SpawnModeType.whitelist
     list:FloorType[]

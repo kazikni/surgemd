@@ -29,7 +29,7 @@
                 "def": "war"
             },
             "spawn_mode":{
-                "type":2,
+                "type":3,
                 "position_generator":"deadzone",
                 "list":[1,2]
             },

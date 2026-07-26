@@ -90,6 +90,7 @@ export class GameMap{
         return v2.random2_s(v2.zero,map.size,random)
     }
     getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:map_gen_position,valid?:map_gen_valid,maxAttempts:number=100):Vec2|undefined{
+        if(mode.type===SpawnModeType.fixed)return mode.position
         let pos:Vec2|undefined=undefined
         let attempt=0
         if(!valid){
@@ -312,21 +313,22 @@ export class GameMap{
             const position=def.position??v2.scale(this.size,0.5)
             const size=def.size??this.size
             const rect=RectHitbox2D.centered(position,size)
-            const base=generate_terrain_shape(def.terrain,this.terrain,random,Layers.Normal,position)
-
-            if(def.terrain.rivers){
-                const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
-                this.rivers.push(...rivers)
-                for(const r of rivers){
-                    for(const layer of r.layers){
-                        this.terrain.add_floor({
-                            type:layer.floor,
-                            hb:layer.hb,
-                            visible:true,
-                            smooth:true,
-                            tint:layer.floor_tint,
-                            layer:layer.layer??Layers.Normal,
-                        })
+            if(def.terrain){
+                const base=generate_terrain_shape(def.terrain,this.terrain,random,Layers.Normal,position)
+                if(def.terrain.rivers){
+                    const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
+                    this.rivers.push(...rivers)
+                    for(const r of rivers){
+                        for(const layer of r.layers){
+                            this.terrain.add_floor({
+                                type:layer.floor,
+                                hb:layer.hb,
+                                visible:true,
+                                smooth:true,
+                                tint:layer.floor_tint,
+                                layer:layer.layer??Layers.Normal,
+                            })
+                        }
                     }
                 }
             }
@@ -340,6 +342,12 @@ export class GameMap{
         if(definition.generation.callback)definition.generation.callback(this)
         for(const spawn of definition.generation.spawn??[]){
             this.generate_objects(spawn,random)
+        }
+
+        for(const b of definition.generation.objects?.buildings??[]){
+            const obj=this.add_building(this.game.definitions.buildings.getFromString(b.def),b.layer)
+            obj.init(b.side)
+            obj.generate(b.position)
         }
 
         this.game.start_settings.textures.push(...definition.biome.textures)

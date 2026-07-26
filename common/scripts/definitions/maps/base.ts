@@ -1,6 +1,6 @@
 import { FloorType, RiversDef } from "../../others/terrain.ts";
 import { LootAditional, SpawnMode, type Layers } from "../../others/constants.ts";
-import { Hitbox2D, LootTable, Random1, Rect,  tdm,  Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { Hitbox2D, LootTable, Orientation, Random1, Rect,  tdm,  Vec2, WeightDefinition } from "../../../engine/core.ts";
 import { GameDefinition, type GameADefinitions } from "../game_defs.ts";
 
 import { type GameMap } from "../../../../server/src/game/others/map.ts"
@@ -36,7 +36,7 @@ export interface IslandDef{
     size?:Vec2
     spawn?:MapObjectGeneration[]
     structures?:MapStructureDef[]
-    terrain:{
+    terrain?:{
         rivers?:{
             defs:RiversDef[]
             expansion?:number
@@ -115,6 +115,18 @@ export const MapTD = tdm.ctx.parse(`{
     biome:MapBiome,
     deadzone_initial_size:float32?,
 }`,{MapBiome:MapBiomeTD,GameDefinitions:GameDefinition.add_td})
+export interface MapObjectItem{
+    def:string
+    position:Vec2
+    count:number
+    velocity?:Vec2
+}
+export interface MapObjectBuilding{
+    def:string
+    position:Vec2
+    side?:Orientation
+    layer?:number
+}
 export interface MapDef{
     loot_tables:Record<string,LootTable<LootAditional>>
     default_floor?:FloorType
@@ -127,7 +139,11 @@ export interface MapDef{
         spawn?:MapObjectGeneration[]
         islands?:IslandDef[]
         callback?:(map:GameMap)=>void
+        objects?:{
+            buildings:MapObjectBuilding[]
+        }
     }
+    players_spawn?:SpawnMode
     definitions?:GameADefinitions
     seed?:number
     biome:MapBiomeDef

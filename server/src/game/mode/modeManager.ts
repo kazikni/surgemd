@@ -13,6 +13,7 @@ import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/ma
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
 import { WarMap } from "common/scripts/definitions/maps/war.ts";
 import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
+import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -71,6 +72,7 @@ export const Maps:Record<string,MapDef>={
         ...NormalMap,
         biome:FallBiome
     },
+    tutorial:TutorialMap,
 
     lobby:NormalLobby,
 

@@ -190,6 +190,7 @@ export type HumanAIDef={
 export type HumanDefinition={
     name?:string
     position?:Vec2
+    layer?:number
     loadout?:LoadoutPreset
     inventory?:InventoryPreset
     boosts?:(WeightDefinition&{

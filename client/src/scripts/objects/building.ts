@@ -1,4 +1,4 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Stream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween, v2m } from "common/engine/client.ts"
+import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Stream, Angle, v2, Orientation, Sound, NullHitbox2D, Color, Tween, v2m } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -124,7 +124,7 @@ export class Building extends StaticBody{
         this.physical_data.no_collision=this.def.no_collisions??false
         this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
 
-        for(const f of def.content.floor_image??[]){
+        for(const f of def.floor_image??[]){
             const sprite=new Sprite2D()
             sprite.hotspot=v2.half_one
             sprite._scale.set(2,2)
@@ -159,7 +159,7 @@ export class Building extends StaticBody{
             this.game.cam2d.add_object(sprite)
             this.objects.push(sprite)
         }
-        for(const c of def.content.ceiling??[]){
+        for(const c of def.ceiling??[]){
             const sprite=new Sprite2D()
 
             sprite.hotspot=v2.half_one

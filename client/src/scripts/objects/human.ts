@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, CircleHitbox2D, type ClientGame, ClientParticle2D, ColorM, Container2D, ease, Frame, Hitbox2D, Stream, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, Tween, v2, v2m, Vec2, FrameDef, Shape2D, model2d, KeyFrameSpriteDef } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
@@ -18,6 +18,7 @@ import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { CircleHitbox2D, ColorM, ease, FrameDef, Hitbox2D, KeyFrameSpriteDef, model2d, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -1617,13 +1618,13 @@ export class Human extends MovingBody{
         }
         this.effects = result
     }
-    get_reflect_segment(): Hitbox2D|undefined {
+    get_reflect_segment():Hitbox2D|undefined{
         if(!this.melee?.reflective)return undefined
         const reflect=this.current_weapon===this.melee?this.melee.reflective!.equipped:this.melee.reflective!.unequipped
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
-    override on_decode_net(stream: Stream, full: boolean): void {
+    override on_decode_net(stream:Stream,full:boolean): void {
         const [
             physical_dirty_part,physical_dirty,
             equipment_dirty_part,equipment_dirty,

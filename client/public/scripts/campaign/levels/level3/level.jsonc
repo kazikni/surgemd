@@ -8,10 +8,10 @@
         "dificulty": "normal"
     },
     "assets": {
-        "background_music": "/sounds/musics/single-player/music_1.mp3",
+        "background_music": "/assets/sounds/musics/single-player/music_1.mp3",
         "load": {
             "sounds": {
-                "history_music_1": "/sounds/musics/history_music_1.mp3"
+                "history_music_1": "/assets/sounds/musics/history_music_1.mp3"
             }
         }
     },

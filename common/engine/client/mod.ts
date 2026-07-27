@@ -1,5 +1,3 @@
-export * from "../core.ts"
-
 export * from "./2d/animated_container.ts"
 export * from "./2d/base.ts"
 export * from "./2d/camera.ts"

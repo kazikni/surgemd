@@ -1,7 +1,8 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
-import { Container2D, Stream } from "common/engine/client.ts";
+import { Container2D } from "common/engine/client.ts";
+import { Stream } from "common/engine/core.ts";
 export class Creature extends MovingBody {
     string_type: string = "creature"
     number_type: number = GameObjectType.Creature

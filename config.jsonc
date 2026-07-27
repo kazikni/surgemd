@@ -75,11 +75,11 @@
         "allowed_hosts": true,
         "spritesheet": {
             "sheets": {
-                "main": "img/game/main",
-                "common": "img/game/common",
-                "snow": "img/game/snow",
-                "fall": "img/game/fall",
-                "maps/tundra": "img/game/maps/tundra"
+                "assets/img/kspr/main": "assets/img/game/main",
+                "assets/img/kspr/common": "assets/img/game/common",
+                "assets/img/kspr/snow": "assets/img/game/snow",
+                "assets/img/kspr/fall": "assets/img/game/fall",
+                "assets/img/kspr/maps/tundra": "assets/img/game/maps/tundra"
             },
             "resolutions": [
                 {
@@ -94,7 +94,7 @@
         },
         "audios": [
             {
-                "input": "sounds/game/main",
+                "input": "assets/sounds/game/main",
                 "output": "assets/main-sounds.json"
             }
         ]

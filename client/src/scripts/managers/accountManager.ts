@@ -88,19 +88,19 @@ export class AccountManager{
 <br>
 <div id="status-container-info">
     <span class="span" id="coin-status-span">
-        Coins: ${status.user.coins}<img class="span-large-icon" src="./img/menu/icons/coin.svg">
+        Coins: ${status.user.coins}<img class="span-large-icon" src="/assets/img/menu/icons/coin.svg">
     </span>
     <span class="span" id="kills-status-span">
-        Kills: ${status.user.kills}<img class="span-large-icon" src="./img/menu/icons/kills.svg">
+        Kills: ${status.user.kills}<img class="span-large-icon" src="/assets/img/menu/icons/kills.svg">
     </span>
     <span class="span" id="wins-status-span">
-        Wins: ${status.user.wins}<img class="span-large-icon" src="./img/menu/icons/win.svg">
+        Wins: ${status.user.wins}<img class="span-large-icon" src="/assets/img/menu/icons/win.svg">
     </span>
     <span class="span" id="special-wins-status-span">
-        Special Wins: ${status.user.special_wins}<img class="span-large-icon" src="./img/menu/icons/special_win.svg">
+        Special Wins: ${status.user.special_wins}<img class="span-large-icon" src="/assets/img/menu/icons/special_win.svg">
     </span>
     <span class="span" id="games-status-span">
-        Games Played: ${status.user.games_total}<img class="span-large-icon" src="./img/menu/icons/game.svg">
+        Games Played: ${status.user.games_total}<img class="span-large-icon" src="/assets/img/menu/icons/game.svg">
     </span>
 </div>
 `

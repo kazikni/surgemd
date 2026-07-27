@@ -1,7 +1,8 @@
-import { ColorM,HideElement,ShowElement,UIModule,v2,v2m,Vec2 } from "common/engine/client.ts"
+import { HideElement,ShowElement,UIModule } from "common/engine/client.ts"
 import { Game } from "../others/game.ts"
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts"
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
+import { ColorM, v2, v2m, Vec2 } from "common/engine/core.ts";
 type MinimapPing = {
     id?:number
 
@@ -67,9 +68,9 @@ export class MinimapModule extends UIModule<Game>{
         this.deadzoneDestEl=this.container.querySelector(".map-deadzone-dest") as HTMLDivElement
         this.deadzoneLineEl=this.container.querySelector(".map-deadzone-safe-line") as HTMLDivElement
 
-        this.load_map_icon("normal","/img/menu/gui/map/map_icon_normal.svg")
-        this.load_map_icon("downed","/img/menu/gui/map/map_icon_downed.svg")
-        this.load_map_icon("dead","/img/menu/gui/map/map_icon_dead.svg")
+        this.load_map_icon("normal","/assets/img/menu/gui/map/map_icon_normal.svg")
+        this.load_map_icon("downed","/assets/img/menu/gui/map/map_icon_downed.svg")
+        this.load_map_icon("dead","/assets/img/menu/gui/map/map_icon_dead.svg")
     }
 
     async load_map_icon(id:string,path:string){

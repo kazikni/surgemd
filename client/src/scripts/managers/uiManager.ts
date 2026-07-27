@@ -7,7 +7,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, random, ShowElement, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/client.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -24,6 +24,7 @@ import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
 import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
+import { Angle, ColorM, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -294,13 +295,11 @@ export class UiManager{
     }
     update_emote_wheel(){
         if (this.emote_wheel.active) {
-            const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
-            )
+            const angle = Angle.rad2deg(v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position))
             const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
 
-            const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
-            const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
+            const chsrc = "/assets/img/menu/gui/emote_wheel_hover_center.svg"
+            const shsrc = "/assets/img/menu/gui/emote_wheel_hover.svg"
 
             const norm = (angle + 360) % 360
 

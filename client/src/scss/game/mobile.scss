@@ -63,7 +63,7 @@
         left:60%;
         top:30%;
         background-color: #0003;
-        background-image: url("/img/menu/gui/buttons/interaction_button.svg");
+        background-image: url("/assets/img/menu/gui/buttons/interaction_button.svg");
         background-size: cover;
     }
     #btn-mobile-reload{
@@ -72,7 +72,7 @@
         bottom: 108px;
         transform: scale(60%);
         background-color: #0003;
-        background-image: url("/img/menu/gui/buttons/reload_button.svg");
+        background-image: url("/assets/img/menu/gui/buttons/reload_button.svg");
         background-size: cover;
     }
     #btn-mobile-emotes{
@@ -81,7 +81,7 @@
         top: 30px;
         transform: scale(60%);
         background-color: #0003;
-        background-image: url("/img/menu/gui/buttons/emote_button.svg");
+        background-image: url("/assets/img/menu/gui/buttons/emote_button.svg");
         background-size: cover;
     }
     @include main.medium_screen {

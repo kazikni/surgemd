@@ -1,7 +1,7 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { BasicSocket, FetchFileManager, FileManager, isMobile, OfflineClientsManager, random, ReplayWatcher, sleep, tdm, TranslationManager } from "common/engine/client.ts";
+import { isMobile } from "common/engine/client.ts";
 import { PlayArgs } from "./constants.ts";
 import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
@@ -10,6 +10,7 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
+import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -77,7 +78,7 @@ import { FindGameResult } from "common/scripts/config/config.ts";
             }
             await this.game.bind(fs)
             await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.cam2d,this.game.definitions,this.game.language,mods)
-            await this.game.load_resources(["main"],{})
+            await this.game.load_resources([],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
             this.game.mainloop(true)
 

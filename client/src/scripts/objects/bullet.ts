@@ -1,8 +1,9 @@
-import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, CenterHotspot, Sprite2D } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { StaticBody } from "./static_body.ts";
+import { BaseGameObject2D, CircleHitbox2D, ColorM, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 const particles=[
     "gas_smoke_particle"
 ]

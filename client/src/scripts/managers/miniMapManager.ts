@@ -1,10 +1,10 @@
 import { type Game } from "../others/game.ts"
-import { ColorM,hash,Hitbox2D, HitboxType2D,v2,v2m,Vec2 } from "common/engine/client.ts"
 import { Floors,FloorType } from "common/scripts/others/terrain.ts"
 import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_packet.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapBiomeDef } from "common/scripts/definitions/maps/base.ts";
+import { ColorM, hash, Hitbox2D, HitboxType2D, v2, v2m, Vec2 } from "common/engine/core.ts";
 export interface MinimapTile {
     position:Vec2
     image:HTMLImageElement

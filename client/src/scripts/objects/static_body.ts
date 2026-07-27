@@ -1,8 +1,9 @@
-import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Vec2 } from "common/engine/client.ts"
+import { ABParticle2D, Sound } from "common/engine/client.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
 import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
+import { Color, ColorM, Hitbox2D, random, Vec2 } from "common/engine/core.ts";
 export type StaticBodyPhysicalData={
     hitbox:Hitbox2D
     side:number

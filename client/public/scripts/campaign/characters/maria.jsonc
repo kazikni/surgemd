@@ -1,7 +1,7 @@
 {
     "name": "Maria",
     "group_color": 15144984,
-    "icon": "/img/menu/gui/character/maria_character_selector.png",
+    "icon": "/assets/img/menu/gui/character/maria_character_selector.png",
     "description": "Extremely Skillful",
     "ai": {
         "kind": "advanced",

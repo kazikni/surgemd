@@ -65,7 +65,7 @@ export function write_kspr(data: KSPR, stream?: Stream): Stream {
 export function load_kspr(buffer: ArrayBuffer): KSPR {
     const stream = new StaticStream(buffer)
     const magic = stream.read_string_sized(5)
-    if (magic !== ".KSPR") throw "Invalid file"
+    if (magic !== ".KSPR") throw "Invalid KSPR file"
     const version = stream.read_uint8()
     const resCount = stream.read_uint8()
     const out: KSPR = {

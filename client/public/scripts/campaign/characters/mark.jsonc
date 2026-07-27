@@ -1,7 +1,7 @@
 {
     "name": "Mark",
     "group_color": 14554741,
-    "icon": "/img/menu/gui/character/mark_character_selector.png",
+    "icon": "/assets/img/menu/gui/character/mark_character_selector.png",
     "description": "Shy And Without Much Combat Experience - Recomended",
     "ai": {
         "kind": "advanced",

@@ -208,5 +208,5 @@ if (import.meta.main) {
     await main(Deno.args)
 }
 
-//deno run -A ./server/src/cli.ts kspr extract client/dist/img/kspr/common.kspr
+//deno run -A ./server/src/cli.ts kspr extract client/dist/assets/img/kspr/common.kspr
 //deno run -A ./server/src/cli.ts game map compile common/scripts/definitions/maps/tundra.ts

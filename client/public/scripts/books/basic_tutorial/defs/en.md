@@ -1,6 +1,6 @@
-<img width="100" height="100" src="/img/menu/logos/MD/MD.svg">
-<img src="/img/menu/logos/embed.png">
-<h1><img class="icon" width="50" height="50" src="/img/menu/logos/companys/campfire.svg">Guia De Sobrevivencia</h1>
+<img width="100" height="100" src="/assets/img/menu/logos/MD/MD.svg">
+<img src="/assets/img/menu/logos/embed.png">
+<h1><img class="icon" width="50" height="50" src="/assets/img/menu/logos/companys/campfire.svg">Guia De Sobrevivencia</h1>
 Volume 1
 [[page]]
 # Básico do básico

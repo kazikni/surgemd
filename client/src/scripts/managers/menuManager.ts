@@ -2,12 +2,13 @@ import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
+import { AudioEngine, Camera2D, GameSave, HideElement, ImageBuffer, InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, typewriter } from "common/engine/client.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
+import { FileManager, random, TranslationManager } from "common/engine/core.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
@@ -110,7 +111,7 @@ export class MenuManager{
         ShowElement(this.content.menuD)
 
         HideElement(this.content.loading_screen)
-        this.content.loading_screen.style.backgroundImage=`url("/img/menu/background/${
+        this.content.loading_screen.style.backgroundImage=`url("/assets/img/menu/background/${
             random.choose(["normal_background","tundra_background_1"])
         }.png")`
         this.content.loading_screen.style.opacity="0"
@@ -202,7 +203,7 @@ export class MenuManager{
         })
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
-        this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.svg" draggable="false"></img>'
+        this.content.menu_options.innerHTML='<img id="title-section" src="/assets/img/menu/logos/title.svg" draggable="false"></img>'
         this.content.menu_content.innerHTML=""
         this.tabs={}
         this.tabs_html={}
@@ -758,7 +759,7 @@ export class MenuManager{
             this.content.content_creators.innerHTML+=`
 <a href="${creator.url}" target="_blank">
     <div class="btn-blue content-creator">
-        <img id="youtube-logo" src="./img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
+        <img id="youtube-logo" src="/assets/img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
         <span>${creator.name}</span>
     </div>
 </a>`

@@ -1,8 +1,9 @@
-import { ease, random, Sound, Sprite2D, v2 } from "common/engine/client.ts";
+import { Sound, Sprite2D } from "common/engine/client.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "common/scripts/packets/update_packet.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
+import { ease, random, v2 } from "common/engine/core.ts";
 export class DamageSplashOBJ extends GameObject{
     ////////////////////////////
     // Definition             //

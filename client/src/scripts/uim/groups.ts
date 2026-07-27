@@ -1,6 +1,7 @@
-import { ColorM, HideElement, ShowElement, UIModule } from "common/engine/client.ts"
+import { HideElement, ShowElement, UIModule } from "common/engine/client.ts"
 import { Game } from "../others/game.ts"
 import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
+import { ColorM } from "common/engine/core.ts";
 
 type GroupElement = {
     container: HTMLDivElement

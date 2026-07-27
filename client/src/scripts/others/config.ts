@@ -1,4 +1,5 @@
-import { Casters, GamepadButtonID, IPLocation, isMobile, Key } from "common/engine/client.ts";
+import { Casters, GamepadButtonID, isMobile, Key } from "common/engine/client.ts";
+import { IPLocation } from "common/engine/core.ts";
 
 /*
 * LOCAL

@@ -1,6 +1,7 @@
-import { ColorM, Container2D, Stream, NullHitbox2D, Sprite2D, v2 } from "common/engine/client.ts";
+import { Container2D, Sprite2D } from "common/engine/client.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
+import { ColorM, NullHitbox2D, Stream, v2 } from "common/engine/core.ts";
 export class HumanBody extends GameObject{
     ////////////////////////////
     // Definition             //

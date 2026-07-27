@@ -1395,7 +1395,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "wrapping":{
                     generate:(()=>{
                         const wrapping=Object.values(definitions.wrapping.value)
-                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/assets/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
                     })()
                 },
                 "badges":{

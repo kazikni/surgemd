@@ -1,7 +1,8 @@
-import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ParticlesEmitter2D, RainParticle2D, random, Sound, SoundController, Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, Sound, SoundController, Tween } from "common/engine/client.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
+import { CircleHitbox2D, ColorM, ease, KDate, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
 
 export class AmbientManager{
     game:Game
@@ -159,8 +160,8 @@ export class AmbientManager{
         this.music.set_volume(0.5)
 
         this.game.sounds.signals.on("unlock",async()=>{
-            await this.game.resources.load_sound("menu_music",{src:`/sounds/musics/menu_music.mp3`,volume:1},"essentials")
-            this.game.resources.load_sound("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
+            await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1},"essentials")
+            this.game.resources.load_sound("gameover_music",{src:`/assets/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
 
             const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)
@@ -366,7 +367,7 @@ export class AmbientManager{
         if(this.game.save.get_variable("sv_sounds_gameplay_music")){
             this.game.resources.unload_sound("gameplay_music")
             this.game.resources.load_sound("gameplay_music",{
-                src:"/sounds/musics/finalization_music_1.mp3",
+                src:"/assets/sounds/musics/finalization_music_1.mp3",
                 volume:1
             }).then((v)=>{
                 if(this.game.game_over){

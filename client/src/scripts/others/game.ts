@@ -1,4 +1,4 @@
-import { BasicSocket, Client, ClientGame, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Language, Numeric, ReplayWatcher, Sound, TranslationManager, v2, v2m, Vec2, WebglRenderer } from "common/engine/client.ts";
+import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Sound, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -26,7 +26,6 @@ import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { MapApp } from "../apps/map.ts";
 import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
 import { GameOverPacket, GameOverStatus } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
@@ -49,6 +48,7 @@ import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -70,8 +70,8 @@ export class Game extends ClientGame<GameObject>{
     group_token:string=""
 
     cursors={
-        default:"url('/img/menu/icons/mouse.svg') 0 0, default",
-        pointer:"url('/img/menu/icons/pointer.svg') 21 21, pointer"
+        default:"url('/assets/img/menu/icons/mouse.svg') 0 0, default",
+        pointer:"url('/assets/img/menu/icons/pointer.svg') 21 21, pointer"
     }
 
     terrain:TerrainM=new TerrainM(this)
@@ -115,8 +115,8 @@ export class Game extends ClientGame<GameObject>{
     editor?: EditorManager
     cam_type:number=0
 
-    free_cam_pos = v2(0, 0)
-    free_cam_speed = 2
+    free_cam_pos=v2(0,0)
+    free_cam_speed=2
     free_cam_zoom=0.5
 
     hitboxes_gfx:Graphics2D=new Graphics2D()
@@ -196,8 +196,6 @@ export class Game extends ClientGame<GameObject>{
             1:GunItem as (new(item:GameItem)=>LItem),
             2:GunItem as (new(item:GameItem)=>LItem)
         })
-
-        this.device.add_app(new MapApp)
 
         this.grid.size=0.05
         this.grid.size=5
@@ -451,21 +449,21 @@ export class Game extends ClientGame<GameObject>{
         this.scope_zoom=force_default?this.default_scope.scope_view:scope.scope_view
         this.ui_manager.signal("current_scope_dirty",scope)
     }
-    async load_resources(textures:string[]=["main"],assets:Record<string,string>,languages_path:string=""){
+    async load_resources(textures:string[]=[],assets:Record<string,string>,languages_path:string=""){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
         this.loaded=false
         this.menu.show_loading_screen()
         this.menu.set_loading_current("Somethings",true)
 
+        textures=["/assets/img/kspr/main",...textures]
         this.resources.clear([
             "essentials",
-            "main",
             ...textures
         ])
 
         for (const tt of textures) {
-            this.menu.set_loading_current(`Loading ${tt}.kspr`)
-            const res = await fetch(`/img/kspr/${tt}.kspr`)
+            this.menu.set_loading_current(`${tt}.kspr`)
+            const res = await fetch(`${tt}.kspr`)
             const buffer = await res.arrayBuffer()
             const kspr = load_kspr(buffer)
             let resolution = this.save.get_variable("sv_graphics_resolution")
@@ -478,16 +476,16 @@ export class Game extends ClientGame<GameObject>{
 
         await this.resources.load_group("/assets/main-sounds.json","main",this.menu.set_loading_current)
         
-        await this.resources.load_sound("typewriter-1",{src:"/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("typewriter-2",{src:"/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("typewriter-1",{src:"/assets/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("typewriter-2",{src:"/assets/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
-        await this.resources.load_sound("deadzone_ambience",{src:"/sounds/ambience/deadzone_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("rain_ambience",{src:"/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("storm_ambience",{src:"/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("snowstorm_ambience",{src:"/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("thunder_1",{src:"/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("thunder_2",{src:"/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("thunder_3",{src:"/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("deadzone_ambience",{src:"/assets/sounds/ambience/deadzone_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("rain_ambience",{src:"/assets/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("storm_ambience",{src:"/assets/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("snowstorm_ambience",{src:"/assets/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("thunder_1",{src:"/assets/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("thunder_2",{src:"/assets/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
+        await this.resources.load_sound("thunder_3",{src:"/assets/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
 
         for(const s in assets){
             await this.resources.load_sound(s,{src:assets[s],volume:1},"ingame",this.menu.set_loading_current)

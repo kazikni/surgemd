@@ -3,7 +3,7 @@ import { buildKSPRGroup, CompilerOptions, Resolution } from "./utils/spritesheet
 
 const PLUGIN_NAME = "vite-spritesheet-plugin";
 
-export function spritesheet(base:string,atlas_list: Record<string, string>,dest_dir: string = "img/kspr",resolutions: Resolution[] = [{ name: "low", scale: 0.5 }],options?:CompilerOptions): Plugin[] {
+export function spritesheet(base:string,atlas_list: Record<string, string>,resolutions: Resolution[] = [{ name: "low", scale: 0.5 }],options?:CompilerOptions): Plugin[] {
     async function buildAll() {
         const outputs: Record<string, Uint8Array> = {}
         for (const [name, folder] of Object.entries(atlas_list)) {
@@ -25,7 +25,7 @@ export function spritesheet(base:string,atlas_list: Record<string, string>,dest_
                 for (const [name, buffer] of Object.entries(outputs)) {
                     this.emitFile({
                         type: "asset",
-                        fileName: `${dest_dir}/${name}.kspr`,
+                        fileName: `${name}.kspr`,
                         source: buffer
                     })
                 }
@@ -47,7 +47,7 @@ export function spritesheet(base:string,atlas_list: Record<string, string>,dest_
                 server.middlewares.use((req, res, next) => {
                     if (!req.url) return next()
                     for (const name of Object.keys(files)) {
-                        if (req.url === `/${dest_dir}/${name}.kspr`) {
+                        if (req.url === `/${name}.kspr`) {
                             res.writeHead(200, {
                                 "Content-Type": "application/octet-stream"
                             })

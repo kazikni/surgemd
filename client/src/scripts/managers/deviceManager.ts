@@ -1,6 +1,7 @@
-import { HideElement, KDate, ShowElement } from "common/engine/client.ts";
+import { HideElement, ShowElement } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
 import { PrivateUpdate, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
+import { KDate } from "common/engine/core.ts";
 export interface GameAppMeta{
     name:string
     icon?:string
@@ -82,9 +83,9 @@ const MDTabDevice:GameDeviceSettings={
     name: "tablet",
     width: 1400,
     height: 780,
-    frame: "/img/menu/gui/tab/tab_border.svg",
+    frame: "/assets/img/menu/gui/tab/tab_border.svg",
     theme:{
-        wallpaper:"/img/menu/gui/tab/tab_wallpaper_abstract.png"
+        wallpaper:"/assets/img/menu/gui/tab/tab_wallpaper_abstract.png"
     },
     screen: {
         x: 85,

@@ -15,7 +15,7 @@ export class MatchTabApp extends TabApp {
     }>()
 
     constructor(tab: TabManager) {
-        super("Match", "/img/menu/gui/tab/icons/match.svg", tab)
+        super("Match", "/assets/img/menu/gui/tab/icons/match.svg", tab)
     }
 
     override on_run(): void {

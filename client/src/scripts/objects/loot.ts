@@ -1,5 +1,5 @@
 
-import { Angle, type Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Container2D, ease, Stream, Sound, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { type Camera2D, CenterHotspot, Container2D, Sound, Sprite2D } from "common/engine/client.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
@@ -12,6 +12,7 @@ import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { Debug } from "../others/config.ts";
 import { decode_loot_data } from "common/scripts/others/functions.ts";
+import { Angle, CircleHitbox2D, ColorM, ease, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export class Loot extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -55,9 +56,7 @@ export class Loot extends GameObject{
         this.container.layer=this.layer
     }
     override on_tick(_dt:number): void {
-        if(this.dest_pos){
-            v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
-        }
+        if(this.dest_pos)v2m.lerp(this.position,this.dest_pos,this.game.global_interpolation)
         this.container.position=this.position
     }
     override on_destroy(): void {

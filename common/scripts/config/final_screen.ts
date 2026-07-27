@@ -38,12 +38,12 @@ export const island_final:FinalScreenDef={
             background: linear-gradient(to bottom, #0d1e35, #040618);
         `,
         accent:"#33b8ff",
-        music:"/sounds/musics/final_screen_music_1.mp3"
+        music:"/assets/sounds/musics/final_screen_music_1.mp3"
     },
     background:[
         {
             type:FinalScreenLayerType.Static,
-            image:"/img/menu/final_screen/moon.png",
+            image:"/assets/img/menu/final_screen/moon.png",
             css:`
                 top:150px;
                 left:50%;
@@ -53,7 +53,7 @@ export const island_final:FinalScreenDef={
         },
         {
             type:FinalScreenLayerType.Static,
-            image:"/img/menu/final_screen/moon.png",
+            image:"/assets/img/menu/final_screen/moon.png",
             css:`
                 top:150px;
                 left:50%;
@@ -65,7 +65,7 @@ export const island_final:FinalScreenDef={
         // Cloud
         {
             type:FinalScreenLayerType.Walk,
-            image:"/img/menu/final_screen/cloud_1.svg",
+            image:"/assets/img/menu/final_screen/cloud_1.svg",
             css:`
                 top:50px;
                 opacity:50%;
@@ -78,7 +78,7 @@ export const island_final:FinalScreenDef={
         // Mountains
         {
             type:FinalScreenLayerType.Tile,
-            image:"/img/menu/final_screen/mountains_1.png",
+            image:"/assets/img/menu/final_screen/mountains_1.png",
             css:`
                 bottom:0px;
                 height:750px;
@@ -88,7 +88,7 @@ export const island_final:FinalScreenDef={
 
         {
             type:FinalScreenLayerType.Walk,
-            image:"/img/menu/final_screen/palm.png",
+            image:"/assets/img/menu/final_screen/palm.png",
             css:`
                 height:320px;
                 bottom:-20px;
@@ -99,7 +99,7 @@ export const island_final:FinalScreenDef={
         },
         {
             type:FinalScreenLayerType.Walk,
-            image:"/img/menu/final_screen/building_1.png",
+            image:"/assets/img/menu/final_screen/building_1.png",
             css:`
                 height:550px;
                 bottom:0px;
@@ -110,7 +110,7 @@ export const island_final:FinalScreenDef={
         },
         {
             type:FinalScreenLayerType.Walk,
-            image:"/img/menu/final_screen/palm.png",
+            image:"/assets/img/menu/final_screen/palm.png",
             css:`
                 height:480px;
                 bottom:-20px;
@@ -123,7 +123,7 @@ export const island_final:FinalScreenDef={
         // Reflected Montains
         {
             type:FinalScreenLayerType.Tile,
-            image:"/img/menu/final_screen/mountains_1.png",
+            image:"/assets/img/menu/final_screen/mountains_1.png",
             css:`
                 bottom:250px;
                 height:400px;
@@ -135,7 +135,7 @@ export const island_final:FinalScreenDef={
         // Water Waves
         {
             type:FinalScreenLayerType.Tile,
-            image:"/img/menu/final_screen/waves.svg",
+            image:"/assets/img/menu/final_screen/waves.svg",
             css:`
                 bottom:50px;
                 height:50px;
@@ -146,7 +146,7 @@ export const island_final:FinalScreenDef={
         },
         {
             type:FinalScreenLayerType.Tile,
-            image:"/img/menu/final_screen/waves.svg",
+            image:"/assets/img/menu/final_screen/waves.svg",
             css:`
                 bottom:150px;
                 height:40px;
@@ -157,7 +157,7 @@ export const island_final:FinalScreenDef={
         },
         {
             type:FinalScreenLayerType.Tile,
-            image:"/img/menu/final_screen/waves.svg",
+            image:"/assets/img/menu/final_screen/waves.svg",
             css:`
                 bottom:215px;
                 height:35px;

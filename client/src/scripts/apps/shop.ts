@@ -11,7 +11,7 @@ export class ShopTabApp extends TabApp {
 
     buy_item?:ShopNode
     constructor(tab: TabManager) {
-        super("Shop", "/img/menu/gui/tab/icons/shop.svg", tab)
+        super("Shop", "/assets/img/menu/gui/tab/icons/shop.svg", tab)
     }
 
     set_shop(data: ShopNode[]) {

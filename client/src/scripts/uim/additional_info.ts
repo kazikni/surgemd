@@ -1,6 +1,7 @@
-import { format_time, HideElement, ShowElement, UIModule } from "common/engine/client.ts";
+import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { DeadZoneState, DeadZoneUpdate, GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { format_time } from "common/engine/core.ts";
 
 export class AdditionalInfoModule extends UIModule<Game> {
     content={
@@ -46,7 +47,7 @@ export class AdditionalInfoModule extends UIModule<Game> {
             }
             this.content.deadzone_info_timer.innerText=format_time(gu.deadzone.timer)
             if(!this.old_deadzone_update||this.old_deadzone_update.state!==gu.deadzone.state){
-                this.content.deadzone_info_icon.src=`/img/menu/gui/deadzone/deadzone_state_${gu.deadzone.state}.svg`
+                this.content.deadzone_info_icon.src=`/assets/img/menu/gui/deadzone/deadzone_state_${gu.deadzone.state}.svg`
             }
         }else if(!this.old_deadzone_update||gu.deadzone?.state!==this.old_deadzone_update.state){ 
             HideElement(this.content.deadzone_info)

@@ -9,7 +9,7 @@
     "assets": {
         "load": {
             "assets": {
-                "history_music_1": "/sounds/musics/history_music_1.mp3"
+                "history_music_1": "/assets/sounds/musics/history_music_1.mp3"
             }
         }
     },

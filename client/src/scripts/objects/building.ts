@@ -1,8 +1,9 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Stream, Angle, v2, Orientation, Sound, NullHitbox2D, Color, Tween, v2m } from "common/engine/client.ts"
+import { Container2DObject, Sprite2D, Sound, Tween } from "common/engine/client.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Debug } from "../others/config.ts";
+import { Angle, Color, ColorM, Hitbox2D, NullHitbox2D, Orientation, Stream, v2, v2m } from "common/engine/core.ts";
 export class BuildingCeiling{
     parent:Building
     def:BuildingCeilingDef

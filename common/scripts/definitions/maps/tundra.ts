@@ -124,12 +124,12 @@ export const TundraBiome:MapBiomeDef={
         [FloorType.Water]:0x274763
     },
     skin:"snow",
-    textures:["common","snow","maps/tundra"],
+    textures:["/assets/img/kspr/common","/assets/img/kspr/snow","/assets/img/kspr/maps/tundra"],
     musics:[
-        "/sounds/musics/online/game_tundra_music_1.mp3",
-        "/sounds/musics/online/game_tundra_music_2.mp3",
-        "/sounds/musics/online/game_tundra_music_3.mp3",
-        "/sounds/musics/online/game_tundra_music_4.mp3",
+        "/assets/sounds/musics/online/game_tundra_music_1.mp3",
+        "/assets/sounds/musics/online/game_tundra_music_2.mp3",
+        "/assets/sounds/musics/online/game_tundra_music_3.mp3",
+        "/assets/sounds/musics/online/game_tundra_music_4.mp3",
     ],
     particles:[],
     ambient_sound:"snowstorm_ambience"

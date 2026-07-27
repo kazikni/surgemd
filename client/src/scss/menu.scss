@@ -9,7 +9,7 @@
     right: 0px;
     top: 0px;
     bottom: 0px;
-    /*background-image: url("/img/menu/background/background.png");
+    /*background-image: url("/assets/img/menu/background/background.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;*/
@@ -54,7 +54,7 @@
             position: fixed;
             width: 100%;
             height: 100%;
-            background:url("/img/menu/final_screen/stars.png") center/contain;
+            background:url("/assets/img/menu/final_screen/stars.png") center/contain;
             background-size: 30vw 30vw;
             opacity: 20%;
         }
@@ -68,7 +68,7 @@
 
             transform:translate(-50%,-50%);
 
-            background:url("/img/menu/final_screen/moon.png") center/contain no-repeat;
+            background:url("/assets/img/menu/final_screen/moon.png") center/contain no-repeat;
         }
         .sky-glow{
             position:absolute;
@@ -107,7 +107,7 @@
 
             transform:translate(-50%,-50%);
 
-            background:url("/img/menu/final_screen/sun.svg") center/contain no-repeat;
+            background:url("/assets/img/menu/final_screen/sun.svg") center/contain no-repeat;
         }
         .sky-glow{
             position:absolute;
@@ -147,7 +147,7 @@
         top:4vw;
         height:12vw;
 
-        background:url("/img/menu/final_screen/cloud_1.svg");
+        background:url("/assets/img/menu/final_screen/cloud_1.svg");
         animation:scroll-right-animation 700s linear infinite;
         opacity: 0.25;
     }
@@ -155,7 +155,7 @@
         position:absolute;
         inset:-50%;
 
-        background-image:url("/img/menu/final_screen/rain.svg");
+        background-image:url("/assets/img/menu/final_screen/rain.svg");
         background-repeat:repeat;
 
         transform:rotate(-45deg);
@@ -198,7 +198,7 @@
 
         height:50vw;
 
-        background:url("/img/menu/final_screen/mountains_1.png");
+        background:url("/assets/img/menu/final_screen/mountains_1.png");
         animation:scroll-left-animation 1400s linear infinite;
     }
     .mountains-ice{
@@ -206,19 +206,19 @@
 
         height:50vw;
 
-        background:url("/img/menu/final_screen/mountains_2.svg");
+        background:url("/assets/img/menu/final_screen/mountains_2.svg");
         animation:scroll-left-animation 1400s linear infinite;
     }
     .city{
         bottom:0;
-        background-image:url("/img/menu/final_screen/buildings_1.svg");
+        background-image:url("/assets/img/menu/final_screen/buildings_1.svg");
     }
     .city-back{
         height:35vw;
         animation:scroll-left-animation 1100s linear infinite;
     }
     .palms{
-        background-image:url("/img/menu/final_screen/beach_front_1.svg");
+        background-image:url("/assets/img/menu/final_screen/beach_front_1.svg");
         bottom: -1vw;
 
         animation:scroll-left-animation 600s linear infinite;
@@ -226,7 +226,7 @@
     .utility-poles{
         bottom:0;
 
-        background-image:url("/img/menu/final_screen/utility_poles_1.svg");
+        background-image:url("/assets/img/menu/final_screen/utility_poles_1.svg");
         animation:scroll-left-animation 900s linear infinite;
         height: 16vw;
     }
@@ -240,7 +240,7 @@
         left:0;
         right:0;
         bottom: 0;
-        background-image:url("/img/menu/final_screen/waves.svg");
+        background-image:url("/assets/img/menu/final_screen/waves.svg");
         filter: brightness(0.5) blur(3px);
     }
     .wave-1{
@@ -399,7 +399,7 @@
         #loading-screen-logo {
             width: 100px;
             height: 100px;
-            background-image: url("/img/menu/logos/MD/MD.svg");
+            background-image: url("/assets/img/menu/logos/MD/MD.svg");
             background-size: cover;
             background-position: center;
 
@@ -438,7 +438,7 @@
             position: absolute;
             width: 5vw;
             height: 5vw;
-            background-image: url("/img/menu/logos/MD/MD.svg");
+            background-image: url("/assets/img/menu/logos/MD/MD.svg");
             background-size: cover;
             background-position: center;
             transition: left 0.9s linear, top 0.9s linear;
@@ -706,10 +706,10 @@
         }
 
         &.windows {
-            background-image: url("/img/menu/socials/windows.svg");
+            background-image: url("/assets/img/menu/socials/windows.svg");
         }
         &.linux {
-            background-image: url("/img/menu/socials/linux.svg");
+            background-image: url("/assets/img/menu/socials/linux.svg");
         }
     }
     
@@ -916,7 +916,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background-image: url("/img/menu/background/vignetting.png");
+    background-image: url("/assets/img/menu/background/vignetting.png");
     background-repeat: no-repeat;
     background-size: cover;
 }
@@ -997,7 +997,7 @@
         left:-250%;
         top:-250%;
 
-        background-image:url("/img/menu/background/white_noise.png");
+        background-image:url("/assets/img/menu/background/white_noise.png");
         background-size:10000px 1000px;
         background-repeat:repeat;
 

@@ -1,4 +1,4 @@
-import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2, Shape2D, model2d, v2m } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Container2D, Sound, Sprite2D, type Tween, Shape2D } from "common/engine/client.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorPress, ObstacleBehaviorTransformInto, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
@@ -6,6 +6,7 @@ import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./stati
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
+import { Color, ColorM, Hitbox2D, model2d, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m } from "common/engine/core.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
     if(skin>0&&def.assets?.frame?.biome_skins){
@@ -468,7 +469,7 @@ export class Obstacle extends StaticBody{
         return (this.def.interactDestroy===true)
     }
 
-    override on_decode_net(stream: Stream, full: boolean): void {
+    override on_decode_net(stream:Stream,full:boolean):void{
         const [
             visual,
             physical_data,physical_data_part,

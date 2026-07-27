@@ -11,7 +11,7 @@ export class DebugApp extends GameApp {
     constructor(){
         super({
             name:"Debug",
-            icon:"/img/menu/gui/tab/icons/debug.svg"
+            icon:"/assets/img/menu/gui/tab/icons/debug.svg"
         })
     }
 

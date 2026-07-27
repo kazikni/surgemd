@@ -48,7 +48,7 @@ export const uconfig: UserConfig = {
     },
     plugins: [
         svelte(),
-        spritesheet("public",config.spritesheet.sheets,undefined,config.spritesheet.resolutions),
+        spritesheet("public",config.spritesheet.sheets,config.spritesheet.resolutions),
         AudiosLists(config.audios),
     ],
     css: {

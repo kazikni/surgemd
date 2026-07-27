@@ -1,6 +1,7 @@
-import { ColorM, HideElement, ShowElement, v2 } from "common/engine/client.ts";
+import { HideElement, ShowElement } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
 import { Layers } from "common/scripts/others/constants.ts";
+import { ColorM, v2 } from "common/engine/core.ts";
 
 export class EditorManager{
     game:Game

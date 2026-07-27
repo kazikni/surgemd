@@ -1,4 +1,4 @@
-import { FileManager } from "common/engine/client.ts";
+import { FileManager } from "common/engine/core.ts";
 
 export const is_binary =typeof window.go_is_binary_version==="undefined"?false:await window.go_is_binary_version()
 if (is_binary) {

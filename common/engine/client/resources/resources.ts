@@ -367,12 +367,10 @@ export class ResourcesManager {
     clear(blacklist:string[]=[]){
         for(const r of Object.keys(this.frames)){
             if(blacklist.includes(r)||blacklist.includes(this.frames[r].group))continue
-            console.log("Unloading: ",r)
             this.unload_frame(r)
         }
         for(const r of Object.keys(this.sounds)){
             if(blacklist.includes(r)||blacklist.includes(this.sounds[r].group))continue
-            console.log("Unloading: ",r)
             this.unload_sound(r)
         }
     }

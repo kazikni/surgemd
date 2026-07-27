@@ -161,6 +161,7 @@ export class Human extends MovingBody{
     human_data:{
         movement_enabled:boolean
         combat_enabled:boolean
+        pacific_enabled:boolean
         friendly_fire:boolean
         alternative_vehicle_control:boolean
 
@@ -168,6 +169,7 @@ export class Human extends MovingBody{
     }={
         movement_enabled:true,
         combat_enabled:true,
+        pacific_enabled:false,
         friendly_fire:false,
         alternative_vehicle_control:true,
 
@@ -418,6 +420,7 @@ export class Human extends MovingBody{
                 team.add_human(this)
             }
         }
+        if(preset.pacific_enabled!==undefined)this.human_data.pacific_enabled=preset.pacific_enabled
         if(preset.boosts){
             const choose=random.weight2(preset.boosts)
             if(choose){
@@ -943,7 +946,7 @@ export class Human extends MovingBody{
             }
             if(!this.parachute){
                 //Hand Use
-                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.downed&&!this.swimming){
+                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.human_data.pacific_enabled&&!this.downed&&!this.swimming){
                     if(this.input.using_item){
                         const success=this.inventory.hand_item.on_fire(this)
                         if(success)this.input.using_item_down=false

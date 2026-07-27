@@ -200,6 +200,9 @@ export abstract class Context2D{
     end_path() {
         this.current_model=model2d.triangulateConvex(this.path)
     }
+    finish_path(){
+        this.current_model=model2d.triangulateConvex(this.path)
+    }
     move_to(x: number, y: number) {
         this.path.push({ x, y })
     }
@@ -209,12 +212,12 @@ export abstract class Context2D{
 
     rect(min: Vec2, max: Vec2) {
         this.begin_path()
-
         this.move_to(min.x, min.y)
         this.line_to(max.x, min.y)
         this.line_to(max.x, max.y)
         this.line_to(min.x, max.y)
         this.line_to(min.x, min.y)
+        this.finish_path()
     }
     circle(center: Vec2, radius: number, segments = 32) {
         this.begin_path()
@@ -222,8 +225,10 @@ export abstract class Context2D{
         if (this.path.length) {
             this.line_to(this.path[0].x, this.path[0].y)
         }
+        this.finish_path()
     }
     arc(cx: number,cy: number,radius: number,start: number,end: number,segments = 32) {
+        this.begin_path()
         const step = (end - start) / segments
         for (let i = 0; i <= segments; i++) {
             const a = start + step * i
@@ -231,9 +236,10 @@ export abstract class Context2D{
             const y = cy + Math.sin(a) * radius
             this.path.push({ x, y })
         }
+        this.finish_texture()
     }
 
-    set_hitbox(hb: Hitbox2D, segments = 32) {
+    hitbox(hb: Hitbox2D, segments = 32) {
         switch (hb.type) {
             case HitboxType2D.null:
                 break
@@ -245,7 +251,7 @@ export abstract class Context2D{
                 break
             case HitboxType2D.group:
                 for (const child of hb.hitboxes) {
-                    this.set_hitbox(child, segments)
+                    this.hitbox(child, segments)
                 }
                 break
             case HitboxType2D.polygon:

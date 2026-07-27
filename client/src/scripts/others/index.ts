@@ -10,8 +10,6 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
-import { BuildingTD } from "common/scripts/definitions/objects/buildings_base.ts";
-import { bullets_factory } from "common/scripts/definitions/items/guns.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -82,6 +80,8 @@ import { bullets_factory } from "common/scripts/definitions/items/guns.ts";
             await this.game.load_resources(["main"],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
             this.game.mainloop(true)
+
+            //this.game.start_editor()
         }
         join_on_game(url:string,password:string,attempts=0,delay=500){
             console.log("Joining In: ",url)

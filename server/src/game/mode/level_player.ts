@@ -22,6 +22,20 @@ export class LevelPlayer {
         this.fs=fs
     }
 
+    async load_character(base:LevelCharacter):Promise<LevelCharacter>{
+        if(base.path){
+            if(typeof base.path==="string"){
+                return mergeDeep(await this.load_character(parseJSONC(await this.fs.read_file(base.path))),base)
+            }else{
+                const content:LevelCharacter[]=[]
+                for(const path of base.path){
+                    content.push(await this.load_character(parseJSONC(await this.fs.read_file(path))))
+                }
+                return mergeDeep({},...content,base)
+            }
+        }
+        return base
+    }
     async begin(path:string){
         this.path=path
         this.level = parseJSONC(await this.fs.read_file("level.jsonc"))
@@ -49,14 +63,8 @@ export class LevelPlayer {
         this.game.signals.on("player_join",async(e:any)=>{
             if(!e.player.is_bot){
                 if(this.level.player){
-                    let p:LevelCharacter
-                    if(this.level.player.path){
-                        p=mergeDeep(parseJSONC(await this.fs.read_file(this.level.player.path)),this.level.player)
-                    }else{
-                        p=this.level.player
-                    }
-                    this.player_preset=this.level.player
-                    e.player.set_preset(p)
+                    this.player_preset=await this.load_character(this.level.player)
+                    e.player.set_preset(this.player_preset)
                     if(!this.level.player.position){
                         const pos = this.game.modeManager.get_human_spawn_position(e.player)
                         if(pos)e.player.position = pos
@@ -87,11 +95,7 @@ export class LevelPlayer {
         if(this.level.characters_selection){
             const characters:LevelCharacter[]=[]
             for(const v of this.level.characters_selection.characters){
-                if(v.path){
-                    characters.push(mergeDeep(parseJSONC(await this.fs.read_file(v.path)),this.level.player))
-                }else{
-                    characters.push(v)
-                }
+                characters.push(await this.load_character(v))
             }
             this.game.clients.send({
                 type:OnlineMessageType.CharacterSelector,

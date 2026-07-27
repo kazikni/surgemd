@@ -42,7 +42,7 @@ export type GameOverScreen={
     type:GameOverScreenType.Light
 }
 export type LevelCharacter=CharacterDefinition&{
-    path?:string
+    path?:string|string[]
 }
 export interface LevelDefinition{
     meta:{

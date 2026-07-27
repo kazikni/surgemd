@@ -461,7 +461,7 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_delay:0.1,
             switch_delay:0.25,
-            unload_multiply:1.1,
+            unload_multiply:1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
             },

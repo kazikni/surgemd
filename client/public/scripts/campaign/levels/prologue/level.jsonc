@@ -29,9 +29,7 @@
                 {
                     "position":{"x":10,"y":43},
                     "def": {
-                        "modifiers":{
-                            "speed":0.5
-                        },
+                        "path":"../../characters/civil.jsonc",
                         "ai": {
                             "kind": "dumb"
                         }
@@ -40,6 +38,7 @@
                 {
                     "position":{"x":10,"y":57},
                     "def": {
+                        "path":"../../characters/civil.jsonc",
                         "ai": {
                             "kind": "dumb"
                         }
@@ -49,7 +48,7 @@
         }
     },
     "player": {
-        "path": "../../characters/vinii.jsonc",
+        "path":["../../characters/civil.jsonc","../../characters/vinii.jsonc"],
         "position":{"x":10,"y":51},
         "modifiers":{
             "speed":0.5

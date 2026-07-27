@@ -11,7 +11,6 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
-import { NPCScript } from "../human/ai/simple_bot_ai.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -33,7 +32,6 @@ export interface BattleRoyaleSettings{
 }
 export class BattleRoyale extends ModeManager{
     leader?:Player
-
     settings:{
         players:{
             limit:number

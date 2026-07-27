@@ -48,6 +48,7 @@ import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/message
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
+import { EditorManager } from "../managers/editorManager.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -111,6 +112,7 @@ export class Game extends ClientGame<GameObject>{
     }
     fs?:FileManager
     watcher?:ReplayWatcher
+    editor?: EditorManager
     cam_type:number=0
 
     free_cam_pos = v2(0, 0)
@@ -174,7 +176,7 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.add_object(this.terrain_gfx)
         this.cam2d.add_object(this.grid)
         this.cam2d.add_object(this.hitboxes_gfx)
-        //this.cam2d.add_object(this.ui_gfx)
+        this.cam2d.add_object(this.ui_gfx)
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid.zIndex=zIndexes.Grid
@@ -203,6 +205,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.terrain_gfx.initialize(this.cam2d.ctx)
         this.hitboxes_gfx.initialize(this.cam2d.ctx)
+        this.ui_gfx.initialize(this.cam2d.ctx)
         this.dead_zone.append()
     }
     get_theme_color(name:string):string{
@@ -510,6 +513,18 @@ export class Game extends ClientGame<GameObject>{
         this.menu.hide_loading_screen()
         this.loaded=true
     }
+    async start_editor(){
+        this.close_game()
+        this.editor = new EditorManager(this)
+        this.cam_type=1
+        this.happening=true
+
+        this.menu.game_start()
+        this.ui.start()
+        this.hitboxes_gfx.ctx.clear()
+        this.editor.start()
+        //await this.editor.load(path)
+    }
     async start(settings:StartSettings){
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
         this.menu.game_start()
@@ -551,6 +566,8 @@ export class Game extends ClientGame<GameObject>{
     close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
         if(hard)this.local_server.stop()
+        if(this.editor)this.editor.close()
+        this.editor=undefined
         this.happening=false
         this.started=false
         this.menu.game_end()
@@ -607,12 +624,12 @@ export class Game extends ClientGame<GameObject>{
             if (move.scale > 0) {
                 this.free_cam_pos.x += Math.cos(move.dir) * this.free_cam_speed * dt
                 this.free_cam_pos.y += Math.sin(move.dir) * this.free_cam_speed * dt
-                v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
+                //v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
             }
             this.free_cam_speed=5/this.free_cam_zoom
             this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(2, dt))
             v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
-            v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
+            //v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
             this.sounds.set_listener_position(this.cam2d.position)
         }else{
             if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
@@ -620,6 +637,7 @@ export class Game extends ClientGame<GameObject>{
             }
             if(this.active_entity){
                 this.cam2d.position=this.active_entity.position
+                //this.cam2d.position=v2.add_rotate_RadAngle(this.active_entity.position,v2(0.05/this.cam2d.zoom,0),this.active_entity.physical_data.rotation)
                 this.sounds.set_listener_position(this.active_entity.position)
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
                 this.cam2d.layer=this.active_entity.layer
@@ -781,7 +799,6 @@ export class Game extends ClientGame<GameObject>{
                 this.definitions.add_definitions(mp.map.definitions)
             }
             await this.terrain.process_map(mp.map)
-            this.terrain.last_layer=0
             this.minimap.init(mp.map)
             this.ambient.on_game_start()
         })

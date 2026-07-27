@@ -12,6 +12,10 @@ export class TerrainM extends TerrainManager{
         super()
         this.game=game
     }
+    override clear(): void {
+        super.clear()
+        this.last_layer=undefined
+    }
     process_map(mp:MapConfig):Promise<void>{
         return new Promise<void>((resolve, _reject) => {
             this.clear()
@@ -32,11 +36,9 @@ export class TerrainM extends TerrainManager{
                 if(layer<f.layer)continue
                 const flb=this.game.minimap.biome.floors[f.type as FloorType]
 
-                graphic.ctx.begin_path()
-                graphic.ctx.set_hitbox(f.hb)
+                graphic.ctx.hitbox(f.hb)
                 //graphic.ctx.subdivide(4)
                 //graphic.ctx.round(0.1,4)
-                graphic.ctx.end_path()
 
                 graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
                 graphic.ctx.fill()

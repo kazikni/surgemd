@@ -148,7 +148,7 @@
         height:12vw;
 
         background:url("/img/menu/final_screen/cloud_1.svg");
-        animation:scroll-right-animation 600s linear infinite;
+        animation:scroll-right-animation 700s linear infinite;
         opacity: 0.25;
     }
     .rain{
@@ -199,7 +199,7 @@
         height:50vw;
 
         background:url("/img/menu/final_screen/mountains_1.png");
-        animation:scroll-left-animation 1000s linear infinite;
+        animation:scroll-left-animation 1400s linear infinite;
     }
     .mountains-ice{
         bottom:0;
@@ -207,28 +207,28 @@
         height:50vw;
 
         background:url("/img/menu/final_screen/mountains_2.svg");
-        animation:scroll-left-animation 720s linear infinite;
+        animation:scroll-left-animation 1400s linear infinite;
     }
     .city{
         bottom:0;
-
         background-image:url("/img/menu/final_screen/buildings_1.svg");
-        animation:scroll-left-animation 800s linear infinite;
     }
     .city-back{
-        height:40vw;
+        height:35vw;
+        animation:scroll-left-animation 1100s linear infinite;
     }
     .palms{
         background-image:url("/img/menu/final_screen/beach_front_1.svg");
         bottom: -1vw;
 
-        animation:scroll-left-animation 240s linear infinite;
+        animation:scroll-left-animation 600s linear infinite;
     }
     .utility-poles{
         bottom:0;
 
         background-image:url("/img/menu/final_screen/utility_poles_1.svg");
-        animation:scroll-left-animation 720s linear infinite;
+        animation:scroll-left-animation 900s linear infinite;
+        height: 16vw;
     }
     .palms-back{
         height: 30vw;
@@ -246,17 +246,17 @@
     .wave-1{
         bottom:8vw;
         height:2vw;
-        animation:scroll-left-animation 130s linear infinite;
+        animation:scroll-left-animation 500s linear infinite;
     }
     .wave-2{
         bottom:5.5vw;
         height:1.3vw;
-        animation:scroll-left-animation 120s linear infinite;
+        animation:scroll-left-animation 400s linear infinite;
     }
     .wave-3{
         bottom:3vw;
         height:1vw;
-        animation:scroll-left-animation 110s linear infinite
+        animation:scroll-left-animation 300s linear infinite
     }
     .water{
         position:absolute;
@@ -298,14 +298,12 @@
             bottom: -3vw;
         }
         .utility-poles{
-            height: 13vw;
             bottom: 12vw;
         }
         .reflection-utility-poles{
             bottom: 0;
         }
         .city-back{
-            height:40vw;
             bottom: 15vw;
         }
         .reflection-city{

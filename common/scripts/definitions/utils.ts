@@ -193,6 +193,7 @@ export type HumanDefinition={
     layer?:number
     loadout?:LoadoutPreset
     inventory?:InventoryPreset
+    pacific_enabled?:boolean
     boosts?:(WeightDefinition&{
         value:number
         def:string

@@ -4,6 +4,7 @@
 @use "./inventory.scss";
 @use "./mobile.scss";
 @use "./game-device.scss";
+@use "./editor.scss";
 #game {
     user-select: none;
     --webkit-user-select: none;

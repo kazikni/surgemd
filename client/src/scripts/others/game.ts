@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Sound, WebglRenderer } from "common/engine/client.ts";
+import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/client.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -517,6 +517,8 @@ export class Game extends ClientGame<GameObject>{
         this.cam_type=1
         this.happening=true
 
+        this.free_cam_pos=v2.zero()
+        this.free_cam_zoom=1
         this.menu.game_start()
         this.ui.start()
         this.hitboxes_gfx.ctx.clear()
@@ -616,18 +618,20 @@ export class Game extends ClientGame<GameObject>{
         this.device.tick(dt)
         this.dead_zone.tick(dt)
         this.final_screen.update(dt)
+        if(this.editor)this.editor.tick(dt)
 
         if (this.cam_type === 1) {
             const move = this.input.movement
-            if (move.scale > 0) {
-                this.free_cam_pos.x += Math.cos(move.dir) * this.free_cam_speed * dt
-                this.free_cam_pos.y += Math.sin(move.dir) * this.free_cam_speed * dt
-                //v2m.clamp2(this.free_cam_pos,v2.zero,this.terrain.map.size)
-            }
             this.free_cam_speed=5/this.free_cam_zoom
-            this.cam2d.zoom = Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(2, dt))
-            v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(1, dt))
-            //v2m.clamp2(this.cam2d.position,v2.zero,this.terrain.map.size)
+            if (move.scale>0) {
+                this.free_cam_pos.x+=Math.cos(move.dir)*this.free_cam_speed*dt
+                this.free_cam_pos.y+=Math.sin(move.dir)*this.free_cam_speed*dt
+            }
+            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
+            v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
+            if(this.input_manager.keyPress(Key.Mouse_Right)){
+                v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
+            }
             this.sounds.set_listener_position(this.cam2d.position)
         }else{
             if(this.active_entity&&this.active_entity_id!==this.active_entity.id){

@@ -230,6 +230,7 @@ export class InputManager {
 
     real_mouse_position = v2.zero()
     mouse_position = v2.zero()
+    old_mouse_position = v2.zero()
     mouse_delta = v2.zero()
 
     left_stick = v2.zero()
@@ -319,10 +320,8 @@ export class InputManager {
         if (!this.focus) return
         const rect = canvas.getBoundingClientRect()
         const scale = v2(canvas.width / rect.width, canvas.height / rect.height)
-        const old = this.mouse_position
         this.real_mouse_position=v2(e.clientX - rect.left,e.clientY - rect.top)
-        this.mouse_position = v2.mult(this.real_mouse_position,scale)
-        this.mouse_delta = v2.sub(this.mouse_position,old)
+        this.mouse_position=v2.mult(this.real_mouse_position,scale)
         this.emit({type: InputEventType.MouseMove,position: this.world_mouse_position,delta: this.mouse_delta})
     }
     get world_mouse_position(): Vec2 {
@@ -463,7 +462,7 @@ export class InputManager {
 
     tick() {
         this.update_gamepads()
-        for (const id in this.axis) {
+        for(const id in this.axis) {
             const axis = this.axis[id]
             let mov = v2(
                 this.action_id_pressed(
@@ -504,7 +503,7 @@ export class InputManager {
                 })
             }
         }   
-        for (const action in this.actions) {
+        for(const action in this.actions) {
             const pressed=this.action_pressed(this.actions[action])
             const active=this.active_actions.has(action)
             if (pressed&&!active){
@@ -522,10 +521,11 @@ export class InputManager {
                 })
             }
         }
-
-        for (const key of this.wheel_pressed) {
+        for(const key of this.wheel_pressed) {
             this.pressed.delete(key)
         }
+        this.mouse_delta = v2.sub(this.mouse_position,this.old_mouse_position)
+        this.old_mouse_position=this.mouse_position
         this.wheel_pressed.clear()
         this.down.clear()
         this.up.clear()

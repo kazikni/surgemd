@@ -168,6 +168,11 @@ import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, rand
 
                     this.game.cam_type=1
                     await this.game.watcher.load(play.handle)
+                    break
+                }
+                case "editor":{
+                    await this.game.start_editor()
+                    break
                 }
             }
         }

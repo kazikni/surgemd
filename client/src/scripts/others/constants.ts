@@ -18,4 +18,6 @@ export type PlayArgs={
 }|{
     type: "replay"
     handle:FileHandle
+}|{
+    type: "editor"
 }

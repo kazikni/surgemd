@@ -746,6 +746,18 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
         "campaign_level_selector":{
             generate:make_menu_campaign(campaign)
         },
+        "editor":{
+            generate:(parent,m)=>{
+                parent.innerHTML = `
+<h2>Start Editor</h2>
+<button class="btn-green" id="btn-open-editor">Open Editor</button>
+`
+                const btn = parent.querySelector("#btn-open-editor") as HTMLButtonElement
+                btn.onclick=(_e)=>m.play_callback?.({
+                    type:"editor",
+                })
+            }
+        },
         "replays":{
             generate: (parent, manager) => {
                 parent.innerHTML = `
@@ -777,7 +789,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                     }
                 }
             }
-        }
+        },
     } as Record<string,MenuSubTabDef>
     const play_options:SubMenuOption[]=[
         {
@@ -987,6 +999,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
         {
             type:"label",
             name:"menu.play.label-files",
+        },
+        {
+            type:"button",
+            id:"editor",
+            name:"menu.play.editor",
+            subtab:"editor"
         },
         {
             type:"button",

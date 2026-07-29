@@ -506,12 +506,12 @@ export class Obstacle extends StaticBody{
             this.transform_into_data?.activated,
             this.press_data?.dirty
         )
-        if(full||this.visual_data.dirty){
-            stream.write_uint8(this.visual_data.variation)
-            stream.write_uint8(this.visual_data.skin)
-        }
         if(full){
             stream.write_uint16(this.def.idNumber!)
+        }
+        if(full||this.visual_data.dirty){
+            stream.write_uint8(this.visual_data.skin)
+            stream.write_uint8(this.visual_data.variation)
         }
         if(full||this.physical_data.dirty||this.physical_data.dirty_part){
             stream.write_float(this.physical_data.scale,0,10,2)

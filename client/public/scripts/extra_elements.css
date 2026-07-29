@@ -146,11 +146,17 @@ smde-window{
     height: 600px;
     border: #000 3px solid;
     resize: both;
-    overflow: auto;
+    overflow: hidden;
     min-width: 3vw;
     min-height:  3vh;
     max-width: 100vw;
     max-height: 99vh;
+}
+smde-window .smde-window-content{
+    position: absolute;
+    top: 30px;
+    width: 100%;
+    overflow:auto;
 }
 smde-window .smde-window-top{
     display: flex;

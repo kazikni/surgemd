@@ -247,7 +247,7 @@ export class Game extends ClientGame<GameObject>{
             }
         })
         this.input_manager.listener.on(InputEventType.ActionDown,(a:InputActionEvent)=>{
-            if(!this.can_act)return
+            if(!this.can_act||this.editor)return
             switch(a.action){
                 case "fire":
                     if(a.element!==this.renderer.canvas)break
@@ -458,6 +458,7 @@ export class Game extends ClientGame<GameObject>{
         textures=["/assets/img/kspr/main",...textures]
         this.resources.clear([
             "essentials",
+            "main",
             ...textures
         ])
 
@@ -629,7 +630,7 @@ export class Game extends ClientGame<GameObject>{
             }
             this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
             v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
-            if(this.input_manager.keyPress(Key.Mouse_Right)){
+            if(this.input_manager.keyPress(Key.E)){
                 v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
             }
             this.sounds.set_listener_position(this.cam2d.position)

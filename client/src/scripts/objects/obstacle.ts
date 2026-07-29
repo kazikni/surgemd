@@ -6,7 +6,7 @@ import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./stati
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { Color, ColorM, Hitbox2D, model2d, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m } from "common/engine/core.ts";
+import { Angle, Color, ColorM, Hitbox2D, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
     if(skin>0&&def.assets?.frame?.biome_skins){
@@ -290,10 +290,7 @@ export class Obstacle extends StaticBody{
         }
         super.set_hit_sounds_def(sounds)
     }
-    initialized:boolean=false
     initialize_hitboxes(){
-        if(this.initialized)return
-        this.initialized=false
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
         this.base_hitbox=this.physical_data.hitbox
         if(this.def.expanded_behavior){
@@ -469,6 +466,39 @@ export class Obstacle extends StaticBody{
         return (this.def.interactDestroy===true)
     }
 
+    set_visual(skin?:number,variation?:number){
+        this.skin=skin??0
+        if(!variation&&this.def?.assets?.frame?.variations){
+            this.variation=random.int(1,this.def.assets.frame.variations)
+        }else{
+            this.variation=variation??0
+        }
+        this.assets_data.frame.base=GetObstacleBaseFrame(this.def,this.variation,this.skin)
+        this.update_frame()
+    }
+    set_physical(scale:number,position?:Vec2,rotation?:number,side?:number){
+        this.physical_data.scale=scale
+        if(position!==undefined&&rotation!==undefined){
+            this.position=position
+            if(side!==undefined){
+                this.physical_data.rotation=rotation
+                this.physical_data.side=side
+            }else if(this.def.rotation_mode===RotationMode.limited){
+                this.physical_data.rotation=Angle.side_rad(rotation as Orientation)
+                this.physical_data.side=(side??0 as Orientation)
+            }else{
+                this.physical_data.rotation=rotation
+                this.physical_data.side=side??0
+            }
+            this.initialize_hitboxes()
+            this.container.rotation=this.physical_data.rotation
+            this.container.position=this.position
+        }
+        this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
+        this.container.scale.x=this.physical_data.scale
+        this.container.scale.y=this.physical_data.scale
+        this.update_shadow()
+    }
     override on_decode_net(stream:Stream,full:boolean):void{
         const [
             visual,
@@ -480,34 +510,24 @@ export class Obstacle extends StaticBody{
             transform_into_active,
             press_active
         ]=stream.read_boolean_group()
-        if(visual||full){
-            this.variation=stream.read_uint8()
-            this.skin=stream.read_uint8()
-        }
         if(full){
             const id=stream.read_uint16()
             this.set_definition(this.game.definitions.obstacles.getFromNumber(id))
-            this.update_frame()
+        }
+        if(visual||full){
+            this.set_visual(stream.read_uint8(),stream.read_uint8())
         }
         if(physical_data_part||physical_data||full){
-            this.physical_data.scale=stream.read_float(0,10,2)
-
+            const scale=stream.read_float(0,10,2)
+            let position:Vec2|undefined
+            let rotation:number|undefined
+            let side:number|undefined
             if(full||physical_data){
-                this.position=stream.read_pos2()
-                this.physical_data.rotation=stream.read_rad()
-                this.physical_data.side=stream.read_uint8()
-
-                this.initialize_hitboxes()
-
-                this.container.rotation=this.physical_data.rotation
-                this.container.position=this.position
+                position=stream.read_pos2()
+                rotation=stream.read_rad()
+                side=stream.read_uint8()
             }
-
-            this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
-            this.container.scale.x=this.physical_data.scale
-            this.container.scale.y=this.physical_data.scale
-
-            this.update_shadow()
+            this.set_physical(scale,position,rotation,side)
         }
         if(health_data||full){
             this.health_data.health=stream.read_float(0,1,1)
@@ -522,7 +542,6 @@ export class Obstacle extends StaticBody{
                 }
             }
         }
-
         if(door_dirty){
             this.update_door(stream.read_int8(),full)
         }

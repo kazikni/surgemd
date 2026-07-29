@@ -293,16 +293,16 @@ export class TranslationManager {
     }
 }
 export interface FrameTransform{
+    position?:Vec2
+    rotation?:number
     scale?:number
     scale2?:Vec2
-    hotspot?:Vec2
-    rotation?:number
-    position?:Vec2
-    visible?:boolean
-    zIndex?:number
     tint?:number
+    hotspot?:Vec2
     alpha?:number
+    zIndex?:number
     layer?:number
+    visible?:boolean
 }
 export type FrameDef={image?:string}&FrameTransform
 export type KeyFrameSpriteDef={

@@ -46,6 +46,7 @@ class SMDEMenu extends HTMLElement {
     constructor(){
         super()
         this._connected=false
+        this.hover=false
     }
     get innerHTML(){
         return super.innerHTML
@@ -56,14 +57,31 @@ class SMDEMenu extends HTMLElement {
             this.rebuild()
         }
     }
+
+    set_hover(hover){
+        this.hover=hover
+        if(this.parent_menu){
+            this.parent_menu.set_hover(hover)
+        }
+    }
+    close(){
+        if(this.parent_menu){
+            return this.parent_menu.close()
+        }
+        const event = new CustomEvent("close",{
+            bubbles: true,
+            cancelable: true
+        })
+        const canClose = this.dispatchEvent(event)
+        if(canClose)this.remove()
+    }
     connectedCallback(){
         this._connected=true
         this.rebuild()
+        this.addEventListener("mouseenter",(e)=>this.set_hover(true))
+        this.addEventListener("mouseleave",(e)=>this.set_hover(false))
     }
     rebuild(){
-        this.onclick=()=>{
-            setTimeout(()=>this.remove(),100)
-        }
     }
     /**
      * 
@@ -73,8 +91,12 @@ class SMDEMenu extends HTMLElement {
     add_option(text,onclick=(_e)=>{}){
         const node=document.createElement("smde-option")
         node.innerText=text
-        node.addEventListener("click",onclick)
+        node.addEventListener("click",(e)=>{
+            onclick(e)
+            this.close()
+        })
         this.appendChild(node)
+        return node
     }
     /**
      * 
@@ -83,12 +105,14 @@ class SMDEMenu extends HTMLElement {
      * @param {(event:MouseEvent)=>void} onclick
      */
     add_submenu(text, menu){
+        menu.parent_menu=this
         const option = document.createElement("smde-option-submenu")
         const label = document.createElement("div")
         label.textContent = text
         option.appendChild(label)
         option.appendChild(menu)
         this.appendChild(option)
+        return option
     }
 }
 class SMDEOptionSubMenu extends HTMLElement{
@@ -208,37 +232,49 @@ class SMDEWindow extends HTMLElement{
         this.moving=false
         this.dragOffset={x:0,y:0}
     }
+    appendChild(n){
+        if(!this.content){
+            super.appendChild(n)
+            return
+        }
+        this.content.appendChild(n)
+    }
     connectedCallback(){
-        this.content=document.createElement("div")
-        this.content.innerHTML=this.innerHTML
+        const content=document.createElement("div")
+        content.innerHTML=this.innerHTML
+        content.className="smde-window-content"
+        content.style.height=`calc(100% - 30px)`
         this.innerHTML=""
-        this.appendChild(this.content)
-        const top=document.createElement("div")
-        top.className="smde-window-top"
-        this.top=top
-        this.appendChild(top)
+
+        this.top=document.createElement("div")
+        this.top.className="smde-window-top"
+        this.appendChild(this.top)
+
         this.set_size(600,600)
         
         this.mouse_down_listener=(e)=>{
             if(!this.movable) return
             this.moving=true
-            this.dragOffset.x = e.clientX - this.offsetLeft
-            this.dragOffset.y = e.clientY - this.offsetTop
+            this.dragOffset.x=e.clientX-this.offsetLeft
+            this.dragOffset.y=e.clientY-this.offsetTop
         }
         this.mouse_up_listener=(e)=>{
             this.moving=false
         }
         this.mouse_move_listener=(e)=>{
-            if(!this.moving) return
-            this.style.left = (e.clientX - this.dragOffset.x) + "px"
-            this.style.top  = (e.clientY - this.dragOffset.y) + "px"
+            if(!this.moving)return
+            this.style.left=(e.clientX-this.dragOffset.x)+"px"
+            this.style.top=(e.clientY-this.dragOffset.y)+"px"
         }
 
-        top.addEventListener("mousedown",this.mouse_down_listener)
+        this.top.addEventListener("mousedown",this.mouse_down_listener)
         document.addEventListener("mouseup",this.mouse_up_listener)
         document.addEventListener("mousemove",this.mouse_move_listener)
 
         this.add_close_button()
+
+        this.appendChild(content)
+        this.content=content
     }
     add_close_button(){
         this.close_button=document.createElement("button")

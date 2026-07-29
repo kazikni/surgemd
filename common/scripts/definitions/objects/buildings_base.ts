@@ -430,6 +430,19 @@ export const buildings_factory={
                     top:true
                 },0.4),
                 spawnHitbox:new RectHitbox2D(min,max),
+                floor_image:[
+                    {image:settings.floor??"container_floor",tint:tint,scale:3},
+                    {image:settings.floor??"container_walls_1",tint:tint,zIndex:zIndexes.BuildingsWalls1}
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:settings.ceiling??"container_ceiling_1",
+                            tint:tint
+                        },
+                        hitbox:new RectHitbox2D(min,max),
+                    }
+                ],
                 assets:{
                     particles:{
                         particle:"metal_particle",
@@ -437,21 +450,6 @@ export const buildings_factory={
                     },
                     sounds:hit_sounds.heavy_metal,
                 },
-                generate:{
-                    floor_image:[
-                        {image:settings.floor??"container_floor",tint:tint,scale:3},
-                        {image:settings.floor??"container_walls_1",tint:tint,zIndex:zIndexes.BuildingsWalls1}
-                    ],
-                    ceiling:[
-                        {
-                            frame:{
-                                image:settings.ceiling??"container_ceiling_1",
-                                tint:tint
-                            },
-                            hitbox:new RectHitbox2D(min,max),
-                        }
-                    ]
-                }
             } as BuildingDef,settings.b??{})
         },
         type_2(id:string,tint:number=0xffffff,settings:{
@@ -478,21 +476,19 @@ export const buildings_factory={
                     },
                     sounds:hit_sounds.heavy_metal,
                 },
-                generate:{
-                    floor_image:[
-                        {image:settings.floor??"container_floor",tint:tint,scale:3},
-                        {image:settings.floor??"container_walls_2",tint:tint,zIndex:zIndexes.BuildingsWalls1}
-                    ],
-                    ceiling:[
-                        {
-                            frame:{
-                                image:settings.ceiling??"container_ceiling_2",
-                                tint:tint
-                            },
-                            hitbox:new RectHitbox2D(min,max),
-                        }
-                    ]
-                }
+                floor_image:[
+                    {image:settings.floor??"container_floor",tint:tint,scale:3},
+                    {image:settings.floor??"container_walls_2",tint:tint,zIndex:zIndexes.BuildingsWalls1}
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:settings.ceiling??"container_ceiling_2",
+                            tint:tint
+                        },
+                        hitbox:new RectHitbox2D(min,max),
+                    }
+                ]
             } as BuildingDef,settings.b??{})
         },
         simple(id:string,tint:number):BuildingDef[]{
@@ -541,6 +537,9 @@ export const buildings_factory={
                     left:false,
                     right:true
                 },wall_size),
+                floor_image:[
+                    {image:floor+"_1"}
+                ],
                 ceiling:[{
                     frame:{
                         image:ceiling,
@@ -548,9 +547,6 @@ export const buildings_factory={
                     },
                     hitbox:spawn_hb,
                 }],
-                floor_image:[
-                    {image:floor+"_1"}
-                ],
                 generate:{
                     stair_data:[{
                         hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
@@ -1055,23 +1051,21 @@ export const buildings_factory={
                 },
                 sounds:hit_sounds.heavy_metal,
             },
-            generate:{
-                floor_image:[
-                    {
-                        image:settings.floor??"storehouse_floor_1",
+            floor_image:[
+                {
+                    image:settings.floor??"storehouse_floor_1",
+                    scale:2.5
+                }
+            ],
+            ceiling:[
+                {
+                    frame:{
+                        image:settings.ceiling??"storehouse_ceiling_1",
                         scale:2.5
-                    }
-                ],
-                ceiling:[
-                    {
-                        frame:{
-                            image:settings.ceiling??"storehouse_ceiling_1",
-                            scale:2.5
-                        },
-                        hitbox:new RectHitbox2D(min,max),
-                    }
-                ]
-            }
+                    },
+                    hitbox:new RectHitbox2D(min,max),
+                }
+            ]
         } as BuildingDef,settings.b??{})
     },
 }

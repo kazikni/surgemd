@@ -136,12 +136,12 @@ export class Building extends StaticBody{
                 rotation:rot+(f.rotation??0),
                 layer:this.layer+(f.layer??0),
 
+                alpha:f.alpha,
                 scale:f.scale,
                 scale2:f.scale2,
                 zIndex:f.zIndex,
                 tint:f.tint,
             },this.game.resources)
-            
             if(f.create_shadow){
                 const shadow_sprite=new Sprite2D()
                 shadow_sprite.frame=sprite.frame
@@ -173,6 +173,7 @@ export class Building extends StaticBody{
                 rotation:rot+(c.frame.rotation??0),
                 layer:this.layer+(c.frame.layer??0),
 
+                alpha:c.frame.alpha,
                 scale:c.frame.scale,
                 scale2:c.frame.scale2,
                 zIndex:zIndexes.DeadCeilings,

@@ -81,8 +81,6 @@ import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, rand
             await this.game.load_resources([],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
             this.game.mainloop(true)
-
-            //this.game.start_editor()
         }
         join_on_game(url:string,password:string,attempts=0,delay=500){
             console.log("Joining In: ",url)

@@ -22,6 +22,34 @@ export function splitPath(path:string):string[]{
     }
     return ret
 }
+export function split_strings_array(text:string):string[]{
+    const out:string[]=[]
+
+    let current=""
+    let quote=""
+
+    for(let i=0;i<text.length;i++){
+        const c=text[i]
+
+        if(!quote){
+            if(c==="\""||c==="'"){
+                quote=c
+                current=""
+            }
+            continue
+        }
+
+        if(c===quote){
+            out.push(current)
+            quote=""
+            continue
+        }
+
+        current+=c
+    }
+
+    return out
+}
 export class Path {
     static join(...parts: string[]): string {
         const stack: string[] = []

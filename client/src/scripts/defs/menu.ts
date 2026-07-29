@@ -10,6 +10,7 @@ import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 import { ModeConfig } from "common/scripts/config/config.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+import { build_setting_input, SettingDef, SettingOption } from "./settings.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -50,45 +51,6 @@ export interface MenuTab{
     tabs:Record<string,HTMLElement>
     current_tab:string
 }
-type SettingOption = {
-  name: string
-  value: string | number
-}
-
-type SettingDef =
-    {
-        type:"input"
-        name:string
-        var:string
-        placeholder?:string
-    }|{
-        var: string
-        name: string
-        type: "choose"
-        options: SettingOption[]
-        on_set?:(val:number|string)=>void
-    }|{
-        var: string
-        name: string
-        type: "toggle"
-        on_set?:(val:boolean)=>void
-    }|{
-        var: string
-        name: string
-        type: "range"
-        min: number
-        max: number
-        step?: number
-        on_set?:(val:number)=>void
-    }|{
-        type:"h1"|"h2"|"h3"|"h4"|"h5"
-        name:string
-    }|{
-        var: string
-        name: string
-        type: "color"
-        on_set?:(val:string)=>void
-    }
 export type ModeSettingsPopupDef={
     title?:string
     inputs:SettingDef[]
@@ -135,124 +97,6 @@ export function game_popup_builder(def:PopupBuilderDef){
         }
     }
 }
-function build_setting_input(def: SettingDef,translation:TranslationManager,onChange:(val:any)=>void,initial?:any): HTMLElement {
-    if(def.type==="h1"||def.type==="h2"||def.type==="h3"||def.type==="h4"||def.type==="h5"){
-        const header=document.createElement(def.type)
-        header.className="span-text-base"
-        header.textContent=translation.get(def.name)
-        return header
-    }
-
-    const row=document.createElement("div")
-    row.className="settings-row"
-
-    const label=document.createElement("span")
-    label.className="span-text"
-    label.textContent=translation.get(def.name)
-    row.appendChild(label)
-
-    let el:HTMLElement
-
-    switch(def.type){
-        case "input":{
-            const i=document.createElement("input")
-            i.className="text-input-green"
-            if(def.placeholder)i.placeholder=def.placeholder
-            if(initial!==undefined)i.value=initial
-            i.onchange=()=>onChange(i.value)
-            el=i
-            break
-        }
-        case "toggle":{
-            const c=document.createElement("input")
-            c.type="checkbox"
-            c.className="checkbox-blue"
-            if(initial!==undefined){
-                c.checked=!!initial
-                def.on_set?.(c.checked)
-            }
-            c.onchange=()=>{
-                onChange(c.checked)
-                def.on_set?.(c.checked)
-            }
-            el=c
-            break
-        }
-        case "choose":{
-            const s=document.createElement("select")
-            s.className="select-blue"
-
-            for(const opt of def.options){
-                const o=document.createElement("option")
-                o.textContent=opt.name
-                o.value=String(opt.value)
-                def.on_set?.(opt.value)
-                s.appendChild(o)
-            }
-
-            if(initial!==undefined){
-                s.value=String(initial)
-                def.on_set?.(initial)
-            }
-
-            s.onchange=()=>onChange(s.value)
-
-            el=s
-            break
-        }
-        case "range":{
-            const slider=document.createElement("input")
-            slider.type="range"
-            slider.className="slider-blue"
-            slider.min=String(def.min)
-            slider.max=String(def.max)
-            slider.step=String(def.step??1)
-
-            if(initial!==undefined){
-                slider.value=String(initial)
-                def.on_set?.(initial)
-            }
-
-            const valueLabel=document.createElement("span")
-            valueLabel.className="span-text"
-            valueLabel.textContent=slider.value
-
-            slider.oninput=()=>{
-                const val=Number(slider.value)
-                valueLabel.textContent=slider.value
-                def.on_set?.(val)
-                onChange(val)
-            }
-
-            const wrap=document.createElement("div")
-            wrap.append(slider,valueLabel)
-
-            el=wrap
-            break
-        }
-        case "color":{
-            const input=document.createElement("input")
-            input.type="color"
-            input.className="input-color"
-
-            if(initial!==undefined){
-                input.value=initial
-                def.on_set?.(initial)
-            }
-
-            input.oninput=()=>{
-                onChange(input.value)
-                def.on_set?.(input.value)
-            }
-
-            el=input
-            break
-        }
-    }
-
-    row.appendChild(el)
-    return row
-}
 
 export function game_mode_settings_manager_popup(settings:any,translation:TranslationManager,def?:ModeSettingsPopupDef){
     return (ctx:GamePopupCTX)=>{
@@ -276,20 +120,22 @@ export function game_mode_settings_manager_popup(settings:any,translation:Transl
             const row=build_setting_input(
                 input,
                 translation,
-                (val)=>{
-                    if(val){
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        setDeep(settings,input.var,val)
-                    }else{
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        deleteDeep(settings,input.var)
-                    }
-                },
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                input.var?getDeep(settings,input.var):""
+                input.var?getDeep(settings,input.var):"",
+                {
+                    on_change(val:any){
+                        if(val){
+                            // deno-lint-ignore ban-ts-comment
+                            //@ts-ignore
+                            setDeep(settings,input.var,val)
+                        }else{
+                            // deno-lint-ignore ban-ts-comment
+                            //@ts-ignore
+                            deleteDeep(settings,input.var)
+                        }
+                    },
+                },
             )
 
             container.appendChild(row)
@@ -349,17 +195,17 @@ export function make_menu_settings(save: GameSave,name:string, defs: (SettingDef
         for(const def of defs){
             if(!def)continue
             parent.appendChild(
-                build_setting_input(
-                    def,
-                    translation,
-                    (val)=>{
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        save.set_variable(def.var,val)
-                    },
+                build_setting_input(def,translation,
                     // deno-lint-ignore ban-ts-comment
                     //@ts-ignore
                     def.var?save.get_variable(def.var):"",
+                    {
+                        on_change(val:any){
+                            // deno-lint-ignore ban-ts-comment
+                            //@ts-ignore
+                            save.set_variable(def.var,val)
+                        },
+                    },
                 )
             )
         }
@@ -638,13 +484,13 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
             {type:"h2",name:"Players"},
             {
                 type:"input",
-                name:"Limit",
+                tname:"Limit",
                 var:"players.limit",
                 placeholder:"100"
             },
             {
                 type:"input",
-                name:"Map",
+                tname:"Map",
                 var:"map.def",
                 placeholder:"normal"
             },
@@ -656,7 +502,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
             {type:"h2",name:"Players"},
             {
                 type:"input",
-                name:"Limit",
+                tname:"Limit",
                 var:"players.limit",
                 placeholder:"100"
             },
@@ -666,64 +512,64 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
         title:"Counter MD Settings",
         inputs:[
             //Players
-            {type:"h2",name:"Players"},
+            {type:"h2",tname:"Players"},
             {
                 type:"input",
-                name:"Limit",
+                tname:"Limit",
                 var:"players.limit",
                 placeholder:"10"
             },
             //Earns
-            {type:"h3",name:"Earns"},
+            {type:"h3",tname:"Earns"},
             {
                 type:"input",
-                name:"Kill",
+                tname:"Kill",
                 var:"players.earns.kill",
                 placeholder:"150"
             },
             {
                 type:"input",
-                name:"Join",
+                tname:"Join",
                 var:"players.earns.join",
                 placeholder:"300"
             },
             {
                 type:"input",
-                name:"Win",
+                tname:"Win",
                 var:"players.earns.win",
                 placeholder:"500"
             },
             {
                 type:"input",
-                name:"Lose",
+                tname:"Lose",
                 var:"players.earns.Lose",
                 placeholder:"700"
             },
             //Rules
-            {type:"h2",name:"Game Rules"},
+            {type:"h2",tname:"Game Rules"},
             {
                 type:"input",
-                name:"Team Need Win",
+                tname:"Team Need Win",
                 var:"rules.team_need_win",
                 placeholder:"5"
             },
             {
                 type:"input",
-                name:"Freeze Time",
+                tname:"Freeze Time",
                 var:"rules.freeze_time",
                 placeholder:"8"
             },
             {
                 type:"input",
-                name:"Round Time",
+                tname:"Round Time",
                 var:"rules.round_time",
                 placeholder:"120"
             },
             // Map
-            {type:"h2",name:"Map"},
+            {type:"h2",tname:"Map"},
             {
                 type:"input",
-                name:"Map",
+                tname:"Map",
                 var:"map",
                 placeholder:"counter_md_normal"
             },
@@ -1074,8 +920,8 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "game":{
                     generate:make_menu_settings(menu.save,"menu.settings.game",[
                         {
-                            type:"choose",
-                            name:"settings.game.region",
+                            type:"enum",
+                            tname:"settings.game.region",
                             var:"sv_game_region",
                             options:menu.api_settings.regions.map((v)=>{
                                 return {
@@ -1086,22 +932,22 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.interpolation",
+                            tname:"settings.game.interpolation",
                             var:"sv_game_interpolation",
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.client_rot",
+                            tname:"settings.game.client_rot",
                             var:"sv_game_client_rot",
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.friendly_fire",
+                            tname:"settings.game.friendly_fire",
                             var:"sv_game_friendly_fire",
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.ammo_outline",
+                            tname:"settings.game.ammo_outline",
                             var:"sv_game_ammo_outline",
                         },
                     ],translation)
@@ -1109,8 +955,8 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "graphics":{
                     generate:make_menu_settings(menu.save,"menu.settings.graphics",[
                         {
-                            type:"choose",
-                            name:"settings.graphics.resolution",
+                            type:"enum",
+                            tname:"settings.graphics.resolution",
                             var:"sv_graphics_resolution",
                             options:[
                                 {name:"Low",value:"low"},
@@ -1118,8 +964,8 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             ],
                         },
                         {
-                            type:"choose",
-                            name:"settings.graphics.particles",
+                            type:"enum",
+                            tname:"settings.graphics.particles",
                             var:"sv_graphics_particles",
                             options:[
                                 {name:"No",value:"0"},
@@ -1129,22 +975,22 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings.graphics.shadows",
+                            tname:"settings.graphics.shadows",
                             var:"sv_graphics_shadows",
                         },
                         /*{
-                            type:"choose",
-                            name:"settings.graphics.lights",
+                            type:"enum",
+                            tname:"settings.graphics.lights",
                             var:"sv_graphics_lights",
                             options:[
-                                {name:"No",value:"0"},
-                                {name:"Minimum",value:"1"},
-                                {name:"Normal",value:"2"},
+                                {tname:"No",value:"0"},
+                                {tname:"Minimum",value:"1"},
+                                {tname:"Normal",value:"2"},
                             ],
                         },*/
                         {
-                            type:"choose",
-                            name:"settings.graphics.post_proccess",
+                            type:"enum",
+                            tname:"settings.graphics.post_proccess",
                             var:"sv_graphics_post_proccess",
                             options:[
                                 {name:"No",value:"0"},
@@ -1154,12 +1000,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings.graphics.climate",
+                            tname:"settings.graphics.climate",
                             var:"sv_graphics_climate",
                         },
                         {
                             type:"toggle",
-                            name:"settings.graphics.fullscreen",
+                            tname:"settings.graphics.fullscreen",
                             var:"sv_graphics_fullscreen",
                             on_set(enable:boolean){
                                 set_full_screen(enable)
@@ -1171,7 +1017,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,"menu.settings.sounds",[
                         {
                             type:"range",
-                            name:"settings.sounds.master_volume",
+                            tname:"settings.sounds.master_volume",
                             var:"sv_sounds_master_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.master_bus.set_volume(Numeric.clamp(v,0,1))
@@ -1182,7 +1028,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"settings.sounds.music_volume",
+                            tname:"settings.sounds.music_volume",
                             var:"sv_sounds_music_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.get_bus("music").set_volume(Numeric.clamp(v,0,1))
@@ -1193,7 +1039,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"settings.sounds.ambient_volume",
+                            tname:"settings.sounds.ambient_volume",
                             var:"sv_sounds_ambient_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.get_bus("ambience").set_volume(Numeric.clamp(v,0,1))
@@ -1204,7 +1050,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings.sounds.gameplay_music",
+                            tname:"settings.sounds.gameplay_music",
                             var:"sv_sounds_gameplay_music",
                         },
                     ],translation),
@@ -1213,37 +1059,37 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,"menu.settings.ui",[
                         {
                             type:"color",
-                            name:"settings.ui.primary_color",
+                            tname:"settings.ui.primary_color",
                             var:"sv_ui_primary_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.secondary_color",
+                            tname:"settings.ui.secondary_color",
                             var:"sv_ui_secondary_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.tertiary_color",
+                            tname:"settings.ui.tertiary_color",
                             var:"sv_ui_tertiary_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.positive_color",
+                            tname:"settings.ui.positive_color",
                             var:"sv_ui_positive_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.negative_color",
+                            tname:"settings.ui.negative_color",
                             var:"sv_ui_negative_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.special_color",
+                            tname:"settings.ui.special_color",
                             var:"sv_ui_special_color",
                         },
                         {
-                            type:"choose",
-                            name:"settings.ui.translation",
+                            type:"enum",
+                            tname:"settings.ui.translation",
                             var:"sv_ui_translation",
                             options:[
                                 {name:"English",value:"en"},
@@ -1255,7 +1101,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         isMobile?undefined:{
                             type:"toggle",
-                            name:"settings.ui.interactive",
+                            tname:"settings.ui.interactive",
                             var:"sv_ui_interactive",
                         }
                     ],translation),
@@ -1349,23 +1195,23 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     generate:make_menu_settings(menu.save,"menu.loadout.character",[
                         {
                             type:"input",
-                            name:"loadout.character.name",
+                            tname:"loadout.character.name",
                             var:"sv_loadout_name",
                         },
                         {
                             type:"color",
-                            name:"loadout.character.hair_tint",
+                            tname:"loadout.character.hair_tint",
                             var:"sv_loadout_hair_tint",
                         },
                         {
-                            type:"choose",
-                            name:"loadout.character.hair_type",
+                            type:"enum",
+                            tname:"loadout.character.hair_type",
                             var:"sv_loadout_hair",
                             options:hairs_types,
                         },
                         {
-                            type:"choose",
-                            name:"loadout.character.body_tint",
+                            type:"enum",
+                            tname:"loadout.character.body_tint",
                             var:"sv_loadout_body_tint",
                             options:[
                                 {
@@ -1396,12 +1242,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"loadout.character.female",
+                            tname:"loadout.character.female",
                             var:"sv_loadout_female",
                         },
                         {
-                            type:"choose",
-                            name:"loadout.character.shirt",
+                            type:"enum",
+                            tname:"loadout.character.shirt",
                             var:"sv_loadout_shirt",
                             options:shirts_types,
                         },

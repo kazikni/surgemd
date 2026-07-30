@@ -1,5 +1,8 @@
 import { createCanvas } from "https://deno.land/x/canvas/mod.ts";
-import { CommandDef, DynamicStream, GameConsole, KSPRImageFormat, load_kspr } from "common/engine/core.ts";
+import { CommandDef, DynamicStream, GameConsole } from "common/engine/core.ts";
+import { KSPRImageFormat,load_kspr } from "common/engine/core/lang/kspr.ts";
+import { audios } from "common/engine/core/lang/audiosheet.ts";
+import { FFmpegDecoder, FFmpegEncoder } from "common/engine/server/audio.ts";
 import { ClientsManager, DenoFileManager, Server } from "common/engine/server.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Game } from "./game/others/game.ts";
@@ -59,7 +62,30 @@ export async function extract_kspr(input:string,output:string){
         }
     }
 }
+export async function compile_audio(input: string,output: string){
+    const fs = new DenoFileManager()
 
+    const decoder = new FFmpegDecoder()
+    const encoder = new FFmpegEncoder()
+
+    console.log(`Compiling "${input}"...`)
+
+    const sheet = await audios.compile_group(fs,decoder,encoder,input)
+
+    const stream = new DynamicStream()
+    audios.write_definitions(stream, sheet)
+
+    await Deno.writeFile(output+".ogg",sheet.audio)
+    await Deno.writeFile(output+".ksnd",stream.data.slice(0, stream.length))
+
+    console.log(`Generated ${output+".ogg"}`)
+    console.log(`Generated ${output+".ksnd"}`)
+
+    console.log(`Duration   : ${sheet.duration.toFixed(2)} s`)
+    console.log(`SampleRate : ${sheet.sampleRate}`)
+    console.log(`Channels   : ${sheet.channels}`)
+    console.log(`Sounds     : ${Object.keys(sheet.sounds).length}`)
+}
 export const game_command:CommandDef={
     name:"game",
     flags:{},
@@ -197,10 +223,35 @@ export const kspr_command: CommandDef = {
         }
     ]
 }
+export const audio_command: CommandDef = {
+    name: "audio",
+    flags: {},
+    childrens: [
+        {
+            name: "compile",
+            flags: {
+                input: {
+                    type: "string"
+                },
+                output: {
+                    type: "string",
+                    default: "output"
+                }
+            },
+            flags_orden: [
+                "input"
+            ],
+            async execute(ctx) {
+                await compile_audio(ctx.args.input,ctx.args.output)
+            }
+        }
+    ]
+}
 async function main(args:string[]) {
     const cmd=new GameConsole({})
     cmd.register(game_command)
     cmd.register(kspr_command)
+    cmd.register(audio_command)
     await cmd.run(args)
 }
 
@@ -210,3 +261,4 @@ if (import.meta.main) {
 
 //deno run -A ./server/src/cli.ts kspr extract client/dist/assets/img/kspr/common.kspr
 //deno run -A ./server/src/cli.ts game map compile common/scripts/definitions/maps/tundra.ts
+//deno run -A ./server/src/cli.ts audio compile client/public/assets/sounds/game/main

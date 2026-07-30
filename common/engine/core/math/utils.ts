@@ -76,6 +76,24 @@ export class Path {
 
         return "/" + stack.join("/")
     }
+    static extname(path:string):string{
+        const content=path.split(".")
+        return path.length>1?content[content.length-1]:""
+    }
+    static filename(path:string):string{
+        const content=path.split(".")
+        if(content.length>1){
+            content.pop()
+        }
+        return content.join(".")
+    }
+    static basename(path:string):string{
+        const val=path.split("/")
+        while(val.length>1&&val[val.length-1]===""){
+            val.pop()
+        }
+        return val[val.length-1]??""
+    }
 }
 export type Tags=string[]
 export function hasTag(tags:Tags,tag:string):boolean{

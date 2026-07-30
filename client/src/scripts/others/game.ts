@@ -37,7 +37,7 @@ import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { load_kspr } from "common/engine/core/lang/kspx.ts";
+import { load_kspr } from "common/engine/core/lang/kspr.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { FinalScreenManager } from "../managers/final_screen.ts";
@@ -476,18 +476,6 @@ export class Game extends ClientGame<GameObject>{
         }
 
         await this.resources.load_group("/assets/main-sounds.json","main",this.menu.set_loading_current)
-        
-        await this.resources.load_sound("typewriter-1",{src:"/assets/sounds/ui/typewriter-1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("typewriter-2",{src:"/assets/sounds/ui/typewriter-2.mp3",volume:1},"essentials",this.menu.set_loading_current)
-
-        await this.resources.load_sound("deadzone_ambience",{src:"/assets/sounds/ambience/deadzone_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("rain_ambience",{src:"/assets/sounds/ambience/rain_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("storm_ambience",{src:"/assets/sounds/ambience/storm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("snowstorm_ambience",{src:"/assets/sounds/ambience/snowstorm_ambience.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("thunder_1",{src:"/assets/sounds/ambience/thunder_1.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("thunder_2",{src:"/assets/sounds/ambience/thunder_2.mp3",volume:1},"essentials",this.menu.set_loading_current)
-        await this.resources.load_sound("thunder_3",{src:"/assets/sounds/ambience/thunder_3.mp3",volume:1},"essentials",this.menu.set_loading_current)
-
         for(const s in assets){
             await this.resources.load_sound(s,{src:assets[s],volume:1},"ingame",this.menu.set_loading_current)
         }

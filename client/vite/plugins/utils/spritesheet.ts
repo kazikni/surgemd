@@ -1,6 +1,6 @@
 import { type Image, createCanvas, loadImage } from "canvas";
 import path from "node:path";
-import { KSPR, write_kspr,KSPRImageFormat } from "../../../../common/engine/core/lang/kspx.ts";
+import { KSPR, write_kspr,KSPRImageFormat } from "common/engine/core/lang/kspr.ts";
 import { RectPacker } from "../../../../common/engine/core/math/geometry.ts";
 import readDirectory from "./readDirectory.ts";
 import { Minimatch } from "minimatch"

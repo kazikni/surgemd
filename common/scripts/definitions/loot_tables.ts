@@ -106,11 +106,11 @@ export const LootTables={
     //Ammos
     ammos:[
         {item:"12g",count:10,weight:5},
-        {item:"9mm",count:50,weight:5},
+        {item:"9mm",count:60,weight:5},
         {item:"762mm",count:40,weight:5},
         {item:"556mm",count:40,weight:5},
-        {item:"45acp",count:40,weight:5},
-        {item:"22lr",count:60,weight:4},
+        {item:"45acp",count:40,weight:3.5},
+        {item:"22lr",count:80,weight:3.5},
         {item:"50cal",count:20,weight:0.1},
         {item:"308sub",count:5,weight:0.05},
         {item:"gasoline",count:5,weight:0.05},

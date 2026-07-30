@@ -598,4 +598,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     toString(Vec2:Vec2):string{
         return `{${Vec2.x},${Vec2.y}}`
     },
+    generate_code(v:Vec2,divade:string=", "):string{
+        return `v2(${v.x}, ${v.y})`
+    }
 })

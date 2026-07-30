@@ -93,6 +93,8 @@ export abstract class BaseHitbox2D{
     abstract encode(stream:Stream):void
     abstract to_json():JsonHitbox2D
 
+    abstract generate_code(linebreak?:string,divade?:string):string
+
     constructor(){
     }
     is_null():boolean{
@@ -164,6 +166,9 @@ export class NullHitbox2D extends BaseHitbox2D{
     }
     static decode(stream:Stream):NullHitbox2D{
         return new NullHitbox2D(stream.read_pos2())
+    }
+    generate_code(linebreak?:string,divade?:string):string{
+        return `new NullHitbox2D(${v2.generate_code(this.position,divade)})`
     }
 }
 export class CircleHitbox2D extends BaseHitbox2D{
@@ -329,6 +334,9 @@ export class CircleHitbox2D extends BaseHitbox2D{
     }
     static decode(stream:Stream):CircleHitbox2D{
         return new CircleHitbox2D(stream.read_pos2(),stream.read_float(0,500,2))
+    }
+    generate_code(linebreak?:string,divade:string=", "):string{
+        return `new CircleHitbox2D(${v2.generate_code(this.position)}${divade}${this.radius})`
     }
 }
 
@@ -665,6 +673,9 @@ export class RectHitbox2D extends BaseHitbox2D{
     override is_null(): boolean {
       return false
     }
+    generate_code(linebreak?:string,divade:string=", "):string{
+        return `new RectHitbox2D(${v2.generate_code(this.min)}${divade}${v2.generate_code(this.max)})`
+    }
 }
 export class HitboxGroup2D extends BaseHitbox2D{
     hitboxes: Hitbox2D[];
@@ -800,6 +811,14 @@ export class HitboxGroup2D extends BaseHitbox2D{
             type:HitboxType2D.group,
             hitboxes:this.hitboxes.map((v)=>v.to_json()),
         }
+    }
+    generate_code(linebreak:string="",divade:string=", "):string{
+        let val="new HitboxGroup2D("
+        for(let i=0;i<this.hitboxes.length;i++){
+            if(i>0)val+=divade
+            val+=this.hitboxes[i].generate_code(linebreak,divade)+linebreak
+        }
+        return val+")"
     }
 }
 export class PolygonHitbox2D extends BaseHitbox2D {
@@ -1019,6 +1038,14 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             edges.push([this.points[i], this.points[(i + 1) % this.points.length]]);
         }
         return edges;
+    }
+
+    generate_code(linebreak:string="",divade:string=", "):string{
+        let val="new PolygonGroup2D("
+        for(let i=0;i<this.points.length;i++){
+            val+=`v2(${this.points[i].x}${divade}${this.points[i].y})`
+        }
+        return val+")"
     }
 }
 

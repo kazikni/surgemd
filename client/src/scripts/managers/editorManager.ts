@@ -1,9 +1,9 @@
 import { HideElement, Key, ShowElement } from "common/engine/client.ts";
 import { type Game } from "../others/game.ts";
 import { Layers } from "common/scripts/others/constants.ts";
-import { ColorM, DynamicStream, split_strings_array, StaticStream, Stream, v2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2 } from "common/engine/core.ts";
 import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject } from "../defs/editor_objects.ts";
-import { build_setting_input, SettingDef, Vec2Input } from "../defs/settings.ts";
+import { build_setting_input, RectInput, SettingDef, Vec2Input } from "../defs/settings.ts";
 export class EditorObjectsManager{
     objects:EditorObject[]=[]
     selected_object?:EditorObject
@@ -34,6 +34,23 @@ export class EditorObjectsManager{
                 throw new Error("Unknown object type")
         }
     }
+    make_hitbox():Hitbox2D{
+        let hitbox:Hitbox2D=new NullHitbox2D(v2.zero)
+        for(const obj of this.objects){
+            if(obj.type===1||obj.type===2){
+                const hb=obj.type===1?new RectHitbox2D((obj as RectHitboxEditorObject).min,(obj as RectHitboxEditorObject).max):new CircleHitbox2D((obj as CircleHitboxEditorObject).center,(obj as CircleHitboxEditorObject).radius)
+                if(hitbox.type===HitboxType2D.null){
+                    hitbox=hb
+                }else if(hitbox.type===HitboxType2D.group){
+                    hitbox.hitboxes.push(hb)
+                }else{
+                    hitbox=new HitboxGroup2D(hitbox,hb)
+                }
+            }
+        }
+        return hitbox
+    }
+
     add_object(obj:EditorObject){
         const ret=this._add_object(obj)
         this.editor.update_objects_window()
@@ -70,6 +87,7 @@ export class EditorObjectsManager{
         this.editor.update_objects_window()
         this.editor.update_propertys_window()
     }
+
     tick(dt:number){
         if(this.editor.can_act){
             if(this.editor.game.input_manager.keyPress(Key.F)){
@@ -111,8 +129,8 @@ export class EditorManager{
     settings_default:Record<string,any>={
         "textures":'"assets/img/kspr/common"',
 
-        "m_size_x":100,
-        "m_size_y":100,
+        "m.size_x":100,
+        "m.size_y":100,
     }
 
     objects:EditorObjectsManager
@@ -167,11 +185,31 @@ export class EditorManager{
             {type:"input",name:"Textures",var:"textures"},
             {type:"button",on_click:this.reload_sources.bind(this),name:"Reload"},
             {type:"h1",name:"Map"},
-            {...Vec2Input,name:"Size",var:"m_size"},
+
+            { ...Vec2Input, name: "Size", var: "m.size" },
+            { ...RectInput, name: "Bounds", var: "m.bounds", can_disable: true },
+            { type: "input", name: "Bounds Size", var: "m.bounds_size", can_disable: true },
+            { type: "input", name: "Default Floor",placeholder:"void", var: "m.default_floor", can_disable: true },
+            { type: "input", name: "Players Spawn", var: "m.players_spawn", can_disable: true },
+            { type: "input", name: "Deadzone Initial Size", var: "m.deadzone_initial_size", can_disable: true },
+            { type: "input", name: "Seed", var: "m.seed", can_disable: true },
+
+            { type: "h2", name: "Generation" },
+            { type: "input", name: "Base Floor",placeholder:"water",initial:"water", var: "m.generation.base" },
+            { type: "input", name: "Base Tint", var: "m.generation.base_tint", can_disable: true },
+            { type: "h2", name: "Biome" },
+            { type: "input", name: "Skin", var: "m.biome.skin", can_disable: true },
+            { type: "input", name: "Skin Chance",placeholder:"100",initial:"100", var: "m.biome.skin_chance", can_disable: true },
+            { type: "input", name: "Particles Tint", var: "m.biome.particles_tint", can_disable: true },
+            { type: "input", name: "Ambient Sound", var: "m.biome.ambient_sound", can_disable: true },
+            {type:"input",name:"Particles",var:"m.biome.particles"},
+            {type:"input",name:"Musics",var:"m.biome.musics"},
+            {type:"input",name:"Textures",var:"m.biome.textures"},
+
             {type:"h1",name:"Building"},
-            {type:"input",name:"ID String",var:"b_idString"},
-            {type:"toggle",name:"No Collisions",var:"b_no_collisions"},
-            {type:"toggle",name:"No Bullet Collision",var:"b_no_bullet_collision"},
+            {type:"input",name:"ID String",var:"b.idString"},
+            {type:"toggle",name:"No Collisions",var:"b.no_collisions"},
+            {type:"toggle",name:"No Bullet Collision",var:"b.no_bullet_collision"},
             {type:"toggle",name:"Reflect Bullets",var:"reflect_bullets"},
         ]
     }
@@ -181,6 +219,12 @@ export class EditorManager{
         const fm=this.create_menu()
         fm.add_option("Save", () => this.save_file())
         fm.add_option("Load", () => this.load_file())
+        const em=this.create_menu()
+        em.add_option("Hitbox",async()=>{
+            await navigator.clipboard.writeText(this.objects.make_hitbox().generate_code())
+            alert("Hitbox code copied.")
+        })
+        fm.add_submenu("Export",em)
         fm.add_option("Reset", () => this.reset())
         menu.add_submenu("File",fm)
 
@@ -279,6 +323,7 @@ export class EditorManager{
 
     encode(stream:Stream){
         stream.write_string_sized(".SMDE",5)
+        stream.write_uint32(0)
         stream.write_array(Object.keys(this.windows),(i,s)=>{
             stream.write_string(i)
             const rect=this.windows[i].getBoundingClientRect()
@@ -296,6 +341,7 @@ export class EditorManager{
     }
     decode(stream:Stream){
         const magic=stream.read_string_sized(5)
+        const version=stream.read_uint32()
         stream.read_array(()=>{
             const id=stream.read_string()
             const [invisible]=stream.read_boolean_group()
@@ -380,16 +426,16 @@ export class EditorManager{
             if(this.menu)this.menu.remove()
             const menu=this.create_menu()
             menu.add_option("Floor Image",()=>{
-                this.objects.add_object(new FloorImageEditorObject())
+                this.objects.selected_object=this.objects.add_object(new FloorImageEditorObject())
             })
             menu.add_option("Rectangle Hitbox",()=>{
-                this.objects.add_object(new RectHitboxEditorObject())
+                this.objects.selected_object=this.objects.add_object(new RectHitboxEditorObject())
             })
             menu.add_option("Circle Hitbox",()=>{
-                this.objects.add_object(new CircleHitboxEditorObject())
+                this.objects.selected_object=this.objects.add_object(new CircleHitboxEditorObject())
             })
             menu.add_option("Obstacle",()=>{
-                this.objects.add_object(new ObstacleEditorObject())
+                this.objects.selected_object=this.objects.add_object(new ObstacleEditorObject())
             })
             this.ui.appendChild(menu)
             this.to_mouse_position(menu)

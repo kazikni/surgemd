@@ -249,7 +249,7 @@ export const bullets_factory={
     buckshot(power:number,tracer=tracers.small):BulletDef{
         return {
             damage:7.5 * power,
-            speed:25 * (1 + (power - 1) * 0.4),
+            speed:26 * (1 + (power - 1) * 0.4),
             range:31 * (1 + (power - 1) * 0.4),
 
             falloff:0.7,
@@ -271,8 +271,8 @@ export const bullets_factory={
     flechette(power:number,tracer=tracers.small):BulletDef{
         return {
             damage:5.6 * power,
-            speed:29 * (1 + (power - 1) * 0.4),
-            range:52 * (1 + (power - 1) * 0.2),
+            speed:30 * (1 + (power - 1) * 0.4),
+            range:55 * (1 + (power - 1) * 0.2),
 
             falloff:0.7,
             criticalMult:1.2,
@@ -606,7 +606,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 dual_offset:0.2,
 
                 fire_delay:0.2,
-                spread:3,
+                spread:6,
 
                 burst:{
                     delay:0.06,
@@ -701,7 +701,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 rank:ItemRank.S,
                 dual_offset:0.2,
                 fire_delay:0.15,
-                spread:2,
+                spread:5,
                 reload:{
                     capacity:14,
                     extended_capacity:30,
@@ -762,7 +762,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ak47","762mm",{
             name:"AK-47",
             fire_delay:0.1,
-            spread:6,
+            spread:5,
             idle_spread:0.15,
 
             ammo_spawn:{
@@ -788,7 +788,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ar15","556mm",{
             name:"AR-15",
             fire_delay:0.07,
-            spread:7,
+            spread:6,
             idle_spread:0.15,
 
             ammo_spawn:{
@@ -834,7 +834,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("m16_gl","556mm",{
             name:"M16-GL",
             fire_delay:0.07,
-            spread:8,
+            spread:6,
             idle_spread:0.15,
             rank:ItemRank.S,
 
@@ -926,7 +926,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.B,
 
             fire_delay:0.4,
-            spread:2,
+            spread:2.5,
             idle_spread:0.5,
 
             fire_mode:FireMode.Burst,
@@ -1184,7 +1184,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.shotgun("m870","12g",{
             name:"M870",
             fire_delay:1,
-            spread:6,
+            spread:4,
             idle_spread:0.75,
             jitter_radius:0.4,
 
@@ -1215,7 +1215,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.B,
 
             fire_delay:1,
-            spread:2.5,
+            spread:2.4,
             idle_spread:0.85,
             jitter_radius:0.1,
     
@@ -1410,7 +1410,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.12,
             switch_delay:1,
-            spread:7,
+            spread:6,
             idle_spread:0.25,
 
             ammo_spawn:{
@@ -1422,7 +1422,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:14,
                     obstacleMult:1.5,
                     range:170,
-                    speed:42,
+                    speed:30,
                     tracer:tracers.large
                 }
             },
@@ -1453,7 +1453,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:10,
                     obstacleMult:1.5,
                     range:170,
-                    speed:42,
+                    speed:35,
                     tracer:tracers.medium
                 }
             },

@@ -1,4 +1,4 @@
-import { ColorM, TranslationManager, v2 } from "common/engine/core.ts";
+import { ColorM, rect, TranslationManager, v2 } from "common/engine/core.ts";
 export const Vec2Input:SettingDef={
     type:"input_list",
     labels:["X","Y"],
@@ -8,6 +8,17 @@ export const Vec2Input:SettingDef={
     },
     make_initial(b,def){
         return b===undefined?b:(Array.isArray(b)?b:[b.x.toString(),b.y.toString()])
+    }
+}
+export const RectInput:SettingDef={
+    type:"input_list",
+    labels:["Min-X","Min-Y","Max-X","Max-Y"],
+    placeholders:["0","0","0","0"],
+    make_value(b,d,e){
+        return rect(v2(parseFloat(b[0]??"0"),parseFloat(b[1]??"0")),v2(parseFloat(b[2]??"0"),parseFloat(b[3]??"0")))
+    },
+    make_initial(b,def){
+        return b===undefined?b:(Array.isArray(b)?b:[b.min.x.toString(),b.min.y.toString(),b.max.x.toString(),b.max.y.toString()])
     }
 }
 export const RGBInput:SettingDef={

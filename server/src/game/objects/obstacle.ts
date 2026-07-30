@@ -588,6 +588,7 @@ export class Obstacle extends StaticBody{
         const [dead] = stream.read_boolean_group()
         this.visual_data.variation=stream.read_uint8()
         this.visual_data.skin=stream.read_uint8()
+        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position,undefined,undefined,undefined)
         const connections=stream.read_array(()=>{
             return stream.read_id()
         },1)

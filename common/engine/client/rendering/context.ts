@@ -194,7 +194,7 @@ export abstract class Context2D{
         }
     }
 
-    begin_path() {
+    begin_path(){
         this.path.length = 0
     }
     end_path() {
@@ -255,12 +255,14 @@ export abstract class Context2D{
                 }
                 break
             case HitboxType2D.polygon:
+                this.begin_path()
                 if (hb.points.length === 0) return
                 this.move_to(hb.points[0].x, hb.points[0].y)
                 for (let i = 1; i < hb.points.length; i++) {
                     this.line_to(hb.points[i].x, hb.points[i].y)
                 }
                 this.line_to(hb.points[0].x, hb.points[0].y)
+                this.finish_path()
                 break
         }
     }

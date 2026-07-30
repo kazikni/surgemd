@@ -509,7 +509,8 @@ export const TundraMap:MapDef={
 
             {def:"tundra_crate",count:7},
             {def:"copper_crate",count:20},
-            {def:map_spawns.crates,count:100},
+            {def:"campfire_crate",count:10},
+            {def:map_spawns.crates,count:110},
             {def:[
                 {def:"oak_tree",weight:100},
                 {def:"pine_tree",weight:75},

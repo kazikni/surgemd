@@ -11,7 +11,8 @@
         "dev:game": "cd server && deno run --watch -A ./src/game/main.ts",
         "dev:api": "cd server && deno run --watch -A ./src/api/main.ts",
         "dev:client": "cd client && npx vite .",
-
+        
+        "optmise:svg":"npx svgo client/public/assets/img -r --multipass",
         "build:client": "cd client && npx vite build"
     }
 }

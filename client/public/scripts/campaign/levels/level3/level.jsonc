@@ -94,14 +94,14 @@
                                     "weight": 28
                                 },
                                 {
-                                    "item": "military_helmet",
+                                    "item": "bike_helmet",
                                     "weight": 20,
-                                    "drop_chance": 0.3
+                                    "drop_chance": 0.5
                                 },
                                 {
-                                    "item": "bike_helmet",
+                                    "item": "military_helmet",
                                     "weight": 15,
-                                    "drop_chance": 0.5
+                                    "drop_chance": 0.3
                                 },
                                 {
                                     "item": "tactical_helmet",
@@ -234,8 +234,8 @@
                                 {"item": "tactical_vest","weight": 5}
                             ],
                             "helmet": [
-                                {"item": "military_helmet","weight": 15},
-                                {"item": "bike_helmet","weight": 10},
+                                {"item": "bike_helmet","weight": 15},
+                                {"item": "military_helmet","weight": 10},
                                 {"item": "tactical_helmet","weight": 5}
                             ],
                             "melee": [

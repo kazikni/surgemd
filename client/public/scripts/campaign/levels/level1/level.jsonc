@@ -69,11 +69,11 @@
                             ],
                             "helmet": [
                                 {
-                                    "item": "military_helmet",
+                                    "item": "bike_helmet",
                                     "weight": 10
                                 },
                                 {
-                                    "item": "bike_helmet",
+                                    "item": "military_helmet",
                                     "weight": 1
                                 },
                                 {

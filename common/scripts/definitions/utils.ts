@@ -193,7 +193,10 @@ export type HumanDefinition={
     layer?:number
     loadout?:LoadoutPreset
     inventory?:InventoryPreset
-    pacific_enabled?:boolean
+    human?:{
+        pacific_enabled?:boolean
+        show_name?:boolean
+    }
     boosts?:(WeightDefinition&{
         value:number
         def:string
@@ -202,6 +205,7 @@ export type HumanDefinition={
     group?:number
     group_color?:number
     ai?:HumanAIDef
+    script?:string
     modifiers?:Partial<HumanModifiers>
 }
 export type CharacterDefinition=HumanDefinition&{

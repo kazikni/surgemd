@@ -329,8 +329,8 @@ export class MenuManager{
         this.update_api()
 
         ShowElement(this.content.menu_options,true)
-        if(this.inverval===undefined){
-            this.inverval=setInterval(this.update.bind(this),1000)
+        if(this.interval===undefined){
+            this.interval=setInterval(this.update.bind(this),1000)
         }
     }
     async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
@@ -757,16 +757,13 @@ export class MenuManager{
         this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
         for(const creator of content_creators){
             this.content.content_creators.innerHTML+=`
-<a href="${creator.url}" target="_blank">
-    <div class="btn-blue content-creator">
-        <img id="youtube-logo" src="/assets/img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
-        <span>${creator.name}</span>
-    </div>
-</a>`
+<div class="btn-blue content-creator" onclick="location.href='${creator.url}'">
+    <span>${creator.name}</span>
+</div>`
         }
     }
 
-    inverval?:any
+    interval?:any
     update(){
         /*this.menu_time_timer-=1
         if(this.menu_time_timer<=0){
@@ -787,9 +784,9 @@ export class MenuManager{
         ShowElement(this.content.gameCanvas)
         HideElement(this.content.menuD)
         this.cam2d.visible=true
-        if(this.inverval!==undefined){
-            clearInterval(this.inverval)
-            this.inverval=undefined
+        if(this.interval!==undefined){
+            clearInterval(this.interval)
+            this.interval=undefined
         }
     }
     game_end(){
@@ -797,8 +794,8 @@ export class MenuManager{
         HideElement(this.content.gameD)
         HideElement(this.content.gameCanvas)
         this.cam2d.visible=false
-        if(this.inverval===undefined){
-            this.inverval=setInterval(this.update.bind(this),1)
+        if(this.interval===undefined){
+            this.interval=setInterval(this.update.bind(this),1)
         }
     }
 }

@@ -1,6 +1,6 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { AudioVoice, Container2D, Sprite2D } from "common/engine/client.ts";
+import { AudioInstance, Container2D, Sprite2D } from "common/engine/client.ts";
 import { Stream, v2 } from "common/engine/core.ts";
 
 export interface PlanePhysicalData extends MovingBodyPhysicalData {}
@@ -10,7 +10,7 @@ export class Plane extends MovingBody {
     override string_type: string="plane";
     container: Container2D = new Container2D()
     sprite: Sprite2D = new Sprite2D()
-    sound?: AudioVoice
+    sound?: AudioInstance
     override physical_data: PlanePhysicalData = {
         rotation: 0
     }

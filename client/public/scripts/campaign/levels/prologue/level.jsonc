@@ -56,5 +56,8 @@
         "boosts": [
             {"weight": 1, "def": "green_bless", "value": 1}
         ]
-    }
+    },
+    "npcs":[
+        {"path":"npcs/npc1/npc.jsonc"}
+    ]
 }

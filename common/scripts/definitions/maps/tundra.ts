@@ -143,7 +143,7 @@ export const TundraMap:MapDef={
             {item:"762mm",count:40,weight:6},
             {item:"556mm",count:40,weight:6},
             {item:"45acp",count:40,weight:6},
-            {item:"22lr",count:60,weight:5},
+            {item:"22lr",count:60,weight:4.5},
             {item:"50cal",count:20,weight:0.1},
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},

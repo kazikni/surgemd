@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioVoice, CenterHotspot, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioInstance, CenterHotspot, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/client.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
@@ -101,12 +101,12 @@ export class Human extends MovingBody{
     consumible_particles!:ParticlesEmitter2D<ClientParticle2D>
     animation={
         emote_tween:undefined as Tween<Vec2>|undefined,
-        emote_sound:undefined as AudioVoice|undefined,
+        emote_sound:undefined as AudioInstance|undefined,
         emote_time:0,
         emote_is_message:false,
 
-        sound_animation:undefined as AudioVoice|undefined,
-        footsteps:undefined as AudioVoice|undefined,
+        sound_animation:undefined as AudioInstance|undefined,
+        footsteps:undefined as AudioInstance|undefined,
 
         recoil_time:0,
         recoil_state:-1,
@@ -437,12 +437,10 @@ export class Human extends MovingBody{
             }))
         }
         const sound=this.game.resources.get_sound(`shield_break`)
-        if(sound){
-            this.game.sounds.play(sound,{
-                position:this.position,
-                max_distance:15
-            })
-        }
+        if(sound)this.game.sounds.play(sound,{
+            position:this.position,
+            max_distance:15
+        })
     }
     on_die(){
         if(this.dead&&this.container.destroyed)return
@@ -687,7 +685,10 @@ export class Human extends MovingBody{
             this.animation.sound_animation=this.game.sounds.play(this.assets.weapon_switch_sound,{
                 position:this.position,
                 max_distance:9,
-                bus:"humans"
+                bus:"humans",
+                on_complete:()=>{
+                    this.animation.sound_animation=undefined
+                }
             })
         }
     }
@@ -857,7 +858,10 @@ export class Human extends MovingBody{
                         position:this.position,
                         max_distance: 15,
                         volume:0.3,
-                        bus:"humans"
+                        bus:"humans",
+                        on_complete:()=>{
+                            this.animation.footsteps=undefined
+                        }
                     })
                 }
                 if(Floors[f as FloorType].footstep_decal){
@@ -1015,7 +1019,10 @@ export class Human extends MovingBody{
                 if(this.assets.weapon_cycle_sound)this.animation.sound_animation=this.game.sounds.play(this.assets.weapon_cycle_sound,{
                     position:this.position,
                     max_distance:9,
-                    bus:"humans"
+                    bus:"humans",
+                    on_complete:()=>{
+                        this.animation.sound_animation=undefined
+                    }
                 })
                 this.animation.cycle_sound_time=undefined
             }
@@ -1253,7 +1260,10 @@ export class Human extends MovingBody{
                         this.animation.sound_animation=this.game.sounds.play(sound,{
                             position:this.position,
                             max_distance:10,
-                            bus:"humans"
+                            bus:"humans",
+                            on_complete:()=>{
+                                this.animation.sound_animation=undefined
+                            }
                         })
                     }
                     break
@@ -1266,7 +1276,10 @@ export class Human extends MovingBody{
                         this.animation.sound_animation=this.game.sounds.play(sound,{
                             position:this.position,
                             max_distance:10,
-                            bus:"humans"
+                            bus:"humans",
+                            on_complete:()=>{
+                                this.animation.sound_animation=undefined
+                            }
                         })
                     }
                     if(def.assets?.using_particle){
@@ -1640,11 +1653,13 @@ export class Human extends MovingBody{
 
             has_emote,
             has_message,
+            controlling,
+            seat,
 
             dead,downed,swimming,
 
-            controlling,
-            seat,
+            show_name
+
         ]=stream.read_boolean_group3()
         this.controlling=controlling
         this.seat=seat
@@ -1779,7 +1794,13 @@ export class Human extends MovingBody{
             }
         }
         if(full){
-            if(this.id!==this.game.active_entity_id&&this.game.ui.group_members[this.id])this.set_name(this.game.ui.players_name[this.id].name)
+            let name:string|undefined
+            if(show_name){
+                name=stream.read_string(1)
+            }else if(this.id!==this.game.active_entity_id&&this.game.ui.group_members[this.id]){
+                name=this.game.ui.players_name[this.id].name
+            }
+            if(name!==undefined)this.set_name(name)
         }
     }
 }

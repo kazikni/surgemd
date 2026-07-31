@@ -248,11 +248,11 @@ export const bullets_factory={
     },
     buckshot(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:7.5 * power,
+            damage:6.8 * power,
             speed:26 * (1 + (power - 1) * 0.4),
             range:31 * (1 + (power - 1) * 0.4),
 
-            falloff:0.7,
+            falloff:0.4,
             criticalMult:1.2,
             tracer:tracer
         }
@@ -260,21 +260,21 @@ export const bullets_factory={
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
             damage:3*power,
-            speed:25*(1+(power-1)*0.4),
+            speed:24*(1+(power-1)*0.4),
             range:31*(1+(power-1)*0.4),
 
-            falloff:0.5,
+            falloff:0.4,
             criticalMult:1.2,
             tracer
         }
     },
     flechette(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5.6 * power,
+            damage:5.5 * power,
             speed:30 * (1 + (power - 1) * 0.4),
             range:55 * (1 + (power - 1) * 0.2),
 
-            falloff:0.7,
+            falloff:0.4,
             criticalMult:1.2,
             tracer:tracer
         }
@@ -1135,7 +1135,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             idle_spread:0.25,
 
             ammo_spawn:{
-                amount:15
+                amount:21
             },
 
             bullet:{
@@ -1194,7 +1194,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:bullets_factory.buckshot(1),
-                count:9
+                count:10
             },
             reload:{
                 delay:0.8,
@@ -1225,7 +1225,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:bullets_factory.flechette(1),
-                count:9
+                count:10
             },
             reload:{
                 delay:0.6,

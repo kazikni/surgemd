@@ -38,6 +38,8 @@ import { HumanBody } from "../objects/human_body.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
 import { FeedMessage } from "common/scripts/packets/general_update.ts";
+import * as Core from "common/engine/core.ts";
+import { NPCScript } from "../human/ai/simple_bot_ai.ts";
 export interface GameData {
     living_count: number[]
 
@@ -146,6 +148,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         musics:[],
         assets:{},
         languages_path:"",
+    }
+
+    globals:Record<string,any>={
+        core:Core,
+        NPCScript
     }
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[

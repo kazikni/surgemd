@@ -1,8 +1,7 @@
 import { SignalManager } from "../../core/math/utils.ts"
 import { v2, Vec2 } from "../../core/math/vec2.ts"
 import { Sound } from "./resources.ts";
-
-export interface SoundPlaybackOptions {
+export interface SoundPlaybackOptions{
     volume?: number
     loop?: boolean
     delay?: number
@@ -20,18 +19,18 @@ export interface SoundPlaybackOptions {
 
     bus?: string
 
-    on_complete?: ()=>void
+    on_complete?:()=>void
 }
-export enum VoiceState {
+export enum VoiceState{
     free,
     playing,
     stopping
 }
 export class AudioBus {
-    name: string
-    gain: GainNode
-    compressor?: DynamicsCompressorNode
-    volume = 1
+    name:string
+    gain:GainNode
+    compressor?:DynamicsCompressorNode
+    volume=1
 
     constructor(public ctx: AudioContext, public destination: AudioNode,name: string) {
         this.name = name
@@ -39,100 +38,54 @@ export class AudioBus {
         this.gain.gain.value = 1
         this.gain.connect(destination)
     }
-
     set_volume(volume: number) {
         volume = Math.max(0, volume)
-
         this.volume = volume
-
         this.gain.gain.cancelScheduledValues(this.ctx.currentTime)
         this.gain.gain.setTargetAtTime(volume,this.ctx.currentTime,0.03)
     }
-
-    add_compressor() {
-        if (this.compressor) return
-
+    add_compressor(){
+        if(this.compressor)return
         this.compressor = this.ctx.createDynamicsCompressor()
-
         this.gain.disconnect()
         this.gain.connect(this.compressor)
         this.compressor.connect(this.destination)
     }
-
     destroy() {
         try {
             this.gain.disconnect()
         } catch {}
-
         try {
             this.compressor?.disconnect()
         } catch {}
-
         this.compressor = undefined
     }
 }
-
 export class SpatialAudioSystem {
-    listener_position: Vec2 = v2(0, 0)
-
-    compute_pan(
-        source: Vec2,
-        maxDistance: number
-    ): number {
+    listener_position:Vec2=v2(0,0)
+    compute_pan(source:Vec2,maxDistance:number):number{
         maxDistance = Math.max(maxDistance, 0.001)
-
         const dx = source.x - this.listener_position.x
-
-        return Math.max(
-            -1,
-            Math.min(
-                1,
-                dx / maxDistance
-            )
-        )
+        return Math.max(-1,Math.min(1,dx/maxDistance))
     }
-
-    compute_volume(
-        source: Vec2,
-        maxDistance: number,
-        refDistance = 1
-    ): number {
-        maxDistance = Math.max(maxDistance, 0.001)
-        refDistance = Math.max(
-            0.001,
-            Math.min(refDistance, maxDistance)
-        )
-
-        const dist = v2.distance(
-            source,
-            this.listener_position
-        )
-
-        if (dist <= refDistance) {
-            return 1
-        }
-
-        const t =
-            (dist - refDistance) /
-            (maxDistance - refDistance)
-
-        const clamped = Math.max(
-            0,
-            Math.min(1, t)
-        )
-
-        return Math.pow(
-            1 - clamped,
-            2
-        )
+    compute_volume(source:Vec2,maxDistance:number,refDistance=1):number{
+        maxDistance=Math.max(maxDistance,0.001)
+        refDistance=Math.max(0.001,Math.min(refDistance,maxDistance))
+        const dist=v2.distance(source,this.listener_position)
+        if(dist<=refDistance)return 1
+        const t=(dist-refDistance)/(maxDistance-refDistance)
+        const clamped = Math.max(0,Math.min(1,t))
+        return Math.pow(1-clamped,2)
     }
 }
-export class AudioVoice {
+export class AudioInstance {
     state: VoiceState = VoiceState.free
     sound?: Sound
     source?: AudioBufferSourceNode
     gain: GainNode
     pan: StereoPannerNode
+
+    id:number=0
 
     started_at = 0
     offset = 0
@@ -151,59 +104,31 @@ export class AudioVoice {
 
     fade_out = 80
 
-    on_complete?: () => void
+    on_complete?:(instance:AudioInstance)=>void
 
-    constructor(
-        public engine: AudioEngine,
-        public ctx: AudioContext
-    ) {
-        this.gain = ctx.createGain()
-        this.pan = ctx.createStereoPanner()
-
+    constructor(public engine: AudioEngine,public ctx: AudioContext){
+        this.gain=ctx.createGain()
+        this.pan=ctx.createStereoPanner()
         this.gain.connect(this.pan)
     }
 
-    play(
-        sound: Sound,
-        bus: AudioBus,
-        options: SoundPlaybackOptions = {}
-    ) {
+    play(sound:Sound,bus:AudioBus,options:SoundPlaybackOptions={}){
         this.stop(true)
+        if(!sound.buffer)return
 
-        if (!sound.buffer) return
+        this.sound=sound
+        this.loop=!!options.loop
+        this.position=options.position
+        this.spatial=options.spatial??true
 
-        this.sound = sound
-        this.loop = !!options.loop
-        this.position = options.position
-        this.spatial = options.spatial ?? true
+        this.base_volume=(options.volume??1)*(sound.volume??1)
+        this.max_distance=Math.max(options.max_distance??20,0.001)
+        this.ref_distance=Math.min(Math.max(options.ref_distance??1,0.001),this.max_distance)
 
-        this.base_volume =
-            (options.volume ?? 1) *
-            (sound.volume ?? 1)
+        this.fade_out=options.fade_out??80
+        this.on_complete=options.on_complete
 
-        this.max_distance =
-            Math.max(
-                options.max_distance ?? 20,
-                0.001
-            )
-
-        this.ref_distance =
-            Math.min(
-                Math.max(
-                    options.ref_distance ?? 1,
-                    0.001
-                ),
-                this.max_distance
-            )
-
-        this.fade_out =
-            options.fade_out ?? 80
-
-        this.on_complete =
-            options.on_complete
-
-        this.offset =
-            options.offset ?? 0
+        this.offset=options.offset ?? 0
 
         const duration = sound.buffer.duration
 
@@ -213,13 +138,7 @@ export class AudioVoice {
                 if (this.offset < 0)
                     this.offset += duration
             } else {
-                this.offset = Math.max(
-                    0,
-                    Math.min(
-                        this.offset,
-                        duration
-                    )
-                )
+                this.offset = Math.max(0,Math.min(this.offset,duration))
             }
         }
 
@@ -228,9 +147,7 @@ export class AudioVoice {
         } catch {}
 
         this.pan.connect(bus.gain)
-
-        const source =
-            this.ctx.createBufferSource()
+        const source=this.ctx.createBufferSource()
 
         this.source = source
 
@@ -238,30 +155,15 @@ export class AudioVoice {
         source.loop = this.loop
         source.connect(this.gain)
 
-        const now =
-            this.ctx.currentTime
+        const now=this.ctx.currentTime
 
         this.gain.gain.cancelScheduledValues(now)
-
-        const fadeIn =
-            Math.max(
-                0,
-                options.fade_in ?? 0
-            ) / 1000
-
-        if (fadeIn > 0) {
-            this.gain.gain.setValueAtTime(
-                0,
-                now
-            )
-
-            this.update_volume()
-
-            this.gain.gain.linearRampToValueAtTime(
-                this.gain.gain.value,
-                now + fadeIn
-            )
-        } else {
+        const fadeIn=Math.max(options.fade_in??0)/1000
+        if(fadeIn>0){
+            const targetVolume = this.compute_volume()
+            this.gain.gain.setValueAtTime(0, now)
+            this.gain.gain.linearRampToValueAtTime(targetVolume,now+fadeIn)
+        }else{
             this.update_volume()
         }
 
@@ -292,48 +194,30 @@ export class AudioVoice {
         this.stopping = false
     }
 
-    update_volume() {
-        if (
-            this.state !== VoiceState.playing
-        ) return
-
-        let volume =
-            this.base_volume
-
-        if (
-            this.spatial &&
-            this.position
-        ) {
-            volume *=
-                this.engine.spatial.compute_volume(
-                    this.position,
-                    this.max_distance,
-                    this.ref_distance
-                )
-
-            this.pan.pan.value =
-                this.engine.spatial.compute_pan(
-                    this.position,
-                    this.max_distance
-                )
-        } else {
-            this.pan.pan.value = 0
+    compute_volume(): number {
+        let volume=this.base_volume
+        if (this.spatial && this.position){
+            volume*=this.engine.spatial.compute_volume(this.position,this.max_distance,this.ref_distance)
         }
-
-        if (volume < 0.003)
-            volume = 0
-
-        this.gain.gain.value = volume
+        return volume<0.003?0:volume
     }
-
+    update_volume(){
+        if(this.state !== VoiceState.playing)return
+        let volume=this.base_volume
+        if(this.spatial&&this.position){
+            volume*=this.engine.spatial.compute_volume(this.position,this.max_distance,this.ref_distance)
+            this.pan.pan.value=this.engine.spatial.compute_pan(this.position,this.max_distance)
+        }else{
+            this.pan.pan.value=0
+        }
+        if(volume<0.003)volume=0
+        this.gain.gain.value=volume
+    }
     update() {
         this.update_volume()
     }
-
-    stop(immediate = false) {
-        if (
-            this.state === VoiceState.free
-        ) return
+    stop(immediate=false) {
+        if(this.state===VoiceState.free)return
 
         if (this.stopping)
             return
@@ -387,22 +271,17 @@ export class AudioVoice {
             this.finish()
         }
     }
-
     finish() {
-        if (
-            this.state === VoiceState.free
-        ) return
+        if(this.state === VoiceState.free)return
 
-        this.state =
-            VoiceState.free
+        this.state=VoiceState.free
 
         this.stopping = false
 
         if (this.on_complete) {
             try {
-                this.on_complete()
+                this.on_complete(this)
             } catch {}
-
             this.on_complete = undefined
         }
 
@@ -424,16 +303,12 @@ export class AudioVoice {
         this.started_at = 0
         this.offset = 0
 
-        this.gain.gain.cancelScheduledValues(
-            this.ctx.currentTime
-        )
+        this.gain.gain.cancelScheduledValues(this.ctx.currentTime)
         this.gain.gain.value = 1
     }
 
     get_offset(): number {
-        if (
-            this.state === VoiceState.free
-        ) return 0
+        if(this.state === VoiceState.free) return 0
 
         const elapsed = Math.max(
             0,
@@ -466,7 +341,7 @@ export class AudioVoice {
     }
 }
 export class VoicePool {
-    voices: AudioVoice[] = []
+    voices: AudioInstance[] = []
 
     constructor(
         public engine: AudioEngine,
@@ -474,15 +349,16 @@ export class VoicePool {
         public maxVoices = 2000
     ) {}
 
-    allocate(): AudioVoice {
+    allocate(): AudioInstance {
         for (const voice of this.voices) {
             if (voice.state === VoiceState.free) {
                 return voice
             }
         }
 
-        if (this.voices.length < this.maxVoices) {
-            const voice = new AudioVoice(this.engine, this.ctx)
+        if(this.voices.length < this.maxVoices) {
+            const voice = new AudioInstance(this.engine, this.ctx)
+            voice.id=this.voices.length
             this.voices.push(voice)
             return voice
         }
@@ -509,7 +385,7 @@ export class VoicePool {
 
 export class SoundController {
     bus?: string
-    voice?: AudioVoice
+    voice?: AudioInstance
 
     constructor(
         public engine: AudioEngine,
@@ -572,14 +448,11 @@ export class SoundController {
 
     set_volume(volume: number) {
         if (!this.voice) return
-
         this.voice.base_volume = volume
         this.voice.update_volume()
     }
-
     set_position(position: Vec2) {
         if (!this.voice) return
-
         this.voice.position = position
         this.voice.update_volume()
     }

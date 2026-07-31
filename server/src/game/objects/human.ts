@@ -50,7 +50,6 @@ export class Human extends MovingBody{
     is_player:boolean=false
     is_bot:boolean=false
     is_npc:boolean=false
-    advanced_permitions:boolean=false
 
     humans_manager!:HumansManager
 
@@ -165,6 +164,9 @@ export class Human extends MovingBody{
         friendly_fire:boolean
         alternative_vehicle_control:boolean
 
+        show_name:boolean
+        advanced_permitions:boolean
+
         self_revive:boolean
     }={
         movement_enabled:true,
@@ -172,6 +174,9 @@ export class Human extends MovingBody{
         pacific_enabled:false,
         friendly_fire:false,
         alternative_vehicle_control:true,
+
+        show_name:false,
+        advanced_permitions:false,
 
         self_revive:false
     }
@@ -420,7 +425,10 @@ export class Human extends MovingBody{
                 team.add_human(this)
             }
         }
-        if(preset.pacific_enabled!==undefined)this.human_data.pacific_enabled=preset.pacific_enabled
+        if(preset.human){
+            if(preset.human.pacific_enabled!==undefined)this.human_data.pacific_enabled=preset.human.pacific_enabled
+            if(preset.human.show_name!==undefined)this.human_data.show_name=preset.human.show_name
+        }
         if(preset.boosts){
             const choose=random.weight2(preset.boosts)
             if(choose){
@@ -433,6 +441,7 @@ export class Human extends MovingBody{
         }
         this.update_modifiers()
         this.health.value=this.health.max
+        this.set_dirty_full()
     }
     make_ai_from_def(def:HumanAIDef):BotAi|undefined{
         let ai:BotAi|undefined
@@ -720,13 +729,13 @@ export class Human extends MovingBody{
                         }
                         break
                     case InputActionType.emote_emote:{
-                        if(this.emote_time>=0&&!this.advanced_permitions)break
+                        if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
                         const def=this.game.definitions.emotes.getFromNumber(a.emote)
                         this.input.emote=def
                         break
                     }
                     case InputActionType.emote_item:{
-                        if(this.emote_time>=0&&!this.advanced_permitions)break
+                        if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
                         const def=this.game.definitions.game_items.valueNumber[a.item]
                         this.input.emote=def
                         this.input.message=undefined
@@ -734,7 +743,7 @@ export class Human extends MovingBody{
                         break
                     }
                     case InputActionType.message:{
-                        if(this.emote_time>=0&&a.value.length>0&&!this.advanced_permitions)break
+                        if(this.emote_time>=0&&a.value.length>0&&!this.human_data.advanced_permitions)break
                         this.emote_time=1.5
                         this.input.message=a.value
                         this.input.emote=undefined
@@ -1415,13 +1424,14 @@ export class Human extends MovingBody{
             // State
             this.input.emote!==undefined, // 1
             this.input.message!==undefined,
+            this.input.path===undefined,
+            this.seat!==undefined,
 
             this.dead,
             this.downed,
             this.swimming,
 
-            this.input.path===undefined,
-            this.seat!==undefined
+            this.human_data.show_name
         )
         // Physical
         if(full||this.physical_data.dirty_part||this.physical_data.dirty){
@@ -1503,6 +1513,9 @@ export class Human extends MovingBody{
         }
         if(full||this.inventory.net_sync.melee_world){
             stream.write_uint16(this.inventory.weapons[0]?.def.idNumber??0)
+        }
+        if(full&&this.human_data.show_name){
+            stream.write_string(this.name,1)
         }
     }
 }

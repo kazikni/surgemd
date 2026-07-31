@@ -43,6 +43,7 @@ export type GameOverScreen={
 }
 export type LevelCharacter=CharacterDefinition&{
     path?:string|string[]
+    script_path?:string
 }
 export interface LevelDefinition{
     meta:{
@@ -74,4 +75,5 @@ export interface LevelDefinition{
     definitions?:{
         enemies?:Record<string,LevelCharacter>
     }
+    npcs?:LevelCharacter[]
 }

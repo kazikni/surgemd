@@ -61,7 +61,7 @@ export type NPCScriptState={
     resolve?:(value:void|PromiseLike<void>)=>void
 }
 export abstract class NPCScript<MoveState extends NPCScriptMoveState=NPCScriptMoveState,State extends NPCScriptState=NPCScriptState>{
-    human:Human
+    human!:Human
     enabled:boolean=true
     _running:boolean=false
     get running(){
@@ -70,8 +70,7 @@ export abstract class NPCScript<MoveState extends NPCScriptMoveState=NPCScriptMo
     move_state?:MoveState
     state?:State
 
-    constructor(human:Human){
-        this.human=human
+    constructor(){
     }
     abstract run():Promise<any>
 

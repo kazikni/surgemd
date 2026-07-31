@@ -2,5 +2,7 @@
     "modifiers":{
         "speed":0.5
     },
-    "pacific_enabled":true
+    "human":{
+        "pacific_enabled":true
+    }
 }

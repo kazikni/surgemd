@@ -15,6 +15,7 @@ export class LevelPlayer {
 
     player_preset?:LevelCharacter
     allies:LevelCharacter[]=[]
+    npcs:LevelCharacter[]=[]
 
     constructor(game: Game,fs:FileManager){
         this.game = game
@@ -23,6 +24,9 @@ export class LevelPlayer {
     }
 
     async load_character(base:LevelCharacter):Promise<LevelCharacter>{
+        if(base.script_path){
+            base.script=await this.fs.read_file(base.script_path)
+        }
         if(base.path){
             if(typeof base.path==="string"){
                 return mergeDeep(await this.load_character(parseJSONC(await this.fs.read_file(base.path))),base)
@@ -112,6 +116,10 @@ export class LevelPlayer {
             characters.splice(idx,1)
             this.allies=characters
         }
+        this.npcs.length=0
+        for(const def of this.level.npcs??[]){
+            this.npcs.push(await this.load_character(def))
+        }
         for(const p of this.game.players.living_players){
             p.set_preset(this.player_preset)
         }
@@ -134,6 +142,10 @@ export class LevelPlayer {
                 const bot = this.game.players.add_enemy(a,new JoinPacket())
                 if(!bot) continue
             }
+        }
+        for(const def of this.npcs){
+            const npc=this.game.humans.add_npc()
+            npc.set_preset(def)
         }
         this.game.modeManager.add_enemies()
     }

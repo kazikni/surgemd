@@ -23,6 +23,10 @@ export interface Sound {
     src:string
     volume:number
     buffer:AudioBuffer
+    slice?:{
+        start: number
+        duration: number
+    }
     group:string
 }
 export class Frame {

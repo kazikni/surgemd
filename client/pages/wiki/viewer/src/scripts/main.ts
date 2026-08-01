@@ -72,7 +72,7 @@ function bullet_text(def:BulletDef):string{
 </tr>
 <tr>
     <th>Critical Multiply</th>
-    <td>${def.criticalMult}</td>
+    <td>${def.critical_mult}</td>
 </tr>
 <tr>
     <th>Obstacle Multiply</th>

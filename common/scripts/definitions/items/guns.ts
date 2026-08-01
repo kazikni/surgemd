@@ -196,16 +196,16 @@ export const GasParticles={
         direction_variation:0.2
     } satisfies GasParticle,
     pistols:{
-        count:2,
+        count:3,
         size:{
-            min:0.7,
+            min:0.5,
             max:0.8
         },
         speed:{
             min:1,
             max:2
         },
-        life_time:0.7,
+        life_time:0.5,
         direction_variation:0.2
     } satisfies GasParticle
 }
@@ -217,7 +217,7 @@ export const bullets_factory={
             range: 170*(1+(power-1) * 0.6),
             speed: 35*(1+(power-1) * 0.6),
 
-            criticalMult: 1.25,
+            critical_mult: 1.25,
             obstacleMult: 1,
             falloff:0.75,
             tracer:tracers.medium
@@ -225,11 +225,11 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 45 * power,
+            damage: 46 * power,
             range: 200 * (1 + (power - 1) * 0.5),
             speed: 55 * (1 + (power - 1) * 0.4),
 
-            criticalMult: 1.1,
+            critical_mult: 1.1,
             obstacleMult: 1.25,
             falloff: 0.7,
             tracer: tracer,
@@ -242,7 +242,7 @@ export const bullets_factory={
             speed:25 * (1 + (power - 1) * 0.3),
 
             falloff:0.7,
-            criticalMult:1.2,
+            critical_mult:1.2,
             tracer:tracer
         }
     },
@@ -253,7 +253,7 @@ export const bullets_factory={
             range:31 * (1 + (power - 1) * 0.4),
 
             falloff:0.4,
-            criticalMult:1.2,
+            critical_mult:1.2,
             tracer:tracer
         }
     },
@@ -264,7 +264,7 @@ export const bullets_factory={
             range:31*(1+(power-1)*0.4),
 
             falloff:0.4,
-            criticalMult:1.2,
+            critical_mult:1.2,
             tracer
         }
     },
@@ -275,7 +275,7 @@ export const bullets_factory={
             range:55 * (1 + (power - 1) * 0.2),
 
             falloff:0.4,
-            criticalMult:1.2,
+            critical_mult:1.2,
             tracer:tracer
         }
     },
@@ -327,6 +327,7 @@ export const guns_factory={
             rank:ItemRank.C,
 
             barrel_length:1.06,
+            idle_spread:0.15,
 
             fire_delay:0.1,
             switch_delay:0.5,
@@ -357,6 +358,7 @@ export const guns_factory={
             rank:ItemRank.C,
 
             barrel_length:1,
+            idle_spread:0.75,
 
             fire_delay:0.1,
             switch_delay:0.5,
@@ -388,6 +390,7 @@ export const guns_factory={
             rank:ItemRank.A,
             
             barrel_length:1,
+            idle_spread:0.5,
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
@@ -421,6 +424,7 @@ export const guns_factory={
             rank:ItemRank.A,
 
             barrel_length:1.3,
+            idle_spread:0.1,
 
             fire_mode:FireMode.Single,
             fire_on_release:true,
@@ -457,6 +461,7 @@ export const guns_factory={
             rank:ItemRank.C,
 
             barrel_length:0.9,
+            idle_spread:0.75,
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
@@ -495,6 +500,7 @@ export const guns_factory={
             rank:ItemRank.S,
 
             barrel_length:1.3,
+            idle_spread:0.25,
 
             fire_mode:FireMode.Auto,
             fire_on_release:true,
@@ -533,7 +539,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             fire_delay:0.2,
             fire_mode:FireMode.Single,
             spread:3,
-            idle_spread:0.33333,
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:45,
@@ -578,8 +584,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 delay:0.05,
                 sequence:4
             },
-            spread:4,
-            idle_spread:0.5,
+            spread:5,
+            idle_spread:0.4,
             ammo_spawn:{
                 amount:60
             },
@@ -606,10 +612,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 dual_offset:0.2,
 
                 fire_delay:0.2,
-                spread:6,
+                spread:7,
 
                 burst:{
-                    delay:0.06,
+                    delay:0.05,
                     sequence:8
                 },
                 reload:{
@@ -762,8 +768,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ak47","762mm",{
             name:"AK-47",
             fire_delay:0.1,
-            spread:5,
-            idle_spread:0.15,
+            spread:7,
 
             ammo_spawn:{
                 amount:60
@@ -788,8 +793,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ar15","556mm",{
             name:"AR-15",
             fire_delay:0.07,
-            spread:6,
-            idle_spread:0.15,
+            spread:8,
 
             ammo_spawn:{
                 amount:60
@@ -810,9 +814,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         guns_factory.assault("m4a1","556mm",{
             name:"M4A1",
-            fire_delay:0.08,
-            spread:2.5,
-            idle_spread:0.15,
+            fire_delay:0.1,
+            spread:2,
 
             ammo_spawn:{
                 amount:60
@@ -834,8 +837,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("m16_gl","556mm",{
             name:"M16-GL",
             fire_delay:0.07,
-            spread:6,
-            idle_spread:0.15,
+            spread:8,
             rank:ItemRank.S,
 
             alt_func:{
@@ -875,7 +877,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.08,
             spread:3,
-            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:96
@@ -897,7 +898,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("m1921","45acp",{
             name:"M1921",
             fire_delay:0.1,
-            spread:6,
+            spread:8,
             idle_spread:0.35,
             rank:ItemRank.B,
 
@@ -960,7 +961,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.D,
             fire_delay:0.03,
             spread:8,
-            idle_spread:0.75,
 
             ammo_spawn:{
                 amount:96
@@ -983,8 +983,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.03,
-            spread:1.5,
-            idle_spread:0.75,
+            spread:1.25,
 
             ammo_spawn:{
                 amount:96
@@ -1008,7 +1007,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.A,
             fire_delay:0.04,
             spread:2,
-            idle_spread:0.75,
 
             ammo_spawn:{
                 amount:90
@@ -1034,7 +1032,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Kar98-K",
             fire_delay:1.6,
             spread:0.4,
-            idle_spread:0,
 
             ammo_spawn:{
                 amount:20
@@ -1066,8 +1063,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"AWP",
             rank:ItemRank.S,
             fire_delay:1.6,
-            spread:0.6,
-            idle_spread:0,
+            spread:0.5,
 
             ammo_spawn:{
                 amount:32
@@ -1094,8 +1090,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.S,
 
             fire_delay:1.7,
-            spread:0.7,
-            idle_spread:0.25,
+            spread:0.6,
 
             ammo_spawn:{
                 amount:25
@@ -1107,7 +1102,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:160,
                     falloff:0.7,
                     speed:40,
-                    criticalMult:1.1,
+                    critical_mult:1.1,
                     obstacleMult:2,
                     tracer:tracers.large
                 }
@@ -1131,8 +1126,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1,
             spread:1,
-            unload_multiply:0.9,
-            idle_spread:0.25,
+            unload_multiply:1,
 
             ammo_spawn:{
                 amount:21
@@ -1157,7 +1151,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:1,
             spread:1,
-            unload_multiply:0.9,
+            unload_multiply:1,
             idle_spread:0.25,
 
             ammo_spawn:{
@@ -1185,7 +1179,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M870",
             fire_delay:1,
             spread:4,
-            idle_spread:0.75,
             jitter_radius:0.4,
 
             ammo_spawn:{
@@ -1215,8 +1208,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             rank:ItemRank.B,
 
             fire_delay:1,
-            spread:2.4,
-            idle_spread:0.85,
+            spread:2.5,
             jitter_radius:0.1,
     
             ammo_spawn:{
@@ -1247,7 +1239,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.3,
             spread:6.75,
-            idle_spread:0.66666,
             jitter_radius:0.25,
 
             fire_mode:FireMode.Auto,
@@ -1278,9 +1269,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         /////////////////////////////////////////////
         guns_factory.dmr("sr25","762mm",{
             name:"sr25",
-            fire_delay:0.3,
+            fire_delay:0.25,
             spread:2,
-            idle_spread:0.5,
             ammo_spawn:{
                 amount:60
             },
@@ -1305,9 +1295,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         guns_factory.dmr("vss","9mm",{
             name:"VSS Vintorez",
-            fire_delay:0.2,
+            fire_delay:0.15,
             spread:3,
-            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:80
@@ -1339,9 +1328,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         guns_factory.dmr("rifle_cbc","22lr",{
             name:"Rifle-CBC",
-            fire_delay:0.2,
+            fire_delay:0.12,
             spread:4.5,
-            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:54
@@ -1378,7 +1366,6 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M1-Garand",
             fire_delay:0.3,
             spread:3,
-            idle_spread:0.5,
 
             ammo_spawn:{
                 amount:40
@@ -1410,8 +1397,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.12,
             switch_delay:1,
-            spread:6,
-            idle_spread:0.25,
+            spread:7.5,
 
             ammo_spawn:{
                 amount:200
@@ -1422,7 +1408,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     damage:14,
                     obstacleMult:1.5,
                     range:170,
-                    speed:30,
+                    speed:35,
                     tracer:tracers.large
                 }
             },
@@ -1441,7 +1427,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.1,
             switch_delay:1,
-            spread:4,
+            spread:5,
             idle_spread:0.4,
 
             ammo_spawn:{
@@ -1472,7 +1458,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.045,
             switch_delay:1,
-            spread:2,
+            spread:3,
             idle_spread:0.35,
 
             ammo_spawn:{
@@ -1533,7 +1519,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     falloff:0.5,
                     on_hit_explosion:"rocket_explosion",
                     speed:20,
-                    criticalMult:1.2,
+                    critical_mult:1.2,
                     obstacleMult:3,
                     tracer:{
                         height:4,

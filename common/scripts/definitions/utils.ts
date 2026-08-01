@@ -36,7 +36,7 @@ export interface BulletDef{
     reflection?:BulletReflection
     pass_through_humans?:boolean
     obstacleMult?:number
-    criticalMult?:number
+    critical_mult?:number
     on_hit_explosion?:string
 }
 export type ItemRankSetting={

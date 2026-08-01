@@ -104,7 +104,7 @@ export class Bullet extends ServerGameObject{
                         }
                         const dmg:number=this.damage
                             *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
-                            *(this.critical?(this.def.criticalMult??1.25):1)
+                            *(this.critical?(this.def.critical_mult??1.25):1)
 
                         ;(obj as Human).damage({
                             amount:dmg,

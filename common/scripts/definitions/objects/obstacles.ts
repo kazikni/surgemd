@@ -1152,7 +1152,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            loot_table:"wood_crate",
+            loot_table:"drawer_loot",
             height:1,
         },
         {

@@ -198,7 +198,7 @@ export const LootTables={
         {weight:0.55,table:"throwables"},
         {weight:0.01,table:"melees"},
     ],
-    loot_drawer:[
+    drawer_loot:[
         {weight:1,table:"civil_loot",count:3},
         {weight:0.1,table:"civil_loot",count:4},
     ],

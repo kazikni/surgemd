@@ -139,11 +139,11 @@ export const TundraMap:MapDef={
     loot_tables:{
         ...LootTables,
         ammos:[
-            {item:"9mm",count:40,weight:6},
+            {item:"9mm",count:60,weight:6},
             {item:"762mm",count:40,weight:6},
             {item:"556mm",count:40,weight:6},
             {item:"45acp",count:40,weight:6},
-            {item:"22lr",count:60,weight:4.5},
+            {item:"22lr",count:80,weight:4.5},
             {item:"50cal",count:20,weight:0.1},
             {item:"308sub",count:5,weight:0.05},
             {item:"gasoline",count:5,weight:0.05},
@@ -188,7 +188,7 @@ export const TundraMap:MapDef={
             {item:"ar15",weight:55},
             {item:"m1921",weight:55},
 
-            {item:"kar98k",weight:45},
+            {item:"kar98k",weight:46},
 
             // Rare Guns
             {item:"m4a1",weight:25},
@@ -196,7 +196,7 @@ export const TundraMap:MapDef={
             // Mythic Guns
             {item:"m1_garand",weight:12},
             {item:"desert_eagle",weight:12},
-            {item:"awp",weight:7},
+            {item:"awp",weight:8},
             {item:"m2_2",weight:6},
             {item:"m79",weight:6},
 

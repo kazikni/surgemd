@@ -263,7 +263,7 @@ export class SimpleBotAi extends BotAi{
 
         this.human.input.interaction=this.human.seat?Math.random()<0.001:Math.random()<0.1
         this.human.input.using_item=Math.random()<0.2
-        this.human.input.using_item_down=this.human.input.using_item
+        if(this.human.input.using_item)this.human.input.using_item_down=true
 
         this.human.input.rotation=Numeric.lerp_rad(this.human.physical_data.rotation,this.human.physical_data.rotation+this.rot_speed,0.9)
         if(this.movement_time>0){

@@ -222,7 +222,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             this.isAimAligned(self, this.seenHuman.position)
         ) {
             self.input.using_item = true
-            self.input.using_item_down = true
+            self.input.using_item_down = 1
         }
     }
     protected state_go_last_seen(self: Human,begin:boolean, dt: number) {

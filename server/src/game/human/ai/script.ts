@@ -229,3 +229,13 @@ export abstract class HumanScript<MoveState extends HumanScriptMoveState=HumanSc
         })
     }
 }
+export class HumanFunctionScript<MoveState extends HumanScriptMoveState=HumanScriptMoveState,State extends HumanScriptState=HumanScriptState> extends HumanScript<MoveState,State>{
+    callback:(s:HumanFunctionScript<MoveState,State>)=>Promise<any>
+    constructor(callback:(s:HumanFunctionScript<MoveState,State>)=>Promise<any>){
+        super()
+        this.callback=callback
+    }
+    override async run(): Promise<any> {
+        return await this.callback(this)
+    }
+}

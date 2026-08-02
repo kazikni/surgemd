@@ -36,7 +36,7 @@ import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { type Bullet } from "./bullet.ts";
-import { HumanScript } from "../human/ai/script.ts";
+import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -362,6 +362,9 @@ export class Human extends MovingBody{
         const script=create_script("return new (class extends HumanScript{\nasync run(){\n"+val+"\n}})",this.game.globals)() as HumanScript
         this.set_script_class(script)
         return script
+    }
+    set_script(func:(s:HumanFunctionScript<any,any>)=>Promise<any>){
+        this.set_script_class(new HumanFunctionScript(func))
     }
     set_loadout_preset(preset?:LoadoutPreset){
         if(!preset)return
@@ -855,8 +858,14 @@ export class Human extends MovingBody{
         if(this.script){
             this.script?.tick(dt)
             if(!this.script._running){
-                this.script._running=true
-                this.script.run()
+                const script=this.script
+                script._running=true
+                script.run().then(()=>{
+                    if(script===this.script){
+                        this.script=undefined
+                        script._running=false
+                    }
+                })
             }
         }
         this.update_modifiers()

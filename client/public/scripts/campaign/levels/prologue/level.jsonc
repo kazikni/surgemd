@@ -13,48 +13,17 @@
             }
         }
     },
-    "cutscenes": {
-        "begin": "cutscenes/begin.jsonc"
-    },
     "next_level":{
         "complete":"../level1"
     },
     "mode": {
-        "type": "battle_royale",
-        "settings":{
-            "map":{
-                "def":"tutorial"
-            },
-            "enemies": [
-                {
-                    "position":{"x":10,"y":43},
-                    "def": {
-                        "path":"../../characters/civil.jsonc",
-                        "ai": {
-                            "kind": "dumb"
-                        }
-                    }
-                },
-                {
-                    "position":{"x":10,"y":57},
-                    "def": {
-                        "path":"../../characters/civil.jsonc",
-                        "ai": {
-                            "kind": "dumb"
-                        }
-                    }
+        "mode":{
+            "mode":"normal",
+            "settings":{
+                "map": {
+                    "def": "tutorial"
                 }
-            ]
+            }
         }
-    },
-    "player": {
-        "path":["../../characters/vinii.jsonc"],
-        "position":{"x":10,"y":51},
-        "boosts": [
-            {"weight": 1, "def": "green_bless", "value": 1}
-        ]
-    },
-    "npcs":[
-        {"path":"npcs/npc1/npc.jsonc"}
-    ]
+    }
 }

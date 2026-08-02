@@ -11,7 +11,7 @@ export const ObstacleTD:TD={
 
         // Life
         { name: "health", content: tdm.float32_onu },
-        { name: "imortal", content: tdm.boolean_onu },
+        { name: "imortal", content: tdm.boolean },
         { name: "resistence", content: tdm.float32_onu },
 
         // Collision
@@ -29,12 +29,12 @@ export const ObstacleTD:TD={
             }}
         },
 
-        { name: "no_collision", content: tdm.boolean_onu },
-        { name: "no_pathfinding_collision", content: tdm.boolean_onu },
-        { name: "passable_by_bullets", content: tdm.boolean_onu },
-        { name: "no_bullets_collision", content: tdm.boolean_onu },
+        { name: "no_collision", content: tdm.boolean },
+        { name: "no_pathfinding_collision", content: tdm.boolean },
+        { name: "passable_by_bullets", content: tdm.boolean },
+        { name: "no_bullets_collision", content: tdm.boolean },
 
-        { name: "invisible_on_map", content: tdm.boolean_onu },
+        { name: "invisible_on_map", content: tdm.boolean },
 
         {
             name: "scale",
@@ -53,7 +53,7 @@ export const ObstacleTD:TD={
             content: {type:TDType.onu,content:{
                 type: TDType.object,
                 content: [
-                    { name: "disabled", content: tdm.boolean_onu },
+                    { name: "disabled", content: tdm.boolean },
                     { name: "model", content: tdm.any },
                     { name: "hitbox", content: tdm.any },
                 ]
@@ -84,7 +84,7 @@ export const ObstacleTD:TD={
                                 { name: "dead_transform", content: {type:TDType.onu,content:FrameTransformTD} },
                                 { name: "variations", content: tdm.any },
                                 { name: "tint_variations", content: tdm.any },
-                                { name: "sprite_variations", content: tdm.boolean_onu },
+                                { name: "sprite_variations", content: tdm.boolean },
                                 { name: "biome_skins", content: tdm.any },
                             ]
                         }}
@@ -114,8 +114,8 @@ export const ObstacleTD:TD={
         { name: "decal", content: tdm.any },
         { name: "loot_table", content: tdm.any },
 
-        { name: "interactDestroy", content: tdm.boolean_onu },
-        { name: "reflect_bullets", content: tdm.boolean_onu },
+        { name: "interactDestroy", content: tdm.boolean },
+        { name: "reflect_bullets", content: tdm.boolean },
 
         { name: "spawnMode", content: tdm.any },
 

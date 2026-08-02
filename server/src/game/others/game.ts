@@ -40,6 +40,9 @@ import { loot_table_get_item } from "common/scripts/others/functions.ts";
 import { FeedMessage } from "common/scripts/packets/general_update.ts";
 import * as Core from "common/engine/core.ts";
 import { HumanScript } from "../human/ai/script.ts";
+import { LevelPlayerScript } from "../mode/level_player.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { OnlineMessageType } from "common/scripts/packets/messages.ts";
 export interface GameData {
     living_count: number[]
 
@@ -152,7 +155,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     globals:Record<string,any>={
         core:Core,
-        HumanScript
+        HumanScript,
+        LevelPlayerScript,
+        JoinPacket,
+        OnlineMessageType,
     }
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
@@ -283,6 +289,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
+        this.modeManager.write_checkpoint(stream)
         this.deadzone.write_checkpoint(stream)
         this.scene_2d.make_checkpoint(stream,{
             save_id:true,
@@ -294,6 +301,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         })
     }
     load_checkpoint(stream:Stream){
+        this.modeManager.decode_checkpoint(stream)
         this.deadzone.decode_checkpoint(stream)
         this.scene_2d.load_checkpoint(stream)
     }
@@ -340,6 +348,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         },finish_time)
     }
 
+    
+    set_rain(rain:number){
+        this.ambient.target_rain=rain
+        this.ambient.rain_state=1
+        this.ambient.rain_timer=random.float(10,30)
+    }
     get_loot_table(table:LootTable,settings?:LootAditional):LootData[]{
         return this.loot_tables.get_loot(table,settings??this.modeManager.rules.loot_settings,this)
     }

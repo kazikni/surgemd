@@ -7,10 +7,9 @@
         "dificulty":"easy"
     },
     "mode":{
-        "type":"debug",
-        "map":{
-            "def":"debug"
+        "mode":{
+            "mode":"debug",
+            "settings":{}
         }
-    },
-    "player":{}
+    }
 }

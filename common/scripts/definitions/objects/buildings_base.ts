@@ -10,8 +10,8 @@ export const BuildingClientTD: TDObject = {
     content: [
         ...GameObjectDefTD,
 
-        { name: "no_collisions", content: tdm.boolean_onu },
-        { name: "no_bullet_collision", content: tdm.boolean_onu },
+        { name: "no_collisions", content: tdm.boolean },
+        { name: "no_bullet_collision", content: tdm.boolean },
 
         { name: "hitbox", content: tdm.any },
         
@@ -37,7 +37,7 @@ export const BuildingClientTD: TDObject = {
                                     content: {
                                         type: TDType.object,
                                         content: [
-                                            { name: "deenabled", content: tdm.boolean_onu },
+                                            { name: "deenabled", content: tdm.boolean },
                                             { name: "duration", content: tdm.float32_onu },
                                             { name: "alpha", content: tdm.float32_onu },
                                         ]
@@ -47,7 +47,7 @@ export const BuildingClientTD: TDObject = {
 
                             { name: "layer", content: tdm.int8_onu },
                             { name: "connections", content: tdm.any },
-                            { name: "no_scope_block", content: tdm.boolean_onu },
+                            { name: "no_scope_block", content: tdm.boolean },
 
                             {
                                 name: "destroy",
@@ -92,7 +92,7 @@ export const BuildingClientTD: TDObject = {
                         type: TDType.object,
                         content: [
                             ...FrameTD.content,
-                            { name: "create_shadow", content: tdm.boolean_onu }
+                            { name: "create_shadow", content: tdm.boolean }
                         ]
                     }
                 }
@@ -120,7 +120,7 @@ export const BuildingTD: TDObject={
         ...BuildingClientTD.content,
         { name: "spawnHitbox", content: tdm.any },
         { name: "spawnMode", content: tdm.any },
-        { name: "reflect_bullets", content: tdm.boolean_onu },
+        { name: "reflect_bullets", content: tdm.boolean },
         {
             name: "generate",
             content: {
@@ -148,7 +148,7 @@ export const BuildingTD: TDObject={
                                         { name: "scale", content: tdm.float32_onu },
                                         { name: "stairs_dest", content: tdm.any },
                                         { name: "only_side", content: tdm.uint8_onu },
-                                        { name: "allow_biome_skin", content: tdm.boolean_onu },
+                                        { name: "allow_biome_skin", content: tdm.boolean },
                                     ]
                                 }
                             }

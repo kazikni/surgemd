@@ -534,12 +534,6 @@ export class Game extends ClientGame<GameObject>{
         this.ui.start()
         this.join()
         this.watcher?.play?.()
-        if(this.offline){
-            this.ui.game_over_screen={
-                type:GameOverScreenType.Restart
-            }
-            this.local_server.init(this.start_with_intro)
-        }
 
         this.scope_zoom=(this.default_scope??this.definitions.scopes.getFromNumber(0)).scope_view
 
@@ -748,6 +742,11 @@ export class Game extends ClientGame<GameObject>{
             packet.badge=this.definitions.badges.getFromStringSafe(sv)?.idNumber
         }
         this.client.emit_packet(packet)
+
+        if(this.offline){
+            this.ui.game_over_screen={type:GameOverScreenType.Restart}
+            this.local_server.init(this.start_with_intro)
+        }
     }
     connect(url:string){
         if(this.happening)return

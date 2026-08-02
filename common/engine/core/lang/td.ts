@@ -473,8 +473,6 @@ export const tdm=Object.freeze({
     string3_onu:{type:TDType.onu,content:{type:TDType.string,len_bytes:3}} satisfies TD,
     string4_onu:{type:TDType.onu,content:{type:TDType.string,len_bytes:4}} satisfies TD,
 
-    boolean_onu:{type:TDType.onu,content:{type:TDType.boolean}} satisfies TD,
-
     ctx:new TDContext(),
 })
 
@@ -535,7 +533,7 @@ export const FrameTransformTD:TDObject={
         {name:"hotspot",content:Vec2TDONU},
         {name:"rotation",content:tdm.float32_onu},
         {name:"position",content:Vec2TDONU},
-        {name:"visible",content:tdm.boolean_onu},
+        {name:"visible",content:tdm.boolean},
         {name:"zIndex",content:tdm.float32_onu},
         {name:"tint",content:tdm.uint32_onu},
         {name:"alpha",content:tdm.uint8_onu},

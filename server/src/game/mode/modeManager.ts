@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts";
-import { Client, Numeric, random, StaticStream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Client, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
@@ -176,13 +176,13 @@ export abstract class ModeManager{
         const dt_scaled = dt * rules.rain_cycle
         amb.rain_timer -= dt_scaled
         if (amb.rain_timer <= 0) {
-            if (amb.rain === 0 && amb.target_rain === 0) {
+            if (amb.rain===0&&amb.target_rain === 0) {
                 if (Math.random() < rules.rain_chance) {
                     amb.target_rain = random.float(0.1, 1)
                     amb.rain_state = 1
                 }
                 amb.rain_timer = random.float(10, 30)
-            }else if (amb.rain_state === 2) {
+            }else if(amb.rain_state === 2) {
                 if (Math.random() < rules.rain_stop_chance) {
                     amb.target_rain = 0
                 } else {
@@ -298,5 +298,19 @@ export abstract class ModeManager{
         }else{
             return map
         }
+    }
+    write_checkpoint(stream:Stream){
+        stream.write_kdate(this.game.ambient.date)
+        .write_float32(this.game.ambient.rain)
+        .write_float32(this.game.ambient.target_rain)
+        .write_uint8(this.game.ambient.rain_state)
+        .write_float32(this.game.ambient.rain_timer)
+    }
+    decode_checkpoint(stream:Stream){
+        this.game.ambient.date=stream.read_kdate()
+        this.game.ambient.rain=stream.read_float32()
+        this.game.ambient.target_rain=stream.read_float32()
+        this.game.ambient.rain_state=stream.read_uint8()
+        this.game.ambient.rain_timer=stream.read_float32()
     }
 }

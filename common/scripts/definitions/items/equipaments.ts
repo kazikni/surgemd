@@ -134,7 +134,7 @@ export const HelmetTD:TD={
         {name:"health",content:tdm.float32},
 
         {name:"level",content:tdm.uint8},
-        {name:"special",content:tdm.boolean_onu},
+        {name:"special",content:tdm.boolean},
 
         {name:"position",content:Vec2TD},
 

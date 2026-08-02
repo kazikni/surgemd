@@ -434,7 +434,12 @@ export abstract class Stream{
                 this.write_string(val, td.len_bytes)
                 break
             case TDType.boolean:
-                this.write_uint8(val?1:0)
+                switch(val){
+                    case true:this.write_uint8(1); break
+                    case false:this.write_uint8(0); break
+                    case null:this.write_uint8(2); break
+                    case undefined:this.write_uint8(3); break
+                }
                 break
             case TDType.onu:
                 if(val===undefined){
@@ -505,7 +510,13 @@ export abstract class Stream{
             case TDType.string:
                 return this.read_string(td.len_bytes)
             case TDType.boolean:
-                return this.read_uint8()===1
+                switch(this.read_uint8()){
+                    case 0:return false
+                    case 1:return true
+                    case 2:return null
+                    case 3:return undefined
+                    default:return undefined
+                }
             case TDType.onu:{
                 const val=this.read_uint8()
                 if(val===0){

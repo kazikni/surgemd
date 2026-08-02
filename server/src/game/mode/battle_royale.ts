@@ -6,8 +6,6 @@ import { MapDef} from "common/scripts/definitions/maps/base.ts";
 import { v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
-import { LevelEnemys } from "common/scripts/config/level_definition.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
@@ -27,8 +25,9 @@ export interface BattleRoyaleSettings{
     }
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
-    enemies?:LevelEnemys
     airdrops?:AirdropConfig
+    teams?:number
+    group_size?:number
 }
 export class BattleRoyale extends ModeManager{
     leader?:Player
@@ -45,7 +44,6 @@ export class BattleRoyale extends ModeManager{
         spawn_mode:SpawnMode
         deadzone:DeadZoneConfig
         airdrops:AirdropConfig
-        enemies?:LevelEnemys
     }
     groups_manager?:GroupsManager
     group_size:number
@@ -66,7 +64,6 @@ export class BattleRoyale extends ModeManager{
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone,
-            enemies:settings.enemies,
             airdrops:settings.airdrops??{
                 obstacle:"iron_crate",
                 spawn:[
@@ -74,31 +71,15 @@ export class BattleRoyale extends ModeManager{
                 ]
             },
         }
-        this.group_size=group_size
-        if(group_size>1){
+        this.group_size=settings.group_size===undefined?group_size:settings.group_size
+        if(this.group_size>1){
             this.groups_manager=new GroupsManager()
         }
-        this.teams=teams
-        if(teams>0){
+        this.teams=settings.teams===undefined?teams:settings.teams
+        if(this.teams>0){
             this.teams_manager=new TeamsManager()
-            for(let i=0;i<teams;i++){
+            for(let i=0;i<this.teams;i++){
                 this.teams_manager.add_team()
-            }
-        }
-    }
-    override add_enemies(enemies:LevelEnemys|undefined=this.settings.enemies){
-        if(!enemies) return
-        for(const e of enemies){
-            const count = e.count ?? 1
-            for(let i = 0; i < count; i++){
-                const bot = this.game.players.add_enemy(e.def,new JoinPacket())
-                if(!bot) continue
-                if(e.position){
-                    v2m.set(bot.position, e.position.x, e.position.y)
-                }else{
-                    const pos = this.get_human_spawn_position(bot)
-                    if(pos) bot.position = pos
-                }
             }
         }
     }

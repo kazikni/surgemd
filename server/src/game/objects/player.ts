@@ -241,6 +241,7 @@ export class Player extends Human{
         return ret
     }
     proccess_input(i:InputPacket){
+        if(this.script)return
         this.input.movement=i.movement
 
         this.input.auto_click=i.auto_fire??true

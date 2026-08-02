@@ -22,6 +22,7 @@ export class BuildingCeiling{
     }
 }
 export class BuildingPuzzle{
+    def:BuildingPuzzleDef
     parent:Building
     id:string
     global:boolean
@@ -45,6 +46,7 @@ export class BuildingPuzzle{
     connections:Obstacle[]=[]
 
     constructor(parent:Building,def:BuildingPuzzleDef){
+        this.def=def
         this.parent=parent
         this.id=def.idString??"main"
         this.global=def.global??false
@@ -63,6 +65,11 @@ export class BuildingPuzzle{
     }
     get_object(id:number):Obstacle{
         return this.parent.objects_ids[id]
+    }
+    add_object(obj:Obstacle,puzzle_value?:string){
+        obj.puzzle=this
+        obj.puzzle_value=puzzle_value
+        obj.puzzle.connections.push(obj)
     }
     input_piece(value:Obstacle) {
         if(value.puzzle_value&&this.code_size){
@@ -218,6 +225,33 @@ export class BuildingPuzzle{
         }
     }
 
+    encode(stream: Stream, ctx: CheckpointContext) {
+        stream.write_string(this.current_code)
+        .write_boolean_group(this.complete_activated,this.fail_activated)
+        .write_array(this.connections, o=>{
+            stream.write_id(ctx.idco[o.id])
+            stream.write_string(o.puzzle_value??"",1)
+        }, 1)
+        .write_array(this.current_actions, a=>{
+            stream.write_uint8(a.tp)
+            .write_any(a.actions)
+        }, 1)
+    }
+    decode(stream: Stream, ctx: CheckpointContext) {
+        this.current_code = stream.read_string()
+        const [complete, fail] = stream.read_boolean_group()
+        this.complete_activated = complete
+        this.fail_activated = fail
+        this.connections.length = 0
+        stream.read_array(() => {
+            const obj = this.parent.manager.objects[ctx.coid[stream.read_id()]] as Obstacle
+            this.add_object(obj,stream.read_string(1))
+        }, 1)
+        this.current_actions = stream.read_array(() => ({
+            tp: stream.read_uint8(),
+            actions: stream.read_any() as PuzzleAction[]
+        }), 1);
+    }
 }
 export class Building extends StaticBody {
     override string_type = "building"
@@ -260,6 +294,10 @@ export class Building extends StaticBody {
         this.allow_net_update=true
     }
 
+    override update_hitbox(): void {
+        super.update_hitbox()
+        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+    }
     override tick(dt:number):void{
         for(const p in this.puzzles){
             this.puzzles[p].tick(dt)
@@ -271,11 +309,9 @@ export class Building extends StaticBody {
 
     set_definition(def: BuildingDef) {
         if(this.def) return
-        this.def = def
+        this.def=def
 
-        if (def.hitbox){
-            this.physical_data.hitbox = def.hitbox.clone()
-        }
+        if(def.hitbox)this.physical_data.hitbox=def.hitbox.clone()
 
         if(this.def.spawnHitbox){
             this.physical_data.spawn_hitbox=this.def.spawnHitbox.clone()
@@ -293,16 +329,22 @@ export class Building extends StaticBody {
     init(side:Orientation=random.int(0,3) as Orientation){
         this.physical_data.side = side
         this.base_hitbox=this.physical_data.hitbox.transform(undefined,undefined,undefined,side)
-
         if(this.def.spawnHitbox){
             this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,side)
         }else{
             this.physical_data.spawn_hitbox=this.physical_data.hitbox
         }
+        this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
+        this.update_hitbox()
     }
     begin_generate(position:Vec2){
         this.position = position
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
+        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position)
+        for(const p of this.def.generate.puzzles??[]){
+            const puzzle=new BuildingPuzzle(this,p)
+            this.puzzles[puzzle.id]=puzzle
+            if(p.global)this.game.puzzles[puzzle.id]=puzzle
+        }
     }
     after_generate(){
         for(const c of this.def.ceiling??[]){
@@ -328,12 +370,6 @@ export class Building extends StaticBody {
     }
     generate(position: Vec2){
         this.begin_generate(position)
-
-        for(const p of this.def.generate.puzzles??[]){
-            const puzzle=new BuildingPuzzle(this,p)
-            this.puzzles[puzzle.id]=puzzle
-            if(p.global)this.game.puzzles[puzzle.id]=puzzle
-        }
 
         /*for(const f of this.def.floors??[]){
             const hb=f.hitbox.transform(this.position)
@@ -392,9 +428,7 @@ export class Building extends StaticBody {
             }
 
             if(o.puzzle_piece){
-                obj.puzzle=this.puzzles[o.puzzle_piece.id??"main"]
-                obj.puzzle_value=o.puzzle_piece.value
-                obj.puzzle.connections.push(obj)
+                this.puzzles[o.puzzle_piece.id??"main"].add_object(obj,o.puzzle_piece.value)
             }
 
             this.children.push({obj,def:o,type:0})
@@ -455,6 +489,10 @@ export class Building extends StaticBody {
         stream.write_array(this.ceilings,(c)=>{
             stream.write_boolean_group(c.alive)
         },1)
+        stream.write_array(Object.keys(this.puzzles), p => {
+            stream.write_string(p,1)
+            this.puzzles[p].encode(stream,ctx)
+        },1)
     }
     override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         const def = this.game.definitions.buildings.valueNumber[stream.read_uint16()]
@@ -476,6 +514,10 @@ export class Building extends StaticBody {
         stream.read_array((i)=>{
             const [alive] = stream.read_boolean_group()
             this.ceilings[i].alive = alive
+        },1)
+        stream.read_array(() => {
+            const puzzle = this.puzzles[stream.read_string(1)]
+            puzzle.decode(stream,ctx)
         },1)
 
         this.update_hitbox()

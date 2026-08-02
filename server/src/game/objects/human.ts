@@ -9,7 +9,7 @@ import { Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep } from "common/engine/core.ts";
+import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { DamageParams } from "../others/utils.ts";
@@ -36,6 +36,7 @@ import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { type Bullet } from "./bullet.ts";
+import { HumanScript } from "../human/ai/script.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
     dirty_part:boolean
@@ -182,10 +183,6 @@ export class Human extends MovingBody{
     }
 
     input:{
-        path?:Vec2[]
-        path_move?:Vec2
-        on_path_complete?:()=>void
-
         movement:PolarMovement
         rotation:number
         dist_to_pointer:number
@@ -262,6 +259,8 @@ export class Human extends MovingBody{
     effects_dirty:boolean=true
     
     status:HumanStatus
+
+    script?:HumanScript
 
     constructor(){
         super()
@@ -354,6 +353,16 @@ export class Human extends MovingBody{
         user.actions.play(new HelpupAction(this))
     }
 
+    set_script_class(script:HumanScript){
+        if(this.script)this.script.enabled=false
+        script.human=this
+        this.script=script
+    }
+    set_script_string(val:string):HumanScript{
+        const script=create_script("return new (class extends HumanScript{\nasync run(){\n"+val+"\n}})",this.game.globals)() as HumanScript
+        this.set_script_class(script)
+        return script
+    }
     set_loadout_preset(preset?:LoadoutPreset){
         if(!preset)return
         this.loadout.dirty=true
@@ -439,6 +448,8 @@ export class Human extends MovingBody{
                 }
             }
         }
+        if(preset.script)this.set_script_string(preset.script)
+
         this.update_modifiers()
         this.health.value=this.health.max
         this.set_dirty_full()
@@ -625,40 +636,6 @@ export class Human extends MovingBody{
             }
         }
         return false
-    }
-    pathfind_to(dest:Vec2,complete_callback?:()=>void,quality:number=0.25):boolean{
-        const path = astar_path2d(
-            this,
-            this.base_hitbox,
-            dest,
-            this.isBlockedForPath.bind(this),
-            {
-                cellSize:quality,
-                dirs:[
-                    [1,0],[0,1],[-1,0],[0,-1],
-                    [1,1],[-1,-1],[-1,1],[1,-1]
-                ]
-            }
-        )
-
-        if (!path || path.length === 0) {
-            return false
-        }
-
-        this.follow_path(path, complete_callback)
-        return true
-    }
-    follow_path(path: Vec2[], complete_callback?: () => void) {
-        if (!path || path.length === 0) return
-
-        this.input.path = path.map(p => v2.clone(p))
-        this.input.on_path_complete = complete_callback
-
-    }
-    clear_path(){
-        this.input.path=undefined
-        this.input.on_path_complete=undefined
-        this.input.path_move=undefined
     }
     update_input(){
         if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===GameItemType.gun){
@@ -875,6 +852,13 @@ export class Human extends MovingBody{
         if(this.dead){
             return
         }
+        if(this.script){
+            this.script?.tick(dt)
+            if(!this.script._running){
+                this.script._running=true
+                this.script.run()
+            }
+        }
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
@@ -911,28 +895,7 @@ export class Human extends MovingBody{
             if(this.seat.rotation!==undefined)this.physical_data.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload)
         }else{
-            if(this.input.path&&this.input.path.length > 0){
-                const target = this.input.path[0]
-                const dist=v2.distance(this.position,target)
-                if (dist < 0.1) {
-                    this.input.path.shift()
-                    this.input.path_move=undefined
-                    if (!this.input.path.length) {
-                        const cb=this.input.on_path_complete
-                        this.clear_path()
-                        if(cb)cb()
-                        return
-                    }
-                }
-                const dest_rot = v2.lookTo(this.position,target)
-                this.physical_data.rotation = Numeric.lerp_rad(this.physical_data.rotation,dest_rot,Numeric.dt_expo_inter(15,dt))
-                this.input.path_move = v2.from_PolarMovement({
-                    dir:dest_rot,
-                    scale:1
-                })
-                const mov=v2.scale(this.input.path_move, speed)
-                v2m.lerp(this.physical_data.velocity, mov, acceleration)
-            }else if(this.human_data.movement_enabled){
+            if(this.human_data.movement_enabled){
                 const move=v2.from_PolarMovement(this.input.movement)
                 v2m.scale(move,move,speed)
                 v2m.lerp(this.physical_data.velocity,move,acceleration)
@@ -1424,7 +1387,7 @@ export class Human extends MovingBody{
             // State
             this.input.emote!==undefined, // 1
             this.input.message!==undefined,
-            this.input.path===undefined,
+            this.script!==undefined,
             this.seat!==undefined,
 
             this.dead,

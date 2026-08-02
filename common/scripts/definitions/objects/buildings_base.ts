@@ -1192,6 +1192,10 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         {
             idString:"puzzle_test",
             generate:{
+                loots:[{
+                    position:v2(3,0),
+                    table:"gold_crate"
+                }],
                 obstacles:[
                     {def:"red_button",position:v2(-2,-2),rotation:1,id:1,press_data:{allow_switch:false},puzzle_piece:{value:"r"}},
                     {def:"green_button",position:v2(0,-2),rotation:1,id:2,press_data:{allow_switch:false},puzzle_piece:{value:"g"}},
@@ -1212,7 +1216,6 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                     ],
                     complete_actions:[
                         {type:"press",id:[1,2,3,4],activated:true,locked:true},
-                        {type:"wait",time:2},
                         {type:"door",id:10,locked:true,open_state:1}
                     ],
                     fail_conditions:[

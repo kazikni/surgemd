@@ -377,6 +377,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         this.cells.clear()
     }
+    update_layers_orden(){
+        for(const l of this.layers_orden){
+            this.layers[l].ticks=this.layers[l].orden.filter((v)=>this.objects[v].allow_tick)
+            this.layers[l].render=this.layers[l].orden.filter((v)=>this.objects[v].allow_render)
+            this.layers[l].net_update=this.layers[l].orden.filter((v)=>this.objects[v].allow_net_update)
+            this.layers[l].physics_update=this.layers[l].orden.filter((v)=>this.objects[v].allow_physics_update)
+        }
+    }
     set_layer(obj: GameObject, new_layer: number) {
         if (!obj.registred) return
         if (obj.layer === new_layer) return
@@ -719,8 +727,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             coid:{},
             idco:{}
         }
-        
-
         for(let i=0;i<layers_count;i++){
             const objects:GameObject[]=[]
             const layer=stream.read_uint8()
@@ -747,6 +753,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 obj.on_decode_checkpoint(stream,ctx)
             }
         }
+        this.update_layers_orden()
         return layers
     }
     tick(dt:number){

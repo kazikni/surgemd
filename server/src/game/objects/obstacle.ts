@@ -159,29 +159,13 @@ export class Obstacle extends StaticBody{
                     }
 
                     if(interact_side!==undefined){
-                        const old_m=user.human_data.movement_enabled
-                        const old_c=user.human_data.combat_enabled
-                        user.human_data.movement_enabled=false
-                        user.human_data.combat_enabled=false
-
                         const pos=v2.add(this.position,v2.rotate_RadAngle(interact_side.pos,this.physical_data.rotation))
                         const angle=interact_side.rot!==undefined?Angle.deg2rad(interact_side.rot)+this.physical_data.rotation:this.physical_data.rotation
-                        const valid=user.pathfind_to(pos,()=>{
-                            user.physical_data.rotation=angle
-                            this.game.add_timeout(()=>{
-                                user.manager.set_layer(this,user.layer+(this.def.expanded_behavior as ObstacleBehaviorScalable).floor_walk)
+                        
+                        user.manager.set_layer(this,user.layer+(this.def.expanded_behavior as ObstacleBehaviorScalable).floor_walk)
 
-                                user.human_data.movement_enabled=old_m
-                                user.human_data.combat_enabled=old_c
-
-                                if(interact_side.dest_pos)user.position=v2.add(this.position,v2.rotate_RadAngle(interact_side.dest_pos,this.physical_data.rotation))
-                                if(interact_side.dest_rot)user.physical_data.rotation=Angle.deg2rad(interact_side.dest_rot)+this.physical_data.rotation
-                            },(this.def.expanded_behavior as ObstacleBehaviorScalable).action_time)
-                        },0.1)
-                        if(!valid){
-                            user.human_data.movement_enabled=old_m
-                            user.human_data.combat_enabled=old_c
-                        }
+                        if(interact_side.dest_pos)user.position=v2.add(this.position,v2.rotate_RadAngle(interact_side.dest_pos,this.physical_data.rotation))
+                        if(interact_side.dest_rot)user.physical_data.rotation=Angle.deg2rad(interact_side.dest_rot)+this.physical_data.rotation
                         /**/
                     }
                     break
@@ -562,7 +546,7 @@ export class Obstacle extends StaticBody{
         })
         stream.write_boolean_group(this.door_data!==undefined,this.transform_into_data!==undefined,this.press_data!==undefined)
         if(this.door_data){
-            stream.write_boolean_group(this.door_data.open===1,this.door_data.open===0,this.door_data.locked,this.door_data.only_side!==undefined)
+            stream.write_boolean_group(this.door_data.open===1,this.door_data.open===-1,this.door_data.locked,this.door_data.only_side!==undefined)
             if(this.door_data.only_side!==undefined)stream.write_int8(this.door_data.only_side)
         }
         if(this.transform_into_data){
@@ -600,7 +584,6 @@ export class Obstacle extends StaticBody{
             this.physical_data.stairs[idx].dest_layer=stream.read_int8()
         })
         const [door_data,transform_into_data,press_data]=stream.read_boolean_group()
-
         if(door_data){
             const [open_negative,open_positive,locked,only_side]=stream.read_boolean_group()
             this.door_data!.open = open_positive?1:open_negative?-1:0

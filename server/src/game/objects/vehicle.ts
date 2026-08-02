@@ -373,29 +373,7 @@ export class Vehicle extends MovingBody {
         }
 
         if (interact_seat && door) {
-            const old_m = user.human_data.movement_enabled
-            const old_c = user.human_data.combat_enabled
-
-            user.human_data.movement_enabled = false
-            user.human_data.combat_enabled = false
-
-            const valid = user.pathfind_to(
-                door,
-                () => {
-                    this.game.add_timeout(() => {
-                        user.human_data.movement_enabled = old_m
-                        user.human_data.combat_enabled = old_c
-
-                        interact_seat?.set_human(user)
-                    }, 1)
-                },
-                0.1
-            )
-
-            if (!valid) {
-                user.human_data.movement_enabled = old_m
-                user.human_data.combat_enabled = old_c
-            }
+            interact_seat?.set_human(user)
         }
     }
 

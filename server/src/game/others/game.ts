@@ -1,4 +1,4 @@
-import { AbstractServerGame, CircleHitbox2D, Client, FileManager, ID,  KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, CircleHitbox2D, Client, FileManager, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -39,7 +39,7 @@ import { StartSettings } from "common/scripts/packets/start_packet.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
 import { FeedMessage } from "common/scripts/packets/general_update.ts";
 import * as Core from "common/engine/core.ts";
-import { NPCScript } from "../human/ai/simple_bot_ai.ts";
+import { HumanScript } from "../human/ai/script.ts";
 export interface GameData {
     living_count: number[]
 
@@ -152,7 +152,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     globals:Record<string,any>={
         core:Core,
-        NPCScript
+        HumanScript
     }
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
@@ -270,6 +270,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.modeManager.reset()
         this.deadzone.reset()
         this.timeouts.length=0
+        this.puzzles={}
         this.started = false
         this.closed = false
         this.fineshed=false

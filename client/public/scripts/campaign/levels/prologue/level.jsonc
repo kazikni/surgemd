@@ -48,11 +48,8 @@
         }
     },
     "player": {
-        "path":["../../characters/civil.jsonc","../../characters/vinii.jsonc"],
+        "path":["../../characters/vinii.jsonc"],
         "position":{"x":10,"y":51},
-        "modifiers":{
-            "speed":0.5
-        },
         "boosts": [
             {"weight": 1, "def": "green_bless", "value": 1}
         ]

@@ -4,6 +4,7 @@ import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_scrip
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { GameConfig } from "common/scripts/config/config.ts";
 import { type Player } from "../objects/player.ts";
+import { HistoryCommand } from "common/scripts/config/history.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
@@ -38,13 +39,15 @@ export class LevelPlayerScript{
         } satisfies OnlineMessage)
         return Object.values(await this.game.clients.wait("_end"))[0]
     }
-    async show_cutscene(path:string):Promise<void>{
-        const def=parseJSONC(await this.level.fs.read_file(path))
+    async show_cutscene(cutscene:HistoryCommand[]):Promise<void>{
         this.game.clients.send({
             type:OnlineMessageType.Cutscene,
-            cutscene:def
+            cutscene
         })
         await this.game.clients.wait("_end")
+    }
+    async show_cutscene_file(path:string):Promise<void>{
+        await this.show_cutscene(parseJSONC(await this.level.fs.read_file(path)) as HistoryCommand[])
     }
 }
 export class LevelPlayer {

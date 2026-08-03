@@ -56,7 +56,7 @@ return (class extends LevelPlayerScript{
     }
     async on_before(start_with_intro){
         if(start_with_intro){
-            await this.show_cutscene("cutscenes/begin.jsonc")
+            await this.show_cutscene_file("cutscenes/begin.jsonc")
         }
     }
     async on_begin(){

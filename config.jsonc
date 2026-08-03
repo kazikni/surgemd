@@ -80,7 +80,6 @@
                 "assets/img/kspr/snow": "assets/img/game/snow",
                 "assets/img/kspr/fall": "assets/img/game/fall",
                 "assets/img/kspr/maps/tundra": "assets/img/game/maps/tundra",
-
                 "scripts/campaign/levels/prologue/sprites":"scripts/campaign/levels/prologue/sprites"
             },
             "resolutions": [
@@ -97,7 +96,7 @@
         "audios": [
             {
                 "input": "assets/sounds/game/main",
-                "output": "assets/main-sounds.json"
+                "output": "assets/sounds/ksnd/main"
             }
         ]
     }

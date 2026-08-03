@@ -16,24 +16,25 @@ The main ones are:
 - [Golang](https://go.dev/)
 - [Python](https://www.python.org/)
 ---
-### 1️⃣ Install Deno
+### 1️⃣ Install Dependencies
+* Install Deno
 Follow the instructions here: [Deno Installation Guide](https://deno.com/)
-
----
-
-### 2️⃣ Install Node.js with NVM
+* Install Node.js with NVM
 First, install [NVM](https://github.com/nvm-sh/nvm).  
 Then, install the recommended Node.js version (`v20.12.0`):
 ```bash
 nvm install 20.12.0
 nvm use 20.12.0
 ```
----
-### 3️⃣ Install Golang
+* Install Golang
 Download and install from: [Golang](https://go.dev/)
----
-### 3️⃣ Install Python
+* Install Python
 Download and install from: [Golang](https://www.python.org/)
+* Install FFmpeg
+Download and install from: [FFmpeg](https://www.ffmpeg.org)
+---
+### 2️⃣ Install Golang
+
 ---
 ### 4️⃣ Get the Surgemd.io Code
 You have three options:
@@ -58,15 +59,3 @@ deno task dev
 ### 🎮 Play the Local Game
 Once the server is running, open:
 👉 [Local Game](http://localhost:3000)
-### Enable Playtime
-Insert in configurations at `api.game`:
-```json
-"play_time": {
-    "week_days": [
-        0,
-        6
-    ],
-    "hour": 17,
-    "duration": 7200
-}
-```

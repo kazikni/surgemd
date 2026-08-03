@@ -59,7 +59,6 @@ export function AudiosLists(
 
             async buildStart() {
                 const data = await buildAll();
-
                 for (const fileName of Object.keys(data)) {
                     this.emitFile({
                         type: "asset",

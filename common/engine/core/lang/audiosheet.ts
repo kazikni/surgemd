@@ -120,6 +120,7 @@ export const audios={
     write_definitions(stream:Stream,sheet:AudioSheet){
         stream.write_string_sized(".KSND", 5)
         .write_uint16(0)
+        .write_float32(sheet.sampleRate)
         .write_array(Object.keys(sheet.sounds),(v)=>{
             stream.write_string(v)
             .write_uint32(sheet.sounds[v].sampleCount)

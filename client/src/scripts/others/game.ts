@@ -474,12 +474,7 @@ export class Game extends ClientGame<GameObject>{
             }
             await this.resources.load_kspr(kspr,resolution,tt,"",this.menu.set_loading_current)
         }
-
-        await this.resources.load_group("/assets/main-sounds.json","main",this.menu.set_loading_current)
-        for(const s in assets){
-            await this.resources.load_sound(s,{src:assets[s],volume:1},"ingame",this.menu.set_loading_current)
-        }
-        
+        await this.resources.load_ksnd("/assets/sounds/ksnd/main","main",undefined,this.menu.set_loading_current)
         if(languages_path!=""){
             try{
                 this.language.load_default_language(await this.resources.load_json(`${languages_path}/en.json`),"ingame")

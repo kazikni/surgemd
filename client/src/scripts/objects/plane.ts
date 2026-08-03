@@ -63,7 +63,7 @@ export class Plane extends MovingBody {
                     this.sound = this.game.sounds.play(
                         this.game.resources.get_sound("airdrop_plane_sfx"),
                         {
-                            max_distance: 40,
+                            max_distance: 200,
                             position: this.position,
                             loop: true,
                             volume: 0.7
@@ -82,7 +82,7 @@ export class Plane extends MovingBody {
                     this.sound = this.game.sounds.play(
                         this.game.resources.get_sound("airstrike_plane_sfx"),
                         {
-                            max_distance: 300,
+                            max_distance: 400,
                             position: this.position,
                             loop: false,
                             volume: 0.7

@@ -81,6 +81,7 @@ export class SpatialAudioSystem {
 export class AudioInstance {
     state: VoiceState = VoiceState.free
     sound?: Sound
+    controller?:SoundController
     source?: AudioBufferSourceNode
     gain: GainNode
     pan: StereoPannerNode
@@ -112,8 +113,9 @@ export class AudioInstance {
         this.gain.connect(this.pan)
     }
 
-    play(sound:Sound,bus:AudioBus,options:SoundPlaybackOptions={}){
+    play(sound:Sound,bus:AudioBus,options:SoundPlaybackOptions={},controller?:SoundController){
         this.stop(true)
+        this.controller=controller
         if(!sound.buffer)return
 
         this.sound=sound
@@ -132,13 +134,15 @@ export class AudioInstance {
 
         const duration = sound.buffer.duration
 
+        const sliceStart = sound.slice?.start ?? 0
+        const sliceDuration = sound.slice?.duration ?? sound.buffer.duration
+
         if (duration > 0) {
             if (this.loop) {
-                this.offset %= duration
-                if (this.offset < 0)
-                    this.offset += duration
+                this.offset %= sliceDuration
+                if(this.offset<0)this.offset += sliceDuration
             } else {
-                this.offset = Math.max(0,Math.min(this.offset,duration))
+                this.offset = Math.max(0,Math.min(this.offset, sliceDuration))
             }
         }
 
@@ -167,35 +171,21 @@ export class AudioInstance {
             this.update_volume()
         }
 
-        source.onended = () => {
+        source.onended=()=>{
             this.finish()
         }
 
-        const delay =
-            Math.max(
-                0,
-                options.delay ?? 0
-            ) / 1000
+        const delay=Math.max(0,options.delay??0)/1000
+        const startTime=now+delay
+        source.start(startTime,sliceStart+this.offset,this.loop?undefined:(sliceDuration-this.offset))
 
-        const startTime =
-            now + delay
-
-        source.start(
-            startTime,
-            this.offset
-        )
-
-        this.started_at =
-            startTime
-
-        this.state =
-            VoiceState.playing
-
-        this.stopping = false
+        this.started_at=startTime
+        this.state=VoiceState.playing
+        this.stopping=false
     }
 
     compute_volume(): number {
-        let volume=this.base_volume
+        let volume=this.base_volume*(this.controller?.volume??1)
         if (this.spatial && this.position){
             volume*=this.engine.spatial.compute_volume(this.position,this.max_distance,this.ref_distance)
         }
@@ -386,11 +376,9 @@ export class VoicePool {
 export class SoundController {
     bus?: string
     voice?: AudioInstance
+    volume:number=1
 
-    constructor(
-        public engine: AudioEngine,
-        bus?: string
-    ) {
+    constructor(public engine: AudioEngine,bus?: string) {
         this.bus = bus
     }
 
@@ -402,15 +390,11 @@ export class SoundController {
         return this.voice?.get_offset() ?? 0
     }
 
-    set(
-        sound?: Sound | null,
-        options: SoundPlaybackOptions = {}
-    ) {
+    set(sound?: Sound | null,options: SoundPlaybackOptions = {}){
         if (!sound) {
             this.stop()
             return
         }
-
         if (
             this.voice &&
             this.voice.state !== VoiceState.free &&
@@ -418,13 +402,12 @@ export class SoundController {
         ) {
             return
         }
-
         this.stop()
-
         this.voice = this.engine.play(sound, {
             bus: this.bus,
-            ...options
+            ...options,
         })
+        if(this.voice)this.voice.controller=this
     }
 
     stop(immediate = false) {
@@ -446,11 +429,6 @@ export class SoundController {
         }
     }
 
-    set_volume(volume: number) {
-        if (!this.voice) return
-        this.voice.base_volume = volume
-        this.voice.update_volume()
-    }
     set_position(position: Vec2) {
         if (!this.voice) return
         this.voice.position = position

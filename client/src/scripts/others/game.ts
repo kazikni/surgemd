@@ -472,7 +472,7 @@ export class Game extends ClientGame<GameObject>{
                 resolution="low"
                 this.save.set_variable("sv_graphics_resolution",resolution)
             }
-            await this.resources.load_kspr(kspr,resolution,tt,"",this.menu.set_loading_current)
+            await this.resources.load_kspr(kspr,resolution,tt,"",undefined,undefined,this.menu.set_loading_current)
         }
         await this.resources.load_ksnd("/assets/sounds/ksnd/main","main",undefined,this.menu.set_loading_current)
         if(languages_path!=""){

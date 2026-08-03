@@ -108,7 +108,7 @@ export interface ViteServerConfig{
     port:number
     allowed_hosts?:true|string[]
     spritesheet:{
-        sheets:Record<string,string>
+        sheets:Record<string,{path:string,save_assets?:boolean}>
         resolutions:{name:string,scale:number}[]
     }
     audios:{

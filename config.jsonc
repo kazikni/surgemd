@@ -75,12 +75,12 @@
         "allowed_hosts": true,
         "spritesheet": {
             "sheets": {
-                "assets/img/kspr/main": "assets/img/game/main",
-                "assets/img/kspr/common": "assets/img/game/common",
-                "assets/img/kspr/snow": "assets/img/game/snow",
-                "assets/img/kspr/fall": "assets/img/game/fall",
-                "assets/img/kspr/maps/tundra": "assets/img/game/maps/tundra",
-                "scripts/campaign/levels/prologue/sprites":"scripts/campaign/levels/prologue/sprites"
+                "assets/img/kspr/main": {"path":"assets/img/game/main"},
+                "assets/img/kspr/common": {"path":"assets/img/game/common"},
+                "assets/img/kspr/snow": {"path":"assets/img/game/snow"},
+                "assets/img/kspr/fall": {"path":"assets/img/game/fall"},
+                "assets/img/kspr/maps/tundra": {"path":"assets/img/game/maps/tundra"},
+                "scripts/campaign/levels/prologue/sprites":{"path":"scripts/campaign/levels/prologue/sprites"}
             },
             "resolutions": [
                 {

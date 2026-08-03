@@ -284,7 +284,7 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             selected_elem.classList.add("selected")
 
             save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,id)
-            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+id).src
+            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+id).url!
         }
         for(const e of emotes){
             const frame=resources.get_frame("emote_"+e.idString)
@@ -325,7 +325,7 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             if(cur_emote){
                 container.innerHTML=`
 <span class="name">${name}</span>
-<img class="icon" src="${resources.get_frame("emote_"+cur_emote.idString).src}"/>
+<img class="icon" src="${resources.get_frame("emote_"+cur_emote.idString).url}"/>
 `
             }else{
                 container.innerHTML=`
@@ -385,7 +385,7 @@ export function make_badges_settings(save: GameSave,resources: ResourcesManager,
             const div = document.createElement("div")
             div.className = "litem"
             div.dataset.idString = b.idString
-            const icon=resources.get_frame("badge_"+b.idString)?.src
+            const icon=resources.get_frame("badge_"+b.idString)?.url
             div.innerHTML = `
 <span class="name">${translation.get("badges."+b.idString)}</span>
 <img class="icon" src="${icon}">`

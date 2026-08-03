@@ -253,7 +253,7 @@ export class UiManager{
         if(!emotes){
             if(this.game.comunication_mode){
                 emotes=[
-                    this.game.definitions.ping.getFromString("ping_alert"), //Right
+                    //this.game.definitions.ping.getFromString("ping_alert"), //Right
                 ]
             }else{
                 emotes=[
@@ -341,7 +341,7 @@ export class UiManager{
                 if(frame){
                     ShowElement(this.content.emote_wheel.emotes[ev])
                     this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
-                    this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).src
+                    this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).url!
                     this.content.emote_wheel.emotes[ev].draggable=false
                 }
             }else{

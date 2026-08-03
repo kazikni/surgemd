@@ -4,7 +4,6 @@ export enum KSPRImageFormat {
     PNG = 1,
     JPEG = 2,
 }
-
 export interface FrameData {
     x: number
     y: number
@@ -23,21 +22,39 @@ export interface KSPRResolution {
     scale: number
     atlases: KSPRAtlas[]
 }
+export type KSPR_Asset=({
+    type:"null"
+}|{
+    type:"text",
+    content:string
+})&{
+    id:string
+    path:string
+}
 export interface KSPR {
+    assets:KSPR_Asset[]
     resolutions: Record<string, KSPRResolution>
 }
 export function write_kspr(data: KSPR, stream?: Stream): Stream {
     const s = stream ?? new DynamicStream()
     // HEADER
     s.write_string_sized(".KSPR",5)
-    s.write_uint8(2)
-    const resolutions = Object.entries(data.resolutions)
-    s.write_uint8(resolutions.length)
-    for (const [resolutionName, res] of resolutions) {
-        s.write_string(resolutionName)
-        s.write_float32(res.scale)
-        s.write_uint16(res.atlases.length)
-        for (const atlas of res.atlases) {
+    s.write_uint8(3)
+    s.write_array(data.assets,(i)=>{
+        s.write_string(i.id,1)
+        s.write_string(i.path,1)
+        switch(i.type){
+            case "text":
+                s.write_uint8(0)
+                s.write_string(i.content,4)
+                break
+        }
+    },2)
+    s.write_array(Object.entries(data.resolutions),(v)=>{
+        s.write_string(v[0])
+        s.write_float32(v[1].scale)
+        s.write_uint16(v[1].atlases.length)
+        for (const atlas of v[1].atlases) {
             // imagem
             s.write_uint8(atlas.format)
             s.write_uint16(atlas.width)
@@ -58,8 +75,7 @@ export function write_kspr(data: KSPR, stream?: Stream): Stream {
                 s.write_uint16(f.h)
             }
         }
-    }
-
+    },1)
     return s
 }
 export function load_kspr(buffer: ArrayBuffer): KSPR {
@@ -67,11 +83,30 @@ export function load_kspr(buffer: ArrayBuffer): KSPR {
     const magic = stream.read_string_sized(5)
     if (magic !== ".KSPR") throw "Invalid KSPR file"
     const version = stream.read_uint8()
-    const resCount = stream.read_uint8()
     const out: KSPR = {
-        resolutions: {}
+        assets:[],
+        resolutions: {},
     }
-    for (let r = 0; r < resCount; r++) {
+    out.assets=stream.read_array(()=>{
+        const id=stream.read_string(1)
+        const path=stream.read_string(1)
+        const tp=stream.read_uint8()
+        switch(tp){
+            case 0:
+                return {
+                    type:"text",
+                    path,
+                    id,
+                    content:stream.read_string(4)
+                }
+        }
+        return {
+            type:"null",
+            id,
+            path
+        }
+    },2) as KSPR_Asset[]
+    stream.read_array(()=>{
         const resName = stream.read_string()
         const scale = stream.read_float32()
         const atlasCount = stream.read_uint16()
@@ -107,6 +142,7 @@ export function load_kspr(buffer: ArrayBuffer): KSPR {
             scale,
             atlases
         }
-    }
+    },1)
+
     return out
 }

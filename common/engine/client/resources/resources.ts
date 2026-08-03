@@ -37,6 +37,9 @@ export interface Sound{
 export class Frame {
     id:string=""
     src:string=""
+    url:string=""
+    blob?:Blob
+    blob_created?:boolean
     group:string=""
 
     image?:HTMLImageElement
@@ -57,6 +60,7 @@ export class Frame {
             this.texture.free()
             this.texture=undefined
         }
+        if(this.blob&&this.blob_created)URL.revokeObjectURL(this.url)
     }
 }
 
@@ -64,6 +68,8 @@ export type Source=Frame|Sound
 export class ResourcesManager {
     frames:Record<string,Frame>={}
     sounds:Record<string,Sound>={}
+    blobs:Record<string,{blob:Blob,url:string,group:string}>={}
+    imported:string[]=[]
 
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
@@ -152,8 +158,34 @@ export class ResourcesManager {
         ])
 
         frame.src=src
+        frame.url=src
 
         return frame
+    }
+    async create_frame_blob(frame: Frame,from_src:boolean=true): Promise<void> {
+        if (!frame.image || !frame.frame_rect) return
+        frame.blob_created=true
+        if(from_src){
+            const width  = frame.frame_rect.max.x - frame.frame_rect.min.x
+            const height = frame.frame_rect.max.y - frame.frame_rect.min.y
+            const canvas = document.createElement("canvas")
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext("2d")!
+            ctx.drawImage(frame.image,frame.frame_rect.min.x,frame.frame_rect.min.y,width,height,0,0,width,height)
+            frame.blob = await new Promise<Blob>(resolve =>
+                canvas.toBlob(blob => resolve(blob!), "image/png")
+            )
+            frame.url = URL.createObjectURL(frame.blob)
+        }else{
+            let tp="image/svg+xml"
+            if(frame.src.endsWith(".png")){
+                tp="image/png"
+            }
+            const text = await (await fetch(frame.src)).text()
+            frame.blob = new Blob([text],{type:tp})
+            frame.url = URL.createObjectURL(frame.blob)
+        }
     }
     async load_frame(id:string,src:string,group:string="",callback?:(msg:string)=>void){
         if(callback)callback(src)
@@ -191,8 +223,18 @@ export class ResourcesManager {
             this.frames[frame.id]=frame
         }
     }
-    async load_kspr(kspr:KSPR,resolution:string,group:string="",prefix:string="",callback?:(item:string)=>void){
+    async load_kspr(kspr:KSPR,resolution:string,group:string="",prefix:string="",create_blob:boolean=false,from_src?:boolean,callback?:(item:string)=>void){
         const res=kspr.resolutions[resolution]
+        for (const asset of kspr.assets) {
+            if(asset.type !== "text")continue
+            if(!asset.path.endsWith(".svg"))continue
+            const blob = new Blob([asset.content],{type:"image/svg+xml"})
+            this.blobs[prefix+asset.id]={
+                blob,
+                url:URL.createObjectURL(blob),
+                group
+            }
+        }
         for(const atlas of res.atlases){
             const blob=new Blob([atlas.image as BlobPart])
             const url=URL.createObjectURL(blob)
@@ -207,12 +249,11 @@ export class ResourcesManager {
                     min:v2(data.x/iw,1-((data.y+data.h)/ih)),
                     max:v2((data.x+data.w)/iw,1-(data.y/ih)),
                 }
-
                 const frame=this.create_frame(texture,rect,data.src??id)
                 frame.image=image
                 frame.id=prefix+id
+                frame.url=frame.src
                 frame.group=group
-
                 frame.frame_rect={
                     min:v2(data.x,data.y),
                     max:v2(data.x+data.w,data.y+data.h)
@@ -221,11 +262,17 @@ export class ResourcesManager {
                     data.w/res.scale,
                     data.h/res.scale
                 )
+                if(this.blobs[frame.id]){
+                    frame.blob=this.blobs[frame.id].blob
+                    frame.url=this.blobs[frame.id].url
+                }else if(create_blob)await this.create_frame_blob(frame,from_src)
                 this.frames[frame.id]=frame
             }
         }
     }
     parse_ksnd(sound: Sound,stream: Stream,group = "",callback?: (item: string) => void){
+        if(this.imported.includes(sound.src))return
+        this.imported.push(sound.src)
         const magic = stream.read_string_sized(5)
         if (magic !== ".KSND") {
             throw new Error("Invalid KSND file.")
@@ -235,6 +282,7 @@ export class ResourcesManager {
             throw new Error(`Unsupported KSND version ${version}.`)
         }
         const sampleRate = stream.read_float32()
+        callback?.(sound.src)
         stream.read_array(() => {
             const id = stream.read_string()
             callback?.(id)
@@ -399,7 +447,13 @@ export class ResourcesManager {
         delete this.frames[id]
     }
     unload_sound(id:string){
+        const idx=this.imported.indexOf(this.sounds[id].src)
+        if(idx!==-1)this.imported.splice(idx,1)
         delete this.sounds[id]
+    }
+    unload_blob(blob:string){
+        URL.revokeObjectURL(this.blobs[blob].url)
+        delete this.blobs[blob]
     }
     unload_group(group:string){
         for(const id in this.frames){
@@ -412,6 +466,11 @@ export class ResourcesManager {
                 this.unload_sound(id)
             }
         }
+        for(const id in this.blobs){
+            if(this.blobs[id].group===group){
+                this.unload_blob(id)
+            }
+        }
     }
     clear(blacklist:string[]=[]){
         for(const r of Object.keys(this.frames)){
@@ -421,6 +480,10 @@ export class ResourcesManager {
         for(const r of Object.keys(this.sounds)){
             if(blacklist.includes(r)||blacklist.includes(this.sounds[r].group))continue
             this.unload_sound(r)
+        }
+        for(const r of Object.keys(this.blobs)){
+            if(blacklist.includes(r)||blacklist.includes(this.blobs[r].group))continue
+            this.unload_blob(r)
         }
     }
 

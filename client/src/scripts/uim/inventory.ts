@@ -1,4 +1,4 @@
-import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
+import { Frame, HideElement, ShowElement, UIModule } from "common/engine/client.ts";
 import { Game } from "../others/game.ts";
 import { InventoryItemData, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
@@ -6,6 +6,7 @@ import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { type Human } from "../objects/human.ts";
+import { FrameDef } from "common/engine/core.ts";
 
 export class InventoryModule extends UIModule<Game> {
     items_container!: HTMLDivElement
@@ -124,7 +125,7 @@ export class InventoryModule extends UIModule<Game> {
             const def = this.game.definitions.game_items.valueNumber[slot.idNumber]
 
             count.textContent = `${slot.count}`
-            img.src = this.game.resources.get_frame(def.idString).src
+            img.src = this.game.resources.get_frame(def.idString).url!
             img.style.display = "block"
 
             el.classList.remove("slot-empty")
@@ -179,7 +180,7 @@ export class InventoryModule extends UIModule<Game> {
                 }
                 name_el.innerText = name
                 this.weapons_elements[i].dataset.item_name=this.game.language.get(item.def.tname??("items."+item.def.idString),undefined,item.def.name)
-                img_el.src = assets.item.src
+                img_el.src = (assets.item as Frame).url
                 img_el.style.display = "block"
             } else {
                 name_el.innerText = ""
@@ -289,7 +290,7 @@ export class InventoryModule extends UIModule<Game> {
         el.className = "aitem-slot"
 
         el.innerHTML = `
-            <img class="icon" draggable="false" src="${this.game.resources.get_frame(def.idString).src}">
+            <img class="icon" draggable="false" src="${this.game.resources.get_frame(def.idString).url}">
             <span class="count"></span>
         `
 
@@ -342,7 +343,7 @@ export class InventoryModule extends UIModule<Game> {
                 img.draggable = false
                 img.width = 30
                 img.height = 30
-                img.src = this.game.resources.get_frame(s.idString).src
+                img.src = this.game.resources.get_frame(s.idString).url
 
                 el.dataset.item_kind = "5"
                 el.dataset.item_value = s.idNumber!.toString()
@@ -413,13 +414,13 @@ export class InventoryModule extends UIModule<Game> {
             this.game.ui.tooltip_hide()
         }
         const sprite = this.game.resources.get_frame(frame)
-        if (!sprite?.src) {
+        if (!sprite?.url) {
             HideElement(el)
             return
         }
         ShowElement(el)
         el.style.display = ""
-        el.innerHTML = `${span}<img class="slot-image" draggable="false" src="${sprite.src}">`
+        el.innerHTML = `${span}<img class="slot-image" draggable="false" src="${sprite.url}">`
     }
     override on_update(dt: number): void {}
     override on_destroy(): void {}

@@ -4,6 +4,7 @@ import { KSPR, write_kspr,KSPRImageFormat } from "../../../../common/engine/core
 import { RectPacker } from "../../../../common/engine/core/math/geometry.ts";
 import readDirectory from "./readDirectory.ts";
 import { Minimatch } from "minimatch"
+import fs from "node:fs"
 export const cacheDir = ".spritesheet-cache";
 export type CacheData = {
     lastModified: number
@@ -23,25 +24,39 @@ const defaultGlob = "**/*.{png,gif,jpg,bmp,tiff,svg}";
 const imagesMatcher = new Minimatch(defaultGlob);
 
 export interface Resolution{scale:number,name:string}
-export async function buildKSPRGroup(base: string = "",dir: string,resolutions: Resolution[],compilerOpts: CompilerOptions = {
-        outputFormat: "png",
-        margin: 8,
-        removeExtensions: true,
-        maximumSize: 2048,
+export async function buildKSPRGroup(base: string = "",dir: string,resolutions: Resolution[],insert_assets?:boolean,compilerOpts: CompilerOptions = {
+    outputFormat: "png",
+    margin: 8,
+    removeExtensions: true,
+    maximumSize: 2048,
 }): Promise<Uint8Array> {
-    const images: { image: Image, path: [string, string] }[] = []
+    const images: { image: Image, path: string,id:string }[] = []
     const files = readDirectory(base, dir).filter(x => imagesMatcher.match(x[1]))
+    const kspr: KSPR = { resolutions: {},assets:[] }
     for (const file of files) {
+        let id = path.basename(file[1])
+        if (compilerOpts.removeExtensions) {
+            id = id.split(".").slice(0, -1).join("")
+        }
+        let src = file[1]
+        if (!src.startsWith("/"))src="/"+src
         images.push({
             image: await loadImage(file[0]),
-            path: file
+            path:src,
+            id
         })
+        if(insert_assets){
+            if(file[0].endsWith(".svg")){
+                kspr.assets.push({
+                    type:"text",
+                    id,
+                    path:src,
+                    content:fs.readFileSync(file[1]).toString()
+                })
+            }
+        }
     }
-    images.sort((a, b) =>
-        (b.image.width * b.image.height) -
-        (a.image.width * a.image.height)
-    )
-    const kspr: KSPR = { resolutions: {} }
+    images.sort((a, b)=>(b.image.width * b.image.height)-(a.image.width * a.image.height))
     for (const res of resolutions) {
         const packer = new RectPacker<typeof images[0]>(
             Math.floor(compilerOpts.maximumSize * res.scale),
@@ -69,14 +84,8 @@ export async function buildKSPRGroup(base: string = "",dir: string,resolutions: 
                     rect.w,
                     rect.h
                 )
-                let name = path.basename(data.path[1])
-                if (compilerOpts.removeExtensions) {
-                    name = name.split(".").slice(0, -1).join("")
-                }
-                let src = data.path[1]
-                if (!src.startsWith("/")) src = "/" + src
-                frames[name] = {
-                    src,
+                frames[data.id] = {
+                    src:data.path,
                     x: rect.x,
                     y: rect.y,
                     w: rect.w,

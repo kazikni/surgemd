@@ -291,7 +291,7 @@ export class GunItem extends GunItemBase implements LItem{
     override unload(): void {
         this.reloading=false
         this.burst=undefined
-        if(this.def.unload_multiply!==undefined)this.use_delay=this.def.fire_delay*this.def.unload_multiply
+        if(this.def.unload_multiply!==undefined)this.use_delay=(this.def.unload_delay??this.def.fire_delay)*this.def.unload_multiply
     }
     drop(): Loot[] {
         if(this.ammo>0&&!this.infinity_ammo()){

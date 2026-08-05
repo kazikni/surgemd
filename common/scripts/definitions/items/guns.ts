@@ -20,6 +20,7 @@ export type GunDef={
 
     fire_delay:number
     switch_delay?:number
+    unload_delay?:number
     switch_multiply?:number
     unload_multiply?:number
     class_switch_multiply?:Partial<Record<GunClasses,number>>
@@ -430,7 +431,7 @@ export const guns_factory={
             fire_on_release:true,
             fire_delay:0.1,
             switch_delay:0.25,
-            unload_multiply:0.65,
+            unload_delay:1.1,
 
             gas_particles:GasParticles.sniper,
             case_particle:{
@@ -466,7 +467,7 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_delay:0.1,
             switch_delay:0.25,
-            unload_multiply:1,
+            unload_delay:1.1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
             },

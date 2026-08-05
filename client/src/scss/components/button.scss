@@ -10,6 +10,7 @@
 
     border: 2px solid var(--item-border);
     background: var(--item-bg);
+    backdrop-filter: blur(7px);
     color: white;
 
     &:hover {

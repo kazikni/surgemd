@@ -71,6 +71,13 @@ export class MinimapModule extends UIModule<Game>{
         this.load_map_icon("normal","/assets/img/menu/gui/map/map_icon_normal.svg")
         this.load_map_icon("downed","/assets/img/menu/gui/map/map_icon_downed.svg")
         this.load_map_icon("dead","/assets/img/menu/gui/map/map_icon_dead.svg")
+
+        this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
+        this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
+
+        this.container.addEventListener("click",()=>{
+            if(!this.fullscreen)this.toggle_fullscreen()
+        })
     }
 
     async load_map_icon(id:string,path:string){
@@ -188,10 +195,9 @@ export class MinimapModule extends UIModule<Game>{
         }
         const el=document.createElement("div")
         el.className="map-ping"
-        const frame=this.game.resources.get_frame(def.idString)
         el.innerHTML=`
             <div class="map-ping-pulse"></div>
-            <div class="map-ping-icon">${await(await fetch(frame.src)).text()}</div>
+            <div class="map-ping-icon">${this.map_icons[def.idString]}</div>
         `
         ping.el=el
         ping.el.style.setProperty("--ping-color",ping.color)

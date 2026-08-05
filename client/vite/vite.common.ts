@@ -49,7 +49,7 @@ export const uconfig: UserConfig = {
     plugins: [
         svelte(),
         KSND(config.audios),
-        spritesheet("public",config.spritesheet.sheets,config.spritesheet.resolutions),
+        spritesheet(config.spritesheet.sheets,config.spritesheet.resolutions),
         //AudiosLists(config.audios),
     ],
     css: {

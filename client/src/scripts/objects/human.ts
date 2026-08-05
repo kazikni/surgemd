@@ -681,11 +681,13 @@ export class Human extends MovingBody{
     }
     on_weapon_switch(){
         this.reset_anim()
+        this.animation.cycle_sound_time=undefined
         if(this.assets.weapon_switch_sound){
             this.animation.sound_animation=this.game.sounds.play(this.assets.weapon_switch_sound,{
                 position:this.position,
                 max_distance:9,
                 bus:"humans",
+                delay:0.4,
                 on_complete:()=>{
                     this.animation.sound_animation=undefined
                 }

@@ -1,4 +1,4 @@
-import { StaticStream } from "../../core.ts";
+import { sleep, StaticStream } from "../../core.ts";
 import { FrameData, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
@@ -24,6 +24,7 @@ export interface SoundDef {
 export interface SoundSlice{
     start:number
     duration:number
+    parent:string
 }
 export interface Sound{
     id:string
@@ -69,7 +70,7 @@ export class ResourcesManager {
     frames:Record<string,Frame>={}
     sounds:Record<string,Sound>={}
     blobs:Record<string,{blob:Blob,url:string,group:string}>={}
-    imported:string[]=[]
+    imported:Record<string,string[]>={}
 
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
@@ -271,8 +272,7 @@ export class ResourcesManager {
         }
     }
     parse_ksnd(sound: Sound,stream: Stream,group = "",callback?: (item: string) => void){
-        if(this.imported.includes(sound.src))return
-        this.imported.push(sound.src)
+        this.imported[sound.src]=[]
         const magic = stream.read_string_sized(5)
         if (magic !== ".KSND") {
             throw new Error("Invalid KSND file.")
@@ -285,6 +285,7 @@ export class ResourcesManager {
         callback?.(sound.src)
         stream.read_array(() => {
             const id = stream.read_string()
+            this.imported[sound.src].push(id)
             callback?.(id)
             const sampleCount = stream.read_uint32()
             const startSample = stream.read_uint32()
@@ -296,12 +297,14 @@ export class ResourcesManager {
                 group,
                 slice: {
                     start: startSample/sampleRate,
-                    duration: sampleCount/sampleRate
+                    duration: sampleCount/sampleRate,
+                    parent:sound.src
                 }
             }
         }, 2)
     }
     async load_ksnd(path:string,group:string,codec:string=".ogg",callback?: (item: string) => void){
+        if(this.imported[path+codec])return
         callback?.(path+".ksnd")
         const stream=new StaticStream(await(await fetch(path+".ksnd")).arrayBuffer())
         callback?.(path+codec)
@@ -309,7 +312,7 @@ export class ResourcesManager {
         const sound:Sound={
             id:group,
             group,
-            src:path,
+            src:path+codec,
             volume:1,
             buffer,
         }
@@ -447,8 +450,10 @@ export class ResourcesManager {
         delete this.frames[id]
     }
     unload_sound(id:string){
-        const idx=this.imported.indexOf(this.sounds[id].src)
-        if(idx!==-1)this.imported.splice(idx,1)
+        if(this.sounds[id].slice&&this.imported[this.sounds[id].slice.parent]){
+            const idx=this.imported[this.sounds[id].slice.parent].indexOf(id)
+            if(idx!==-1)this.imported[this.sounds[id].slice.parent].splice(idx,1)
+        }
         delete this.sounds[id]
     }
     unload_blob(blob:string){

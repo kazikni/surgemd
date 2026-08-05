@@ -1052,17 +1052,12 @@ export const buildings_factory={
                 sounds:hit_sounds.heavy_metal,
             },
             floor_image:[
-                {
-                    image:settings.floor??"storehouse_floor_1",
-                    scale:2.5
-                }
+                {image:settings.floor??"storehouse_floor_1",position:v2(5.85,0),rotation:Math.PI,scale:2.5},
+                {image:settings.floor??"storehouse_floor_1",position:v2(-5.85,0),scale:2.5},
             ],
             ceiling:[
                 {
-                    frame:{
-                        image:settings.ceiling??"storehouse_ceiling_1",
-                        scale:2.5
-                    },
+                    frame:{image:settings.ceiling??"storehouse_ceiling_1",scale:2.5},
                     hitbox:new RectHitbox2D(min,max),
                 }
             ]

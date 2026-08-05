@@ -115,7 +115,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 velocity:{
                     min:0,
                     max:1.7,
-                    decay:0.5
+                    decay:0.45
                 },
                 angular:{
                     min:0.6,
@@ -130,7 +130,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                         duration:2,
                     },
                     scale:{
-                        to:3,
+                        to:2.5,
                         duration:0.5,
                     }
                 },

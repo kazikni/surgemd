@@ -422,7 +422,7 @@ export class ObstacleEditorObject extends EditorObject{
         this.skin=undefined
         this.scale=undefined
         this.allow_biome_skin=undefined
-        if(rotation)this.rotation=stream.read_rad()
+        if(rotation)this.rotation=stream.read_float32()
         if(layer)this.layer=stream.read_int16()
         if(variation)this.variation=stream.read_uint8()
         if(skin)this.skin=stream.read_uint8()
@@ -448,7 +448,7 @@ export class ObstacleEditorObject extends EditorObject{
             this.allow_biome_skin!==undefined
         )
 
-        if(this.rotation!==undefined)stream.write_rad(this.rotation)
+        if(this.rotation!==undefined)stream.write_float32(this.rotation)
         if(this.layer!==undefined)stream.write_int16(this.layer)
         if(this.variation!==undefined)stream.write_uint8(this.variation)
         if(this.skin!==undefined)stream.write_uint8(this.skin)

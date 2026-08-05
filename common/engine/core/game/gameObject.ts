@@ -41,6 +41,7 @@ export abstract class BaseObject2D{
     allow_physics_update:boolean=false
     allow_render:boolean=false
     allow_net_update:boolean=false
+    allow_dirty:boolean=true
     allow_checkpoint:boolean=true
 
     net_sync_deletion:boolean=true
@@ -97,10 +98,10 @@ export abstract class BaseObject2D{
     }
 
     set_dirty_part(){
-        this.manager.part_dirty_objects[this.id]=this
+        if(this.allow_dirty)this.manager.part_dirty_objects[this.id]=this
     }
     set_dirty_full(){
-        this.manager.full_dirty_objects[this.id]=this
+        if(this.allow_dirty)this.manager.full_dirty_objects[this.id]=this
     }
 }
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {

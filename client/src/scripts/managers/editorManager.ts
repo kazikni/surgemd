@@ -314,6 +314,7 @@ export class EditorManager{
 
         this.update_objects_window()
         this.reload_sources()
+        this.game.dead_zone.set_current(v2(0,0),1000,1,false)
     }
     close(){
         ShowElement(this.game.ui.content.game_gui)

@@ -41,8 +41,13 @@ export class Explosion extends ServerGameObject{
         }
         if(this.def.synced_particles){
             const def=this.game.definitions.synced_particle.getFromString(this.def.synced_particles.def)
-            for(let i=0;i<this.def.synced_particles.count;i++){
-                this.game.add_synced_particle(this.position,def,this.owner,this.layer)
+            
+            if(this.def.synced_particles.creator){
+                this.game.add_synced_particles_creator(this.position,def,this.owner,this.def.synced_particles.count,this.def.synced_particles.creator_time,this.layer)
+            }else{
+                for(let i=0;i<this.def.synced_particles.count;i++){
+                    this.game.add_synced_particle(this.position,def,this.owner,this.layer)
+                }
             }
         }
         if(floor_def.floor_kind!==FloorKind.Liquid){

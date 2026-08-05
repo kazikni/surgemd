@@ -41,6 +41,8 @@ export type ExplosionDef={
     synced_particles?:{
         def:string
         count:number
+        creator_time?:number
+        creator?:boolean
     }
     decal?:DecalInstanceDef
     liquid_decal?:DecalInstanceDef
@@ -216,8 +218,9 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 sound:"explosion_4"
             },
             synced_particles:{
-                count:11,
-                def:"smoke"
+                count:10,
+                def:"smoke",
+                creator:true
             },
             decal:explosions_decals.small,
             cam_shake:explosion_cam_shakes.small

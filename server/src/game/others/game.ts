@@ -25,7 +25,7 @@ import { DamageSourceDef, GameDefinition } from "common/scripts/definitions/game
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
-import { SyncedParticle } from "../objects/synced_particle.ts";
+import { SyncedParticle, SyncedParticlesCreator } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
@@ -406,6 +406,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     add_synced_particle(position:Vec2,def:SyncedParticleDef,owner?:Human,layer=Layers.Normal):SyncedParticle{
         const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position,owner}) as SyncedParticle
+        return p
+    }
+    add_synced_particles_creator(position:Vec2,def:SyncedParticleDef,owner?:Human,count?:number,time?:number,layer=Layers.Normal):SyncedParticle{
+        const p=this.scene_2d.objects.add_object(new SyncedParticlesCreator(),layer,undefined,{def,count,time,position,owner}) as SyncedParticle
         return p
     }
 

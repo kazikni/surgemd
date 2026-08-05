@@ -88,21 +88,19 @@ export class AudioInstance {
 
     id:number=0
 
-    started_at = 0
-    offset = 0
+    started_at=0
+    offset=0
 
     loop = false
     spatial = true
 
     position?: Vec2
-
     base_volume = 1
 
     max_distance = 20
     ref_distance = 1
 
     stopping = false
-
     fade_out = 80
 
     on_complete?:(instance:AudioInstance)=>void
@@ -175,7 +173,7 @@ export class AudioInstance {
             this.finish()
         }
 
-        const delay=Math.max(0,options.delay??0)/1000
+        const delay=Math.max(0,options.delay??0)
         const startTime=now+delay
         source.start(startTime,sliceStart+this.offset,this.loop?undefined:(sliceDuration-this.offset))
 
@@ -234,12 +232,8 @@ export class AudioInstance {
             return
         }
 
-        const now =
-            this.ctx.currentTime
-
-        const end =
-            now +
-            this.fade_out / 1000
+        const now=this.ctx.currentTime
+        const end=now+this.fade_out / 1000
 
         this.gain.gain.cancelScheduledValues(now)
         this.gain.gain.setValueAtTime(
@@ -330,48 +324,6 @@ export class AudioInstance {
         return pos
     }
 }
-export class VoicePool {
-    voices: AudioInstance[] = []
-
-    constructor(
-        public engine: AudioEngine,
-        public ctx: AudioContext,
-        public maxVoices = 2000
-    ) {}
-
-    allocate(): AudioInstance {
-        for (const voice of this.voices) {
-            if (voice.state === VoiceState.free) {
-                return voice
-            }
-        }
-
-        if(this.voices.length < this.maxVoices) {
-            const voice = new AudioInstance(this.engine, this.ctx)
-            voice.id=this.voices.length
-            this.voices.push(voice)
-            return voice
-        }
-
-        let oldest = this.voices[0]
-
-        for (const voice of this.voices) {
-            if (voice.started_at < oldest.started_at) {
-                oldest = voice
-            }
-        }
-
-        oldest.stop(true)
-
-        return oldest
-    }
-
-    update() {
-        for (const voice of this.voices) {
-            voice.update()
-        }
-    }
-}
 
 export class SoundController {
     bus?: string
@@ -385,21 +337,15 @@ export class SoundController {
     get running(): boolean {
         return this.voice?.state === VoiceState.playing
     }
-
     get offset(): number {
         return this.voice?.get_offset() ?? 0
     }
-
     set(sound?: Sound | null,options: SoundPlaybackOptions = {}){
-        if (!sound) {
+        if(!sound){
             this.stop()
             return
         }
-        if (
-            this.voice &&
-            this.voice.state !== VoiceState.free &&
-            this.voice.sound === sound
-        ) {
+        if(this.voice&&this.voice.state!==VoiceState.free&&this.voice.sound===sound){
             return
         }
         this.stop()
@@ -409,26 +355,18 @@ export class SoundController {
         })
         if(this.voice)this.voice.controller=this
     }
-
     stop(immediate = false) {
         if (!this.voice) return
-
         this.voice.stop(immediate)
-
         if (immediate) {
             this.voice = undefined
         }
     }
-
     update() {
-        if (
-            this.voice &&
-            this.voice.state === VoiceState.free
-        ) {
+        if(this.voice&&this.voice.state === VoiceState.free) {
             this.voice = undefined
         }
     }
-
     set_position(position: Vec2) {
         if (!this.voice) return
         this.voice.position = position
@@ -438,17 +376,15 @@ export class SoundController {
 
 export class AudioEngine {
     ctx: AudioContext
-
     master_bus: AudioBus
-
     buses = new Map<string, AudioBus>()
 
-    voice_pool: VoicePool
+    voices: AudioInstance[] = []
+    max_voices=2000
+    last_voice=0
 
     spatial: SpatialAudioSystem
-
     signals = new SignalManager()
-
     unlocked = false
 
     constructor() {
@@ -462,15 +398,14 @@ export class AudioEngine {
         )
 
         this.master_bus.add_compressor()
-
-        this.voice_pool = new VoicePool(
-            this,
-            this.ctx
-        )
-
         this.spatial = new SpatialAudioSystem()
 
         this.init_unlock()
+        for(let i=0;i<100;i++){
+            const voice = new AudioInstance(this, this.ctx)
+            voice.id=this.voices.length
+            this.voices.push(voice)
+        }
     }
 
     create_bus(name: string): AudioBus {
@@ -489,22 +424,11 @@ export class AudioEngine {
         return this.buses.get(name) ?? this.master_bus
     }
 
-    play(
-        sound?: Sound,
-        options: SoundPlaybackOptions = {}
-    ) {
-        if (!sound) return
-
-        if (!this.unlocked) return
-
-        const voice = this.voice_pool.allocate()
-
-        voice.play(
-            sound,
-            this.get_bus(options.bus ?? "master"),
-            options
-        )
-
+    play(sound?: Sound,options: SoundPlaybackOptions = {}) {
+        if(!sound)return
+        if(!this.unlocked)return
+        const voice = this.allocate_audio()
+        voice.play(sound,this.get_bus(options.bus ?? "master"),options)
         return voice
     }
 
@@ -512,8 +436,40 @@ export class AudioEngine {
         return new SoundController(this, bus)
     }
 
+    allocate_audio(): AudioInstance {
+        const last_voice=this.last_voice
+        while(this.last_voice<this.voices.length){
+            if(this.voices[this.last_voice].state===VoiceState.free) {
+                return this.voices[this.last_voice]
+            }
+            this.last_voice++
+        }
+        this.last_voice=0
+        while(this.last_voice<last_voice){
+            if(this.voices[this.last_voice].state===VoiceState.free) {
+                return this.voices[this.last_voice]
+            }
+            this.last_voice++
+        }
+        if(this.voices.length < this.max_voices) {
+            const voice = new AudioInstance(this, this.ctx)
+            voice.id=this.voices.length
+            this.voices.push(voice)
+            return voice
+        }
+        let oldest = this.voices[0]
+        for(const voice of this.voices){
+            if (voice.started_at<oldest.started_at) {
+                oldest = voice
+            }
+        }
+        oldest.stop(true)
+        return oldest
+    }
     update() {
-        this.voice_pool.update()
+        for(const v of this.voices){
+            v.update()
+        }
     }
 
     set_listener_position(position: Vec2) {

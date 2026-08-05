@@ -9,7 +9,7 @@ import { Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, astar_path2d, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script } from "common/engine/core.ts";
+import { ActionsManager, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script } from "common/engine/core.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { DamageParams } from "../others/utils.ts";

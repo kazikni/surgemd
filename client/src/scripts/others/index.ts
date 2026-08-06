@@ -1,7 +1,7 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { isMobile } from "common/engine/client.ts";
+import { isMobile } from "common/engine/web.ts";
 import { PlayArgs } from "./constants.ts";
 import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";

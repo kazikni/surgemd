@@ -1,5 +1,5 @@
 import { GameServer } from "./others/server.ts"
-import { Server } from "common/engine/server.ts";
+import { Server } from "common/engine/deno.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { parseJSONC, tdm } from "common/engine/core.ts";
 

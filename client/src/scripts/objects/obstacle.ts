@@ -1,4 +1,4 @@
-import { ABParticle2D, ClientParticle2D, Container2D, Sound, Sprite2D, type Tween, Shape2D } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Container2D, Sound, Sprite2D, type Tween, Shape2D } from "common/engine/web.ts";
 import { ObstacleBehaviorDoor, ObstacleBehaviorPress, ObstacleBehaviorTransformInto, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";

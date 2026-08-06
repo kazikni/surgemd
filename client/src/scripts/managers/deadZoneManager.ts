@@ -2,7 +2,7 @@ import { type Game } from "../others/game.ts"
 import { zIndexes } from "common/scripts/others/constants.ts"
 import { DeadZoneUpdate } from "common/scripts/packets/general_update.ts"
 import { CircleHitbox2D, Color, ColorM, ease, model2d, Numeric, ParticlesEmitter2D, v2, Vec2 } from "common/engine/core.ts"
-import { ClientParticle2D, Graphics2D } from "common/engine/client.ts";
+import { ClientParticle2D, Graphics2D } from "common/engine/web.ts";
 export class DeadZoneManager{
     radius:number=-1
     position:Vec2=v2(0,0)

@@ -1,10 +1,9 @@
-import { sleep, StaticStream } from "../../core.ts";
 import { FrameData, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { Stream } from "../../core/net/stream.ts";
-import { Renderer, Texture } from "../rendering/renderer.ts"
-import { AudioEngine } from "./sounds.ts";
+import { StaticStream, Stream } from "../../core/net/stream.ts";
+import { type Renderer, type Texture } from "../rendering/renderer.ts"
+import { type AudioEngine } from "./sounds.ts";
 export interface SpritesheetJSON{
     meta:{
         image:string

@@ -33,6 +33,8 @@ export interface GameRules{
             distance:number
         }
         group_colors:number[]
+        no_quickswitch:boolean
+        reload_while_shoot:boolean
     }
     ambient:{
         day_night_cycle:number
@@ -99,6 +101,8 @@ export abstract class ModeManager{
                 },
             },
             keep_inventory:false,
+            no_quickswitch:false,
+            reload_while_shoot:true,
             help_up:{
                 time:7,
                 distance:2

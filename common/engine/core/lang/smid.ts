@@ -1,4 +1,4 @@
-import { AudioEngine } from "../../client.ts";
+import { AudioEngine } from "../../web/resources/sounds.ts";
 
 export interface SMIDNote {
     note:string

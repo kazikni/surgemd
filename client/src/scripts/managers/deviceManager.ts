@@ -1,4 +1,4 @@
-import { HideElement, ShowElement } from "common/engine/client.ts";
+import { HideElement, ShowElement } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
 import { PrivateUpdate, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { KDate } from "common/engine/core.ts";

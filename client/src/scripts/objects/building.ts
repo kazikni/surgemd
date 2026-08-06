@@ -1,4 +1,4 @@
-import { Container2DObject, Sprite2D, Sound, Tween } from "common/engine/client.ts"
+import { Container2DObject, Sprite2D, Sound, Tween } from "common/engine/web.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";

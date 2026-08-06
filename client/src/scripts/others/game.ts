@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/client.ts";
+import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -143,7 +143,7 @@ export class Game extends ClientGame<GameObject>{
             [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody],
         )
 
-        this.set_meter_size(85)
+        this.set_meter_size(100)
         this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
 
         this.local_server=new LocalGameServer(this)

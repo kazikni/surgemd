@@ -1,5 +1,5 @@
 import { GInventoryBase, GunItemBase, MDItem, MeleeItemBase } from "common/scripts/others/inventory.ts";
-import { Frame, ResourcesManager, Sound } from "common/engine/client.ts";
+import { Frame, ResourcesManager, Sound } from "common/engine/web.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 export abstract class LItem extends MDItem{
     declare inventory:GInventory

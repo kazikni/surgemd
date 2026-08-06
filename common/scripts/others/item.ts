@@ -93,7 +93,7 @@ export const WeaponsRig={
 }
 export const tracers={
     tiny:{
-        width:5,
+        width:3,
         height:0.7,
         proj:{
             img:0,
@@ -102,7 +102,7 @@ export const tracers={
         }
     },
     small:{
-        width:7,
+        width:5,
         height:0.8,
         proj:{
             img:0,
@@ -111,7 +111,7 @@ export const tracers={
         }
     },
     medium:{
-        width:11,
+        width:7,
         height:1,
         proj:{
             img:0,
@@ -120,7 +120,7 @@ export const tracers={
         }
     },
     large:{
-        width:14,
+        width:9,
         height:1.3,
         proj:{
             img:0,
@@ -129,7 +129,7 @@ export const tracers={
         }
     },
     xl:{
-        width:17,
+        width:11,
         height:1.6,
         proj:{
             img:0,

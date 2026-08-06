@@ -1,5 +1,5 @@
 import {BookDef, BookPage} from "common/scripts/config/book.ts"
-import { formatToHtml } from "common/engine/client.ts";
+import { formatToHtml } from "common/engine/web.ts";
 import "./main.scss"
 const params = new URLSearchParams(location.search);
 const bookName = params.get("book")

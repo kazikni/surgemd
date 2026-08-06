@@ -4,7 +4,6 @@ import { ColorM } from "../../core/math/color.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { Numeric } from "../../core/math/utils.ts"
 import { v2, Vec2, Vec2M } from "../../core/math/vec2.ts"
-import { random } from "../mod.ts";
 import { Frame, ResourcesManager } from "../resources/resources.ts"
 import { CamA, Container2DObject } from "./base.ts"
 export class Sprite2D extends Container2DObject{
@@ -42,12 +41,14 @@ export class Sprite2D extends Container2DObject{
     current_delay:number=0
     current_frame:number=0
 
+    meter_size:number=1
+
     old_ms=1
 
     override update_real(): void {
         super.update_real()
         this._real_size=this.size??this.frame?.frame_size??v2.zero()
-        ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,100,this._real_position,this._rect,this.model)
+        ImageModel2D(this._real_scale,this._real_rotation,this.hotspot,this._real_size,this.meter_size,this._real_position,this._rect,this.model)
     }
 
     model:Float32Array
@@ -83,6 +84,10 @@ export class Sprite2D extends Container2DObject{
         return this._rect
     }
     override draw(cam:CamA): void {
+        if(cam.meter_size&&cam.meter_size!==this.meter_size){
+            this.meter_size=cam.meter_size
+            this.dirty_reals=true
+        }
         this.draw_super()
         cam.ctx.draw_frame2d(this.frame,this.model,this._real_tint)
     }

@@ -10,18 +10,10 @@ import { Rect } from "../../core/math/geometry.ts";
 
 export interface CamA{
     matrix:Matrix
-
-    position:Vec2
-    size:Vec2
-    layer:number
-
-    meter_size:number
-    center_pos:boolean
-
     ctx:Context2D
     renderer:Renderer
-
     rect:Rect
+    meter_size?:number
 
     visible_function?:(obj:Container2DObject)=>boolean
     sort_function:(a:Container2DObject,b:Container2DObject)=>number

@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { sandbox_version, socials } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";

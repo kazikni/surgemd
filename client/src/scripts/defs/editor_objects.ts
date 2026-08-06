@@ -1,10 +1,9 @@
 import { cloneDeep, ColorM, FrameDef, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { type EditorManager } from "../managers/editorManager.ts";
-import { Sprite2D } from "common/engine/client.ts";
+import { Sprite2D } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { FrameSettings, SettingDef, Vec2Input } from "./settings.ts";
 import { Obstacle } from "../objects/obstacle.ts";
-import { st } from "../../../dist/scripts/client-ByeVVyUe.js";
 
 export abstract class EditorObject{
     type:number=0

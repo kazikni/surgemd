@@ -1,4 +1,4 @@
-import { Router } from "common/engine/server.ts";
+import { Router } from "common/engine/deno.ts";
 import { random } from "common/engine/core.ts";
 import { type ApiServer } from "../server.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";

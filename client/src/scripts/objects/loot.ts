@@ -1,5 +1,5 @@
 
-import { type Camera2D, CenterHotspot, Container2D, Sound, Sprite2D } from "common/engine/client.ts";
+import { type Camera2D, CenterHotspot, Container2D, Sound, Sprite2D } from "common/engine/web.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"

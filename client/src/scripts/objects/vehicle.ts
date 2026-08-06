@@ -1,5 +1,5 @@
 import { VehicleDef, WheelDef } from "common/scripts/definitions/objects/vehicles.ts"
-import { Container2D, Sprite2D } from "common/engine/client.ts"
+import { Container2D, Sprite2D } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";

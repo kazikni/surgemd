@@ -6,7 +6,9 @@ import {  Context2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { circle, Rect } from "../../core/math/geometry.ts";
-
+export function cam_sort_callback(a:Container2DObject,b:Container2DObject):number{
+    return (a._layer-b._layer)||(a._zIndex-b._zIndex)||(a.id_on_parent-b.id_on_parent)
+}
 export class Camera2D{
     renderer:Renderer
     container:Container2D=new Container2D()
@@ -110,7 +112,6 @@ export class Camera2D{
         if(this.center_pos){
             const halfViewSize = v2(this.width / 2, this.height / 2);
             let cameraPos = v2.sub(this.position, halfViewSize);
-
             if(this._shake){
                 cameraPos=circle.random_point_inside(cameraPos,this._shake.intensity)
                 if(this._shake.duration!==-1){
@@ -120,12 +121,11 @@ export class Camera2D{
             }
             this.visual_position=cameraPos
             this.projectionMatrix=this.SubMatrix
-
-            this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(cameraPos)))
+            this.projectionMatrix=matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(cameraPos)))
         }else{
             this.visual_position=this.position
             this.projectionMatrix=this.SubMatrix
-            this.projectionMatrix = matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
+            this.projectionMatrix=matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
         this.container.update(dt,resources)
     }
@@ -134,25 +134,14 @@ export class Camera2D{
         this.update(dt,resources)
 
         if(!this.sort_callback){
-            this.sort_callback=(a,b)=>
-                (a._layer-b._layer)||
-                (a._zIndex-b._zIndex)||
-                (a.id_on_parent-b.id_on_parent)
+            this.sort_callback=cam_sort_callback
         }
-        const cam={
+        const cam:CamA={
             matrix:this.projectionMatrix,
-
-            position:this.visual_position,
-            size:v2(this.width,this.height),
-
-            meter_size:this.meter_size,
-            center_pos:this.center_pos,
-            layer:this.layer,
-
             ctx:this.ctx,
             renderer:this.renderer,
-
             rect:this.get_rect(),
+            meter_size:this.meter_size,
 
             sort_function:this.sort_callback,
             visible_function:this.visible_callback

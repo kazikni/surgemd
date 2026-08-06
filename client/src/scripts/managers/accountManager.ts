@@ -1,4 +1,4 @@
-import { ShowTab } from "common/engine/client.ts";
+import { ShowTab } from "common/engine/web.ts";
 import { API_BASE } from "../others/config.ts";
 import { type MenuManager } from "./menuManager.ts";
 import { CalculatePlayerLevel, CalculatePlayerLevelProgress} from "common/scripts/others/functions.ts";

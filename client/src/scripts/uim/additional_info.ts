@@ -1,4 +1,4 @@
-import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
+import { HideElement, ShowElement, UIModule } from "common/engine/web.ts";
 import { Game } from "../others/game.ts";
 import { DeadZoneState, DeadZoneUpdate, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { format_time } from "common/engine/core.ts";

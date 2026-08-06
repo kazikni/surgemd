@@ -1,4 +1,4 @@
-import { Frame, HideElement, ShowElement, UIModule } from "common/engine/client.ts";
+import { Frame, HideElement, ShowElement, UIModule } from "common/engine/web.ts";
 import { Game } from "../others/game.ts";
 import { InventoryItemData, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";

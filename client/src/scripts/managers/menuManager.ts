@@ -2,7 +2,7 @@ import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, GameSave, HideElement, ImageBuffer, InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, typewriter } from "common/engine/client.ts";
+import { AudioEngine, Camera2D, GameSave, HideElement, ImageBuffer, InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, typewriter } from "common/engine/web.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";

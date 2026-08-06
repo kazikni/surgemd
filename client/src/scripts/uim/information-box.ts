@@ -1,4 +1,4 @@
-import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
+import { HideElement, ShowElement, UIModule } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
 
 export class InformationBoxModule extends UIModule<Game> {

@@ -2,7 +2,7 @@ import { CircleHitbox2D, ColorM, Stream, v2, } from "common/engine/core.ts";
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { DecalDef } from "common/scripts/definitions/objects/decals.ts";
-import { AnimatedSprite2D, Sprite2D } from "common/engine/client.ts";
+import { AnimatedSprite2D, Sprite2D } from "common/engine/web.ts";
 export class Decal extends GameObject{
     string_type:string="decal"
     number_type: number=GameObjectType.Decal

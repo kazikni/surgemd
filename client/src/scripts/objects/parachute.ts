@@ -1,4 +1,4 @@
-import { CenterHotspot, Sprite2D, ABParticle2D } from "common/engine/client.ts"
+import { CenterHotspot, Sprite2D, ABParticle2D } from "common/engine/web.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";

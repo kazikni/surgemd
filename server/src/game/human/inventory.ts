@@ -88,7 +88,7 @@ export class GunItem extends GunItemBase implements LItem{
     }
     reload(user:Human){
         if(!this.def.reload||user.downed)return
-        if(this.ammo>=this.get_capacity()||(!this.infinity_ammo()&&!user.inventory.aitems[this.def.ammo_type])||this.use_delay>0){
+        if(this.ammo>=this.get_capacity()||(!this.infinity_ammo()&&!user.inventory.aitems[this.def.ammo_type])||(!user.game.modeManager.rules.humans.reload_while_shoot&&this.use_delay>0)){
             this.reloading=false
             return
         }
@@ -260,7 +260,7 @@ export class GunItem extends GunItemBase implements LItem{
     update(user:Human,dt:number){
         if(this.use_delay>0)this.use_delay-=dt
         if(user.inventory.hand_item===this&&!user.actions.current_action){
-            if((this.ammo<=0||this.reloading)&&this.def.reload&&this.use_delay<=0){
+            if((this.ammo<=0||this.reloading)&&this.def.reload){
                 this.reloading=true
                 this.reload(user)
             }
@@ -558,6 +558,7 @@ export class GInventory extends GInventoryBase<LItem>{
         this.net_sync.items=true
     }
     override set_weapon_index(idx:number,force:boolean=false){
+        if(this.owner.game.modeManager.rules.humans.no_quickswitch&&(this.hand_item instanceof GunItem&&this.hand_item.use_delay>0))return
         if(this.hand_item!==this.weapons[idx]||force){
             this.owner.recoil=undefined
             this.owner.actions.cancel()

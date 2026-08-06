@@ -1,6 +1,6 @@
 import { ApiServerConfig, ApiSettings, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
-import { default_handlers, Server } from "common/engine/server.ts";
+import { default_handlers, Server } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
 export class ApiServer {
     server: Server

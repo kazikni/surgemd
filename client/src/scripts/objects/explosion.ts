@@ -1,6 +1,6 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { ABParticle2D, CenterHotspot, Sprite2D } from "common/engine/client.ts";
+import { ABParticle2D, CenterHotspot, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { CircleHitbox2D, ColorM, Numeric, random, Stream, v2, v2m } from "common/engine/core.ts";

@@ -1,4 +1,4 @@
-import { CenterHotspot, Sprite2D, type Tween } from "common/engine/client.ts"
+import { CenterHotspot, Sprite2D, type Tween } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";

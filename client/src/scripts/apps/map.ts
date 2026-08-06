@@ -1,6 +1,6 @@
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
 import { GameApp } from "../managers/deviceManager.ts";
-import { ColorM, v2, Vec2 } from "common/engine/client.ts";
+import { ColorM, v2, Vec2 } from "common/engine/web.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
 type MapPing={
     id:number

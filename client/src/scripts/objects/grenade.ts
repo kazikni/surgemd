@@ -1,5 +1,5 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { ABParticle2D, CenterHotspot, Sprite2D } from "common/engine/client.ts";
+import { ABParticle2D, CenterHotspot, Sprite2D } from "common/engine/web.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";

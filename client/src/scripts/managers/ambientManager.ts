@@ -1,4 +1,4 @@
-import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, Sound, SoundController, Tween } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, Sound, SoundController, Tween } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";

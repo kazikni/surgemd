@@ -1,4 +1,4 @@
-import { HideElement, ShowElement, UIModule } from "common/engine/client.ts";
+import { HideElement, ShowElement, UIModule } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
 import { type SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";

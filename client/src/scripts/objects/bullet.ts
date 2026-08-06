@@ -1,4 +1,4 @@
-import { ABParticle2D, Camera2D, CenterHotspot, Sprite2D } from "common/engine/client.ts";
+import { ABParticle2D, Camera2D, CenterHotspot, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";

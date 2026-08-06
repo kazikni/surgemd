@@ -7,7 +7,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/client.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";

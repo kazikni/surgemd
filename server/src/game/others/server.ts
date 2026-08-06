@@ -1,4 +1,4 @@
-import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer, DenoFileManager} from "common/engine/server.ts"
+import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer, DenoFileManager} from "common/engine/deno.ts"
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
 import { Game, GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";

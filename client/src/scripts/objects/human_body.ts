@@ -1,4 +1,4 @@
-import { Container2D, Sprite2D } from "common/engine/client.ts";
+import { Container2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { ColorM, NullHitbox2D, Stream, v2 } from "common/engine/core.ts";

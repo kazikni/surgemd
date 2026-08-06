@@ -1,3 +1,3 @@
 export * from "./core.ts"
-export * from "./client.ts"
-export * from "./server.ts"
+export * from "./web.ts"
+export * from "./deno.ts"

@@ -1,4 +1,4 @@
-import { Sound, Sprite2D } from "common/engine/client.ts";
+import { Sound, Sprite2D } from "common/engine/web.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { DamageSplash } from "common/scripts/packets/update_packet.ts";
 import { GameObject } from "../others/gameObject.ts";

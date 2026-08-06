@@ -1,5 +1,5 @@
 import { FinalScreenDef, FinalScreenLayer, FinalScreenLayerType } from "common/scripts/config/final_screen.ts";
-import { HideElement, ShowElement } from "common/engine/client.ts";
+import { HideElement, ShowElement } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";

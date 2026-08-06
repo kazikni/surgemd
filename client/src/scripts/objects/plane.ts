@@ -1,6 +1,6 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { AudioInstance, Container2D, Sprite2D } from "common/engine/client.ts";
+import { AudioInstance, Container2D, Sprite2D } from "common/engine/web.ts";
 import { Stream, v2 } from "common/engine/core.ts";
 
 export interface PlanePhysicalData extends MovingBodyPhysicalData {}

@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioInstance, CenterHotspot, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/client.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioInstance, CenterHotspot, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/web.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"

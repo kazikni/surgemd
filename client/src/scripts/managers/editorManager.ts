@@ -1,4 +1,4 @@
-import { HideElement, Key, ShowElement } from "common/engine/client.ts";
+import { HideElement, Key, ShowElement } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
 import { Layers } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2 } from "common/engine/core.ts";

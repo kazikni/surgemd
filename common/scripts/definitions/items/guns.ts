@@ -300,7 +300,8 @@ export const guns_factory={
             barrel_length:0.8,
 
             fire_delay:1,
-            switch_delay:0.6,
+            switch_delay:0.25,
+            unload_delay:1.1,
 
             gas_particles:GasParticles.pistols,
             muzzle_flash:MuzzleFlash.normal,
@@ -330,7 +331,8 @@ export const guns_factory={
             idle_spread:0.15,
 
             fire_delay:0.1,
-            switch_delay:0.5,
+            switch_delay:0.25,
+            unload_delay:1.1,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -361,7 +363,8 @@ export const guns_factory={
             idle_spread:0.75,
 
             fire_delay:0.1,
-            switch_delay:0.5,
+            switch_delay:0.25,
+            unload_delay:1.1,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -388,13 +391,14 @@ export const guns_factory={
             idString:id,
             class:GunClasses.DMR,
             rank:ItemRank.A,
-            
-            barrel_length:1,
+
+            barrel_length:1.06,
             idle_spread:0.5,
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.15,
+            switch_delay:0.2,
+            unload_delay:1,
 
             gas_particles:GasParticles.dmr,
             case_particle:{
@@ -428,9 +432,9 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_on_release:true,
-            fire_delay:0.1,
-            switch_delay:0.25,
-            unload_delay:1.2,
+            fire_delay:0.2,
+            switch_delay:0.15,
+            unload_delay:1.1,
 
             gas_particles:GasParticles.sniper,
             case_particle:{
@@ -460,13 +464,13 @@ export const guns_factory={
             class:GunClasses.Shotgun,
             rank:ItemRank.C,
 
-            barrel_length:0.9,
+            barrel_length:1.06,
             idle_spread:0.75,
 
             fire_mode:FireMode.Single,
-            fire_delay:0.1,
-            switch_delay:0.25,
-            unload_delay:1.2,
+            fire_delay:0.2,
+            switch_delay:0.15,
+            unload_delay:1.1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
             },
@@ -1177,7 +1181,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M870",
             fire_delay:1,
             spread:4,
-            jitter_radius:0.4,
+            jitter_radius:0.35,
 
             ammo_spawn:{
                 amount:10

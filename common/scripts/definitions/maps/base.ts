@@ -147,6 +147,9 @@ export interface MapDef{
             items?:MapObjectItem[]
         }
     }
+    assets?:{
+        textures?:string[]
+    }
     players_spawn?:SpawnMode
     definitions?:GameADefinitions
     seed?:number

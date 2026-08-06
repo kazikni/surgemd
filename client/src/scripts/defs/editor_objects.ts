@@ -4,6 +4,7 @@ import { Sprite2D } from "common/engine/client.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { FrameSettings, SettingDef, Vec2Input } from "./settings.ts";
 import { Obstacle } from "../objects/obstacle.ts";
+import { st } from "../../../dist/scripts/client-ByeVVyUe.js";
 
 export abstract class EditorObject{
     type:number=0
@@ -36,6 +37,7 @@ export abstract class EditorObject{
 }
 export class RectHitboxEditorObject extends EditorObject{
     override type=1
+    group:string=""
     min:Vec2=v2.zero()
     max:Vec2=v2.one()
     override get_property(name: string) {
@@ -55,6 +57,7 @@ export class RectHitboxEditorObject extends EditorObject{
     override name():string{return "Rect Hitbox"}
     override get_propertys(): SettingDef[] {
         return [
+            {type:"input",name:"Group",var:"group"},
             {...Vec2Input,name:"Min",var:"min"},
             {...Vec2Input,name:"Max",var:"max"},
         ]
@@ -79,15 +82,17 @@ export class RectHitboxEditorObject extends EditorObject{
         return ret
     }
     override encode(stream:Stream){
-        stream.write_pos2(this.min).write_pos2(this.max)
+        stream.write_string(this.group,1).write_pos2(this.min).write_pos2(this.max)
     }
     override decode(stream:Stream){
+        this.group=stream.read_string(1)
         this.min=stream.read_pos2()
         this.max=stream.read_pos2()
     }
 }
 export class CircleHitboxEditorObject extends EditorObject{
     override type=2
+    group:string=""
     center:Vec2=v2.zero()
     radius:number=1
     override get_property(name: string) {
@@ -106,6 +111,7 @@ export class CircleHitboxEditorObject extends EditorObject{
     override name():string{return "Circle Hitbox"}
     override get_propertys(): SettingDef[] {
         return [
+            {type:"input",name:"Group",var:"group"},
             {...Vec2Input,name:"Center",var:"center"},
             {type:"input",name:"Radius",var:"radius"},
         ]
@@ -130,9 +136,10 @@ export class CircleHitboxEditorObject extends EditorObject{
         return ret
     }
     override encode(stream:Stream){
-        stream.write_pos2(this.center).write_rad(this.radius);
+        stream.write_string(this.group,1).write_pos2(this.center).write_rad(this.radius)
     }
     override decode(stream:Stream){
+        this.group=stream.read_string(1)
         this.center=stream.read_pos2()
         this.radius=stream.read_rad()
     }
@@ -287,6 +294,7 @@ export class ObstacleEditorObject extends EditorObject{
     obstacle?:Obstacle
 
     def:string=""
+    id?:number
     position=v2.zero()
     rotation?:number
     layer?:number
@@ -341,6 +349,7 @@ export class ObstacleEditorObject extends EditorObject{
     override get_property(name: string) {
         switch(name){
             case "def":
+            case "id":
             case "position":
             case "rotation":
             case "scale":
@@ -355,6 +364,7 @@ export class ObstacleEditorObject extends EditorObject{
     override get_propertys(): SettingDef[] {
         return [
             {type:"input",name:"Definition",var:"def"},
+            {type:"input",name:"ID",can_disable:true,var:"id"},
             {...Vec2Input,name:"Position",var:"position"},
             {type:"input",name:"Rotation",can_disable:true,var:"rotation"},
             {type:"input",can_disable:true,name:"Scale",var:"scale"},
@@ -373,6 +383,7 @@ export class ObstacleEditorObject extends EditorObject{
             case "allow_biome_skin":
                 this[name]=value;
                 break;
+            case "id":
             case "variation":
             case "layer":
             case "rotation":
@@ -407,6 +418,7 @@ export class ObstacleEditorObject extends EditorObject{
         this.position = stream.read_pos2()
 
         const[
+            id,
             rotation,
             layer,
             variation,
@@ -416,12 +428,15 @@ export class ObstacleEditorObject extends EditorObject{
             allowBiomeSkin
         ]=stream.read_boolean_group2()
 
+        this.id=undefined
         this.rotation=undefined
         this.layer=undefined
         this.variation=undefined
         this.skin=undefined
         this.scale=undefined
         this.allow_biome_skin=undefined
+
+        if(id)this.id=stream.read_id()
         if(rotation)this.rotation=stream.read_float32()
         if(layer)this.layer=stream.read_int16()
         if(variation)this.variation=stream.read_uint8()
@@ -436,9 +451,10 @@ export class ObstacleEditorObject extends EditorObject{
         this.rebuild_obstacle()
     }
     override encode(stream: Stream) {
-        stream.write_string(this.def)
-        stream.write_pos2(this.position)
-        stream.write_boolean_group2(
+        stream.write_string(this.def,1)
+        .write_pos2(this.position)
+        .write_boolean_group2(
+            this.id!==undefined,
             this.rotation!==undefined,
             this.layer!==undefined,
             this.variation!==undefined,
@@ -447,7 +463,7 @@ export class ObstacleEditorObject extends EditorObject{
             this.scale!==undefined,
             this.allow_biome_skin!==undefined
         )
-
+        if(this.id!==undefined)stream.write_id(this.id)
         if(this.rotation!==undefined)stream.write_float32(this.rotation)
         if(this.layer!==undefined)stream.write_int16(this.layer)
         if(this.variation!==undefined)stream.write_uint8(this.variation)

@@ -4,6 +4,7 @@ import { Layers } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2 } from "common/engine/core.ts";
 import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject } from "../defs/editor_objects.ts";
 import { build_setting_input, RectInput, SettingDef, Vec2Input } from "../defs/settings.ts";
+import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 export class EditorObjectsManager{
     objects:EditorObject[]=[]
     selected_object?:EditorObject
@@ -116,6 +117,25 @@ export class EditorObjectsManager{
         }
     }
 }
+export function building_to_string(b:BuildingDef):string{
+    let value=""
+    let spaces=1
+    const sep="   "
+    value+=`{\n`
+    if(b.idString)value+=`${sep.repeat(spaces)}idString: '${b.idString.toString()}',\n`
+    if(b.hitbox)value+=`${sep.repeat(spaces)}hitbox: ${b.hitbox.generate_code()},\n`
+    if(b.spawnHitbox)value+=`${sep.repeat(spaces)}spawnHitbox: ${b.spawnHitbox.generate_code()},\n`
+    if(b.no_collisions!==undefined)value+=`${sep.repeat(spaces)}no_collisions: ${b.no_collisions},\n`
+    if(b.no_bullet_collision!==undefined)value+=`${sep.repeat(spaces)}no_bullet_collision: ${b.no_bullet_collision},\n`
+    if(b.reflect_bullets!==undefined)value+=`${sep.repeat(spaces)}reflect_bullets: ${b.reflect_bullets},\n`
+    if(b.floor_image!==undefined)value+=`${sep.repeat(spaces)}floor_image: ${JSON.stringify(b.floor_image)}\n`
+    value+=`${sep.repeat(spaces)}generate: {\n`
+    spaces++
+    if(b.generate.obstacles!==undefined)value+=`${sep.repeat(spaces)}obstacles: ${JSON.stringify(b.generate.obstacles)}\n`
+    spaces--
+    value+=sep.repeat(spaces)+"}\n"+"}"
+    return value
+}
 export class EditorManager{
     game:Game
     ui!:HTMLDivElement
@@ -153,6 +173,7 @@ export class EditorManager{
         menu.className="editor-window"
         return menu
     }
+    
     create_closable_window(id:string){
         const window=this.create_window()
         window.id="editor-objects-window"
@@ -165,10 +186,15 @@ export class EditorManager{
         return window
     }
 
+    get_setting(name:string):any{
+        if(this.settings[name]===undefined)return this.settings_default[name]
+        return this.settings[name]
+    }
     create_settings(parent:HTMLElement,settings:(SettingDef|undefined)[]){
+        parent.innerHTML=""
         for(const def of settings){
             if(!def)continue
-            parent.appendChild(build_setting_input(def,this.game.language,def.var?(this.settings[def.var]??this.settings_default[def.var]):"",
+            parent.appendChild(build_setting_input(def,this.game.language,def.var?(this.settings[def.var]??this.settings_default[def.var]):undefined,
                 {
                     on_change:(val:any)=>{
                         if(def.var!==undefined)this.settings[def.var]=val
@@ -222,6 +248,11 @@ export class EditorManager{
         em.add_option("Hitbox",async()=>{
             await navigator.clipboard.writeText(this.objects.make_hitbox().generate_code())
             alert("Hitbox code copied.")
+        })
+        em.add_option("Building Objects",async()=>{
+            const building=this.make_building()
+            await navigator.clipboard.writeText(building_to_string(building))
+            alert("Building Objects code copied.")
         })
         fm.add_submenu("Export",em)
         fm.add_option("Reset", () => this.reset())
@@ -356,8 +387,41 @@ export class EditorManager{
         this.objects.decode(stream)
         this.settings=stream.read_any()
         this.reload_sources()
+        this.create_settings(this.windows["settings"],this.create_settings_defs())
     }
 
+    make_building():BuildingDef{
+        const ret:BuildingDef={
+            idString:this.get_setting("b.idString"),
+            generate:{},
+            hitbox:this.objects.make_hitbox(),
+            no_collisions:this.get_setting("b.no_collisions"),
+            no_bullet_collision:this.get_setting("b.no_bullet_collision"),
+            reflect_bullets:this.get_setting("b.reflect_bullets"),
+        }
+        for(const obj of this.objects.objects){
+            switch(obj.type){
+                case 3:
+                    if(!ret.floor_image)ret.floor_image=[]
+                    ret.floor_image.push((obj as FloorImageEditorObject).frame)
+                    break
+                case 4:
+                    if(!ret.generate.obstacles)ret.generate.obstacles=[]
+                    ret.generate.obstacles.push({
+                        def:(obj as ObstacleEditorObject).def,
+                        position:(obj as ObstacleEditorObject).position,
+                        rotation:(obj as ObstacleEditorObject).rotation,
+                        scale:(obj as ObstacleEditorObject).scale,
+                        layer:(obj as ObstacleEditorObject).layer,
+                        variation:(obj as ObstacleEditorObject).variation,
+                        skin:(obj as ObstacleEditorObject).skin,
+                        allow_biome_skin:(obj as ObstacleEditorObject).allow_biome_skin,
+                    })
+                    break
+            }
+        }
+        return ret
+    }
     async save_file(name:string="map") {
         const stream = new DynamicStream()
         this.encode(stream)
@@ -381,7 +445,7 @@ export class EditorManager{
             const stream = new StaticStream(buffer)
             this.decode(stream)
         }
-        input.click();
+        input.click()
     }
     reset() {
         this.objects.clear()

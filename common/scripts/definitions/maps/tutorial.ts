@@ -9,35 +9,18 @@ export const TutorialMap:MapDef={
     biome:FallBiome,
     size:v2(100,100),
     bounds_size:0,
+    assets:{
+        textures:["scripts/campaign/levels/prologue/sprites"]
+    },
     definitions:{
         objects:{
             buildings:[
                 {
-                    idString:"part_1",
-                    hitbox:new HitboxGroup2D(
-                        ...RectHitbox2D.wall_enabled_list(v2(-2.65,-2.65),v2(2.65,2.65),{
-                            bottom:true,
-                            top:true,
-                            left:true,
-                            right:false
-                        },0.22),
-                        new RectHitbox2D(v2(2.45,-2.65),v2(2.65,-0.85)),
-                        new RectHitbox2D(v2(2.45,0.85),v2(2.65,2.65))
-                    ),
-                    reflect_bullets:true,
-                    floor_image:[
-                        {image:"small_bunker_floor_1",position:v2(0,0),rotation:Math.PI}
-                    ],
+                    idString: 'part_1',
+                    hitbox: new HitboxGroup2D(new RectHitbox2D(v2(-3.7699999809265137, -4.75), v2(-3.5399999618530273, 4.75)), new RectHitbox2D(v2(3.5399999618530273, -4.75), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, 4.539999961853027), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, -4.75), v2(-0.6100000143051147, -4.539999961853027)), new RectHitbox2D(v2(0.8199999928474426, -4.75), v2(3.5399999618530273, -4.539999961853027))),
+                    floor_image: [{"image":"military_rest_room_floor"}],
                     generate:{
-                        obstacles:[
-                            {def:"green_button",position:v2(2.65,-1),rotation:0,id:1,press_data:{allow_switch:false},puzzle_piece:{}},
-                            {def:"metal_door",position:v2(2.55,0.75),rotation:3,variation:7,id:2,door_data:{
-                                locked:true,
-                            }},
-
-                            {def:"small_bed",position:v2(-1.5,1.1),rotation:0},
-                            {def:"large_drawer",position:v2(-1,-1.97),rotation:1},
-                        ],
+                        obstacles:[{"def":"metal_door","id":2,"position":{"x":-0.6299999952316284,"y":-4.650000095367432},"rotation":0,"variation":7},{"def":"green_button","id":1,"position":{"x":-0.8,"y":-4.7},"rotation":3},{"def":"small_bed","position":{"x":2.5,"y":3},"rotation":0,"variation":2},{"def":"small_bed","position":{"x":-2.5,"y":3},"rotation":0,"variation":2},{"def":"small_bed","position":{"x":-2.5,"y":-3},"rotation":2,"variation":2},{"def":"small_bed","position":{"x":2.5,"y":-3},"rotation":2,"variation":2},{"def":"large_drawer","position":{"x":3.0799999237060547,"y":0},"rotation":2},{"def":"large_drawer","position":{"x":-3.0799999237060547,"y":0},"rotation":0}],
                         puzzles:[
                             {
                                 complete_conditions:[
@@ -57,8 +40,8 @@ export const TutorialMap:MapDef={
                         sub_building:[
                             {def:"part_1",position:v2(10,50),rotation:0},
 
-                            {def:"part_1",position:v2(10,43),rotation:0},
-                            {def:"part_1",position:v2(10,57),rotation:0},
+                            //{def:"part_1",position:v2(10,43),rotation:0},
+                            //{def:"part_1",position:v2(10,57),rotation:0},
                         ],
                         obstacles:[
                             /*{def:"wood_crate",position:v2(18,50),id:1,puzzle_piece:{id:"puzzle_2"}},

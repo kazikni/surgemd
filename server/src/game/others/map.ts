@@ -354,6 +354,7 @@ export class GameMap{
             if(i.velocity)obj.velocity=v2.clone(i.velocity)
         }
 
+        this.game.start_settings.textures.push(...definition.assets?.textures??[])
         this.game.start_settings.textures.push(...definition.biome.textures)
         this.game.start_settings.musics.push(...definition.biome.musics)
 

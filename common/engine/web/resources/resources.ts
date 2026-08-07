@@ -449,6 +449,7 @@ export class ResourcesManager {
         delete this.frames[id]
     }
     unload_sound(id:string){
+        if(!this.sounds[id])return
         if(this.sounds[id].slice&&this.imported[this.sounds[id].slice.parent]){
             const idx=this.imported[this.sounds[id].slice.parent].indexOf(id)
             if(idx!==-1)this.imported[this.sounds[id].slice.parent].splice(idx,1)
@@ -456,6 +457,7 @@ export class ResourcesManager {
         delete this.sounds[id]
     }
     unload_blob(blob:string){
+        if(!this.blobs[blob])return
         URL.revokeObjectURL(this.blobs[blob].url)
         delete this.blobs[blob]
     }

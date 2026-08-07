@@ -1328,20 +1328,20 @@ export class Human extends MovingBody{
 
         this.destroy()
     }
-    revive(){
-        if(!this.dead)return
+    clear(inventory:boolean=false,status:boolean=false){
+        if(inventory){
+            this.inventory.clear()
+        }
+        if(status){
+            this.health.value=this.health.max
+            this.clear_boost()
+        }
         this.dead=false
         this.downed=false
         this.killed_by=undefined
         this.downed_by=undefined
         this.last_damage_by=undefined
-        this.health.value=this.health.max
-        this.clear_boost()
-        this.set_dirty_full()
-        if(this.seat)this.seat.clear_human()
-        this.effects.clear()
-        if(!this.registred)this.manager.registry_object(this)
-        this.game.humans._add_human(this)
+
         this.equipment_data.scope=this.equipment_data.default_scope
         this.inventory.net_sync.aitems=true
         this.inventory.net_sync.hand=true
@@ -1349,6 +1349,15 @@ export class Human extends MovingBody{
         this.inventory.net_sync.items=true
         this.inventory.net_sync.melee_world=true
         this.inventory.net_sync.weapons=true
+        this.set_dirty_full()
+        if(this.seat)this.seat.clear_human()
+        this.effects.clear()
+    }
+    revive(inventory?:boolean,status?:boolean){
+        if(!this.dead)return
+        if(!this.registred)this.manager.registry_object(this)
+        this.game.humans._add_human(this)
+        this.clear(inventory,status)
     }
     on_kill_enemy(victim:Human,params:DamageParams){
         const rules=this.game.modeManager.rules

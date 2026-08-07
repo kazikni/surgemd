@@ -152,6 +152,7 @@ export class PlayersManager{
     global_buffer_2?:Stream
 
     first_tick:boolean=false
+    connect_add_player:boolean=true
 
     start_packet_stream:Stream=new DynamicStream()
 
@@ -306,12 +307,12 @@ export class PlayersManager{
             this.connected_players[client.ID].join_packet=packet
             this.game.modeManager.on_player_connect(this.connected_players[client.ID])
             this.game.signals.emit("player_connect",{client:client})
-            const p = this.connected_players[client.ID].add_player()
-            if(p!==undefined){
+            const p=this.connect_add_player?this.connected_players[client.ID].add_player():undefined
+            if(p!==undefined||!this.connect_add_player){
                 const jp=new JoinnedPacket()
                 jp.ntps=this.game.ntps
                 for(const lp of this.living_players){
-                    if(lp.id===p.id)continue
+                    if(p&&lp.id===p.id)continue
                     jp.players.push({
                         id:lp.id,
                         name:lp.name,
@@ -328,7 +329,7 @@ export class PlayersManager{
                 }
                 this.game.modeManager.manage_joinned_packet(jp)
                 client.emit_packet(jp)
-                console.log(`${p.name} Join`)
+                if(p)console.log(`${p.name} Join`)
             }
         })
         client.on("input",(p:InputPacket)=>{

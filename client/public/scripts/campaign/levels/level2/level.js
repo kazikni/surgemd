@@ -1,9 +1,5 @@
 return (class extends LevelPlayerScript{
     on_start(){
-        for(const a of this.allies??[]){
-            const bot = this.game.players.add_enemy(a,new JoinPacket())
-            if(!bot) continue
-        }
         this.game.modeManager.add_enemies([
             {
                 "def": {
@@ -221,8 +217,13 @@ return (class extends LevelPlayerScript{
     }
     on_spawn_player(player){
         player.set_preset(this.preset)
+        for(const a of this.allies??[]){
+            const bot = this.game.players.add_enemy(a,new JoinPacket())
+            if(!bot) continue
+        }
     }
     async on_before(){
+        await this.show_level_intro()
         const characters=[
             await this.level.load_character({"path": "../../characters/mark.jsonc"}),
             await this.level.load_character({"path": "../../characters/maria.jsonc"})

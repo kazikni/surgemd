@@ -83,7 +83,7 @@ self.onmessage = async(ev) => {
             if(!level)break
             self.postMessage({
                 type:"start_level",
-                path:Path.join(level.path,(level.level.next_level as Record<string,string>)[msg.name]),
+                path:Path.join(level.path,(level.def.next_level as Record<string,string>)[msg.name]),
                 start_with_intro:msg.start_with_intro
             })
             break

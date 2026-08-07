@@ -1178,6 +1178,42 @@
             rotate: 90deg;
         }
     }
+    #history-content{
+        position: absolute;
+    }
+    .intro-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+        font-family: "Russo-One", monospace;
+        .intro-location {
+            font-size: 18px;
+            opacity: 0.6;
+            letter-spacing: 2px;
+        }
+        .intro-name {
+            font-size: 120px;
+            font-weight: bold;
+
+            color: #47b984;
+
+            text-shadow:
+                0 0 10px #27b34a65,
+                0 0 25px #27b34a6b;
+        }
+        .intro-date {
+            font-size: 14px;
+            opacity: 0.5;
+        }
+        .intro-description {
+            margin-top: 10px;
+            font-size: 16px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+        }
+    }
 }
 @keyframes glitchText {
     0% { transform: translate(0px, 0px); }

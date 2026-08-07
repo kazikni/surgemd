@@ -2,7 +2,7 @@ import { createCanvas } from "https://deno.land/x/canvas/mod.ts";
 import { CommandDef, DynamicStream, GameConsole } from "common/engine/core.ts";
 import { KSPRImageFormat,load_kspr } from "common/engine/core/lang/kspr.ts";
 import { audios } from "common/engine/core/lang/audiosheet.ts";
-import { FFmpegDecoder, FFmpegEncoder } from "common/engine/server/audio.ts";
+import { FFmpegDecoder, FFmpegEncoder } from "common/engine/deno/audio.ts";
 import { ClientsManager, DenoFileManager, Server } from "common/engine/deno.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Game } from "./game/others/game.ts";

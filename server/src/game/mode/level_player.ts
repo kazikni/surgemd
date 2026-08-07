@@ -1,10 +1,11 @@
 import { type Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition } from "common/scripts/config/level_definition.ts";
-import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script } from "common/engine/core.ts";
+import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2 } from "common/engine/core.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { GameConfig } from "common/scripts/config/config.ts";
 import { type Player } from "../objects/player.ts";
-import { HistoryCommand } from "common/scripts/config/history.ts";
+import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+import { DamageReason } from "common/scripts/definitions/utils.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
@@ -48,6 +49,15 @@ export class LevelPlayerScript{
     }
     async show_cutscene_file(path:string):Promise<void>{
         await this.show_cutscene(parseJSONC(await this.level.fs.read_file(path)) as HistoryCommand[])
+    }
+    async show_level_intro():Promise<void>{
+        await this.show_cutscene([{
+            type:HistoryCommandType.ShowInitialScreen,
+            name:this.level.def.meta.name,
+            location:this.level.def.meta.location,
+            date:this.level.def.meta.date,
+            description:this.level.def.meta.description,
+        }])
     }
 }
 export class LevelPlayer {
@@ -102,6 +112,8 @@ export class LevelPlayer {
         Object.assign(this.game.start_settings.assets,this.def.assets?.assets??{})
         this.game.start_settings.languages_path=path+"/languages"
 
+        this.game.players.connect_add_player=false
+
         await this.script.initialize_mode(this.def.mode)
         await this.script.on_begin()
     
@@ -141,7 +153,10 @@ export class LevelPlayer {
             }else{
                 conn.add_player()
             }
-            if(conn.human)this.script.on_spawn_player(conn.human as Player)
+            if(conn.human){
+                conn.human.clear(true,true)
+                this.script.on_spawn_player(conn.human as Player)
+            }
         }
     }
     reset(){

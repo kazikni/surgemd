@@ -46,6 +46,7 @@ export class MenuManager{
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
         history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
+        history_content:document.body.querySelector("#history-content") as HTMLDivElement,
 
         main_social:document.body.querySelector("#main-social") as HTMLDivElement,
         content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
@@ -679,6 +680,58 @@ export class MenuManager{
                         cmd.opacity_anim
                     )
                     break
+                }
+                case HistoryCommandType.ShowInitialScreen:{
+                        this.content.history_content.innerHTML=`
+<div class="intro-content">
+    <div class="intro-name"></div>
+    <div class="intro-location"></div>
+    <div class="intro-date"></div>
+    <div class="intro-description"></div>
+</div>`
+                        const play_sound=()=>resources.audio.play(resources.get_sound(random.choose(["typewriter-1","typewriter-2"])),{
+                            volume:0.15,
+                            bus:"bus"
+                        })
+                        const text_speed=1
+                        // TYPEWRITER
+                        const rand_delay={
+                            min:40*text_speed,
+                            max:200*text_speed
+                        }
+                        await typewriter(this.content.history_content.querySelector(".intro-name") as HTMLDivElement, cmd.name, rand_delay,play_sound)
+                        await typewriter(this.content.history_content.querySelector(".intro-location") as HTMLDivElement, cmd.location, rand_delay,play_sound)
+                        const date:string|undefined=cmd.description
+                        const description:string|undefined=cmd.date
+                        if(date){
+                            await typewriter(this.content.history_content.querySelector(".intro-date") as HTMLDivElement, date, rand_delay,play_sound)
+                        }
+                        if(description){
+                            await typewriter(this.content.history_content.querySelector(".intro-description") as HTMLDivElement, description, rand_delay,play_sound)
+                        }
+                        await sleep(2)
+                        this.content.history_container.innerHTML=""
+                    /*const text_speed=config.text_speed??1
+                    const wait_time=(config.wait_time??2)*1000
+                    this.open_phase_intro()
+                    // TYPEWRITER
+                    const rand_delay={
+                        min:40*text_speed,
+                        max:200*text_speed
+                    }
+
+                    await typewriter(this.content.phase_intro_name, config.name, rand_delay,play_type_sound)
+                    await typewriter(this.content.phase_intro_location, config.location, rand_delay,play_type_sound)
+                    if (config.date) {
+                        await typewriter(this.content.phase_intro_date, config.date, rand_delay,play_type_sound)
+                    }
+                    if (config.description) {
+                        await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
+                    }
+                    setTimeout(()=>{
+                        HideElement(this.content.phase_intro_overlay)
+                    },wait_time+1000)
+                    await new Promise(r => setTimeout(r, wait_time))*/
                 }
             }
         }

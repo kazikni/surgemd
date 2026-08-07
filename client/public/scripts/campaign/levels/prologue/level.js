@@ -53,6 +53,13 @@ return (class extends LevelPlayerScript{
                 s.set_random_walk(0.5)
             })
         })
+
+        let npc=this.game.players.add_bot(new JoinPacket())
+        npc.position=v2(12,51)
+        npc=this.game.players.add_bot(new JoinPacket())
+        npc.position=v2(10,46)
+        npc=this.game.players.add_bot(new JoinPacket())
+        npc.position=v2(12,46)
     }
     async on_before(start_with_intro){
         if(start_with_intro){

@@ -7,6 +7,7 @@ export enum HistoryCommandType{
     SetAmbient,
     PlaySoundEffect,
     ShowGameOverMessage,
+    ShowInitialScreen
 }
 export type HistoryCommand={
     type:HistoryCommandType.Wait,
@@ -44,4 +45,10 @@ export type HistoryCommand={
     text:string[]
     time_per_message?:number
     opacity_anim?:number
+}|{
+    type:HistoryCommandType.ShowInitialScreen
+    name:string
+    location:string
+    date?:string
+    description?:string
 }

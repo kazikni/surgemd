@@ -204,7 +204,7 @@ export const LootTables={
     ],
     //Crates
     wood_crate:[
-        {weight:2,count:1,table:"normal_loot"},
+        {weight:1.5,count:1,table:"normal_loot"},
         {weight:1,count:2,table:"normal_loot"},
         {weight:0.25,count:3,table:"normal_loot"},
         {weight:0.05,count:4,table:"normal_loot"},

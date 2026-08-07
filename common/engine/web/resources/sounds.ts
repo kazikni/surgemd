@@ -155,6 +155,10 @@ export class AudioInstance {
 
         source.buffer = sound.buffer
         source.loop = this.loop
+        if (sound.slice) {
+            source.loopStart = sliceStart
+            source.loopEnd = sliceStart+sliceDuration
+        }
         source.connect(this.gain)
 
         const now=this.ctx.currentTime

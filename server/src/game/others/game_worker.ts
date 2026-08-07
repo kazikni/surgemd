@@ -1,7 +1,7 @@
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts"
 import { Game, GameData } from "./game.ts"
 import { PacketManager } from "common/scripts/packets/packet_manager.ts"
-import { ConnectionLimiter, SelfGameWorker } from "common/engine/server/worker.ts"
+import { ConnectionLimiter, SelfGameWorker } from "common/engine/deno/worker.ts"
 import { DenoFileManager, WorkerMessageBase } from "common/engine/deno.ts"
 import { FileManager, random } from "common/engine/core.ts"
 export type WorkerMessage=WorkerMessageBase<GameConfig,GameData,GameServerConfig>&({

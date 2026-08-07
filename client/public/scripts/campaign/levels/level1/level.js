@@ -105,15 +105,19 @@ return (class extends LevelPlayerScript{
                             },
                             {
                                 "item": "spas12",
-                                "weight": 1.5
+                                "weight": 1
+                            },
+                            {
+                                "item": "model94",
+                                "weight": 1
                             },
                             {
                                 "item": "kar98k",
-                                "weight": 1.5
+                                "weight": 1
                             },
                             {
                                 "item": "awp",
-                                "weight": 0.5
+                                "weight": 0.15
                             },
                             {
                                 "item": "awm",
@@ -199,7 +203,7 @@ return (class extends LevelPlayerScript{
                             },
                             {
                                 "item": "awp",
-                                "weight": 0.5
+                                "weight": 0.2
                             },
                             {
                                 "item": "pkp",
@@ -211,6 +215,7 @@ return (class extends LevelPlayerScript{
                             }
                         ],
                         "aitems": {
+                            "12g":20,
                             "556mm": 140,
                             "762mm": 140,
                             "45acp": 140,
@@ -271,5 +276,6 @@ return (class extends LevelPlayerScript{
         if(start_with_intro){
             await this.show_cutscene_file("cutscenes/begin.jsonc")
         }
+        await this.show_level_intro()
     }
 })

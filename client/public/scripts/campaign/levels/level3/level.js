@@ -64,6 +64,9 @@ return (class extends LevelPlayerScript{
         })
         this.game.set_rain(1)
     }
+    async on_before(){
+        await this.show_level_intro()
+    }
     on_start(){
         this.game.deadzone.jump_stages(4)
         this.game.modeManager.add_enemies([

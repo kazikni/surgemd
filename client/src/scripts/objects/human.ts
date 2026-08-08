@@ -35,6 +35,8 @@ export class Human extends MovingBody{
     zIndex=zIndexes.Players
     parachute:boolean=false
     controlling:boolean=false
+    controlling_1:boolean=false
+    controlling_2:boolean=false
     override physical_data: HumanPhysicalData={
         rotation:0,
         scale:1
@@ -1008,7 +1010,7 @@ export class Human extends MovingBody{
             }
         }
         if(this.downed){
-            if(this.animation.walk_cycle&&this.animation.walk_speed>0){
+            if(this.animation.walk_cycle&&this.animation.walk_speed>0&&this.controlling_2){
                 this.animation.walk_time+=dt*1.8
                 const time=ease.sineIn(this.animation.walk_time)
                 switch(this.animation.walk_cycle){
@@ -1679,7 +1681,7 @@ export class Human extends MovingBody{
     }
     override on_decode_net(stream:Stream,full:boolean): void {
         const [
-            physical_dirty_part,physical_dirty,
+            physical_dirty,
             equipment_dirty_part,equipment_dirty,
             loadout_dirty,
             animation_dirty,
@@ -1693,7 +1695,8 @@ export class Human extends MovingBody{
 
             has_emote,
             has_message,
-            controlling,
+            controlling_1,
+            controlling_2,
             seat,
 
             dead,downed,swimming,
@@ -1701,7 +1704,9 @@ export class Human extends MovingBody{
             show_name
 
         ]=stream.read_boolean_group3()
-        this.controlling=controlling
+        this.controlling=controlling_1&&controlling_2
+        this.controlling_1=controlling_1
+        this.controlling_2=controlling_2
         this.seat=seat
         this.shield=shield
         if(!dead&&this.dead){
@@ -1712,13 +1717,13 @@ export class Human extends MovingBody{
             this.container.visible=false
         }
         this.swimming=swimming
-        if(full||physical_dirty_part||physical_dirty){
-            this.decode_physical_data(stream,full)
-            if(full||physical_dirty){
-                const scale=stream.read_float32()
-                this.update_scale(scale)
-            }
+
+        this.decode_physical_data(stream,full)
+        if(full||physical_dirty){
+            const scale=stream.read_float32()
+            this.update_scale(scale)
         }
+
         if(full||equipment_dirty||equipment_dirty_part){
             const [
                 has_helmet_skin,has_helmet_health,

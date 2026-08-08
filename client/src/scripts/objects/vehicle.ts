@@ -107,7 +107,7 @@ export class Vehicle extends MovingBody {
                         image:wheel.def.marks.frame??"tire_mark",
                         position:worldPos,
                         rotation:this.container.rotation,
-                        alpha:Numeric.clamp((this.tire_stress-stress_resistance)*0.15,0.1,1),
+                        alpha:Numeric.clamp((this.tire_stress-stress_resistance)*0.2,30,255),
                         scale:wheel.def.scale,
                     },this.game.resources)
                     d.sprite.transform_frame(wheel.def.marks.frame_transform??{})

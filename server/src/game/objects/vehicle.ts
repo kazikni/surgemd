@@ -8,12 +8,14 @@ import {
     v2m,
     Vec2,
 } from "common/engine/core.ts"
-import { type Human } from "./human.ts"
+import { Human } from "./human.ts"
 import { GameObjectType } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 import { Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { StaticBody } from "./static_body.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
+import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { Obstacle } from "./obstacle.ts";
 
 export interface VehiclePhysicalData extends MovingBodyPhysicalData {
     acceleration: Vec2
@@ -55,17 +57,33 @@ export class VehicleSeat {
         }
     }
 
-    clear_human() {
-        if (!this.human || !this.vehicle.can_leave) return
+    clear_human(moving_physics:boolean=false) {
+        if(!this.human||!this.vehicle.can_leave) return
+        const door_position=v2.rotate_RadAngle(this.leave??v2(0,-1),this.vehicle.physical_data.rotation)
+        v2m.add(this.human.position,this.human.position,door_position)
+        if(moving_physics){
+            v2m.add(this.human.physical_data.secondary_velocity,this.human.physical_data.secondary_velocity,this.vehicle.physical_data.velocity)
+            this.human.physical_data.secondary_velocity_take_control=true
+            const vel=v2.len(this.vehicle.physical_data.velocity)
+            if(vel>6){
+                this.human.physical_data.secondary_velocity_swimming=true
+                this.human.swimming=true
+                const dir=v2.normalizeSafe(door_position)
+                v2m.scale(dir,dir,2)
+                v2m.add(this.human.physical_data.secondary_velocity,this.human.physical_data.secondary_velocity,dir)
+                this.human.physical_data.secondary_acceleration=0.1
+                this.human.physical_data.rotation=Math.atan2(dir.y,dir.x)
+                this.human.damage({amount:vel*0.75,critical:false,direction:v2.lookTo(this.position,this.human.position),penetration:1,position:this.human.position,reason:DamageReason.VehicleJump})
+            }
+        }
         this.human.seat = undefined
         this.human = undefined
     }
 
     set_human(p: Human) {
         if (this.human) return
-
         if (p.seat) p.seat.clear_human()
-
+        p.physical_data.secondary_velocity=v2.zero()
         this.human = p
         p.seat = this
     }
@@ -85,6 +103,7 @@ export class Vehicle extends MovingBody {
     back_walk = false
     is_moving = false
 
+    pillot_seat?:VehicleSeat
     seats: VehicleSeat[] = []
 
     can_leave = true
@@ -141,15 +160,14 @@ export class Vehicle extends MovingBody {
         this.physical_data.max_steer_speed =this.def.physics.max_steer_speed
 
         if (this.def.pillot_seat) {
-            this.seats.push(
-                new VehicleSeat(
-                    this,
-                    this.def.pillot_seat.position,
-                    true,
-                    this.def.pillot_seat.leave,
-                    this.def.pillot_seat.doors
-                )
+            this.pillot_seat=new VehicleSeat(
+                this,
+                this.def.pillot_seat.position,
+                true,
+                this.def.pillot_seat.leave,
+                this.def.pillot_seat.doors
             )
+            this.seats.push(this.pillot_seat)
         }
 
         for (const s of this.def.seats ?? []) {
@@ -277,42 +295,6 @@ export class Vehicle extends MovingBody {
             }
         }
     }
-
-    private solve_collision(other: StaticBody) {
-        if ((other as StaticBody).physical_data?.no_collision) return
-        const cols = this.hitbox.overlap_collisions(other.hitbox)
-        if (cols.length <= 0) return
-        for (const col of cols) {
-            v2m.sub(this.position,this.position,v2.scale(col.dir, col.pen))
-            const normal = v2.normalizeSafe(col.dir, v2(1, 0))
-            const velDot = v2.dot(this.physical_data.velocity,normal)
-            if (velDot < 0) {
-                const restitution=other.number_type===GameObjectType.Vehicle?0.25:0.12
-
-                const normalVel=v2.scale(normal, velDot)
-
-                const tangentVel=v2.sub(this.physical_data.velocity,normalVel)
-
-                this.physical_data.velocity = v2.add(tangentVel,v2.scale(normalVel,-restitution))
-
-                this.physical_data.velocity.x *= 0.88
-                this.physical_data.velocity.y *= 0.88
-
-                const tangent = v2(-normal.y, normal.x)
-
-                const tangentDot = v2.dot(
-                    this.physical_data.velocity,
-                    tangent
-                )
-
-                this.physical_data.angular_velocity +=
-                    tangentDot *
-                    0.003 /
-                    Math.max(1, this.physical_data.mass)
-            }
-        }
-    }
-
     override on_tick(dt: number) {
         if (this.dead) return
 
@@ -340,40 +322,81 @@ export class Vehicle extends MovingBody {
     }
 
     override on_collided(obj: ServerGameObject, _dt: number): void {
-        if (obj.id === this.id) return
-        if(obj instanceof StaticBody)this.solve_collision(obj)
+        if(obj.id===this.id)return
+        const vel:number=v2.len(this.physical_data.velocity)
+        if(obj instanceof StaticBody){
+            if((obj as StaticBody).physical_data?.no_collision) return
+            const cols = this.hitbox.overlap_collisions(obj.hitbox)
+            if (cols.length <= 0) return
+            for (const col of cols) {
+                v2m.sub(this.position,this.position,v2.scale(col.dir, col.pen))
+                v2m.sub(this.physical_data.velocity,this.physical_data.velocity,v2.scale(col.dir,vel*0.5))
+            }
+            if((obj instanceof Obstacle)){
+                obj.damage({
+                    position:obj.position,
+                    amount:vel*(this.physical_data.mass*0.01),
+                    reason:DamageReason.VehicleCollision,
+                    owner:this.pillot_seat?.human,
+                    penetration:1,
+                    critical:false,
+                    direction:v2.lookTo(this.position,obj.position)
+                })
+            }
+        }else if(obj instanceof Human){
+            if(obj.health.invensibility>0||obj.dead||obj.swimming||vel<=6||obj.seat)return
+            const cols = this.hitbox.overlap_collisions(obj.hitbox)
+            if (cols.length <= 0) return
+            for (const col of cols) {
+                v2m.sub(this.position,this.position,v2.scale(col.dir, col.pen))
+                v2m.sub(this.physical_data.velocity,this.physical_data.velocity,v2.scale(col.dir,vel*0.3))
+            }
+            const damage=vel*(this.physical_data.mass*0.002)
+            const dir=v2.lookTo(this.position,obj.position)
+            obj.damage({
+                position:obj.position,
+                amount:damage,
+                critical:false,
+                penetration:1,
+                reason:DamageReason.VehicleCollision,
+                owner:this.pillot_seat?.human,
+                direction:dir
+            })
+
+            obj.swimming=true
+            obj.physical_data.secondary_velocity_swimming=true
+            obj.physical_data.secondary_velocity_take_control=true
+            obj.physical_data.secondary_acceleration=0.2
+            obj.push(vel*(this.physical_data.mass)*0.001,dir)
+        }
     }
 
     override can_interact(user: Human): boolean {
-        return (
-            this.interaction_hitbox.colliding_with(user.hitbox) &&
-            !this.dead &&
-            !user.seat
-        )
+        return (this.interaction_hitbox.colliding_with(user.hitbox)&&!this.dead)
     }
 
     override on_interact(user: Human): void {
-        let interact_seat: VehicleSeat | undefined
-        let dist = Infinity
-        let door: Vec2 | undefined
+        if(!user.seat){
+            let interact_seat: VehicleSeat | undefined
+            let dist = Infinity
+            let door: Vec2 | undefined
+            for (const s of this.seats) {
+                for (const cd of s.doors) {
+                    const dis = v2.distance(
+                        s.position,
+                        user.position
+                    )
 
-        for (const s of this.seats) {
-            for (const cd of s.doors) {
-                const dis = v2.distance(
-                    s.position,
-                    user.position
-                )
-
-                if (dis <= dist) {
-                    dist = dis
-                    interact_seat = s
-                    door = cd
+                    if (dis <= dist) {
+                        dist = dis
+                        interact_seat = s
+                        door = cd
+                    }
                 }
             }
-        }
-
-        if (interact_seat && door) {
-            interact_seat?.set_human(user)
+            if (interact_seat && door) {interact_seat?.set_human(user)}
+        }else if(user.seat.vehicle===this){
+            user.seat.clear_human(true)
         }
     }
 
@@ -382,11 +405,7 @@ export class Vehicle extends MovingBody {
     }
 
     override on_encode_net(stream: Stream, full: boolean) {
-        stream.write_boolean_group(
-            this.physical_data.dirty,
-            this.dead
-        )
-
+        stream.write_boolean_group(this.physical_data.dirty,this.dead)
         if (this.physical_data.dirty || full) {
             this.physical_encode(stream)
         }
@@ -394,7 +413,6 @@ export class Vehicle extends MovingBody {
         stream.write_float32(this.speed)
         stream.write_rad(this.direction)
         stream.write_float32(this.tire_stress)
-
         if (full) {
             stream.write_uint8(this.def.idNumber!)
         }

@@ -70,10 +70,10 @@ export interface FeedMessageKill{
     killer?:{
         id:number
         kills:number
-        used:number
     }
     damage_reason:DamageReason
     victimId:number
+    used?:number
 }
 export interface FeedMessageLeader{
     type:FeedMessageType.leader_assigned|FeedMessageType.leader_dead,
@@ -95,13 +95,13 @@ function encode_feed_message(msg:FeedMessage,stream:Stream){
     switch(msg.type){
         case FeedMessageType.kill:
         case FeedMessageType.down:
-            stream.write_boolean_group(msg.killer!==undefined)
+            stream.write_boolean_group(msg.killer!==undefined,msg.used!==undefined)
             .write_uint8(msg.damage_reason)
             if(msg.killer){
                 stream.write_id(msg.killer.id)
                 .write_uint8(msg.killer.kills)
-                .write_uint16(msg.killer.used)
             }
+            if(msg.used!==undefined)stream.write_id(msg.used)
             stream.write_id(msg.victimId)
             break
         case FeedMessageType.join:
@@ -129,10 +129,10 @@ function decode_feed_message(stream:Stream):FeedMessage{
             if(bg[0]){
                 msg["killer"]={
                     id:stream.read_id(),
-                    kills:stream.read_uint8(),
-                    used:stream.read_uint16()
+                    kills:stream.read_uint8()
                 }
             }
+            if(bg[1])msg["used"]=stream.read_id()
             msg["victimId"]=stream.read_id()
             break
         }

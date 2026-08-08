@@ -131,6 +131,8 @@ export enum DamageReason{
     Connection,
     Bleend,
     Airdrop,
+    VehicleJump,
+    VehicleCollision
 }
 export interface InventoryItemData{
     count:number

@@ -120,18 +120,18 @@ export const VehicleTemplates = {
         physics:{
             mass:1200,
 
-            engine_force:4500,
+            engine_force:20000,
             brake_force:1000,
-            reverse_speed_mult:0.45,
+            reverse_speed_mult:0.75,
 
-            traction:1,
-            drag:0.3,
-            max_steer_speed:12,
-            steer_force:12,
+            traction:1.5,
+            drag:1.4,
+            max_steer_speed:25,
+            steer_force:20,
             floor_kind:{
                 [FloorKind.Liquid]:{
                     traction:0.2,
-                    rolling_resistance:5,
+                    rolling_resistance:4,
                 }
             }
         },

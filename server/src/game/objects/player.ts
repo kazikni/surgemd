@@ -160,9 +160,9 @@ export class Player extends Human{
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
-                    used:this.game.definitions.game_objects.keysString[params.source!.idString]
                 }:undefined,
                 victimId:this.id,
+                used:this.game.definitions.game_objects.keysString[params.source!.idString],
                 damage_reason:params.reason,
                 type:FeedMessageType.down,
             })
@@ -185,8 +185,8 @@ export class Player extends Human{
                 killer:{
                     id:this.killed_by.id,
                     kills:this.killed_by.status.kills,
-                    used:this.game.definitions.game_objects.keysString[params.source?.idString??""]??0
                 },
+                used:this.game.definitions.game_objects.keysString[params.source?.idString??""]??0,
                 victimId:this.id,
                 type:FeedMessageType.kill,
                 damage_reason:params.reason,

@@ -5,7 +5,7 @@ import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset 
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
-import { Floors, FloorType } from "common/scripts/others/terrain.ts"
+import { FloorDef, Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
@@ -39,9 +39,14 @@ import { type Bullet } from "./bullet.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     dirty:boolean
-    dirty_part:boolean
     scale:number
     current_floor:FloorType
+
+    secondary_velocity_enabled:boolean
+    secondary_velocity_take_control:boolean
+    secondary_velocity_swimming:boolean
+    secondary_velocity:Vec2
+    secondary_acceleration:number
 }
 export class Human extends MovingBody{
     // Definition
@@ -63,12 +68,16 @@ export class Human extends MovingBody{
     recoil?:{speed:number,delay:number}
     physical_data:HumanPhysicalData={
         dirty:true,
-        dirty_part:true,
 
         scale:1,
         rotation:0,
 
         velocity:v2.zero(),
+        secondary_velocity_enabled:false,
+        secondary_velocity:v2.zero(),
+        secondary_velocity_take_control:false,
+        secondary_velocity_swimming:false,
+        secondary_acceleration:1,
 
         current_floor:0,
     }
@@ -227,6 +236,10 @@ export class Human extends MovingBody{
         interaction:false,
         swamp_guns:false,
     }
+
+    _interact_object?:ServerGameObject
+    _interact_score:number=Infinity
+    _interacted_objects:Set<number>=new Set()
 
     grenade_holding?:{
         def:GrenadeDef
@@ -649,148 +662,11 @@ export class Human extends MovingBody{
         }
         return false
     }
-    update_input(){
-        if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===GameItemType.gun){
-            (this.inventory.hand_item as GunItem).reloading=true
-        }
-        if(this.input.swamp_guns){
-            this.inventory.swamp_guns()
-        }
-        if(this.input.interaction){
-            if(this.seat){
-                this.position=v2.add(this.seat.position,v2.rotate_RadAngle(v2(0,-1),this.seat.vehicle.physical_data.rotation))
-                this.seat.clear_human()
-            }else if(this.downed&&this.human_data.self_revive){
-                this.on_interact(this)
-            }
-        }
-        if(!this.downed&&!this.parachute){
-            const executed:InputActionType[]=[]
-            for(const a of this.input.actions){
-                if(executed.includes(a.type))continue
-                executed.push(a.type)
-                switch(a.type){
-                    case InputActionType.drop:
-                        if(a.drop>=0){
-                            const drop=a.drop
-                            switch(a.drop_kind){
-                                case 1:
-                                    this.inventory.drop_weapon(Numeric.clamp(drop,0,2))
-                                    break
-                                case 2:
-                                    this.inventory.drop_aitem(drop)
-                                    break
-                                case 3:
-                                    this.inventory.drop_slot(drop)
-                                    this.actions.cancel()
-                                    break
-                                case 4:
-                                    this.inventory.drop_item(drop)
-                                    this.actions.cancel()
-                                    break
-                                case 5:
-                                    this.inventory.drop_iitem(drop)
-                                    break
-                                case 6:
-                                    if(a.drop===0){
-                                        this.inventory.drop_helmet()
-                                    }else if(a.drop===1){
-                                        this.inventory.drop_vest()
-                                    }
-                                    break
-                            }
-                        }
-                        break
-                    case InputActionType.use_item:{
-                        const item=this.inventory.slots[a.slot]?.item
-                        if(item){
-                            item.on_use(this,this.inventory.slots[a.slot])
-                        }
-                        break
-                    }
-                    case InputActionType.set_hand:
-                        if(!this.inventory.weapons[a.hand])break
-                        this.inventory.set_weapon_index(a.hand)
-                        break
-                    case InputActionType.set_scope:
-                        if(this.inventory.iitems.some((i)=>i.idNumber===a.scope_id)){
-                            this.equipment_data.scope=this.game.definitions.scopes.getFromNumber(a.scope_id)
-                        }
-                        break
-                    case InputActionType.emote_emote:{
-                        if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
-                        const def=this.game.definitions.emotes.getFromNumber(a.emote)
-                        this.input.emote=def
-                        break
-                    }
-                    case InputActionType.emote_item:{
-                        if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
-                        const def=this.game.definitions.game_items.valueNumber[a.item]
-                        this.input.emote=def
-                        this.input.message=undefined
-                        this.emote_time=1
-                        break
-                    }
-                    case InputActionType.message:{
-                        if(this.emote_time>=0&&a.value.length>0&&!this.human_data.advanced_permitions)break
-                        this.emote_time=1.5
-                        this.input.message=a.value
-                        this.input.emote=undefined
-                        break
-                    }
-                    case InputActionType.ping:
-                        if(this.team_data.group?.pings){
-                            this.team_data.group.pings.push({
-                                color:this.team_data.color,
-                                def:a.ping,
-                                id:this.id,
-                                position:a.position,
-                            })
-                        }else{
-                            this.input.ping={
-                                color:this.team_data.color,
-                                def:a.ping,
-                                id:this.id,
-                                position:a.position,
-                            }
-                        }
-                        break
-                    case InputActionType.buy_on_shop:
-                        this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
-                        break
-                    case InputActionType.debug_give:
-                        if(this.game.debug.debug_menu){
-                            const l=this.game.definitions.game_items.valueString[a.item]
-                            if(!l)break
-                            this.inventory.give_item(l,a.count,true)
-                        }
-                        break
-                    case InputActionType.debug_spawn:
-                        if(this.game.debug.debug_menu){
-                            const l=this.game.definitions.game_items.valueString[a.item]
-                            if(!l)break
-                            const aditional:LootData[]=[]
-                            if(l.item_type===GameItemType.gun){
-                                aditional.push({
-                                    item:this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),
-                                    count:((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count
-                                })
-                            }
-                            this.game.add_loot(this.position,{item:l,count:a.count,aditional},this.layer)
-                        }
-                        break
-                }
-            }
-        }
-        this.input.swamp_guns=false
-        this.input.interaction=false
-        this.input.reload=false
-        this.input.actions.length=0
-    }
 
-    _interact_object?:ServerGameObject
-    _interact_score:number=Infinity
-    _interacted_objects:Set<number>=new Set()
+    override push(speed: number, dir: number): void {
+        const vel=v2.from_RadAngle(dir,speed)
+        v2m.add(this.physical_data.secondary_velocity,this.physical_data.secondary_velocity,vel)
+    }
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
@@ -860,10 +736,199 @@ export class Human extends MovingBody{
                 break
         }
     }
-    override on_tick(dt:number): void {
-        if(this.dead){
-            return
+
+    tick_input(dt:number){
+        if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===GameItemType.gun){
+            (this.inventory.hand_item as GunItem).reloading=true
         }
+        if(this.input.swamp_guns){
+            this.inventory.swamp_guns()
+        }
+        if(this.input.interaction){
+            if(this.downed){
+                if(this.human_data.self_revive)this.on_interact(this)
+            }else if(this.seat){
+                this.seat.vehicle.on_interact(this)
+            }else if(this.human_data.movement_enabled&&this._interact_object){
+                (this._interact_object as ServerGameObject).on_interact(this)
+            }
+        }
+        const executed:InputActionType[]=[]
+        for(const a of this.input.actions){
+            if(executed.includes(a.type))continue
+            executed.push(a.type)
+            switch(a.type){
+                case InputActionType.drop:
+                    if(a.drop>=0){
+                        const drop=a.drop
+                        switch(a.drop_kind){
+                            case 1:
+                                this.inventory.drop_weapon(Numeric.clamp(drop,0,2))
+                                break
+                            case 2:
+                                this.inventory.drop_aitem(drop)
+                                break
+                            case 3:
+                                this.inventory.drop_slot(drop)
+                                this.actions.cancel()
+                                break
+                            case 4:
+                                this.inventory.drop_item(drop)
+                                this.actions.cancel()
+                                break
+                            case 5:
+                                this.inventory.drop_iitem(drop)
+                                break
+                            case 6:
+                                if(a.drop===0){
+                                    this.inventory.drop_helmet()
+                                }else if(a.drop===1){
+                                    this.inventory.drop_vest()
+                                }
+                                break
+                        }
+                    }
+                    break
+                case InputActionType.use_item:{
+                    if(this.downed||this.parachute)break
+                    const item=this.inventory.slots[a.slot]?.item
+                    if(item){
+                        item.on_use(this,this.inventory.slots[a.slot])
+                    }
+                    break
+                }
+                case InputActionType.set_hand:{
+                    if(!this.inventory.weapons[a.hand]||this.downed||this.parachute)break
+                    this.inventory.set_weapon_index(a.hand)
+                    break
+                }
+                case InputActionType.set_scope:
+                    if(this.inventory.iitems.some((i)=>i.idNumber===a.scope_id)){
+                        this.equipment_data.scope=this.game.definitions.scopes.getFromNumber(a.scope_id)
+                    }
+                    break
+                case InputActionType.emote_emote:{
+                    if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
+                    const def=this.game.definitions.emotes.getFromNumber(a.emote)
+                    this.input.emote=def
+                    break
+                }
+                case InputActionType.emote_item:{
+                    if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
+                    const def=this.game.definitions.game_items.valueNumber[a.item]
+                    this.input.emote=def
+                    this.input.message=undefined
+                    this.emote_time=1
+                    break
+                }
+                case InputActionType.message:{
+                    if(this.emote_time>=0&&a.value.length>0&&!this.human_data.advanced_permitions)break
+                    this.emote_time=1.5
+                    this.input.message=a.value
+                    this.input.emote=undefined
+                    break
+                }
+                case InputActionType.ping:
+                    if(this.team_data.group?.pings){
+                        this.team_data.group.pings.push({
+                            color:this.team_data.color,
+                            def:a.ping,
+                            id:this.id,
+                            position:a.position,
+                        })
+                    }else{
+                        this.input.ping={
+                            color:this.team_data.color,
+                            def:a.ping,
+                            id:this.id,
+                            position:a.position,
+                        }
+                    }
+                    break
+                case InputActionType.buy_on_shop:
+                    if(this.downed||this.parachute)break
+                    this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
+                    break
+                case InputActionType.debug_give:
+                    if(this.game.debug.debug_menu){
+                        const l=this.game.definitions.game_items.valueString[a.item]
+                        if(!l)break
+                        this.inventory.give_item(l,a.count,true)
+                    }
+                    break
+                case InputActionType.debug_spawn:
+                    if(this.game.debug.debug_menu){
+                        const l=this.game.definitions.game_items.valueString[a.item]
+                        if(!l)break
+                        const aditional:LootData[]=[]
+                        if(l.item_type===GameItemType.gun){
+                            aditional.push({
+                                item:this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),
+                                count:((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count
+                            })
+                        }
+                        this.game.add_loot(this.position,{item:l,count:a.count,aditional},this.layer)
+                    }
+                    break
+            }
+        }
+        this.input.swamp_guns=false
+        this.input.interaction=false
+        this.input.reload=false
+        this.input.actions.length=0
+        this._interact_object=undefined
+        this._interacted_objects.clear()
+        this._interact_score=Infinity
+
+        if(this.emote_time>=0){
+            this.emote_time-=dt
+        }
+    }
+    tick_physics(current_floor:FloorDef,speed:number,dt:number){
+        const secondary_velocity=v2.len(this.physical_data.secondary_velocity)>0.05
+        let acceleration=40*(this.downed||this.swimming?0.2:current_floor.acceleration)
+        acceleration=Numeric.dt_expo_inter(acceleration,dt)
+
+        if(this.human_data.movement_enabled&&!(secondary_velocity&&this.physical_data.secondary_velocity_take_control)){
+            if(this.human_data.pulse_movement){
+                this.human_data.pulse_movement_timer-=dt
+                if(this.human_data.pulse_movement_timer<=this.human_data.pulse_movement.duration){
+                    const move=v2.from_PolarMovement({scale:this.input.movement.scale,dir:this.physical_data.rotation})
+                    v2m.scale(move,move,speed*this.human_data.pulse_movement.speed_mult)
+                    v2m.lerp(this.physical_data.velocity,move,acceleration*3)
+                }else{
+                    v2m.lerp(this.physical_data.velocity,v2.zero,acceleration*0.2)
+                }
+                if(this.human_data.pulse_movement_timer<=0)this.human_data.pulse_movement_timer=this.human_data.pulse_movement.pulse_time
+            }else{
+                const move=v2.from_PolarMovement(this.input.movement)
+                v2m.scale(move,move,speed)
+                v2m.lerp(this.physical_data.velocity,move,acceleration)
+            }
+            if(!this.downed&&!this.swimming)this.physical_data.rotation=this.input.rotation
+            else if(this.swimming)this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
+        }else{
+            this.physical_data.velocity=v2.zero()
+        }
+        if(this.downed){
+            if(this.input.movement.scale>0)this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.movement.dir,Numeric.dt_expo_inter(1,dt))
+        }
+        super.on_tick(dt)
+
+        if(secondary_velocity){
+            this.physical_data.secondary_velocity_enabled=true
+            v2m.add(this.position,this.position,v2.scale(this.physical_data.secondary_velocity,dt))
+            v2m.lerp(this.physical_data.secondary_velocity,v2.zero,acceleration*this.physical_data.secondary_acceleration)
+        }else if(this.physical_data.secondary_velocity_enabled){
+            this.physical_data.secondary_acceleration=0.5
+            this.physical_data.secondary_velocity_take_control=false
+            this.physical_data.secondary_velocity_enabled=false
+            this.physical_data.secondary_velocity_swimming=false
+            this.physical_data.secondary_velocity=v2.zero()
+        }
+    }
+    override on_tick(dt:number): void {
+        if(this.dead)return
         if(this.script){
             this.script?.tick(dt)
             if(!this.script._running){
@@ -877,11 +942,10 @@ export class Human extends MovingBody{
                 })
             }
         }
+        this.equipment_data.force_default_scope=false
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let acceleration=40*(this.downed||this.swimming?0.2:current_floor.acceleration)
-        acceleration=Numeric.dt_expo_inter(acceleration,dt)
         let speed=5.3*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
@@ -889,7 +953,7 @@ export class Human extends MovingBody{
             * (this.downed?0.25:1)
             * (this.parachute?1:(current_floor.speed_mult))
             * (this.grenade_holding?0.7:1)
-        this.swimming=current_floor.deep||false
+        this.swimming=current_floor.deep||this.physical_data.secondary_velocity_swimming||false
         if(this.recoil){
             this.recoil.delay-=dt
             if(this.recoil.delay<=0)this.recoil=undefined
@@ -913,85 +977,49 @@ export class Human extends MovingBody{
             if(this.seat.rotation!==undefined)this.physical_data.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload)
         }else{
-            if(this.human_data.movement_enabled){
-                const move=v2.from_PolarMovement(this.input.movement)
-                if(this.human_data.pulse_movement){
-                    this.human_data.pulse_movement_timer-=dt
-                    if(this.human_data.pulse_movement_timer<=this.human_data.pulse_movement.duration){
-                        v2m.scale(move,move,speed*this.human_data.pulse_movement.speed_mult)
-                        v2m.lerp(this.physical_data.velocity,move,acceleration*3)
-                    }else{
-                        v2m.lerp(this.physical_data.velocity,v2.zero,acceleration*0.2)
-                    }
-                    if(this.human_data.pulse_movement_timer<=0)this.human_data.pulse_movement_timer=this.human_data.pulse_movement.pulse_time
-                }else{
-                    v2m.scale(move,move,speed)
-                    v2m.lerp(this.physical_data.velocity,move,acceleration)
+            this.tick_physics(current_floor,speed,dt)
+            //Hand Use
+            if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.human_data.pacific_enabled&&!this.downed&&!this.swimming){
+                if(this.input.using_item){
+                    const success=this.inventory.hand_item.on_fire(this)
+                    if(success)this.input.using_item_down=false
+                }else if(this.input.using_item_alt){
+                    this.inventory.hand_item.on_fire_alt(this)
                 }
-                if(this.downed||this.swimming){
-                    this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
-                }else{
-                    this.physical_data.rotation=this.input.rotation
-                }
-            }else{
-                this.physical_data.rotation=this.input.rotation
-                this.physical_data.velocity=v2.zero()
             }
-            this.equipment_data.force_default_scope=false
-            this._interact_object=undefined
-            this._interacted_objects.clear()
-            this._interact_score=Infinity
-            super.on_tick(dt)
-            if(this.human_data.movement_enabled&&!this.downed&&this._interact_object){
-                (this._interact_object as ServerGameObject).on_interact(this)
-            }
-            if(!this.parachute){
-                //Hand Use
-                if(!this.grenade_holding&&this.inventory.hand_item&&this.human_data.combat_enabled&&!this.human_data.pacific_enabled&&!this.downed&&!this.swimming){
-                    if(this.input.using_item){
-                        const success=this.inventory.hand_item.on_fire(this)
-                        if(success)this.input.using_item_down=false
-                    }else if(this.input.using_item_alt){
-                        this.inventory.hand_item.on_fire_alt(this)
+            if(this.grenade_holding){
+                if(this.grenade_holding.cook_time>0){
+                    this.grenade_holding.cook_time-=dt
+                }else{
+                    if(!this.input.using_item&&!this.grenade_holding.activated){
+                        this.grenade_holding.activated=true
+                        this.animation_data.dirty=true
+                        this.animation_data.current_animation.push({
+                            type:HumanAnimationType.Throw
+                        })
                     }
-                }
-                if(this.grenade_holding){
-                    if(this.grenade_holding.cook_time>0){
-                        this.grenade_holding.cook_time-=dt
-                    }else{
-                        if(!this.input.using_item&&!this.grenade_holding.activated){
+                    if(this.grenade_holding.activated){
+                        this.grenade_holding.active_time-=dt
+                        this.throw_using_projectile()
+                    }else if(this.grenade_holding.def.fuse?.allow_hand){
+                        this.grenade_holding.time-=dt
+                        if(this.grenade_holding.time<=0&&!this.grenade_holding.activated){
+                            this.grenade_holding.cook_time=0
                             this.grenade_holding.activated=true
                             this.animation_data.dirty=true
                             this.animation_data.current_animation.push({
-                                type:HumanAnimationType.Throw
+                                type:HumanAnimationType.Reset
                             })
-                        }
-                        if(this.grenade_holding.activated){
-                            this.grenade_holding.active_time-=dt
-                            this.throw_using_projectile()
-                        }else if(this.grenade_holding.def.fuse?.allow_hand){
-                            this.grenade_holding.time-=dt
-                            if(this.grenade_holding.time<=0&&!this.grenade_holding.activated){
-                                this.grenade_holding.cook_time=0
-                                this.grenade_holding.activated=true
-                                this.animation_data.dirty=true
-                                this.animation_data.current_animation.push({
-                                    type:HumanAnimationType.Reset
-                                })
-                            }
                         }
                     }
                 }
             }
         }
-        this.physical_data.dirty_part=true
         this.set_dirty_part()
-
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
             this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
         }
-
         if(this.downed&&!this.being_helpup_by){
             this.downed_time+=dt
             if(this.downed_time>=1){
@@ -1007,16 +1035,11 @@ export class Human extends MovingBody{
             }
         }
 
-        if(this.emote_time>=0){
-            this.emote_time-=dt
-        }
-        //Update Inventory
         this.inventory.update(dt)
-        this.update_input()
+        this.tick_input(dt)
+        this.actions.update(dt)
 
         if(this.health.invensibility>0)this.health.invensibility-=dt
-
-        this.actions.update(dt)
 
         if(this.game.deadzone.do_damage&&this.game.deadzone.damage>0&&this.game.deadzone.is_on_deadzone(this.position)){
             this.piercing_damage({
@@ -1029,7 +1052,6 @@ export class Human extends MovingBody{
                 penetration:1,
             })
         }
-
         if(this.health.value!==this.health.old||this.boost.value!==this.boost.old||this.boost.def!==this.boost.old_def){
             this.health.old=this.health.value
             this.boost.old=this.boost.value
@@ -1042,7 +1064,6 @@ export class Human extends MovingBody{
         super.on_net_update()
 
         this.physical_data.dirty=false
-        this.physical_data.dirty_part=false
 
         this.animation_data.dirty=false
         this.animation_data.current_animation.length=0
@@ -1061,7 +1082,6 @@ export class Human extends MovingBody{
         this.inventory.net_update()
     }
     self_state(full:boolean):SelfStateUpdate{
-
         const ret:SelfStateUpdate={
             health:Math.ceil(this.health.value),
             max_health:this.health.max,
@@ -1320,6 +1340,7 @@ export class Human extends MovingBody{
 
         this.net_sync_deletion=false
         this.dead=true
+        this.human_data.pulse_movement=undefined
         this.set_dirty_part()
 
         if(this.loadout.emotes.death){
@@ -1347,12 +1368,9 @@ export class Human extends MovingBody{
             this.game.modeManager.leader_die(this)
             if(this.game.modeManager.rules.leader.search)this.game.modeManager.search_leader()
         }
-
         if(this.team_data.team)this.team_data.team.clear_downeds()
         if(this.team_data.group)this.team_data.group.clear_downeds()
-
         if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
-
         this.destroy()
     }
     clear(inventory:boolean=false,status:boolean=false){
@@ -1368,6 +1386,7 @@ export class Human extends MovingBody{
         this.killed_by=undefined
         this.downed_by=undefined
         this.last_damage_by=undefined
+        this.human_data.pulse_movement=undefined
 
         this.equipment_data.scope=this.equipment_data.default_scope
         this.inventory.net_sync.aitems=true
@@ -1415,7 +1434,7 @@ export class Human extends MovingBody{
     override on_encode_net(stream: Stream, full: boolean,utils:any): void {
         stream.write_boolean_group3(
             // Physical
-            this.physical_data.dirty_part,this.physical_data.dirty, // 2
+            this.physical_data.dirty, // 1
             // Equipment
             this.equipment_data.dirty_part,this.equipment_data.dirty, // 1
             // Loadout
@@ -1433,6 +1452,7 @@ export class Human extends MovingBody{
             this.input.emote!==undefined, // 1
             this.input.message!==undefined,
             this.script!==undefined,
+            !(this.physical_data.secondary_velocity_enabled&&this.physical_data.secondary_velocity_take_control),
             this.seat!==undefined,
 
             this.dead,
@@ -1442,11 +1462,9 @@ export class Human extends MovingBody{
             this.human_data.show_name
         )
         // Physical
-        if(full||this.physical_data.dirty_part||this.physical_data.dirty){
-            this.physical_encode(stream)
-            if(full||this.physical_data.dirty){
-                stream.write_float32(this.physical_data.scale)
-            }
+        this.physical_encode(stream)
+        if(full||this.physical_data.dirty){
+            stream.write_float32(this.physical_data.scale)
         }
         // Equipment
         if(full||this.equipment_data.dirty||this.equipment_data.dirty_part){

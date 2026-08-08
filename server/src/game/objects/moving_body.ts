@@ -17,8 +17,7 @@ export abstract class MovingBody extends ServerGameObject{
         this.allow_tick=true
     }
     push(speed:number,dir:number){
-        const vel=v2.from_RadAngle(dir)
-        v2m.scale(vel,vel,speed)
+        const vel=v2.from_RadAngle(dir,speed)
         v2m.add(this.physical_data.velocity,this.physical_data.velocity,vel)
     }
     on_collided(obj:ServerGameObject,dt:number){

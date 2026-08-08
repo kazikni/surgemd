@@ -25,6 +25,7 @@ import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { Angle, ColorM, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -467,7 +468,7 @@ export class UiManager{
                     case DamageReason.Explosion:
                     case DamageReason.Human:{
                         if(!msg.killer)break
-                        const dsd=this.game.definitions.game_objects.valueNumber[msg.killer.used] as DamageSourceDef
+                        const dsd=this.game.definitions.game_objects.valueNumber[msg.used??0] as DamageSourceDef
                         text=this.game.language.get("feed.kill.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
@@ -476,6 +477,23 @@ export class UiManager{
                         if(this.leader&&msg.killer.id===this.leader.id){
                             this.leader.kills=msg.killer.kills
                             this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.killer.id].name}`
+                        }
+                        break
+                    }
+                    case DamageReason.VehicleCollision:{
+                        const dsd=this.game.definitions.vehicles.getFromNumberSafe(msg.used??0)
+                        const sn=dsd?this.game.language.get("vehicles."+dsd.idString):""
+                        if(msg.killer){
+                            text=this.game.language.get("feed.kill.vehicle_collision_direct",{
+                                player1:this.players_name[msg.killer.id].full,
+                                player2:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
+                        }else{
+                            text=this.game.language.get("feed.kill.vehicle_collision_indirect",{
+                                player:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
                         }
                         break
                     }
@@ -519,12 +537,29 @@ export class UiManager{
                     case DamageReason.Human:
                     case DamageReason.Explosion:{
                         if(!msg.killer)break
-                        const dsd=this.game.definitions.game_objects.valueNumber[msg.killer.used] as DamageSourceDef
+                        const dsd=this.game.definitions.game_objects.valueNumber[msg.used??0] as DamageSourceDef
                         text=this.game.language.get("feed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
+                        break
+                    }
+                    case DamageReason.VehicleCollision:{
+                        const dsd=this.game.definitions.vehicles.getFromNumberSafe(msg.used??0)
+                        const sn=dsd?this.game.language.get("vehicles."+dsd.idString):""
+                        if(msg.killer){
+                            text=this.game.language.get("feed.down.vehicle_collision_direct",{
+                                player1:this.players_name[msg.killer.id].full,
+                                player2:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
+                        }else{
+                            text=this.game.language.get("feed.down.vehicle_collision_indirect",{
+                                player:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
+                        }
                         break
                     }
                     case DamageReason.DeadZone:
@@ -538,6 +573,9 @@ export class UiManager{
                         break
                     case DamageReason.Bleend:
                         text=this.game.language.get("feed.down.bleend",{})
+                        break
+                    case DamageReason.VehicleJump:
+                        text=this.game.language.get("feed.down.vehicle_jump",{player:this.players_name[msg.victimId].full})
                         break
                 }
                 elem.innerHTML=text

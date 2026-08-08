@@ -169,6 +169,13 @@ export class Human extends MovingBody{
         advanced_permitions:boolean
 
         self_revive:boolean
+
+        pulse_movement_timer:number
+        pulse_movement?:{
+            speed_mult:number
+            pulse_time:number
+            duration:number
+        }
     }={
         movement_enabled:true,
         combat_enabled:true,
@@ -179,7 +186,9 @@ export class Human extends MovingBody{
         show_name:false,
         advanced_permitions:false,
 
-        self_revive:false
+        self_revive:false,
+
+        pulse_movement_timer:0,
     }
 
     input:{
@@ -906,8 +915,19 @@ export class Human extends MovingBody{
         }else{
             if(this.human_data.movement_enabled){
                 const move=v2.from_PolarMovement(this.input.movement)
-                v2m.scale(move,move,speed)
-                v2m.lerp(this.physical_data.velocity,move,acceleration)
+                if(this.human_data.pulse_movement){
+                    this.human_data.pulse_movement_timer-=dt
+                    if(this.human_data.pulse_movement_timer<=this.human_data.pulse_movement.duration){
+                        v2m.scale(move,move,speed*this.human_data.pulse_movement.speed_mult)
+                        v2m.lerp(this.physical_data.velocity,move,acceleration*3)
+                    }else{
+                        v2m.lerp(this.physical_data.velocity,v2.zero,acceleration*0.2)
+                    }
+                    if(this.human_data.pulse_movement_timer<=0)this.human_data.pulse_movement_timer=this.human_data.pulse_movement.pulse_time
+                }else{
+                    v2m.scale(move,move,speed)
+                    v2m.lerp(this.physical_data.velocity,move,acceleration)
+                }
                 if(this.downed||this.swimming){
                     this.physical_data.rotation=Numeric.lerp_rad(this.physical_data.rotation,this.input.rotation,Numeric.dt_expo_inter(1,dt))
                 }else{
@@ -1272,9 +1292,15 @@ export class Human extends MovingBody{
 
         this.inventory.set_weapon_index(0)
 
+        this.human_data.pulse_movement={
+            speed_mult:1,
+            pulse_time:1,
+            duration:0.1
+        }
+
         this.grenade_holding=undefined
         if(this.seat)this.seat.clear_human()
-        this.push(-10,params.direction)
+        this.push(-5,params.direction)
     }
     help_up(){
         if(!this.downed)return
@@ -1286,6 +1312,7 @@ export class Human extends MovingBody{
         this.health.value=this.health.max*0.3
         this.clear_boost()
         this.being_helpup_by=undefined
+        this.human_data.pulse_movement=undefined
         this.actions.cancel()
     }
     die(params:DamageParams){

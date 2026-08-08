@@ -5,7 +5,7 @@ import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
-import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
+import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { ClientDecal } from "./client_decal.ts";
@@ -523,6 +523,7 @@ export class Human extends MovingBody{
         this.sprites.right_leg.rotation=-0.1
         this.sprites.left_leg_foot.position=v2(0.05,0)
         this.sprites.right_leg_foot.position=v2(0.05,0)
+        this.animation.walk_cycle=1
 
         this.sprites.left_arm.visible=true
         this.sprites.right_arm.visible=true
@@ -842,7 +843,7 @@ export class Human extends MovingBody{
             this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
             this.sprites.name.layer=this.layer
         }
-        if(!this.seat&&this.distance_walked>0.01){
+        if(!this.seat&&this.distance_walked>0.001){
             const f=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void)
             if(f!==this.current_floor){
                 this.current_floor=f
@@ -984,36 +985,6 @@ export class Human extends MovingBody{
         }
     }
     update_animations(dt:number){
-        if(this.animation.recoil_state!==-1){
-            switch(this.animation.recoil_type){
-                case 0:
-                    this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
-                    this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_left_arm_position.x,this.animation.base_left_arm_position.x-0.05,this.animation.recoil_time)
-                    this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
-                    break
-                case 1:
-                    this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
-                    this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
-                    break
-                case 2:
-                    this.sprites.weapon2.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
-                    this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
-                    break
-            }
-            if(this.animation.recoil_state===0){
-                this.animation.recoil_time+=dt*10
-                if(this.animation.recoil_time>=1){
-                    this.animation.recoil_state=1
-                    this.animation.recoil_time=1
-                }
-            }else{ 
-                this.animation.recoil_time-=dt*10
-                if(this.animation.recoil_time<=0){
-                    this.animation.recoil_state=-1
-                    this.animation.recoil_time=0
-                }
-            }
-        }
         if(this.animation.cycle_sound_time!==undefined){
             this.animation.cycle_sound_time-=dt
             if(this.animation.cycle_sound_time<=0){
@@ -1036,7 +1007,74 @@ export class Human extends MovingBody{
                 this.animation.muzzle_flash_time=-1
             }
         }
-        if(!this.downed){
+        if(this.downed){
+            if(this.animation.walk_cycle&&this.animation.walk_speed>0){
+                this.animation.walk_time+=dt*1.8
+                const time=ease.sineIn(this.animation.walk_time)
+                switch(this.animation.walk_cycle){
+                    case 1:
+                        this.sprites.right_arm.position=v2.lerp(DefaultFistRig.right!.position,DefaultDownedWalkFistRig.right!.position,time)
+                        this.sprites.right_arm.rotation=Numeric.lerp_rad(DefaultFistRig.right!.rotation,DefaultDownedWalkFistRig.right!.rotation,time)
+                        this.sprites.left_leg.position=v2.lerp({x:-0.8,y:-0.22},{x:-0.7,y:-0.20},time)
+
+                        this.sprites.left_arm.position=DefaultFistRig.left!.position
+                        this.sprites.left_arm.rotation=DefaultFistRig.left!.rotation
+                        this.sprites.right_leg.position={x:-0.8,y:0.22}
+                        break
+                    case 2:
+                        this.sprites.right_arm.position=v2.lerp(DefaultDownedWalkFistRig.right!.position,DefaultFistRig.right!.position,time)
+                        this.sprites.right_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.right!.rotation,DefaultFistRig.right!.rotation,time)
+                        this.sprites.left_leg.position=v2.lerp({x:-0.7,y:-0.20},{x:-0.8,y:-0.22},time)
+                        break
+                    case 3:
+                        this.sprites.left_arm.position=v2.lerp(DefaultFistRig.left!.position,DefaultDownedWalkFistRig.left!.position,time)
+                        this.sprites.left_arm.rotation=Numeric.lerp_rad(DefaultFistRig.left!.rotation,DefaultDownedWalkFistRig.left!.rotation,time)
+                        this.sprites.right_leg.position=v2.lerp({x:-0.8,y:0.22},{x:-0.7,y:0.20},time)
+                        break
+                    case 4:
+                        this.sprites.left_arm.position=v2.lerp(DefaultDownedWalkFistRig.left!.position,DefaultFistRig.left!.position,time)
+                        this.sprites.left_arm.rotation=Numeric.lerp_rad(DefaultDownedWalkFistRig.left!.rotation,DefaultFistRig.left!.rotation,time)
+                        this.sprites.right_leg.position=v2.lerp({x:-0.7,y:0.20},{x:-0.8,y:0.22},time)
+                        break
+                    default:
+                        break
+                }
+                if(this.animation.walk_time>=1){
+                    this.animation.walk_time-=1
+                    this.animation.walk_cycle=Numeric.loop(this.animation.walk_cycle+1,1,5)
+                }
+            }
+        }else{
+            if(this.animation.recoil_state!==-1){
+                switch(this.animation.recoil_type){
+                    case 0:
+                        this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
+                        this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_left_arm_position.x,this.animation.base_left_arm_position.x-0.05,this.animation.recoil_time)
+                        this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
+                        break
+                    case 1:
+                        this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
+                        this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
+                        break
+                    case 2:
+                        this.sprites.weapon2.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-0.05,this.animation.recoil_time)
+                        this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-0.05,this.animation.recoil_time)
+                        break
+                }
+                if(this.animation.recoil_state===0){
+                    this.animation.recoil_time+=dt*10
+                    if(this.animation.recoil_time>=1){
+                        this.animation.recoil_state=1
+                        this.animation.recoil_time=1
+                    }
+                }else{ 
+                    this.animation.recoil_time-=dt*10
+                    if(this.animation.recoil_time<=0){
+                        this.animation.recoil_state=-1
+                        this.animation.recoil_time=0
+                    }
+                }
+            }
             if(this.animation.walk_cycle){
                 this.animation.walk_time+=this.animation.walk_speed
                 this.sprites.left_leg.visible=true

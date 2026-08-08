@@ -47,6 +47,16 @@ export const DefaultFistRig:FistRig={
         rotation:0,
     }
 }
+export const DefaultDownedWalkFistRig:FistRig={
+    left:{
+        position:v2(0.52,-0.22),
+        rotation:0.05,
+    },
+    right:{
+        position:v2(0.52,0.22),
+        rotation:-0.05,
+    }
+}
 export const WeaponsArmRig={
     0:{
         left:{

@@ -63,6 +63,7 @@ __                                                                              
 * Increse critical chance if you dont walk from 15% to 25%
 * Bounce Kill Score Reward
 * Red, Yellow, Green And Blue Buttons
+* Downeds Walk Animation
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

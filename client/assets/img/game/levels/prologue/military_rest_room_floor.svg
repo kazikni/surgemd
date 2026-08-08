@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   viewBox="0 0 755.41164 954.19925"
-   width="755.41162"
-   height="954.19922"
+   viewBox="0 0 503.60273 636.12649"
+   width="503.60272"
+   height="636.12646"
    version="1.1"
    id="svg14"
-   sodipodi:docname="military_rest_room.svg"
+   sodipodi:docname="military_rest_room_floor.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xml:space="preserve"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -711,8 +711,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.70710678"
-     inkscape:cx="-34.648232"
-     inkscape:cy="506.28846"
+     inkscape:cx="-4.2426407"
+     inkscape:cy="439.82042"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
      inkscape:window-x="0"
@@ -799,7 +799,7 @@
          stroke-linecap="butt"
          id="path11" /></g></pattern><g
      id="g12"
-     transform="matrix(17.115913,0,0,17.115913,171.97448,466.35647)"
+     transform="matrix(11.410495,0,0,11.410495,114.64851,310.90122)"
      style="fill:#585a5c;fill-opacity:1;stroke:#404143;stroke-width:0.22082;stroke-dasharray:none;stroke-opacity:1"><g
        id="g5"><path
          id="rect7"
@@ -811,8 +811,4 @@
          id="rect4"
          style="fill:#4a4c4d;fill-opacity:1;stroke:#404143;stroke-width:0.233701;stroke-dasharray:none;stroke-opacity:1"
          d="M 33.970558,-27.130102 H 17.164327 v 1.051645 l 15.666941,1.5e-5 V 27.275361 H -8.7903543 l 0.030011,-53.35381 16.981472,-1.6e-5 v -1.051637 H -9.9307866 V 28.38544 H 33.970558 Z"
-         sodipodi:nodetypes="ccccccccccccc" /></g></g><path
-     id="rect6572"
-     style="display:none;opacity:1;stroke-width:7.435"
-     d="m 312.6866,392.17815 h 153.071 v 189.06892 h -153.071 z"
-     sodipodi:nodetypes="ccccc" /></svg>
+         sodipodi:nodetypes="ccccccccccccc" /></g></g></svg>

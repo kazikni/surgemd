@@ -18,7 +18,7 @@ export const TutorialMap:MapDef={
                 {
                     idString: 'part_1',
                     hitbox: new HitboxGroup2D(new RectHitbox2D(v2(-3.7699999809265137, -4.75), v2(-3.5399999618530273, 4.75)), new RectHitbox2D(v2(3.5399999618530273, -4.75), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, 4.539999961853027), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, -4.75), v2(-0.6100000143051147, -4.539999961853027)), new RectHitbox2D(v2(0.8199999928474426, -4.75), v2(3.5399999618530273, -4.539999961853027))),
-                    floor_image: [{"image":"military_rest_room_floor"}],
+                    floor_image: [{"image":"military_rest_room_floor",scale:3}],
                     generate:{
                         obstacles:[{"def":"metal_door","id":2,"position":{"x":-0.6299999952316284,"y":-4.650000095367432},"rotation":0,"variation":7},{"def":"green_button","id":1,"position":{"x":-0.8,"y":-4.7},"rotation":3},{"def":"small_bed","position":{"x":2.5,"y":3},"rotation":0,"variation":2},{"def":"small_bed","position":{"x":-2.5,"y":3},"rotation":0,"variation":2},{"def":"small_bed","position":{"x":-2.5,"y":-3},"rotation":2,"variation":2},{"def":"small_bed","position":{"x":2.5,"y":-3},"rotation":2,"variation":2},{"def":"large_drawer","position":{"x":3.0799999237060547,"y":0},"rotation":2},{"def":"large_drawer","position":{"x":-3.0799999237060547,"y":0},"rotation":0}],
                         puzzles:[

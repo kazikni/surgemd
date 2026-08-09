@@ -29,7 +29,7 @@ export abstract class AirBody extends MovingBody {
     set_configuration(position:Vec2,speed:number,...args:any){
         this.position = position
         this.speed = speed
-        this.base_hitbox=new CircleHitbox2D(v2.zero,100)
+        this.base_hitbox=new CircleHitbox2D(v2.zero,500)
     }
 
     override on_tick(dt: number): void {

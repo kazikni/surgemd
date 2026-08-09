@@ -7,8 +7,9 @@ export class Graphics2D extends Container2DObject {
     object_type = "graphics"
     override full: boolean=true
     _main_matrix:Matrix=matrix4.identity()
-    matrix_index:number=0
     ctx!:BatcherContext2D
+
+    matrix_index:number=0
     constructor(){
         super()
     }

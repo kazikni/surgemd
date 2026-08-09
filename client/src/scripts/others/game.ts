@@ -49,6 +49,7 @@ import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
 import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Drone } from "../objects/drone.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -140,7 +141,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody],
+            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
 
         this.set_meter_size(100)

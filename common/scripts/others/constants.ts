@@ -42,6 +42,7 @@ export enum GameObjectType{
     Parachute,
     SyncedParticle,
     Plane,
+    Drone
 }
 
 export enum HumanAnimationType{

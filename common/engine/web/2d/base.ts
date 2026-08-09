@@ -3,7 +3,7 @@ import { Vec4M, Color, ColorM} from "../../core/math/color.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { type Context2D } from "../rendering/context.ts";
 import { Renderer } from "../rendering/renderer.ts";
-import { Matrix } from "../../core/math/matrix.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { type Container2D } from "./container.ts";
 import { FrameTransform } from "../../core/definition/definitions.ts";
 import { Rect } from "../../core/math/geometry.ts";
@@ -105,6 +105,18 @@ export abstract class Container2DObject {
         if(this.parent)this.parent.dirty_children=true
     }
 
+    _real_matrix?:Matrix
+    _matrix?:Matrix
+
+    get matrix():Matrix|undefined{
+        return this._matrix
+    }
+    set matrix(val:Matrix){
+        if(matrix4.is_equal(val,this._matrix))return
+        this._matrix=val
+        this.dirty_reals=true
+    }
+
     destroyed:boolean=false
     destroy(){
         this.destroyed=true
@@ -138,16 +150,18 @@ export abstract class Container2DObject {
                 v2m.mul(this._real_position,this.parent._real_scale, this._position)
                 v2m.add(this._real_position,this._real_position,this.parent._real_position)
             }
+            if(this.parent._real_matrix&&this._matrix)this._real_matrix=matrix4.mul(this._matrix,this.parent._real_matrix)
+            else if(this.parent._real_matrix)this._real_matrix=this.parent._real_matrix
+            else this._real_matrix=this._matrix
             ColorM.mul(this._real_tint,this._tint,this.parent._tint)
         } else {
             v2m.set(this._real_position,this._position._x,this._position._y)
             v2m.set(this._real_scale,this._scale._x,this._scale._y)
             this._real_rotation = this._rotation
+            this._real_matrix=this._matrix
 
-            if(this.parent)
-                ColorM.mul(this._real_tint,this._tint,this.parent._tint)
-            else
-                ColorM.set1(this._real_tint,this._tint)
+            if(this.parent)ColorM.mul(this._real_tint,this._tint,this.parent._tint)
+            else ColorM.set1(this._real_tint,this._tint)
         }
     }
     update(_dt:number,_resources:ResourcesManager): void {

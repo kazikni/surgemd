@@ -43,6 +43,7 @@ import { HumanScript } from "../human/ai/script.ts";
 import { LevelPlayerScript } from "../mode/level_player.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { OnlineMessageType } from "common/scripts/packets/messages.ts";
+import { Drone } from "../objects/drone.ts";
 export interface GameData {
     living_count: number[]
 
@@ -175,6 +176,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Parachute,
             SyncedParticle,
             Plane,
+            Drone
         ])
 
         this.ntps=main_config.ntps
@@ -413,6 +415,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         return p
     }
 
+    add_drone(position?:Vec2,args?:any,drone?:Drone){
+        if(!drone)drone=new Drone()
+        const direction=random.rad()
+        if(!position)position=v2.from_RadAngle(direction,Math.min(this.map.size.x,this.map.size.y)+10)
+        this.scene_2d.objects.add_object(drone,Layers.Normal,undefined,{position:position,...args})
+    }
     add_plane(position:Vec2,args:Record<string,any>,plane?:Plane){
         if(!plane)plane=new Plane()
         const direction=random.rad()

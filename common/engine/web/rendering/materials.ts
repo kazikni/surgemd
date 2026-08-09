@@ -383,13 +383,13 @@ attribute vec2 a_Position;
 attribute vec2 a_TexCoord;
 attribute vec4 a_Tint;
 
-uniform mat4 u_ProjectionMatrix;
+uniform mat4 u_Matrix;
 
 varying highp vec2 v_TexCoord;
 varying lowp vec4 v_Tint;
 
 void main() {
-    gl_Position = u_ProjectionMatrix * vec4(a_Position, 0.0, 1.0);
+    gl_Position = u_Matrix * vec4(a_Position, 0.0, 1.0);
     v_TexCoord = a_TexCoord;
     v_Tint = a_Tint;
 }`,
@@ -414,7 +414,7 @@ void main() {
         const aUV   = gl.getAttribLocation(fac.program, "a_TexCoord")
         const aTint = gl.getAttribLocation(fac.program, "a_Tint")
 
-        const uProj = gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+        const uMat = gl.getUniformLocation(fac.program, "u_Matrix")!
         const uTex  = gl.getUniformLocation(fac.program, "u_Texture")!
 
         const vBuffer  = new GLDynamicBuffer(gl)
@@ -428,7 +428,7 @@ void main() {
             if (count === 0) return
 
             glr.set_program(fac.program)
-            gl.uniformMatrix4fv(uProj, false, matrix)
+            gl.uniformMatrix4fv(uMat, false, matrix)
 
             vBuffer.upload_u8(gl.ARRAY_BUFFER, attr.data)
             gl.enableVertexAttribArray(aPos)

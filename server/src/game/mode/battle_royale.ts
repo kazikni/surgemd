@@ -286,6 +286,7 @@ export class BattleRoyaleDebug extends BattleRoyale{
     }
     override async generate_map(): Promise<void> {
         this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed)
+        this.game.add_drone(v2.scale(this.game.map.size,0.5))
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.game.map.size,2)

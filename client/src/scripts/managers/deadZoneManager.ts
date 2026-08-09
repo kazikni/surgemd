@@ -47,7 +47,6 @@ export class DeadZoneManager{
     }
     update_from_data(data:DeadZoneUpdate){
         this.set_current(data.position,data.radius,this.game.minimap.map_size.x)
-
         this.dest_position=data.new_position
         this.dest_radius=data.new_radius
     }
@@ -73,16 +72,12 @@ export class DeadZoneManager{
         this.color=col
 
         this.sprite.ctx.clear()
-        this.sprite.ctx.model(model)
-
         this.sprite.ctx.fill_color=col
-        this.sprite.ctx.fill()
-
+        this.sprite.ctx.fill_model(model)
         if(radius>0){
             const model2=model2d.outlineCircle(radius,0.2,200)
-            this.sprite.ctx.model(model2)
             this.sprite.ctx.fill_color=col
-            this.sprite.ctx.fill()
+            this.sprite.ctx.fill_model(model2)
         }
     }
 }

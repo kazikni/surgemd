@@ -23,7 +23,7 @@ export class Camera2D{
     screen_camera_matrix!: Matrix
     screen_matrix!: Matrix
 
-    canvas_matrix!: Matrix
+    camera_matrix!: Matrix
 
     get zoom(): number { return this._zoom; }
     set zoom(zoom: number) {
@@ -59,7 +59,7 @@ export class Camera2D{
         this.renderer=renderer
         this.zoom=1
         this.container.full_request=false
-        this.ctx=renderer.make_context()
+        this.ctx=renderer.create_context()
     }
 
     get_rect():Rect{
@@ -131,8 +131,9 @@ export class Camera2D{
             }
         }
 
-        this.viewport_camera_matrix=matrix4.mul(this.viewport_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
-        this.screen_camera_matrix=matrix4.mul(this.screen_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
+        this.camera_matrix=matrix4.translation_2d(v2.neg(cameraPos))
+        this.viewport_camera_matrix=matrix4.mul(this.viewport_matrix,this.camera_matrix)
+        this.screen_camera_matrix=matrix4.mul(this.screen_matrix,this.camera_matrix)
 
         this.container.update(dt,resources)
     }
@@ -144,7 +145,7 @@ export class Camera2D{
             this.sort_callback=cam_sort_callback
         }
         const cam:CamA={
-            matrix:[this.viewport_camera_matrix,this.screen_camera_matrix,this.viewport_matrix,this.screen_matrix],
+            matrix:[this.viewport_camera_matrix,this.screen_camera_matrix,this.viewport_matrix,this.screen_matrix,this.camera_matrix],
             ctx:this.ctx,
             renderer:this.renderer,
             rect:this.get_rect(),
@@ -158,7 +159,6 @@ export class Camera2D{
             this.old_layer=this.layer
             this.container.dirty_zindex=true
         }
-        //this.ctx.base_matrix=this.projectionMatrix
         if(this.visible)this.container.draw(cam)
         this.ctx.render(this.renderer)
         this.ctx.clear()

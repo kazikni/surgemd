@@ -17,6 +17,13 @@ export class Drone extends AirBody {
     angular_velocity:number=0
     angular_velocity_dest:number=0
 
+    motion_timer:number = 0
+    motion_speed:number = 1
+    motion_radius:number = 10
+    motion_origin:Vec2 = v2.zero()
+
+    mode:number=0 // 0 = Static, 1 = Moving to Target
+
     constructor(){
         super()
     }
@@ -25,6 +32,9 @@ export class Drone extends AirBody {
         super.set_configuration(position,speed)
         this.type = type
         this.owner = owner
+
+        this.motion_origin = v2.clone(position)
+        this.motion_timer = 0
     }
 
     override on_create(args?: {position:Vec2,target_pos:Vec2,speed:number,type:number,owner?:Human}): void {
@@ -32,8 +42,38 @@ export class Drone extends AirBody {
     }
     override on_tick(dt: number): void {
         super.on_tick(dt)
-
         const expo=Numeric.dt_expo_inter(1,dt)
+
+        if(this.mode===0){
+            /*this.motion_timer += dt * this.motion_speed
+
+            const period = 4
+            let t = (this.motion_timer % period) / period
+            let x = 0
+            let y = 0
+
+            if(t < 0.25) {
+                const p = t / 0.25
+                x = -this.motion_radius
+                y = Numeric.lerp(0,-this.motion_radius,p)
+            }else if (t < 0.5) {
+                const p = (t - 0.25) / 0.25
+                x = Numeric.lerp(-this.motion_radius,this.motion_radius,p)
+
+                y = -this.motion_radius
+            }else if (t < 0.75) {
+                const p = (t - 0.5) / 0.25
+                x = this.motion_radius
+                y = Numeric.lerp(-this.motion_radius,this.motion_radius,p)
+            }else {
+                const p = (t - 0.75) / 0.25
+                x=Numeric.lerp(this.motion_radius,-this.motion_radius,p)
+                y = this.motion_radius
+            }
+
+            this.position.x = this.motion_origin.x + x
+            this.position.y = this.motion_origin.y + y*/
+        }
 
         this.angular_timer-=dt
         this.angular_velocity=Numeric.lerp_rad(this.angular_velocity,this.angular_velocity_dest,expo*2)
@@ -47,7 +87,7 @@ export class Drone extends AirBody {
         this.z_timer-=dt
         if(this.z_timer<=0){
             this.z_timer=random.float(2,10)
-            //this.z_dest=random.float(0.1,1)
+            this.z_dest=random.float(0.1,1)
         }
         this.z=Numeric.lerp_rad(this.z,this.z_dest,expo*0.2)
         this.set_dirty_part()

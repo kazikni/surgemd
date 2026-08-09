@@ -13,95 +13,14 @@ export type GL2D_SimpleBatchAttr = {
 export const GLF_SimpleBatch: GLMaterialFactoryCall<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr> = {
     vertex: `
 attribute vec2 a_Position;
-attribute vec2 a_Translation;
-attribute vec2 a_Scale;
-attribute float a_Rotation;
 attribute vec4 a_Color;
 
-uniform mat4 u_ProjectionMatrix;
-varying vec4 v_Color;
-
-vec2 rotate(vec2 p, float a) {
-    float c = cos(a);
-    float s = sin(a);
-    return vec2(
-        p.x * c - p.y * s,
-        p.x * s + p.y * c
-    );
-}
-void main() {
-    vec2 p = rotate(a_Position*a_Scale, a_Rotation)+a_Translation;
-
-    gl_Position = u_ProjectionMatrix * vec4(p, 0.0, 1.0);
-    v_Color = a_Color;
-}`,
-    frag: `
-precision mediump float;
+uniform mat4 u_Matrix;
 
 varying vec4 v_Color;
 
 void main() {
-    gl_FragColor = v_Color;
-}`,
-create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>) {
-    const aPosition = gl.gl.getAttribLocation(fac.program, "a_Position")
-    const aTrans = gl.gl.getAttribLocation(fac.program, "a_Translation")!
-    const aScale = gl.gl.getAttribLocation(fac.program, "a_Scale")!
-    const aRotation = gl.gl.getAttribLocation(fac.program, "a_Rotation")!
-    const aColor = gl.gl.getAttribLocation(fac.program, "a_Color")!
-    const uProj = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
-
-    const vBuffer  = new GLDynamicBuffer(gl.gl)
-
-    const draw = (mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,matrix: Matrix,attr:GL2D_SimpleBatchAttr) => {
-        gl.set_program(fac.program)
-        gl.gl.uniformMatrix4fv(uProj, false, matrix)
-
-        vBuffer.upload_u8(gl.gl.ARRAY_BUFFER, attr.data)
-
-        gl.gl.enableVertexAttribArray(aPosition)
-        gl.gl.enableVertexAttribArray(aTrans)
-        gl.gl.enableVertexAttribArray(aScale)
-        gl.gl.enableVertexAttribArray(aRotation)
-        gl.gl.enableVertexAttribArray(aColor)
-
-        gl.gl.vertexAttribPointer(aPosition, 2, gl.gl.FLOAT, false, 32, 0) // F4, F4
-        gl.gl.vertexAttribPointer(aTrans, 2, gl.gl.FLOAT, false, 32, 8) // F4, F4
-        gl.gl.vertexAttribPointer(aScale, 2, gl.gl.FLOAT, false, 32, 16) // F4, F4
-        gl.gl.vertexAttribPointer(aRotation, 1, gl.gl.FLOAT, false, 32, 24) // F4
-        gl.gl.vertexAttribPointer(aColor, 4, gl.gl.UNSIGNED_BYTE, true, 32, 28) //U1,U1,U1,U1
-
-        gl.gl.drawArrays(gl.gl.TRIANGLES,0,attr.data_count)
-    }
-
-    return (arg: GL2D_SimpleBatchArgs) => ({
-        ...arg,
-        factory: fac,
-        group: "simple_batch",
-        draw,
-        free:()=>{
-            vBuffer.free()
-        }
-    })
-}
-}
-export type GL2D_CTXSimpleBatchArgs = {
-}
-export type GL2D_CTXSimpleBatchAttr = {
-    data:Uint8Array
-    data_count:number
-}
-export const GLF_CTXSimpleBatch: GLMaterialFactoryCall<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr> = {
-    vertex: `
-attribute vec2 a_Position;
-attribute vec4 a_Color;
-
-uniform mat4 u_ProjectionMatrix;
-
-varying vec4 v_Color;
-
-void main() {
-    gl_Position = u_ProjectionMatrix * vec4(a_Position,0.0,1.0);
+    gl_Position = u_Matrix * vec4(a_Position,0.0,1.0);
     v_Color = a_Color;
 }`,
     frag: `
@@ -115,13 +34,13 @@ void main() {
 create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>) {
     const aPosition = gl.gl.getAttribLocation(fac.program, "a_Position")
     const aColor = gl.gl.getAttribLocation(fac.program, "a_Color")!
-    const uProj = gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
+    const uMat = gl.gl.getUniformLocation(fac.program, "u_Matrix")!
     
     const vBuffer  = new GLDynamicBuffer(gl.gl)
 
     const draw = (mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,matrix: Matrix,attr:GL2D_SimpleBatchAttr) => {
         gl.set_program(fac.program)
-        gl.gl.uniformMatrix4fv(uProj, false, matrix)
+        gl.gl.uniformMatrix4fv(uMat, false, matrix)
 
         vBuffer.upload_u8(gl.gl.ARRAY_BUFFER, attr.data)
 

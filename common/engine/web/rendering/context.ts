@@ -8,6 +8,7 @@ import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
 import { Stream } from "../../core/net/stream.ts";
 
+export type VertexAddCallback=(cmd:BatcherMaterialCommand,vertex:number)=>void
 export type ContextGradient = {
     type: "linear" | "radial"
     from?: Vec2
@@ -24,16 +25,15 @@ export type ContextState = {
     line_inner: number
     line_outer: number
 
-    current_advanced_material?:Material
     current_material?:Material
+    on_vertex?:VertexAddCallback
 }
 export abstract class Context2D{
     protected state: ContextState
     protected stack: ContextState[] = []
-    protected path: Vec2[] = []
-    protected current_model?: Model2D
 
-    default_advanced_material?:Material
+    protected path: Vec2[][]=[]
+
     default_material?:Material
     base_matrix?:Matrix
 
@@ -42,13 +42,6 @@ export abstract class Context2D{
     }
     set material(val:Material|undefined){
         this.state.current_material=val
-    }
-    
-    get advanced_material():Material|undefined{
-        return this.state.current_advanced_material
-    }
-    set advanced_material(val:Material|undefined){
-        this.state.current_advanced_material=val
     }
 
     static default_state(ctx?:Context2D):ContextState{
@@ -62,7 +55,6 @@ export abstract class Context2D{
             line_inner:0,
             line_outer:1,
 
-            current_advanced_material:ctx?.default_advanced_material,
             current_material:ctx?.default_material,
         }
     }
@@ -81,8 +73,8 @@ export abstract class Context2D{
             line_inner: s.line_inner,
             line_outer: s.line_outer,
 
-            current_advanced_material:s.current_advanced_material,
             current_material:s.current_material,
+            on_vertex:s.on_vertex
         })
     }
     restore() {
@@ -169,74 +161,75 @@ export abstract class Context2D{
         this.state.transform_matrix = matrix4.identity()
     }
 
-    abstract fill_rect(x: number, y: number, w: number, h: number):void
-    abstract stroke_rect(x: number, y: number, w: number, h: number):void
-    abstract round_rect(x: number,y: number,w: number,h: number,r: number,segments?:number):void
-    draw_grid(begin_x: number,begin_y: number,end_x: number,end_y: number,grid_size: number,offset:Vec2=v2.zero):void {
+    grid(begin_x: number,begin_y: number,end_x: number,end_y: number,grid_size: number,offset:Vec2=v2.zero):void {
         const gx0 = Math.min(begin_x, end_x)+offset.x
-        const gx1 = Math.max(begin_x, end_x)+offset.y
-        const gy0 = Math.min(begin_y, end_y)+offset.x
+        const gx1 = Math.max(begin_x, end_x)+offset.x
+        const gy0 = Math.min(begin_y, end_y)+offset.y
         const gy1 = Math.max(begin_y, end_y)+offset.y
-
         for (let x = gx0; x <= gx1; x++) {
             const wx = x * grid_size
-            this.begin_path()
             this.move_to(wx, gy0 * grid_size)
             this.line_to(wx, gy1 * grid_size)
-            this.stroke()
         }
         for (let y = gy0; y <= gy1; y++) {
             const wy = y * grid_size
-            this.begin_path()
             this.move_to(gx0 * grid_size, wy)
             this.line_to(gx1 * grid_size, wy)
-            this.stroke()
         }
     }
 
     begin_path(){
-        this.path.length = 0
+        this.path.length=0
     }
-    end_path() {
-        this.current_model=model2d.triangulateConvex(this.path)
+    end_path(){
     }
-    finish_path(){
-        this.current_model=model2d.triangulateConvex(this.path)
-    }
+
     move_to(x: number, y: number) {
-        this.path.push({ x, y })
+        this.path.push([{x,y}])
     }
     line_to(x: number, y: number) {
-        this.path.push({ x, y })
+        if(this.path.length===0)this.path.push([])
+        this.path[this.path.length-1].push({x,y})
     }
 
     rect(min: Vec2, max: Vec2) {
-        this.begin_path()
         this.move_to(min.x, min.y)
         this.line_to(max.x, min.y)
         this.line_to(max.x, max.y)
         this.line_to(min.x, max.y)
-        this.line_to(min.x, min.y)
-        this.finish_path()
     }
+    /*round_rect(x: number,y: number,w: number,h: number,r: number,segments = 8) {
+        r = Math.min(r, w / 2, h / 2)
+        this.move_to(x + r, y)
+        this.line_to(x + w - r, y)
+        this.arc(x + w - r, y + r, r, -Math.PI / 2, 0, segments)
+        this.line_to(x + w, y + h - r)
+        this.arc(x + w - r, y + h - r, r, 0, Math.PI / 2, segments)
+        this.line_to(x + r, y + h)
+        this.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI, segments)
+        this.line_to(x, y + r)
+        this.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5, segments)
+    }*/
     circle(center: Vec2, radius: number, segments = 32) {
-        this.begin_path()
-        this.arc(center.x, center.y, radius, 0, Math.PI * 2, segments)
-        if (this.path.length) {
-            this.line_to(this.path[0].x, this.path[0].y)
+        if (segments < 3) segments = 3
+        const path: Vec2[] = []
+        const step = Math.PI * 2 / segments
+        for (let i = 0; i < segments; i++) {
+            const a = i * step
+            path.push({
+                x: center.x + Math.cos(a) * radius,
+                y: center.y + Math.sin(a) * radius
+            })
         }
-        this.finish_path()
+        this.path.push(path)
     }
-    arc(cx: number,cy: number,radius: number,start: number,end: number,segments = 32) {
-        this.begin_path()
+    arc(cx: number,cy: number,radius: number,start: number,end: number,segments = 32){
+        if(segments<1)segments=1
         const step = (end - start) / segments
         for (let i = 0; i <= segments; i++) {
             const a = start + step * i
-            const x = cx + Math.cos(a) * radius
-            const y = cy + Math.sin(a) * radius
-            this.path.push({ x, y })
+            this.line_to(cx + Math.cos(a) * radius,cy + Math.sin(a) * radius)
         }
-        this.finish_texture()
     }
 
     hitbox(hb: Hitbox2D, segments = 32) {
@@ -254,66 +247,45 @@ export abstract class Context2D{
                     this.hitbox(child, segments)
                 }
                 break
-            case HitboxType2D.polygon:
-                this.begin_path()
-                if (hb.points.length === 0) return
-                this.move_to(hb.points[0].x, hb.points[0].y)
+            case HitboxType2D.polygon: {
+                if(hb.points.length===0)return
+                this.move_to(hb.points[0].x,hb.points[0].y)
                 for (let i = 1; i < hb.points.length; i++) {
-                    this.line_to(hb.points[i].x, hb.points[i].y)
+                    const p = hb.points[i]
+                    this.line_to(p.x,p.y)
                 }
-                this.line_to(hb.points[0].x, hb.points[0].y)
-                this.finish_path()
-                break
+                return
+            }
         }
     }
-    model(model:Model2D){
-        this.current_model=model
-    }
 
-    subdivide(iterations = 1) {
-        const closed =
-            this.path.length > 2 &&
-            v2.distance(this.path[0], this.path[this.path.length - 1]) < 0.0001;
-
-        let pts = closed
-            ? this.path.slice(0, -1)
-            : [...this.path];
-
+    /*subdivide(iterations = 1) {
+        const closed=this.path.length>2&&v2.distance(this.path[0], this.path[this.path.length - 1])<0.0001
+        let pts=closed?this.path.slice(0, -1):[...this.path]
         for (let k = 0; k < iterations; k++) {
-            const out: Vec2[] = [];
-
-            const last = closed ? pts.length : pts.length - 1;
-
-            if (!closed)
-                out.push(v2.clone(pts[0]));
+            const out: Vec2[] = []
+            const last = closed ? pts.length:pts.length-1
+            if(!closed)out.push(v2.clone(pts[0]))
 
             for (let i = 0; i < last; i++) {
                 const a = pts[i];
-                const b = pts[(i + 1) % pts.length];
-
+                const b = pts[(i + 1) % pts.length]
                 out.push({
                     x: a.x * 0.75 + b.x * 0.25,
                     y: a.y * 0.75 + b.y * 0.25
-                });
-
+                })
                 out.push({
                     x: a.x * 0.25 + b.x * 0.75,
                     y: a.y * 0.25 + b.y * 0.75
-                });
+                })
             }
-
-            if (!closed)
-                out.push(v2.clone(pts[pts.length - 1]));
-
-            pts = out;
+            if(!closed)out.push(v2.clone(pts[pts.length - 1]));
+            pts = out
         }
-
-        if (closed)
-            pts.push(v2.clone(pts[0]));
-
-        this.path = pts;
-    }
-    round(strength = 0.5, iterations = 1) {
+        if(closed)pts.push(v2.clone(pts[0]))
+        this.path = pts
+    }*/
+    /*round(strength = 0.5, iterations = 1) {
         const closed =
             this.path.length > 2 &&
             v2.distance(this.path[0], this.path[this.path.length - 1]) < 0.0001;
@@ -351,14 +323,34 @@ export abstract class Context2D{
             pts.push(v2.clone(pts[0]));
 
         this.path = pts;
+    }*/
+
+    fill(matrix:Matrix=matrix4.default.identity):void{
+        if(!this.state.current_material)return
+        const color=this.apply_color(this.state.fill_color as Color)
+        for(const p of this.path){
+            this.draw_model(model2d.triangulateConvex(p,undefined,this.state.transform_matrix),color,matrix,this.state.current_material,this.state.on_vertex)
+        }
+    }
+    fill_model(model:Model2D,matrix:Matrix=matrix4.default.identity):void{
+        if(this.state.current_material)this.draw_model(model,this.apply_color(this.state.fill_color as Color),matrix,this.state.current_material,this.state.on_vertex)
+    }
+    stroke(matrix:Matrix=matrix4.default.identity,on_vertex?:VertexAddCallback){
+        if(!this.state.current_material)return
+        const color=this.apply_color(this.state.stroke_color as Color)
+        for(const path of this.path){
+            for (let i = 0;i<path.length-1;i++) {
+                const a=path[i]
+                const b=path[i+1]
+                const line=model2d.line(a,b,this.state.line_width)
+                const vertexCount = line.vertices.length / 2
+                if (vertexCount < 2) return
+                this.draw_model(line,color,matrix,this.state.current_material,on_vertex)
+            }
+        }
     }
 
-    abstract fill():void
-    abstract fill_model(model: Model2D,position:Vec2,scale:Vec2,rotation:number):void
-
-    abstract stroke():void
-    abstract stroke_model(model:Model2D,position:Vec2,scale:Vec2,rotation:number):void
-
+    abstract draw_model(model:Model2D,color:Color,matrix:Matrix,material:Material,on_vertex?:VertexAddCallback):void
     abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color,matrix?:Matrix):void
     abstract draw_batcher(batcher:Batcher,matrix?:Matrix):void
 
@@ -377,150 +369,46 @@ export class BatcherContext2D extends Context2D{
         super()
         this.batcher=new Batcher()
     }
-    fill_rect(x: number, y: number, w: number, h: number) {
-        const model = model2d.rect(
-            { x, y },
-            { x: x + w, y: y + h }
-        )
-
-        const c = this.apply_color(this.state.fill_color)
-
-        /*this.batcher.draw_model2d(
-            this.materials[this.current_material],
-            model,
-            v2.null,
-            v2.null,
-            0,
-            {
-                color: { value: [c.r, c.g, c.b, c.a] }
-            },
-        )*/
-    }
-    stroke_rect(x: number, y: number, w: number, h: number) {
-        const lw = this.state.line_width
-
-        this.fill_rect(x, y, w, lw)
-        this.fill_rect(x, y + h - lw, w, lw)
-        this.fill_rect(x, y, lw, h)
-        this.fill_rect(x + w - lw, y, lw, h)
-    }
-    fill() {
-        if(!this.state.current_material||!this.current_model) return
-
-        const model = this.current_model
-        const c = this.apply_color(this.state.fill_color as Color)
-
+    draw_model(model:Model2D,color:Color,matrix:Matrix,material:Material,on_vertex?:VertexAddCallback){
         const vertexCount = model.vertices.length / 2
         if (vertexCount < 2) return
-        const cmd = this.batcher.ensure(this.state.current_material,this.transform_matrix)
-
+        const cmd = this.batcher.ensure(material)
         for(let i=0;i<vertexCount;i++){
-            cmd.stream.write_float32(model.vertices[i*2]) // 4
-            cmd.stream.write_float32(model.vertices[i*2+1]) // 8
-            cmd.stream.write_uint8(c.r) // 29
-            cmd.stream.write_uint8(c.g) // 30
-            cmd.stream.write_uint8(c.b) // 31
-            cmd.stream.write_uint8(c.a) // 32
+            const x=model.vertices[i*2]
+            const y=model.vertices[i*2+1]
+            cmd.stream.write_float32(matrix[0]*x+matrix[4]*y+matrix[12])
+            cmd.stream.write_float32(matrix[1]*x+matrix[5]*y+matrix[13])
+            cmd.stream.write_uint8(color.r) // 29
+            cmd.stream.write_uint8(color.g) // 30
+            cmd.stream.write_uint8(color.b) // 31
+            cmd.stream.write_uint8(color.a) // 32
+            on_vertex?.(cmd,i)
             cmd.vertex_count++
         }
     }
-    stroke() {
-        if(!this.state.current_material) return
-        const c = this.apply_color(this.state.stroke_color as Color)
-        const cmd = this.batcher.ensure(this.state.current_material,this.transform_matrix)
-        for (let i = 0; i < this.path.length - 1; i++) {
-            const a = this.path[i]
-            const b = this.path[i + 1]
-            const line = model2d.line(a, b, this.state.line_width)
-            const vertexCount = line.vertices.length / 2
-            if (vertexCount < 2) return
-            for(let i=0;i<vertexCount;i++){
-                cmd.stream.write_float32(line.vertices[i*2]) // 4
-                cmd.stream.write_float32(line.vertices[i*2+1]) // 8
-                cmd.stream.write_uint8(c.r) // 29
-                cmd.stream.write_uint8(c.g) // 30
-                cmd.stream.write_uint8(c.b) // 31
-                cmd.stream.write_uint8(c.a) // 32
-                cmd.vertex_count++
-            }
-        }
-    }
-    draw_frame2d(frame:Frame|undefined,model:Float32Array,tint: Color=ColorM.default.white,matrix?:Matrix, on_vertex_add?:(cmd:BatcherMaterialCommand,vertex:number)=>void) {
+    draw_frame2d(frame:Frame|undefined,model:Float32Array,tint: Color=ColorM.default.white,matrix:Matrix=matrix4.default.identity, on_vertex?:VertexAddCallback) {
         if(!frame||!frame.texture?.material||tint.a<=0)return
         const vertexCount = model.length / 2
         if (vertexCount < 2) return
-        const cmd = this.batcher.ensure(frame.texture.material,matrix??this.transform_matrix)
+        const cmd = this.batcher.ensure(frame.texture.material)
         for(let i=0;i<vertexCount;i++){
-            cmd.stream.write_float32(model[i*2])
-            cmd.stream.write_float32(model[i*2+1])
+            const x=model[i*2]
+            const y=model[i*2+1]
+            cmd.stream.write_float32(matrix[0]*x+matrix[4]*y+matrix[12])
+            cmd.stream.write_float32(matrix[1]*x+matrix[5]*y+matrix[13])
             Stream.write_uv(cmd.stream,frame.texcoords[i*2],frame.texcoords[i*2+1])
             cmd.stream.write_uint8(tint.r)
             cmd.stream.write_uint8(tint.g)
             cmd.stream.write_uint8(tint.b)
             cmd.stream.write_uint8(tint.a)
-            on_vertex_add?.(cmd,i)
+            on_vertex?.(cmd,i)
             cmd.vertex_count++
         }
         return cmd
     }
 
-    fill_model(model: Model2D,position:Vec2,scale:Vec2,rotation:number){
-        if(!this.advanced_material)return
-        const c = this.apply_color(this.state.fill_color as Color)
-
-        const vertexCount = model.vertices.length / 2
-        if (vertexCount < 2) return
-        const cmd = this.batcher.ensure(this.advanced_material,this.transform_matrix)
-
-        for(let i=0;i<vertexCount;i++){
-            cmd.stream.write_float32(model.vertices[i*2]) // 4
-            cmd.stream.write_float32(model.vertices[i*2+1]) // 8
-            cmd.stream.write_float32(position.x) // 12
-            cmd.stream.write_float32(position.y) // 16
-            cmd.stream.write_float32(scale.x) // 20
-            cmd.stream.write_float32(scale.y) // 24
-            cmd.stream.write_float32(rotation) // 28
-            cmd.stream.write_uint8(c.r) // 29
-            cmd.stream.write_uint8(c.g) // 30
-            cmd.stream.write_uint8(c.b) // 31
-            cmd.stream.write_uint8(c.a) // 32
-            cmd.vertex_count++
-        }
-    }
-    stroke_model(model: Model2D, position: Vec2, scale: Vec2, rotation:number): void {
-        const c = this.apply_color(this.state.stroke_color)
-
-        /*this.batcher.draw_model2d(
-            this.materials[1],
-            model2d.stroke_model(model,this.state.line_width,this.state.line_inner,this.state.line_outer),
-            position,
-            scale,
-            rotation,
-            {
-                color: { value: [c.r, c.g, c.b, c.a] }
-            }
-        )*/
-    }
-    override draw_batcher(batcher: Batcher, matrix?: Matrix): void {
+    override draw_batcher(batcher: Batcher,matrix?:Matrix): void {
         this.batcher.draw_batcher(batcher,matrix)
-    }
-    round_rect(x: number,y: number,w: number,h: number,r: number,segments = 8) {
-        r = Math.min(r, w / 2, h / 2)
-
-        this.begin_path()
-
-        this.move_to(x + r, y)
-        this.line_to(x + w - r, y)
-        this.arc(x + w - r, y + r, r, -Math.PI / 2, 0, segments)
-
-        this.line_to(x + w, y + h - r)
-        this.arc(x + w - r, y + h - r, r, 0, Math.PI / 2, segments)
-
-        this.line_to(x + r, y + h)
-        this.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI, segments)
-
-        this.line_to(x, y + r)
-        this.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5, segments)
     }
 
     render(_renderer:Renderer){
@@ -530,9 +418,6 @@ export class BatcherContext2D extends Context2D{
     }
     override sub_context(): BatcherContext2D {
         const ctx=new BatcherContext2D()
-
-        ctx.default_advanced_material=this.default_advanced_material
-        ctx.state.current_advanced_material=ctx.default_advanced_material
     
         ctx.default_material=this.default_material
         ctx.state.current_material=ctx.default_material
@@ -558,10 +443,7 @@ export class GLContext2D extends BatcherContext2D{
         super()
         this.renderer=renderer
 
-        this.default_advanced_material=(renderer as WebglRenderer).factorys2D.simple_batch.create({})
-        this.state.current_advanced_material=this.default_advanced_material
-
-        this.default_material=(renderer as WebglRenderer).factorys2D.ctx_simple_batch.create({})
+        this.default_material=(renderer as WebglRenderer).factorys2D.simple_batch.create({})
         this.state.current_material=this.default_material
     }
     override render(renderer: WebglRenderer): void {

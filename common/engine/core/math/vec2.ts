@@ -1,5 +1,5 @@
 import { Angle, DegAngle, Orientation, PolarMovement, RadAngle } from "./geometry.ts"
-import { Matrix } from "./matrix.ts";
+import { type Matrix } from "./matrix.ts";
 import { random, SeededRandom } from "./random.ts"
 
 export interface Vec2{

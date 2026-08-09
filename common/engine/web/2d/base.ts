@@ -23,6 +23,7 @@ export abstract class Container2DObject {
 
     parent?: Container2D
     id_on_parent:number=0
+    _final_matrix:Matrix=matrix4.identity()
 
     _layer: number = 0
     get layer():number{
@@ -138,7 +139,7 @@ export abstract class Container2DObject {
 
     dirty_reals=true
     update_real(){
-        if (this.parent&&!this.parent.object_group) {
+        if(this.parent&&!this.parent.object_group) {
             v2m.mul(this._real_scale,this.parent._real_scale, this._scale)
             if(this.sync_rotation){
                 this._real_rotation = this.parent._real_rotation + this._rotation

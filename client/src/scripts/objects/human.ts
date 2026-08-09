@@ -292,7 +292,6 @@ export class Human extends MovingBody{
 
         // Emote
         this.sprites.emote_container.zIndex=zIndexes.DamageSplashs
-        this.sprites.emote_container.sync_rotation=false
         this.sprites.emote_container.position=v2(0,-1.5)
         this.sprites.emote_sprite.hotspot=v2.half_one
         this.sprites.emote_bg.hotspot=v2.half_one

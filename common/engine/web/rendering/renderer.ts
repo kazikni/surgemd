@@ -1,7 +1,6 @@
 import { v2, Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_CTXSimpleBatchArgs, GL2D_CTXSimpleBatchAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CTXSimpleBatch, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
+import { GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
-import { SingleMatBatching2D, SingleMatBatching2DGL } from "./batcher.ts";
 import { Matrix } from "../../core/math/matrix.ts";
 import { Context2D, GLContext2D } from "./context.ts";
 export interface Material{
@@ -71,9 +70,8 @@ export abstract class Renderer {
     abstract bind_texture(texture:Texture):void
     abstract unbind_texture():void
 
-    abstract make_context():Context2D
+    abstract create_context():Context2D
 
-    abstract draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void
     abstract set_background_color(color:Color):void
     abstract clear(): void
 
@@ -146,7 +144,6 @@ export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext
     readonly factorys2D:{
         simple_batch:GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
-        ctx_simple_batch:GLMaterialFactory<GL2D_CTXSimpleBatchArgs,GL2D_CTXSimpleBatchAttr>,
         simple:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>,
         texture:GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
@@ -193,7 +190,6 @@ export class WebglRenderer extends Renderer {
 
         this.factorys2D={
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
-            ctx_simple_batch:this.proccess_factory(GLF_CTXSimpleBatch),
             simple:this.proccess_factory(GLF_Simple),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
             texture:this.proccess_factory(GLF_Texture),
@@ -230,7 +226,7 @@ export class WebglRenderer extends Renderer {
         this.quadTBO = gl.createBuffer()
         this.canvas.style.backgroundColor=`rgb(${0},${0},${0})`
     }
-    make_context():GLContext2D{
+    create_context():GLContext2D{
         return new GLContext2D(this)
     }
 
@@ -336,12 +332,6 @@ export class WebglRenderer extends Renderer {
         this.gl.attachShader(p!, this.createShader(frag, this.gl.FRAGMENT_SHADER))
         this.gl.linkProgram(p!)
         return p!
-    }
-    create_single_mat_batcher(mat:Material):SingleMatBatching2DGL{
-        return new SingleMatBatching2DGL(this,mat)
-    }
-    override draw_single_mat_batcher2d(matrix:Matrix,batcher:SingleMatBatching2D):void{
-        batcher.render(matrix)
     }
     set_program(program:WebGLProgram){
         if(!this.current_program||program!==this.current_program){

@@ -2,6 +2,7 @@ import { FrameDef, FrameTransform, KeyFrameSpriteDef } from "../../core/definiti
 import { ImageModel2D } from "../../core/definition/models.ts"
 import { ColorM } from "../../core/math/color.ts"
 import { Rect } from "../../core/math/geometry.ts";
+import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Numeric } from "../../core/math/utils.ts"
 import { v2, Vec2, Vec2M } from "../../core/math/vec2.ts"
 import { Frame, ResourcesManager } from "../resources/resources.ts"
@@ -90,7 +91,9 @@ export class Sprite2D extends Container2DObject{
             this.dirty_reals=true
         }
         this.draw_super()
-        cam.ctx.draw_frame2d(this.frame,this.model,this._real_tint,cam.matrix[this.matrix_index])
+        let matrix:Matrix=matrix4.clone(cam.matrix[this.matrix_index])
+        if(this._real_matrix)matrix=matrix4.mul(matrix,this._real_matrix)
+        cam.ctx.draw_frame2d(this.frame,this.model,this._real_tint,matrix)
     }
 }
 export class AnimatedSprite2D extends Sprite2D{

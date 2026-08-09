@@ -529,24 +529,53 @@ export interface PackedRect<T> {
     data: T
 }
 
+interface SkylineNode {
+    x: number
+    y: number
+    width: number
+}
+
 export interface Bin<T> {
     width: number
     height: number
     rects: PackedRect<T>[]
+    skyline: SkylineNode[]
 }
 
 export class RectPacker<T> {
     bins: Bin<T>[] = []
 
-    constructor(public maxWidth: number,public maxHeight: number,public margin: number = 0) {}
+    constructor(
+        public maxWidth: number,
+        public maxHeight: number,
+        public margin: number = 0
+    ) {}
 
     add(w: number, h: number, data: T) {
         const paddedW = w + this.margin * 2
         const paddedH = h + this.margin * 2
 
+        if (
+            paddedW > this.maxWidth ||
+            paddedH > this.maxHeight
+        ) {
+            throw new Error("Rect too big for bin")
+        }
+
+        // Primeiro tenta os bins existentes.
         for (const bin of this.bins) {
             const pos = this.tryPlace(bin, paddedW, paddedH)
+
             if (pos) {
+                this.place(
+                    bin,
+                    pos.index,
+                    pos.x,
+                    pos.y,
+                    paddedW,
+                    paddedH
+                )
+
                 bin.rects.push({
                     x: pos.x + this.margin,
                     y: pos.y + this.margin,
@@ -554,6 +583,7 @@ export class RectPacker<T> {
                     h,
                     data
                 })
+
                 return
             }
         }
@@ -561,11 +591,32 @@ export class RectPacker<T> {
         const bin: Bin<T> = {
             width: this.maxWidth,
             height: this.maxHeight,
-            rects: []
+            rects: [],
+            skyline: [{
+                x: 0,
+                y: 0,
+                width: this.maxWidth
+            }]
         }
 
-        const pos = this.tryPlace(bin, paddedW, paddedH)
-        if (!pos) throw new Error("Rect too big for bin")
+        const pos = this.tryPlace(
+            bin,
+            paddedW,
+            paddedH
+        )
+
+        if (!pos) {
+            throw new Error("Rect too big for bin")
+        }
+
+        this.place(
+            bin,
+            pos.index,
+            pos.x,
+            pos.y,
+            paddedW,
+            paddedH
+        )
 
         bin.rects.push({
             x: pos.x + this.margin,
@@ -578,29 +629,123 @@ export class RectPacker<T> {
         this.bins.push(bin)
     }
 
-    private tryPlace(bin: Bin<T>, w: number, h: number) {
-        for (let y = 0; y + h <= bin.height; y++) {
-            for (let x = 0; x + w <= bin.width; x++) {
-                if (!this.collides(bin, x, y, w, h)) {
-                    return { x, y }
-                }
+    private tryPlace(
+        bin: Bin<T>,
+        w: number,
+        h: number
+    ): { x: number, y: number, index: number } | undefined {
+
+        let bestX = 0
+        let bestY = Infinity
+        let bestIndex = -1
+
+        const skyline = bin.skyline
+
+        for (let i = 0; i < skyline.length; i++) {
+            const node = skyline[i]
+
+            if (node.x + w > bin.width)
+                break
+
+            let x = node.x
+            let y = node.y
+            let widthLeft = w
+
+            let j = i
+
+            while (widthLeft > 0) {
+                const current = skyline[j]
+
+                if (current.y > y)
+                    y = current.y
+
+                if (y + h > bin.height)
+                    break
+
+                widthLeft -= current.width
+                j++
+
+                if (j >= skyline.length && widthLeft > 0)
+                    break
+            }
+
+            if (widthLeft > 0)
+                continue
+
+            // Bottom-left heuristic:
+            // menor Y primeiro, depois menor X.
+            if (
+                y < bestY ||
+                (y === bestY && x < bestX)
+            ) {
+                bestX = x
+                bestY = y
+                bestIndex = i
             }
         }
-        return null
+
+        if (bestIndex < 0)
+            return undefined
+
+        return {
+            x: bestX,
+            y: bestY,
+            index: bestIndex
+        }
     }
 
-    private collides(bin: Bin<T>, x: number, y: number, w: number, h: number) {
-        for (const r of bin.rects) {
-            const rx = r.x - this.margin
-            const ry = r.y - this.margin
-            const rw = r.w + this.margin * 2
-            const rh = r.h + this.margin * 2
+    private place(
+        bin: Bin<T>,
+        index: number,
+        x: number,
+        y: number,
+        w: number,
+        h: number
+    ) {
+        const skyline = bin.skyline
 
-            if (x < rx + rw && x + w > rx &&y < ry + rh &&y + h > ry) {
-                return true
+        const newNode: SkylineNode = {
+            x,
+            y: y + h,
+            width: w
+        }
+
+        skyline.splice(index, 0, newNode)
+
+        // Remove/encurta nós cobertos pelo novo retângulo.
+        const endX = x + w
+
+        for (
+            let i = index + 1;
+            i < skyline.length;
+        ) {
+            const node = skyline[i]
+
+            if (node.x >= endX)
+                break
+
+            const overlap = endX - node.x
+
+            if (overlap >= node.width) {
+                skyline.splice(i, 1)
+            } else {
+                node.x += overlap
+                node.width -= overlap
+                break
             }
         }
-        return false
+
+        for (let i = 0; i < skyline.length - 1;) {
+            const a = skyline[i]
+            const b = skyline[i + 1]
+
+            if (a.y === b.y) {
+                a.width += b.width
+                skyline.splice(i + 1, 1)
+            } else {
+                i++
+            }
+        }
     }
 }
 export const circle={

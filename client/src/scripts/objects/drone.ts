@@ -1,5 +1,5 @@
 import { GameObjectType } from "common/scripts/others/constants.ts"
-import { Color, Hitbox2D, Stream, v2 } from "common/engine/core.ts";
+import { Color, Hitbox2D, matrix4, Stream, v2, v2m } from "common/engine/core.ts";
 import { AirBody } from "./airbody.ts";
 import { Container2D, Sprite2D, Tween } from "common/engine/web.ts";
 
@@ -22,7 +22,7 @@ export class Drone extends AirBody {
     hidden_hitbox?:Hitbox2D
     
     can_hide(scope_zoom:number=1):boolean{
-        return Math.max(1-this.z,0)/(scope_zoom*3)<0.75
+        return Math.max(1.2-this.z,0)/(scope_zoom*2.7)<0.7
     }
     set_hidden(hide:boolean){
         if(this.hidden===hide)return
@@ -63,6 +63,9 @@ export class Drone extends AirBody {
             s.rotation+=6*dt
         }
 
+        const paralax=1+(this.z*0.5)
+        this.visual.scale=v2(1/paralax,1/paralax)
+        this.visual.matrix=matrix4.parallax_2d(this.game.cam2d.position,paralax)
         this.set_hidden(this.can_hide(this.game.scope_zoom))
     }
     override on_initial(): void {

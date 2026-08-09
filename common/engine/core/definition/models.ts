@@ -1,6 +1,7 @@
 import { Rect } from "../math/geometry.ts";
 import { HitboxType2D, type Hitbox2D } from "../math/hitbox.ts"
-import { v2, Vec2 } from "../math/vec2.ts";
+import { Matrix, matrix4 } from "../math/matrix.ts";
+import { v2, v2m, Vec2 } from "../math/vec2.ts";
 import { v3, Vec3 } from "../math/vec3.ts";
 
 export interface Model2D{
@@ -425,7 +426,7 @@ export const model2d={
             outer,
         )
     },
-    triangulateConvex(polygon: Vec2[], texSize = 32): Model2D {
+    triangulateConvex(polygon: Vec2[], texSize = 32,matrix?:Matrix): Model2D {
         if (!polygon || polygon.length < 3) return { vertices: new Float32Array(0), tex_coords: new Float32Array(0) }
 
         const EPS = 1e-6
@@ -439,6 +440,7 @@ export const model2d={
 
         for (let k = 0; k < indices.length; k++) {
             const v = pts[indices[k]]
+            if(matrix)v2m.mul_matrix(v,v,matrix)
             verts.push(v.x, v.y)
             tex.push(v.x / texSize, v.y / texSize)
         }

@@ -1,5 +1,5 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioInstance, CenterHotspot, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/web.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioInstance, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/web.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
@@ -172,16 +172,16 @@ export class Human extends MovingBody{
         this.container=new AnimatedContainer2D(this.game as unknown as ClientGame)
 
         this.sprites={
-            body:this.container.add_animated_sprite("body",{scale:1.5,zIndex:4,hotspot:CenterHotspot}),
-            eyes:this.container.add_animated_sprite("eyes",{scale:1.5,zIndex:5,hotspot:CenterHotspot}),
-            hair:this.container.add_sprite("hair",{scale:1.5,zIndex:6,hotspot:CenterHotspot}),
+            body:this.container.add_animated_sprite("body",{scale:1.5,zIndex:4,hotspot:v2.half_one}),
+            eyes:this.container.add_animated_sprite("eyes",{scale:1.5,zIndex:5,hotspot:v2.half_one}),
+            hair:this.container.add_sprite("hair",{scale:1.5,zIndex:6,hotspot:v2.half_one}),
 
             mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.5,zIndex:5}),
 
-            helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.5,hotspot:CenterHotspot}),
+            helmet:this.container.add_sprite("helmet",{zIndex:8,scale:1.5,hotspot:v2.half_one}),
 
             backpack:this.container.add_sprite("backpack",{position:v2(-0.27,0),hotspot:v2(1,0.5),scale:1.5,zIndex:3}),
-            vest:this.container.add_sprite("vest",{scale:1.45,hotspot:CenterHotspot}),
+            vest:this.container.add_sprite("vest",{scale:1.45,hotspot:v2.half_one}),
 
             left_arm:this.container.add_container("left_arm"),
             right_arm:this.container.add_container("right_arm"),
@@ -199,7 +199,7 @@ export class Human extends MovingBody{
             right_leg_l:new Sprite2D(),
             right_leg_foot:new Sprite2D(),
 
-            chest:this.container.add_sprite("chest",{scale:1.4,hotspot:CenterHotspot,zIndex:1}),
+            chest:this.container.add_sprite("chest",{scale:1.4,hotspot:v2.half_one,zIndex:1}),
             muzzle_flash:this.container.add_sprite("muzzle_flash",{visible:false,zIndex:6,hotspot:v2(0,.5)}),
             parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.half_one,visible:false}),
             weapon:this.container.add_sprite("weapon"),
@@ -869,7 +869,7 @@ export class Human extends MovingBody{
                         }
                     })
                 }
-                if(Floors[f as FloorType].footstep_decal){
+                if(Floors[f as FloorType].footstep_decal&&!this.swimming&&!this.downed){
                     const d=new ClientDecal()
                     d.sprite.frame=this.game.resources.get_frame("human_footstep")
                     d.sprite.rotation=walk_dir
@@ -887,7 +887,7 @@ export class Human extends MovingBody{
                         direction:0,
                         frame:{
                             image:"riple",
-                            hotspot:CenterHotspot,
+                            hotspot:v2.half_one,
                             zIndex:zIndexes.Decals,
                             layer:this.layer,
                             scale:0,
@@ -1205,7 +1205,7 @@ export class Human extends MovingBody{
                     life_time:def.gas_particles.life_time,
                     frame:{
                         image:"gas_smoke_particle",
-                        hotspot:CenterHotspot,
+                        hotspot:v2.half_one,
                         layer:this.layer,
                         zIndex:zIndexes.Particles
                     },
@@ -1231,7 +1231,7 @@ export class Human extends MovingBody{
                 position:case_position,
                 frame:{
                     image:def.case_particle.frame??"casing_"+def.ammo_type,
-                    hotspot:CenterHotspot,
+                    hotspot:v2.half_one,
                     layer:this.layer,
                     zIndex:zIndexes.Particles
                 },

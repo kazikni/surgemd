@@ -55,11 +55,11 @@ return (class extends LevelPlayerScript{
         })
 
         let npc=this.game.players.add_bot(new JoinPacket())
-        npc.position=v2(12,51)
+        npc.position=core.v2(12,51)
         npc=this.game.players.add_bot(new JoinPacket())
-        npc.position=v2(10,46)
+        npc.position=core.v2(10,46)
         npc=this.game.players.add_bot(new JoinPacket())
-        npc.position=v2(12,46)
+        npc.position=core.v2(12,46)
     }
     async on_before(start_with_intro){
         if(start_with_intro){

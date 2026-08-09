@@ -321,7 +321,7 @@ export class InputManager {
         const rect = canvas.getBoundingClientRect()
         const scale = v2(canvas.width / rect.width, canvas.height / rect.height)
         this.real_mouse_position=v2(e.clientX - rect.left,e.clientY - rect.top)
-        this.mouse_position=v2.mult(this.real_mouse_position,scale)
+        this.mouse_position=v2.mul(this.real_mouse_position,scale)
         this.emit({type: InputEventType.MouseMove,position: this.world_mouse_position,delta: this.mouse_delta})
     }
     get world_mouse_position(): Vec2 {

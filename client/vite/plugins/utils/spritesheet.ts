@@ -24,14 +24,17 @@ const defaultGlob = "**/*.{png,gif,jpg,bmp,tiff,svg}";
 const imagesMatcher = new Minimatch(defaultGlob);
 
 export interface Resolution{scale:number,name:string}
-export async function buildKSPRGroup(base: string = "",dir: string,resolutions: Resolution[],insert_assets?:boolean,compilerOpts: CompilerOptions = {
+export async function buildKSPRGroup(paths: {dir:string,base?:string}[],resolutions: Resolution[],insert_assets?:boolean,compilerOpts: CompilerOptions = {
     outputFormat: "png",
     margin: 8,
     removeExtensions: true,
     maximumSize: 2048,
 }): Promise<Uint8Array> {
     const images: { image: Image, path: string,id:string }[] = []
-    const files = readDirectory(base, dir).filter(x => imagesMatcher.match(x[1]))
+    const files:[string,string][]=[]
+    for(const f of paths){
+        files.push(...(readDirectory(f.base??"", f.dir).filter(x => imagesMatcher.match(x[1]))))
+    }
     const kspr: KSPR = { resolutions: {},assets:[] }
     for (const file of files) {
         let id = path.basename(file[1])

@@ -6,6 +6,7 @@ import {  Context2D } from "../rendering/context.ts";
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { circle, Rect } from "../../core/math/geometry.ts";
+import { Vec2 } from "../../core.ts";
 export function cam_sort_callback(a:Container2DObject,b:Container2DObject):number{
     return (a._layer-b._layer)||(a._zIndex-b._zIndex)||(a.id_on_parent-b.id_on_parent)
 }
@@ -15,8 +16,14 @@ export class Camera2D{
     private _zoom = 1;
 
     visible:boolean=true
-    projectionMatrix!: Matrix;
-    SubMatrix!: Matrix;
+
+    viewport_camera_matrix!: Matrix
+    viewport_matrix!: Matrix
+
+    screen_camera_matrix!: Matrix
+    screen_matrix!: Matrix
+
+    canvas_matrix!: Matrix
 
     get zoom(): number { return this._zoom; }
     set zoom(zoom: number) {
@@ -26,13 +33,14 @@ export class Camera2D{
 
     width = 1;
     height = 1;
+    size:Vec2=v2.one()
+
     meter_size: number = 100
+    aspect:number=1
 
     position = v2(0, 0)
-    visual_position=v2(0,0)
     layer:number=0
     old_layer?:number=0
-
     center_pos:boolean=true
 
     after_draw:((cam:CamA)=>void)[]=[]
@@ -78,15 +86,21 @@ export class Camera2D{
     }
 
     resize(): void {
-        const scale=this.meter_size*this._zoom
+        const size=v2(this.renderer.canvas.width,this.renderer.canvas.height)
+        this.aspect=this.meter_size*this._zoom
+        const scale=v2.dscale(size,this.aspect)
 
-        const scaleX = this.renderer.canvas.width / scale
-        const scaleY = this.renderer.canvas.height / scale
-    
-        this.SubMatrix = matrix4.projection(v2(scaleX,scaleY),500)
+        const screen_size=v2.dscale(size,this.meter_size)
+        this.screen_matrix = matrix4.projection(screen_size,1000)
+        this.viewport_matrix = matrix4.projection(scale,1000)
+        if(this.center_pos){
+            this.screen_matrix=matrix4.mul(this.screen_matrix,matrix4.translation_2d(v2(screen_size.x/2,screen_size.y/2)))
+            this.viewport_matrix=matrix4.mul(this.viewport_matrix,matrix4.translation_2d(v2(scale.x/2,scale.y/2)))
+        }
 
-        this.width = scaleX;
-        this.height = scaleY;
+        this.width = scale.x
+        this.height = scale.y
+        this.size=scale
     }
     stop_shake(){
         this._shake=undefined
@@ -108,25 +122,18 @@ export class Camera2D{
     }
 
     update(dt:number,resources:ResourcesManager): void {
-        this.projectionMatrix=this.SubMatrix
-        if(this.center_pos){
-            const halfViewSize = v2(this.width / 2, this.height / 2);
-            let cameraPos = v2.sub(this.position, halfViewSize);
-            if(this._shake){
-                cameraPos=circle.random_point_inside(cameraPos,this._shake.intensity)
-                if(this._shake.duration!==-1){
-                    this._shake.duration-=dt
-                    if(this._shake.duration<=0)this._shake=undefined
-                }
+        let cameraPos=v2.clone(this.position)
+        if(this._shake){
+            cameraPos=circle.random_point_inside(cameraPos,this._shake.intensity)
+            if(this._shake.duration!==-1){
+                this._shake.duration-=dt
+                if(this._shake.duration<=0)this._shake=undefined
             }
-            this.visual_position=cameraPos
-            this.projectionMatrix=this.SubMatrix
-            this.projectionMatrix=matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(cameraPos)))
-        }else{
-            this.visual_position=this.position
-            this.projectionMatrix=this.SubMatrix
-            this.projectionMatrix=matrix4.mult(this.SubMatrix,matrix4.translation_2d(v2.neg(this.position)))
         }
+
+        this.viewport_camera_matrix=matrix4.mul(this.viewport_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
+        this.screen_camera_matrix=matrix4.mul(this.screen_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
+
         this.container.update(dt,resources)
     }
 
@@ -137,7 +144,7 @@ export class Camera2D{
             this.sort_callback=cam_sort_callback
         }
         const cam:CamA={
-            matrix:this.projectionMatrix,
+            matrix:[this.viewport_camera_matrix,this.screen_camera_matrix,this.viewport_matrix,this.screen_matrix],
             ctx:this.ctx,
             renderer:this.renderer,
             rect:this.get_rect(),
@@ -151,7 +158,7 @@ export class Camera2D{
             this.old_layer=this.layer
             this.container.dirty_zindex=true
         }
-        this.ctx.base_matrix=this.projectionMatrix
+        //this.ctx.base_matrix=this.projectionMatrix
         if(this.visible)this.container.draw(cam)
         this.ctx.render(this.renderer)
         this.ctx.clear()

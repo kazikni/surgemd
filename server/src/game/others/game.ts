@@ -436,7 +436,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(!obstacle)obstacle=this.definitions.obstacles.getFromString("airdrop_locked")
 
         this.add_plane(position,{
-            speed: 20,
+            speed: 21,
             obstacle,
             type: 0
         })

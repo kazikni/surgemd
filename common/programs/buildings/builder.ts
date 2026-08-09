@@ -80,7 +80,7 @@ export function MakeBuilding(def:BBDef,scale:number=2,meter_size=100,hotspot:Vec
         hotspot,
         meter_size,
         scale,
-        center:v2.mult(def.size,hotspot),
+        center:v2.mul(def.size,hotspot),
         size:def.size
     }
     if(def.scale!==undefined)ctx.scale*=def.scale

@@ -1,10 +1,6 @@
 import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
 import { type ClientGame } from "./game.ts";
-export const CenterHotspot={
-    x:0.5,
-    y:0.5
-}
 export interface TweenOptions<T>{
     target: T
     to: Partial<T>

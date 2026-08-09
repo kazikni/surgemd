@@ -1,4 +1,4 @@
-import { CenterHotspot, Sprite2D, ABParticle2D } from "common/engine/web.ts"
+import { Sprite2D, ABParticle2D } from "common/engine/web.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
@@ -29,7 +29,7 @@ export class Parachute extends GameObject{
         this.sprite.set_frame({
             image:"parachute",
             scale:2,
-            hotspot:CenterHotspot,
+            hotspot:v2.half_one,
             zIndex:zIndexes.Parachute
         },this.game.resources)
         this.game.cam2d.add_object(this.sprite)
@@ -51,7 +51,7 @@ export class Parachute extends GameObject{
                 this.game.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
-                        hotspot:CenterHotspot,
+                        hotspot:v2.half_one,
                         zIndex:zIndexes.Decals,
                         layer:this.layer,
                         scale:0,

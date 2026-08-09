@@ -95,9 +95,9 @@ export class SubCanvas2D extends Container2DObject {
         if(this.camera.center_pos){
             const halfViewSize = v2(this.camera.size.x / 2, this.camera.size.y / 2)
             const cameraPos = v2.sub(this.camera.position, halfViewSize)
-            this.camera.matrix=matrix4.mult(this.size_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
+            this.camera.matrix=matrix4.mul(this.size_matrix,matrix4.translation_2d(v2.neg(cameraPos)))
         }else{
-            this.camera.matrix=matrix4.mult(this.size_matrix,matrix4.translation_2d(v2.neg(this.camera.position)))
+            this.camera.matrix=matrix4.mul(this.size_matrix,matrix4.translation_2d(v2.neg(this.camera.position)))
         }
         this.container.draw(this.camera,renderer,objects)
 

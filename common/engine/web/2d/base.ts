@@ -9,7 +9,7 @@ import { FrameTransform } from "../../core/definition/definitions.ts";
 import { Rect } from "../../core/math/geometry.ts";
 
 export interface CamA{
-    matrix:Matrix
+    matrix:Matrix[]
     ctx:Context2D
     renderer:Renderer
     rect:Rect
@@ -138,14 +138,14 @@ export abstract class Container2DObject {
                 v2m.mul(this._real_position,this.parent._real_scale, this._position)
                 v2m.add(this._real_position,this._real_position,this.parent._real_position)
             }
-            ColorM.mult(this._real_tint,this._tint,this.parent._tint)
+            ColorM.mul(this._real_tint,this._tint,this.parent._tint)
         } else {
             v2m.set(this._real_position,this._position._x,this._position._y)
             v2m.set(this._real_scale,this._scale._x,this._scale._y)
             this._real_rotation = this._rotation
 
             if(this.parent)
-                ColorM.mult(this._real_tint,this._tint,this.parent._tint)
+                ColorM.mul(this._real_tint,this._tint,this.parent._tint)
             else
                 ColorM.set1(this._real_tint,this._tint)
         }

@@ -19,7 +19,7 @@ export class Shape2D extends Container2DObject {
         ctx.save()
         ctx.fill_color = this.color
         if (this.matrix) {
-            ctx.transform_matrix = matrix4.mult(ctx.transform_matrix,this.matrix)
+            ctx.transform_matrix = matrix4.mul(ctx.transform_matrix,this.matrix)
         }
         ctx.fill_model(this.model,this._real_position,this._real_scale,this._real_rotation)
         ctx.restore()

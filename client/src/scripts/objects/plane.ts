@@ -1,20 +1,10 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { AudioInstance, Container2D, Sprite2D } from "common/engine/web.ts";
 import { Stream, v2 } from "common/engine/core.ts";
+import { AirBody } from "./airbody.ts";
 
-export interface PlanePhysicalData extends MovingBodyPhysicalData {}
-
-export class Plane extends MovingBody {
+export class Plane extends AirBody {
     override number_type: number=GameObjectType.Plane;
     override string_type: string="plane";
-    container: Container2D = new Container2D()
-    sprite: Sprite2D = new Sprite2D()
-    sound?: AudioInstance
-    override physical_data: PlanePhysicalData = {
-        rotation: 0
-    }
-    initial = true
 
     plane_type:number=0
 
@@ -23,74 +13,70 @@ export class Plane extends MovingBody {
     }
 
     override on_create(args: Record<string, any>): void {
-        this.container.add_child(this.sprite)
-        this.game.cam2d.add_object(this.container)
-        this.container.zIndex = zIndexes.Planes
-        this.position = this.container.position
+        this.game.cam2d.add_object(this.sprite)
+        this.sprite.zIndex = zIndexes.Airbodys
+        this.position = this.sprite.position
     }
     override on_layer_set(){
-        this.container.layer = this.layer
+        this.sprite.layer = this.layer
     }
     override on_tick(dt: number) {
         super.on_tick(dt)
-        this.container.position=this.position
-        this.container.rotation = this.physical_data.rotation
+        this.sprite.position=this.position
+        this.sprite.rotation = this.physical_data.rotation
         if (this.sound) {
             this.sound.position = this.position
         }
     }
     override on_destroy() {
-        this.container.destroy()
         this.sprite.destroy()
-        this.destroyed = true
-        this.sound?.stop()
+        this.sound?.stop?.()
+    }
+    override on_initial(): void {
+        switch (this.plane_type) {
+            case 0:
+                this.sprite.set_frame(
+                    {
+                        image: "airdrop_plane",
+                        scale: 20,
+                        hotspot: v2.half_one
+                    },
+                    this.game.resources
+                )
+                this.sound = this.game.sounds.play(
+                    this.game.resources.get_sound("airdrop_plane_sfx"),
+                    {
+                        max_distance: 200,
+                        position: this.position,
+                        loop: true,
+                        volume: 0.7
+                    }
+                )
+                break
+            case 1:
+                this.sprite.set_frame(
+                    {
+                        image: "airstrike_plane",
+                        scale: 8,
+                        hotspot: v2.half_one
+                    },
+                    this.game.resources
+                )
+                this.sound = this.game.sounds.play(
+                    this.game.resources.get_sound("airstrike_plane_sfx"),
+                    {
+                        max_distance: 400,
+                        position: this.position,
+                        loop: false,
+                        volume: 0.7
+                    }
+                )
+                break
+        }
+        this.initial = false
     }
     override on_decode_net(stream:Stream,full:boolean): void {
-        this.decode_physical_data(stream,full)
-        const type = stream.read_uint8()
-        if (this.initial) {
-            this.plane_type = type
-            switch (this.plane_type) {
-                case 0:
-                    this.sprite.set_frame(
-                        {
-                            image: "airdrop_plane",
-                            scale: 20,
-                            hotspot: v2.half_one
-                        },
-                        this.game.resources
-                    )
-                    this.sound = this.game.sounds.play(
-                        this.game.resources.get_sound("airdrop_plane_sfx"),
-                        {
-                            max_distance: 200,
-                            position: this.position,
-                            loop: true,
-                            volume: 0.7
-                        }
-                    )
-                    break
-                case 1:
-                    this.sprite.set_frame(
-                        {
-                            image: "airstrike_plane",
-                            scale: 8,
-                            hotspot: v2.half_one
-                        },
-                        this.game.resources
-                    )
-                    this.sound = this.game.sounds.play(
-                        this.game.resources.get_sound("airstrike_plane_sfx"),
-                        {
-                            max_distance: 400,
-                            position: this.position,
-                            loop: false,
-                            volume: 0.7
-                        }
-                    )
-                    break
-            }
-            this.initial = false
-        }
+        if(full)this.plane_type=stream.read_uint8()
+        super.on_decode_net(stream,full)
     }
 }

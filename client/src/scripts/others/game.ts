@@ -186,7 +186,7 @@ export class Game extends ClientGame<GameObject>{
         this.world_shadow={
             enabled:true,
             color:ColorM.hex("#0013"),
-            matrix:matrix4.translation_2d(v2(0.1,0.1)),//matrix4.mult(),matrix4.translation_2d(v2(0.9,0.9)))
+            matrix:matrix4.translation_2d(v2(0.1,0.1)),//matrix4.mul(),matrix4.translation_2d(v2(0.9,0.9)))
             offset:v2(0.1,0.1),
             scale:v2(1,1)
         }

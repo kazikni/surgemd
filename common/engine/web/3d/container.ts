@@ -39,12 +39,12 @@ export abstract class Container3DObject {
     update(_dt:number,_resources:ResourcesManager): void {
         if (this.parent) {
 
-            this._real_scale = v3.mult(this.parent._real_scale, this.scale);
+            this._real_scale = v3.mul(this.parent._real_scale, this.scale);
             if(this.sync_rotation){
                 this._real_rotation = v3.add(this.parent._real_rotation,this.parent._real_rotation);
                 /*this._real_position = v3.add(
                     v3.rotate_RadAngle(
-                        v3.mult(this.parent._real_scale, this.position),
+                        v3.mul(this.parent._real_scale, this.position),
                         this.parent._real_rotation
                     ),
                     this.parent._real_position
@@ -52,7 +52,7 @@ export abstract class Container3DObject {
             }else{
                 this._real_rotation=this.rotation
                 this._real_position = v3.add(
-                    v3.mult(this.parent._real_scale, this.position),
+                    v3.mul(this.parent._real_scale, this.position),
                     this.parent._real_position
                 );
             }
@@ -202,10 +202,10 @@ export class Camera3D{
 
     update(dt:number,resources:ResourcesManager): void {
         if(!this.SubMatrix)this.resize()
-        this.mainMatrix = matrix4.mult(
-            matrix4.mult(this.SubMatrix,matrix4.mult(
+        this.mainMatrix = matrix4.mul(
+            matrix4.mul(this.SubMatrix,matrix4.mul(
                 matrix4.xRotation(this.rotation.x),
-                matrix4.mult(
+                matrix4.mul(
                     matrix4.yRotation(this.rotation.y),
                     matrix4.zRotation(this.rotation.z)
                 )

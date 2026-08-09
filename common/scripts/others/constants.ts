@@ -118,7 +118,7 @@ export enum zIndexes{
     ParachutePlayers,
     Rain1,
     Parachute,
-    Planes,
+    Airbodys,
     DeadZone,
     Lights,
     DamageSplashs,

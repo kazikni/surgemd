@@ -75,15 +75,15 @@
         "allowed_hosts": true,
         "spritesheet": {
             "sheets": {
-                "assets/img/kspr/main": {"path":"assets/img/game/main","base":"public"},
+                "assets/img/kspr/main": {"path":[{"dir":"assets/img/game/main","base":"public"},{"dir":"assets/img/game/main"}]},
 
-                "assets/img/kspr/common": {"path":"assets/img/game/common"},
-                "assets/img/kspr/snow": {"path":"assets/img/game/snow"},
-                "assets/img/kspr/fall": {"path":"assets/img/game/fall"},
+                "assets/img/kspr/common": {"path":[{"dir":"assets/img/game/common"}]},
+                "assets/img/kspr/snow": {"path":[{"dir":"assets/img/game/snow"}]},
+                "assets/img/kspr/fall": {"path":[{"dir":"assets/img/game/fall"}]},
 
-                "assets/img/kspr/maps/tundra": {"path":"assets/img/game/maps/tundra"},
+                "assets/img/kspr/maps/tundra": {"path":[{"dir":"assets/img/game/maps/tundra"}]},
 
-                "scripts/campaign/levels/prologue/sprites":{"path":"assets/img/game/levels/prologue"}
+                "scripts/campaign/levels/prologue/sprites":{"path":[{"dir":"assets/img/game/levels/prologue"}]}
             },
             "resolutions": [
                 {"name": "low","scale": 0.5},

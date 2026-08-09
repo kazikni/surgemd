@@ -1,8 +1,8 @@
-import { ABParticle2D, Camera2D, CenterHotspot, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, Camera2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
-import { StaticBody } from "./static_body.ts";
+import { type StaticBody } from "./static_body.ts";
 import { BaseGameObject2D, CircleHitbox2D, ColorM, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 const particles=[
     "gas_smoke_particle"
@@ -171,7 +171,7 @@ export class Bullet extends GameObject{
                         position:this.position,
                         frame:{
                             image:particles[this.particles-1],
-                            hotspot:CenterHotspot
+                            hotspot:v2.half_one
                         },
                         speed:random.float(0.5,1.2),
                         angle:0,

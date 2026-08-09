@@ -1,4 +1,5 @@
 import { Angle, DegAngle, Orientation, PolarMovement, RadAngle } from "./geometry.ts"
+import { Matrix } from "./matrix.ts";
 import { random, SeededRandom } from "./random.ts"
 
 export interface Vec2{
@@ -50,6 +51,25 @@ export const v2m=Object.freeze({
     div(out:Vec2,a:Vec2, b:Vec2){ out.x = a.x/b.x; out.y = a.y/b.y; },
     scale(out:Vec2,a:Vec2, b:number){ out.x = a.x*b; out.y = a.y*b; },
     dscale(out:Vec2,a:Vec2, b:number){ out.x = a.x/b; out.y = a.y/b; },
+
+    mul_matrix(out:Vec2,vec:Vec2,matrix:Matrix){
+        out.x=matrix[0]*vec.x+matrix[4]*vec.y+matrix[12]
+        out.y=matrix[1]*vec.x+matrix[5]*vec.y+matrix[13]
+    },
+    div_matrix(out: Vec2, vec: Vec2, matrix: Matrix) {
+        const a = matrix[0]
+        const b = matrix[1]
+        const c = matrix[4]
+        const d = matrix[5]
+
+        const x = vec.x - matrix[12]
+        const y = vec.y - matrix[13]
+
+        const det = a * d - b * c
+
+        out.x = (d * x - c * y) / det
+        out.y = (-b * x + a * y) / det
+    },
 
     set(out:Vec2,x:number,y:number){out.x=x;out.y=y},
     add_component(out:Vec2,x:number,y:number){out.x+=x;out.y+=y},
@@ -259,8 +279,30 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @param y `Vec_B`
      * @returns A new `Vec2` With `x`*`y`
      */
-    mult(x:Vec2, y:Vec2):Vec2 {
+    mul(x:Vec2, y:Vec2):Vec2 {
         return this.new(x.x*y.x,x.y*y.y)
+    },
+    mul_matrix(vec:Vec2,matrix:Matrix){
+        return {
+            x:matrix[0]*vec.x+matrix[4]*vec.y+matrix[12],
+            y:matrix[1]*vec.x+matrix[5]*vec.y+matrix[13]
+        }
+    },
+    div_matrix(vec: Vec2,matrix: Matrix) {
+        const a = matrix[0]
+        const b = matrix[1]
+        const c = matrix[4]
+        const d = matrix[5]
+
+        const x = vec.x - matrix[12]
+        const y = vec.y - matrix[13]
+
+        const det = a * d - b * c
+
+        return{
+            x:(d * x - c * y) / det,
+            y:(-b * x + a * y) / det
+        }
     },
     /**
      * @param x `Vec_A`
@@ -270,6 +312,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     div(x:Vec2, y:Vec2):Vec2 {
         return this.new(x.x/y.x,x.y/y.y)
     },
+    
     /**
      * @param x `Vec_A`
      * @param y `Vec_B`

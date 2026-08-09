@@ -89,7 +89,7 @@ export class Batcher {
     constructor(){
     }
     ensure(material: Material,matrix?:Matrix):BatcherMaterialCommand{
-        if(!this.current||!(this.current.type===0&&this.current.material===material)) {
+        if(!this.current||!(this.current.type===0&&this.current.material===material&&matrix4.is_equal(matrix))){
             this.current = {
                 type:0,
                 material,
@@ -110,9 +110,11 @@ export class Batcher {
         }
         this.commands.push(this.current)
     }
-    render(renderer:Renderer,matrix: Matrix=matrix4.identity()) {
+    render(renderer:Renderer,matrix?: Matrix) {
         for(const cmd of this.commands) {
-            const m=cmd.matrix?matrix4.mult(matrix,cmd.matrix):matrix
+            let m=cmd.matrix
+            if(matrix&&m)m=matrix4.mul(m,matrix)
+            else if(!m)m=matrix4.default.identity
             if(cmd.type===0){
                 const params={data:cmd.stream.data.subarray(0,cmd.stream.length),data_count:cmd.vertex_count,...cmd.params}
                 cmd.material.draw(cmd.material,m,params)

@@ -148,7 +148,7 @@ export const ColorM={
     hex2number(color: string): number {
         return parseInt(color.replace(/^#/, ''), 16)
     },
-    mult(dst:Color,x:Color,y:Color){
+    mul(dst:Color,x:Color,y:Color){
         dst.r=Math.floor(x.r*(y.r/255))
         dst.g=Math.floor(x.g*(y.g/255))
         dst.b=Math.floor(x.b*(y.b/255))

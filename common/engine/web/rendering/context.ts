@@ -35,7 +35,7 @@ export abstract class Context2D{
 
     default_advanced_material?:Material
     default_material?:Material
-    base_matrix:Matrix=matrix4.identity()
+    base_matrix?:Matrix
 
     get material():Material|undefined{
         return this.state.current_material
@@ -148,19 +148,19 @@ export abstract class Context2D{
     }
 
     translate(x: number, y: number) {
-        this.state.transform_matrix = matrix4.mult(
+        this.state.transform_matrix = matrix4.mul(
             this.state.transform_matrix,
             matrix4.translation_2d({ x, y })
         )
     }
     rotate(rad: number) {
-        this.state.transform_matrix = matrix4.mult(
+        this.state.transform_matrix = matrix4.mul(
             this.state.transform_matrix,
             matrix4.zRotation(rad)
         )
     }
     scale(x: number, y: number) {
-        this.state.transform_matrix = matrix4.mult(
+        this.state.transform_matrix = matrix4.mul(
             this.state.transform_matrix,
             matrix4.scale_3d({ x, y, z: 1 })
         )
@@ -359,7 +359,7 @@ export abstract class Context2D{
     abstract stroke():void
     abstract stroke_model(model:Model2D,position:Vec2,scale:Vec2,rotation:number):void
 
-    abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color):void
+    abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color,matrix?:Matrix):void
     abstract draw_batcher(batcher:Batcher,matrix?:Matrix):void
 
     abstract sub_context():Context2D
@@ -445,11 +445,11 @@ export class BatcherContext2D extends Context2D{
             }
         }
     }
-    draw_frame2d(frame:Frame|undefined,model:Float32Array,tint: Color=ColorM.default.white, on_vertex_add?:(cmd:BatcherMaterialCommand,vertex:number)=>void) {
+    draw_frame2d(frame:Frame|undefined,model:Float32Array,tint: Color=ColorM.default.white,matrix?:Matrix, on_vertex_add?:(cmd:BatcherMaterialCommand,vertex:number)=>void) {
         if(!frame||!frame.texture?.material||tint.a<=0)return
         const vertexCount = model.length / 2
         if (vertexCount < 2) return
-        const cmd = this.batcher.ensure(frame.texture.material,this.transform_matrix)
+        const cmd = this.batcher.ensure(frame.texture.material,matrix??this.transform_matrix)
         for(let i=0;i<vertexCount;i++){
             cmd.stream.write_float32(model[i*2])
             cmd.stream.write_float32(model[i*2+1])
@@ -574,7 +574,7 @@ export class GLContext2D extends BatcherContext2D{
         this.batcher.commands=[]
         this.renderer.bind_texture(texture)
     }
-    override finish_texture(matrix:Matrix):void{
+    override finish_texture(matrix?:Matrix):void{
         this.batcher.render(this.renderer,matrix??this.base_matrix)
         this.batcher.clear()
         this.batcher.commands=this.commands

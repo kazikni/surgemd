@@ -188,7 +188,7 @@ export class Obstacle extends StaticBody{
     }
     update_shadow(){
         if(this.shadow){
-            this.shadow.scale=v2.mult(this.container.scale,this.game.world_shadow.scale)
+            this.shadow.scale=v2.mul(this.container.scale,this.game.world_shadow.scale)
             const vv=v2.scale(this.game.world_shadow.offset,this.container.scale.x)
             v2m.add(vv,vv,this.container.position)
             this.shadow.position=vv

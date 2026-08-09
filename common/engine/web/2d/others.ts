@@ -19,6 +19,7 @@ export class Grid2D extends Container2DObject{
 
     fill?:Color
     stroke?:Color
+    matrix_index:number=0
 
     _rect:Rect={min:v2.zero(),max:v2.zero}
 
@@ -56,7 +57,10 @@ export class Grid2D extends Container2DObject{
         cam.ctx.line_width=this.line_width
         if(this.fill)cam.ctx.stroke_color=this.fill
         if(this.stroke)cam.ctx.stroke_color=this.stroke
+        const tm=cam.ctx.transform_matrix
+        cam.ctx.transform_matrix=cam.matrix[this.matrix_index]
         cam.ctx.draw_grid(this.begin.x,this.begin.y,this.end.x,this.end.y,this.size,this._position)
+        cam.ctx.transform_matrix=tm
     }
     override get_rect():Rect{
         return this._rect

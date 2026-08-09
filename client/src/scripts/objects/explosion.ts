@@ -1,6 +1,6 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { ABParticle2D, CenterHotspot, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { CircleHitbox2D, ColorM, Numeric, random, Stream, v2, v2m } from "common/engine/core.ts";
@@ -26,7 +26,7 @@ export class Explosion extends GameObject{
     constructor(){
         super()
         this.sprite.visible=false
-        this.sprite.hotspot=CenterHotspot
+        this.sprite.hotspot=v2.half_one
         this.sprite.size=v2(400,400)
 
         this.allow_tick=true
@@ -75,7 +75,7 @@ export class Explosion extends GameObject{
                 this.game.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
-                        hotspot:CenterHotspot,
+                        hotspot:v2.half_one,
                         zIndex:zIndexes.Decals,
                         layer:this.layer,
                         scale:0,
@@ -97,7 +97,7 @@ export class Explosion extends GameObject{
                     this.game.particles.add_particle(new ABParticle2D({
                         frame:{
                             layer:this.layer,
-                            hotspot:CenterHotspot,
+                            hotspot:v2.half_one,
                             ...p.frame,
                         },
                         scale:p.frame.scale,

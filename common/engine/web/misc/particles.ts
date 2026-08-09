@@ -5,7 +5,6 @@ import { Color, ColorM } from "../../core/math/color.ts"
 import { Sprite2D } from "../2d/sprite.ts"
 import { Numeric } from "../../core/math/utils.ts"
 import { type ClientGame } from "./game.ts";
-import { CenterHotspot } from "./utils.ts";
 
 export abstract class ClientParticle2D extends Particle2D{
     constructor(){
@@ -156,7 +155,7 @@ export class RainParticle2D extends ClientParticle2D{
                     this.stage=2
                     this.sprite.set_frame(this.config.frame.wave,(this.manager.game as unknown as ClientGame).resources)
                     v2m.single(this.sprite.scale,0.1)
-                    this.sprite.hotspot=CenterHotspot
+                    this.sprite.hotspot=v2.half_one
                     if(this.config.zindex){
                         this.sprite.zIndex=this.config.zindex.wave
                     }

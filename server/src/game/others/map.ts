@@ -27,10 +27,12 @@ export interface MapStructure{
 export class GameMap{
     size:Vec2
     bounds:Rect
+    air_bounds:Rect
     game:Game
     constructor(game:Game,_seed:number=0){
         this.size=v2(10,10)
         this.bounds={min:v2.zero(),max:v2.zero()}
+        this.air_bounds={min:v2.zero(),max:v2.zero()}
         this.game=game
     }
     map_packet_stream:Stream=new DynamicStream()
@@ -296,6 +298,10 @@ export class GameMap{
         this.bounds=definition.bounds??{
             min:v2(-bounds_size,-bounds_size),
             max:v2(this.size.x+bounds_size,this.size.y+bounds_size)
+        }
+        this.air_bounds=definition.bounds??{
+            min:v2(-40,-40),
+            max:v2(this.size.x+40,this.size.y+40)
         }
         this.biome=definition.biome
         this.definitions=definition.definitions??{}

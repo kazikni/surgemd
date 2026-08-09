@@ -52,6 +52,7 @@ export class Sprite2D extends Container2DObject{
     }
 
     model:Float32Array
+    matrix_index:number=0
 
     constructor(){
         super()
@@ -89,7 +90,7 @@ export class Sprite2D extends Container2DObject{
             this.dirty_reals=true
         }
         this.draw_super()
-        cam.ctx.draw_frame2d(this.frame,this.model,this._real_tint)
+        cam.ctx.draw_frame2d(this.frame,this.model,this._real_tint,cam.matrix[this.matrix_index])
     }
 }
 export class AnimatedSprite2D extends Sprite2D{

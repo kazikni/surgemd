@@ -17,6 +17,7 @@ export const TutorialMap:MapDef={
             buildings:[
                 {
                     idString: 'part_1',
+                    reflect_bullets:true,
                     hitbox: new HitboxGroup2D(new RectHitbox2D(v2(-3.7699999809265137, -4.75), v2(-3.5399999618530273, 4.75)), new RectHitbox2D(v2(3.5399999618530273, -4.75), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, 4.539999961853027), v2(3.7699999809265137, 4.75)), new RectHitbox2D(v2(-3.5399999618530273, -4.75), v2(-0.6100000143051147, -4.539999961853027)), new RectHitbox2D(v2(0.8199999928474426, -4.75), v2(3.5399999618530273, -4.539999961853027))),
                     floor_image: [{"image":"military_rest_room_floor",scale:3}],
                     generate:{

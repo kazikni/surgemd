@@ -1,5 +1,5 @@
 
-import { type Camera2D, CenterHotspot, Container2D, Sound, Sprite2D } from "common/engine/web.ts";
+import { type Camera2D, Container2D, Sound, Sprite2D } from "common/engine/web.ts";
 import { GameConstants, GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
@@ -36,11 +36,11 @@ export class Loot extends GameObject{
         super()
         this.container.visible=false
     
-        this.sprite_main.hotspot=CenterHotspot
+        this.sprite_main.hotspot=v2.half_one
         this.sprite_main.visible=false
         this.sprite_main.zIndex=3
 
-        this.sprite_outline.hotspot=CenterHotspot
+        this.sprite_outline.hotspot=v2.half_one
         this.sprite_outline.visible=false
         this.sprite_outline.zIndex=0
 

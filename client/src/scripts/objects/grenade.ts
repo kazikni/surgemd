@@ -1,5 +1,5 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { ABParticle2D, CenterHotspot, Sprite2D } from "common/engine/web.ts";
+import { ABParticle2D, Sprite2D } from "common/engine/web.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
@@ -54,7 +54,7 @@ export class Grenade extends MovingBody{
                         direction:0,
                         frame:{
                             image:"riple",
-                            hotspot:CenterHotspot,
+                            hotspot:v2.half_one,
                             zIndex:zIndexes.Decals,
                             layer:this.layer,
                             scale:0,
@@ -78,7 +78,7 @@ export class Grenade extends MovingBody{
         if(this.def)return
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
-        this.sprite.hotspot=CenterHotspot
+        this.sprite.hotspot=v2.half_one
         this.sprite.zIndex=zIndexes.GrenadeAir
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){

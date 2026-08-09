@@ -6,7 +6,7 @@ import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./stati
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { Angle, Color, ColorM, Hitbox2D, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Color, ColorM, Hitbox2D, matrix4, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
     if(skin>0&&def.assets?.frame?.biome_skins){
@@ -112,6 +112,13 @@ export class Obstacle extends StaticBody{
     override on_create(_args: Record<string,any>): void {
         this.game.cam2d.add_object(this.container)
     }
+    override on_destroy(): void {
+        this.container.destroy()
+        if(this.emitter_1)this.emitter_1.destroyed=true
+        if(this.shadow)this.shadow.destroy()
+        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
+    }
+
 
     // Below
     can_below(other:Hitbox2D):boolean{
@@ -132,12 +139,6 @@ export class Obstacle extends StaticBody{
             this.shadow.tint.a=below?0:255
         }
     }
-    override on_destroy(): void {
-        this.container.destroy()
-        if(this.emitter_1)this.emitter_1.destroyed=true
-        if(this.shadow)this.shadow.destroy()
-    }
-
     update_frame(){
         this.sprite.transform_frame({
             tint:0xffffff,
@@ -145,6 +146,8 @@ export class Obstacle extends StaticBody{
             hotspot:v2.half_one
         })
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
+        this.sprite.matrix=undefined
+        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
         if(this.health_data.dead){
             if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
@@ -177,6 +180,7 @@ export class Obstacle extends StaticBody{
                     this.shadow_sprite.tint=this.game.world_shadow.color
                 }
             }
+            if(this.def.parallax!==undefined)this.game.parallax[this.id]=this
         }
 
         this.container.visible=true

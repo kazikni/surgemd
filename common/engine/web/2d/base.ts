@@ -112,7 +112,7 @@ export abstract class Container2DObject {
     get matrix():Matrix|undefined{
         return this._matrix
     }
-    set matrix(val:Matrix){
+    set matrix(val:Matrix|undefined){
         if(matrix4.is_equal(val,this._matrix))return
         this._matrix=val
         this.dirty_reals=true

@@ -978,6 +978,11 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             tname:"settings.graphics.shadows",
                             var:"sv_graphics_shadows",
                         },
+                        {
+                            type:"toggle",
+                            tname:"settings.graphics.perspective",
+                            var:"sv_graphics_perspective",
+                        },
                         /*{
                             type:"enum",
                             tname:"settings.graphics.lights",

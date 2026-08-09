@@ -370,6 +370,7 @@
             "graphics": {
                 "resolution": "Textures Quality",
                 "shadows": "Shadows",
+                "perspective": "Perspective",
                 "particles": "Particles",
                 "lights": "Lights",
                 "post_proccess": "Post Proccess",

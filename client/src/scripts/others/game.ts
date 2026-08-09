@@ -137,6 +137,8 @@ export class Game extends ClientGame<GameObject>{
     theme_colors:Record<string,string>={}
     ntps:number=30
 
+    parallax:Record<number,Obstacle>={}
+
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
@@ -628,6 +630,11 @@ export class Game extends ClientGame<GameObject>{
                     this.ui_gfx.ctx.dr(this.active_entity.position,v2.add(this.active_entity.position,v2.from_RadAngle(this.active_entity.physical_data.rotation,this.aim_line.width)),this.aim_line.height/this.cam2d.zoom)
                 }*/
                 if(this.active_entity.dead)this.active_entity=undefined
+            }
+        }
+        if(this.save.get_variable("sv_graphics_perspective")){
+            for(const k in this.parallax){
+                this.parallax[k].sprite.matrix=matrix4.parallax_2d(this.cam2d.position,this.parallax[k].def.parallax!)
             }
         }
         this.terrain.draw(this.terrain_gfx,this.cam2d.layer)

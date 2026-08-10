@@ -1339,8 +1339,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:15,
-                    falloff:0.5,
+                    damage:17,
+                    falloff:0.6,
                     range:165,
                     speed:40,
                     pass_through_humans:true,

@@ -7,6 +7,7 @@ import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { circle, Rect } from "../../core/math/geometry.ts";
 import { Vec2 } from "../../core.ts";
+import { Numeric } from "../../core/math/utils.ts";
 export function cam_sort_callback(a:Container2DObject,b:Container2DObject):number{
     return (a._layer-b._layer)||(a._zIndex-b._zIndex)||(a.id_on_parent-b.id_on_parent)
 }
@@ -62,6 +63,23 @@ export class Camera2D{
         this.ctx=renderer.create_context()
     }
 
+    topdown={
+        perspective:1,
+        parallax:1
+    }
+
+    get_topdown_perspective_2d(matrix:Matrix,object_position: Vec2,parallax: number,z_distance: number,max_distance:number=13):void{
+        const distance=v2.distance(object_position,this.position)
+        const baseParallax=parallax*this.topdown.parallax
+
+        let effectiveParallax=1-(1-baseParallax)
+        if (distance>max_distance){
+            const t=max_distance/distance
+            effectiveParallax=1-(1-effectiveParallax)*t
+        }
+
+        matrix4.m.topdown_perspective_2d(matrix,this.position,effectiveParallax,z_distance)
+    }
     get_rect():Rect{
         if(this.center_pos){
             const sizeH=v2(this.width,this.height)

@@ -32,7 +32,8 @@ export class Plane extends AirBody {
         this.radius=radius
     }
 
-    override on_create(args?: {position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
+    override on_create(args: {position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
+        super.on_create(args)
         if(args)this.set_configuration(args.position,args.speed,args.target_pos,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
     }
     override on_tick(dt: number): void {
@@ -71,7 +72,7 @@ export class Plane extends AirBody {
     }
     override on_encode_net(stream: Stream,full: boolean): void {
         if(full)stream.write_uint8(this.type)
-        this.physical_encode(stream)
+        super.on_encode_net(stream,full)
     }
     override on_encode_checkpoint(stream: Stream): void {
         stream.write_pos2(this.position)

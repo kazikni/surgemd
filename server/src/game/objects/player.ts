@@ -64,7 +64,7 @@ export abstract class PlayerConnManager{
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
         const layers=[layer-2,layer-1,layer,layer+1,layer+2]
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
-        return objs
+        return [...objs,...Object.values(this.game.always_visible)]
     }
     abstract net_update(general_update:Stream):void
 }

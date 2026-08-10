@@ -37,7 +37,8 @@ export class Drone extends AirBody {
         this.motion_timer = 0
     }
 
-    override on_create(args?: {position:Vec2,target_pos:Vec2,speed:number,type:number,owner?:Human}): void {
+    override on_create(args: {position:Vec2,target_pos:Vec2,speed:number,type:number,owner?:Human}): void {
+        super.on_create(args)
         if(args)this.set_configuration(args.position,args.speed,args.type,args.owner)
     }
     override on_tick(dt: number): void {
@@ -94,7 +95,7 @@ export class Drone extends AirBody {
     }
     override on_encode_net(stream: Stream,full: boolean): void {
         stream.write_float32(this.z)
-        this.physical_encode(stream)
+        super.on_encode_net(stream,full)
     }
     override on_encode_checkpoint(stream: Stream): void {
         stream.write_pos2(this.position)

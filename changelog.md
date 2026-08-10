@@ -2,6 +2,7 @@
 ## News
 __                                                                                                                 __
 ### Mains
+* Perspective!
 * No Hope Rework
 * Fall Biome
 * Swimming
@@ -22,6 +23,8 @@ __                                                                              
 * Aim crosshair
 * Menu Shadow Options
 * Prologue Level
+* Shadows Setting
+* Perspective Setting
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG

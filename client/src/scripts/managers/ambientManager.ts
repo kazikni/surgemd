@@ -2,7 +2,7 @@ import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, Sound, SoundC
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
-import { CircleHitbox2D, ColorM, ease, KDate, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, ease, KDate, matrix4, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
 
 export class AmbientManager{
     game:Game
@@ -87,6 +87,14 @@ export class AmbientManager{
                         speed,
                         lifetime:lifetime,
                         decay_time:10,
+                        on_tick:(o:RainParticle2D,dt:number)=>{
+                            if(o.stage===0){
+                                if(!o.sprite.matrix)o.sprite.matrix=matrix4.identity()
+                                this.game.cam2d.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
+                            }else{
+                                o.sprite.matrix=undefined
+                            }
+                        }
                     })
                 },
             enabled:false
@@ -279,8 +287,8 @@ export class AmbientManager{
     update_camera(){
         if(!this.game.active_entity)return
         this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*7)
-        if(this.rain_value>0)this.rain_particles_emitter.limit=(this.rain_value*150)/this.game.cam2d.zoom
-        this.ambient_particles_emitter.limit=6/this.game.cam2d.zoom
+        if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.cam2d.zoom
+        else this.rain_particles_emitter.limit=0
     }
     render(){
     }

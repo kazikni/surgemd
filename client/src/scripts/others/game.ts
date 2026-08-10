@@ -634,7 +634,8 @@ export class Game extends ClientGame<GameObject>{
         }
         if(this.save.get_variable("sv_graphics_perspective")){
             for(const k in this.parallax){
-                this.parallax[k].sprite.matrix=matrix4.parallax_2d(this.cam2d.position,this.parallax[k].def.parallax!)
+                if(!this.parallax[k].sprite.matrix)this.parallax[k].sprite.matrix=matrix4.identity()
+                this.cam2d.get_topdown_perspective_2d(this.parallax[k].sprite.matrix,this.parallax[k].position,this.parallax[k].def.parallax!,0)
             }
         }
         this.terrain.draw(this.terrain_gfx,this.cam2d.layer)

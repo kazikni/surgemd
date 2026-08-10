@@ -10,8 +10,6 @@ export interface MovingBodyPhysicalData{
 export abstract class MovingBody extends ServerGameObject{
     abstract physical_data:MovingBodyPhysicalData
 
-    clamp_hitbox:boolean=true
-
     constructor(){
         super()
         this.allow_tick=true
@@ -42,8 +40,7 @@ export abstract class MovingBody extends ServerGameObject{
     }
     override on_tick(dt: number): void {
         const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, dt))
-            if(this.clamp_hitbox)this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
-            else this.position=pos
+        this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
         for (const obj of objs) {
             if (obj.id === this.id) continue

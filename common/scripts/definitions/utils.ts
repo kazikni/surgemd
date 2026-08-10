@@ -280,11 +280,11 @@ export const hit_sounds:Record<string,HitSoundsDef>={
     }
 }
 export const PerspetiveSizes={
-    tiny:1.02,
-    small:1.025,
-    medium:1.03,
-    large:1.05,
-    giant:1.07,
-    xl:1.1,
+    tiny:1.01,
+    small:1.015,
+    medium:1.02,
+    large:1.04,
+    giant:1.06,
+    xl:1.07,
 
 }satisfies Record<string,number>

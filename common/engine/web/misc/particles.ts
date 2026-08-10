@@ -34,6 +34,7 @@ export interface ABParticle2Config{
         scale?:number
         tint?:Color
     }
+    on_tick?:(obj:ABParticle2D,dt:number)=>void
 }
 export interface RainParticle2Config{
     frame:{
@@ -52,6 +53,7 @@ export interface RainParticle2Config{
     rotation:number
     speed?:number
     decay_time?:number
+    on_tick?:(obj:RainParticle2D,dt:number)=>void
 }
 export class ABParticle2D extends ClientParticle2D{
     ticks=0
@@ -100,6 +102,7 @@ export class ABParticle2D extends ClientParticle2D{
         
         this.sprite._position._x+=vel.x
         this.sprite.position.y+=vel.y
+        this.config.on_tick?.(this,dt)
 
     }
     override on_create(): void {
@@ -172,7 +175,7 @@ export class RainParticle2D extends ClientParticle2D{
                 break
             }
         }
-
+        this.config.on_tick?.(this,dt)
     }
     override on_create(): void {
         super.on_create()

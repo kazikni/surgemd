@@ -196,6 +196,29 @@ export const matrix4={
             dst[14] = 0
             dst[15] = 1
         },
+        topdown_perspective_2d(dst: Matrix,center: Vec2,parallax: number,z_distance: number){
+            const inv = 1 - parallax
+
+            dst[0] = parallax
+            dst[1] = 0
+            dst[2] = 0
+            dst[3] = 0
+
+            dst[4] = 0
+            dst[5] = parallax
+            dst[6] = 0
+            dst[7] = 0
+
+            dst[8] = 0
+            dst[9] = 0
+            dst[10] = 1
+            dst[11] = 0
+
+            dst[12] = center.x * inv
+            dst[13] = center.y * inv - z_distance
+            dst[14] = 0
+            dst[15] = 1
+        }
     },
     is_equal(m1?:Matrix,m2?:Matrix){
         return m1===m2||(m1!==undefined&&m2!==undefined&&(

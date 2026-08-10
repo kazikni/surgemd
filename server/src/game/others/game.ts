@@ -100,6 +100,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     
     loot_tables:LootTablesManager<LootData,LootAditional,LootSetting>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootSetting>)
 
+    always_visible:Record<number,ServerGameObject>={}
     pings:PingData[]=[]
     feed_messages:FeedMessage[]=[]
     puzzles:Record<string,BuildingPuzzle>={}
@@ -279,6 +280,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.deadzone.reset()
         this.timeouts.length=0
         this.puzzles={}
+        this.always_visible={}
         this.started = false
         this.closed = false
         this.fineshed=false

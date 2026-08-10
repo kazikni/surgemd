@@ -16,8 +16,8 @@ export const LootTables={
         {item:"famas",weight:8},
         {item:"rifle_cbc",weight:7},
         {item:"spas12",weight:7},
-        {item:"model94",weight:7},
-        {item:"blr81",weight:7},
+        {item:"model94",weight:1},
+        {item:"blr81",weight:1},
     ],
     mythic_guns:[
         {item:"sr25",weight:13},
@@ -43,7 +43,7 @@ export const LootTables={
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:130},
+        {table:"common_guns",weight:150},
         {table:"mythic_guns",weight:5},
         {table:"legendary_guns",weight:0.2}
     ],

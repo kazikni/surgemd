@@ -1414,7 +1414,7 @@ export class Human extends MovingBody{
             kill_reward*=rules.score.leader_kill
         }
         if(params.object&&params.object.number_type===GameObjectType.Bullet){
-            if((params.object as Bullet).reflectionCount>0)kill_reward+=rules.score.bounce_kill
+            if((params.object as Bullet).reflection_count>0)kill_reward+=rules.score.bounce_kill
         }
         this.apply_score(ScoreApplyerType.Kill,kill_reward)
 

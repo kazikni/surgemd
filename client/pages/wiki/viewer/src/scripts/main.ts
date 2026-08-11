@@ -76,7 +76,7 @@ function bullet_text(def:BulletDef):string{
 </tr>
 <tr>
     <th>Obstacle Multiply</th>
-    <td>${def.obstacleMult}</td>
+    <td>${def.obstacle_mult}</td>
 </tr>
 <tr>
     <th>Fallof</th>

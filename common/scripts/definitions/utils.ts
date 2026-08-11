@@ -35,7 +35,7 @@ export interface BulletDef{
     }
     reflection?:BulletReflection
     pass_through_humans?:boolean
-    obstacleMult?:number
+    obstacle_mult?:number
     critical_mult?:number
     on_hit_explosion?:string
 }

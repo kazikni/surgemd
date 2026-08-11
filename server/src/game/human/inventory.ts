@@ -174,11 +174,10 @@ export class GunItem extends GunItemBase implements LItem{
                     ang+=Angle.deg2rad(random.float(-spread,spread))
                 }
                 const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
-                const b=user.game.add_bullet(pos,this.def.bullet.def,user,this.def.ammo_type,this.def,user.layer,undefined,is_idle?0.25:undefined)
-                b.modifiers={
-                    speed:user.modifiers.bullet_speed,
-                    size:user.modifiers.bullet_size,
-                }
+                const b=user.game.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(this.def.ammo_type),this.def,user.layer,is_idle?0.2:undefined)
+                b.set_definition(this.def.bullet.def)
+                b.speed*=user.modifiers.bullet_speed
+                b.tracer_height*=user.modifiers.bullet_size
                 user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,spread,position:pos})
                 b.set_direction(ang)
             }

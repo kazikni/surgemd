@@ -104,7 +104,7 @@ export const ConfigDefaultValues={
     sv_graphics_renderer:"webgl2",
     sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"medium",
     sv_graphics_shadows:!(Debug.force_mobile||isMobile),
-    sv_graphics_perspective:true,
+    sv_graphics_perspective:false,
     sv_graphics_particles:GraphicsDConfig.Advanced,
     sv_graphics_lights:GraphicsDConfig.Advanced,
     sv_graphics_post_proccess:(Debug.force_mobile||isMobile)?GraphicsDConfig.None:GraphicsDConfig.Advanced,

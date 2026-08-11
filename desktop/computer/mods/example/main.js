@@ -59,7 +59,7 @@ export function main(ctx){
                                 range:100,
                                 falloff:0.8,
                                 speed:31,
-                                obstacleMult:1.2,
+                                obstacle_mult:1.2,
                                 tracer:ctx.globals.tracers.small
                             }
                         },

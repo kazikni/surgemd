@@ -77,6 +77,8 @@ __                                                                              
 * Small Changes on melee swing animation
 * Improve Grenades Animation
 * Fix Drinking Animation Reset
+* Change Quickswitch
+* Allow Reload After Delay
 __                                                                                                                 __
 ### Menu
 * Final Screen Rework

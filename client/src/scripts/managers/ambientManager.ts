@@ -229,9 +229,9 @@ export class AmbientManager{
         }
 
         light = ease.quadraticInOut(light)
-        const rainDark = this.rain_value * 0.2
+        const rainDark = this.rain_value * 0.3
 
-        this.global_ilumination = Math.max(light * (1 - rainDark),0.4)
+        this.global_ilumination = Math.max(light * (1 - rainDark),0.3)
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
         if(!this.game.minimap.biome)return
@@ -279,10 +279,6 @@ export class AmbientManager{
         this.set_rain_state(0,0)
         this.deadzone_ambience_sound=this.game.resources.get_sound("deadzone_ambience")
     }
-    /*musics:string[]=[
-        "game_snow_music_1",
-        "game_snow_music_2",
-    ]*/
     end_game=false
     update_camera(){
         if(!this.game.active_entity)return

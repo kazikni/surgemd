@@ -218,7 +218,7 @@ export const bullets_factory={
             speed: 35*(1+(power-1) * 0.5),
 
             critical_mult: 1.25,
-            obstacleMult: 1,
+            obstacle_mult: 1,
             falloff:0.75,
             tracer:tracers.medium
         }
@@ -230,7 +230,7 @@ export const bullets_factory={
             speed: 55 * (1 + (power - 1) * 0.4),
 
             critical_mult: 1.1,
-            obstacleMult: 1.25,
+            obstacle_mult: 1.25,
             falloff: 0.7,
             tracer: tracer,
         }
@@ -555,7 +555,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:110,
                     falloff:0.8,
                     speed:38,
-                    obstacleMult:1.2,
+                    obstacle_mult:1.2,
                     tracer:tracers.small,
                 }
             },
@@ -742,7 +742,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     range:190,
                     falloff:0.7,
                     speed:45,
-                    obstacleMult:1.7,
+                    obstacle_mult:1.7,
                     tracer:tracers.large
                 }
             },
@@ -1107,7 +1107,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     falloff:0.7,
                     speed:40,
                     critical_mult:1.1,
-                    obstacleMult:2,
+                    obstacle_mult:2,
                     tracer:tracers.large
                 }
             },
@@ -1339,7 +1339,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:17,
+                    damage:15.5,
                     falloff:0.6,
                     range:165,
                     speed:40,
@@ -1352,9 +1352,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             reload:{
                 delay:0.7,
-                capacity:9,
-                extended_capacity:18,
-                reload_count:1
+                capacity:10,
+                extended_capacity:20,
+                reload_count:2
             },
             recoil:{
                 duration:0.4,
@@ -1408,7 +1408,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:14,
-                    obstacleMult:1.5,
+                    obstacle_mult:1.5,
                     range:170,
                     speed:35,
                     tracer:tracers.large
@@ -1439,7 +1439,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             bullet:{
                 def:{
                     damage:10,
-                    obstacleMult:1.5,
+                    obstacle_mult:1.5,
                     range:170,
                     speed:35,
                     tracer:tracers.medium
@@ -1522,7 +1522,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     on_hit_explosion:"rocket_explosion",
                     speed:20,
                     critical_mult:1.2,
-                    obstacleMult:3,
+                    obstacle_mult:3,
                     tracer:{
                         height:4,
                         width:2,

@@ -44,6 +44,7 @@ import { LevelPlayerScript } from "../mode/level_player.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { OnlineMessageType } from "common/scripts/packets/messages.ts";
 import { Drone } from "../objects/drone.ts";
+import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 export interface GameData {
     living_count: number[]
 
@@ -361,15 +362,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     get_loot_table(table:LootTable,settings?:LootAditional):LootData[]{
         return this.loot_tables.get_loot(table,settings??this.modeManager.rules.loot_settings,this)
     }
-    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{
+    add_bullet(position:Vec2,owner?:Human,ammo?:AmmoDef,source?:DamageSourceDef,layer:number=Layers.Normal,critical_chance?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
-            def,
             position:v2.clone(position),
             owner:owner,
             ammo:ammo,
             source,
             critical_chance,
-            satured
         })as Bullet
         return b
     }

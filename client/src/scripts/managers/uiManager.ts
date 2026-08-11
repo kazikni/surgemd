@@ -25,7 +25,6 @@ import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { Angle, ColorM, random, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean

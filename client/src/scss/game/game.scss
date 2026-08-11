@@ -459,17 +459,6 @@
     opacity: var(--ui-minimap-opacity);
     box-shadow: var(--ui-panel-box-shadow);
 
-    .map-viewport{
-        position: absolute;
-        left: 0px;
-        top: 0px;
-        transform-origin:0 0;
-    }
-    .map-tile{
-        position:absolute;
-        display:block;
-    }
-
     &.fullscreen{
         left:50%;
         top:50%;
@@ -483,102 +472,6 @@
         opacity: var(--ui-minimap-full-opacity);
         box-shadow: var(--ui-panel-box-shadow-big);
         border:var(--ui-panel-border);
-    }
-    .map-deadzone-safe-line{
-        position:absolute;
-        height:10px;
-        background:var(--ui-theme-primary);
-        pointer-events:none;
-        transform-origin:left center;
-    }
-    .map-deadzone{
-        position:absolute;
-        border-radius:50%;
-        pointer-events:none;
-
-        left:var(--dx);
-        top:var(--dy);
-
-        width:var(--dr);
-        height:var(--dr);
-
-        transform:translate(-50%,-50%);
-        box-shadow: 0 0 0 13000px var(--deadzone-color);
-    }
-    .map-deadzone-dest{
-        position:absolute;
-        border-radius:50%;
-        pointer-events:none;
-
-        left:0px;
-        top: 0px;
-        width: 100px;
-        height: 100px;
-
-        left:var(--dx);
-        top:var(--dy);
-
-        width:var(--dr);
-        height:var(--dr);
-
-        transform:translate(-50%,-50%);
-        box-shadow:0 0 0 30px #fff5;
-    }
-    .map-ping{
-        position:absolute;
-
-        width:50px;
-        height:50px;
-
-        pointer-events:none;
-
-        left: var(--px);
-        top: var(--py);
-
-        scale: var(--scale);
-
-        transform:translate(-50%,-50%);
-        z-index:40;
-
-        .map-ping-icon{
-            position:absolute;
-
-            left:0;
-            top:0;
-
-            width:50px;
-            height:50px;
-
-            z-index:2;
-            color: var(--ping-color);
-        }
-        .map-ping-pulse{
-            position:absolute;
-
-            left:50%;
-            top:50%;
-
-            width:20px;
-            height:20px;
-
-            border-radius:50%;
-
-            border:4px solid var(--ping-color);
-
-            transform:translate(-50%,-50%);
-
-            z-index:1;
-        }
-    }
-    .map-humans{
-        position:absolute;
-        inset:0;
-        pointer-events:none;
-        z-index: 41;
-        
-        .map-human{
-            position:absolute;
-        }
     }
 
     @include main.large_screen {

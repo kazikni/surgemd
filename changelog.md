@@ -9,6 +9,7 @@ __                                                                              
 * Shadows
 * Dialogs
 * Audio Libary
+* Downeds Walk Animation and movement
 __                                                                                                                 __
 ### Menu
 * Main Menu Rework
@@ -61,12 +62,10 @@ __                                                                              
 * Campfire Badge
 __                                                                                                                 __
 ### Others
-* Alternative Shed Ceiling
 * Hunt House on tundra map
-* Increse critical chance if you dont walk from 15% to 25%
+* Increse critical chance if you dont walk from 15% to 20%
 * Bounce Kill Score Reward
 * Red, Yellow, Green And Blue Buttons
-* Downeds Walk Animation
 __                                                                                                                 __
 ## Changes
 __                                                                                                                 __

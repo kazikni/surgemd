@@ -121,7 +121,7 @@ export abstract class ModeManager{
             rain_cycle:1,
             thunderstorm_cycle:1,
             rain_stop_chance:0.3,
-            rain_chance:0.03,
+            rain_chance:0.02,
         },
         deadzone:{
             enabled:true,

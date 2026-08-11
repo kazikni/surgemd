@@ -300,8 +300,7 @@ export const guns_factory={
             barrel_length:0.8,
 
             fire_delay:1,
-            switch_delay:0.25,
-            unload_delay:1.1,
+            switch_delay:0.1,
 
             gas_particles:GasParticles.pistols,
             muzzle_flash:MuzzleFlash.normal,
@@ -331,8 +330,8 @@ export const guns_factory={
             idle_spread:0.15,
 
             fire_delay:0.1,
-            switch_delay:0.25,
-            unload_delay:1.1,
+            switch_delay:0.2,
+            unload_delay:1,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -360,11 +359,11 @@ export const guns_factory={
             rank:ItemRank.C,
 
             barrel_length:1,
-            idle_spread:0.75,
+            idle_spread:0.7,
 
             fire_delay:0.1,
-            switch_delay:0.25,
-            unload_delay:1.1,
+            switch_delay:0.2,
+            unload_delay:1,
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -397,8 +396,7 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.1,
-            switch_delay:0.2,
-            unload_delay:1,
+            switch_delay:0.1,
 
             gas_particles:GasParticles.dmr,
             case_particle:{

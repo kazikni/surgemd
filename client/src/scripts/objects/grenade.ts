@@ -3,7 +3,7 @@ import { ABParticle2D, Sprite2D } from "common/engine/web.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, ColorM, Particle2D, ParticlesEmitter2D, random, Stream, v2, v2m } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, matrix4, Particle2D, ParticlesEmitter2D, random, Stream, v2, v2m } from "common/engine/core.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     zpos:number
 }
@@ -70,8 +70,12 @@ export class Grenade extends MovingBody{
                 }
             }
             this.sprite.zIndex=zIndexes.GrenadeGround
+            this.sprite.matrix=undefined
         }else{
             this.sprite.zIndex=zIndexes.GrenadeAir
+            if(this.def.parralax!==undefined){
+                this.sprite.matrix=matrix4.parallax_2d(this.game.cam2d.position,1+(this.def.parralax*this.physical_data.zpos))
+            }
         }
     }
     set_definition(def:GrenadeDef){
@@ -100,6 +104,7 @@ export class Grenade extends MovingBody{
                         tint:col,
                         angle:ang,
                         scale:0.01,
+                        zIndex:zIndexes.Particles,
                         layer:this.layer,
                         to:{
                             scale:1,

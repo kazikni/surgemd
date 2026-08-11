@@ -77,6 +77,7 @@ export type GrenadeDef={
     radius:number
     zBaseScale:number
     zScaleAdd:number
+    parralax?:number
 
     decays:{
         ground_speed:number
@@ -432,6 +433,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             radius:0.6,
             zBaseScale:1,
             zScaleAdd:1,
+            parralax:0.5,
             decays:{
                 ground_rotation:2,
                 ground_speed:2
@@ -457,6 +459,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             radius:0.6,
             zBaseScale:1,
             zScaleAdd:1,
+            parralax:0.5,
             decays:{
                 ground_rotation:2,
                 ground_speed:2

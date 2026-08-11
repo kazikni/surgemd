@@ -17,6 +17,7 @@ export class Plane extends AirBody {
     radius:number=0
     grenade_def?: GrenadeDef
     obstacle?: ObstacleDef
+
     constructor(){
         super()
     }
@@ -35,6 +36,10 @@ export class Plane extends AirBody {
     override on_create(args: {position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
         super.on_create(args)
         if(args)this.set_configuration(args.position,args.speed,args.target_pos,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
+        
+    }
+    override on_destroy(): void {
+        super.on_destroy()
     }
     override on_tick(dt: number): void {
         super.on_tick(dt)

@@ -3,28 +3,28 @@ import { Game } from "../others/game.ts"
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts"
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
 import { ColorM, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { GeneralUpdate, MapZone } from "common/scripts/packets/general_update.ts";
 type MinimapPing = {
     id?:number
 
     pos:Vec2
     def:PingDef
 
-    color:string
+    color:number
 
     duration:number
     time:number
 
     pulseTime:number
-
-    image?:HTMLImageElement
-    image_promise?:Promise<void>
 }
 interface MapHumansInstance{
     pos:Vec2
-    old_tint:number
-    old_icon:string
-    image?:HTMLImageElement
-    image_promise?:Promise<void>
+}
+interface MinimapIconDef{
+    name:string
+    value:string
+    images:Record<number,HTMLImageElement>
+    images_promise:Record<number,Promise<HTMLImageElement>>
 }
 export class MinimapModule extends UIModule<Game>{
     enabled=true
@@ -48,8 +48,10 @@ export class MinimapModule extends UIModule<Game>{
     mapHeight=0
 
     pings:MinimapPing[]=[]
+    zones:MapZone[]=[]
 
-    map_icons:Record<string,string>={}
+    map_icons_name:Record<string,MinimapIconDef>={}
+    map_icons:MinimapIconDef[]=[]
 
     override on_init(): void {
         this.canvas=document.body.querySelector("#ui-map") as HTMLCanvasElement
@@ -58,6 +60,7 @@ export class MinimapModule extends UIModule<Game>{
         this.load_map_icon("normal","/assets/img/menu/gui/map/map_icon_normal.svg")
         this.load_map_icon("downed","/assets/img/menu/gui/map/map_icon_downed.svg")
         this.load_map_icon("dead","/assets/img/menu/gui/map/map_icon_dead.svg")
+        this.load_map_icon("drone","/assets/img/menu/gui/map/map_icon_drone.svg")
 
         this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
         this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
@@ -68,7 +71,32 @@ export class MinimapModule extends UIModule<Game>{
     }
 
     async load_map_icon(id:string,path:string){
-        this.map_icons[id]=(await (await fetch(path)).text())
+        const icon:MinimapIconDef={
+            name:id,
+            value:(await (await fetch(path)).text()),
+            images:{},
+            images_promise:{}
+        }
+        this.map_icons.push(icon)
+        this.map_icons_name[id]=icon
+    }
+
+    get_minimap_icon(id:string,color:number):HTMLImageElement|undefined{
+        const icon=this.map_icons_name[id]
+        if(!icon||icon.images_promise[color]!==undefined)return
+        if(icon.images[color])return icon.images[color]
+
+        icon.images_promise[color]=new Promise((resolve)=>{
+            const fill=ColorM.number2hex(color)
+            const stroke=ColorM.number2hex(ColorM.number_mul_hsv(color,-3,undefined,0.5))
+            const image=new Image()
+            image.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(icon.value.replaceAll("var(--image-fill)",fill).replaceAll("var(--image-stroke)",stroke))
+            image.onload=()=>resolve(image)
+        })
+        icon.images_promise[color].then((v)=>{
+            icon.images[color]=v
+            delete icon.images_promise[color]
+        })
     }
 
     render(dt:number){
@@ -124,7 +152,7 @@ export class MinimapModule extends UIModule<Game>{
         }
 
         this.render_deadzone()
-        this.render_safe_line()
+        this.render_zones()
         this.render_pings(dt)
         this.render_humans()
 
@@ -132,7 +160,7 @@ export class MinimapModule extends UIModule<Game>{
     }
     render_deadzone() {
         const dz = this.game.dead_zone
-        if (!dz) return
+        if (!dz||dz.enabled) return
 
         const ms = this.game.minimap.meter_size
 
@@ -189,6 +217,7 @@ export class MinimapModule extends UIModule<Game>{
         ctx.stroke()
 
         ctx.restore()
+        this.render_safe_line()
     }
     render_safe_line() {
         const player = this.game.active_entity?.position
@@ -227,9 +256,6 @@ export class MinimapModule extends UIModule<Game>{
             if(!hi){
                 hi={
                     pos:v2.clone(human.position),
-                    old_tint:-1,
-                    old_icon:"",
-                    image:undefined
                 }
                 this.humans_ins.set(human.id,hi)
             }
@@ -253,19 +279,9 @@ export class MinimapModule extends UIModule<Game>{
             v2m.lerp(hi.pos,human.position,this.game.global_interpolation)
             const pos=this.worldToMap(hi.pos.x,hi.pos.y)
 
-            const iconChanged=icon!==hi.old_icon||color!==hi.old_tint
-            if(iconChanged||(!hi.image&&!hi.image_promise)){
-                hi.old_icon=icon
-                hi.old_tint=color
-                hi.image_promise=this.load_human_icon(human.id,icon,color)
-                hi.image_promise.then(()=>{
-                    if(!this.humans_ins.has(human.id))return
-                    hi.image_promise=undefined
-                })
-            }
-
-            const image=(hi as any).image as HTMLImageElement|undefined
+            const image=this.get_minimap_icon(icon,color)
             if(!image)continue
+
             const visualSize=size/this.scale
             const width=image.width*visualSize
             const height=image.height*visualSize
@@ -277,18 +293,36 @@ export class MinimapModule extends UIModule<Game>{
             }
         }
     }
+    render_zones(){
+        for(const z of this.zones){
+            this.ctx.beginPath()
+            const pos=this.worldToMap(z.position.x,z.position.y)
+            this.ctx.arc(pos.x,pos.y,z.radius*this.game.minimap.meter_size,-Math.PI,Math.PI)
+
+            const color=ColorM.number2hex(z.color)
+            this.ctx.fillStyle=color+"99"
+            this.ctx.strokeStyle=color
+            this.ctx.lineWidth=3/this.scale
+            this.ctx.fill()
+            this.ctx.stroke()
+
+            if(z.icon>0&&this.map_icons[z.icon-1]){
+                const img=this.get_minimap_icon(this.map_icons[z.icon-1].name,z.color)
+                if(!img)continue
+                const width=img.width/this.scale
+                const height=img.height/this.scale
+                this.ctx.drawImage(img,pos.x-width*0.5,pos.y-height*0.5,width,height)
+            }
+        }
+    }
     render_pings(dt:number){
         for(let i=0;i<this.pings.length;i++){
             const ping=this.pings[i]
-            if(!ping.image)ping.image_promise=this.load_ping_icon(ping.def.idString,ping.color).then(image=>{
-                if(!this.pings.includes(ping))return
-                ping.image=image
-                ping.image_promise=undefined
-            })
             const pos=this.worldToMap(ping.pos.x,ping.pos.y)
-            if(ping.image){
+            const img=this.get_minimap_icon(ping.def.idString,ping.color)
+            if(img){
                 const size=50/this.scale
-                this.ctx.drawImage(ping.image,pos.x-size*0.5,pos.y-size*0.5,size,size)
+                this.ctx.drawImage(img,pos.x-size*0.5,pos.y-size*0.5,size,size)
             }
             if(ping.pulseTime<100){
                 const pulseSize=(7*ping.pulseTime)/this.scale
@@ -296,7 +330,7 @@ export class MinimapModule extends UIModule<Game>{
 
                 this.ctx.beginPath()
                 this.ctx.arc(pos.x,pos.y,pulseSize*0.5,0,Math.PI*2)
-                this.ctx.strokeStyle=ping.color+alpha.toString(16)
+                this.ctx.strokeStyle=ColorM.number2hex(ping.color)+alpha.toString(16)
                 this.ctx.lineWidth=4/this.scale
                 this.ctx.stroke()
                 ping.pulseTime+=dt*15
@@ -310,27 +344,6 @@ export class MinimapModule extends UIModule<Game>{
                 }
             }
         }
-    }
-    async load_human_icon(id:number,icon:string,color:number):Promise<void>{
-        const fill=ColorM.number2hex(color)
-        const stroke=ColorM.number2hex(ColorM.number_mul_hsv(color,-3,undefined,0.5))
-
-        const svg=this.map_icons[icon]
-        if(!svg)return
-
-        const image=new Image()
-        image.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg.replaceAll("var(--image-fill)",fill).replaceAll("var(--image-stroke)",stroke))
-
-        try{
-            await image.decode()
-        }catch{
-            return
-        }
-        
-        if(!this.humans_ins.has(id))return
-        const hi=this.humans_ins.get(id)!
-        if(hi?.old_icon!==icon||hi.old_tint!==color)return
-        hi.image=image
     }
     enable(){
         this.enabled=true
@@ -357,7 +370,7 @@ export class MinimapModule extends UIModule<Game>{
         return v2(x*this.game.minimap.meter_size,y*this.game.minimap.meter_size)
     }
 
-    add_ping(position:Vec2,def:PingDef,color:string,id?:number){
+    add_ping(position:Vec2,def:PingDef,color:number,id?:number){
         if(id!==undefined){
             for(let i=this.pings.length-1;i>=0;i--){
                 if(this.pings[i].id===id){
@@ -380,27 +393,15 @@ export class MinimapModule extends UIModule<Game>{
             bus:"ui"
         })
     }
-    async load_ping_icon(icon:string,color:string):Promise<HTMLImageElement|undefined>{
-        const svg=this.map_icons[icon]
-        if(!svg)return
-
-        const image=new Image()
-        image.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg.replaceAll("var(--image-color)",color))
-
-        try{
-            await image.decode()
-        }catch{
-            return
-        }
-
-        return image
-    }
     override on_signal(signal:string,data:any):void{
         switch(signal){
             case "private":
                 for(const p of (data as PrivateUpdate).pings){
-                    this.add_ping(p.position,this.game.definitions.ping.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
+                    this.add_ping(p.position,this.game.definitions.ping.getFromNumber(p.def),p.color,p.id)
                 }
+                break
+            case "general_update":
+                this.zones=(data as GeneralUpdate).map_zones
                 break
             case "actiondown":
                 switch(data.action){
@@ -431,5 +432,6 @@ export class MinimapModule extends UIModule<Game>{
     override on_destroy():void{}
     override on_clear():void{
         this.pings.length=0
+        this.zones.length=0
     }
 }

@@ -11,7 +11,6 @@ import { HumansManager } from "../managers/humans_manager.ts";
 import { Loot } from "../objects/loot.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { Vehicle } from "../objects/vehicle.ts";
-import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { Explosion } from "../objects/explosion.ts";
@@ -37,7 +36,7 @@ import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
-import { FeedMessage } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, MapZone } from "common/scripts/packets/general_update.ts";
 import * as Core from "common/engine/core.ts";
 import { HumanScript } from "../human/ai/script.ts";
 import { LevelPlayerScript } from "../mode/level_player.ts";
@@ -103,6 +102,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     always_visible:Record<number,ServerGameObject>={}
     pings:PingData[]=[]
+    map_zones:MapZone[]=[]
     feed_messages:FeedMessage[]=[]
     puzzles:Record<string,BuildingPuzzle>={}
 
@@ -287,6 +287,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.fineshed=false
         this.clock.timeScale=1
         this.pings.length=0
+        this.map_zones.length=0
     }
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.fineshed=false

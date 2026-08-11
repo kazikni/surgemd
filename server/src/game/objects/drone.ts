@@ -2,6 +2,7 @@ import { GameObjectType } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D, Numeric, random, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { AirBody } from "./airbody.ts";
+import { MapZone } from "common/scripts/packets/general_update.ts";
 export class Drone extends AirBody {
     override string_type = "drone"
     override number_type = GameObjectType.Drone
@@ -24,6 +25,9 @@ export class Drone extends AirBody {
 
     mode:number=0 // 0 = Static, 1 = Moving to Target
 
+    zone?:MapZone
+
+    view_hitbox:CircleHitbox2D=new CircleHitbox2D(v2.zero(),1)
     constructor(){
         super()
     }
@@ -40,11 +44,32 @@ export class Drone extends AirBody {
     override on_create(args: {position:Vec2,target_pos:Vec2,speed:number,type:number,owner?:Human}): void {
         super.on_create(args)
         if(args)this.set_configuration(args.position,args.speed,args.type,args.owner)
+        this.zone={
+            color:0xe6ba0d,
+            icon:4,
+            position:this.position,
+            id:this.id,
+            radius:5
+        }
+        this.game.map_zones.push(this.zone)
+    }
+    override on_destroy(): void {
+        super.on_destroy()
+        if(this.zone){
+            const idx=this.game.map_zones.indexOf(this.zone)
+            if(idx!==-1)this.game.map_zones.splice(idx,1)
+        }
     }
     override on_tick(dt: number): void {
         super.on_tick(dt)
         const expo=Numeric.dt_expo_inter(1,dt)
 
+        this.view_hitbox.position=this.position
+        this.view_hitbox.radius=20+(20*this.z)
+        if(this.zone){
+            this.zone.position=this.position
+            this.zone.radius=this.view_hitbox.radius
+        }
         if(this.mode===0){
             /*this.motion_timer += dt * this.motion_speed
 

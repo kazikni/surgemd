@@ -78,12 +78,12 @@ export const LootTables={
         {item:"medikit",weight:1},
     ],
     adrenaline_consumibles:[
-        {item:"yellow_soda",count:1,weight:6},
+        {item:"yellow_soda",count:1,weight:5},
         {item:"inhaler",count:1,weight:1},
         {item:"yellow_pills",count:1,weight:0.1},
     ],
     shield_consumibles:[
-        {item:"blue_soda",count:2,weight:6},
+        {item:"blue_soda",count:2,weight:5},
         {item:"blue_potion",count:1,weight:1},
         {item:"blue_pills",count:1,weight:0.1},
     ],
@@ -93,7 +93,7 @@ export const LootTables={
         {item:"red_crystal",count:2,weight:0.1},
     ],
     mana_consumibles:[
-        {item:"purple_soda",count:2,weight:6},
+        {item:"purple_soda",count:2,weight:5},
         {item:"purple_potion",count:1,weight:1},
         {item:"purple_pills",count:1,weight:0.1},
     ],

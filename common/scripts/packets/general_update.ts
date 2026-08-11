@@ -21,12 +21,20 @@ export interface AmbientData{
     rain:number
     thunder_storm:number
 }
+export interface MapZone{
+    id?:number
+    position:Vec2
+    icon:number
+    color:number
+    radius:number
+}
 export interface GeneralUpdate{
     started:boolean
     living_count:number[]
     feed:FeedMessage[]
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
+    map_zones:MapZone[]
 }
 export interface MakeDeadZoneSettings{
     wait_time:{
@@ -178,6 +186,14 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
     stream.write_array(up.living_count,(i,_s)=>{
         stream.write_uint8(i)
     },1)
+    stream.write_array(up.map_zones,(i)=>{
+        stream.write_boolean_group(i.id!==undefined)
+        stream.write_uint32(i.color)
+        .write_uint8(i.icon)
+        .write_pos2(i.position)
+        .write_float32(i.radius)
+        if(i.id!==undefined)stream.write_id(i.id)
+    },1)
 }
 function decode_general_update(stream:Stream,up:GeneralUpdate){
     const [
@@ -213,6 +229,17 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
     up.living_count=stream.read_array((_s)=>{
         return stream.read_uint8()
     },1)
+    up.map_zones=stream.read_array(()=>{
+        const [id]=stream.read_boolean_group()
+        const ret:MapZone={
+            color:stream.read_uint32(),
+            icon:stream.read_uint8(),
+            position:stream.read_pos2(),
+            radius:stream.read_float32()
+        }
+        if(id)ret.id=stream.read_id()
+        return ret
+    },1)
 }
 
 export class GeneralUpdatePacket extends Packet{
@@ -222,7 +249,8 @@ export class GeneralUpdatePacket extends Packet{
         started:false,
         living_count:[],
         feed:[],
-        deadzone:undefined
+        deadzone:undefined,
+        map_zones:[]
     }
     decode(stream: Stream): void {
         decode_general_update(stream,this.content)

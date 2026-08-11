@@ -398,6 +398,7 @@ export class UiManager{
         for(const msg of up.feed){
             this.add_feed_message(msg)
         }
+        this.game.ui_manager.signal("general_update",up)
     }
     state:HelpGuiState={
         driving:false,

@@ -13,6 +13,7 @@ import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { GameADefinitions } from "common/scripts/definitions/game_defs.ts";
+import { MapZone } from "common/scripts/packets/general_update.ts";
 export type map_gen_position=(hitbox:Hitbox2D,map:GameMap,random:SeededRandom)=>Vec2
 export type map_gen_valid=(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap)=>boolean
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void

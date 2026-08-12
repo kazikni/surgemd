@@ -64,6 +64,7 @@ export class PlayerClient extends PlayerConnManager{
             if(this.human.input.ping)up.priv.pings.push(this.human.input.ping)
             if(this.human.team_data.group?.pings)up.priv.pings.push(...this.human.team_data.group.pings)
             up.priv.map_humans=this.human.map_humans()
+            this.human.visible_humans.length=0
 
             up.priv.self_state=this.human.self_state(this.human.is_new)
             if(this.human instanceof Player){

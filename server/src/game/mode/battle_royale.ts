@@ -9,9 +9,13 @@ import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
+import { LocationDrone } from "../objects/drone.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
+}
+export interface DronesConfig{
+    spawn:number[]
 }
 export interface BattleRoyaleSettings{
     players?:{
@@ -26,6 +30,7 @@ export interface BattleRoyaleSettings{
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
     airdrops?:AirdropConfig
+    drones?:DronesConfig
     teams?:number
     group_size?:number
 }
@@ -44,6 +49,7 @@ export class BattleRoyale extends ModeManager{
         spawn_mode:SpawnMode
         deadzone:DeadZoneConfig
         airdrops:AirdropConfig
+        drones:DronesConfig
     }
     groups_manager?:GroupsManager
     group_size:number
@@ -70,6 +76,9 @@ export class BattleRoyale extends ModeManager{
                     20,150,301
                 ]
             },
+            drones:settings.drones??{
+                spawn:[20,301]
+            }
         }
         this.group_size=settings.group_size===undefined?group_size:settings.group_size
         if(this.group_size>1){
@@ -98,6 +107,11 @@ export class BattleRoyale extends ModeManager{
             this.game.add_timeout(()=>{
                 this.game.add_airdrop()
             },p)
+        }
+        for(const d of this.settings.drones.spawn){
+            this.game.add_timeout(()=>{
+                this.game.add_drone(undefined,undefined,new LocationDrone())
+            },d)
         }
         this.game.add_timeout(()=>{
             this.game.close()
@@ -286,7 +300,6 @@ export class BattleRoyaleDebug extends BattleRoyale{
     }
     override async generate_map(): Promise<void> {
         this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed)
-        this.game.add_drone(v2.scale(this.game.map.size,0.5))
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.game.map.size,2)

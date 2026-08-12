@@ -57,10 +57,12 @@ export class MinimapModule extends UIModule<Game>{
         this.canvas=document.body.querySelector("#ui-map") as HTMLCanvasElement
         this.ctx=this.canvas.getContext("2d")!
 
-        this.load_map_icon("normal","/assets/img/menu/gui/map/map_icon_normal.svg")
-        this.load_map_icon("downed","/assets/img/menu/gui/map/map_icon_downed.svg")
-        this.load_map_icon("dead","/assets/img/menu/gui/map/map_icon_dead.svg")
-        this.load_map_icon("drone","/assets/img/menu/gui/map/map_icon_drone.svg")
+        const base="/assets/img/menu/gui/map/"
+        this.load_map_icon("normal",base+"map_icon_normal.svg")
+        this.load_map_icon("other",base+"map_icon_other.svg")
+        this.load_map_icon("downed",base+"map_icon_downed.svg")
+        this.load_map_icon("dead",base+"map_icon_dead.svg")
+        this.load_map_icon("drone",base+"map_icon_drone.svg")
 
         this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
         this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
@@ -160,7 +162,7 @@ export class MinimapModule extends UIModule<Game>{
     }
     render_deadzone() {
         const dz = this.game.dead_zone
-        if (!dz||dz.enabled) return
+        if (!dz||!dz.enabled) return
 
         const ms = this.game.minimap.meter_size
 
@@ -251,6 +253,7 @@ export class MinimapModule extends UIModule<Game>{
     render_humans(){
         const alive=new Set<number>()
         for(const human of this.game.ui.map_humans){
+            if(alive.has(human.id))continue
             alive.add(human.id)
             let hi=this.humans_ins.get(human.id)
             if(!hi){
@@ -259,7 +262,7 @@ export class MinimapModule extends UIModule<Game>{
                 }
                 this.humans_ins.set(human.id,hi)
             }
-            let size=0.5
+            let size=0.6
             let icon="normal"
             let color=0
             const member=this.game.ui.group_members[human.id]
@@ -269,6 +272,9 @@ export class MinimapModule extends UIModule<Game>{
             }else if(human.id===this.game.active_entity_id){
                 size=1
                 color=0x11aa55
+            }else{
+                color=human.default_map_color
+                icon="other"
             }
             if(human.downed){
                 icon="downed"

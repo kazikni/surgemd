@@ -137,11 +137,11 @@ export class DeadZoneManager {
             const center = v2.scale(this.game.map.size, 0.5)
             this.state.old_position = center
             this.state.position = center
-            this.state.new_position = this.next_position(this.state.new_radius)
+            this.state.new_position = this.next_position()
         }else if(stage.state === DeadZoneState.Waiting){
             this.state.old_position = this.state.new_position
             this.state.position = this.state.new_position
-            this.state.new_position = this.next_position(this.state.new_radius)
+            this.state.new_position = this.next_position()
         }else if(stage.state === DeadZoneState.Advancing){
             this.state.old_position = this.state.position
         }
@@ -208,7 +208,7 @@ export class DeadZoneManager {
             this.do_damage=true
         }
     }
-    next_position(radius:number,mode:SpawnMode=Spawn.ground,attempts:number = 30):Vec2{
+    next_position(radius:number=this.state.new_radius,mode:SpawnMode=Spawn.ground,attempts:number = 30):Vec2{
         for(let i = 0; i < attempts; i++){
             let pos:Vec2
             if(this.stageIndex===0){
@@ -246,10 +246,7 @@ export class DeadZoneManager {
         return pos
     }
     random_point_in_map(radius:number):Vec2{
-        return v2(
-            random.float(radius, this.game.map.size.x - radius),
-            random.float(radius, this.game.map.size.y - radius)
-        )
+        return v2(random.float(radius, this.game.map.size.x - radius),random.float(radius, this.game.map.size.y - radius))
     }
     random_point_inside(radius:number):Vec2{
         const angle = random.rad()
@@ -285,12 +282,11 @@ export class DeadZoneManager {
     }
 
     random_point_inside_cb(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
+        if(this.stageIndex===0)return this.random_point_in_map(this.state.new_radius)
         const angle = random.rad()
         const maxLen = Math.max(this.state.radius, 0)
         const len = random.float(0, maxLen)
-
         const pos = v2(angle,len)
-
         v2m.add(pos,pos,this.state.position)
 
         return pos

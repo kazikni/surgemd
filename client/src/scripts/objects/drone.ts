@@ -63,9 +63,8 @@ export class Drone extends AirBody {
             s.rotation+=6*dt
         }
 
-        const paralax=1+(this.z*0.5)
-        this.visual.scale=v2(1/paralax,1/paralax)
-        this.visual.matrix=matrix4.parallax_2d(this.game.cam2d.position,paralax)
+        v2m.single(this.shadow.scale,1/Math.max(this.z*2,0.1))
+        this.visual.matrix=matrix4.parallax_2d(this.game.cam2d.position,1+(this.z*0.5))
         this.set_hidden(this.can_hide(this.game.scope_zoom))
     }
     override on_initial(): void {

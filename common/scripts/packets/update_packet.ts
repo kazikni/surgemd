@@ -25,6 +25,7 @@ export interface MapHumanData{
     downed:boolean
     id:number
     position:Vec2
+    default_map_color:number
 }
 export interface PrivateUpdate{
     splashes:DamageSplash[]
@@ -309,6 +310,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             stream.write_boolean_group(d.dead,d.downed)
             stream.write_id(d.id)
             .write_pos2(d.position)
+            .write_uint32(d.default_map_color)
         })
         .write_array(this.priv.pings,(e)=>{
             stream.write_boolean_group(e.id!==undefined)
@@ -343,6 +345,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             return {
                 id:stream.read_id(),
                 position:stream.read_pos2(),
+                default_map_color:stream.read_uint32(),
                 dead:bg[0],
                 downed:bg[1],
             }

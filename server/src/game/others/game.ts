@@ -419,29 +419,22 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     add_drone(position?:Vec2,args?:any,drone?:Drone){
         if(!drone)drone=new Drone()
-        const direction=random.rad()
-        if(!position)position=v2.from_RadAngle(direction,Math.min(this.map.size.x,this.map.size.y)+10)
-        this.scene_2d.objects.add_object(drone,Layers.Normal,undefined,{position:position,...args})
+        this.scene_2d.objects.add_object(drone,Layers.Normal,undefined,{position,...args})
     }
     add_plane(position:Vec2,args:Record<string,any>,plane?:Plane){
         if(!plane)plane=new Plane()
-        const direction=random.rad()
-        const planePos = v2.from_RadAngle(direction,Math.min(this.map.size.x,this.map.size.y)+10)
         this.scene_2d.objects.add_object(
             plane,
             Layers.Normal,
             undefined,
             {
-                position: planePos,
                 target_pos: position,
                 ...args
             }
         )
     }
     add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
-        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.ground,this.map.random,(_hitbox,_map,_random)=>{
-            return this.deadzone.random_point_inside_new()
-        })
+        if(!position)position=this.deadzone.next_position()
         if(!position)position=v2(3,3)
         if(!obstacle)obstacle=this.definitions.obstacles.getFromString("airdrop_locked")
 

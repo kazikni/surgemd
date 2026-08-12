@@ -109,10 +109,12 @@ export class Human extends MovingBody{
 
         group?:Group
         group_id?:number
+
         color:number
     }={
         color:0x11aa55
     }
+    default_map_color:number=0xf01041
 
     equipment_data!:{
         helmet?:HelmetDef
@@ -1424,8 +1426,10 @@ export class Human extends MovingBody{
             owner:this
         })
     }
+    
+    visible_humans:MapHumanData[]=[]
     map_humans():MapHumanData[]{
-        return this.team_data.team?.humans??this.team_data.group?.humans??[this]
+        return [...this.team_data.team?.humans??this.team_data.group?.humans??[this],...this.visible_humans]
     }
     override on_destroy(): void {
         const idx=this.humans_manager.humans.indexOf(this)

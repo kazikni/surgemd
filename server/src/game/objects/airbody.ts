@@ -1,6 +1,6 @@
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { MovingBodyPhysicalData } from "./moving_body.ts";
-import { NullHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { NullHitbox2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 
 export interface AirbodyPhysicalData extends MovingBodyPhysicalData {}
@@ -24,9 +24,18 @@ export abstract class AirBody extends ServerGameObject {
     check_destroy(){
         if(this.position.x<=this.game.map.air_bounds.min.x||this.position.y<=this.game.map.air_bounds.min.y||this.position.x>=this.game.map.air_bounds.max.x||this.position.y>=this.game.map.air_bounds.max.y)this.destroy()
     }
-    set_configuration(position:Vec2,speed:number,...args:any){
-        this.position = position
+    set_configuration(speed:number,position?:Vec2,...args:any){
         this.speed = speed
+        if(!position){
+            const dir=random.int(0,3)
+            switch(dir){
+                case 0:position=v2(random.float(this.game.map.air_bounds.min.x,this.game.map.air_bounds.max.x),this.game.map.air_bounds.min.y);break
+                case 1:position=v2(random.float(this.game.map.air_bounds.min.x,this.game.map.air_bounds.max.x),this.game.map.air_bounds.max.y);break
+                case 2:position=v2(this.game.map.air_bounds.min.x,random.float(this.game.map.air_bounds.min.y,this.game.map.air_bounds.max.y));break
+                default:position=v2(this.game.map.air_bounds.max.x,random.float(this.game.map.air_bounds.min.y,this.game.map.air_bounds.max.y));break
+            }
+        }
+        this.position=position
     }
     
     override on_create(_args: any): void {

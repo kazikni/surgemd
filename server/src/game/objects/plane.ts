@@ -22,8 +22,8 @@ export class Plane extends AirBody {
         super()
     }
 
-    override set_configuration(position:Vec2,speed:number,target_pos:Vec2,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef){
-        super.set_configuration(position,speed)
+    override set_configuration(speed:number,position:Vec2|undefined,target_pos:Vec2,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef){
+        super.set_configuration(speed,position)
         this.target_pos = target_pos
         this.type = type
         this.owner = owner
@@ -33,9 +33,9 @@ export class Plane extends AirBody {
         this.radius=radius
     }
 
-    override on_create(args: {position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
+    override on_create(args: {position?:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
         super.on_create(args)
-        if(args)this.set_configuration(args.position,args.speed,args.target_pos,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
+        if(args)this.set_configuration(args.speed,args.position,args.target_pos,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
         
     }
     override on_destroy(): void {

@@ -1,3 +1,5 @@
+import { BackgroundEDef } from "./background_effect.ts";
+
 export enum HistoryCommandType{
     Wait,
     WaitInput,
@@ -7,7 +9,8 @@ export enum HistoryCommandType{
     SetAmbient,
     PlaySoundEffect,
     ShowGameOverMessage,
-    ShowInitialScreen
+    ShowInitialScreen,
+    SetBackground
 }
 export type HistoryCommand={
     type:HistoryCommandType.Wait,
@@ -27,7 +30,8 @@ export type HistoryCommand={
     typewriter_delay?:number
 }|{
     type:HistoryCommandType.SetMusic
-    music:string
+    path?:string
+    music?:string
     loop?:boolean
     start_at?:number
 }|{
@@ -51,4 +55,8 @@ export type HistoryCommand={
     location:string
     date?:string
     description?:string
+}|{
+    type:HistoryCommandType.SetBackground
+    background?:BackgroundEDef
+    timescale?:number
 }

@@ -43,7 +43,6 @@ export interface LevelDefinition{
     mode:GameConfig
     script?:string
     assets?:{
-        background_music?:string
         assets?:Record<string,string>
         textures?:string[]
     }

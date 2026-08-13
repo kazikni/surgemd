@@ -431,8 +431,8 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_on_release:true,
             fire_delay:0.2,
-            switch_delay:0.15,
-            unload_delay:1.2,
+            switch_delay:0.2,
+            unload_delay:1,
 
             gas_particles:GasParticles.sniper,
             case_particle:{
@@ -467,8 +467,8 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.2,
-            switch_delay:0.15,
-            unload_delay:1.2,
+            switch_delay:0.2,
+            unload_delay:1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
             },

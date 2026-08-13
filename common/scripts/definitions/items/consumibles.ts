@@ -125,23 +125,6 @@ export const ConsumiblesAnimations={
             ],
             time:0.5
         },
-        {
-            time:0.25,
-            actions:[
-                {
-                    type:"callmode",
-                    mode:"eyes",
-                    args:[1,false]
-                },
-                {
-                    type:"tween",
-                    fuser:"weapon",
-                    to:{
-                        position:v2(.43,0)
-                    }
-                }
-            ]
-        }
     ]
 }satisfies Record<string,()=>AKeyFrame[]>
 

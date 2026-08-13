@@ -9,6 +9,8 @@ import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } fro
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 import { FileManager, random, TranslationManager } from "common/engine/core.ts";
+import { BackgroundManager } from "./background_manager.ts";
+import { backgrounds } from "common/scripts/config/background_effect.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
@@ -63,6 +65,9 @@ export class MenuManager{
     submenu_param:boolean
     input!:InputManager
 
+    background:BackgroundManager
+    history_background:BackgroundManager
+
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
@@ -107,11 +112,6 @@ export class MenuManager{
             regions:["local"],
         }
 
-        HideElement(this.content.gameD)
-        HideElement(this.content.gameCanvas)
-        ShowElement(this.content.menuD)
-
-        HideElement(this.content.loading_screen)
         this.content.loading_screen.style.backgroundImage=`url("/assets/img/menu/background/${
             random.choose(["normal_background","tundra_background_1"])
         }.png")`
@@ -146,6 +146,9 @@ export class MenuManager{
             this.content.loading_score.innerText = this.loading_game.score.toString()
             this.spawn_target()
         }
+
+        this.background=new BackgroundManager(this.content.menuD.querySelector("#menu-background") as HTMLDivElement)
+        this.history_background=new BackgroundManager(this.content.history_overlay.querySelector("#history-background") as HTMLDivElement)
     }
     intro_fineshed:boolean=false
     start_intro(): Promise<void> {
@@ -315,8 +318,10 @@ export class MenuManager{
         }
         if(tab){
             this.content.menu_options.style.opacity="0"
+            this.content.menu_options.style.pointerEvents="none"
         }else{
             this.content.menu_options.style.opacity="1"
+            this.content.menu_options.style.pointerEvents=""
         }
     }
     async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
@@ -329,6 +334,7 @@ export class MenuManager{
         this.cam2d.visible=false
         this.update_api()
 
+        this.game_end()
         ShowElement(this.content.menu_options,true)
         if(this.interval===undefined){
             this.interval=setInterval(this.update.bind(this),1000)
@@ -581,6 +587,7 @@ export class MenuManager{
         ShowElement(this.content.history_overlay,true)
         music_player.set(undefined)
         ambient_player.set(undefined)
+        this.history_background.set_def(undefined)
         const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
         sleep(1)
         for (const cmd of commands) {
@@ -641,8 +648,8 @@ export class MenuManager{
                     break
                 }
                 case HistoryCommandType.SetMusic: {
-                    if (music_player && resources) {
-                        const s = resources.get_sound(cmd.music)
+                    if(music_player&&resources){
+                        const s=cmd.music?resources.get_sound(cmd.music):(cmd.path?await resources.load_sound("gameplay_music",{src:cmd.path}):undefined)
                         music_player.set(s,{
                             loop:cmd.loop!==undefined?cmd.loop:true,
                             offset:cmd.start_at
@@ -682,61 +689,44 @@ export class MenuManager{
                     break
                 }
                 case HistoryCommandType.ShowInitialScreen:{
-                        this.content.history_content.innerHTML=`
+                    this.content.history_content.innerHTML=`
 <div class="intro-content">
     <div class="intro-name"></div>
     <div class="intro-location"></div>
     <div class="intro-date"></div>
     <div class="intro-description"></div>
 </div>`
-                        const play_sound=()=>resources.audio.play(resources.get_sound(random.choose(["typewriter-1","typewriter-2"])),{
-                            volume:0.15,
-                            bus:"bus"
-                        })
-                        const text_speed=1
-                        // TYPEWRITER
-                        const rand_delay={
-                            min:40*text_speed,
-                            max:200*text_speed
-                        }
-                        await typewriter(this.content.history_content.querySelector(".intro-name") as HTMLDivElement, cmd.name, rand_delay,play_sound)
-                        await typewriter(this.content.history_content.querySelector(".intro-location") as HTMLDivElement, cmd.location, rand_delay,play_sound)
-                        const date:string|undefined=cmd.description
-                        const description:string|undefined=cmd.date
-                        if(date){
-                            await typewriter(this.content.history_content.querySelector(".intro-date") as HTMLDivElement, date, rand_delay,play_sound)
-                        }
-                        if(description){
-                            await typewriter(this.content.history_content.querySelector(".intro-description") as HTMLDivElement, description, rand_delay,play_sound)
-                        }
-                        await sleep(2)
-                        this.content.history_container.innerHTML=""
-                    /*const text_speed=config.text_speed??1
-                    const wait_time=(config.wait_time??2)*1000
-                    this.open_phase_intro()
+                    const play_sound=()=>resources.audio.play(resources.get_sound(random.choose(["typewriter-1","typewriter-2"])),{
+                        volume:0.15,
+                        bus:"bus"
+                    })
+                    const text_speed=1
                     // TYPEWRITER
                     const rand_delay={
                         min:40*text_speed,
                         max:200*text_speed
                     }
-
-                    await typewriter(this.content.phase_intro_name, config.name, rand_delay,play_type_sound)
-                    await typewriter(this.content.phase_intro_location, config.location, rand_delay,play_type_sound)
-                    if (config.date) {
-                        await typewriter(this.content.phase_intro_date, config.date, rand_delay,play_type_sound)
+                    await typewriter(this.content.history_content.querySelector(".intro-name") as HTMLDivElement, cmd.name, rand_delay,play_sound)
+                    await typewriter(this.content.history_content.querySelector(".intro-location") as HTMLDivElement, cmd.location, rand_delay,play_sound)
+                    const date:string|undefined=cmd.description
+                    const description:string|undefined=cmd.date
+                    if(date){
+                        await typewriter(this.content.history_content.querySelector(".intro-date") as HTMLDivElement, date, rand_delay,play_sound)
                     }
-                    if (config.description) {
-                        await typewriter(this.content.phase_intro_description, config.description, rand_delay,play_type_sound)
+                    if(description){
+                        await typewriter(this.content.history_content.querySelector(".intro-description") as HTMLDivElement, description, rand_delay,play_sound)
                     }
-                    setTimeout(()=>{
-                        HideElement(this.content.phase_intro_overlay)
-                    },wait_time+1000)
-                    await new Promise(r => setTimeout(r, wait_time))*/
+                    await sleep(2)
+                    this.content.history_container.innerHTML=""
+                    break
+                }
+                case HistoryCommandType.SetBackground:{
+                    this.history_background.set_def(cmd.background,cmd.timescale)
+                    break
                 }
             }
         }
         HideElement(this.content.history_overlay,true)
-        if (music_player) music_player.set(undefined)
     }
     select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
         return this.game_popup((ctx) => {
@@ -850,6 +840,8 @@ export class MenuManager{
         if(this.interval===undefined){
             this.interval=setInterval(this.update.bind(this),1)
         }
+        this.background.set_def(backgrounds.city_river)
+        this.background.show()
     }
 }
 

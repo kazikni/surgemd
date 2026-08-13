@@ -48,6 +48,7 @@ export class LocalGameServer{
     }
     begin_level(path:string){
         this.run()
+        this.game.menu.show_loading_screen()
         this.worker!.postMessage({type:"load_level",path})
     }
     next_level(name:string,start_with_intro?:boolean){

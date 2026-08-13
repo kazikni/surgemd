@@ -110,3 +110,23 @@ kl-md-extra {
         left: 50%;
     }
 }
+.background-screen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    .background-bg,
+    .background-content {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+    }
+    @keyframes scroll-left-animation {
+        from { transform: translateX(33%); }
+        to   { transform: translateX(-33%); }
+    }
+    @keyframes scroll-right-animation {
+        from { transform: translateX(-33%); }
+        to   { transform: translateX(33%); }
+    }
+}

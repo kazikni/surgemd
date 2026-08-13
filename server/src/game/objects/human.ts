@@ -944,6 +944,7 @@ export class Human extends MovingBody{
                 })
             }
         }
+        this.inventory.accessorys.call_event("tick",dt)
         this.equipment_data.force_default_scope=false
         this.update_modifiers()
         //Movement

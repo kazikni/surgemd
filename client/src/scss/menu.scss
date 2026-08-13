@@ -2,13 +2,6 @@
 @use "./md.scss";
 @use "./components/text.scss" as text;
 #menu {
-    width: 100vw;
-    height: 100vh;
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
     /*background-image: url("/assets/img/menu/background/background.png");
     background-size: cover;
     background-position: center;
@@ -25,323 +18,6 @@
         background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
         pointer-events: none;
     }
-}
-#menu-background{
-    pointer-events: none;
-    position:absolute;
-    inset:0;
-    overflow:hidden;
-    .background-object{
-        position:absolute;
-        background-size:auto 100%;
-        background-repeat: repeat no-repeat;
-        width:500%;
-        left:-200%;
-        right:0;
-    }
-    .night-background{
-        position:absolute;
-        inset:0;
-        overflow:hidden;
-        transition: opacity linear 2s;
-        background:linear-gradient(
-            to bottom,
-            #102540 0%,
-            #0b1630 45%,
-            #050811 100%
-        );
-        .stars{
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background:url("/assets/img/menu/final_screen/stars.png") center/contain;
-            background-size: 30vw 30vw;
-            opacity: 20%;
-        }
-        .moon{
-            position:absolute;
-            left:50%;
-            top:20%;
-
-            width:10vw;
-            height:10vw;
-
-            transform:translate(-50%,-50%);
-
-            background:url("/assets/img/menu/final_screen/moon.png") center/contain no-repeat;
-        }
-        .sky-glow{
-            position:absolute;
-            left:50%;
-            top:20%;
-
-            width:30vw;
-            height:30vw;
-
-            transform:translate(-50%,-50%);
-
-            border-radius:50%;
-            background:#5dc9f044;
-            filter:blur(120px);
-        }
-    }
-    .day-background{
-        position:absolute;
-        inset:0;
-        overflow:hidden;
-        background: linear-gradient(
-            to bottom,
-            #5fd8ff 0%,
-            #4dbcf8 35%,
-            #6ca9ff 70%,
-            #f8d8a8 100%
-        );
-        transition: opacity linear 2s;
-        .sun{
-            position:absolute;
-            left:50%;
-            top:20%;
-
-            width:10vw;
-            height:10vw;
-
-            transform:translate(-50%,-50%);
-
-            background:url("/assets/img/menu/final_screen/sun.svg") center/contain no-repeat;
-        }
-        .sky-glow{
-            position:absolute;
-            left:50%;
-            top:20%;
-
-            width:30vw;
-            height:30vw;
-
-            transform:translate(-50%,-50%);
-
-            border-radius:50%;
-            background:#ff510044;
-            filter:blur(120px);
-        }
-        .horizon-haze{
-            position:absolute;
-
-            left:0;
-            right:0;
-
-            bottom:18vw;
-
-            height:18vw;
-
-            background:
-                linear-gradient(
-                    to top,
-                    rgba(255,240,180,.25),
-                    transparent
-                );
-
-            filter:blur(30px);
-        }
-    }
-    .clouds{
-        top:4vw;
-        height:12vw;
-
-        background:url("/assets/img/menu/final_screen/cloud_1.svg");
-        animation:scroll-right-animation 700s linear infinite;
-        opacity: 0.25;
-    }
-    .rain{
-        position:absolute;
-        inset:-50%;
-
-        background-image:url("/assets/img/menu/final_screen/rain.svg");
-        background-repeat:repeat;
-
-        transform:rotate(-45deg);
-
-        pointer-events:none;
-        opacity:.35;
-        background-size:8vw 8vw;
-        animation:rain-scroll-front 20s linear infinite;
-    }
-    @keyframes scroll-left-animation {
-        from { transform: translateX(33%); }
-        to   { transform: translateX(-33%); }
-    }
-    @keyframes scroll-right-animation {
-        from { transform: translateX(-33%); }
-        to   { transform: translateX(33%); }
-    }
-    /*
-    @keyframes scroll-left-animation {
-        from { background-position-x: 100%; }
-        to   { background-position-x: -100%; }
-    }
-    @keyframes scroll-right-animation {
-        from { background-position-x: -100%; }
-        to   { background-position-x: 100%; }
-    }
-    */
-    @keyframes rain-scroll-front{
-        from{
-            background-position:0 0;
-        }
-        to{
-            background-position:-450vw 5vw;
-        }
-    }
-}
-.menu-background-animated{
-    .mountains{
-        bottom:0;
-
-        height:50vw;
-
-        background:url("/assets/img/menu/final_screen/mountains_1.png");
-        animation:scroll-left-animation 1400s linear infinite;
-    }
-    .mountains-ice{
-        bottom:0;
-
-        height:50vw;
-
-        background:url("/assets/img/menu/final_screen/mountains_2.svg");
-        animation:scroll-left-animation 1400s linear infinite;
-    }
-    .city{
-        bottom:0;
-        background-image:url("/assets/img/menu/final_screen/buildings_1.svg");
-    }
-    .city-back{
-        height:35vw;
-        animation:scroll-left-animation 1100s linear infinite;
-    }
-    .palms{
-        background-image:url("/assets/img/menu/final_screen/beach_front_1.svg");
-        bottom: -1vw;
-
-        animation:scroll-left-animation 600s linear infinite;
-    }
-    .utility-poles{
-        bottom:0;
-
-        background-image:url("/assets/img/menu/final_screen/utility_poles_1.svg");
-        animation:scroll-left-animation 900s linear infinite;
-        height: 16vw;
-    }
-    .palms-back{
-        height: 30vw;
-    }
-    .palms-front{
-        height: 20vw;
-    }
-    .wave{
-        left:0;
-        right:0;
-        bottom: 0;
-        background-image:url("/assets/img/menu/final_screen/waves.svg");
-        filter: brightness(0.5) blur(3px);
-    }
-    .wave-1{
-        bottom:8vw;
-        height:2vw;
-        animation:scroll-left-animation 500s linear infinite;
-    }
-    .wave-2{
-        bottom:5.5vw;
-        height:1.3vw;
-        animation:scroll-left-animation 400s linear infinite;
-    }
-    .wave-3{
-        bottom:3vw;
-        height:1vw;
-        animation:scroll-left-animation 300s linear infinite
-    }
-    .water{
-        position:absolute;
-
-        left:0;
-        right:0;
-        bottom:0;
-
-        height:13vw;
-
-        overflow:hidden;
-
-        transform:scaleY(-0.7);
-        filter: blur(7px) brightness(.75) saturate(80%);
-        backdrop-filter: blur(7px) brightness(.75) saturate(80%);
-    }
-    .ground{
-        position: absolute;
-        width: 100%;
-        height: 5vw;
-        background:#050811;
-        left: 0;
-        right: 0;
-        bottom: 10vw;
-    }
-    &#menu-background-islando{
-        .mountains{
-            height: 80vw;
-            bottom: 12vw;
-        }
-        .reflection-mountains{
-            bottom: 0;
-        }
-        .palms{
-            height: 30vw;
-            bottom: 12vw;
-        }
-        .reflection-palms{
-            bottom: -3vw;
-        }
-        .utility-poles{
-            bottom: 12vw;
-        }
-        .reflection-utility-poles{
-            bottom: 0;
-        }
-        .city-back{
-            bottom: 15vw;
-        }
-        .reflection-city{
-            bottom: 2vw;
-        }
-    }
-    &#menu-background-tundra{
-        .mountains-ice{
-            height: 80vw;
-            bottom: 12vw;
-        }
-        .reflection-mountains{
-            bottom: 0;
-        }
-        .palms{
-            height: 30vw;
-            bottom: 12vw;
-        }
-        .reflection-palms{
-            bottom: 0;
-        }
-    }
-}
-/*#menu-background-effects{
-    position: absolute;
-    pointer-events: none;
-    left: 0px;
-    top: 0px;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(7px);
-}*/
-#game-version{
-    position: absolute;
-    color: #fff;
-    right: 0px;
-    bottom: 0px;
-    transform: translate(-50%,-100%);
 }
 #both-ui{
     left: 0px;
@@ -740,10 +416,17 @@
         }
     }
 }
+#game-version{
+    position: absolute;
+    color: #fff;
+    right: 10px;
+    bottom: 10px;
+    margin: 0;
+}
 #main-social{
     position: absolute;
     left: 0px;
-    bottom: 35px;
+    bottom: 0px;
     background-color: #0004;
     border-radius: 0 10px 0 0;
     pointer-events: all;
@@ -1080,11 +763,7 @@
     z-index: 103;
     opacity: 0;
     pointer-events: all;
-    cursor: none;
-
-    .tv-static {
-        filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(6);
-    }
+    cursor: none; 
 
     #history-container {
         position: relative;

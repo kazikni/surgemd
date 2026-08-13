@@ -44,6 +44,7 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { OnlineMessageType } from "common/scripts/packets/messages.ts";
 import { Drone } from "../objects/drone.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
+import { HistoryCommandType } from "common/scripts/config/history.ts";
 export interface GameData {
     living_count: number[]
 
@@ -162,6 +163,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         LevelPlayerScript,
         JoinPacket,
         OnlineMessageType,
+        HistoryCommandType
     }
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[

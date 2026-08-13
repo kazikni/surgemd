@@ -5,7 +5,6 @@ import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/message
 import { GameConfig } from "common/scripts/config/config.ts";
 import { type Player } from "../objects/player.ts";
 import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
-import { DamageReason } from "common/scripts/definitions/utils.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
@@ -24,6 +23,7 @@ export class LevelPlayerScript{
     on_tick(dt:number){}
     on_begin(){}
     on_before(start_with_intro:boolean){}
+    on_load(){}
     on_start(){}
     on_stop(){}
 
@@ -40,6 +40,9 @@ export class LevelPlayerScript{
         } satisfies OnlineMessage)
         return Object.values(await this.game.clients.wait("_end"))[0]
     }
+    async load_json(path:string):Promise<any>{
+        return parseJSONC(await this.level.fs.read_file(path))
+    }
     async show_cutscene(cutscene:HistoryCommand[]):Promise<void>{
         this.game.clients.send({
             type:OnlineMessageType.Cutscene,
@@ -47,17 +50,18 @@ export class LevelPlayerScript{
         })
         await this.game.clients.wait("_end")
     }
-    async show_cutscene_file(path:string):Promise<void>{
-        await this.show_cutscene(parseJSONC(await this.level.fs.read_file(path)) as HistoryCommand[])
+    async send_message_event(msg:OnlineMessage){
+        this.game.clients.send(msg)
+        await this.game.clients.wait("_end")
     }
-    async show_level_intro():Promise<void>{
-        await this.show_cutscene([{
+    make_level_intro():HistoryCommand[]{
+        return [{
             type:HistoryCommandType.ShowInitialScreen,
             name:this.level.def.meta.name,
             location:this.level.def.meta.location,
             date:this.level.def.meta.date,
             description:this.level.def.meta.description,
-        }])
+        }]
     }
 }
 export class LevelPlayer {
@@ -104,28 +108,39 @@ export class LevelPlayer {
     }
     async begin(path:string){
         this.path=path
+
         this.def = parseJSONC(await this.fs.read_file("level.jsonc"))
         this.set_script_class(new (create_script(await this.fs.read_file(this.def.script??"level.js"),this.game.globals)()))
 
-        this.game.start_settings.background_music=this.def.assets?.background_music
         this.game.start_settings.textures.push(...(this.def.assets?.textures??[]))
         Object.assign(this.game.start_settings.assets,this.def.assets?.assets??{})
         this.game.start_settings.languages_path=path+"/languages"
 
         this.game.players.connect_add_player=false
+        this.game.can_start=false
+        this.game.can_finish=false
 
         await this.script.initialize_mode(this.def.mode)
         await this.script.on_begin()
     
         this.save_checkpoint()
-        this.game.can_start=false
-        this.game.can_finish=false
+
+
         if(!this.game.running)this.game.mainloop()
     }
     async init(start_with_intro:boolean=true){
+
         this.game.clock.timeScale=0
+
+        this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:true})
+        await this.game.clients.wait("_end")
+        await this.script.on_load()
+        this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:false})
+        await this.game.clients.wait("_end")
+
         await this.script.on_before(start_with_intro)
         this.game.clock.timeScale=1
+
         this.start()
     }
     save_checkpoint(){

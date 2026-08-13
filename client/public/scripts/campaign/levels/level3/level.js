@@ -4,6 +4,10 @@ return (class extends LevelPlayerScript{
         if(pos)player.position=pos
         player.set_preset(this.preset)
     }
+    async on_load(){
+        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_fall_music_1.mp3"}})
+        this.background=await this.load_json("../../backgrounds/city_river_bloodmoon.json")
+    }
     async on_begin(){
         this.preset=await this.level.load_character({
             "path": "../../characters/vinii.jsonc",
@@ -65,7 +69,17 @@ return (class extends LevelPlayerScript{
         this.game.set_rain(1)
     }
     async on_before(){
-        await this.show_level_intro()
+        const cutscene=[]
+        cutscene.push({
+            type:HistoryCommandType.SetMusic,
+            music:"gameplay_music",
+        },{
+            type:HistoryCommandType.SetBackground,
+            background:this.background,
+            timescale:70
+        })
+        cutscene.push(...this.make_level_intro())
+        await this.show_cutscene(cutscene)
     }
     on_start(){
         this.game.deadzone.jump_stages(4)

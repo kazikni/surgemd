@@ -223,7 +223,11 @@ return (class extends LevelPlayerScript{
         }
     }
     async on_before(){
-        await this.show_level_intro()
+        const cutscene=[]
+        if(start_with_intro)cutscene.push(...this.cutscene)
+        cutscene.push(...this.make_level_intro())
+        await this.show_cutscene(cutscene)
+
         const characters=[
             await this.level.load_character({"path": "../../characters/mark.jsonc"}),
             await this.level.load_character({"path": "../../characters/maria.jsonc"})

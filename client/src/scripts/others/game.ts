@@ -40,8 +40,6 @@ import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { load_kspr } from "common/engine/core/lang/kspr.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
-import { FinalScreenManager } from "../managers/final_screen.ts";
-import { island_final } from "common/scripts/config/final_screen.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
@@ -89,7 +87,6 @@ export class Game extends ClientGame<GameObject>{
     ambient:AmbientManager
     device:GameDeviceManager
     minimap:MinimapManager
-    final_screen:FinalScreenManager
 
     active_entity?:Human
     active_entity_id?:number
@@ -174,7 +171,6 @@ export class Game extends ClientGame<GameObject>{
         this.ambient=new AmbientManager(this)
         this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
-        this.final_screen=new FinalScreenManager(this)
 
         this.cam2d.add_object(this.terrain_gfx)
         this.cam2d.add_object(this.grid)
@@ -452,10 +448,10 @@ export class Game extends ClientGame<GameObject>{
         this.scope_zoom=force_default?this.default_scope.scope_view:scope.scope_view
         this.ui_manager.signal("current_scope_dirty",scope)
     }
-    async load_resources(textures:string[]=[],assets:Record<string,string>,languages_path:string=""){
+    async load_resources(textures:string[]=[],assets:Record<string,string>,languages_path:string="",show_loading_screen:boolean=true){
         if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
         this.loaded=false
-        this.menu.show_loading_screen()
+        if(show_loading_screen)this.menu.show_loading_screen()
         this.menu.set_loading_current("Somethings",true)
 
         textures=["/assets/img/kspr/main",...textures]
@@ -486,16 +482,7 @@ export class Game extends ClientGame<GameObject>{
                 console.log(e)
             }
         }
-        /*if(this.level){
-            if(this.level?.assets?.background_music){
-                await this.resources.load_sound("level_music",{src:this.level.assets.background_music,volume:1},"level",this.menu.set_loading_current)
-            }
-            if(this.level.cutscenes?.begin){
-                await this.menu.preload_cutscene(this.level_path+"/cutscenes/"+this.level.cutscenes.begin)
-            }
-        }*/
-
-        this.menu.hide_loading_screen()
+        if(show_loading_screen)this.menu.hide_loading_screen()
         this.loaded=true
     }
     async start_editor(){
@@ -515,7 +502,6 @@ export class Game extends ClientGame<GameObject>{
     async start(settings:StartSettings){
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
         this.menu.game_start()
-
         this.happening=true
 
         this.cam2d.position.x=-10000
@@ -534,15 +520,14 @@ export class Game extends ClientGame<GameObject>{
         this.watcher?.play?.()
 
         this.scope_zoom=(this.default_scope??this.definitions.scopes.getFromNumber(0)).scope_view
-
         this.hitboxes_gfx.ctx.clear()
     }
     async show_final_screen(game_over:GameOverStatus){
-        this.final_screen.set_final_screen(island_final)
+        /*this.final_screen.set_final_screen(island_final)
         await this.final_screen.show_final_screen()
         await this.final_screen.show_status(game_over.status[0] as PlayerStatus)
         if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)
-        await this.final_screen.hide_final_screen()
+        await this.final_screen.hide_final_screen()*/
     }
     close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
@@ -598,7 +583,6 @@ export class Game extends ClientGame<GameObject>{
         this.ui.update(dt)
         this.device.tick(dt)
         this.dead_zone.tick(dt)
-        this.final_screen.update(dt)
         if(this.editor)this.editor.tick(dt)
 
         if (this.cam_type === 1) {
@@ -762,6 +746,7 @@ export class Game extends ClientGame<GameObject>{
         client.onopen=this.set_client.bind(this,client)
     }
     set_client(client:Client){
+        this.menu.show_loading_screen()
         if(!client.opened){
             this.client=undefined
             return
@@ -784,9 +769,7 @@ export class Game extends ClientGame<GameObject>{
         client.on("connect",(_p:ConnectPacket)=>{
         })
         client.on("map",async(mp:MapPacket)=>{
-            if(!this.map_started){
-                await this.signals.wait("_map_start")
-            }
+            if(!this.map_started)await this.signals.wait("_map_start")
             if(mp.map.definitions){
                 this.definitions.reset()
                 this.definitions.add_definitions(mp.map.definitions)
@@ -824,6 +807,21 @@ export class Game extends ClientGame<GameObject>{
                 case OnlineMessageType.CharacterSelector:{
                     const r=await this.menu.select_character_screen(msg.characters)
                     client.emit("_end",r)
+                    break
+                }
+                case OnlineMessageType.Load:{
+                    if(msg.assets){
+                        for(const a in msg.assets){
+                            await this.resources.load_source(a,msg.assets[a],undefined,"level",this.menu.set_loading_current)
+                        }
+                    }
+                    client.emit("_end")
+                    break
+                }
+                case OnlineMessageType.SetLoad:{
+                    if(msg.enabled)this.menu.show_loading_screen()
+                    else this.menu.hide_loading_screen()
+                    client.emit("_end")
                     break
                 }
             }

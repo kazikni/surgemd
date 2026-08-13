@@ -11,7 +11,6 @@ import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
-import { HistoryCommandType } from "common/scripts/config/history.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;

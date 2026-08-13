@@ -2,7 +2,6 @@
 ## News
 __                                                                                                                 __
 ### Mains
-* Perspective!
 * No Hope Rework
 * Fall Biome
 * Swimming
@@ -10,6 +9,7 @@ __                                                                              
 * Dialogs
 * Audio Libary
 * Downeds Walk Animation and movement
+* Localization Drone
 __                                                                                                                 __
 ### Menu
 * Main Menu Rework
@@ -78,6 +78,7 @@ __                                                                              
 * Fix Drinking Animation Reset
 * Change Quickswitch
 * Allow Reload After Delay
+* Perspective On Airstrike and Nukes
 __                                                                                                                 __
 ### Menu
 * Final Screen Rework

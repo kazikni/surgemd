@@ -848,8 +848,8 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     image:"pan_world"
                 },
                 downed:{
-                    position:v2(-0.25,0.05),
-                    rotation:1.1,
+                    position:v2(-0.45,0),
+                    rotation:Angle.deg2rad(85),
                     image:"pan",
                     scale:2,
                     hotspot:v2(0.5,0.5),

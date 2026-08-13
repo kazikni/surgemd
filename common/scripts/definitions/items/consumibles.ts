@@ -96,6 +96,11 @@ export const ConsumiblesAnimations={
                     type:"transform",
                     fuser:"right_arm",
                 },
+                {
+                    type:"callmode",
+                    mode:"mounth",
+                    args:[1,false]
+                }
             ],
             time:0
         },
@@ -106,7 +111,7 @@ export const ConsumiblesAnimations={
                     fuser:"weapon",
                     to:{
                         rotation:-1.570796,
-                        position:v2(.46,0)
+                        position:v2(.52,0)
                     }
                 },
                 {
@@ -119,6 +124,23 @@ export const ConsumiblesAnimations={
                 }
             ],
             time:0.5
+        },
+        {
+            time:0.25,
+            actions:[
+                {
+                    type:"callmode",
+                    mode:"eyes",
+                    args:[1,false]
+                },
+                {
+                    type:"tween",
+                    fuser:"weapon",
+                    to:{
+                        position:v2(.43,0)
+                    }
+                }
+            ]
         }
     ]
 }satisfies Record<string,()=>AKeyFrame[]>

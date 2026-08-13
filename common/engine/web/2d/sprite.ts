@@ -38,10 +38,6 @@ export class Sprite2D extends Container2DObject{
         this.dirty_reals=true
     }
 
-    frames?:KeyFrameSpriteDef[]
-    current_delay:number=0
-    current_frame:number=0
-
     meter_size:number=1
 
     old_ms=1
@@ -99,15 +95,28 @@ export class Sprite2D extends Container2DObject{
 export class AnimatedSprite2D extends Sprite2D{
     override object_type:string="animated_sprite2d"
     override _has_update: boolean=true
+
+    _frames?:KeyFrameSpriteDef[]
+    get frames():KeyFrameSpriteDef[]|undefined{
+        return this._frames
+    }
+    set frames(val:KeyFrameSpriteDef[]|undefined){
+        this._frames=val
+        this.current_frame=0
+        this.current_delay=0
+    }
+
+    current_delay:number=0
+    current_frame:number=0
     override update(dt:number,resources:ResourcesManager){
         super.update(dt,resources)
-        if(this.frames&&this.frames[this.current_frame]){
-            if(this.current_delay<this.frames[this.current_frame].delay){
+        if(this._frames&&this._frames[this.current_frame]){
+            if(this.current_delay<this._frames[this.current_frame].delay){
                 this.current_delay+=dt
             }else{
                 this.current_delay=0
-                this.current_frame=Numeric.loop(this.current_frame+1,0,this.frames.length)
-                this.set_frame(this.frames[this.current_frame],resources)
+                this.current_frame=Numeric.loop(this.current_frame+1,0,this._frames.length)
+                this.set_frame(this._frames[this.current_frame],resources)
             }
         }else{
             this.current_delay=0

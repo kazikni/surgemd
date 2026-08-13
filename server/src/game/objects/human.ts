@@ -1315,7 +1315,7 @@ export class Human extends MovingBody{
         this.inventory.set_weapon_index(0)
 
         this.human_data.pulse_movement={
-            speed_mult:1,
+            speed_mult:2,
             pulse_time:1,
             duration:0.1
         }

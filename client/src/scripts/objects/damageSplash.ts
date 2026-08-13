@@ -50,7 +50,7 @@ export class DamageSplashOBJ extends GameObject{
         
         const human = this.manager.get_object(args.taker) as Human|undefined
         if(human&&args.shield_break){
-            human.broke_shield()
+            human.container.callmode("broke_shield")
         }
 
         this.sprite.frame = await this.game.resources.render_text(`${args.count}`, 50, color,"Russo-One")

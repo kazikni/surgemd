@@ -5,6 +5,7 @@ import { type ClientGame } from "../misc/game.ts"
 import { ResourcesManager } from "../resources/resources.ts"
 import { Container2D } from "./container.ts";
 import { Container2DObject } from "./base.ts";
+import { ease, EaseFunction } from "../../core/math/utils.ts";
 export type AnimationInstance = {
     loop: boolean
     enabled: boolean
@@ -16,12 +17,16 @@ export type AnimationInstance = {
     destroyed: boolean
     on_complete?: () => void
 }
+export type AnimatedContainerModeCallback=(parent?:any,...args:any)=>void
 export class AnimatedContainer2D extends Container2D{
     objects=new Map<string,Container2DObject>()
     override _has_update: boolean=true
 
     current_animations:AnimationInstance[]=[]
     game:ClientGame
+
+    modes:Record<string,AnimatedContainerModeCallback>={}
+    animation_parent?:any
 
     constructor(game:ClientGame){
         super()
@@ -36,7 +41,7 @@ export class AnimatedContainer2D extends Container2D{
         }
         this.current_animations.length=0
     }
-    play_animation(anim:AKeyFrame[],on_complete?:()=>void,loop:boolean=false):AnimationInstance{
+    play_animation(anim:AKeyFrame[],on_complete?:()=>void,loop:boolean=false,parent?:any):AnimationInstance{
         const a:AnimationInstance={
             current_kf:-1,
             current_delay:0,
@@ -50,6 +55,9 @@ export class AnimatedContainer2D extends Container2D{
         }
         this.current_animations.push(a)
         return a
+    }
+    callmode(name:string,...args:any){
+        this.modes[name]?.(this.animation_parent,...args)
     }
     override update(dt: number, resources: ResourcesManager): void {
         super.update(dt,resources)
@@ -95,12 +103,13 @@ export class AnimatedContainer2D extends Container2D{
                     case "tween":{
                         const fuser=this.get_object(action.fuser)
                         if(kf.time>0){
+                            const ease_func:EaseFunction|undefined=typeof action.ease==="string"?(ease as Record<string,EaseFunction>)[action.ease]:action.ease
                             if(action.to.position){
                                 a.tweens.push(this.game.add_tween({
                                     duration:kf.time,
                                     target:fuser.position,
                                     yoyo:action.yoyo,
-                                    ease:action.ease,
+                                    ease:ease_func,
                                     to:action.to.position
                                 }))
                             }
@@ -109,7 +118,7 @@ export class AnimatedContainer2D extends Container2D{
                                     duration:kf.time,
                                     target:fuser.hotspot,
                                     yoyo:action.yoyo,
-                                    ease:action.ease,
+                                    ease:ease_func,
                                     to:action.to.hotspot
                                 }))
                             }
@@ -118,7 +127,7 @@ export class AnimatedContainer2D extends Container2D{
                                     duration:kf.time,
                                     target:fuser,
                                     yoyo:action.yoyo,
-                                    ease:action.ease,
+                                    ease:ease_func,
                                     to:{rotation:action.to.rotation}
                                 }))
                             }
@@ -127,11 +136,15 @@ export class AnimatedContainer2D extends Container2D{
                         }
                         break
                     }
+                    case "callmode":{
+                        this.modes[action.mode]?.(this.animation_parent,...(action.args??[]))
+                        break
+                    }
                 }
             }
         }
     }
-    add_animated_sprite(id:string,def?:FrameTransform):Sprite2D{
+    add_animated_sprite(id:string,def?:FrameTransform):AnimatedSprite2D{
         const spr=new AnimatedSprite2D()
         this.objects.set(id,spr)
         if(def)spr.transform_frame(def)

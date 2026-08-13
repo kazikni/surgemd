@@ -1,7 +1,6 @@
 
-import { ABParticle2D, AnimatedContainer2D, AudioInstance, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/web.ts";
+import { ABParticle2D, AnimatedContainer2D, AudioInstance, type ClientGame, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D, AnimatedSprite2D } from "common/engine/web.ts";
 import { GameConstants, GameObjectType,  HumanLoadoutData,  HumanAnimation, HumanAnimationType, zIndexes } from "common/scripts/others/constants.ts"
-import { GraphicsDConfig } from "../others/config.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
@@ -18,7 +17,8 @@ import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-import { CircleHitbox2D, ColorM, ease, FrameDef, Hitbox2D, KeyFrameSpriteDef, model2d, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, ease, Hitbox2D, KeyFrameSpriteDef, model2d, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { DefaultHumanModes } from "../defs/human_animations.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     scale:number
 }
@@ -59,8 +59,8 @@ export class Human extends MovingBody{
     sprites!:{
         hair:Sprite2D
         body:Sprite2D
-        eyes:Sprite2D
-        mounth:Sprite2D
+        eyes:AnimatedSprite2D
+        mounth:AnimatedSprite2D
 
         helmet:Sprite2D
         vest:Sprite2D
@@ -106,6 +106,8 @@ export class Human extends MovingBody{
         emote_sound:undefined as AudioInstance|undefined,
         emote_time:0,
         emote_is_message:false,
+        emote_mount_animation:true,
+        is_emote_mount_animation:false,
 
         sound_animation:undefined as AudioInstance|undefined,
         footsteps:undefined as AudioInstance|undefined,
@@ -143,10 +145,14 @@ export class Human extends MovingBody{
 
         consumible_particles:string
         original_hand_frame:string
+        eyes:string[],
     }={
         consumible_particles:"",
-        original_hand_frame:""
+        original_hand_frame:"",
+        eyes:[]
     }
+    animation_sync:boolean=true
+
     melee?:MeleeDef
     current_weapon?:WeaponDef
     current_weapon_skin:number=0
@@ -211,6 +217,8 @@ export class Human extends MovingBody{
 
             accessorys:[]
         }
+        this.container.animation_parent=this
+        this.container.modes=DefaultHumanModes
 
         this.sprites.left_shirt_arm.transform_frame({
             hotspot:v2(1,0.5),
@@ -309,8 +317,7 @@ export class Human extends MovingBody{
             this.game.cam2d.add_object(this.sprites.shadow)
         }
 
-        this.set_skin(
-            this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
+        this.container.callmode("set_skin",this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
             undefined,undefined,
             this.game.definitions.loadout.getFromString("white_shirt") as LoadoutShirtDef,
             this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
@@ -332,225 +339,18 @@ export class Human extends MovingBody{
     }
 
     on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
-        if(reflected){
-            this.game.sounds.play(this.game.resources.get_sound(sound??"human_metal_hit"),{
-                position:this.position,
-                max_distance:10,
-                bus:"humans"
-            })
-            return
-        }
-        if(this.shield){
-        }else{
-            if(Math.random()<=0.1){
-                const d=new ClientDecal()
-                d.sprite.set_frame({
-                    image:`liquid_decal_${random.int(1,2)}`,
-                    tint:random.choose([0xaa0a28,0xff0a28]),
-                    alpha:210,
-                    scale:random.float(0.7,1.4),
-                    rotation:random.rad(),
-                    position:position,
-                },this.game.resources)
-                this.game.scene_2d.objects.add_object(d,this.layer)
-            }
-            const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
-            this.game.particles.add_particle(new ABParticle2D({
-                scale:0.1,
-                frame:{
-                    image:`blood_splash_${random.int(1,3)}`,
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles
-                },
-                direction:random.rad(),
-                life_time:random.float(0.5,1),
-                position:position,
-                speed:random.float(0.1,0.4),
-                angle:random.rad(),
-                tint:tint,
-                to:{
-                    scale:1.5,
-                    tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0)
-                },
-                zIndex:zIndexes.Particles
-            }))
-        }
-        this.game.sounds.play(this.game.resources.get_sound(sound??(
-            (this.vest&&this.vest.reflect_bullets)?
-                (
-                    "human_metal_hit"
-                ):
-                (critical?
-                    "human_headshot":
-                    `human_hit_${random.int(1,2)}`
-                )
-            )
-        ),{
-            position:this.position,
-            max_distance:10,
-            bus:"humans"
-        })
-    }
-    broke_shield(){
-        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Advanced){
-            for(let p=0;p<14;p++){
-                const a=random.rad()
-                this.game.particles.add_particle(new ABParticle2D({
-                    direction:random.rad(),
-                    life_time:0.5+(Math.random()*0.5),
-                    position:this.position,
-                    speed:7,
-                    scale:random.float(2,3),
-                    frame:{
-                        layer:this.layer,
-                        zIndex:zIndexes.Particles,
-                        image:"shield_part"
-                    },
-                    angle:a,
-                    tint:ColorM.rgba(255,255,255,255),
-                    to:{
-                    tint:ColorM.rgba(255,255,255,0),
-                        scale:0.3,
-                        angle:random.float(-10,10),
-                        speed:5,
-                    }
-                }))
-            }
-        }
-        if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
-            this.game.particles.add_particle(new ABParticle2D({
-                direction:0,
-                life_time:0.4,
-                position:this.position,
-                speed:0,
-                scale:0.1,
-                frame:{
-                    image:"shockwave",
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles,
-                    hotspot:v2.half_one
-                },
-                tint:ColorM.rgba(255,255,255,255),
-                to:{
-                tint:ColorM.rgba(255,255,255,0),
-                    scale:10,
-                }
-            }))
-        }
-        const sound=this.game.resources.get_sound(`shield_break`)
-        if(sound)this.game.sounds.play(sound,{
-            position:this.position,
-            max_distance:15
-        })
+        this.container.callmode("hitted",position,critical,sound,reflected)
     }
     on_die(){
         if(this.dead&&this.container.destroyed)return
         this.dead=true
         if(this.sprites.shadow)this.sprites.shadow.destroy()
-
-        for(let i=0;i<5;i++){
-            const angle=random.rad()
-            this.game.particles.add_particle(new ABParticle2D({
-                frame:{
-                    image:`blood_splash_${random.int(1,3)}`,
-                    layer:this.layer,
-                },
-
-                scale:0.1,
-                direction:angle,
-                angle:angle,
-                position:this.position,
-                zIndex:zIndexes.Particles,
-
-                life_time:random.float(1,2),
-                speed:random.float(1,2),
-                tint:ColorM.rgba(170,10,40),
-                to:{
-                    scale:random.float(2,5),
-                    tint:ColorM.rgba(170,10,40,0),
-                    angle:angle+random.neg_float(0.5,3)
-                },
-            }))
-        }
-        const d=new ClientDecal()
-
-        d.sprite.frame=this.game.resources.get_frame(`blood_decal_${random.int(1,2)}`)
-        d.sprite.scale=v2.random(2,3)
-        d.sprite.rotation=random.rad()
-        d.sprite.position=v2.clone(this.position)
-        this.game.scene_2d.objects.add_object(d,this.layer)
-
-        for(let i=0;i<4;i++){
-            const angle=random.rad()
-            this.game.particles.add_particle(new ABParticle2D({
-                frame:{
-                    image:`human_gore_${random.int(1,2)}`,
-                    layer:this.layer,
-                },
-
-                scale:0.1,
-                direction:angle,
-                angle:angle,
-                position:this.position,
-                zIndex:zIndexes.Particles,
-
-                life_time:random.float(1,2),
-                speed:random.float(1,3),
-                tint:ColorM.default.white,
-                to:{
-                    scale:random.float(1.7,3),
-                    tint:ColorM.rgba(255,255,255,0),
-                    angle:angle+random.neg_float(0.5,3)
-                },
-            }))
-        }
-
+        this.container.callmode("die")
         this.game.add_timeout(()=>{
             this.container.destroy()
             this.destroy()
         },5)
     }
-    on_downed(){
-        if(this.downed)return
-        this.downed=true
-        this.container.zIndex=zIndexes.DownedPlayers
-        this.sprites.chest.visible=true
-        this.sprites.backpack.visible=false
-        this.sprites.left_leg.visible=true
-        this.sprites.right_leg.visible=true
-        this.sprites.left_leg.position=v2(-0.8,-0.22)
-        this.sprites.right_leg.position=v2(-0.8,0.22)
-        this.sprites.left_leg.rotation=0.1
-        this.sprites.right_leg.rotation=-0.1
-        this.sprites.left_leg_foot.position=v2(0.05,0)
-        this.sprites.right_leg_foot.position=v2(0.05,0)
-        this.animation.walk_cycle=1
-
-        this.sprites.left_arm.visible=true
-        this.sprites.right_arm.visible=true
-        this.sprites.left_arm.position=DefaultFistRig.left!.position
-        this.sprites.right_arm.position=DefaultFistRig.right!.position
-        this.sprites.left_arm.rotation=DefaultFistRig.left!.rotation
-        this.sprites.right_arm.rotation=DefaultFistRig.right!.rotation
-
-        this.sprites.weapon.visible=false
-        this.sprites.weapon2.visible=false
-        if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
-        this.update_melee(this.melee)
-    }
-    on_help_up(){
-        if(!this.downed)return
-        this.downed=false
-        this.sprites.chest.visible=false
-        this.sprites.backpack.visible=true
-        this.sprites.left_leg.visible=false
-        this.sprites.right_leg.visible=false
-        this.container.zIndex=zIndexes.Players
-        this.set_current_weapon(this.current_weapon)
-        if(this.sprites.shadow)this.sprites.shadow.zIndex=this.container.zIndex-0.5
-        this.update_melee(this.melee)
-    }
-
     // Weapon And Arm Rig
     set_arms_rig(rig?:FistRig){
         if(rig){
@@ -611,218 +411,6 @@ export class Human extends MovingBody{
             }
             if(replace)this.sprites.weapon.transform_frame(replace)
         }
-    }
-    set_current_weapon(weapon?:WeaponDef){
-        if(this.downed)return
-        this.current_weapon=weapon
-
-        this.assets.weapon_fire_sound=undefined
-        this.assets.weapon_fire_last_sound=undefined
-        this.assets.weapon_fire_alt_func_sound=undefined
-        this.assets.weapon_reload_sound=undefined
-        this.assets.weapon_reload_sound_alt=undefined
-        this.assets.weapon_switch_sound=undefined
-        this.assets.weapon_cycle_sound=undefined
-
-        if(weapon){
-            this.set_arms_rig(weapon.rig_arms)
-            let original_name=weapon.idString
-            let frame:string
-            let replace:FrameDef|undefined
-            if(weapon.item_type===GameItemType.gun){
-                this.assets.weapon_reload_sound=this.game.resources.get_sound(weapon.assets?.reload_sound??weapon.idString+"_reload")
-                this.assets.weapon_reload_sound_alt=this.game.resources.get_sound(weapon.assets?.reload_sound_alt??weapon.idString+"_reload_alt")
-                if(weapon.dual_from){
-                    const original=this.game.definitions.guns.getFromString(weapon.dual_from!)
-                    original_name=original.idString
-                    frame=weapon.assets?.world??original_name+"_world"
-                    this.sprites.weapon2.set_frame({
-                        image:frame,
-                        rotation:0,
-                        hotspot:v2.half_one,
-                        zIndex:2,
-                        scale:2,
-                    },this.game.resources)
-                    replace=this.loadout.wrapping?.replace[frame]
-                    if(replace)this.sprites.weapon2.set_frame(replace,this.game.resources)
-                }else{
-                    frame=weapon.assets?.world??weapon.idString+"_world"
-                }
-                if(weapon.assets?.use_last)this.assets.weapon_fire_last_sound=this.game.resources.get_sound(typeof weapon.assets?.use_last==="string"?weapon.assets.use_last:weapon.idString+"_fire_last")
-                    if(weapon.assets?.use_alt_func)this.assets.weapon_fire_last_sound=this.game.resources.get_sound(weapon.assets.use_alt_func)
-            }else{
-                frame=weapon.assets?.world??weapon.idString
-            }
-            replace=this.loadout.wrapping?.replace[frame]
-            this.assets.weapon_fire_sound=this.game.resources.get_sound(weapon.assets?.use_sound??original_name+"_fire")
-            this.assets.weapon_switch_sound=this.game.resources.get_sound(weapon.assets?.switch_sound??original_name+"_switch")
-
-            if(typeof weapon.assets?.cycle_sound==="string"){
-                this.assets.weapon_cycle_sound=this.game.resources.get_sound(weapon.assets.cycle_sound)
-            }else if(weapon.assets?.cycle_sound){
-                this.assets.weapon_cycle_sound=this.assets.weapon_switch_sound
-            }
-
-            this.assets.original_hand_frame=frame
-            this.sprites.weapon.set_frame({
-                image:frame,
-                rotation:0,
-                hotspot:v2.half_one,
-                scale:2,
-                zIndex:2,
-            },this.game.resources)
-            if(replace)this.sprites.weapon.set_frame(replace,this.game.resources)
-        }else{
-            this.set_arms_rig(undefined)
-        }
-        this.update_weapon(weapon)
-        this.animation.base_left_arm_position=v2.clone(this.sprites.left_arm.position)
-        this.animation.base_right_arm_position=v2.clone(this.sprites.right_arm.position)
-        this.animation.base_weapon_position=v2.clone(this.sprites.weapon.position)
-        if(this.melee)this.update_melee(this.melee)
-    }
-    on_weapon_switch(){
-        this.reset_anim()
-        this.animation.cycle_sound_time=undefined
-        if(this.assets.weapon_switch_sound){
-            this.animation.sound_animation=this.game.sounds.play(this.assets.weapon_switch_sound,{
-                position:this.position,
-                max_distance:9,
-                bus:"humans",
-                delay:0.4,
-                on_complete:()=>{
-                    this.animation.sound_animation=undefined
-                }
-            })
-        }
-    }
-    update_melee(def?:MeleeDef){
-        this.melee=def
-        if(def?.character_frame){
-            this.sprites.melee_world.visible=true
-            if(this.downed&&def.character_frame.downed){
-                this.sprites.melee_world.set_frame(def.character_frame.downed,this.game.resources)
-            }else if(this.current_weapon?.item_type===def.item_type){
-                this.sprites.melee_world.set_frame(def.character_frame.equipped_frame,this.game.resources)
-            }else{
-                this.sprites.melee_world.set_frame(def.character_frame.unequipped_frame,this.game.resources)
-            }
-        }else{
-            this.sprites.melee_world.visible=false
-        }
-    }
-
-    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number,accessorys:LoadoutAccessoryDef[]){
-        if(
-            this.loadout&&
-            this.loadout.body.def===body_def&&this.loadout.body.tint===body_tint&&
-            this.loadout.hair?.def===hair?.def&&this.loadout.hair?.tint===hair?.tint&&
-            this.loadout.eyes===eyes_def
-        )return
-        this.loadout={
-            body:{
-                def:body_def,
-                tint:body_tint,
-            },
-            hair:hair,
-            eyes:eyes_def,
-            shirt:shirt_def,
-            legs:legs_def,
-            accessorys
-        }
-
-        const body_t=ColorM.number(body_tint)
-
-        const body_f=body_def.frame?.base??"human_"+body_def.idString
-        const hand_f=body_def.frame?.hand??"human_"+body_def.idString+"_hand"
-
-        if(hair){
-            if(hair.def.frame?.base)this.sprites.hair.set_frame(Object.assign({image:"human_"+hair.def.idString},hair.def.frame?.base),this.game.resources)
-            this.sprites.hair.tint=ColorM.number(hair.tint)
-        }
-        if(eyes_def){
-            const eyes_f=[eyes_def.frame?.base??"human_"+eyes_def.idString+"_1",eyes_def.frame?.blink??"human_"+eyes_def.idString+"_2"]
-            this.sprites.eyes.frame=this.game.resources.get_frame(eyes_f[0])
-            this.sprites.eyes.position=eyes_def.position
-            this.sprites.eyes.frames=[{delay:random.float(3.4,3.6),image:eyes_f[0]},{delay:0.3,image:eyes_f[1]}]
-            this.sprites.eyes.visible=true
-        }else{
-            this.sprites.eyes.frames=[]
-            this.sprites.eyes.visible=false
-        }
-
-        const arm_f=shirt_def.frame?.arm??("human_"+shirt_def.idString+"_arm")
-
-        this.sprites.body.frame=this.game.resources.get_frame(body_f)
-
-        this.sprites.body.tint=body_t
-
-        this.assets.arm_frame_small=this.game.resources.get_frame(arm_f+"_1")
-        this.assets.arm_frame_medium=this.game.resources.get_frame(arm_f+"_2")
-
-        this.sprites.left_hand.frame=this.game.resources.get_frame(hand_f)
-        this.sprites.right_hand.frame=this.game.resources.get_frame(hand_f)
-        this.sprites.left_hand.tint=body_t
-        this.sprites.right_hand.tint=body_t
-
-        if(shirt_def.frame?.arm_tint)this.sprites.left_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
-        if(shirt_def.frame?.arm_tint)this.sprites.right_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
-
-        if(legs_def.frame?.leg){
-            this.sprites.left_leg_l.set_frame(legs_def.frame.leg,this.game.resources)
-            this.sprites.right_leg_l.set_frame(legs_def.frame.leg,this.game.resources)
-        }
-        if(legs_def.frame?.foot){
-            this.sprites.left_leg_foot.position=v2(0.05,0)
-            this.sprites.right_leg_foot.position=v2(0.05,0)
-            this.sprites.left_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
-            this.sprites.right_leg_foot.set_frame(legs_def.frame.foot,this.game.resources)
-        }
-
-        this.sprites.left_leg.rotation=0.05
-        this.sprites.right_leg.rotation=3.19
-        this.sprites.left_leg.position=v2(-0.6,-0.2)
-        this.sprites.right_leg.position=v2(0.6,0.2)
-        this.sprites.left_leg.zIndex=1
-        this.sprites.right_leg.zIndex=1
-
-        this.sprites.chest.position=v2(-0.25,0)
-        this.sprites.chest.visible=false
-        if(shirt_def.frame?.chest)this.sprites.chest.set_frame(shirt_def.frame.chest,this.game.resources)
-
-        if(body_def.mounth){
-            this.sprites.mounth.visible=true
-            this.sprites.mounth.tint=body_t
-            this.sprites.mounth.scale.x=1.4
-            this.sprites.mounth.position=body_def.mounth.position
-            this.sprites.mounth.frame=this.game.resources.get_frame(body_def.mounth.normal)
-            this.animation.mounth=[
-                {image:body_def.mounth.normal,delay:0.15},
-                {image:body_def.mounth.open,delay:0.15},
-            ]
-        }else{
-            this.animation.mounth.length=0
-            this.sprites.mounth.visible=false
-        }
-
-        for(const a of this.sprites.accessorys){
-            a.destroy()
-        }
-        this.sprites.accessorys.length=0
-        for(const a of accessorys){
-            const spr=new Sprite2D()
-            spr.set_frame({
-                image:a.frame?.image??a.idString,
-                hotspot:v2.half_one,
-                scale:2,
-                zIndex:6
-            },this.game.resources)
-            if(a.frame)spr.transform_frame(a.frame)
-            this.container.add_child(spr)
-            this.sprites.accessorys.push(spr)
-        }
-
-        this.reset_anim()
     }
     update_scale(scale:number){
         this.physical_data.scale=scale
@@ -928,10 +516,12 @@ export class Human extends MovingBody{
                         this.sprites.emote_container.visible=false
                         this.animation.emote_tween=undefined
                         if(this.animation.emote_is_message)this.sprites.emote_sprite.frame?.free?.()
-                        this.sprites.mounth.frames=undefined
-                        this.sprites.mounth.current_frame=0
-                        this.sprites.mounth.current_delay=0
-                        this.sprites.mounth.frame=this.game.resources.get_frame(this.animation.mounth[0].image as string)
+
+                        if(this.animation.is_emote_mount_animation){
+                            this.sprites.mounth.frames=undefined
+                            this.sprites.mounth.frame=this.game.resources.get_frame(this.animation.mounth[0].image as string)
+                            this.animation.is_emote_mount_animation=false
+                        }
                     },
                     ease:ease.circOut
                 })
@@ -979,8 +569,11 @@ export class Human extends MovingBody{
         this.consumible_particles.enabled=false
         this.container.stop_all_animations()
 
+        this.animation_sync=true
         if(hard){
-            this.set_current_weapon(this.current_weapon)
+            this.container.callmode("set_current_weapon",this.current_weapon)
+            this.container.callmode("eyes")
+            this.container.callmode("mounth")
         }else{
             this.update_weapon(this.current_weapon)
         }
@@ -1511,9 +1104,10 @@ export class Human extends MovingBody{
         })
         this.animation.emote_is_message=false
 
-        this.sprites.mounth.frames=this.animation.mounth
-        this.sprites.mounth.current_frame=0
-        this.sprites.mounth.current_delay=0
+        if(this.animation.emote_mount_animation){
+            this.sprites.mounth.frames=this.animation.mounth
+            this.animation.is_emote_mount_animation=true
+        }
     }
     add_message(msg:string){
         this.game.sounds.play(this.game.resources.get_sound("emote_play"),{
@@ -1550,9 +1144,10 @@ export class Human extends MovingBody{
             }
         })
 
-        this.sprites.mounth.frames=this.animation.mounth
-        this.sprites.mounth.current_frame=0
-        this.sprites.mounth.current_delay=0
+        if(this.animation.emote_mount_animation){
+            this.sprites.mounth.frames=this.animation.mounth
+            this.animation.is_emote_mount_animation=true
+        }
     }
     set_helmet(helmet:number,skin?:number){
         if(helmet-1===this.helmet?.idNumber!&&this.helmet_skin===skin)return
@@ -1625,26 +1220,6 @@ export class Human extends MovingBody{
         })
         this.sprites.name!.tint=ColorM.hex(color)
     }
-    on_effect_added(effect:EffectDef){
-        if(effect.assets?.sounds?.when_take){
-            this.game.sounds.play(this.game.resources.get_sound(effect.assets.sounds.when_take),{
-                position:this.position,
-                max_distance: 7,
-                volume: 0.7,
-                bus:"humans"
-            })
-        }
-    }
-    on_effect_removed(effect:EffectDef){
-        if(effect.assets?.sounds?.when_remove){
-            this.game.sounds.play(this.game.resources.get_sound(effect.assets.sounds.when_remove),{
-                position:this.position,
-                max_distance: 7,
-                volume: 0.7,
-                bus:"humans"
-            })
-        }
-    }
     update_effects(effects: EffectDef[]){
         const old = this.effects ?? []
         const oldMap = new Map(old.map(e => [e.def.idNumber, e]))
@@ -1658,7 +1233,7 @@ export class Human extends MovingBody{
                     lifetime: oldEffect.lifetime
                 })
             }else{
-                this.on_effect_added(newEffect)
+                this.container.callmode("effect_added",newEffect)
                 result.push({
                     def: newEffect,
                     lifetime: 0
@@ -1667,7 +1242,7 @@ export class Human extends MovingBody{
         }
         for(const [id, oldEffect] of oldMap){
             if(!newMap.has(id)){
-                this.on_effect_removed(oldEffect.def)
+                this.container.callmode("effect_removed",oldEffect)
             }
         }
         this.effects = result
@@ -1760,7 +1335,7 @@ export class Human extends MovingBody{
             const accessorys:LoadoutAccessoryDef[]=stream.read_array(()=>{
                 return this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef
             },1)
-            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
+            this.container.callmode("set_skin",body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
             const wrapping=stream.read_uint16()
             this.loadout.wrapping=wrapping>0?this.game.definitions.wrapping.valueNumber[wrapping-1]:undefined
         }
@@ -1814,27 +1389,35 @@ export class Human extends MovingBody{
                 }
                 return animation
             },1)
-            this.set_animations(animations)
+            if(this.animation_sync)this.set_animations(animations)
         }
-        if(downed||swimming){
-            this.on_downed()
-        }else if(this.downed&&!(downed||swimming)){
-            this.on_help_up()
+        if(this.animation_sync){
+            if(downed||swimming){
+                this.container.callmode("downed")
+            }else if(this.downed&&!(downed||swimming)){
+                this.container.callmode("get_up")
+            }
         }
         if(full||hand_dirty){
             const id=stream.read_int16()
             const current_weapon = id>=0?(this.game.definitions.game_items.valueNumber[id] as WeaponDef):undefined
             if(current_weapon!==this.current_weapon){
-                this.set_current_weapon(current_weapon)
+                this.current_weapon=current_weapon
+                if(this.animation_sync)this.container.callmode("set_current_weapon",current_weapon)
             }
         }
         if(switching){
-            this.on_weapon_switch()
+            if(this.animation_sync){
+                this.reset_anim()
+                this.animation.cycle_sound_time=undefined
+                this.container.callmode("weapon_switch")
+            }
         }
         if(full||melee_wold_dirty){
             const id=stream.read_uint16()
             if(this.melee?.idNumber!==id){
-                this.update_melee(this.game.definitions.melees.getFromNumber(id))
+                this.melee=this.game.definitions.melees.getFromNumber(id)
+                if(this.animation_sync)this.container.callmode("update_melee",this.melee)
             }
         }
         if(full){

@@ -51,7 +51,10 @@ export const FallBiome:MapBiomeDef={
     },
     skin_chance:0.2,
     textures:["/assets/img/kspr/common","/assets/img/kspr/fall"],
-    musics:[],
+    musics:[
+        "/assets/sounds/musics/online/game_fall_music_1.mp3",
+        "/assets/sounds/musics/online/game_fall_music_2.mp3",
+    ],
     particles:[],
 }
 export const map_spawns={

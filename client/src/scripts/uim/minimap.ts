@@ -56,20 +56,23 @@ export class MinimapModule extends UIModule<Game>{
     override on_init(): void {
         this.canvas=document.body.querySelector("#ui-map") as HTMLCanvasElement
         this.ctx=this.canvas.getContext("2d")!
-
-        const base="/assets/img/menu/gui/map/"
-        this.load_map_icon("normal",base+"map_icon_normal.svg")
-        this.load_map_icon("other",base+"map_icon_other.svg")
-        this.load_map_icon("downed",base+"map_icon_downed.svg")
-        this.load_map_icon("dead",base+"map_icon_dead.svg")
-        this.load_map_icon("drone",base+"map_icon_drone.svg")
-
-        this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
-        this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
+ 
+        this.load_icons()
 
         this.canvas.addEventListener("click",()=>{
             if(!this.fullscreen)this.toggle_fullscreen()
         })
+    }
+    async load_icons(){
+        const base="/assets/img/menu/gui/map/"
+        await this.load_map_icon("normal",base+"map_icon_normal.svg")
+        await this.load_map_icon("other",base+"map_icon_other.svg")
+        await this.load_map_icon("downed",base+"map_icon_downed.svg")
+        await this.load_map_icon("dead",base+"map_icon_dead.svg")
+        await this.load_map_icon("drone",base+"map_icon_drone.svg")
+
+        await this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
+        await this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
     }
 
     async load_map_icon(id:string,path:string){
@@ -101,7 +104,10 @@ export class MinimapModule extends UIModule<Game>{
         })
     }
 
-    render(dt:number){
+    tick(dt:number){
+        this.tick_pings(dt)
+    }
+    render(){
         const minimap=this.game.minimap
         let maxW=0
         let maxH=0
@@ -155,7 +161,7 @@ export class MinimapModule extends UIModule<Game>{
 
         this.render_deadzone()
         this.render_zones()
-        this.render_pings(dt)
+        this.render_pings()
         this.render_humans()
 
         ctx.restore()
@@ -182,23 +188,18 @@ export class MinimapModule extends UIModule<Game>{
         ctx.rect(-100000,-100000,200000,200000)
         ctx.arc(x,y,radius,0,Math.PI * 2,true)
 
-        ctx.fillStyle = ColorM.rgba2hex(dz.color)
+        const color=ColorM.rgba2hex(dz.color)
+        ctx.fillStyle=color
         ctx.fill("evenodd")
 
         ctx.restore()
         ctx.save()
 
         ctx.beginPath()
-        ctx.arc(
-            x,
-            y,
-            radius,
-            0,
-            Math.PI * 2
-        )
+        ctx.arc(x,y,radius,0,Math.PI * 2)
 
-        ctx.strokeStyle = ColorM.rgba2hex(dz.color)
-        ctx.lineWidth = 5 / this.scale
+        ctx.strokeStyle=color.substring(0,7)+"ff"
+        ctx.lineWidth=5/this.scale
         ctx.stroke()
 
         ctx.restore()
@@ -206,13 +207,7 @@ export class MinimapModule extends UIModule<Game>{
         ctx.save()
 
         ctx.beginPath()
-        ctx.arc(
-            destX,
-            destY,
-            destRadius,
-            0,
-            Math.PI * 2
-        )
+        ctx.arc(destX,destY,destRadius,0,Math.PI * 2)
 
         ctx.strokeStyle = "#ffffff88"
         ctx.lineWidth = 5 / this.scale
@@ -321,7 +316,23 @@ export class MinimapModule extends UIModule<Game>{
             }
         }
     }
-    render_pings(dt:number){
+    tick_pings(dt:number){
+        for(let i=0;i<this.pings.length;i++){
+            const ping=this.pings[i]
+            if(ping.pulseTime<100){
+                ping.pulseTime+=dt*15
+            }
+            if(ping.def.lifetime!==undefined){
+                ping.time+=dt
+                if(ping.time>=ping.duration){
+                    this.pings.splice(i,1)
+                    i--
+                    continue
+                }
+            }
+        }
+    }
+    render_pings(){
         for(let i=0;i<this.pings.length;i++){
             const ping=this.pings[i]
             const pos=this.worldToMap(ping.pos.x,ping.pos.y)
@@ -339,15 +350,6 @@ export class MinimapModule extends UIModule<Game>{
                 this.ctx.strokeStyle=ColorM.number2hex(ping.color)+alpha.toString(16)
                 this.ctx.lineWidth=4/this.scale
                 this.ctx.stroke()
-                ping.pulseTime+=dt*15
-            }
-            if(ping.def.lifetime!==undefined){
-                ping.time+=dt
-                if(ping.time>=ping.duration){
-                    this.pings.splice(i,1)
-                    i--
-                    continue
-                }
             }
         }
     }
@@ -428,12 +430,13 @@ export class MinimapModule extends UIModule<Game>{
         }
     }
     override on_update(dt:number):void{
+        this.tick(dt)
         if(!this.enabled&&!this.fullscreen){
             HideElement(this.canvas)
             return
         }
         ShowElement(this.canvas)
-        this.render(dt)
+        this.render()
     }
     override on_destroy():void{}
     override on_clear():void{

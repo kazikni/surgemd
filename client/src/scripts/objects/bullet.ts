@@ -1,12 +1,9 @@
-import { ABParticle2D, Camera2D, Sprite2D } from "common/engine/web.ts";
+import { Camera2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { BaseGameObject2D, CircleHitbox2D, ColorM, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-const particles=[
-    "gas_smoke_particle"
-]
 export class Bullet extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -77,7 +74,7 @@ export class Bullet extends GameObject{
     }
     override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
-        this.sprite_trail.size=v2(200,18) // Metter Size * 2
+        this.sprite_trail.size=v2(200,17) // Metter Size * 2
         this.game.cam2d.add_object(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }

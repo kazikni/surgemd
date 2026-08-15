@@ -1,28 +1,25 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameConstants, GameObjectType, HumanAnimationData, HumanLoadoutData, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData } from "common/scripts/others/constants.ts"
+import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanoidVisualData, HumanVisualData } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
-import { FloorDef, Floors, FloorType } from "common/scripts/others/terrain.ts"
+import { FloorDef, Floors} from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, type BaseObject2D, CircleHitbox2D, type GameObjectManager2D, Hitbox2D, Stream, Numeric, PolarMovement, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script } from "common/engine/core.ts";
-import { type StaticBody } from "./static_body.ts";
+import { ActionsManager, CircleHitbox2D, Hitbox2D, Stream, Numeric, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script } from "common/engine/core.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type HumansManager } from "../managers/humans_manager.ts";
 import { GInventory, GunItem, LItem, MeleeItem } from "../human/inventory.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
-import { type Obstacle } from "./obstacle.ts";
 import { type Building } from "./building.ts";
 import { ConsumibleCondition } from "common/scripts/definitions/items/consumibles.ts";
 import { type Action, HelpupAction } from "../human/actions.ts";
@@ -37,21 +34,18 @@ import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { type Bullet } from "./bullet.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
-export type HumanPhysicalData=MovingBodyPhysicalData&{
-    dirty:boolean
-    scale:number
-    current_floor:FloorType
-
+import { Humanoid, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
+export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
     secondary_velocity_swimming:boolean
     secondary_velocity:Vec2
     secondary_acceleration:number
 }
-export class Human extends MovingBody{
+export class Human extends Humanoid{
     // Definition
-    string_type:string="human"
-    number_type:number=GameObjectType.Human
+    override string_type:string="human"
+    override number_type:number=GameObjectType.Human
     name:string=""
     is_player:boolean=false
     is_bot:boolean=false
@@ -64,9 +58,8 @@ export class Human extends MovingBody{
     spawn_body:boolean=false
 
     // Physical
-    old_position:Vec2=v2.zero()
     recoil?:{speed:number,delay:number}
-    physical_data:HumanPhysicalData={
+    override physical_data:HumanPhysicalData={
         dirty:true,
 
         scale:1,
@@ -82,17 +75,9 @@ export class Human extends MovingBody{
         current_floor:0,
     }
 
-    dead:boolean=false
-    downed:boolean=false
+    knocked:boolean=false
     swimming:boolean=false
 
-    health!:{
-        value:number
-        max:number
-        old:number
-
-        invensibility:number
-    }
     boost!:{
         value:number
         max:number
@@ -138,7 +123,7 @@ export class Human extends MovingBody{
         return 11/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
     emote_time:number=0
-    loadout!:HumanLoadoutData&{
+    declare visual:HumanVisualData&{
         dirty:boolean
         dirty_colors:boolean
 
@@ -155,7 +140,11 @@ export class Human extends MovingBody{
         }
         colors:Record<string,number>
     }
-    animation_data:HumanAnimationData&{current_animation:HumanAnimation[]}={
+    animation_data:{
+        dirty:boolean,
+        switching:boolean,
+        current_animation:HumanAnimation[]
+    }={
         dirty:true,
         switching:true,
         current_animation:[]
@@ -202,9 +191,7 @@ export class Human extends MovingBody{
         pulse_movement_timer:0,
     }
 
-    input:{
-        movement:PolarMovement
-        rotation:number
+    override input:HumanoidInput&{
         dist_to_pointer:number
 
         auto_click:boolean
@@ -288,15 +275,8 @@ export class Human extends MovingBody{
 
     constructor(){
         super()
-        this.old_position=v2.clone(this.position)
         this.inventory=new GInventory(this)
-
         this.actions=new ActionsManager(this)
-
-        this.base_hitbox = new CircleHitbox2D(
-            v2(0,0),
-            GameConstants.player.radius
-        )
 
         this.status={
             damage:0,
@@ -318,9 +298,10 @@ export class Human extends MovingBody{
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
-    override on_create(_args: Record<string, void>): void {
+    override on_create(args: any): void {
+    super.on_create(args)
         const female=Math.random()<0.5
-        this.loadout={
+        this.visual={
             dirty:true,
             dirty_colors:false,
             original:{
@@ -360,12 +341,6 @@ export class Human extends MovingBody{
             2:GunItem as (new(item:GameItem)=>LItem),
         })
 
-        this.health={
-            invensibility:0,
-            max:100,
-            value:100,
-            old:-1,
-        }
         this.clear_boost()
         this.update_modifiers()
     }
@@ -392,48 +367,48 @@ export class Human extends MovingBody{
     }
     set_loadout_preset(preset?:LoadoutPreset){
         if(!preset)return
-        this.loadout.dirty=true
+        this.visual.dirty=true
         if(preset.badge!==undefined){
-            this.loadout.original.badge_id=preset.badge
+            this.visual.original.badge_id=preset.badge
             if(preset.badge===""){
-                this.loadout.badge=undefined
+                this.visual.badge=undefined
             }else{
-                this.loadout.badge=this.game.definitions.badges.getFromString(preset.badge)
+                this.visual.badge=this.game.definitions.badges.getFromString(preset.badge)
             }
         }
-        if(preset.shirt)this.loadout.shirt=this.game.definitions.loadout.getFromString(preset.shirt) as LoadoutShirtDef
-        if(preset.legs)this.loadout.legs=this.game.definitions.loadout.getFromString(preset.legs) as LoadoutLegDef
-        if(preset.eyes)this.loadout.eyes=this.game.definitions.loadout.getFromString(preset.eyes) as LoadoutEyesDef
+        if(preset.shirt)this.visual.shirt=this.game.definitions.loadout.getFromString(preset.shirt) as LoadoutShirtDef
+        if(preset.legs)this.visual.legs=this.game.definitions.loadout.getFromString(preset.legs) as LoadoutLegDef
+        if(preset.eyes)this.visual.eyes=this.game.definitions.loadout.getFromString(preset.eyes) as LoadoutEyesDef
         if(preset.hair!==undefined){
             if(preset.hair===""){
-                this.loadout.hair=undefined
+                this.visual.hair=undefined
             }else{
-                this.loadout.hair={
+                this.visual.hair={
                     def:this.game.definitions.loadout.getFromString(preset.hair) as LoadoutHairDef,
                     tint:0
                 }
             }
         }
-        if(preset.hair_tint!==undefined&&this.loadout.hair)this.loadout.hair.tint=preset.hair_tint
-        if(preset.body)this.loadout.body={
+        if(preset.hair_tint!==undefined&&this.visual.hair)this.visual.hair.tint=preset.hair_tint
+        if(preset.body)this.visual.body={
             def:this.game.definitions.loadout.getFromString(preset.body) as LoadoutBodyDef,
             tint:0
         }
-        if(preset.body_tint!==undefined)this.loadout.body.tint=preset.body_tint
+        if(preset.body_tint!==undefined)this.visual.body.tint=preset.body_tint
         if(preset.accessorys!==undefined){
-            this.loadout.accessorys.length=0
+            this.visual.accessorys.length=0
             for(const a of preset.accessorys){
-                this.loadout.accessorys.push(this.game.definitions.loadout.getFromString(a) as LoadoutAccessoryDef)
+                this.visual.accessorys.push(this.game.definitions.loadout.getFromString(a) as LoadoutAccessoryDef)
             }
         }
         if(preset.colors!==undefined){
-            this.loadout.dirty_colors=true
+            this.visual.dirty_colors=true
             for(const v of Object.entries(preset.colors)){
-                this.loadout.colors[v[0]]=ColorM.hex2number(v[1])
+                this.visual.colors[v[0]]=ColorM.hex2number(v[1])
             }
         }
         if(preset.wrapping){
-            this.loadout.wrapping=this.game.definitions.wrapping.getFromStringSafe(typeof preset.wrapping==="string"?preset.wrapping:random.choose(preset.wrapping))
+            this.visual.wrapping=this.game.definitions.wrapping.getFromStringSafe(typeof preset.wrapping==="string"?preset.wrapping:random.choose(preset.wrapping))
         }
     }
     set_preset(preset:HumanDefinition|undefined){
@@ -446,7 +421,7 @@ export class Human extends MovingBody{
                     type:FeedMessageType.set_name,
                     playerId:this.id,
                     playerName:this.name,
-                    playerBadge:this.loadout.badge?.idNumber!
+                    playerBadge:this.visual.badge?.idNumber!
                 })
             }
         }
@@ -532,10 +507,7 @@ export class Human extends MovingBody{
         if(this.physical_data.scale!==this.modifiers.size){
             this.physical_data.dirty=true
             this.physical_data.scale=this.modifiers.size
-            this.base_hitbox = new CircleHitbox2D(
-                v2(0,0),
-                GameConstants.player.radius*this.physical_data.scale
-            )
+            this.update_body()
         }
     }
     side_effect(sf:SideEffect,owner?:Human){
@@ -656,44 +628,22 @@ export class Human extends MovingBody{
         this.grenade_holding=undefined
         this.inventory.net_sync.items=true
     }
-    isBlockedForPath(manager: GameObjectManager2D<BaseObject2D>,hb: Hitbox2D,_x: number,_y: number,layer: number): boolean {
-        for (const obj of manager.cells.get_objects(hb, layer)) {
-            if ((obj.number_type===GameObjectType.Building||obj.number_type===GameObjectType.Obstacle)&&!(obj as StaticBody).physical_data.no_collision&&!(obj as StaticBody).physical_data.no_pathfinding_collision){
-                if(hb.colliding_with(obj.hitbox))return true
-            }
-        }
-        return false
-    }
 
     override push(speed: number, dir: number): void {
         const vel=v2.from_RadAngle(dir,speed)
         v2m.add(this.physical_data.secondary_velocity,this.physical_data.secondary_velocity,vel)
     }
-    override on_collided(obj: ServerGameObject,_dt:number): void {
+    override on_collided(obj: ServerGameObject,dt:number): void {
+        super.on_collided(obj,dt)
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
-                if((obj as Obstacle).physical_data.stairs.length>0){
-                    for(const s of (obj as Obstacle).physical_data.stairs){
-                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
-                    }
-                }
                 if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
                     obj.on_interact(this)
                     this._interacted_objects.add(obj.id)
                 }
-                if((obj as StaticBody).physical_data.no_collision)break
-                const collision=this.hitbox.overlap_collisions(obj.hitbox)
-                for(const col of collision){
-                    v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
-                }
                 break
             }
             case GameObjectType.Building:{
-                if((obj as StaticBody).physical_data.stairs.length>0){
-                    for(const s of (obj as StaticBody).physical_data.stairs){
-                        if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)
-                    }
-                }
                 if(!this.equipment_data.force_default_scope){
                     for(const c of (obj as Building).ceilings){
                         if(c.can_below(this.hitbox)){
@@ -704,11 +654,6 @@ export class Human extends MovingBody{
                 if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
                     obj.on_interact(this)
                     this._interacted_objects.add(obj.id)
-                }
-                if((obj as StaticBody).physical_data.no_collision)break
-                const collision=this.hitbox.overlap_collisions(obj.hitbox)
-                for(const col of collision){
-                    v2m.sub(this.position,this.position,v2.scale(col.dir,col.pen))
                 }
                 break
             }
@@ -1072,8 +1017,8 @@ export class Human extends MovingBody{
         this.animation_data.current_animation.length=0
         this.animation_data.switching=false
 
-        this.loadout.dirty=false
-        this.loadout.dirty_colors=false
+        this.visual.dirty=false
+        this.visual.dirty_colors=false
         this.input.emote=undefined
         this.input.message=undefined
         this.input.ping=undefined
@@ -1126,7 +1071,7 @@ export class Human extends MovingBody{
                 action:this.actions.dirty,
                 group:false
             },
-            colors:this.loadout.dirty_colors?this.loadout.colors:undefined
+            colors:this.visual.dirty_colors?this.visual.colors:undefined
         }
         if(this.team_data.group?.dirty){
             ret.dirty.group=true
@@ -1346,8 +1291,8 @@ export class Human extends MovingBody{
         this.human_data.pulse_movement=undefined
         this.set_dirty_part()
 
-        if(this.loadout.emotes.death){
-            this.input.emote=this.loadout.emotes.death
+        if(this.visual.emotes.death){
+            this.input.emote=this.visual.emotes.death
         }
 
         this.inventory.drop_all()
@@ -1373,7 +1318,7 @@ export class Human extends MovingBody{
         }
         if(this.team_data.team)this.team_data.team.clear_downeds()
         if(this.team_data.group)this.team_data.group.clear_downeds()
-        if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.loadout.badge,this.layer)
+        if(this.spawn_body)this.game.add_human_body(this.position,this.name,params.direction,this.visual.badge,this.layer)
         this.destroy()
     }
     clear(inventory:boolean=false,status:boolean=false){
@@ -1443,7 +1388,7 @@ export class Human extends MovingBody{
             // Equipment
             this.equipment_data.dirty_part,this.equipment_data.dirty, // 1
             // Loadout
-            this.loadout.dirty, // 1
+            this.visual.dirty, // 1
             this.animation_data.dirty, // 1
             this.effects_dirty,
             this.boost.def.shield&&this.boost.value>0,
@@ -1489,26 +1434,26 @@ export class Human extends MovingBody{
             }
         }
         // Loadout  
-        if(full||this.loadout.dirty){
+        if(full||this.visual.dirty){
             stream.write_boolean_group(
-                this.loadout.hair!==undefined,
-                this.loadout.eyes!==undefined,
+                this.visual.hair!==undefined,
+                this.visual.eyes!==undefined,
             )
-            stream.write_uint16(this.loadout.body.def.idNumber!)
-            if(this.loadout.hair){
-                stream.write_uint16(this.loadout.hair.def.idNumber!)
-                .write_uint32(this.loadout.hair.tint)
+            stream.write_uint16(this.visual.body.def.idNumber!)
+            if(this.visual.hair){
+                stream.write_uint16(this.visual.hair.def.idNumber!)
+                .write_uint32(this.visual.hair.tint)
             }
-            if(this.loadout.eyes){
-                stream.write_uint16(this.loadout.eyes.idNumber!)
+            if(this.visual.eyes){
+                stream.write_uint16(this.visual.eyes.idNumber!)
             }
-            stream.write_uint16(this.loadout.shirt.idNumber!)
-            .write_uint16(this.loadout.legs.idNumber!)
-            .write_uint32(this.loadout.body.tint)
-            .write_array(this.loadout.accessorys,(v)=>{
+            stream.write_uint16(this.visual.shirt.idNumber!)
+            .write_uint16(this.visual.legs.idNumber!)
+            .write_uint32(this.visual.body.tint)
+            .write_array(this.visual.accessorys,(v)=>{
                 stream.write_uint16(v.idNumber!)
             },1)
-            .write_uint16(this.loadout.wrapping===undefined?0:(this.loadout.wrapping.idNumber!+1))
+            .write_uint16(this.visual.wrapping===undefined?0:(this.visual.wrapping.idNumber!+1))
         }
         if(this.input.emote){
             stream.write_uint16(this.game.definitions.game_objects.keysString[this.input.emote.idString])

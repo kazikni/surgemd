@@ -5,9 +5,11 @@ import { WrappingDef } from "../definitions/loadout/wrapping.ts"
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
+    humanoid:{
+        radius:0.42,
+    },
     player:{
         defaultName:"Player",
-        radius:0.42,
         max_name_size:25,
     },
     loot:{
@@ -28,6 +30,7 @@ export const GameConstants={
 }
 export enum GameObjectType{
     StaticBody,
+    Humanoid,
     Human,
     HumanBody,
     Loot,
@@ -200,7 +203,7 @@ export const Spawn={
         list:[FloorType.Water,FloorType.Ice]
     },
 } satisfies Record<string,SpawnMode>
-export interface HumanLoadoutData {
+export interface HumanoidVisualData {
     body:{
         def:LoadoutBodyDef
         tint:number
@@ -210,14 +213,12 @@ export interface HumanLoadoutData {
         tint:number
     }
     eyes?:LoadoutEyesDef
-    wrapping?:WrappingDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
     accessorys:LoadoutAccessoryDef[]
 }
-export interface HumanAnimationData{
-    dirty:boolean
-    switching:boolean
+export interface HumanVisualData extends HumanoidVisualData{
+    wrapping?:WrappingDef
 }
 export interface ObstacleVisualData{
     dirty:boolean

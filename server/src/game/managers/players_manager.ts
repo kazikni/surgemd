@@ -210,7 +210,7 @@ export class PlayersManager{
             type:FeedMessageType.join,
             playerId:p.id,
             playerName:p.name,
-            playerBadge:p.loadout.badge?.idNumber
+            playerBadge:p.visual.badge?.idNumber
         })
 
         if(this.game.statistics)this.game.statistics.player.players++
@@ -318,7 +318,7 @@ export class PlayersManager{
                     jp.players.push({
                         id:lp.id,
                         name:lp.name,
-                        badge:lp.loadout.badge?.idNumber
+                        badge:lp.visual.badge?.idNumber
                     })
                 }
                 jp.date=this.game.ambient.date

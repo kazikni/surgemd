@@ -264,24 +264,24 @@ export class Player extends Human{
         if(i.cancel)this.actions.cancel()
     }
     proccess_join_packet(jp:JoinPacket){
-        this.loadout.dirty=true
+        this.visual.dirty=true
         if(jp.skin){
-            this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
-            this.loadout.hair={
+            this.visual.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
+            this.visual.hair={
                 tint:jp.skin.hair_tint,
                 def:this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
             }
-            this.loadout.body.tint=jp.skin.body_tint
-            this.loadout.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
-            this.loadout.accessorys=[]
+            this.visual.body.tint=jp.skin.body_tint
+            this.visual.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
+            this.visual.accessorys=[]
             if(jp.skin.female){
-                this.loadout.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
+                this.visual.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
             }
         }
-        this.loadout.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]
-        if(jp.badge)this.loadout.badge=this.game.definitions.badges.valueNumber[jp.badge]
-        else this.loadout.badge=undefined
-        this.loadout.emotes.victory=this.game.definitions.emotes.valueNumber[jp.victory_emote-1]
-        this.loadout.emotes.death=this.game.definitions.emotes.valueNumber[jp.death_emote-1]
+        this.visual.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]
+        if(jp.badge)this.visual.badge=this.game.definitions.badges.valueNumber[jp.badge]
+        else this.visual.badge=undefined
+        this.visual.emotes.victory=this.game.definitions.emotes.valueNumber[jp.victory_emote-1]
+        this.visual.emotes.death=this.game.definitions.emotes.valueNumber[jp.death_emote-1]
     }
 }

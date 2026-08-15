@@ -9,117 +9,8 @@ import { EffectDef } from "common/scripts/definitions/player/effects.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { WeaponDef } from "common/scripts/definitions/game_defs.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 
 export const DefaultHumanModes={
-    set_skin(h:Human,body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,body_tint:number,accessorys:LoadoutAccessoryDef[]){
-        if(
-            h.loadout&&
-            h.loadout.body.def===body_def&&h.loadout.body.tint===body_tint&&
-            h.loadout.hair?.def===hair?.def&&h.loadout.hair?.tint===hair?.tint&&
-            h.loadout.eyes===eyes_def
-        )return
-        h.loadout={
-            body:{
-                def:body_def,
-                tint:body_tint,
-            },
-            hair:hair,
-            eyes:eyes_def,
-            shirt:shirt_def,
-            legs:legs_def,
-            accessorys
-        }
-
-        const body_t=ColorM.number(body_tint)
-
-        const body_f=body_def.frame?.base??"human_"+body_def.idString
-        const hand_f=body_def.frame?.hand??"human_"+body_def.idString+"_hand"
-
-        if(hair){
-            if(hair.def.frame?.front)h.sprites.hair.set_frame(Object.assign({image:"human_"+hair.def.idString+"_front"},hair.def.frame?.front),h.game.resources)
-            h.sprites.hair.tint=ColorM.number(hair.tint)
-        }
-        if(eyes_def){
-            h.assets.eyes=[eyes_def.frame?.base??"human_"+eyes_def.idString+"_1",eyes_def.frame?.blink??"human_"+eyes_def.idString+"_2"]
-            h.sprites.eyes.position=eyes_def.position
-        }else{
-            h.assets.eyes.length=0
-        }
-        h.container.callmode("eyes")
-
-        const arm_f=shirt_def.frame?.arm??("human_"+shirt_def.idString+"_arm")
-
-        h.sprites.body.frame=h.game.resources.get_frame(body_f)
-
-        h.sprites.body.tint=body_t
-
-        h.assets.arm_frame_small=h.game.resources.get_frame(arm_f+"_1")
-        h.assets.arm_frame_medium=h.game.resources.get_frame(arm_f+"_2")
-
-        h.sprites.left_hand.frame=h.game.resources.get_frame(hand_f)
-        h.sprites.right_hand.frame=h.game.resources.get_frame(hand_f)
-        h.sprites.left_hand.tint=body_t
-        h.sprites.right_hand.tint=body_t
-
-        if(shirt_def.frame?.arm_tint)h.sprites.left_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
-        if(shirt_def.frame?.arm_tint)h.sprites.right_shirt_arm.tint=ColorM.number(shirt_def.frame?.arm_tint)
-
-        if(legs_def.frame?.leg){
-            h.sprites.left_leg_l.set_frame(legs_def.frame.leg,h.game.resources)
-            h.sprites.right_leg_l.set_frame(legs_def.frame.leg,h.game.resources)
-        }
-        if(legs_def.frame?.foot){
-            h.sprites.left_leg_foot.position=v2(0.05,0)
-            h.sprites.right_leg_foot.position=v2(0.05,0)
-            h.sprites.left_leg_foot.set_frame(legs_def.frame.foot,h.game.resources)
-            h.sprites.right_leg_foot.set_frame(legs_def.frame.foot,h.game.resources)
-        }
-
-        h.sprites.left_leg.rotation=0.05
-        h.sprites.right_leg.rotation=3.19
-        h.sprites.left_leg.position=v2(-0.6,-0.2)
-        h.sprites.right_leg.position=v2(0.6,0.2)
-        h.sprites.left_leg.zIndex=1
-        h.sprites.right_leg.zIndex=1
-
-        h.sprites.chest.position=v2(-0.25,0)
-        h.sprites.chest.visible=false
-        if(shirt_def.frame?.chest)h.sprites.chest.set_frame(shirt_def.frame.chest,h.game.resources)
-
-        if(body_def.mounth){
-            h.sprites.mounth.visible=true
-            h.sprites.mounth.tint=body_t
-            h.sprites.mounth.scale.x=1.4
-            h.sprites.mounth.position=body_def.mounth.position
-            h.sprites.mounth.frame=h.game.resources.get_frame(body_def.mounth.normal)
-            h.animation.mounth=[
-                {image:body_def.mounth.normal,delay:0.15},
-                {image:body_def.mounth.open,delay:0.15},
-            ]
-        }else{
-            h.animation.mounth.length=0
-            h.sprites.mounth.visible=false
-        }
-
-        for(const a of h.sprites.accessorys){
-            a.destroy()
-        }
-        h.sprites.accessorys.length=0
-        for(const a of accessorys){
-            const spr=new Sprite2D()
-            spr.set_frame({
-                image:a.frame?.image??a.idString,
-                hotspot:v2.half_one,
-                scale:2,
-                zIndex:6
-            },h.game.resources)
-            if(a.frame)spr.transform_frame(a.frame)
-            h.container.add_child(spr)
-            h.sprites.accessorys.push(spr)
-        }
-        h.reset_anim()
-    },
     broke_shield(h:Human){
         const particles=h.game.save.get_variable("sv_graphics_particles")
         if(particles>=GraphicsDConfig.Advanced){
@@ -382,7 +273,7 @@ export const DefaultHumanModes={
                         zIndex:2,
                         scale:2,
                     },h.game.resources)
-                    replace=h.loadout.wrapping?.replace[frame]
+                    replace=h.visual.wrapping?.replace[frame]
                     if(replace)h.sprites.weapon2.set_frame(replace,h.game.resources)
                 }else{
                     frame=weapon.assets?.world??weapon.idString+"_world"
@@ -392,7 +283,7 @@ export const DefaultHumanModes={
             }else{
                 frame=weapon.assets?.world??weapon.idString
             }
-            replace=h.loadout.wrapping?.replace[frame]
+            replace=h.visual.wrapping?.replace[frame]
             h.assets.weapon_fire_sound=h.game.resources.get_sound(weapon.assets?.use_sound??original_name+"_fire")
             h.assets.weapon_switch_sound=h.game.resources.get_sound(weapon.assets?.switch_sound??original_name+"_switch")
 
@@ -448,27 +339,9 @@ export const DefaultHumanModes={
         }
     },
     mounth(h:Human,state:number=0,emote_mounth:boolean=true,enabled:boolean=true){
-        if(h.animation.mounth.length===0){
-            return
-        }
-        h.animation.emote_mount_animation=emote_mounth
-        if(enabled===false){
-            h.sprites.mounth.visible=false
-        }else{
-            h.sprites.mounth.visible=true
-            h.sprites.mounth.frame=h.game.resources.get_frame(h.animation.mounth[state].image as string)
-        }
+        h.set_mounth(state,emote_mounth,enabled)
     },
     eyes(h:Human,state:number=0,animated:boolean=true){
-        if(h.assets.eyes.length===0){
-            h.sprites.eyes.visible=false
-            h.sprites.eyes.frames=undefined
-        }else{
-            h.sprites.eyes.visible=true
-            if(animated)h.sprites.eyes.frames=[{delay:random.float(3.4,3.6),image:h.assets.eyes[0]},{delay:0.3,image:h.assets.eyes[1]}]
-            else h.sprites.eyes.frames=undefined
-
-            h.sprites.eyes.frame=h.game.resources.get_frame(h.assets.eyes[state])
-        }
+        h.set_eyes(state,animated)
     }
 } satisfies Record<string,AnimatedContainerModeCallback>

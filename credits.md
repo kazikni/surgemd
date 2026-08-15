@@ -20,6 +20,7 @@ ___
 * @namerio
 ___
 ## Sound Designers
+* Kazikni
 * Surviv.io
 * Suroi.io
 * @teardwop

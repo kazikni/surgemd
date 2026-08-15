@@ -1,3 +1,4 @@
+import { FontStyle, FontStyleFull } from "../../core/definition/utils.ts";
 import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
 import { type ClientGame } from "./game.ts";
@@ -331,4 +332,13 @@ export class ImageBuffer {
         this.lastUsed.clear()
         this.tick = 0
     }
+}
+
+export function ApplyFontStyle(elem:HTMLElement,style:FontStyle){
+    if(style.css!==undefined)elem.style.cssText+=style.css
+    if(style.class_name!==undefined)elem.className+=style.class_name
+    if(style.color!==undefined)elem.style.color=style.color
+    if(style.font!==undefined)elem.style.fontFamily=style.font
+    if(style.weight!==undefined)elem.style.fontWeight=style.weight
+    if(style.size!==undefined)elem.style.fontSize=style.size
 }

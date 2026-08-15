@@ -1,33 +1,4 @@
-export enum BackgroundELayerType{
-    Tile,
-    Static
-}
-export type BackgroundELayer={
-    css?:string
-    class_name?:string
-    top?:number
-    bottom?:number
-    left?:number
-    right?:number
-    childs?:BackgroundELayer[]
-}&({
-    type:BackgroundELayerType.Static
-    size?:number
-}|{
-    type:BackgroundELayerType.Tile
-    speed:number
-    size?:number
-})
-export interface BackgroundETheme{
-    class_name?:string
-    css?:string
-    accent?:string
-    timescale?:number
-}
-export interface BackgroundEDef{
-    theme:BackgroundETheme
-    layers:BackgroundELayer[]
-}
+import { BackgroundEDef, BackgroundELayerType, CutsceneTheme } from "../../engine/core/definition/utils.ts";
 
 export const backgrounds={
     city:{
@@ -241,3 +212,53 @@ backdrop-filter: blur(7px) brightness(.75) saturate(80%);`,childs:[
         layers:[]
     }
 } satisfies Record<string,BackgroundEDef>
+export const default_cutscene_theme: CutsceneTheme = {
+    text:{
+        color:"#fff",
+        font:"Russo-One",
+        size:"20px"
+    },
+    text_styles:{
+        "nn_title_blue":{
+            typewriter:{delay:{min:40,max:200}},
+            color:"#07aaee",
+            font:"Russo-One",
+            size:"15vh",
+        },
+        "nn_location":{
+            typewriter:{delay:{min:40,max:150}},
+            color:"#eee",
+            font:"Russo-One",
+            size:"3.5vh",
+        },
+        "nn_date":{
+            typewriter:{delay:{min:40,max:200}},
+            color:"#eee",
+            font:"Russo-One",
+            size:"2vh",
+        },
+        "nn_description":{
+            typewriter:{delay:{min:40,max:100}},
+            color:"#bbb",
+            font:"Russo-One",
+            size:"3vw",
+            css:"letter-spacing: 1px;"
+        }
+    },
+    dialog:{
+        background:"linear-gradient(135deg,rgba(7, 170, 238, 0.08),rgba(7, 170, 238, 0.18))",
+        padding:"8px 12px",
+        border:"2px solid #07aaee80",
+        radius:"12px",
+        max_width:"90%",
+        name:{
+            color:"#ffffff",
+            size:"20px",
+            weight:"bold"
+        },
+        content: {
+            size: "16px",
+            color: "#ffffff"
+        }
+    },
+}

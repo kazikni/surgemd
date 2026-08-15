@@ -64,6 +64,11 @@ export class LocalGameServer{
             case "start_level":
                 this.begin_level(msg.path)
                 break
+            case "stop":{
+                this.stop()
+                this.game.close_game(true)
+                this.game.menu.hide_loading_screen()
+            }
         }
     }
 }

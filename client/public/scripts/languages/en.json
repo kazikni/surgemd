@@ -391,7 +391,8 @@
                 "negative_color": "Negative Color",
                 "special_color": "Special Color",
                 "translation": "Translation",
-                "interactive": "Interactive UI"
+                "interactive": "Interactive UI",
+                "show_intro": "Show Intro"
             }
         },
         "keybinds": {

@@ -61,10 +61,14 @@ return (class extends LevelPlayerScript{
         npc=this.game.players.add_bot(new JoinPacket())
         npc.position=core.v2(12,46)*/
     }
+    async on_load(){
+        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
+    }
     async on_before(start_with_intro){
-        if(start_with_intro){
-            await this.show_cutscene_file("cutscenes/begin.jsonc")
-        }
+        const cutscene=[]
+        if(start_with_intro)cutscene.push(...this.cutscene)
+        cutscene.push(...this.make_level_intro())
+        await this.show_cutscene(cutscene)
     }
     async on_begin(){
         this.preset=await this.level.load_character({

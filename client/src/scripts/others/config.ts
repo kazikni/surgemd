@@ -82,6 +82,7 @@ export const ConfigCasters=Object.freeze({
     sv_ui_translation:Casters.toString,
     sv_ui_interactive:Casters.toBoolean,
     sv_ui_simple_mode:Casters.toBoolean,
+    sv_ui_show_intro:Casters.toBoolean,
 
     sv_debug_ping_emulation:Casters.toNumber,
 })
@@ -134,6 +135,7 @@ export const ConfigDefaultValues={
     sv_ui_translation:"en",
     sv_ui_interactive:true,
     sv_ui_simple_mode:Debug.force_mobile||isMobile,
+    sv_ui_show_intro:true,
 
     sv_debug_ping_emulation:0,
 }

@@ -71,10 +71,11 @@ return (class extends LevelPlayerScript{
     async on_before(){
         const cutscene=[]
         cutscene.push({
-            type:HistoryCommandType.SetMusic,
-            music:"gameplay_music",
+            type:core.CutsceneCommandType.SetSoundController,
+            controller:"music",
+            source:"gameplay_music",
         },{
-            type:HistoryCommandType.SetBackground,
+            type:core.CutsceneCommandType.SetBackground,
             background:this.background,
             timescale:70
         })
@@ -366,7 +367,7 @@ return (class extends LevelPlayerScript{
                     "team":1
                 },
                 "count": 24
-            },
+            },//*/
             {
                 "def": {
                     "name": "Gigi",

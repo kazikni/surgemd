@@ -81,6 +81,12 @@ self.onmessage = async(ev) => {
         }
         case "next_level":{
             if(!level)break
+            if(!(level.def.next_level as Record<string,string>)?.[msg.name]){
+                self.postMessage({
+                    type:"stop",
+                })
+                return
+            }
             self.postMessage({
                 type:"start_level",
                 path:Path.join(level.path,(level.def.next_level as Record<string,string>)[msg.name]),

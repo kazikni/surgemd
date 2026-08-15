@@ -1,13 +1,5 @@
-import {
-    BackgroundEDef,
-    BackgroundELayer,
-    BackgroundELayerType
-} from "common/scripts/config/background_effect.ts"
-
-import {
-    HideElement,
-    ShowElement
-} from "common/engine/web.ts"
+import { BackgroundEDef, BackgroundELayer, BackgroundELayerType } from "../../core/definition/utils.ts";
+import { HideElement, ShowElement } from "./utils.ts";
 
 interface BackgroundLayerInstance {
     def: BackgroundELayer
@@ -25,31 +17,20 @@ export class BackgroundManager {
     time=0
     layers:BackgroundLayerInstance[] = []
 
-    constructor(parent:HTMLElement=document.body) {
-        this.create_html(parent)
+    constructor() {
     }
-
-    private create_html(parent:HTMLElement) {
-        this.root = document.createElement("div")
-        this.root.className = "background-screen"
+    initialize(root:HTMLDivElement) {
+        this.root=root
         this.root.innerHTML = `<div class="background-bg"></div><div class="background-content"></div>`
-        parent.appendChild(this.root)
         this.background=this.root.querySelector(".background-bg") as HTMLDivElement
         this.content=this.root.querySelector(".background-content") as HTMLDivElement
         HideElement(this.root, true)
     }
     set_def(def: BackgroundEDef|undefined,timescale:number=1) {
-        if(!def){
-            this.clear()
-            return
-        }
+        this.clear()
+        if(!def)return
         timescale*=(def.theme.timescale??1)
         this.current = def
-        this.time = 0
-        this.layers.length = 0
-        this.background.innerHTML = ""
-        this.content.innerHTML = ""
-        this.root.className = "background-screen"
 
         if(def.theme.class_name){
             this.root.classList.add(...def.theme.class_name.split(/\s+/).filter(Boolean))
@@ -64,7 +45,6 @@ export class BackgroundManager {
             this.create_layer(this.background,layer,timescale)
         }
     }
-
     private create_layer(parent: HTMLDivElement,layer: BackgroundELayer,timescale:number=1): BackgroundLayerInstance {
         const element=document.createElement("div")
 
@@ -105,11 +85,12 @@ export class BackgroundManager {
         this.layers.push(instance)
         return instance
     }
-    async show() {
+    show() {
         if(!this.current)return
         ShowElement(this.root,true)
+        this.enabled=true
     }
-    async hide() {
+    hide() {
         this.enabled = false
         HideElement(this.root)
     }
@@ -125,10 +106,12 @@ export class BackgroundManager {
         }
     }
     clear() {
+        this.current=undefined
+        this.time = 0
+        this.layers.length = 0
         this.background.innerHTML = ""
         this.content.innerHTML = ""
-        this.layers.length = 0
-        this.current = undefined
-        this.time = 0
+        this.root.className = "background-screen"
+        this.root.style.cssText=""
     }
 }

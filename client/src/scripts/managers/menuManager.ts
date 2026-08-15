@@ -2,15 +2,15 @@ import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, GameSave, HideElement, ImageBuffer, InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, typewriter } from "common/engine/web.ts";
+import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController } from "common/engine/web.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
-import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 import { FileManager, random, TranslationManager } from "common/engine/core.ts";
-import { BackgroundManager } from "./background_manager.ts";
-import { backgrounds } from "common/scripts/config/background_effect.ts";
+import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
+import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
+import { BackgroundManager } from "common/engine/web/misc/background.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
@@ -66,14 +66,13 @@ export class MenuManager{
     input!:InputManager
 
     background:BackgroundManager
-    history_background:BackgroundManager
 
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
     play_callback_hard?:(play:FindGameResult)=>void
 
-    cutscene:HistoryCommand[]=[]
+    cutscene!:CutsceneManager
 
     params:URLSearchParams
 
@@ -117,7 +116,6 @@ export class MenuManager{
         }.png")`
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
-        this.start_intro()
 
         this.content.main_social.innerHTML=`
 <a href="${socials.discord}" target="_blank" class="social-link">
@@ -147,12 +145,32 @@ export class MenuManager{
             this.spawn_target()
         }
 
-        this.background=new BackgroundManager(this.content.menuD.querySelector("#menu-background") as HTMLDivElement)
-        this.history_background=new BackgroundManager(this.content.history_overlay.querySelector("#history-background") as HTMLDivElement)
+        this.background=new BackgroundManager()
+        this.background.initialize(this.content.menuD.querySelector("#menu-background") as HTMLDivElement)
     }
     intro_fineshed:boolean=false
     start_intro(): Promise<void> {
         return new Promise<void>((resolve) => {
+            const finish=()=>{
+                this.intro_fineshed=true
+                HideElement(screen, true)
+                screen.remove()
+                const invite = this.params.get("group-id")
+                if (invite) {
+                    this.join_group(invite)
+                    this.load_tab("play")
+                    const playTab = this.tabs["play"]
+                    if (playTab) {
+                        const groupOption = playTab.def.options.find(
+                            o => o.type === "button" && o.subtab === "group"
+                        )
+                        if (groupOption) {
+                            this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
+                        }
+                    }
+                }
+                resolve()
+            }
             if(this.intro_fineshed){
                 resolve()
                 return
@@ -160,6 +178,11 @@ export class MenuManager{
             const screen = this.content.initial_screen
             const video = document.getElementById("intro-video") as HTMLVideoElement
 
+            if(!this.save.get_variable("sv_ui_show_intro")){
+                screen.style.opacity = "0"
+                finish()
+                return
+            }
             ShowElement(screen)
 
             screen.style.opacity = "0"
@@ -184,24 +207,7 @@ export class MenuManager{
             video.addEventListener("ended",() => {
                 screen.style.opacity = "0"
                 setTimeout(() => {
-                    this.intro_fineshed=true
-                    HideElement(screen, true)
-                    screen.remove()
-                    const invite = this.params.get("group-id")
-                    if (invite) {
-                        this.join_group(invite)
-                        this.load_tab("play")
-                        const playTab = this.tabs["play"]
-                        if (playTab) {
-                            const groupOption = playTab.def.options.find(
-                                o => o.type === "button" && o.subtab === "group"
-                            )
-                            if (groupOption) {
-                                this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
-                            }
-                        }
-                    }
-                    resolve()
+                    finish()
                 },1000)
             })
         })
@@ -324,7 +330,7 @@ export class MenuManager{
             this.content.menu_options.style.pointerEvents=""
         }
     }
-    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager,music?:SoundController,ambient?:SoundController){
         this.save=save
         this.resources=resources
         this.sounds=sounds
@@ -332,12 +338,21 @@ export class MenuManager{
         this.input=input
         this.cam2d=cam2d
         this.cam2d.visible=false
+        this.start_intro()
+
         this.update_api()
 
         this.game_end()
         ShowElement(this.content.menu_options,true)
         if(this.interval===undefined){
             this.interval=setInterval(this.update.bind(this),1000)
+        }
+        this.cutscene=new CutsceneManager(resources,sounds,input,transition)
+        this.cutscene.initialize(this.content.history_overlay)
+        this.cutscene.default_theme=default_cutscene_theme
+        this.cutscene.controllers={
+            music:music!,
+            ambience:ambient!
         }
     }
     async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
@@ -566,168 +581,6 @@ export class MenuManager{
             })
         })
     }
-    history_buffer:ImageBuffer=new ImageBuffer()
-    async preload_cutscene(path:string){
-        this.cutscene=await this.resources.load_json(path,this.set_loading_current)
-        this.history_buffer.clear()
-        await this.preload_history_frames(this.cutscene)
-    }
-    async preload_history_frames(commands: HistoryCommand[], max = 6){
-        let count = 0
-        for(const cmd of commands){
-            if(cmd.type === HistoryCommandType.SetFrame){
-                this.set_loading_current(cmd.frame)
-                await this.history_buffer.load(cmd.frame)
-                count++
-                if(count >= max) break
-            }
-        }
-    }
-    async show_history(commands: HistoryCommand[],resources: ResourcesManager,music_player: SoundController,ambient_player: SoundController,input:InputManager,time_scale: number = 1): Promise<void> {
-        ShowElement(this.content.history_overlay,true)
-        music_player.set(undefined)
-        ambient_player.set(undefined)
-        this.history_background.set_def(undefined)
-        const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
-        sleep(1)
-        for (const cmd of commands) {
-            switch (cmd.type) {
-                case HistoryCommandType.Wait: {
-                    await sleep(cmd.time)
-                    this.content.history_dialog_text.style.opacity="0"
-                    break
-                }
-                case HistoryCommandType.WaitInput: {
-                    ShowElement(this.content.history_dialog_indicator)
-                    await input.wait_for_action("next")
-                    HideElement(this.content.history_dialog_indicator)
-                    this.content.history_dialog_text.style.opacity="0"
-                    break
-                }
-                case HistoryCommandType.SetFrame: {
-                    const currentIndex = commands.indexOf(cmd)
-
-                    for (let i = 1; i <= 3; i++) {
-                        const next = commands[currentIndex + i]
-                        if (next?.type === HistoryCommandType.SetFrame) {
-                            this.history_buffer.preload(next.frame)
-                        }
-                    }
-
-                    this.content.history_frame.style.opacity = "0"
-                    await sleep(0.4)
- 
-                    const img = await this.history_buffer.load(cmd.frame)
-                    this.content.history_frame.src = img.src
-
-                    requestAnimationFrame(() => {
-                        this.content.history_frame.style.opacity = "1"
-                    })
-
-                    break
-                }
-                case HistoryCommandType.SetDialog: {
-                    const text=cmd.text??(cmd.text_ln===undefined?"":this.translation.get(cmd.text_ln))
-                    if(text){
-                        ShowElement(this.content.history_dialog_text,true)
-
-                        const name=cmd.name??(cmd.name_ln===undefined?"":this.translation.get(cmd.name_ln))
-                        this.content.history_dialog_text.innerHTML = `
-                            ${name?`<p class="name">${name}</p>`:""}
-                            <p class="content"></p>
-                        `
-
-                        const content=this.content.history_dialog_text.querySelector(".content") as HTMLSpanElement
-
-                        await typewriter(content,text,cmd.typewriter_delay??20)
-                        content.style.color = cmd.color ?? "white"
-                        
-                    }else{
-                        HideElement(this.content.history_dialog_text,true)
-                    }
-                    break
-                }
-                case HistoryCommandType.SetMusic: {
-                    if(music_player&&resources){
-                        const s=cmd.music?resources.get_sound(cmd.music):(cmd.path?await resources.load_sound("gameplay_music",{src:cmd.path}):undefined)
-                        music_player.set(s,{
-                            loop:cmd.loop!==undefined?cmd.loop:true,
-                            offset:cmd.start_at
-                        })
-                    }
-                    break
-                }
-                case HistoryCommandType.SetAmbient: {
-                    if (ambient_player&&resources) {
-                        const s = resources.get_sound(cmd.ambient)
-                        ambient_player.set(s,{
-                            loop:cmd.loop!==undefined?cmd.loop:true,
-                            offset:cmd.start_at
-                        })
-                    }
-                    break
-                }
-                case HistoryCommandType.PlaySoundEffect: {
-                    if (resources) {
-                        const s = resources.get_sound(cmd.sfx)
-                        const inst = this.sounds.play(s,{
-                          bus:cmd.category??"ui"  
-                        },)
-                    }
-                    break
-                }
-
-                case HistoryCommandType.ShowGameOverMessage: {
-                    if(!resources||!music_player)break
-                    await this.game_over_messages(
-                        cmd.text,
-                        resources.get_sound("gameover_music"),
-                        music_player,
-                        cmd.time_per_message,
-                        cmd.opacity_anim
-                    )
-                    break
-                }
-                case HistoryCommandType.ShowInitialScreen:{
-                    this.content.history_content.innerHTML=`
-<div class="intro-content">
-    <div class="intro-name"></div>
-    <div class="intro-location"></div>
-    <div class="intro-date"></div>
-    <div class="intro-description"></div>
-</div>`
-                    const play_sound=()=>resources.audio.play(resources.get_sound(random.choose(["typewriter-1","typewriter-2"])),{
-                        volume:0.15,
-                        bus:"bus"
-                    })
-                    const text_speed=1
-                    // TYPEWRITER
-                    const rand_delay={
-                        min:40*text_speed,
-                        max:200*text_speed
-                    }
-                    await typewriter(this.content.history_content.querySelector(".intro-name") as HTMLDivElement, cmd.name, rand_delay,play_sound)
-                    await typewriter(this.content.history_content.querySelector(".intro-location") as HTMLDivElement, cmd.location, rand_delay,play_sound)
-                    const date:string|undefined=cmd.description
-                    const description:string|undefined=cmd.date
-                    if(date){
-                        await typewriter(this.content.history_content.querySelector(".intro-date") as HTMLDivElement, date, rand_delay,play_sound)
-                    }
-                    if(description){
-                        await typewriter(this.content.history_content.querySelector(".intro-description") as HTMLDivElement, description, rand_delay,play_sound)
-                    }
-                    await sleep(2)
-                    this.content.history_container.innerHTML=""
-                    break
-                }
-                case HistoryCommandType.SetBackground:{
-                    this.history_background.set_def(cmd.background,cmd.timescale)
-                    break
-                }
-            }
-        }
-        HideElement(this.content.history_overlay,true)
-    }
     select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
         return this.game_popup((ctx) => {
             let selected = 0
@@ -844,5 +697,3 @@ export class MenuManager{
         this.background.show()
     }
 }
-
-//ME MELHORE POR FAVOR

@@ -153,13 +153,16 @@
     height: fit-content;
     text-align: center;
     flex-direction: column;
-    font-family: "Russo-One",monospace;
-    font-size: 20px;
     display: flex;
     *{
         margin-left: 20px;
         margin-right: 20px;
     }
+}
+#history-overlay{
+    z-index: 103;
+    pointer-events: all;
+    cursor: none;
 }
 #title-section {
     width: 45vw;
@@ -751,149 +754,6 @@
     max-width:600px;
 }
 
-#history-overlay {
-    position: fixed;
-    inset: 0;
-    background: black;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    z-index: 103;
-    opacity: 0;
-    pointer-events: all;
-    cursor: none; 
-
-    #history-container {
-        position: relative;
-        width: 100%;
-        height: auto;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        padding: 40px;
-        box-sizing: border-box;
-
-        #history-frame {
-            max-width: 100%;
-            max-height: 100%;
-
-            object-fit: contain;
-            background: black;
-
-            image-rendering: pixelated;
-
-            transition: opacity 0.75s ease;
-        }
-    }
-    #history-dialog {
-        position: absolute;
-        bottom: 40px;
-        left: 50%;
-        transform: translateX(-50%);
-
-        width: 90%;
-        height: auto;
-
-        .dialog-box {
-            position: absolute;
-            bottom: 0px;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: opacity 0.75s ease;
-
-            display: inline-flex;
-            flex-direction: column;
-
-            width: auto;
-            max-width: 100%;
-
-            height: auto;
-            max-height: 15vh;
-            overflow-y: auto;
-
-            gap: 4px;
-            padding: 8px 12px;
-            * {
-                margin: 0;
-            }
-            border-radius: 12px;
-
-            background: linear-gradient(
-                135deg,
-                rgba(7, 170, 238, 0.08),
-                rgba(7, 170, 238, 0.18)
-            );
-
-            border: 2px solid rgba(7, 170, 238, 0.5);
-
-            white-space: pre-wrap;
-            overflow-wrap: break-word;
-            text-align: center;
-
-            .name {
-                font-family: "Russo-One";
-                font-weight: bold;
-                font-size: 20px;
-                opacity: 0.8;
-            }
-
-            .content {
-                font-size: 16px;
-                line-height: 1.5;
-                word-break: break-word;
-            }
-        }
-        #history-dialog-indicator {
-            position: absolute;
-            transform: translateX(-50%);
-            left: 50%;
-            top: 10px;
-            font-size: 22px;
-            opacity: 0.7;
-            rotate: 90deg;
-        }
-    }
-    #history-content{
-        position: absolute;
-    }
-    .intro-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        text-align: center;
-        font-family: "Russo-One", monospace;
-        .intro-location {
-            font-size: 18px;
-            opacity: 0.6;
-            letter-spacing: 2px;
-        }
-        .intro-name {
-            font-size: 120px;
-            font-weight: bold;
-
-            color: #47b984;
-
-            text-shadow:
-                0 0 10px #27b34a65,
-                0 0 25px #27b34a6b;
-        }
-        .intro-date {
-            font-size: 14px;
-            opacity: 0.5;
-        }
-        .intro-description {
-            margin-top: 10px;
-            font-size: 16px;
-            opacity: 0.8;
-            letter-spacing: 1px;
-        }
-    }
-}
 @keyframes glitchText {
     0% { transform: translate(0px, 0px); }
     20% { transform: translate(-2px, 1px); }

@@ -1,10 +1,10 @@
 import { type Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition } from "common/scripts/config/level_definition.ts";
-import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2 } from "common/engine/core.ts";
+import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType } from "common/engine/core.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { GameConfig } from "common/scripts/config/config.ts";
 import { type Player } from "../objects/player.ts";
-import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
+import { type Human } from "../objects/human.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
@@ -26,6 +26,7 @@ export class LevelPlayerScript{
     on_load(){}
     on_start(){}
     on_stop(){}
+    on_finish(winners:Human[]){}
 
     async character_selection(characters:LevelCharacter[]):Promise<number>{
         this.game.clients.send({
@@ -43,7 +44,7 @@ export class LevelPlayerScript{
     async load_json(path:string):Promise<any>{
         return parseJSONC(await this.level.fs.read_file(path))
     }
-    async show_cutscene(cutscene:HistoryCommand[]):Promise<void>{
+    async show_cutscene(cutscene:CutsceneCommand[]):Promise<void>{
         this.game.clients.send({
             type:OnlineMessageType.Cutscene,
             cutscene
@@ -54,14 +55,16 @@ export class LevelPlayerScript{
         this.game.clients.send(msg)
         await this.game.clients.wait("_end")
     }
-    make_level_intro():HistoryCommand[]{
+    make_level_intro(title_color="blue"):CutsceneCommand[]{
         return [{
-            type:HistoryCommandType.ShowInitialScreen,
-            name:this.level.def.meta.name,
-            location:this.level.def.meta.location,
-            date:this.level.def.meta.date,
-            description:this.level.def.meta.description,
-        }]
+            type:CutsceneCommandType.SetContentText,
+            content:[
+                {value:this.level.def.meta.name,style:"nn_title_"+title_color},
+                {value:this.level.def.meta.location,style:"nn_location"},
+                {value:this.level.def.meta.date,style:"nn_date"},
+                {value:this.level.def.meta.description,style:"nn_description"},
+            ],
+        },{type:CutsceneCommandType.Wait,time:3}]
     }
 }
 export class LevelPlayer {

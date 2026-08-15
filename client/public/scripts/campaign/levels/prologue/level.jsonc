@@ -1,8 +1,9 @@
 {
     "meta": {
         "name": "Prologue",
-        "location": "Soldier Training Camp",
+        "location": "República Unida de América del Sur - Soldier Training Camp",
         "description": "Vinii has just reached the age required to enlist in the army.",
+        "date":"6:00 - 15/10/1993",
         "size": "medium",
         "dificulty": "easy"
     },

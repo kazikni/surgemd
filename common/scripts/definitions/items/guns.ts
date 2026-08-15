@@ -214,8 +214,8 @@ export const bullets_factory={
     assault(power:number):BulletDef{
         return {
             damage:10*power,
-            range: 170*(1+(power-1) * 0.6),
-            speed: 35*(1+(power-1) * 0.5),
+            range: 170*(1+(power-1) * 0.5),
+            speed: 36*(1+(power-1) * 0.5),
 
             critical_mult: 1.25,
             obstacle_mult: 1,
@@ -242,7 +242,7 @@ export const bullets_factory={
             speed:25 * (1 + (power - 1) * 0.3),
 
             falloff:0.7,
-            critical_mult:1.2,
+            critical_mult:1.25,
             tracer:tracer
         }
     },
@@ -253,18 +253,18 @@ export const bullets_factory={
             range:31 * (1 + (power - 1) * 0.4),
 
             falloff:0.4,
-            critical_mult:1.2,
+            critical_mult:1.25,
             tracer:tracer
         }
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:3*power,
+            damage:2.8*power,
             speed:24*(1+(power-1)*0.4),
             range:31*(1+(power-1)*0.4),
 
-            falloff:0.4,
-            critical_mult:1.2,
+            falloff:0.3,
+            critical_mult:1.25,
             tracer
         }
     },
@@ -594,7 +594,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:7,
+                    damage:8,
                     range:70,
                     falloff:0.5,
                     speed:20,
@@ -642,7 +642,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:17,
+                    damage:18,
                     range:130,
                     falloff:0.8,
                     speed:43,
@@ -1248,7 +1248,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:bullets_factory.birdshot(1),
-                count:15
+                count:16
             },
             reload:{
                 delay:0.8,

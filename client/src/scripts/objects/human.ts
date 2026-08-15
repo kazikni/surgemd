@@ -563,7 +563,6 @@ export class Human extends MovingBody{
             this.animation.sound_animation=undefined
         }
         this.sprites.muzzle_flash.visible=false
-        this.animation.recoil_state=-1
 
         this.animation.cycle_sound_time=undefined
         this.consumible_particles.enabled=false
@@ -656,13 +655,13 @@ export class Human extends MovingBody{
                         break
                 }
                 if(this.animation.recoil_state===0){
-                    this.animation.recoil_time+=dt*10
+                    this.animation.recoil_time+=dt*9
                     if(this.animation.recoil_time>=1){
                         this.animation.recoil_state=1
                         this.animation.recoil_time=1
                     }
                 }else{ 
-                    this.animation.recoil_time-=dt*10
+                    this.animation.recoil_time-=dt*9
                     if(this.animation.recoil_time<=0){
                         this.animation.recoil_state=-1
                         this.animation.recoil_time=0
@@ -903,6 +902,7 @@ export class Human extends MovingBody{
                     break
                 }
                 case HumanAnimationType.Consuming:{
+                    this.animation.recoil_state=-1
                     const def=this.game.definitions.consumibles.getFromNumber(a.item)
                     const sound=this.game.resources.get_sound((def.assets?.using_sound)??`using_${def.idString}`)
                     const consuming=def.consuming as (ConsumingAction&{type:0})

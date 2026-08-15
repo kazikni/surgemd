@@ -1,4 +1,4 @@
-import { HistoryCommand } from "../config/history.ts";
+import { CutsceneCommand } from "../../engine/core.ts";
 
 export enum OnlineMessageType{
     Cutscene,
@@ -13,7 +13,7 @@ export type OnlineMessageCharacter={
 }
 export type OnlineMessage={
     type:OnlineMessageType.Cutscene
-    cutscene:HistoryCommand[]
+    cutscene:CutsceneCommand[]
 }|{
     type:OnlineMessageType.CharacterSelector
     characters:OnlineMessageCharacter[]

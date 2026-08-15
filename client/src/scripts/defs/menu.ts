@@ -1104,10 +1104,15 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 {name:"Ak-47",value:"ak47"},
                             ],
                         },
-                        isMobile?undefined:{
+                        {
                             type:"toggle",
                             tname:"settings.ui.interactive",
                             var:"sv_ui_interactive",
+                        },
+                        {
+                            type:"toggle",
+                            tname:"settings.ui.show_intro",
+                            var:"sv_ui_show_intro",
                         }
                     ],translation),
                 },
@@ -1454,6 +1459,7 @@ ___
 * @namerio
 ___
 ## Sound Designers
+* Kazikni
 * Surviv.io
 * Suroi.io
 * @teardwop

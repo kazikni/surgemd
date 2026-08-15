@@ -224,7 +224,7 @@ return (class extends LevelPlayerScript{
     }
     async on_before(){
         const cutscene=[]
-        if(start_with_intro)cutscene.push(...this.cutscene)
+        //if(start_with_intro)cutscene.push(...this.cutscene)
         cutscene.push(...this.make_level_intro())
         await this.show_cutscene(cutscene)
 

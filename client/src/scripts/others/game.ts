@@ -800,7 +800,7 @@ export class Game extends ClientGame<GameObject>{
         client.on("message",async(msg:OnlineMessage)=>{
             switch(msg.type){
                 case OnlineMessageType.Cutscene:{
-                    await this.menu.show_history(msg.cutscene,this.resources,this.ambient.music,this.ambient.ambience,this.input_manager)
+                    await this.menu.cutscene.play(msg.cutscene)
                     client.emit("_end")
                     break
                 }

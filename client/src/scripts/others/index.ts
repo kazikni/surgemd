@@ -10,7 +10,7 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
-import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
+import { BasicSocket, CutsceneCommandType, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -77,7 +77,7 @@ import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, rand
                 }
             }
             await this.game.bind(fs)
-            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.cam2d,this.game.definitions,this.game.language,mods)
+            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.cam2d,this.game.definitions,this.game.language,mods,this.game.ambient.music,this.game.ambient.ambience)
             await this.game.load_resources([],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
             this.game.mainloop(true)

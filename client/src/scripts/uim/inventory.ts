@@ -6,7 +6,6 @@ import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { type Human } from "../objects/human.ts";
-import { FrameDef } from "common/engine/core.ts";
 
 export class InventoryModule extends UIModule<Game> {
     items_container!: HTMLDivElement

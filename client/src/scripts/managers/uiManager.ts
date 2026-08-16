@@ -165,8 +165,8 @@ export class UiManager{
         let color=ColorM.hex(secondary)
         color=ColorM.mult_rgba(color,1,1,1,0.4)
         this.content.game_gui.style.setProperty("--ui-panel-background",ColorM.rgba2hex(color))
-        this.content.game_gui.style.setProperty("--ui-panel-border",`2px solid ${primary}`)
-        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.get_variable("sv_ui_simple_mode")?"":`0 0 5px ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-border",`0.2vh solid ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.get_variable("sv_ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
 
         this.game.ui_manager.signal("update_theme",{})
     }

@@ -194,6 +194,10 @@ export class InventoryModule extends UIModule<Game> {
         el.className = "weapon-slot"
         el.id = "weapon-slot-" + i
 
+        const img = document.createElement("img")
+        img.className = "weapon-slot-image"
+        el.appendChild(img)
+
         const number = document.createElement("span")
         number.className = "weapon-slot-number"
         number.innerText = (i + 1).toString()
@@ -202,10 +206,6 @@ export class InventoryModule extends UIModule<Game> {
         const name = document.createElement("span")
         name.className = "weapon-slot-name"
         el.appendChild(name)
-
-        const img = document.createElement("img")
-        img.className = "weapon-slot-image"
-        el.appendChild(img)
         
         el.dataset.item_kind = "1"
         el.dataset.item_value = i.toString()

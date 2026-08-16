@@ -5,88 +5,11 @@
     color:var(--ui-theme-special)
 }
 #ui-items{
-    position: absolute;
-    bottom: 130px;
-    left: 50%;
-    transform: translateX(-50%);
     width: max-content;
 
     display: flex;
     flex-direction: row;
-    gap: 10px;
-
-    @include main.large_screen {
-        bottom: 102px;
-        gap: 7px;
-        .inventory-item-slot{
-            width: 42px;
-            height: 42px;
-            .slot-count{
-                font-size: 10px;
-            }
-            .slot-number{
-                font-size: 8px;
-            }
-            .slot-image {
-                width: 20px;
-                height: 20px;
-            }
-        }
-    }
-    @include main.medium_screen {
-        bottom: 80px;
-        gap: 6px;
-        .inventory-item-slot{
-            width: 34px;
-            height: 34px;
-            .slot-count{
-                font-size: 10px;
-            }
-            .slot-number{
-                font-size: 7px;
-            }
-            .slot-image {
-                width: 20px;
-                height: 20px;
-            }
-        }
-    }
-    @include main.small_screen {
-        bottom: 64px;
-        gap: 5px;
-        .inventory-item-slot{
-            width: 23px;
-            height: 23px;
-            .slot-count{
-                font-size: 6px;
-            }
-            .slot-number{
-                font-size: 4px;
-            }
-            .slot-image {
-                width: 20px;
-                height: 20px;
-            }
-        }
-    }
-    @include main.tiny_screen {
-        bottom: 44px;
-        gap: 3px;
-        .inventory-item-slot{
-            width: 20px;
-            height: 20px;
-            .slot-count{
-                font-size: 6px;
-            }
-            .slot-number{
-                font-size: 4px;
-            }
-            .slot-image {
-                width: 15px;
-                height: 15px;
-            }
-        }
-    }
+    gap: 0.4vw;
 }
 .inventory-item-slot {
     position: relative;
@@ -96,9 +19,9 @@
 
     font-family: "Russo-One", serif;
 
-    width: 70px;
-    height: 70px;
-    border-radius: 4px;
+    width: 3.5vw;
+    height: 3.5vw;
+    border-radius: var(--ui-panel-border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -106,173 +29,75 @@
     pointer-events: all;
 
     .slot-image {
-        width: 50px;
-        height: 50px;
-        border-radius: 4px;
+        width: 60%;
+        height: 60%;
         object-fit: contain;
         pointer-events: none;
     }
     .slot-count {
         position: absolute;
-        bottom: 2px;
-        right: 4px;
-        font-size: 14px;
-        font-weight: bold;
+        bottom: 2%;
+        right: 2%;
+        font-size: 0.8vw;
         text-shadow: 0 0 2px #000;
     }
     .slot-number {
         position: absolute;
-        top: 2px;
-        left: 4px;
-        font-size: 12px;
+        top: 3%;
+        left: 4%;
+        font-size: 0.7vw;
         color: var(--ui-theme-primary);
-    }
-    @include main.medium_screen {
-        width: 55px;
-        height: 55px;
-        .slot-count{
-            font-size: 9px;
-        }
-        .slot-number{
-            font-size: 8px;
-        }
-        .slot-image {
-            width: 13px;
-            height: 13px;
-        }
-    }
-    @include main.small_screen {
-        width: 30px;
-        height: 30px;
-        .slot-count{
-            font-size: 6px;
-        }
-        .slot-number{
-            font-size: 4px;
-        }
-        .slot-image {
-            width: 13px;
-            height: 13px;
-        }
     }
 }
 #ui-weapons{
-    position: absolute;
-    bottom: 5px;
-    left: 50%;
-    transform: translateX(-50%);
-
     display: flex;
     flex-direction: row;
-    gap: 10px;
-    width: 40%;
+    gap: 0.4vw;
+    width: 40vw;
+    font-size: 0.9vw;
 
     .weapon-slot{
         pointer-events: all;
         display: block;
         position: relative;
-        width: 300px;
-        height: 110px;
-        border-radius: 4px;
-        font-size: 20px;
+        border-radius: var(--ui-panel-border-radius);
         font-family: "Russo-One", serif;
+        width: 33%;
+        height: 10vh;
 
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
         .weapon-slot-number {
-            position: relative;
-            top: 5px;
-            left: 93%;
+            position: absolute;
+            top: 2%;
+            left: 2%;
             color: var(--ui-theme-primary);
         }
         .weapon-slot-name {
             position: absolute;
-            bottom: 5px;
-            right: 10px;
+            bottom: 2%;
+            right: 2%;
             color: var(--ui-theme-tertiary);
         }
         .weapon-slot-image {
             pointer-events: none;
             position: absolute;
             top: 50%;
-            left: 5px;
+            left: 2%;
             object-fit: contain;
 
             width: auto;
             height: auto;
 
-            min-width: 150px;
-            max-width: 250px;
-            max-height: 75px;
+            min-width: 90%;
+            max-width: 100%;
+            min-height: 10%;
+            max-height: 90%;
 
-            transform: translateY(-50%) rotate(-10deg);
+            transform: translateY(-50%) rotate(-7deg);
         }
         &.weapon-slot-selected{
             border:var(--ui-panel-border);
-        }
-    }
-    @include main.large_screen {
-        gap: 7px;
-        width: 35%;
-        .weapon-slot{
-            height: 85px;
-            font-size: 15px;
-            .weapon-slot-image{
-                min-width: 40px;
-                max-width: 90px;
-                max-height: 60px;
-            }
-            .weapon-slot-number{
-                left:86%;
-            }
-            .weapon-slot-name{
-                bottom: 3px;
-                right: 3px;
-            }
-        }
-    }
-    @include main.medium_screen {
-        gap: 5px;
-        .weapon-slot{
-            height: 65px;
-            font-size: 10px;
-            .weapon-slot-image{
-                min-width: 40px;
-                max-width: 90px;
-                max-height: 60px;
-            }
-            .weapon-slot-number{
-                left:86%;
-            }
-            .weapon-slot-name{
-                bottom: 3px;
-                right: 3px;
-            }
-        }
-    }
-    @include main.small_screen {
-        gap: 5px;
-        .weapon-slot{
-            height: 50px;
-            font-size: 7px;
-            .weapon-slot-image{
-                min-width: 75px;
-                max-width: 80px;
-                max-height: 35px;
-            }
-            .weapon-slot-number{
-                left:86%;
-            }
-            .weapon-slot-name{
-                bottom: 3px;
-                right: 3px;
-            }
-        }
-    }
-    @include main.tiny_screen {
-        .weapon-slot{
-            height: 30px;
-            font-size: 7px;
         }
     }
 }
@@ -280,63 +105,28 @@
     position: absolute;
     display: flex;
     flex-direction: row;
-    gap:5px;
-    width: fit-content;
-    height: fit-content;
-    top:10px;
+    gap:0.3vw;
+    top:0.5vh;
     left:50%;
     transform: translateX(-50%);
     .scope-slot{
         display: flex;
-        border-radius: 4px;
+        border-radius: var(--ui-panel-border-radius);
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
         width: fit-content;
         height: fit-content;
         .icon{
-            padding: 5px;
-            width: 40px;
-            height: 40px;
+            padding: 0.5vh;
+            width: 2vw;
+            height: 2vw;
         }
     }
     .scope-slot-selected{
         border:var(--ui-panel-border);
         .icon{
-            padding: 7px;
-            width: 50px;
-            height: 50px;
-        }
-    }
-    @include main.medium_screen{
-        .scope-slot{
-            .icon{
-                padding: 7px;
-                width: 20px;
-                height: 20px;
-            }
-        }
-        .scope-slot-selected{
-            .icon{
-                padding: 8px;
-                width: 30px;
-                height: 30px;
-            }
-        }
-    }
-    @include main.small_screen{
-        .scope-slot{
-            .icon{
-                padding: 5px;
-                width: 15px;
-                height: 15px;
-            }
-        }
-        .scope-slot-selected{
-            .icon{
-                padding: 7px;
-                width: 22px;
-                height: 22px;
-            }
+            width: 2.5vw;
+            height: 2.5vw;
         }
     }
 }
@@ -344,10 +134,10 @@
     display: flex;
     flex-direction: column;
     flex-wrap:wrap-reverse;
-    max-height: 200px;
-    gap: 5px;
+    max-height: 20vh;
+    gap: 0.75vh;
     position: absolute;
-    right: 10px;
+    right: 0.5vh;
     top: 65%;
     transform: translate(0%, -50%);
     justify-items: end;
@@ -356,109 +146,45 @@
         color: var(--ui-theme-tertiary);
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
+        border-radius: var(--ui-panel-border-radius);
 
         display: flex;
         flex-direction: row-reverse;
         align-items: center;
         justify-content: space-between;
 
-        border-radius: 4px;
-        width: 70px;
-        height: 34px;
-        gap: 5px;
+        width: 3.5vw;
+        height: 3vh;
+        gap: 2vh;
 
-        padding: 0 6px;
+        padding: 0 1vh;
 
         pointer-events: auto;
 
         .count {
             font-family: "Russo-One", sans-serif;
-            font-size: 15px;
+            font-size: 1.4vh;
 
-            flex: 1;
+            flex: 0;
             text-align: left;
         }
-
         .icon {
-            width: 28px;
-            height: 28px;
+            flex:0;
+            width: 70%;
+            height: 70%;
 
-            flex-shrink: 0;
             object-fit: contain;
         }
     }
     .aitem-slot:hover{
         border:var(--ui-panel-border);
     }
-    @include main.large_screen{
-        .aitem-slot{
-            width: 65px;
-            height: 28px;
-            .count{
-                font-size: 12px;
-            }
-            .icon{
-                width: 22px;
-                height: 22px;
-            }
-        }
-        max-height: 160px;
-        gap: 3px;
-        right: 7px;
-    }
-    @include main.medium_screen{
-        .aitem-slot{
-            width: 50px;
-            height: 22px;
-            .count{
-                font-size: 10px;
-            }
-            .icon{
-                width: 19px;
-                height: 19px;
-            }
-        }
-        max-height: 130px;
-        gap: 3px;
-        right: 7px;
-    }
-    @include main.small_screen{
-        .aitem-slot{
-            width: 30px;
-            height: 14px;
-            .count{
-                font-size: 7px;
-            }
-            .icon{
-                width: 12px;
-                height: 12px;
-            }
-        }
-        max-height: 80px;
-        gap: 2px;
-        right: 5px;
-    }
-    @include main.tiny_screen{
-        .aitem-slot{
-            width: 22px;
-            height: 10px;
-            .count{
-                font-size: 5px;
-            }
-            .icon{
-                width: 8px;
-                height: 8px;
-            }
-        }
-        max-height: 60px;
-        gap: 1px;
-        right: 3px;
-    }
 }
 #ui-equipment{
     position: absolute;
-    right: 10px;
-    bottom: 10px;
+    right: 0.5vh;
+    bottom: 0.5vh;
+    font-size: 0.75vw;
     color: var(--ui-theme-tertiary);
     .equipment-fixed {
         display: flex;
@@ -472,11 +198,11 @@
     .equipment-slot {
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
+        border-radius: var(--ui-panel-border-radius);
 
-        width: 70px;
-        height: 70px;
+        width: 4vw;
+        height: 4vw;
         position: relative;
-        border-radius: 4px;
         img {
             position: absolute;
             left: 50%;
@@ -487,9 +213,9 @@
             object-fit: contain;
         }
         span {
-            text-align: center;
             position: absolute;
-            top: -30px;
+            top: -5%;
+            transform: translateY(-100%);
         }
     }
     .equipment-slot.empty {
@@ -497,50 +223,6 @@
     }
     .slot-label {
         position: absolute;
-        font-size: 10px;
-        bottom: 2px;
-        left: 2px;
-    }
-    @include main.large_screen {
-        right: 7.5px;
-        bottom: 7.5px;
-        font-size: 10px;
-        .equipment-fixed {
-            gap: 7px;
-        }
-        .equipment-slot {
-            width: 55px;
-            height: 55px;
-        }
-    }
-    @include main.medium_screen {
-        right: 6px;
-        bottom: 6px;
-        font-size: 10px;
-        .equipment-fixed {
-            gap: 7px;
-        }
-        .equipment-slot {
-            width: 45px;
-            height: 45px;
-        }
-    }
-    @include main.small_screen {
-        right: 5px;
-        bottom: 5px;
-        .equipment-fixed {
-            gap: 5px;
-        }
-        .equipment-slot {
-            width: 35px;
-            height: 35px;
-        }
-    }
-    @include main.tiny_screen {
-        .equipment-slot {
-            width: 20px;
-            height: 20px;
-        }
     }
 }
 #item-tooltip{
@@ -550,15 +232,11 @@
     pointer-events:none;
     position:fixed;
 
-    min-width:300px;
-    max-width:450px;
+    width:20vw;
 
-    max-height:300px;
-    overflow-y:auto;
-
-    padding:10px;
-    border-radius:6px;
-
+    padding:1vh;
+    
+    border-radius: var(--ui-panel-border-radius);
     color: var(--ui-theme-tertiary);
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
@@ -568,11 +246,11 @@
 
     #item-tooltip-title{
         font-weight:bold;
-        margin-bottom:6px;
-        font-size:20px;
+        margin-bottom:2%;
+        font-size:2vh;
     }
     #item-tooltip-description{
-        font-size:15px;
+        font-size:1.5vh;
 
         white-space:pre-wrap;
         overflow-wrap:break-word;

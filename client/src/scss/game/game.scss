@@ -37,21 +37,10 @@
     display: block;
     align-items: center;
     transform: translateY(-100%),translateX(-100%);
-    @include main.large_screen {
-        font-size: 16px;
-    }
-    @include main.medium_screen {
-        font-size: 13px;
-    }
-    @include main.small_screen {
-        font-size: 10px;
-    }
-    @include main.tiny_screen {
-        font-size: 7px;
-    }
+    border-radius: var(--ui-panel-border-radius);
 }
 #health-bar-container {
-    height: 50px;
+    height: 5vh;
 
     #health-bar,
     #health-bar-basic-heal,
@@ -61,7 +50,7 @@
         left: 0;
         height: 100%;
         width: 100%;
-        border-radius: 4px;
+        border-radius: var(--ui-panel-border-radius);
     }
     #health-bar-basic-heal{
         width: 75%;
@@ -84,12 +73,10 @@
         background: linear-gradient(90deg, #fff,#dfdfdf);
         transition: width ease-in-out 0.2s;
     }
-
     #health-bar-animation {
         background: #ff000066;
         transition: width ease-out 2s;
     }
-
     #health-bar-amount {
         position: absolute;
         font-style: italic;
@@ -97,29 +84,17 @@
         left: 103%;
         transform: translateY(-50%);
     }
-    @include main.large_screen{
-        height: 40px;
-    }
-    @include main.medium_screen{
-        height: 30px;
-    }
-    @include main.small_screen{
-        height: 20px;
-    }
-    @include main.tiny_screen{
-        height: 10px;
-    }
 }
 #boost-bar-container {
-    height: 20px;
+    height: 2vh;
     #boost-bar {
         position: absolute;
         top: 0;
         left: 0;
-        border-radius: 4px;
         height: 100%;
         width: 0%;
         transition: width ease-in-out 0.2s;
+        border-radius: var(--ui-panel-border-radius);
     }
     #boost-bar-amount {
         position: absolute;
@@ -127,152 +102,55 @@
         top:50%;
         left: 103%;
         transform: translateY(-50%);
-    }
-    @include main.large_screen{
-        height: 16px;
-    }
-    @include main.medium_screen{
-        height: 12px;
-    }
-    @include main.small_screen{
-        height: 9px;
-    }
-    @include main.tiny_screen{
-        height: 5px;
+        border-radius: var(--ui-panel-border-radius);
     }
 }
 #bottom-left-container{
     pointer-events: none;
     position: absolute;
-    left: 10px;
-    bottom: 10px;
+    left: 0.75vh;
+    bottom: 0.75vh;
 
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1vh;
 
-    width: 410px;
+    width: 21vw;
+
     color: var(--ui-theme-tertiary);
+    font-size: 1vw;
 
     .ui-panel{
         position: relative;
         background: var(--ui-panel-background);
         box-shadow: var(--ui-panel-box-shadow);
-        font-size: 20px;
         font-family: "Russo-One", serif;
-        border-radius: 4px;
+        border-radius: var(--ui-panel-border-radius);
     }
 
     #action-info{
-        height: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 4px;
         span{
             position: static;
             transform: none;
         }
     }
     #hand-info{
-        height: 40px;
-
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-radius: 4px;
+        padding: 1vh;
         span{
-            position: static;
-            transform: none;
+            flex: 0;
         }
         img{
-            position: static;
-            width: 28px;
-            margin-left: 5px;
+            width: 3.5vh;
+            height: 3.5vh;
             height: auto;
-            pointer-events: all;
-        }
-    }
-    @include main.large_screen {
-        width: 330px;
-        gap: 7px;
-        left: 7px;
-        bottom: 7px;
-        .ui-panel{
-            font-size: 15px;
-        }
-        #hand-info{
-            span{
-                font-size: 16px;
-            }
-            img{
-                width: 22px;
-            }
-        }
-        #action-info{
-            span{
-                font-size: 15px;
-            }
-        }
-    }
-    @include main.medium_screen {
-        width: 240px;
-        gap: 5px;
-        left: 5px;
-        bottom: 5px;
-        .ui-panel{
-            font-size: 10px;
-        }
-        #hand-info{
-            span{
-                font-size: 10px;
-            }
-            img{
-                width: 14px;
-            }
-        }
-        #action-info{
-            span{
-                font-size: 11px;
-            }
-        }
-    }
-    @include main.small_screen {
-        width: 190px;
-        gap: 5.5px;
-        left: 5.5px;
-        bottom: 5.5px;
-        #hand-info{
-            span{
-                font-size: 10px;
-            }
-            img{
-                width: 14px;
-            }
-        }
-        #action-info{
-            span{
-                font-size: 9px;
-            }
-        }
-    }
-    @include main.tiny_screen {
-        width: 110px;
-        gap: 3px;
-        left: 3px;
-        bottom: 3px;
-        #hand-info{
-            span{
-                font-size: 8px;
-            }
-            img{
-                width: 11px;
-            }
-        }
-        #action-info{
-            span{
-                font-size: 7px;
-            }
+            pointer-events: auto;
+            flex: 0;
         }
     }
 }
@@ -286,7 +164,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 0.5vw;
+
+    font-family: "Russo-One";
+    font-size: 0.9vw;
 
     pointer-events: none;
 }
@@ -297,12 +178,11 @@
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
 
-    font-family: "Russo-One";
     width: fit-content;
     height: fit-content;
 
-    padding: 12px 16px;
-    border-radius: 4px;
+    padding: 0.5vw 0.75vh;
+    border-radius: var(--ui-panel-border-radius);
 
     text-align: center;
 }
@@ -315,43 +195,40 @@
     pointer-events: none;
     display: flex;
     position: absolute;
-    left: 5px;
+    left: 0.5vh;
     top: 50%;
     flex-direction: column;
     transform: translateY(-50%);
     font-family: "Russo-One";
-    font-size: 20px;
-    @include main.small_screen{
-        font-size: 10px;
-    }
+    font-size: 1.5vh;
 }
 #debug-show{
     position: absolute;
-    left: 5px;
+    left: 0.5vh;
     top: 40%;
+    font-size: 1.5vh;
+}
+#bottom-center-container{
+    position: absolute;
+    bottom:0.5vh;
+    left:50%;
+
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 0.75vh;
 }
 #top-right-container{
     position: absolute;
-    top:10px;
-    right:10px;
+    top:0.75vh;
+    right:0.75vh;
 
     display: flex;
     flex-direction: row;
     gap: 1vh;
     pointer-events: none;
-
-    @include main.large_screen {
-        right: 7px;
-        top: 7px;
-    }
-    @include main.medium_screen {
-        right: 7px;
-        top: 7px;
-    }
-    @include main.small_screen {
-        right: 5px;
-        top: 5px;
-    }
 }
 #top-info-container{
     width: 17vw;
@@ -370,8 +247,8 @@
     .feed-message{
         background: var(--ui-panel-background);
         color: var(--ui-theme-tertiary);
-        border-radius: 4px;
-        padding: 3px;
+        border-radius: var(--ui-panel-border-radius);
+        padding: 1vh;
         img{align-self: center}
     }
     .feed-message-good{
@@ -385,35 +262,29 @@
         margin-bottom: -3px;
         margin-left: 3px;
     }
-    @include main.medium_screen {
-        gap: 3px;
-    }
-    @include main.small_screen {
-        gap: 1px;
-    }
 }
 #additional-info{
     @extend .span-text-base;
 
     display:flex;
     flex-direction:row;
-    gap: 2vh;
+    gap: 1vw;
 
-    padding:0.5vh;
+    padding:0.5vw;
 
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
 
-    font-size: 2vh;
+    font-size: 1.1vw;
 
     >div{
         display:flex;
         align-items:center;
-        gap:1vh;
+        gap:0.5vw;
         flex: 0;
     }
     img{
-        height: 3vh;
+        height: 1.2vw;
         flex-shrink:0;
     }
     #deadzone-info-state{
@@ -424,7 +295,7 @@
     height: 17vw;
 
     overflow:hidden;
-    border-radius:2px;
+    border-radius: var(--ui-panel-border-radius);
     pointer-events:all;
 
     opacity: var(--ui-minimap-opacity);
@@ -440,8 +311,7 @@
         height: 45vw;
         transform: translate(-50%,-50%);
 
-        border-radius:0;
-
+        border-radius: var(--ui-panel-border-radius);
         opacity: var(--ui-minimap-full-opacity);
         box-shadow: var(--ui-panel-box-shadow-big);
         border:var(--ui-panel-border);
@@ -453,8 +323,8 @@
     flex-direction: row;
     align-items:center;
     font-family: "Russo-One";
-    font-size: 2vh;
-    padding: 0.5vh;
+    font-size: 0.75vw;
+    padding: 0.25vw 0.5vw;
 
     color: var(--ui-theme-tertiary);
     background: var(--ui-panel-background);
@@ -462,8 +332,8 @@
     #leader-container-icon{
         background-image: url("/assets/img/menu/icons/aim.svg");
         background-size: cover;
-        width: 3vh;
-        height: 3vh;
+        width: 1.5vw;
+        height: 1.5vw;
     }
     #leader-text{
         flex:1;
@@ -471,8 +341,8 @@
 }
 #groups-info{
     position:absolute;
-    left:10px;
-    top:10px;
+    left:0.5vh;
+    top:0.5vh;
 
     display:flex;
     flex-direction:column;
@@ -521,7 +391,7 @@
         position:relative;
         width:100%;
         overflow:hidden;
-        border-radius:3px;
+        border-radius:var(--ui-panel-border-radius);
     }
     .health-bar-bg,
     .boost-bar-bg{

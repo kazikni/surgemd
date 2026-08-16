@@ -547,7 +547,7 @@ export class Human extends Humanoid{
             v2m.rotate_RadAngle(case_position,this.physical_data.rotation)
             v2m.add(case_position,case_position,this.position)
             const p=new ABParticle2D({
-                direction:this.physical_data.rotation+(3.141592/2)+random.float(0,0.6),
+                direction:this.physical_data.rotation+(3.141592/2)+random.float(0,1),
                 life_time:1,
                 position:case_position,
                 frame:{

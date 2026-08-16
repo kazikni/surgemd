@@ -288,3 +288,4 @@ export const PerspetiveSizes={
     xl:1.07,
 
 }satisfies Record<string,number>
+export type ScopeChange={zoom?:number,zoom_mult?:number,def?:string|number}

@@ -7,7 +7,7 @@ import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
-import { DamageSplash, PrivateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { DamageSplash, PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { MapPacket } from "common/scripts/packets/map_packet.ts";
 import { Layers, PlayerStatus, zIndexes } from "common/scripts/others/constants.ts";
@@ -75,8 +75,6 @@ export class Game extends ClientGame<GameObject>{
 
     terrain:TerrainM=new TerrainM(this)
 
-    force_default_scope:boolean=false
-    default_scope?:ScopeDef
     scope_zoom:number=0.5
     zoom_speed:number=4
 
@@ -438,14 +436,11 @@ export class Game extends ClientGame<GameObject>{
             this.ui.current_interaction.on_interact(this.active_entity)
         }
     }
-    set_scope(scope:ScopeDef,force_default:boolean=false,force:boolean=false){
-        if(this.inventory.scope&&this.inventory.scope===scope&&this.force_default_scope==force_default&&!force){
+    set_scope(scope:ScopeDef){
+        if(this.inventory.scope&&this.inventory.scope===scope){
             return
         }
-        if(!this.default_scope)this.default_scope=this.definitions.scopes.getFromNumber(0)
-        this.force_default_scope=force_default
         this.inventory.scope=scope
-        this.scope_zoom=force_default?this.default_scope.scope_view:scope.scope_view
         this.ui_manager.signal("current_scope_dirty",scope)
     }
     async load_resources(textures:string[]=[],assets:Record<string,string>,languages_path:string="",show_loading_screen:boolean=true){
@@ -519,7 +514,7 @@ export class Game extends ClientGame<GameObject>{
         this.join()
         this.watcher?.play?.()
 
-        this.scope_zoom=(this.default_scope??this.definitions.scopes.getFromNumber(0)).scope_view
+        this.scope_zoom=1
         this.hitboxes_gfx.ctx.clear()
     }
     async show_final_screen(game_over:GameOverStatus){
@@ -555,7 +550,7 @@ export class Game extends ClientGame<GameObject>{
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
-        this.set_scope(this.default_scope||this.definitions.scopes.getFromNumber(0),true)
+        this.set_scope(this.definitions.scopes.getFromNumber(0))
         this.cam2d.zoom=6
         this.zoom_speed=4
     }
@@ -600,7 +595,6 @@ export class Game extends ClientGame<GameObject>{
             if(this.input_manager.keyPress(Key.E)){
                 v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
             }
-            this.sounds.set_listener_position(this.cam2d.position)
         }else{
             if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
                 this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
@@ -608,7 +602,6 @@ export class Game extends ClientGame<GameObject>{
             if(this.active_entity){
                 this.cam2d.position=this.active_entity.position
                 //this.cam2d.position=v2.add_rotate_RadAngle(this.active_entity.position,v2(0.05/this.cam2d.zoom,0),this.active_entity.physical_data.rotation)
-                this.sounds.set_listener_position(this.active_entity.position)
                 this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
                 this.cam2d.layer=this.active_entity.layer
                 /*this.ui_gfx.ctx.clear()
@@ -619,6 +612,7 @@ export class Game extends ClientGame<GameObject>{
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
+        this.sounds.set_listener_position(this.cam2d.position)
         if(this.save.get_variable("sv_graphics_perspective")){
             for(const k in this.parallax){
                 if(!this.parallax[k].sprite.matrix)this.parallax[k].sprite.matrix=matrix4.identity()
@@ -685,6 +679,10 @@ export class Game extends ClientGame<GameObject>{
         }
         this.ui.proccess_general_update(up)
     }
+    process_self_state(state:SelfStateUpdate){
+        this.scope_zoom=state.scope_zoom
+        this.ui.update_self_state(state)
+    }
     process_private(priv:PrivateUpdate){
         if(priv.active_entity.dirty){
             if(priv.active_entity.id){
@@ -699,6 +697,7 @@ export class Game extends ClientGame<GameObject>{
                 this.add_damage_splash(s)
             }
         }
+        if(priv.self_state)this.process_self_state(priv.self_state)
         this.ui.proccess_private(priv)
         this.device.update_private(priv)
         this.ui_manager.signal("private",priv)

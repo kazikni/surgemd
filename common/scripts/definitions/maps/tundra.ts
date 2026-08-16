@@ -41,6 +41,7 @@ export function create_hunt_house(id:string,settings:{
                     }
                 },
                 hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+                scope_change:{}
             }
         ],
         floor_image:[

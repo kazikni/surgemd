@@ -632,12 +632,10 @@ export class UiManager{
     }
     proccess_private(priv:PrivateUpdate){
         this.game.ui.map_humans=priv.map_humans
-        if(priv.self_state){
-            this.update_self_state(priv.self_state)
-            this.game.device.update_self_state(priv.self_state)
-        }
     }
     update_self_state(state:SelfStateUpdate){
+        this.game.device.update_self_state(state)
+
         if (state.dirty.inventory.aitems) {
             this.game.inventory.aitems = {}
             for (const a of Object.keys(state.inventory.aitems)) {
@@ -648,7 +646,7 @@ export class UiManager{
         if(state.dirty.inventory.iitems) {
             this.game.inventory.iitems = state.inventory.iitems
         }
-        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope),state.force_default_scope)
+        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope))
         if(state.dirty.inventory.weapons){
             for(const idx in state.inventory.weapons){
                 this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])

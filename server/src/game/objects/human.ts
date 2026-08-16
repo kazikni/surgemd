@@ -1,7 +1,7 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanoidVisualData, HumanVisualData } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
-import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset } from "common/scripts/definitions/utils.ts"
+import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset, ScopeChange } from "common/scripts/definitions/utils.ts"
 import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
@@ -110,17 +110,11 @@ export class Human extends Humanoid{
         vest_health?:number
         scope:ScopeDef
         default_scope:ScopeDef
-        force_default_scope:boolean
 
         dirty:boolean
         dirty_part:boolean
     }
-    get force_default_scope():boolean{
-        return this.equipment_data.force_default_scope||this.downed
-    }
-    get scope_zoom():number{
-        return 11/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
-    }
+    scope_zoom:number=1
     emote_time:number=0
     declare visual:HumanVisualData&{
         dirty:boolean
@@ -287,6 +281,18 @@ export class Human extends Humanoid{
         this.allow_checkpoint=false
     }
 
+    scope_change(change:ScopeChange={}){
+        let def:ScopeDef|undefined
+        if(change.def){
+            def=(typeof change.def==="string"?this.game.definitions.scopes.getFromStringSafe(change.def):this.game.definitions.scopes.getFromNumberSafe(change.def))
+        }else{
+            def=this.equipment_data.default_scope
+        }
+
+        if(def)this.scope_zoom=def.scope_view
+        if(change.zoom)this.scope_zoom=change.zoom
+        if(change.zoom_mult)this.scope_zoom*=change.zoom_mult
+    }
     apply_score(type:number,amount:number,multiplier:number=1){
         this.status.score+=amount*multiplier
         if(this.status.score<0)this.status.score=0
@@ -332,7 +338,6 @@ export class Human extends Humanoid{
             dirty_part:true,
             scope:default_scope,
             default_scope,
-            force_default_scope:false
         }
         this.inventory.initialize(this.game.definitions,{
             0:MeleeItem as (new(item:GameItem)=>LItem),
@@ -643,11 +648,9 @@ export class Human extends Humanoid{
                 break
             }
             case GameObjectType.Building:{
-                if(!this.equipment_data.force_default_scope){
-                    for(const c of (obj as Building).ceilings){
-                        if(c.can_below(this.hitbox)){
-                            this.equipment_data.force_default_scope=true
-                        }
+                for(const c of (obj as Building).ceilings){
+                    if(c.scope_change&&c.can_below(this.hitbox)){
+                        this.scope_change(c.scope_change)
                     }
                 }
                 if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
@@ -668,8 +671,8 @@ export class Human extends Humanoid{
                 break
             }
             case GameObjectType.SyncedParticle:{
-                if((obj as SyncedParticle).def.force_default_scope&&this.hitbox.colliding_with(obj.hitbox)){
-                    this.equipment_data.force_default_scope=true
+                if((obj as SyncedParticle).def.scope_change&&this.hitbox.colliding_with(obj.hitbox)){
+                    this.scope_change((obj as SyncedParticle).def.scope_change)
                 }
                 break
             }
@@ -887,9 +890,9 @@ export class Human extends Humanoid{
                     }
                 })
             }
-        }
+        }7
         this.inventory.accessorys.call_event("tick",dt)
-        this.equipment_data.force_default_scope=false
+        this.scope_zoom=this.equipment_data.scope.scope_view
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
@@ -923,6 +926,7 @@ export class Human extends Humanoid{
         if(this.seat){
             if(this.seat.rotation!==undefined)this.physical_data.rotation=this.seat.rotation
             if(this.seat.pillot)this.seat.vehicle.move(this.input.movement,this.input.reload)
+            if(this.seat.scope_change)this.scope_change(this.seat.scope_change)
         }else{
             this.tick_physics(current_floor,speed,dt)
             //Hand Use
@@ -1051,7 +1055,7 @@ export class Human extends Humanoid{
             }:undefined,
 
             current_scope:this.equipment_data.scope.idNumber!,
-            force_default_scope:this.force_default_scope,
+            scope_zoom:this.scope_zoom,
 
             dirty:full?{
                 action:true,

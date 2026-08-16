@@ -728,7 +728,7 @@ export class ADVHumanAI extends BotAi{
 
         this.ctx.dt=dt
         this.ctx.vision_hitbox.position=this.human.position
-        this.ctx.vision_hitbox.radius=this.human.scope_zoom
+        this.ctx.vision_hitbox.radius=11/this.human.scope_zoom
         this.ctx.nearby_allies.length=0
         this.ctx.nearby_enemies.length=0
         this.ctx.visible_loots.length=0

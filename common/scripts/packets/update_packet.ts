@@ -82,7 +82,7 @@ export interface SelfStateUpdate{
     action?:{delay:number,type:ActionsType}
 
     current_scope:number
-    force_default_scope:boolean
+    scope_zoom:number
 
     group?:Record<number,GroupMemberState>
     colors?:Record<string,number>
@@ -110,8 +110,6 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         state.action!==undefined, //has Action
 
         state.inventory.hand?.liquid, // Is Liquid
-
-        state.force_default_scope,
 
         state.colors!==undefined
     )
@@ -170,6 +168,7 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         stream.write_string_dict(state.colors,(i)=>stream.write_uint32(i))
     }
     stream.write_uint8(state.current_scope)
+    .write_float32(state.scope_zoom)
 }
 function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameDefinition){
     state.health=stream.read_uint8()
@@ -191,8 +190,6 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         hasHand,
         hasAction,
         liquid,
-
-        force_default_scope,
 
         dirtyColors
     ]=stream.read_boolean_group2()
@@ -277,7 +274,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         state.colors=stream.read_string_dict(()=>stream.read_uint32())
     }
     state.current_scope=stream.read_uint8()
-    state.force_default_scope=force_default_scope
+    state.scope_zoom=stream.read_float32()
 }
 export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     ID=PacketType.Update
@@ -397,7 +394,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                     hand:undefined
                 },
                 current_scope:0,
-                force_default_scope:false,
+                scope_zoom:1
             }
             decode_self_state(this.priv.self_state,stream,this.definition)
         }

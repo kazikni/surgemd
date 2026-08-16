@@ -1,4 +1,4 @@
-import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts"
+import { VehicleDef, VehicleSeatDef } from "common/scripts/definitions/objects/vehicles.ts"
 import {
     Hitbox2D,
     Stream,
@@ -14,7 +14,7 @@ import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 import { Floors, FloorType } from "common/scripts/others/terrain.ts"
 import { StaticBody } from "./static_body.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
-import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { DamageReason, ScopeChange } from "common/scripts/definitions/utils.ts";
 import { Obstacle } from "./obstacle.ts";
 
 export interface VehiclePhysicalData extends MovingBodyPhysicalData {
@@ -40,19 +40,21 @@ export class VehicleSeat {
     pillot: boolean
     vehicle: Vehicle
     leave: Vec2
+    scope_change?: ScopeChange
 
     doors: Vec2[] = []
     base_doors: Vec2[] = []
 
-    constructor(vehicle: Vehicle, position: Vec2, pillot: boolean, leave: Vec2, base_doors: Vec2[]) {
-        this.vehicle = vehicle
-        this.position = position
-        this.base_position = v2.clone(position)
-        this.pillot = pillot
-        this.leave = leave
-        this.base_doors = base_doors
+    constructor(vehicle: Vehicle, def:VehicleSeatDef,pillot:boolean=false) {
+        this.vehicle=vehicle
+        this.position=def.position
+        this.base_position=v2.clone(def.position)
+        this.pillot=pillot
+        this.leave=def.leave
+        this.base_doors=def.doors
+        this.scope_change=def.scope_change
 
-        for (const d of base_doors) {
+        for (const d of def.doors) {
             this.doors.push(v2.clone(d))
         }
     }
@@ -159,27 +161,13 @@ export class Vehicle extends MovingBody {
 
         this.physical_data.max_steer_speed =this.def.physics.max_steer_speed
 
-        if (this.def.pillot_seat) {
-            this.pillot_seat=new VehicleSeat(
-                this,
-                this.def.pillot_seat.position,
-                true,
-                this.def.pillot_seat.leave,
-                this.def.pillot_seat.doors
-            )
+        if(this.def.pillot_seat){
+            this.pillot_seat=new VehicleSeat(this,this.def.pillot_seat,true)
             this.seats.push(this.pillot_seat)
         }
 
-        for (const s of this.def.seats ?? []) {
-            this.seats.push(
-                new VehicleSeat(
-                    this,
-                    s.position,
-                    false,
-                    s.leave,
-                    s.doors
-                )
-            )
+        for(const s of this.def.seats??[]){
+            this.seats.push(new VehicleSeat(this,s))
         }
 
         this.interaction_hitbox = this.hitbox
@@ -272,25 +260,16 @@ export class Vehicle extends MovingBody {
                 s.base_position,
                 this.physical_data.rotation
             )
-
             s.position = v2.add(this.position, off)
-
             s.rotation = this.physical_data.rotation
-
             for (const i in s.doors) {
                 s.doors[i] = v2.rotate_RadAngle(
                     s.base_doors[i],
                     this.physical_data.rotation
                 )
-
-                v2m.add(
-                    s.doors[i],
-                    this.position,
-                    s.doors[i]
-                )
+                v2m.add(s.doors[i],this.position,s.doors[i])
             }
-
-            if (s.human) {
+            if(s.human){
                 s.human.position = s.position
             }
         }

@@ -24,7 +24,6 @@ export class LevelPlayerScript{
     on_begin(){}
     on_before(start_with_intro:boolean){}
     async on_load(){
-        await sleep(100)
     }
     on_start(){}
     on_stop(){}

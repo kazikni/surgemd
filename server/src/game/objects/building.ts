@@ -3,19 +3,20 @@ import { Angle, Hitbox2D, Stream, NullHitbox2D, Orientation, random, RotationMod
 import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
+import { ScopeChange } from "common/scripts/definitions/utils.ts";
 export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
 export class BuildingCeiling{
     def:BuildingCeilingDef
     hitbox:Hitbox2D
     alive:boolean
     connections:Obstacle[]
-    no_scope_block:boolean
+    scope_change?:ScopeChange
     constructor(def:BuildingCeilingDef,hitbox:Hitbox2D,connections:Obstacle[]){
         this.def=def
         this.hitbox=hitbox
         this.alive=true
         this.connections=connections
-        this.no_scope_block=!!def.no_scope_block
+        this.scope_change=def.scope_change
     }
     can_below(hb:Hitbox2D){
         return this.alive&&hb.colliding_with(this.hitbox)

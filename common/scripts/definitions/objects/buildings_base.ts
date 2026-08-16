@@ -1,7 +1,7 @@
 import { DeepPartial, Definition, Definitions, FrameDef, FrameTD, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, TD, tdm, TDObject, TDType, v2, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, ScopeChange } from "../utils.ts";
 import { DecalTint } from "./decals.ts";
 //20mm = 0.17619
 //2mm  = 0.017619
@@ -47,7 +47,7 @@ export const BuildingClientTD: TDObject = {
 
                             { name: "layer", content: tdm.int8_onu },
                             { name: "connections", content: tdm.any },
-                            { name: "no_scope_block", content: tdm.boolean },
+                            { name: "scope_change", content: tdm.any },
 
                             {
                                 name: "destroy",
@@ -267,7 +267,7 @@ export type BuildingCeilingDef={
     }
     layer?:number
     connections?:number[]
-    no_scope_block?:boolean
+    scope_change?:ScopeChange
     destroy?:{
         frame:string
         sound?:string
@@ -441,6 +441,7 @@ export const buildings_factory={
                             tint:tint
                         },
                         hitbox:new RectHitbox2D(min,max),
+                        scope_change:{}
                     }
                 ],
                 assets:{
@@ -487,6 +488,7 @@ export const buildings_factory={
                             tint:tint
                         },
                         hitbox:new RectHitbox2D(min,max),
+                        scope_change:{}
                     }
                 ]
             } as BuildingDef,settings.b??{})
@@ -546,6 +548,7 @@ export const buildings_factory={
                         position:v2(0,0),
                     },
                     hitbox:spawn_hb,
+                    scope_change:{}
                 }],
                 generate:{
                     stair_data:[{
@@ -569,6 +572,7 @@ export const buildings_factory={
                         rotation:Math.PI
                     },
                     hitbox:spawn_hb,
+                    scope_change:{}
                 }],
                 floor_image:[
                     {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
@@ -625,6 +629,7 @@ export const buildings_factory={
                             rotation:Math.PI
                         },
                         hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
+                        scope_change:{}
                     }
                 ],
                 generate:{
@@ -700,6 +705,7 @@ export const buildings_factory={
                             rotation:Math.PI
                         },
                         hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
+                        scope_change:{}
                     }
                 ],
                 generate:{
@@ -764,6 +770,7 @@ export const buildings_factory={
                             }
                         },
                         hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+                        scope_change:{}
                     }
                 ],
                 floor_image:[
@@ -859,6 +866,7 @@ export const buildings_factory={
                     {
                         frame:{image:"small_house_1_ceiling"},
                         hitbox:new RectHitbox2D(min,max),
+                        scope_change:{}
                     }
                 ],
                 generate:{
@@ -1059,6 +1067,7 @@ export const buildings_factory={
                 {
                     frame:{image:settings.ceiling??"storehouse_ceiling_1",scale:2.5},
                     hitbox:new RectHitbox2D(min,max),
+                    scope_change:{}
                 }
             ]
         } as BuildingDef,settings.b??{})

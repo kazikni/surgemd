@@ -34,7 +34,7 @@ import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { type Bullet } from "./bullet.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
-import { Humanoid, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
+import { Humanoid, HumanoidAnimationData, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
@@ -118,7 +118,6 @@ export class Human extends Humanoid{
     get force_default_scope():boolean{
         return this.equipment_data.force_default_scope||this.downed
     }
-
     get scope_zoom():number{
         return 11/(this.force_default_scope?this.equipment_data.default_scope.scope_view:this.equipment_data.scope.scope_view)
     }
@@ -140,14 +139,14 @@ export class Human extends Humanoid{
         }
         colors:Record<string,number>
     }
-    animation_data:{
-        dirty:boolean,
+    override animation_data:HumanoidAnimationData&{
         switching:boolean,
         current_animation:HumanAnimation[]
     }={
         dirty:true,
         switching:true,
-        current_animation:[]
+        current_animation:[],
+        alt_animations:[],
     }
 
     inventory:GInventory
@@ -1011,9 +1010,7 @@ export class Human extends Humanoid{
     override on_net_update(): void {
         super.on_net_update()
 
-        this.physical_data.dirty=false
-
-        this.animation_data.dirty=false
+        super.on_net_update()
         this.animation_data.current_animation.length=0
         this.animation_data.switching=false
 
@@ -1435,25 +1432,8 @@ export class Human extends Humanoid{
         }
         // Loadout  
         if(full||this.visual.dirty){
-            stream.write_boolean_group(
-                this.visual.hair!==undefined,
-                this.visual.eyes!==undefined,
-            )
-            stream.write_uint16(this.visual.body.def.idNumber!)
-            if(this.visual.hair){
-                stream.write_uint16(this.visual.hair.def.idNumber!)
-                .write_uint32(this.visual.hair.tint)
-            }
-            if(this.visual.eyes){
-                stream.write_uint16(this.visual.eyes.idNumber!)
-            }
-            stream.write_uint16(this.visual.shirt.idNumber!)
-            .write_uint16(this.visual.legs.idNumber!)
-            .write_uint32(this.visual.body.tint)
-            .write_array(this.visual.accessorys,(v)=>{
-                stream.write_uint16(v.idNumber!)
-            },1)
-            .write_uint16(this.visual.wrapping===undefined?0:(this.visual.wrapping.idNumber!+1))
+            this.encode_net_visual(stream)
+            stream.write_uint16(this.visual.wrapping===undefined?0:(this.visual.wrapping.idNumber!+1))
         }
         if(this.input.emote){
             stream.write_uint16(this.game.definitions.game_objects.keysString[this.input.emote.idString])
@@ -1467,6 +1447,9 @@ export class Human extends Humanoid{
             },1)
         }
         if(full||this.animation_data.dirty){
+            stream.write_array(this.animation_data.alt_animations,(v)=>{
+                stream.write_string(v,1)
+            })
             stream.write_array(this.animation_data.current_animation,(v)=>{
                 stream.write_uint8(v.type)
                 switch(v.type){

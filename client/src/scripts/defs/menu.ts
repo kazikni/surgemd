@@ -3,7 +3,7 @@ import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, Transla
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
-import { sandbox_version, socials } from "../others/config.ts";
+import { Debug, sandbox_version, socials } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
@@ -1104,7 +1104,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 {name:"Ak-47",value:"ak47"},
                             ],
                         },
-                        {
+                        (isMobile||Debug.force_mobile)?undefined:{
                             type:"toggle",
                             tname:"settings.ui.interactive",
                             var:"sv_ui_interactive",

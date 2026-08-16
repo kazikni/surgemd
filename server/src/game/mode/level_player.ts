@@ -1,6 +1,6 @@
 import { type Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition } from "common/scripts/config/level_definition.ts";
-import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType } from "common/engine/core.ts";
+import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType, sleep } from "common/engine/core.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { GameConfig } from "common/scripts/config/config.ts";
 import { type Player } from "../objects/player.ts";
@@ -23,7 +23,9 @@ export class LevelPlayerScript{
     on_tick(dt:number){}
     on_begin(){}
     on_before(start_with_intro:boolean){}
-    on_load(){}
+    async on_load(){
+        await sleep(100)
+    }
     on_start(){}
     on_stop(){}
     on_finish(winners:Human[]){}
@@ -128,18 +130,18 @@ export class LevelPlayer {
     
         this.save_checkpoint()
 
-
         if(!this.game.running)this.game.mainloop()
     }
     async init(start_with_intro:boolean=true){
-
         this.game.clock.timeScale=0
 
-        this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:true})
-        await this.game.clients.wait("_end")
+        /*this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:true})
+        await this.game.clients.wait("_end")*/
+
         await this.script.on_load()
-        this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:false})
-        await this.game.clients.wait("_end")
+
+        /*this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:false})
+        await this.game.clients.wait("_end")*/
 
         await this.script.on_before(start_with_intro)
         this.game.clock.timeScale=1

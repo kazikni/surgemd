@@ -227,7 +227,7 @@ export const bullets_factory={
         return {
             damage: 46 * power,
             range: 200 * (1 + (power - 1) * 0.5),
-            speed: 55 * (1 + (power - 1) * 0.4),
+            speed: 57 * (1 + (power - 1) * 0.6),
 
             critical_mult: 1.1,
             obstacle_mult: 1.25,

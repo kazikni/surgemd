@@ -1,9 +1,15 @@
+import { AKeyFrame } from "../../core/definition/definitions.ts";
 import { FrameData, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
 import { StaticStream, Stream } from "../../core/net/stream.ts";
 import { type Renderer, type Texture } from "../rendering/renderer.ts"
 import { type AudioEngine } from "./sounds.ts";
+export interface SourceBase{
+    id:string
+    group:string
+    src:string
+}
 export interface SpritesheetJSON{
     meta:{
         image:string
@@ -25,16 +31,15 @@ export interface SoundSlice{
     duration:number
     parent:string
 }
-export interface Sound{
-    id:string
-    src:string
+export interface Sound extends SourceBase{
     volume:number
     buffer:AudioBuffer
-    group:string
-
     slice?:SoundSlice
 }
-export class Frame {
+export interface Animation extends SourceBase{
+    keyframes:AKeyFrame[]
+}
+export class Frame implements SourceBase{
     id:string=""
     src:string=""
     url:string=""
@@ -64,10 +69,13 @@ export class Frame {
     }
 }
 
-export type Source=Frame|Sound
+export type Source=Frame|Sound|Animation
 export class ResourcesManager {
+    // Sources
     frames:Record<string,Frame>={}
     sounds:Record<string,Sound>={}
+    animations:Record<string,Animation>={}
+
     blobs:Record<string,{blob:Blob,url:string,group:string}>={}
     imported:Record<string,string[]>={}
 
@@ -129,6 +137,8 @@ export class ResourcesManager {
             return await this.load_frame(id,src,group,callback)
         }else if(src.endsWith(".mp3")||src.endsWith(".wav")){
             return await this.load_sound(id,{src:src,volume:volume},group,callback)
+        }else if(src.endsWith(".kanim")){
+            return await this.load_animation(id,src,group,callback)
         }
         return undefined
     }
@@ -341,6 +351,20 @@ export class ResourcesManager {
 
         return sound
     }
+    async load_animation(id:string,keyframes:AKeyFrame[]|string,group:string="",callback?:(item:string)=>void):Promise<Animation>{
+        let path=""
+        if(typeof keyframes==="string"){
+            path=keyframes
+            keyframes=(await this.load_json(keyframes,callback)) as AKeyFrame[]
+        }
+        this.animations[id]={
+            group:group,
+            id:id,
+            src:path,
+            keyframes:keyframes,
+        }
+        return this.animations[id]
+    }
     async render_text(text: string, size = 32, color = "white", font = "Arial",max_width?: number,line_height:number=1){
         const canvas = this.canvas
         const ctx = this.ctx
@@ -441,6 +465,10 @@ export class ResourcesManager {
         const sound=this.sounds[id]
         return sound
     }
+    get_animation(id:string):Animation{
+        const animation=this.animations[id]
+        return animation
+    }
 
     unload_frame(id:string){
         const frame=this.frames[id]
@@ -455,6 +483,11 @@ export class ResourcesManager {
             if(idx!==-1)this.imported[this.sounds[id].slice.parent].splice(idx,1)
         }
         delete this.sounds[id]
+    }
+    unload_animation(id:string){
+        const animation=this.animations[id]
+        if(!animation)return
+        delete this.animations[id]
     }
     unload_blob(blob:string){
         if(!this.blobs[blob])return
@@ -472,6 +505,11 @@ export class ResourcesManager {
                 this.unload_sound(id)
             }
         }
+        for(const id in this.animations){
+            if(this.animations[id].group===group){
+                this.unload_animation(id)
+            }
+        }
         for(const id in this.blobs){
             if(this.blobs[id].group===group){
                 this.unload_blob(id)
@@ -485,6 +523,10 @@ export class ResourcesManager {
         }
         for(const r of Object.keys(this.sounds)){
             if(blacklist.includes(r)||blacklist.includes(this.sounds[r].group))continue
+            this.unload_sound(r)
+        }
+        for(const r of Object.keys(this.animations)){
+            if(blacklist.includes(r)||blacklist.includes(this.animations[r].group))continue
             this.unload_sound(r)
         }
         for(const r of Object.keys(this.blobs)){

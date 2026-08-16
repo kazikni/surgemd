@@ -44,9 +44,6 @@ export class MinimapModule extends UIModule<Game>{
 
     humans_ins = new Map<number, MapHumansInstance>()
 
-    mapWidth=0
-    mapHeight=0
-
     pings:MinimapPing[]=[]
     zones:MapZone[]=[]
 
@@ -109,17 +106,8 @@ export class MinimapModule extends UIModule<Game>{
     }
     render(){
         const minimap=this.game.minimap
-        let maxW=0
-        let maxH=0
-        for(const tile of minimap.tiles.values()){
-            const px=tile.position.x*minimap.tile_size_px
-            const py=tile.position.y*minimap.tile_size_px
-            maxW=Math.max(maxW,px+tile.image.width)
-            maxH=Math.max(maxH,py+tile.image.height)
-        }
-        this.mapWidth=maxW
-        this.mapHeight=maxH
-        if(maxW<=0||maxH<=0)return
+        const max=v2(minimap.canvas.width,minimap.canvas.height)
+        if(minimap.canvas.width<=0||minimap.canvas.height<=0)return
         const cw=this.canvas.clientWidth
         const ch=this.canvas.clientHeight
         if(cw<=0||ch<=0)return
@@ -135,9 +123,11 @@ export class MinimapModule extends UIModule<Game>{
         let cameraY:number
 
         if(this.fullscreen){
-            scale=Math.min(cw/maxW,ch/maxH)
-            cameraX=(cw-maxW*scale)*0.5
-            cameraY=(ch-maxH*scale)*0.5
+            scale=Math.min(cw/max.x,ch/max.y)
+            cameraX=(cw-max.x*scale)*0.5
+            cameraY=(ch-max.y*scale)*0.5
+            this.canvas.style.width=`${(45*Math.max(max.x/max.y,0))}vw`
+            this.canvas.style.height="45vw"
         }else{
             const player=this.game.active_entity?.position
             if(!player)return
@@ -145,6 +135,8 @@ export class MinimapModule extends UIModule<Game>{
             scale=this.zoom
             cameraX=cw*0.5-playerPos.x*scale
             cameraY=ch*0.5-playerPos.y*scale
+            this.canvas.style.width=""
+            this.canvas.style.height=""
         }
         this.scale=scale
 
@@ -152,12 +144,7 @@ export class MinimapModule extends UIModule<Game>{
         ctx.translate(cameraX,cameraY)
         ctx.scale(scale,scale)
 
-        for(const tile of minimap.tiles.values()){
-            if(!tile.loaded)continue
-            const px=tile.position.x*minimap.tile_size_px
-            const py=tile.position.y*minimap.tile_size_px
-            ctx.drawImage(tile.image,px,py)
-        }
+        ctx.drawImage(minimap.canvas,0,0)
 
         this.render_deadzone()
         this.render_zones()

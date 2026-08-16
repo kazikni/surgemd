@@ -220,9 +220,8 @@ export class CutsceneManager {
                 break
             }
             case CutsceneCommandType.SetBackground:{
-                this.timeScale=(command.timescale??1)*(command.background?.theme.timescale??1)
                 if(command.background){
-                    this.background.set_def(command.background,this.timeScale)
+                    this.background.set_def(command.background,(command.timescale??1)*(command.background?.theme.timescale??1)*this.timeScale)
                     await this.background.show()
                 }else{
                     await this.background.hide()
@@ -259,7 +258,9 @@ export class CutsceneManager {
         this.playing = false
     }
     wait(seconds: number):Promise<void>{
-        return new Promise<void>(resolve =>{setTimeout(resolve,(seconds*1000)/this.timeScale)})
+        return new Promise<void>(resolve=>setTimeout(()=>{
+            resolve()
+        },seconds*1000))
     }
 
     private apply_font_style(variables: Record<string, string>,prefix: string,style?: FontStyle){

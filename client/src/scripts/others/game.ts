@@ -46,7 +46,7 @@ import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
@@ -531,7 +531,10 @@ export class Game extends ClientGame<GameObject>{
     }
     close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
-        if(hard)this.local_server.stop()
+        if(hard){
+            this.local_server.stop()
+            this.menu.hide_loading_screen()
+        }
         if(this.editor)this.editor.close()
         this.editor=undefined
         this.happening=false
@@ -746,7 +749,6 @@ export class Game extends ClientGame<GameObject>{
         client.onopen=this.set_client.bind(this,client)
     }
     set_client(client:Client){
-        this.menu.show_loading_screen()
         if(!client.opened){
             this.client=undefined
             return
@@ -819,8 +821,11 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case OnlineMessageType.SetLoad:{
-                    if(msg.enabled)this.menu.show_loading_screen()
-                    else this.menu.hide_loading_screen()
+                    if(msg.enabled){
+                        this.menu.show_loading_screen()
+                    }else{
+                        this.menu.hide_loading_screen()
+                    }
                     client.emit("_end")
                     break
                 }

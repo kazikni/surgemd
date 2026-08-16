@@ -1,4 +1,4 @@
-import { CircleHitbox2D, ColorM, ease, KeyFrameSpriteDef, model2d, Numeric, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, ease, KeyFrameSpriteDef, model2d, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData, zIndexes } from "common/scripts/others/constants.ts";
 import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, AudioInstance, ClientGame, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
@@ -450,5 +450,15 @@ export class Humanoid extends MovingBody{
 
             this.sprites.eyes.frame=this.game.resources.get_frame(this.assets.eyes[state])
         }
+    }
+
+    play_alt_animation(animation:string){
+        //if(!this.game.alt_animations)
+    }
+    decode_animation(stream:Stream){
+        const arr=stream.read_array(()=>{
+            return stream.read_string(1)
+        },1)
+        for(let i=0;i<arr.length-1;i++)this.play_alt_animation(arr[i])
     }
 }

@@ -1,3 +1,4 @@
+import { decode_akeyframe, encode_akeyframe } from "../../engine/core.ts";
 import { Packet } from "../../engine/core/net/packets.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { PacketType } from "../definitions/utils.ts";

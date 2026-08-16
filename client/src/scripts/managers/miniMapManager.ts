@@ -15,7 +15,6 @@ export class MinimapManager {
     game:Game
     config!:MapConfig
     meter_size=10 // 1 Meter In World = 10 Pixels
-    tile_size_px=2048
     canvas=document.createElement("canvas")
     ctx:CanvasRenderingContext2D
     tiles=new Map<number,MinimapTile>()
@@ -34,8 +33,8 @@ export class MinimapManager {
         const map_px_w=config.size.x*this.meter_size
         const map_px_h=config.size.y*this.meter_size
 
-        const tiles_x=Math.ceil(map_px_w/this.tile_size_px)
-        const tiles_y=Math.ceil(map_px_h/this.tile_size_px)
+        this.canvas.width=map_px_w
+        this.canvas.height=map_px_h
 
         this.map_size=config.size
 
@@ -45,55 +44,28 @@ export class MinimapManager {
             return ((ad.zIndex?.base ?? zIndexes.Obstacles1)-(bd.zIndex?.base ?? zIndexes.Obstacles1))
         })
 
-        for(let y=0;y<tiles_y;y++){
-            for(let x=0;x<tiles_x;x++){
-                await this.render_tile(v2(x,y),sorted)
-            }
-        }
+        this.render(sorted)
 
         this.game.ui_manager.signal("minimap",{})
     }
 
-    async render_tile(position:Vec2,objects:MapObjectObstacle[]){
-        const key=hash.hash_2d(position.x,position.y)
-
-        const world_size=this.tile_size_px/this.meter_size
-        const world_min=v2.scale(position,world_size)
-        const world_max=v2(position.x+1,position.y+1)
-        v2m.scale(world_max,world_max,world_size)
-        world_max.x=Math.min(world_max.x,this.map_size.x)
-        world_max.y=Math.min(world_max.y,this.map_size.y)
-
-        this.canvas.width=Math.floor((world_max.x-world_min.x)*this.meter_size)
-        this.canvas.height=Math.floor((world_max.y-world_min.y)*this.meter_size)
+    render(objects:MapObjectObstacle[],cam_pos:Vec2=v2.zero()){
+        this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
 
         this.ctx.fillStyle=ColorM.number2hex(Floors[FloorType.Void].default_color)
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
 
-        const minimap_min=v2.scale(world_min,this.meter_size)
         for(const floor of this.config.terrain){
-            const rect=floor.hb.to_rect()
-            if(rect.max.x>=world_min.x&&rect.min.x<=world_max.x&&rect.max.y>=world_min.y&&rect.min.y<=world_max.y){
-                const color=ColorM.number2hex(floor.tint??this.biome?.floors[floor.type as FloorType]??Floors[floor.type as FloorType].default_color)
-                this.draw_hitbox(color,floor.hb,minimap_min)
-            }
+            const color=ColorM.number2hex(floor.tint??this.biome?.floors[floor.type as FloorType]??Floors[floor.type as FloorType].default_color)
+            this.draw_hitbox(color,floor.hb,cam_pos)
         }
-        this.draw_grid(world_min)
+        this.draw_grid(cam_pos)
         for(const obj of objects){
-            this.draw_object(obj,minimap_min)
+            this.draw_object(obj,cam_pos)
         }
         for(const r of this.config.regions){
-            this.draw_region(r,minimap_min)
+            this.draw_region(r,cam_pos)
         }
-
-        const image=new Image()
-        image.src=this.canvas.toDataURL("image/png")
-        await image.decode()
-        this.tiles.set(key,{
-            position,
-            image,
-            loaded:true
-        })
     }
     get_region(){
         for(const region of this.config.regions){
@@ -130,13 +102,13 @@ export class MinimapManager {
         const start_x=(-(cam_position.x*this.meter_size))%step
         const start_y=(-(cam_position.y*this.meter_size))%step
 
-        for(let x=start_x;x<=this.tile_size_px;x+=step){
+        for(let x=start_x;x<=this.canvas.width;x+=step){
             ctx.moveTo(x,0)
-            ctx.lineTo(x,this.tile_size_px)
+            ctx.lineTo(x,this.canvas.width)
         }
-        for(let y=start_y;y<=this.tile_size_px;y+=step){
+        for(let y=start_y;y<=this.canvas.height;y+=step){
             ctx.moveTo(0,y)
-            ctx.lineTo(this.tile_size_px,y)
+            ctx.lineTo(this.canvas.height,y)
         }
 
         ctx.stroke()

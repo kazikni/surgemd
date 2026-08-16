@@ -1,6 +1,6 @@
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { BaseObject2D, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BaseObject2D, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData } from "common/scripts/others/constants.ts";
 import { LoadoutBodyDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { type StaticBody } from "./static_body.ts";
@@ -15,6 +15,10 @@ export type HumanoidPhysicalData=MovingBodyPhysicalData&{
 export type HumanoidInput={
     movement:PolarMovement
     rotation:number
+}
+export type HumanoidAnimationData={
+    dirty:boolean
+    alt_animations:string[]
 }
 export class Humanoid extends MovingBody {
     string_type:string="humanoid"
@@ -39,6 +43,10 @@ export class Humanoid extends MovingBody {
     dead = false
     downed = false
 
+    animation_data:HumanoidAnimationData={
+        dirty:false,
+        alt_animations:[]
+    }
     visual!:HumanoidVisualData
     input: HumanoidInput={rotation:0,movement:{dir:0,scale:0}}
 
@@ -99,5 +107,33 @@ export class Humanoid extends MovingBody {
     tick_movement(dt: number) {
     }
     update_skin() {
+    }
+
+    override on_net_update(): void {
+        super.on_net_update()
+        this.physical_data.dirty=false
+        this.animation_data.dirty=false
+        this.animation_data.alt_animations.length=0
+    }
+    encode_net_visual(stream:Stream){
+        stream.write_boolean_group(
+            this.visual.hair!==undefined,
+            this.visual.eyes!==undefined,
+        )
+        stream.write_uint16(this.visual.body.def.idNumber!)
+        if(this.visual.hair){
+            stream.write_uint16(this.visual.hair.def.idNumber!)
+            .write_uint32(this.visual.hair.tint)
+        }
+        if(this.visual.eyes){
+            stream.write_uint16(this.visual.eyes.idNumber!)
+        }
+        stream.write_uint16(this.visual.shirt.idNumber!)
+        .write_uint16(this.visual.legs.idNumber!)
+        .write_uint32(this.visual.body.tint)
+        .write_array(this.visual.accessorys,(v)=>{
+            stream.write_uint16(v.idNumber!)
+        },1)
+        return stream
     }
 }

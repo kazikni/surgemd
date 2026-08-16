@@ -376,14 +376,30 @@
     left: 5px;
     top: 40%;
 }
+#top-info-container{
+    position: absolute;
+    top:10px;
+    right:10px;
+    gap:10px;
+    width: 17vw;
+    display: flex;
+    flex-direction: column;
+
+    @include main.large_screen {
+        right: 7px;
+        top: 7px;
+    }
+    @include main.medium_screen {
+        right: 7px;
+        top: 7px;
+    }
+    @include main.small_screen {
+        right: 5px;
+        top: 5px;
+    }
+}
 #additional-info{
     @extend .span-text-base;
-    position:absolute;
-
-    right:10px;
-    top:10px;
-
-    width:280px;
 
     display:flex;
     flex-direction:row;
@@ -412,10 +428,7 @@
         margin-left:auto;
     }
     @include main.large_screen {
-        width: 225px;
         padding: 7px;
-        top: 7px;
-        right: 7px;
         font-size: 15px;
         img{
             width:19px;
@@ -423,17 +436,13 @@
         }
     }
     @include main.medium_screen {
-        width: 185px;
         img{
             width:19px;
             height:19px;
         }
     }
     @include main.small_screen {
-        width: 122px;
         padding: 3px;
-        top: 5px;
-        right: 5px;
         font-size: 10px;
         img{
             width:10px;
@@ -442,30 +451,23 @@
     }
 }
 #ui-map{
-    position:absolute;
-
-    right:10px;
-    top:70px;
-
-    width:300px;
-    height:300px;
+    height: 17vw;
 
     overflow:hidden;
-
     border-radius:2px;
-
     pointer-events:all;
 
     opacity: var(--ui-minimap-opacity);
     box-shadow: var(--ui-panel-box-shadow);
 
     &.fullscreen{
+        position:fixed;
+
         left:50%;
         top:50%;
-        transform: translate(-50%,-50%);
-
         width: 45vw;
         height: 45vw;
+        transform: translate(-50%,-50%);
 
         border-radius:0;
 
@@ -473,54 +475,30 @@
         box-shadow: var(--ui-panel-box-shadow-big);
         border:var(--ui-panel-border);
     }
-
-    @include main.large_screen {
-        width: 240px;
-        height: 240px;
-        right: 7px;
-        top: 50px;
-    }
-    @include main.medium_screen {
-        width: 200px;
-        height: 200px;
-        right: 7px;
-        top: 54px;
-    }
-    @include main.small_screen {
-        width: 130px;
-        height: 130px;
-        right: 5px;
-        top: 44px;
-    }
 }
 #leader-container{
-    max-width: 260px;
     pointer-events: none;
-    position: absolute;
     display: flex;
-    flex-direction: row;
+    align-items:center;
     font-family: "Russo-One";
     font-size: 20px;
-    top: 360px;
-    right: 0px;
-    padding: 15px;
+    padding: 10px;
+
     color: var(--ui-theme-tertiary);
+    background: var(--ui-panel-background);
+    box-shadow: var(--ui-panel-box-shadow);
     #leader-container-icon{
         background-image: url("/assets/img/menu/icons/aim.svg");
         background-size: cover;
         width: 40px;
         height: 40px;
-        position: relative;
         left: 0px;
     }
     #leader-text{
-        transform: translateY(25%);
-        width: fit-content;
-        height: fit-content;
+        flex:1;
     }
     @include main.large_screen {
         font-size: 16px;
-        top: 280px;
         #leader-container-icon{
             width: 30px;
             height: 30px;
@@ -528,7 +506,6 @@
     }
     @include main.medium_screen {
         font-size: 10px;
-        top: 250px;
         #leader-container-icon{
             width: 22px;
             height: 22px;
@@ -536,7 +513,6 @@
     }
     @include main.small_screen {
         font-size: 7px;
-        top: 160px;
         #leader-container-icon{
             width: 10px;
             height: 10px;

@@ -1,13 +1,11 @@
 
-import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Frame, Sound, Sprite2D, Tween, Shape2D } from "common/engine/web.ts";
+import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Sound, Sprite2D, Tween } from "common/engine/web.ts";
 import { GameObjectType, HumanAnimation, HumanAnimationType, HumanVisualData, zIndexes } from "common/scripts/others/constants.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
-import { DefaultDownedWalkFistRig, DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
+import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts"
-import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts"
-import { ClientDecal } from "./client_decal.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
@@ -16,7 +14,7 @@ import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-import { CircleHitbox2D, ColorM, ease, Hitbox2D, model2d, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, ease, Hitbox2D, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { DefaultHumanModes } from "../defs/human_animations.ts";
 import { Humanoid, HumanoidAnimation, HumanoidAssets, HumanoidSprites } from "./humanoid.ts";
 export class Human extends Humanoid{
@@ -357,6 +355,7 @@ export class Human extends Humanoid{
     override on_render(_dt: number): void {
     }
     override on_tick(dt:number): void {
+        if(this.dead)return
         super.on_tick(dt)
         if(this.sprites.name){
             this.sprites.name.position.x=this.position.x
@@ -1122,6 +1121,7 @@ export class Human extends Humanoid{
             this.update_effects(effects)
         }
         if(full||animation_dirty){
+            this.decode_animation(stream)
             const animations:HumanAnimation[]=stream.read_array(()=>{
                 let animation:HumanAnimation
                 const tp=stream.read_uint8() as HumanAnimationType

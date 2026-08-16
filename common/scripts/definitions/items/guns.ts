@@ -1,10 +1,6 @@
 import { DeepPartial, Definition, Definitions, FrameTransform, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
-import { type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
-export interface GunRecoilDef{
-    duration:number
-    speed:number
-}
+import { GasParticles, ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type GunDef={
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.gun
@@ -18,53 +14,15 @@ export type GunDef={
     barrel_length:number
     barrel_offset?:number
 
-    fire_delay:number
     switch_delay?:number
     unload_delay?:number
     switch_multiply?:number
     class_switch_multiply?:Partial<Record<GunClasses,number>>
 
-    spread?:number
-    idle_spread?:number
-    jitter_radius?:number
-
-    fire_mode?:FireMode
-    fire_on_release?:boolean
-    burst?:{
-        delay:number
-        sequence:number
-    }
-
-    muzzle_flash?:MuzzleFlash
-    gas_particles?:GasParticle
-    case_particle?:{
-        position:Vec2
-        at_begin?:boolean
-        frame?:string
-        sound?:string
-    }
-
-    bullet?:{
-        def:BulletDef
-        count?:number
-    }
-    projectile?:{
-        def:string
-        count?:number
-        angular_speed?:number
-        speed?:number
-    }
-    synsed_particle?:{
-        def:string
-        count?:number
-        speed?:Random1
-    }
     alt_func?:GunAltFunc
 
-    recoil?:GunRecoilDef
     speed_mod?:number
 
-    ammo_type:string
     ammo_spawn?:{
         amount:number
         type?:string
@@ -95,21 +53,9 @@ export type GunDef={
 }|{
     dual_from:string
     dual_offset:number
-})&Definition
+})&Definition&ItemFireDefinition
 export interface DualAdditional{dual_offset:number}
-export interface GasParticle{
-    count:number
-    size:{
-        min:number
-        max:number
-    }
-    speed:{
-        min:number
-        max:number
-    }
-    life_time:number
-    direction_variation:number
-}
+
 export enum GunClasses{
     Pistol,
     Shotgun,
@@ -121,93 +67,13 @@ export enum GunClasses{
     Miscellaneous,
     Magic,
 }
-export interface MuzzleFlash{
-    sprite:string
-}
-export const MuzzleFlash={
-    normal:{
-        sprite:"muzzle_flash_1",
-    }
-}
-export interface GunAltFunc{
-    type:0// Shot Projectile
-    projectile:string
-    speed:number
-    delay:number
-    ammo:string
-}
+export type GunAltFunc=({
+    type:0// Alt Shoot
+}&ItemFireDefinition)
 export const GunsConstructors={
     extends(gun:GunDef,variant:DeepPartial<GunDef>):GunDef{
         return mergeDeep({}as GunDef,gun,variant)as GunDef
     },
-}
-
-export const GasParticles={
-    shotgun:{
-        count:7,
-        size:{
-            min:0.5,
-            max:1.2
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.9,
-        direction_variation:0.4
-    } satisfies GasParticle,
-    sniper:{
-        count:8,
-        size:{
-            min:0.6,
-            max:1.4
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:1.1,
-        direction_variation:0.43
-    } satisfies GasParticle,
-    dmr:{
-        count:3,
-        size:{
-            min:0.6,
-            max:1.4
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:1.1,
-        direction_variation:0.43
-    } satisfies GasParticle,
-    automatic:{
-        count:1, 
-        size:{
-            min:0.8,
-            max:1
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.7,
-        direction_variation:0.2
-    } satisfies GasParticle,
-    pistols:{
-        count:3,
-        size:{
-            min:0.5,
-            max:0.8
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.5,
-        direction_variation:0.2
-    } satisfies GasParticle
 }
 
 export const bullets_factory={
@@ -250,7 +116,7 @@ export const bullets_factory={
         return {
             damage:6.8 * power,
             speed:26 * (1 + (power - 1) * 0.4),
-            range:31 * (1 + (power - 1) * 0.4),
+            range:30 * (1 + (power - 1) * 0.4),
 
             falloff:0.4,
             critical_mult:1.25,
@@ -307,6 +173,10 @@ export const guns_factory={
             case_particle:{
                 position:v2.new(0.5,0.1)
             },
+            recoil_animation:{
+                time_scale:9,
+                walk:0.05
+            },
 
             ammo_type:ammo,
 
@@ -349,6 +219,10 @@ export const guns_factory={
                 world:"weapon_medium_world",
                 world_tint:0x22222f
             },
+            recoil_animation:{
+                time_scale:20,
+                walk:0.05
+            },
             speed_mod:0.97,
         },extend??{})
     },
@@ -382,6 +256,10 @@ export const guns_factory={
                 world_tint:0x22222f
             },
 
+            recoil_animation:{
+                time_scale:25,
+                walk:0.03
+            },
             speed_mod:0.98,
         },extend??{})
     },
@@ -416,6 +294,10 @@ export const guns_factory={
                 world_tint:0x22222f
             },
 
+            recoil_animation:{
+                time_scale:8,
+                walk:0.7
+            },
             speed_mod:0.95,
         },extend??{})
     },
@@ -439,6 +321,10 @@ export const guns_factory={
                 position:v2.new(0.7,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
+            recoil_animation:{
+                time_scale:6,
+                walk:0.1
+            },
 
             ammo_type:ammo,
 
@@ -478,6 +364,10 @@ export const guns_factory={
                 position:v2.new(0.5,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
+            recoil_animation:{
+                time_scale:6,
+                walk:0.11
+            },
 
             ammo_type:ammo,
 
@@ -514,6 +404,10 @@ export const guns_factory={
                 position:v2.new(0.7,0.1)
             },
             muzzle_flash:MuzzleFlash.normal,
+            recoil_animation:{
+                time_scale:12,
+                walk:0.07
+            },
 
             ammo_type:ammo,
 
@@ -596,7 +490,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:8,
                     range:70,
-                    falloff:0.5,
+                    falloff:0.75,
                     speed:20,
                     tracer:tracers.tiny
                 }
@@ -838,16 +732,21 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         guns_factory.assault("m16_gl","556mm",{
             name:"M16-GL",
-            fire_delay:0.07,
+            fire_delay:0.08,
             spread:8,
             rank:ItemRank.S,
 
             alt_func:{
                 type:0,
-                ammo:"explosive_ammo",
-                delay:2.5,
-                projectile:"m79_grenade",
-                speed:13
+                fire_delay:3,
+                recoil:{
+                    duration:3,
+                    speed:0.25,
+                },
+                ammo_type:"explosive_ammo",
+                projectile:{
+                    def:"m79_grenade",
+                },
             },
 
             assets:{
@@ -934,7 +833,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_mode:FireMode.Burst,
             burst:{
-                delay:0.1,
+                delay:0.07,
                 sequence:3
             },
 
@@ -1466,7 +1365,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:bullets_factory.assault(0.9)
+                def:bullets_factory.assault(0.85)
             },
             reload:{
                 delay:6.2,
@@ -1477,6 +1376,10 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             recoil:{
                 duration:0.1,
                 speed:0.7
+            },
+            recoil_animation:{
+                time_scale:40,
+                walk:0.07
             },
         }),
         /////////////////////////////////////////////

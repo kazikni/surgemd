@@ -1,6 +1,6 @@
 import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { AmmoItemBase, ConsumibleItemBase, GInventoryBase, GrenadeItemBase, GunItemBase, MDItem, MeleeItemBase } from "common/scripts/others/inventory.ts";
-import { DamageReason, InventoryDroppable, GameItemType, InventoryPreset } from "common/scripts/definitions/utils.ts";
+import { DamageReason, InventoryDroppable, GameItemType, InventoryPreset, ItemFireDefinition } from "common/scripts/definitions/utils.ts";
 import { ConsumingActionA, ReloadAction } from "./actions.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 import { ConsumibleDef } from "common/scripts/definitions/items/consumibles.ts";
@@ -59,7 +59,6 @@ export class GunItem extends GunItemBase implements LItem{
                     this.use_delay=0
                 }else{
                     this.shot(user)
-                    this.use_delay=this.def.fire_delay
                 }
                 return true
             }
@@ -74,7 +73,6 @@ export class GunItem extends GunItemBase implements LItem{
                 case 0:
                     if(this.use_delay<=0){
                         this.shot_alt(user)
-                        this.use_delay=this.def.alt_func.delay
                     }
                     break
             }
@@ -138,6 +136,78 @@ export class GunItem extends GunItemBase implements LItem{
         v2m.add(ret,start,ret)
         return ret
     }
+
+    fire_item(user:Human,position:Vec2,def:ItemFireDefinition){
+        let spread=def.spread??0
+        const is_idle=v2.len(user.physical_data.velocity)<=0.1
+        if(is_idle&&def.idle_spread!==undefined){
+            spread*=def.idle_spread
+        }
+
+        if(def.bullet){
+            const bullets_count=def.bullet.count??1
+            const patternPoint = getPatterningShape(bullets_count, def.jitter_radius??1)
+            for(let i=0;i<bullets_count;i++){
+                let ang=user.physical_data.rotation
+                if(spread){
+                    ang+=Angle.deg2rad(random.float(-spread,spread))
+                }
+                const pos=def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const b=user.game.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(def.ammo_type),this.def,user.layer,is_idle?0.25:undefined)
+                b.set_definition(def.bullet.def)
+                b.speed*=user.modifiers.bullet_speed
+                b.tracer_height*=user.modifiers.bullet_size
+                user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,spread,position:pos})
+                b.set_direction(ang)
+            }
+        }
+        if(def.synsed_particle){
+            const scc=def.synsed_particle.count??1
+            const patternPoint = getPatterningShape(scc, def.jitter_radius??0)
+            const pdef=user.game.definitions.synced_particle.getFromString(def.synsed_particle.def)
+
+            for(let i=0;i<scc;i++){
+                const pos=def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
+                if(def.synsed_particle.speed){
+                    let ang=user.physical_data.rotation
+                    if(def.spread){
+                        ang+=Angle.deg2rad(random.float(-def.spread,def.spread))
+                    }
+                    part.push(random.random1(def.synsed_particle.speed),ang)
+                }
+            }
+        }
+        if(def.projectile){
+            const scc=def.projectile.count??1
+            const patternPoint = getPatterningShape(scc, def.jitter_radius??1)
+            const gdef=user.game.definitions.grenades.getFromString(def.projectile.def)
+
+            for(let i=0;i<scc;i++){
+                const pos=def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const proj=user.game.add_grenade(pos,gdef,user,user.layer)
+                proj.physical_data.zpos=0.5
+                proj.physical_data.zpos_speed=1
+                const limit=(gdef.throw_max_speed??0)
+                proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
+            }
+        }
+        if(def.recoil){
+            user.recoil={delay:def.recoil.duration,speed:def.recoil.speed}
+        }
+
+        if(this.burst){
+            if(this.burst.c<=0||this.ammo<=0){
+                this.burst=undefined
+                this.use_delay=def.fire_delay??0
+            }else{
+                this.burst.c--
+                this.use_delay=this.burst.t
+            }
+        }else{
+            this.use_delay=def.fire_delay??0
+        }
+    }
     shot(user:Human,consume:boolean=true){
         user.actions.cancel()
 
@@ -159,63 +229,7 @@ export class GunItem extends GunItemBase implements LItem{
 
         if(this.def.dual_from)this.dual_d=!this.dual_d
 
-        let spread=this.def.spread??0
-        const is_idle=v2.len(user.physical_data.velocity)<=0.1
-        if(is_idle&&this.def.idle_spread!==undefined){
-            spread*=this.def.idle_spread
-        }
-
-        if(this.def.bullet){
-            const bullets_count=this.def.bullet.count??1
-            const patternPoint = getPatterningShape(bullets_count, this.def.jitter_radius??1)
-            for(let i=0;i<bullets_count;i++){
-                let ang=user.physical_data.rotation
-                if(spread){
-                    ang+=Angle.deg2rad(random.float(-spread,spread))
-                }
-                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
-                const b=user.game.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(this.def.ammo_type),this.def,user.layer,is_idle?0.2:undefined)
-                b.set_definition(this.def.bullet.def)
-                b.speed*=user.modifiers.bullet_speed
-                b.tracer_height*=user.modifiers.bullet_size
-                user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,spread,position:pos})
-                b.set_direction(ang)
-            }
-        }
-        if(this.def.synsed_particle){
-            const scc=this.def.synsed_particle.count??1
-            const patternPoint = getPatterningShape(scc, this.def.jitter_radius??0)
-            const pdef=user.game.definitions.synced_particle.getFromString(this.def.synsed_particle.def)
-
-            for(let i=0;i<scc;i++){
-                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
-                const part=user.game.add_synced_particle(pos,pdef,user,user.layer)
-                if(this.def.synsed_particle.speed){
-                    let ang=user.physical_data.rotation
-                    if(this.def.spread){
-                        ang+=Angle.deg2rad(random.float(-this.def.spread,this.def.spread))
-                    }
-                    part.push(random.random1(this.def.synsed_particle.speed),ang)
-                }
-            }
-        }
-        if(this.def.projectile){
-            const scc=this.def.projectile.count??1
-            const patternPoint = getPatterningShape(scc, this.def.jitter_radius??1)
-            const gdef=user.game.definitions.grenades.getFromString(this.def.projectile.def)
-
-            for(let i=0;i<scc;i++){
-                const pos=this.def.jitter_radius?v2.add(position,patternPoint[i]):position
-                const proj=user.game.add_grenade(pos,gdef,user,user.layer)
-                proj.physical_data.zpos=0.5
-                proj.physical_data.zpos_speed=1
-                const limit=(gdef.throw_max_speed??0)
-                proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
-            }
-        }
-        if(this.def.recoil){
-            user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
-        }
+        this.fire_item(user,position,this.def)
 
         user.animation_data.current_animation.push({
             type:HumanAnimationType.Fire,
@@ -224,37 +238,36 @@ export class GunItem extends GunItemBase implements LItem{
             alt_func:false,
         })
     }
-    shot_alt(user:Human){
-        user.actions.cancel()
+    shot_alt(user:Human,consume:boolean=true){
+        if(this.def.alt_func?.type===0){
+            user.actions.cancel()
 
-        user.animation_data.dirty=true
-        user.inventory.net_sync.hand=true
+            user.animation_data.dirty=true
+            user.inventory.net_sync.hand=true
 
-        this.reloading=false
+            this.reloading=false
+            /*if(consume){
+                if(this.def.reload)this.ammo=Math.max(this.ammo-(this.def.reload!.ammo_consume??1))
+                //if(this.def.mana_consume)user.health_data.boost=Math.max(user.health_data.boost-this.def.mana_consume*user.modifiers.mana_consume,0)
+            }*/
 
-        const barrel_position=v2(
-            this.def.barrel_length,
-            (this.def.barrel_offset??0)+(this.def.dual_from?(this.dual_d?-this.def.dual_offset:this.def.dual_offset):0)
-        )
-        const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
-        const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
-        if(this.def.dual_from)this.dual_d=!this.dual_d
+            const barrel_position=v2(
+                this.def.barrel_length,
+                (this.def.barrel_offset??0)+(this.def.dual_from?(this.dual_d?-this.def.dual_offset:this.def.dual_offset):0)
+            )
+            const barrel_point=v2.rotate_RadAngle(barrel_position,user.physical_data.rotation)
+            const position=this.clip_muzzle(user,v2.add(user.position,barrel_point))
 
-        const proj_def=user.game.definitions.grenades.getFromString(this.def.alt_func!.projectile)
-        const proj=user.game.add_grenade(position,proj_def,user,user.layer)
-        proj.physical_data.zpos=0.5
-        proj.physical_data.zpos_speed=1
-        const limit=this.def.alt_func!.speed
-        proj.push(Numeric.clamp(user.input.dist_to_pointer*limit,0,limit),user.physical_data.rotation,10)
-        if(this.def.recoil){
-            user.recoil={delay:this.def.recoil.duration,speed:this.def.recoil.speed}
+            if(this.def.dual_from)this.dual_d=!this.dual_d
+            this.fire_item(user,position,this.def.alt_func)
+
+            user.animation_data.current_animation.push({
+                type:HumanAnimationType.Fire,
+                alt:this.dual_d,
+                last:this.ammo===0,
+                alt_func:true,
+            })
         }
-        user.animation_data.current_animation.push({
-            type:HumanAnimationType.Fire,
-            alt:this.dual_d,
-            alt_func:true,
-            last:this.ammo===0
-        })
     }
     update(user:Human,dt:number){
         if(this.use_delay>0)this.use_delay-=dt
@@ -263,17 +276,8 @@ export class GunItem extends GunItemBase implements LItem{
                 this.reloading=true
                 this.reload(user)
             }
-            if(this.use_delay<=0){
-                if(this.burst){
-                    if(this.burst.c<=0||this.ammo<=0){
-                        this.burst=undefined
-                        this.use_delay=this.def.fire_delay
-                    }else{
-                        this.burst.c--
-                        this.use_delay=this.burst.t
-                        this.shot(user)
-                    }
-                }
+            if(this.use_delay<=0&&this.burst){
+                this.shot(user)
             }
         }
     }
@@ -283,8 +287,8 @@ export class GunItem extends GunItemBase implements LItem{
             if(def?.item_type===GameItemType.gun&&this.def.class_switch_multiply){
                 this.use_delay*=(this.def.class_switch_multiply)[def.class]??1
             }
-        }else if(this.def.switch_multiply){
-            this.use_delay=Math.min(this.def.fire_delay,this.use_delay*this.def.switch_multiply)
+        }else if(this.def.switch_multiply!==undefined){
+            this.use_delay=Math.min(this.def.fire_delay??0,this.use_delay*this.def.switch_multiply)
         }
     }
     override unload(): void {

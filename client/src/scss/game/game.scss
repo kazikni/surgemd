@@ -337,7 +337,8 @@
 
     display: flex;
     flex-direction: row;
-    gap:10px;
+    gap: 1vh;
+    pointer-events: none;
 
     @include main.large_screen {
         right: 7px;
@@ -356,15 +357,15 @@
     width: 17vw;
     display: flex;
     flex-direction: column;
-    gap:10px;
+    gap: 1vh;
 }
 #feed-container{
     @extend .span-text;
-    font-size: 16px;
+    font-size: 2vh;
     pointer-events: none;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 0.1vh;
     width: 20vw;
     .feed-message{
         background: var(--ui-panel-background);
@@ -385,20 +386,10 @@
         margin-left: 3px;
     }
     @include main.medium_screen {
-        width: 220px;
-        right: 200px;
         gap: 3px;
-        .feed-message{
-            font-size: 10px;
-        }
     }
     @include main.small_screen {
-        width: 150px;
-        right: 150px;
         gap: 1px;
-        .feed-message{
-            font-size: 8px;
-        }
     }
 }
 #additional-info{
@@ -406,51 +397,27 @@
 
     display:flex;
     flex-direction:row;
-    gap:20px;
+    gap: 2vh;
 
-    padding:10px;
+    padding:0.5vh;
 
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
 
-    font-size: 20px;
-    pointer-events:none;
+    font-size: 2vh;
 
     >div{
         display:flex;
         align-items:center;
-        gap:1px;
-        min-height:24px;
+        gap:1vh;
+        flex: 0;
     }
     img{
-        width:24px;
-        height:24px;
+        height: 3vh;
         flex-shrink:0;
     }
     #deadzone-info-state{
         margin-left:auto;
-    }
-    @include main.large_screen {
-        padding: 7px;
-        font-size: 15px;
-        img{
-            width:19px;
-            height:19px;
-        }
-    }
-    @include main.medium_screen {
-        img{
-            width:19px;
-            height:19px;
-        }
-    }
-    @include main.small_screen {
-        padding: 3px;
-        font-size: 10px;
-        img{
-            width:10px;
-            height:10px;
-        }
     }
 }
 #ui-map{
@@ -462,6 +429,7 @@
 
     opacity: var(--ui-minimap-opacity);
     box-shadow: var(--ui-panel-box-shadow);
+    pointer-events: auto;
 
     &.fullscreen{
         position:fixed;
@@ -482,10 +450,11 @@
 #leader-container{
     pointer-events: none;
     display: flex;
+    flex-direction: row;
     align-items:center;
     font-family: "Russo-One";
-    font-size: 15px;
-    padding: 7px;
+    font-size: 2vh;
+    padding: 0.5vh;
 
     color: var(--ui-theme-tertiary);
     background: var(--ui-panel-background);
@@ -493,36 +462,11 @@
     #leader-container-icon{
         background-image: url("/assets/img/menu/icons/aim.svg");
         background-size: cover;
-        width: 30px;
-        height: 30px;
-        left: 0px;
+        width: 3vh;
+        height: 3vh;
     }
     #leader-text{
         flex:1;
-    }
-    @include main.large_screen {
-        font-size: 15px;
-        padding: 8px;
-        #leader-container-icon{
-            width: 22px;
-            height: 22px;
-        }
-    }
-    @include main.medium_screen {
-        font-size: 13px;
-        padding: 6px;
-        #leader-container-icon{
-            width: 15px;
-            height: 15px;
-        }
-    }
-    @include main.small_screen {
-        font-size: 10px;
-        padding: 5px;
-        #leader-container-icon{
-            width: 10px;
-            height: 10px;
-        }
     }
 }
 #groups-info{

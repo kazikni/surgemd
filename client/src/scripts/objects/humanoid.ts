@@ -126,6 +126,58 @@ export class Humanoid extends MovingBody{
 
             accessorys:[]
         }
+    
+        this.sprites.left_shirt_arm.transform_frame({
+            hotspot:v2(1,0.5),
+            zIndex:1,
+            scale:1.2,
+        })
+        this.sprites.left_hand.transform_frame({
+            hotspot:v2.half_one,
+            zIndex:0,
+            scale:1.2,
+        })
+        this.sprites.right_shirt_arm.transform_frame({
+            hotspot:v2(1,0.5),
+            zIndex:1,
+            scale:1.2,
+        })
+        this.sprites.right_hand.transform_frame({
+            hotspot:v2.half_one,
+            zIndex:0,
+            scale:1.2,
+        })
+
+        this.sprites.left_arm.add_child(this.sprites.left_hand)
+        this.sprites.left_arm.add_child(this.sprites.left_shirt_arm)
+        this.sprites.right_arm.add_child(this.sprites.right_hand)
+        this.sprites.right_arm.add_child(this.sprites.right_shirt_arm)
+
+        
+        this.sprites.left_leg_l.transform_frame({
+            hotspot:v2(0,0.5),
+            zIndex:1
+        })
+        this.sprites.left_leg_foot.transform_frame({
+            hotspot:v2.half_one,
+            zIndex:0
+        })
+
+        this.sprites.right_leg_l.transform_frame({
+            hotspot:v2(0,0.5),
+            zIndex:1
+        })
+        this.sprites.right_leg_foot.transform_frame({
+            hotspot:v2.half_one,
+            zIndex:0
+        })
+        v2m.set(this.sprites.left_leg.scale,1.4,1.4)
+        v2m.set(this.sprites.right_leg.scale,1.4,1.4)
+
+        this.sprites.left_leg.add_child(this.sprites.left_leg_l)
+        this.sprites.left_leg.add_child(this.sprites.left_leg_foot)
+        this.sprites.right_leg.add_child(this.sprites.right_leg_l)
+        this.sprites.right_leg.add_child(this.sprites.right_leg_foot)
 
         if(this.game.world_shadow.enabled){
             this.sprites.shadow=new Shape2D()

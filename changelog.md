@@ -2,6 +2,7 @@
 ## News
 __                                                                                                                 __
 ### Mains
+* !Big Changes On the game Code
 * No Hope Rework
 * Fall Biome
 * Swimming
@@ -9,7 +10,10 @@ __                                                                              
 * Dialogs
 * Audio Libary
 * Downeds Walk Animation and movement
+* Being Run Over
 * Localization Drone
+* Puzzle Test
+* Complete The level will start the next
 __                                                                                                                 __
 ### Menu
 * Main Menu Rework
@@ -26,6 +30,7 @@ __                                                                              
 * Prologue Level
 * Shadows Setting
 * Perspective Setting
+* Readd Level Title Screen
 __                                                                                                                 __
 ### Items
 * XM556 - 556mm LMG
@@ -63,7 +68,7 @@ __                                                                              
 __                                                                                                                 __
 ### Others
 * Hunt House on tundra map
-* Increse critical chance if you dont walk from 15% to 20%
+* Increse critical chance if you dont walk from 15% to 25%
 * Bounce Kill Score Reward
 * Red, Yellow, Green And Blue Buttons
 __                                                                                                                 __
@@ -75,6 +80,7 @@ __                                                                              
 * Some Sprites Changes
 * Small Changes on melee swing animation
 * Improve Grenades Animation
+* Smoke Grenades Now Create Sysned Particles In A Sequence
 * Fix Drinking Animation Reset
 * Change Quickswitch
 * Allow Reload After Delay

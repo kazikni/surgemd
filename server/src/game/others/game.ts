@@ -282,8 +282,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.timeouts.length=0
         this.puzzles={}
         this.always_visible={}
-        this.started = false
-        this.closed = false
+        this.started=false
+        this.closed=false
         this.fineshed=false
         this.clock.timeScale=1
         this.pings.length=0

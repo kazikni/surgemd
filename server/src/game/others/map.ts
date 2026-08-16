@@ -48,6 +48,8 @@ export class GameMap{
     biome!:MapBiomeDef
     default_floor:FloorType=FloorType.Void
 
+    minimap_enabled:boolean=true
+
     point_is_valid(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap){
         switch(mode.type){
             case SpawnModeType.any:
@@ -276,9 +278,10 @@ export class GameMap{
         }
     }
     
-    generate(definition:MapDef,seed:number=random.float(0,231412)){
+    generate(definition:MapDef,seed:number=random.float(0,231412),minimap_enabled:boolean=true){
         const random=new SeededRandom(definition.seed??seed)
         this.random=random
+        this.minimap_enabled=minimap_enabled
 
         this.game.loot_tables.clear()
         this.game.loot_tables.add_tables(definition.loot_tables)
@@ -416,6 +419,7 @@ export class GameMap{
             }
         }
         p.map={
+            minimap_enabled:this.minimap_enabled,
             terrain:this.terrain.floors,
             size:this.size,
             seed:seed,

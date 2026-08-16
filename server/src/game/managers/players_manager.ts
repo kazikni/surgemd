@@ -277,11 +277,14 @@ export class PlayersManager{
         s.clear()
 
         this.general_update.content.started=this.game.started
+        this.general_update.content.leader_enabled=false
         this.general_update.content.feed=this.game.feed_messages
         this.general_update.content.deadzone=this.game.deadzone.state
         this.general_update.content.ambient=this.game.ambient
         this.general_update.content.map_zones=this.game.map_zones
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
+
+        this.game.modeManager.manage_general_packet(this.general_update)
 
         this.game.clients.packets_manager.encode(this.general_update,s)
 

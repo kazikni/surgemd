@@ -1195,7 +1195,7 @@ export class Human extends Humanoid{
             if(show_name){
                 name=stream.read_string(1)
             }else if(this.id!==this.game.active_entity_id&&this.game.ui.group_members[this.id]){
-                name=this.game.ui.players_name[this.id].name
+                name=this.game.ui.players_name[this.id]?.name
             }
             if(name!==undefined)this.set_name(name)
         }

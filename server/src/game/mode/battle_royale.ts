@@ -26,6 +26,7 @@ export interface BattleRoyaleSettings{
     map?:{
         def:MapDef|string
         seed?:number
+        disable_minimap?:boolean
     }
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
@@ -45,6 +46,7 @@ export class BattleRoyale extends ModeManager{
         map:{
             def:MapDef|string
             seed?:number
+            disable_minimap?:boolean
         }
         spawn_mode:SpawnMode
         deadzone:DeadZoneConfig
@@ -66,7 +68,8 @@ export class BattleRoyale extends ModeManager{
             join_time:settings.join_time??90,
             map:{
                 def:settings.map?.def??"normal",
-                seed:settings.map?.seed
+                seed:settings.map?.seed,
+                disable_minimap:settings.map?.disable_minimap
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone,
@@ -97,9 +100,17 @@ export class BattleRoyale extends ModeManager{
         if(!this.groups_manager)return undefined
         return this.groups_manager.groups[group]
     }
+    override create_group(id?: number, group?: Group): Group | undefined {
+        if(!this.groups_manager)return
+        return this.groups_manager.add_group(id,group)
+    }
     override get_team(team:number):Team|undefined{
         if(!this.teams_manager)return undefined
         return this.teams_manager.teams[team]
+    }
+    override create_team(team?: Team): Team | undefined {
+        if(!this.teams_manager)return
+        return this.teams_manager.add_team(team)
     }
     override on_start(){
         this.game.deadzone.start()
@@ -250,6 +261,11 @@ export class BattleRoyale extends ModeManager{
             }
         }
     }
+    override on_human_revive(human: Human): void {
+        this.set_group_for_human(human)
+        const pos=this.get_human_spawn_position(human)
+        if(pos)human.position=pos
+    }
     override on_finish(winners:Player[]): void {
         for(const p of this.game.players.living_players){
             this.give_rank_score()
@@ -276,7 +292,7 @@ export class BattleRoyale extends ModeManager{
         }
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed)
+        this.game.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed,!this.settings.map.disable_minimap)
         this.game.deadzone.set_config(this.settings.deadzone)
         //this.game.deadzone.start()
     }
@@ -299,7 +315,7 @@ export class BattleRoyaleDebug extends BattleRoyale{
     override on_start(){
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed)
+        this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.game.map.size,2)

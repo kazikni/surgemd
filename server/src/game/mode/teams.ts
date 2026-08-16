@@ -136,6 +136,7 @@ export class Group extends Team{
         const colors=h.game.modeManager.rules.humans.group_colors
         h.team_data.color=colors[Math.min(this.humans.length,colors.length)]
         this.dirty=true
+        h.set_dirty_full()
         this.humans.push(h)
     }
     override replace(o: Human, n: Human) {

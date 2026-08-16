@@ -62,7 +62,6 @@
                     </div>
                 </div>
                 <div id="information-container">
-                    <div id="feed-container"></div>
                     <div id="information-box-container">
                         <div id="information-killbox"></div>
                         <div id="information-interaction"></div>
@@ -76,26 +75,29 @@
                     <div id="ui-iitems"></div>
                     <div id="ui-equipment"></div>
                 </div>
-                <div id="top-info-container">
-                    <div id="additional-info">
-                        <div>
-                            <div id="living-count-main"></div>
-                            <img src="/assets/img/menu/icons/human.svg" draggable="false">
+                <div id="top-right-container">
+                    <div id="feed-container"></div>
+                    <div id="top-info-container">
+                        <div id="additional-info">
+                            <div>
+                                <div id="living-count-main"></div>
+                                <img src="/assets/img/menu/icons/human.svg" draggable="false">
+                            </div>
+                            <div>
+                                <span  id="kills-info" class="span-text-base">0</span>
+                                <img src="/assets/img/menu/icons/aim.svg" draggable="false">
+                            </div>
+                            <div id="deadzone-info">
+                                <span id="deadzone-info-timer"></span>
+                                <span id="deadzone-info-state"></span>
+                                <img draggable="false" id="deadzone-info-icon">
+                            </div>
                         </div>
-                        <div>
-                            <span  id="kills-info" class="span-text-base">0</span>
-                            <img src="/assets/img/menu/icons/aim.svg" draggable="false">
+                        <canvas id="ui-map"></canvas>
+                        <div id="leader-container">
+                            <span id="leader-text">Waiting For The Leader</span>
+                            <div id="leader-container-icon"></div>
                         </div>
-                        <div id="deadzone-info">
-                            <span id="deadzone-info-timer"></span>
-                            <span id="deadzone-info-state"></span>
-                            <img draggable="false" id="deadzone-info-icon">
-                        </div>
-                    </div>
-                    <canvas id="ui-map"></canvas>
-                    <div id="leader-container">
-                        <span id="leader-text">Waiting For The Leader</span>
-                        <div id="leader-container-icon"></div>
                     </div>
                 </div>
                 <div id="groups-info"></div>

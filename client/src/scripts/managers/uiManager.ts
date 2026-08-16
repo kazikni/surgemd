@@ -54,6 +54,7 @@ export class UiManager{
 
         feed:document.querySelector("#feed-container") as HTMLDivElement,
 
+        leader_container:document.querySelector("#leader-container") as HTMLSpanElement,
         leader_span:document.querySelector("#leader-text") as HTMLSpanElement,
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
@@ -90,6 +91,11 @@ export class UiManager{
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
         btn_emotes:document.querySelector("#btn-mobile-emotes") as HTMLButtonElement,
     }
+
+    feed_enabled:boolean=false
+
+    leader_enabled:boolean=true
+    old_leader_enabled:boolean=true
     leader?:{
         id:number
         kills:number
@@ -395,6 +401,13 @@ export class UiManager{
         }
     }
     proccess_general_update(up:GeneralUpdate){
+        this.feed_enabled=up.feed_enabled
+        this.leader_enabled=up.leader_enabled
+        if(this.leader_enabled!==this.old_leader_enabled){
+            this.old_leader_enabled=this.leader_enabled
+            if(this.leader_enabled)ShowElement(this.content.leader_container)
+            else HideElement(this.content.leader_container)
+        }
         for(const msg of up.feed){
             this.add_feed_message(msg)
         }
@@ -434,19 +447,11 @@ export class UiManager{
         this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
     }
     feed_queue: HTMLDivElement[] = []
-    max_feed_messages = 7
+    max_feed_messages = 15
     add_feed_message(msg:FeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
         elem.classList.add("feed-message")
-        this.content.feed.appendChild(elem)
-        this.feed_queue.push(elem)
-        let block_message:boolean=false
-        while (this.feed_queue.length > this.max_feed_messages) {
-            const old = this.feed_queue.shift()
-            if (old) {
-                old.remove()
-            }
-        }
+        let block_message:boolean=!this.feed_enabled
         switch(msg.type){
             // deno-lint-ignore no-fallthrough
             case FeedMessageType.set_name:
@@ -608,10 +613,20 @@ export class UiManager{
                 break
             }
         }
-        this.game.add_timeout(()=>{
-            elem.remove()
-        },4)
-        if(!block_message)this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
+        if(!block_message){
+            this.content.feed.appendChild(elem)
+            this.feed_queue.push(elem)
+            while (this.feed_queue.length > this.max_feed_messages) {
+                const old = this.feed_queue.shift()
+                if (old) {
+                    old.remove()
+                }
+            }
+            this.game.add_timeout(()=>{
+                elem.remove()
+            },4)
+            this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
+        }
     }
     crosshair=false
     crosshair_manager:CrosshairManager=new CrosshairManager(document.body)

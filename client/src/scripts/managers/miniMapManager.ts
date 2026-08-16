@@ -1,10 +1,10 @@
 import { type Game } from "../others/game.ts"
-import { Floors,FloorType } from "common/scripts/others/terrain.ts"
+import { Floor, Floors,FloorType } from "common/scripts/others/terrain.ts"
 import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_packet.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { MapBiomeDef } from "common/scripts/definitions/maps/base.ts";
-import { ColorM, hash, Hitbox2D, HitboxType2D, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { ColorM, Hitbox2D, HitboxType2D, v2, v2m, Vec2 } from "common/engine/core.ts";
 export interface MinimapTile {
     position:Vec2
     image:HTMLImageElement
@@ -17,45 +17,46 @@ export class MinimapManager {
     meter_size=10 // 1 Meter In World = 10 Pixels
     canvas=document.createElement("canvas")
     ctx:CanvasRenderingContext2D
-    tiles=new Map<number,MinimapTile>()
     map_size:Vec2
     biome!:MapBiomeDef
+    enabled:boolean=false
 
     constructor(game:Game){
         this.game=game
         this.ctx=this.canvas.getContext("2d")!
         this.map_size=v2.zero()
     }
-    async init(config:MapConfig){
-        this.clear()
+    init(config:MapConfig){
+        this.enabled=config.minimap_enabled
         this.config=config
 
-        const map_px_w=config.size.x*this.meter_size
-        const map_px_h=config.size.y*this.meter_size
+        if(this.config.minimap_enabled){
+            const map_px_w=config.size.x*this.meter_size
+            const map_px_h=config.size.y*this.meter_size
 
-        this.canvas.width=map_px_w
-        this.canvas.height=map_px_h
+            this.canvas.width=map_px_w
+            this.canvas.height=map_px_h
 
-        this.map_size=config.size
+            this.map_size=config.size
 
-        const sorted=[...this.config.objects].sort((a,b)=>{
-            const ad=this.game.definitions.obstacles.getFromNumber(a.def)
-            const bd=this.game.definitions.obstacles.getFromNumber(b.def)
-            return ((ad.zIndex?.base ?? zIndexes.Obstacles1)-(bd.zIndex?.base ?? zIndexes.Obstacles1))
-        })
+            const sorted=[...this.config.objects].sort((a,b)=>{
+                const ad=this.game.definitions.obstacles.getFromNumber(a.def)
+                const bd=this.game.definitions.obstacles.getFromNumber(b.def)
+                return ((ad.zIndex?.base ?? zIndexes.Obstacles1)-(bd.zIndex?.base ?? zIndexes.Obstacles1))
+            })
 
-        this.render(sorted)
-
+            this.render(this.config.terrain,sorted,this.config.regions)
+        }
         this.game.ui_manager.signal("minimap",{})
     }
 
-    render(objects:MapObjectObstacle[],cam_pos:Vec2=v2.zero()){
+    render(terrain:Floor[],objects:MapObjectObstacle[],regions:MapRegion[],cam_pos:Vec2=v2.zero()){
         this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
 
         this.ctx.fillStyle=ColorM.number2hex(Floors[FloorType.Void].default_color)
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
 
-        for(const floor of this.config.terrain){
+        for(const floor of terrain){
             const color=ColorM.number2hex(floor.tint??this.biome?.floors[floor.type as FloorType]??Floors[floor.type as FloorType].default_color)
             this.draw_hitbox(color,floor.hb,cam_pos)
         }
@@ -63,13 +64,8 @@ export class MinimapManager {
         for(const obj of objects){
             this.draw_object(obj,cam_pos)
         }
-        for(const r of this.config.regions){
+        for(const r of regions){
             this.draw_region(r,cam_pos)
-        }
-    }
-    get_region(){
-        for(const region of this.config.regions){
-            return region
         }
     }
     draw_region(region:MapRegion,cam_position:Vec2){
@@ -182,8 +178,5 @@ export class MinimapManager {
         this.ctx.drawImage(frame.image,sx,sy,sw,sh,-w/2,-h/2,w,h)
 
         this.ctx.restore()
-    }
-    clear(){
-        this.tiles.clear()
     }
 }

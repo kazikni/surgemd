@@ -1353,6 +1353,7 @@ export class Human extends Humanoid{
         if(!this.registred)this.manager.registry_object(this)
         this.game.humans._add_human(this)
         this.clear(inventory,status)
+        this.game.modeManager.on_human_revive(this)
     }
     on_kill_enemy(victim:Human,params:DamageParams){
         const rules=this.game.modeManager.rules

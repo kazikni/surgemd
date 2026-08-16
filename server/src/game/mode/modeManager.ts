@@ -14,6 +14,7 @@ import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
 import { WarMap } from "common/scripts/definitions/maps/war.ts";
 import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
 import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
+import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -63,8 +64,12 @@ export interface GameRules{
         leader_multiplier:number
     }
     leader:{
+        enabled:boolean
         kills_min:number
         search:boolean
+    }
+    feed:{
+        enabled:boolean
     }
     loot_settings:LootSetting
 }
@@ -140,8 +145,12 @@ export abstract class ModeManager{
             leader_multiplier:1.2,
         },
         leader:{
+            enabled:true,
             kills_min:3,
             search:true
+        },
+        feed:{
+            enabled:true
         },
         loot_settings:{}
     }
@@ -241,16 +250,13 @@ export abstract class ModeManager{
 
     on_human_create(human:Human):void{}
     on_human_die(human:Human):void{}
+    on_human_revive(human:Human):void{}
 
-    get_group(group:number):Group|undefined{
-        return undefined
-    }
-    get_team(team:number):Team|undefined{
-        return undefined
-    }
-    set_group_for_human(h:Human):void{
-
-    }
+    get_group(group:number):Group|undefined{return undefined}
+    get_team(team:number):Team|undefined{return undefined}
+    create_group(id?:number,group?:Group):Group|undefined{return undefined}
+    create_team(team?:Team):Team|undefined{return undefined}
+    set_group_for_human(h:Human):void{}
 
     get_living_count():number[]{
         return [this.game.players.living_players.length]
@@ -260,7 +266,10 @@ export abstract class ModeManager{
     }
 
     manage_joinned_packet(jp:JoinnedPacket){
-
+    }
+    manage_general_packet(g:GeneralUpdatePacket){
+        g.content.feed_enabled=this.rules.feed.enabled
+        g.content.leader_enabled=this.rules.leader.enabled
     }
 
     human_buy_item(human:Human,item:GameItem){}

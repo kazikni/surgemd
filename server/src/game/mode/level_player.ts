@@ -163,16 +163,11 @@ export class LevelPlayer {
             conn.view_objects.length=0
             if(conn.real_human?.dead){
                 conn.revive()
-                conn.human!.reset_status()
-                this.game.modeManager.set_group_for_human(conn.real_human)
-                const pos=this.game.modeManager.get_human_spawn_position(conn.real_human)
-                if(pos!==undefined){
-                    conn.real_human.position=pos
-                }
             }else{
                 conn.add_player()
             }
-            if(conn.human){
+            conn.human!.reset_status()
+            if(conn.human&&conn.human.is_player&&!conn.human.is_bot){
                 conn.human.clear(true,true)
                 this.script.on_spawn_player(conn.human as Player)
             }

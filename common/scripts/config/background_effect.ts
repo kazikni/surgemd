@@ -221,7 +221,7 @@ export const default_cutscene_theme: CutsceneTheme = {
     text_styles:{
         "nn_title_blue":{
             typewriter:{delay:{min:40,max:200}},
-            color:"#07aaee",
+            color:"#104b81",
             font:"Russo-One",
             size:"15vh",
         },

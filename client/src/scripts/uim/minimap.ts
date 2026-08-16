@@ -27,7 +27,7 @@ interface MinimapIconDef{
     images_promise:Record<number,Promise<HTMLImageElement>>
 }
 export class MinimapModule extends UIModule<Game>{
-    enabled=true
+    visible=true
     fullscreen=false
 
     scale:number=1
@@ -340,15 +340,6 @@ export class MinimapModule extends UIModule<Game>{
             }
         }
     }
-    enable(){
-        this.enabled=true
-    }
-    disable(){
-        this.enabled=false
-    }
-    toggle(){
-        this.enabled=!this.enabled
-    }
     toggle_fullscreen(){
         this.fullscreen=!this.fullscreen
         this.canvas.classList.toggle("fullscreen",this.fullscreen)
@@ -401,7 +392,7 @@ export class MinimapModule extends UIModule<Game>{
             case "actiondown":
                 switch(data.action){
                     case "toggle_hide_device":
-                        this.toggle()
+                        this.visible=!this.visible
                         break
                     case "toggle_full_device":
                         this.toggle_fullscreen()
@@ -418,12 +409,12 @@ export class MinimapModule extends UIModule<Game>{
     }
     override on_update(dt:number):void{
         this.tick(dt)
-        if(!this.enabled&&!this.fullscreen){
+        if((this.visible||this.fullscreen)&&this.game.minimap.enabled&&this.game.minimap.config.minimap_enabled){
+            ShowElement(this.canvas)
+            this.render()
+        }else{
             HideElement(this.canvas)
-            return
         }
-        ShowElement(this.canvas)
-        this.render()
     }
     override on_destroy():void{}
     override on_clear():void{

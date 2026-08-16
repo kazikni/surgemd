@@ -30,6 +30,8 @@ export interface MapZone{
 }
 export interface GeneralUpdate{
     started:boolean
+    feed_enabled:boolean
+    leader_enabled:boolean
     living_count:number[]
     feed:FeedMessage[]
     deadzone?:DeadZoneUpdate
@@ -165,6 +167,8 @@ function decode_feed_message(stream:Stream):FeedMessage{
 function encode_general_update(stream:Stream,up:GeneralUpdate){
     stream.write_boolean_group(
         up.started,
+        up.feed_enabled,
+        up.leader_enabled,
         up.deadzone!==undefined,
         up.ambient!==undefined,
     )
@@ -198,10 +202,14 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
 function decode_general_update(stream:Stream,up:GeneralUpdate){
     const [
         started,
+        feed_enabled,
+        leader_enabled,
         deadzone,
         ambient
     ]=stream.read_boolean_group()
     up.started=started
+    up.feed_enabled=feed_enabled
+    up.leader_enabled=leader_enabled
     up.ambient=undefined
 
     up.feed=stream.read_array(()=>decode_feed_message(stream))
@@ -247,6 +255,8 @@ export class GeneralUpdatePacket extends Packet{
     Name="general_update"
     content:GeneralUpdate={
         started:false,
+        feed_enabled:false,
+        leader_enabled:false,
         living_count:[],
         feed:[],
         deadzone:undefined,

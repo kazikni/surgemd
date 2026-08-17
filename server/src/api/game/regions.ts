@@ -10,7 +10,7 @@ export class RegionConnection {
     constructor(public socket: WebSocket,public user: ApiUserDefinition) {
         socket.addEventListener("message", (e) => {
             const msg = JSON.parse(e.data)
-            if (msg.request_id === undefined) {
+            if (msg?.request_id===undefined) {
                 return;
             }
             const pending = this.pending.get(msg.request_id)
@@ -19,16 +19,14 @@ export class RegionConnection {
             }
             this.pending.delete(msg.request_id)
             pending.resolve(msg)
-        });
+        })
     }
-
     send(data: unknown) {
         if (this.socket.readyState !== WebSocket.OPEN) {
             return
         }
         this.socket.send(JSON.stringify(data));
     }
-
     request(data: any) {
         if (this.socket.readyState !== WebSocket.OPEN) {
             throw new Error("Socket closed")
@@ -99,7 +97,6 @@ export class RegionManager {
 
     async find_game(data: FindGameData): Promise<FindGameResult> {
         const region = this.regions_ws[data.region];
-
         if (!region) {
             return {
                 success: false,

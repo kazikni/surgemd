@@ -71,6 +71,10 @@ export interface ApiServerConfig{
         modes: ModeConfig[]
         play_time?:PlayTimeConfig
     }
+    debug?:{
+        error_file?:string
+        disable_error_file?:boolean
+    }
     database?:{
         enabled?: boolean
         statistic?: boolean

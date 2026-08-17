@@ -2,6 +2,7 @@ import { ApiServerConfig, ApiSettings, GameConfig, GameModeConfig, ModeConfig } 
 import { GroupManager } from "./game/groups.ts";
 import { default_handlers, Server } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
+import { error } from "node:console";
 export class ApiServer {
     server: Server
     groups = new GroupManager(this)
@@ -106,8 +107,48 @@ export class ApiServer {
 
         this.last_frame_time = performance.now()
     }
+    async log_server_error(error: unknown, context?: string) {
+        if(this.config.debug?.disable_error_file)return
+        const time = new Date().toISOString()
+
+        let stack: string
+
+        if (error instanceof Error) {
+            stack = error.stack ?? `${error.name}: ${error.message}`
+        } else {
+            stack = String(error)
+        }
+
+        const content =
+`============================================================
+[${time}]
+${context ? `Context: ${context}\n` : ""}
+${stack}
+============================================================
+`
+
+        try {
+            await Deno.writeTextFile(
+                this.config.debug?.error_file??"database/error.log",
+                content,
+                {
+                    append: true,
+                    create: true,
+                }
+            )
+        } catch (logError) {
+            console.error("[SERVER] Failed to write error.log:", logError)
+            console.error("[SERVER] Original error:", error)
+        }
+
+        console.error(`[SERVER] ${context ?? "Error"}:`, error)
+    }
     run(){
-        this.server.run()
-        setInterval(this.tick.bind(this),1000)
+        try{
+            this.server.run()
+            setInterval(this.tick.bind(this),1000)
+        }catch(e){
+            this.log_server_error(error,"Error Catch")
+        }
     }
 }

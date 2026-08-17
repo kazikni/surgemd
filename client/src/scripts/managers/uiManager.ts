@@ -447,7 +447,7 @@ export class UiManager{
         this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
     }
     feed_queue: HTMLDivElement[] = []
-    max_feed_messages = 15
+    max_feed_messages = 13
     add_feed_message(msg:FeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
         elem.classList.add("feed-message")

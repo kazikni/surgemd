@@ -116,7 +116,7 @@ export const ConfigDefaultValues={
     sv_game_friendly_fire:false,
     sv_game_interpolation:true,
     sv_game_client_rot:true,
-    sv_game_ammo_outline:false,
+    sv_game_ammo_outline:true,
     sv_game_ping:5,
 
     sv_mobile_auto_pickup:Debug.force_mobile||isMobile,

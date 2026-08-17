@@ -251,15 +251,7 @@ export class Router {
                 ...(this.routes.get("") ?? [])
             ]
             for (const handler of handlers) {
-                const ret = handler(req, [...path], info)
-                if (ret && typeof (ret as Promise<any>).then === "function") {
-                    const response = await ret
-                    if (response) {
-                        return response
-                    }
-                } else if (ret) {
-                    return ret
-                }
+                return await handler(req, [...path], info)
             }
 
             return null

@@ -4,7 +4,7 @@ import { Hitbox2D, LootTable, Orientation, Random1, Rect,  tdm,  Vec2, WeightDef
 import { GameDefinition, type GameADefinitions } from "../game_defs.ts";
 
 import { type GameMap } from "../../../../server/src/game/others/map.ts"
-import { type MapRegion } from "../../packets/map_packet.ts";
+import { type MapRegion } from "../../packets/map_message.ts";
 
 export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface TerrainLayerDef {

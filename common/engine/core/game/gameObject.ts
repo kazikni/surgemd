@@ -5,7 +5,6 @@ import { v2, v2m, Vec2, Vec2M } from "../math/vec2.ts";
 import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
 import { Rect } from "../math/geometry.ts";
-import { type WasmModule } from "../lang/wasm.ts";
 export type GameObjectID=ID
 export abstract class BaseObject2D{
     abstract number_type:number
@@ -44,6 +43,7 @@ export abstract class BaseObject2D{
     allow_dirty:boolean=true
     allow_checkpoint:boolean=true
 
+    net_sync_can_unsee:boolean=true
     net_sync_deletion:boolean=true
     net_sync_dirty:boolean=true
     net_sync_creation:boolean=true
@@ -503,6 +503,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         const size = stream.read_uint24()
         const start = stream.index
         const end = start + size
+        let tp:number|undefined
         try{
             const b = stream.read_boolean_group()
             if (!(b[0] || b[1] || b[2])) {
@@ -513,7 +514,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             if (!this.layers[layer]) {
                 this.add_layer(layer)
             }
-            const tp = stream.read_uint8()
+            tp = stream.read_uint8()
             let obj:GameObject|undefined = this.objects[oid]
             if (b[3] && !obj && !b[2]) {
                 const obb = this.make_object_net(oid, layer, tp)
@@ -546,7 +547,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             console.error(e)
         }finally{
             if(stream.index !== end){
-                console.warn(`Size mismatch (${stream.index-start}/${size})`)
+                console.warn(`Size mismatch (${stream.index-start}/${size}) tp:${tp}`)
             }
             stream.index = start + size
         }
@@ -634,37 +635,65 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         return stream
     }
-    encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,delete_all:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
-        if(!stream){
-            if(!this.stream_cache)this.stream_cache=new DynamicStream()
-            stream=this.stream_cache
+    encode_list_net(objects: GameObject[],last_list: GameObject[],force_full: boolean = false,delete_all: boolean = false,object_options?: (obj: GameObject) => any,stream?: Stream):{ last: GameObject[], strm: Stream } {
+        if (!stream) {
+            if (!this.stream_cache) this.stream_cache = new DynamicStream()
+            stream = this.stream_cache
             this.stream_cache.clear()
         }
-        stream.write_uint8(200) // List Encode
-        stream.write_boolean_group(force_full,delete_all)
 
-        const list:[GameObject,boolean][]=[]
-        objects.forEach((v)=>{
-            const full=force_full||this.full_dirty_objects[v.id]!==undefined||!last_list.includes(v)
-            if(full||this.part_dirty_objects[v.id])list.push([v,full])
-        })
+        stream.write_uint8(200)
+        stream.write_boolean_group(force_full, delete_all)
+
+        const current = new Map<number, GameObject>()
+        for (const obj of objects) {
+            current.set(obj.id, obj)
+        }
+
+        const effective:GameObject[]=[...objects]
+        for (const obj of last_list) {
+            if(current.has(obj.id))continue
+            if(!obj.net_sync_can_unsee) {
+                effective.push(obj)
+            }
+        }
+
+        const unique=new Map<number,GameObject>()
+        for(const obj of effective){
+            unique.set(obj.id, obj)
+        }
+
+        const next_list = [...unique.values()]
+
+        const list: [GameObject, boolean][]=[]
+        for(const obj of next_list){
+            const full=force_full||this.full_dirty_objects[obj.id]!==undefined||!last_list.some(v => v.id === obj.id)
+            if(full||this.part_dirty_objects[obj.id]!==undefined){
+                list.push([obj, full])
+            }
+        }
 
         stream.write_uint16(list.length)
-        for(const o of list){
-            this.encode_object_net(o[0],o[1],stream,object_options?object_options(o[0]):null)
+        for(const [obj, full] of list) {
+            this.encode_object_net(obj,full,stream,object_options?object_options(obj):null)
         }
 
-        // Destroy Queue
         const deletions: GameObject[] = []
-        for (const obj of last_list){
-            if (obj.net_sync_deletion && !objects.includes(obj))deletions.push(obj)
-        }
-        stream.write_uint16(deletions.length)
-        for(let i=0;i<deletions.length;i++){
-            stream.write_id(deletions[i].id)
+        for(const obj of last_list){
+            if(obj.net_sync_deletion&&!next_list.some(v => v.id === obj.id)){
+                deletions.push(obj)
+            }
         }
 
-        return {strm:stream,last:objects}
+        stream.write_uint16(deletions.length)
+        for(const obj of deletions){
+            stream.write_id(obj.id)
+        }
+
+        return {
+            strm: stream,
+            last: next_list
+        }
     }
     encode_checkpoint(stream:Stream,settings:CheckpointSettings={}){
         const save_id=settings.save_id??false

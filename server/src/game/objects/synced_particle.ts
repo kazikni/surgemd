@@ -10,7 +10,7 @@ export class SyncedParticlesCreator extends ServerGameObject{
     override string_type: string=""
 
     count:number=7
-    time:number=0.4
+    time:number=0.2
     timer:number=0
     owner?:Human
     def!:SyncedParticleDef

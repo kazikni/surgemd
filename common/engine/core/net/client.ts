@@ -81,7 +81,7 @@ export class Client{
         }
         this.ws.onmessage = (msg) => {
             if (this.recev_ping_emulation > 0) {
-                setTimeout(() => this._on_message(msg),this.recev_ping_emulation)
+                setTimeout(()=>this._on_message(msg),this.recev_ping_emulation)
             } else {
                 this._on_message(msg)
             }
@@ -116,23 +116,22 @@ export class Client{
         this.emit_packet(p)
     }
     emit_packet(packet: Packet) {
-        if (this.ws.readyState !== WebSocket.OPEN) return
-        this.stream_cache.clear()
+        this.stream_cache.clear(true)
         this.manager.encode(packet, this.stream_cache)
-        const data=this.stream_cache.data
+        const data=this.stream_cache.data.slice()
         //const data=this.stream_cache.data.subarray(0,this.stream_cache.length)
         this._send(data)
     }
     async _on_message(msg:MessageEvent<ArrayBuffer|Blob>){
-        let buf: ArrayBufferLike | null = null
-        if (msg.data instanceof ArrayBuffer){
-            buf = msg.data
+        let buf: ArrayBufferLike|null=null
+        if(msg.data instanceof ArrayBuffer){
+            buf=msg.data
         }else if(msg.data instanceof Uint8Array){
             buf=msg.data.buffer
         }else if(msg.data instanceof Blob) {
             buf=await msg.data.arrayBuffer()
         }
-        if (buf) {
+        if(buf){
             const stream=new StaticStream(buf as ArrayBuffer)
             let packet = this.manager.decode(stream)
             while(!(packet instanceof InvalidPacket)){
@@ -152,6 +151,7 @@ export class Client{
         }
     }
     _send(data:any){
+        if(this.ws.readyState!==WebSocket.OPEN)return
         if(!this.ws.send)return
         if(this.send_ping_emulation>0){
             setTimeout(()=>this.ws.send(data),this.send_ping_emulation)
@@ -173,8 +173,7 @@ export class Client{
         this.signals.on(name,callback)
     }
     send_stream(stream:Stream){
-        if(this.ws.readyState !== WebSocket.OPEN)return
-        this._send(stream.data)
+        this._send(stream.data.slice())
         //this._send(stream.data.subarray(0, Math.max(stream.length,Math.min(stream.data.length,4000))))
     }
     send(msg:any,bytes1:number=1,bytes2:number=2){

@@ -121,7 +121,7 @@ export function decode_loot_data(definitions:GameDefinition,stream:Stream):LootD
     return {
         item:definitions.game_items.valueNumber[stream.read_uint16()],
         count:stream.read_float32(),
-        aditional:has_aditional?stream.read_array(()=>decode_loot_data(definitions,stream),1):undefined,
+        //aditional:has_aditional?stream.read_array(()=>decode_loot_data(definitions,stream),1):undefined,
         skin:has_skin?stream.read_uint8():undefined
     }
 }

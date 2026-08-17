@@ -15,7 +15,7 @@ export abstract class Stream{
     abstract get data():Uint8Array
     abstract get buffer():ArrayBufferLike
 
-    abstract clear():void
+    abstract clear(hard?:boolean):void
 
     abstract write_uint8(val:number):this
     abstract read_uint8():number
@@ -53,7 +53,7 @@ export abstract class Stream{
 
     abstract write_stream(src: Stream, offset?:number, length?:number):this
 
-    abstract write_stream_dynamic(src: Stream): this
+    abstract write_stream_dynamic(src?:Stream): this
     abstract read_stream_dynamic(): Stream
 
     write_int(value:number,bytes:1|2|3|4):this{
@@ -666,9 +666,10 @@ export class StaticStream extends Stream{
         this._u8Array = new Uint8Array(source, byteOffset, byteLength)
     }
 
-    clear(){
+    clear(hard:boolean=false){
         this.index=0
         this.length=0
+        if(hard)this._u8Array.fill(0)
     }
 
 
@@ -902,7 +903,11 @@ export class StaticStream extends Stream{
         return this
     }
 
-    write_stream_dynamic(src: Stream): this {
+    write_stream_dynamic(src?: Stream): this {
+        if(!src){
+            this.write_uint24(0)
+            return this
+        }
         this.write_uint24(src.length)
         this._u8Array.set(src.data.subarray(0, src.length), this.index)
         this.index += src.length
@@ -943,9 +948,10 @@ export class DynamicStream extends Stream{
         this._u8Array = new Uint8Array(b)
     }
 
-    clear(){
+    clear(hard:boolean=false){
         this.index=0
         this.length=0
+        if(hard)this._u8Array.fill(0)
     }
 
     ensure(extra: number): void {
@@ -1224,11 +1230,7 @@ export class DynamicStream extends Stream{
     }
     read_stream_dynamic(): Stream {
         const len = this.read_uint24()
-        const stream = new StaticStream(
-            this._view.buffer as ArrayBuffer,
-            this.index,
-            len
-        )
+        const stream = new StaticStream(this._view.buffer as ArrayBuffer,this.index,len)
         if(this._index+len>this.length)return stream
         stream.length = len
         this.index += len

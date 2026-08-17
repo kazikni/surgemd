@@ -12,7 +12,7 @@
     background: var(--item-bg);
     backdrop-filter: blur(7px);
     color: white;
-    text-shadow: 0.2vh 0.2vh var(--item-text-shadow);
+    //text-shadow: 0.2vh 0.2vh var(--item-text-shadow);
 
     &:hover {
         background: var(--item-bg-hover);

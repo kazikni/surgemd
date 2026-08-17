@@ -1,4 +1,3 @@
-import { decode_akeyframe, encode_akeyframe } from "../../engine/core.ts";
 import { Packet } from "../../engine/core/net/packets.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { PacketType } from "../definitions/utils.ts";
@@ -9,6 +8,7 @@ export interface StartSettings{
     assets:Record<string,string>
     languages_path:string
     background_music?:string
+    map?:Stream
 }
 
 export class StartPacket extends Packet{
@@ -27,6 +27,7 @@ export class StartPacket extends Packet{
         },1)
         .write_string(this.settings.background_music??"",1)
         .write_string(this.settings.languages_path)
+        stream.write_stream_dynamic(this.settings.map)
     }
     override decode(stream: Stream): void {
         this.settings={
@@ -43,5 +44,6 @@ export class StartPacket extends Packet{
             languages_path:stream.read_string(1),
         }
         if(this.settings.background_music==="")this.settings.background_music=undefined
+        this.settings.map=stream.read_stream_dynamic()
     }
 }

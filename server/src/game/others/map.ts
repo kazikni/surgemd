@@ -2,7 +2,7 @@ import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, Re
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
-import { MapPacket,MapObjectEncode, MapRegion } from "common/scripts/packets/map_packet.ts"
+import { encode_map_config, MapConfig, MapObjectEncode, MapRegion } from "common/scripts/packets/map_message.ts"
 import { Floors, FloorType, generate_terrain_shape, River, TerrainManager } from "common/scripts/others/terrain.ts"
 import { GameObjectType, Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
@@ -26,6 +26,7 @@ export interface MapStructure{
 
 export class GameMap{
     size:Vec2
+    seed:number=0
     bounds:Rect
     air_bounds:Rect
     game:Game
@@ -35,7 +36,7 @@ export class GameMap{
         this.air_bounds={min:v2.zero(),max:v2.zero()}
         this.game=game
     }
-    map_packet_stream:Stream=new DynamicStream()
+    map_stream:Stream=new DynamicStream()
     terrain:TerrainManager=new TerrainManager()
     random!:SeededRandom
 
@@ -278,7 +279,8 @@ export class GameMap{
         }
     }
     
-    generate(definition:MapDef,seed:number=random.float(0,231412),minimap_enabled:boolean=true){
+    generate(definition:MapDef,seed:number=random.int(0,231412),minimap_enabled:boolean=true){
+        this.seed=seed
         const random=new SeededRandom(definition.seed??seed)
         this.random=random
         this.minimap_enabled=minimap_enabled
@@ -368,15 +370,20 @@ export class GameMap{
         this.game.start_settings.musics.push(...definition.biome.musics)
 
         this.game.deadzone.reset()
-        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
-        this.map_packet_stream.lock()
+
+        this.map_stream.clear(true)
+        this.encode(this.map_stream)
+        this.map_stream.lock()
     }
     generate_with_algorithm(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
+        this.seed=seed
         const random=new SeededRandom(seed)
         this.random=random
         algorithm(this,random)
-        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
-        this.map_packet_stream.lock()
+
+        this.map_stream.clear(true)
+        this.encode(this.map_stream)
+        this.map_stream.lock()
     }
     soft_reset(){
         this.random.reset()
@@ -400,8 +407,8 @@ export class GameMap{
         this.regions.push(ret)
         return ret
     }
-    encode(seed:number):MapPacket{
-        const p=new MapPacket()
+
+    encode(stream:Stream){
         const objects:MapObjectEncode[]=[]
         for(const o of this.objects){
             if(o instanceof Obstacle){
@@ -418,16 +425,17 @@ export class GameMap{
                 }
             }
         }
-        p.map={
+        const map:MapConfig={
             minimap_enabled:this.minimap_enabled,
             terrain:this.terrain.floors,
             size:this.size,
-            seed:seed,
+            seed:this.seed,
             objects,
             biome:this.biome,
             definitions:this.definitions,
-            regions:this.regions
+            regions:this.regions,
         }
-        return p
+        encode_map_config(map,stream)
+        return map
     }
 }

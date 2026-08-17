@@ -371,6 +371,7 @@ export class River{
 
                 let point1 = hitbox[startIndex]
                 let point2 = hitbox[endIndex]
+                if(!point1||!point2)continue
 
                 point1 = this.extend_point(point1,center,def.width * 1.7)
                 point2 = this.extend_point(point2,center,def.width * 1.7)

@@ -202,8 +202,10 @@ export class AmbientManager{
         this.music.set(this.game.resources.get_sound("level_music"),{
             loop:true
         })
-        this.reload()
         this.last_music_pos=0
+        this.music.set(undefined)
+        this.ambience.set(undefined)
+        this.reload()
     }
     clear(){
         this.music.set(undefined)

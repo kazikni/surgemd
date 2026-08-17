@@ -128,7 +128,7 @@ export class PlayerClient extends PlayerConnManager{
     }
     stream:DynamicStream=new DynamicStream()
     net_update(general_update:Stream){
-        this.stream.clear()
+        this.stream.clear(true)
         if(this.client.opened){
             this.stream.write_stream(general_update)
             const packet=this.get_update_packet()
@@ -264,6 +264,7 @@ export class PlayersManager{
         this.start_packet_stream.clear()
         const packet=new StartPacket()
         packet.settings=this.game.start_settings
+        packet.settings.map=this.game.map.map_stream
         this.game.clients.packets_manager.encode(packet,this.start_packet_stream)
         ;(this.start_packet_stream as DynamicStream).lock()
     }
@@ -285,7 +286,6 @@ export class PlayersManager{
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
 
         this.game.modeManager.manage_general_packet(this.general_update)
-
         this.game.clients.packets_manager.encode(this.general_update,s)
 
         for(const p of Object.values(this.connected_players)){
@@ -298,11 +298,13 @@ export class PlayersManager{
         if(this.game.replay)this.game.replay.update()
         this.first_tick=false
     }
-    connection(client:Client,username:string){
+    async connection(client:Client,username:string){
         if(this.connected_players[client.ID])return
         this.connected_players[client.ID]=new PlayerClient(this.game,client)
+        if(!this.game.initialized)await this.game.signals.wait("game_initialized")
+
         client.send_stream(this.start_packet_stream)
-        client.send_stream(this.game.map.map_packet_stream)
+        client.send_stream(this.game.map.map_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
             if(this.game.closed)return

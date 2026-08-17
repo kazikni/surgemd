@@ -161,15 +161,17 @@ export class LevelPlayer {
     spawn_players(){
         for(const conn of Object.values(this.game.players.connected_players)){
             conn.view_objects.length=0
-            if(conn.real_human?.dead){
+            let p=conn.real_human as Player
+            if(p?.dead){
                 conn.revive()
             }else{
-                conn.add_player()
+                p=conn.add_player() as Player
             }
-            conn.human!.reset_status()
-            if(conn.human&&conn.human.is_player&&!conn.human.is_bot){
-                conn.human.clear(true,true)
-                this.script.on_spawn_player(conn.human as Player)
+            if(!p)continue
+            p!.reset_status()
+            if(p&&p.is_player&&!p.is_bot){
+                p.clear(true,true)
+                this.script.on_spawn_player(p)
             }
         }
     }

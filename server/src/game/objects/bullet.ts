@@ -61,6 +61,7 @@ export class Bullet extends ServerGameObject{
         this.velocity=v2(0,0)
 
         this.net_sync_deletion=false
+        this.net_sync_can_unsee=false
 
         this.allow_tick=true
     }
@@ -281,7 +282,6 @@ export class Bullet extends ServerGameObject{
             .write_float32(this.tracer_height)
             .write_uint32(this.tracer_color)
             .write_uint8(this.tracer_alpha)
-            //.write_uint8(this.def.tracer.particles?.frame??0)
             .write_boolean_group(this.hit_owner,this.critical,this.pass_through_humans,this.pass_through_everthing)
             .write_id(this.owner?.id??0)
         }

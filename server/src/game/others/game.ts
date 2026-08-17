@@ -85,6 +85,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     closed:boolean=false
     started:boolean=false
     fineshed:boolean=false
+    initialized:boolean=false
 
     statistics?:GameStatistic
 
@@ -196,6 +197,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.deadzone=new DeadZoneManager(this)
     }
     async init(mode:ModeManager){
+        this.initialized=false
         this.definitions.init_default()
         if(this.mods){
             for(const k of this.mods.getLoadOrder()){
@@ -212,6 +214,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         await mode.generate_map()
 
         this.players.encode_start_packet()
+        this.initialized=true
+        this.signals.emit("game_initialized",this)
     }
     async auto_init(game_config:GameConfig){
         this.game_config=game_config
@@ -323,7 +327,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 return this.players.encode_frame(full)
             },this.ntps);
             /*(new DenoFileManager().open("database/replays/1.repl","rw")).then((v)=>{
-                this.replay!.startRecording(v,this.map.map_packet_stream)
+                this.replay!.startRecording(v,this.map.map_stream)
             })*/
         }
 

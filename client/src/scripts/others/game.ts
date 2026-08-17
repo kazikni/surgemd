@@ -9,8 +9,7 @@ import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
 import { DamageSplash, PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { MapPacket } from "common/scripts/packets/map_packet.ts";
-import { Layers, PlayerStatus, zIndexes } from "common/scripts/others/constants.ts";
+import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -48,6 +47,7 @@ import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
 import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
+import { decode_map_config } from "common/scripts/packets/map_message.ts";
 export class Game extends ClientGame<GameObject>{
     client?:Client
     input:InputPacket=new InputPacket()
@@ -61,7 +61,6 @@ export class Game extends ClientGame<GameObject>{
     }
     game_over:boolean=false
     started:boolean=false
-    map_started:boolean=false
 
     local_server:LocalGameServer
     start_with_intro:boolean=false
@@ -417,6 +416,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.fs=fs
     }
+
     set_lookTo_angle(angle:number,dist:number){
         if(!this.active_entity)return
         this.input.angle=angle
@@ -505,7 +505,17 @@ export class Game extends ClientGame<GameObject>{
         this.cam2d.zoom=6
         this.zoom_speed=4
 
-        this.ambient.music.set(undefined)
+        if(settings.map){
+            const map=decode_map_config(settings.map)
+            if(map.definitions){
+                this.definitions.reset()
+                this.definitions.add_definitions(map.definitions)
+            }
+            await this.terrain.process_map(map)
+            this.minimap.init(map)
+        }
+
+        this.ambient.on_game_start()
 
         this.ui.game_over_screen={
             type:GameOverScreenType.Normal
@@ -537,7 +547,6 @@ export class Game extends ClientGame<GameObject>{
         this.menu.game_end()
         this.ambient.on_game_close()
         this.client=undefined
-        this.map_started=false
         this.cam_type=0
         this.language.clear("ingame")
         this.soft_close_game()
@@ -744,18 +753,18 @@ export class Game extends ClientGame<GameObject>{
     }
     set_socket(socket:BasicSocket){
         if(this.client)return
-        this.client=new Client(socket,PacketManager)
-        this.client.onopen=this.set_client.bind(this,this.client)
+        const client=new Client(socket,PacketManager)
+        client.onopen=this.set_client.bind(this,client)
     }
     set_client(client:Client){
-        if(!client.opened){
-            return
-        }
+        if(!client.opened)return
+        if(this.client===client)return
+        if(this.client&&this.client.opened)this.client.disconnect()
         this.client=client
         client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
         client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
-        this.world_shadow.enabled=this.save.get_variable("sv_graphics_shadows")
 
+        this.world_shadow.enabled=this.save.get_variable("sv_graphics_shadows")
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)
         })
@@ -767,24 +776,13 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("connect",(_p:ConnectPacket)=>{
         })
-        client.on("map",async(mp:MapPacket)=>{
-            if(!this.map_started)await this.signals.wait("_map_start")
-            if(mp.map.definitions){
-                this.definitions.reset()
-                this.definitions.add_definitions(mp.map.definitions)
-            }
-            await this.terrain.process_map(mp.map)
-            this.minimap.init(mp.map)
-            this.ambient.on_game_start()
-        })
         client.on("start",async(s:StartPacket)=>{
             await this.start(s.settings)
-            this.map_started=true
-            this.signals.emit("_map_start")
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
             this.ntps=jp.ntps
+
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.game_over = true

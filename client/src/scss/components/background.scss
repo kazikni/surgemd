@@ -5,10 +5,11 @@
     background: var(--item-bg);
     backdrop-filter: blur(7px);
 
+    /*
     text-shadow: 0.2vh 0.2vh var(--item-text-shadow);
     h1{
         text-shadow: 0.35vh 0.35vh var(--item-text-shadow);
-    }
+    }*/
     &:hover {
         box-shadow: 0 0 2vw var(--item-border-hover);
         outline: none !important;

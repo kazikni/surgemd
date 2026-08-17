@@ -27,23 +27,6 @@
         text-align: left;
         color: rgba(255, 255, 255, 0.5);
     }
-
-    @include main.large_screen {
-        font-size: 23px;
-        padding: 6px 15px;
-    }
-    @include main.medium_screen {
-        font-size: 18px;
-        padding: 5px 12px;
-    }
-    @include main.small_screen {
-        font-size: 14px;
-        padding: 4px 10px;
-    }
-    @include main.tiny_screen {
-        font-size: 10px;
-        padding: 3px 7px;
-    }
 }
 .text-input-blue {
     @extend .text-input-base;

@@ -187,7 +187,7 @@ export class AudioInstance {
     }
 
     compute_volume(): number {
-        let volume=this.base_volume*(this.controller?.volume??1)
+        let volume=this.base_volume
         if (this.spatial && this.position){
             volume*=this.engine.spatial.compute_volume(this.position,this.max_distance,this.ref_distance)
         }
@@ -195,7 +195,7 @@ export class AudioInstance {
     }
     update_volume(){
         if(this.state !== VoiceState.playing)return
-        let volume=this.base_volume
+        let volume=this.base_volume*(this.controller?.volume??1)
         if(this.spatial&&this.position){
             volume*=this.engine.spatial.compute_volume(this.position,this.max_distance,this.ref_distance)
             this.pan.pan.value=this.engine.spatial.compute_pan(this.position,this.max_distance)

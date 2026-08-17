@@ -571,16 +571,16 @@ export class Game extends ClientGame<GameObject>{
     }
     override on_update(dt:number){
         super.on_update(dt)
-
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
             this.global_interpolation=1
         }
-        this.ambient.update(dt)
+        if(this.happening){
+            this.ambient.update(dt)
+            this.dead_zone.tick(dt)
+        }
         this.ui.update(dt)
-        this.device.tick(dt)
-        this.dead_zone.tick(dt)
         if(this.editor)this.editor.tick(dt)
 
         if (this.cam_type === 1) {

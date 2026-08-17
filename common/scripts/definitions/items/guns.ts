@@ -296,7 +296,7 @@ export const guns_factory={
 
             recoil_animation:{
                 time_scale:8,
-                walk:0.7
+                walk:0.07
             },
             speed_mod:0.95,
         },extend??{})

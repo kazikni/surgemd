@@ -1,8 +1,7 @@
-# Surgemd Pre-Beta-9
 ## News
-__                                                                                                                 __
+___
 ### Mains
-* !Big Changes On the game Code
+* *Big Changes On the game Code!*
 * No Hope Rework
 * Fall Biome
 * Swimming
@@ -14,7 +13,7 @@ __                                                                              
 * Scanner Drone
 * Puzzle Test
 * Complete The level will start the next
-__                                                                                                                 __
+___
 ### Menu
 * Main Menu Rework
 * Emotes Loadout
@@ -31,7 +30,7 @@ __                                                                              
 * Shadows Setting
 * Perspective Setting
 * Readd Level Title Screen
-__                                                                                                                 __
+___
 ### Items
 * XM556 - 556mm LMG
 * M249 - 556mm LMG
@@ -44,7 +43,7 @@ __                                                                              
 * Bonesaw Bloody
 * Bike Helmets Variations
 * TaurusTx sounds
-__                                                                                                                 __
+___
 ### Loadout
 * Angry Emote
 * Angry Swearing
@@ -65,15 +64,15 @@ __                                                                              
 * Stone-2 And Stone-3 Badge
 * MD Badge
 * Campfire Badge
-__                                                                                                                 __
+___
 ### Others
 * Hunt House on tundra map
 * Increse critical chance if you dont walk from 15% to 25%
 * Bounce Kill Score Reward
 * Red, Yellow, Green And Blue Buttons
-__                                                                                                                 __
+___
 ## Changes
-__                                                                                                                 __
+___
 ### Items
 * Some Balance Changes
 * Some Loot Table Changes
@@ -85,19 +84,15 @@ __                                                                              
 * Change Quickswitch
 * Allow Reload After Delay
 * Perspective On Airstrike and Nukes
-__                                                                                                                 __
+___
 ### Menu
 * Final Screen Rework
 * Lock Skins Color Selection
 * Game over Improvements
 * Remove Blur Backdrop
-__                                                                                                                 __
+___
 ### Others
 * Fix RIP Ammo dont split rpg7 bullet
 * Obstacles Particles Opacity Decay
 * Shed Ceiling Now Need Have At Least 3 Walls To Fall
 * If the player does not die to another player, the kill will go to the last player who dealt damage to them.
-__                                                                                                                 __
-# Play The Game
-[Web Version](https://surgemd.io)
-If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

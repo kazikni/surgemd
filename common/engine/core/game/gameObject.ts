@@ -653,7 +653,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         const effective:GameObject[]=[...objects]
         for (const obj of last_list) {
             if(current.has(obj.id))continue
-            if(!obj.net_sync_can_unsee) {
+            if(!obj.net_sync_can_unsee&&!obj.destroyed) {
                 effective.push(obj)
             }
         }

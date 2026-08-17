@@ -105,7 +105,7 @@ export class Client{
             this.emit_packet(new PongPacket(packet.client_time,performance.now()))
         })
     }
-    private stream_cache:Stream=new DynamicStream()
+    private stream_cache:Stream=new DynamicStream(2048)
 
     emit(signal:string,msg?:any,bytes1:number=1,bytes2:number=2){
         const p=new SignalMessagePacket()
@@ -117,12 +117,10 @@ export class Client{
     }
     emit_packet(packet: Packet) {
         if (this.ws.readyState !== WebSocket.OPEN) return
-
         this.stream_cache.clear()
         this.manager.encode(packet, this.stream_cache)
-
-        const data = this.stream_cache.data.slice(0,this.stream_cache.length)
-
+        const data=this.stream_cache.data
+        //const data=this.stream_cache.data.subarray(0,this.stream_cache.length)
         this._send(data)
     }
     async _on_message(msg:MessageEvent<ArrayBuffer|Blob>){
@@ -176,7 +174,8 @@ export class Client{
     }
     send_stream(stream:Stream){
         if(this.ws.readyState !== WebSocket.OPEN)return
-        this._send(stream.data.subarray(0, stream.length))
+        this._send(stream.data)
+        //this._send(stream.data.subarray(0, Math.max(stream.length,Math.min(stream.data.length,4000))))
     }
     send(msg:any,bytes1:number=1,bytes2:number=2){
         const p=new MessagePacket()

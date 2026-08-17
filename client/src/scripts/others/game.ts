@@ -744,15 +744,13 @@ export class Game extends ClientGame<GameObject>{
     }
     set_socket(socket:BasicSocket){
         if(this.client)return
-        const client=new Client(socket,PacketManager)
-        client.onopen=this.set_client.bind(this,client)
+        this.client=new Client(socket,PacketManager)
+        this.client.onopen=this.set_client.bind(this,this.client)
     }
     set_client(client:Client){
         if(!client.opened){
-            this.client=undefined
             return
         }
-        if(client===this.client)return
         this.client=client
         client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
         client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")

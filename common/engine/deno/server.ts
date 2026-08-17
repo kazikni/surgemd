@@ -278,6 +278,31 @@ export class Server extends Router {
         this.server = null
         this.default_handlers=default_handlers
     }
+    private async handle_request(
+        req: Request,
+        info: Deno.ServeHandlerInfo
+    ): Promise<Response> {
+        const url = new URL(req.url)
+
+        const path = [""]
+        path.push(...splitPath(url.pathname))
+
+        let response = await this._handler()(
+            req,
+            path,
+            info
+        )
+
+        if (!response) {
+            response = await this.failCallback(
+                req,
+                path,
+                info
+            ) ?? new Response("fail")
+        }
+
+        return response
+    }
     run() {
         if (this.ssl) {
             this.server = Deno.serve({
@@ -286,32 +311,12 @@ export class Server extends Router {
                 cert: Deno.readTextFileSync(this.certFile),
                 key: Deno.readTextFileSync(this.keyFile),
                 
-            }, async (req: Request, info: Deno.ServeHandlerInfo) => {
-                const url = new URL(req.url);
-                const path = [""];
-                path.push(...splitPath(url.pathname));
-                let val = (await this._handler()(req, path, info));
-                if (!val) {
-                    const re = this.failCallback(req, path, info);
-                    val = (await re) ?? new Response("fail");
-                }
-                return val as Response;
-            });
+            },this.handle_request.bind(this));
         } else {
             this.server = Deno.serve({
                 port: this.port,
                 hostname:"0.0.0.0"
-            }, async (req: Request, info: Deno.ServeHandlerInfo) => {
-                const url = new URL(req.url);
-                const path = [url.host];
-                path.push(...splitPath(url.pathname));
-                let val = (await this._handler()(req, path, info));
-                if (!val) {
-                    const re = this.failCallback(req, path, info);
-                    val = (await re) ?? new Response("fail");
-                }
-                return val as Response;
-            });
+            },this.handle_request.bind(this));
         }
     }
     async stop() {

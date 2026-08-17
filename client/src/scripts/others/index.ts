@@ -105,6 +105,7 @@ import { BasicSocket, CutsceneCommandType, FetchFileManager, FileManager, Offlin
             if(this.game.happening)return
             switch(play.type){
                 case "online":{
+                    this.game.menu.show_loading_screen()
                     const args={
                         ...play,
                         region:this.game.save.get_variable("sv_game_region"),
@@ -122,10 +123,13 @@ import { BasicSocket, CutsceneCommandType, FetchFileManager, FileManager, Offlin
                             })).json()
                             if(ghost.success){
                                 this.game.connect(ghost.address)
+                            }else{
+                                this.game.menu.hide_loading_screen()
                             }
                         }
                     }catch{
                         alert("Error")
+                        this.game.menu.hide_loading_screen()
                     }
                     break
                 }

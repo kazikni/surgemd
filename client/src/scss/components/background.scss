@@ -1,40 +1,44 @@
 @use "common/engine/main.scss" as main;
-.background-menu-base{
-    border-radius: 4px;
-    border: 2px solid var(--item-border);
+.menu-panel-base{
+    border-radius: 0.3vw;
+    border: 0.13vw solid var(--item-border);
     background: var(--item-bg);
     backdrop-filter: blur(7px);
-    &:hover {
-        box-shadow: 0 0 20px var(--item-border-hover);
+
+    text-shadow: 0.2vh 0.2vh var(--item-text-shadow);
+    h1{
+        text-shadow: 0.35vh 0.35vh var(--item-text-shadow);
     }
+    &:hover {
+        box-shadow: 0 0 2vw var(--item-border-hover);
+        outline: none !important;
+    }
+
+    font-family: sans-serif, 'Segoe UI', Tahoma, Geneva, Verdana;
 }
-.background-menu-blue {
-    @extend .background-menu-base;
+.menu-panel-blue {
+    @extend .menu-panel-base;
 
     --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
 
     --item-border: #07aaeeaa;
     --item-border-hover: #07aaeeaa;
+    --item-text-shadow: #07aaee44;
 }
-.background-menu-green {
-    @extend .background-menu-base;
+.menu-panel-green {
+    @extend .menu-panel-base;
     --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
 
     --item-border: #00aa77aa;
     --item-border-hover: #00aa77aa;
+    --item-text-shadow: #00aa7744;
 }
-.background-menu-ss{
+.menu-panel-ss{
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+    gap: 5vh;
+    padding: 2vw;
     text-align: center;
     align-content: center;
     font-family: "Russo-One";
-    @include main.medium_screen {
-        padding: 10px;
-    }
-    @include main.small_screen {
-        padding: 15px;
-    }
 }

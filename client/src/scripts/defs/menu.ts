@@ -222,7 +222,7 @@ export function make_menu_campaign(campaign:Record<string,any>){
             for(const l in charpter.levels){
                 const level=charpter.levels[l]
                 const level_div = document.createElement("div")
-                level_div.className="background-menu-ss background-menu-blue"
+                level_div.className="menu-panel-ss menu-panel-blue"
                 level_div.innerHTML = `
 <h1>${level.meta.name}</h1>
 <p>${level.meta.description}</p>
@@ -242,7 +242,7 @@ export function make_menu_modes(modes:ModeConfig[]){
         for(const m in modes){
             const mode=modes[m]
             const mb=document.createElement("div")
-            mb.className="background-menu-ss background-menu-blue"
+            mb.className="menu-panel-ss menu-panel-blue"
             mb.innerHTML=`
 <h1>${mode.mode.name==undefined?mode.mode.mode:manager.translation.get(mode.mode.name)}</h1>`
             for(const t in mode.group_size){
@@ -270,8 +270,6 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
 <span class="span-text">Emotes Inventory</span>
 <div class="loadout-icons-group emotes-inventory"></div>
         `
-
-        parent.classList.add("big")
 
         const emotes_g=parent.querySelector(".emotes-inventory") as HTMLDivElement
         function emote_click(e:MouseEvent){
@@ -360,7 +358,6 @@ export function make_badges_settings(save: GameSave,resources: ResourcesManager,
     return (parent: HTMLDivElement) => {
         let selected: string=save.get_variable("sv_loadout_badge")
 
-        parent.classList.add("big")
         parent.innerHTML = `
 <div class="loadout-icons-group items">
     <div class="litem" idString=""></div>
@@ -410,8 +407,6 @@ export function select_loadout_item(save: GameSave,resources: ResourcesManager,i
     return (parent: HTMLDivElement) => {
         let selectedElem: HTMLDivElement | null = null
         let selectedSlot: HTMLDivElement | null = null
-
-        parent.classList.add("big")
 
         parent.innerHTML = `
 <span class="span-text">Active</span>
@@ -608,7 +603,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             generate: (parent, manager) => {
                 parent.innerHTML = `
                 <h2>Play Replay</h2>
-                <div class="replay-upload background-menu-blue">
+                <div class="replay-upload menu-panel-blue">
                     <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
                     <button class="btn-green" id="btn-load-replay">Load Replay</button>
                 </div>`
@@ -648,13 +643,13 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             name:"menu.play.level-selector",
             subtab:"campaign_level_selector"
         },
-        {
-            type:"label",
-            name:"menu.play.label-online",
-        },
     ]
     if(sandbox_version){
         play_options.push(
+            {
+                type:"label",
+                name:"menu.play.label-online",
+            },
             {
                 type:"button",
                 id:"host_game",
@@ -736,8 +731,12 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                 }
             }
         }
-    }else{
+    }else if(menu.api_settings){
         play_options.push(
+            {
+                type:"label",
+                name:"menu.play.label-online",
+            },
             {
                 type:"button",
                 id:"play-online",
@@ -752,7 +751,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             }
         )
         play_subtabs["play_online"]={
-            generate:make_menu_modes(menu.api_settings.modes)
+            generate:make_menu_modes(menu.api_settings?.modes??[])
         }
         play_subtabs["group"]={
             generate:(p,m)=>{
@@ -919,7 +918,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             subtabs:{
                 "game":{
                     generate:make_menu_settings(menu.save,"menu.settings.game",[
-                        {
+                        menu.api_settings?{
                             type:"enum",
                             tname:"settings.game.region",
                             var:"sv_game_region",
@@ -929,7 +928,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                     value:v
                                 }
                             }),
-                        },
+                        }:undefined,
                         {
                             type:"toggle",
                             tname:"settings.game.interpolation",
@@ -1321,12 +1320,6 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
     <a href="${socials.github}" target="_blank" class="social-link">
         <i class="social-icon github"></i>
     </a>
-    <a href="/files/surgemd-windows-lasted.zip" target="_blank" class="social-link">
-        <i class="social-icon selfs"></i>
-    </a>
-    <a href="/files/surgemd-linux-lasted.zip" target="_blank" class="social-link">
-        <i class="social-icon linux"></i>
-    </a>
 </div>`
                     }
                 },
@@ -1339,7 +1332,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             parent.innerHTML+=`<h2 class="span-text">${n.title}</h2>`
                             const d=document.createElement("div")
                             d.classList.add("update-item")
-                            d.innerHTML=`<div class="background-menu-blue background-menu-tt">${formatToHtml(await (await fetch(news_path+"content/"+n.id+".md")).text())}</div>`
+                            d.innerHTML=`<div class="menu-panel-blue background-menu-tt">${formatToHtml(await (await fetch(news_path+"content/"+n.id+".md")).text())}</div>`
                             //d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3 class="span-text">See More</h3></a>`
                             parent.appendChild(d)
                         }

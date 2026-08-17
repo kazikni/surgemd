@@ -5,22 +5,24 @@
     transition: 0.25s ease;
     cursor: text;
 
-    padding: 8px 18px;
-    font-size: 25px;
+    padding: 0.5vw 0.5vh;
+    font-size: 1.5vw;
 
-    border: 2px solid var(--item-border);
+    border: 0.13vw solid var(--item-border);
     background: var(--item-bg);
     backdrop-filter: blur(7px);
     color: white;
     outline: none;
 
     &:active {
-        transform: translateY(2px);
+        transform: translateY(0.2vh);
     }
     &:focus {
         border-color: var(--item-bg-hover);
-        box-shadow: 0 0 15px var(--item-border-hover);
+        box-shadow: 0 0 2vw var(--item-border-hover);
+        outline: none !important;
     }
+    &:ot
     &::placeholder {
         text-align: left;
         color: rgba(255, 255, 255, 0.5);
@@ -64,8 +66,8 @@
 .text-input-red {
     @extend .text-input-base;
 
-    --item-bg: linear-gradient(135deg, #b01c4166 0%, #75042b66 100%);
-    --item-bg-hover: linear-gradient(135deg, #bd2a4e66 0%, #a3124466 100%);
+    --item-bg: linear-gradient(135deg, #b01c4144 0%, #75042b66 100%);
+    --item-bg-hover: linear-gradient(135deg, #bd2a4e44 0%, #a3124466 100%);
 
     --item-border: #40041eaa;
     --item-border-hover: #40041eaa;

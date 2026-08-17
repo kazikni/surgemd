@@ -5,7 +5,7 @@
     z-index: 10;
 }
 .editor-window{
-    @extend .background-menu-blue;
+    @extend .menu-panel-blue;
     position: absolute;
     .smde-window-top{
         border-bottom: #07aaeeaa 2px solid;
@@ -20,7 +20,7 @@
     }
 }
 .editor-menu{
-    @extend .background-menu-blue;
+    @extend .menu-panel-blue;
     position: absolute;
     height: fit-content;
     smde-option, smde-option-submenu{

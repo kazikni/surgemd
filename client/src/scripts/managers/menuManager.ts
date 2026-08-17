@@ -14,7 +14,7 @@ import { BackgroundManager } from "common/engine/web/misc/background.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
-    api_settings:ApiSettings
+    api_settings?:ApiSettings
     account:AccountManager
     tabs:Record<string,MenuTab>={}
     tabs_html:Record<string,HTMLDivElement>={}
@@ -96,21 +96,6 @@ export class MenuManager{
 
         this.submenu_param=!!this.params
 
-        this.api_settings={
-            modes:[
-                {
-                    mode:{
-                        mode:"normal"
-                    },
-                    group_size:[1]
-                },
-            ],
-            database:{
-                enabled:false,
-            },
-            regions:["local"],
-        }
-
         this.content.loading_screen.style.backgroundImage=`url("/assets/img/menu/background/${
             random.choose(["normal_background","tundra_background_1"])
         }.png")`
@@ -129,10 +114,7 @@ export class MenuManager{
 </a>
 `
         this.update_content_creators([
-            {
-                name:"Kazikni",
-                url:"https://youtube.com/@kazikni",
-            },
+            {name:"Kazikni",url:"https://youtube.com/@kazikni"},
         ])
 
 
@@ -259,7 +241,7 @@ export class MenuManager{
 
             for(const st of Object.keys(t.subtabs)){
                 const extra=document.createElement("kl-md-extra") as HTMLDivElement
-                extra.className="background-menu-md background-menu-blue"
+                extra.className="background-menu-md menu-panel-blue"
                 extra.id=`${t.id}-${st}-sm-extra`
 
                 t.subtabs[st].generate(extra,this)
@@ -340,7 +322,7 @@ export class MenuManager{
         this.cam2d.visible=false
         this.start_intro()
 
-        this.update_api()
+        await this.update_api()
 
         this.game_end()
         ShowElement(this.content.menu_options,true)
@@ -365,11 +347,12 @@ export class MenuManager{
                 js=await(await fetch(`${API_BASE}/get-settings`)).json()
             }catch(e){
                 console.log(e)
+                js=undefined
             }
             this.api_settings=js
         }
 
-        if(this.api_settings.database.enabled){
+        if(this.api_settings?.database.enabled){
             this.account.enable(this)
         }
     }
@@ -551,7 +534,7 @@ export class MenuManager{
             overlay.className="game-popup-overlay"
 
             const popup=document.createElement("div")
-            popup.className="game-popup background-menu-blue"
+            popup.className="game-popup menu-panel-blue"
 
             overlay.appendChild(popup)
             document.body.appendChild(overlay)
@@ -587,7 +570,7 @@ export class MenuManager{
 
             ctx.parent.innerHTML = `
                 <div class="character-selector-screen">
-                    <div class="character-main background-menu-blue">
+                    <div class="character-main menu-panel-blue">
                         <h1 class="character-name"></h1>
                         <div class="character-image-wrapper">
                             <img class="character-icon">
@@ -652,10 +635,7 @@ export class MenuManager{
     update_content_creators(content_creators:{name:string,url:string}[]){
         this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
         for(const creator of content_creators){
-            this.content.content_creators.innerHTML+=`
-<div class="btn-blue content-creator" onclick="location.href='${creator.url}'">
-    <span>${creator.name}</span>
-</div>`
+            this.content.content_creators.innerHTML+=`<div class="btn-blue content-creator" onclick="location.href='${creator.url}'">${creator.name}</div>`
         }
     }
 

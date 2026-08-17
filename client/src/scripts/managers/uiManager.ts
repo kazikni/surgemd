@@ -820,7 +820,7 @@ export class UiManager{
         let content=""
         for(const status of g.status.status){
             content+=`
-<div class="background-menu-blue">
+<div class="menu-panel-blue">
     <h1>${this.players_name[status.id].full}</h1>
     <span>Kills: ${status.kills}</span>
     <span>Damage: ${status.damage}</span>

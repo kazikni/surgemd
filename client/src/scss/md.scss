@@ -1,22 +1,10 @@
 @use "common/engine/main.scss";
 kl-md-submenu{
     display: flex;
-    gap: 50px; /*Default*/
+    gap: 5vw; /*Default*/
     flex-direction: row;
     width: fit-content;
     height: fit-content;
-    @include main.large_screen {
-        gap: 40px;
-    }
-    @include main.medium_screen {
-        gap: 30px;
-    }
-    @include main.small_screen {
-        gap: 20px;
-    }
-    @include main.tiny_screen {
-        gap: 10px;
-    }
 }
 kl-md-submenu-options {
     display: flex;
@@ -26,21 +14,8 @@ kl-md-submenu-options {
 
 kl-md-submenu-options button,
 kl-md-submenu-options select {
-    width: 300px;
-    margin-top:-2px;
-
-    @include main.large_screen {
-        width: 260px;
-    }
-    @include main.medium_screen {
-        width: 220px;
-    }
-    @include main.small_screen {
-        width: 160px;
-    }
-    @include main.tiny_screen {
-        width: 130px;
-    }
+    width: 20vw;
+    margin-top:-0.2vh;
 }
 
 kl-md-extra {

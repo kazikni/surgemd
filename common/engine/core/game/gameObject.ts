@@ -54,6 +54,7 @@ export abstract class BaseObject2D{
 
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
+    pool?:GameObjectPool2D<any>
 
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
@@ -342,6 +343,39 @@ export interface Layer2D{
     net_update:number[]
     render:number[]
 }
+
+export class GameObjectPool2D<GameObject extends BaseObject2D> {
+    objects: GameObject[] = []
+    available: GameObject[] = []
+
+    constructor(private factory:()=>GameObject){}
+
+    allocate(): GameObject {
+        let obj=this.available.pop()
+        if(!obj){
+            obj=this.factory()
+            obj.pool=this
+            this.objects.push(obj)
+        }
+        return obj
+    }
+    release(obj: GameObject) {
+        this.available.push(obj)
+    }
+    preallocate(count: number) {
+        for (let i = 0; i < count; i++) {
+            const obj = this.factory()
+            obj.pool = this
+            this.objects.push(obj)
+            this.available.push(obj)
+        }
+    }
+    free() {
+        this.objects.length = 0
+        this.available.length = 0
+    }
+}
+
 export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
 export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number|undefined,layer:number,type:number)=>GameObject|undefined
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
@@ -352,6 +386,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     layers_orden:number[]=[]
 
     objects:Record<number,GameObject>={}
+    pools:Record<number,GameObjectPool2D<GameObject>>={}
 
     full_dirty_objects:Record<number,GameObject>={}
     part_dirty_objects:Record<number,GameObject>={}
@@ -375,6 +410,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     clear(){
         for(const obj in this.objects){
             this.objects[obj].on_destroy()
+            if(this.objects[obj].pool)this.objects[obj].pool.release(obj)
             this.objects[obj].registred=false
             this.objects[obj].destroyed=true
         }
@@ -467,6 +503,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     unregister_object(obj:GameObject){
         if(!obj.registred)return
         obj.registred=false
+        if(obj.pool)obj.pool.release(obj)
         this.cells.unregistry(obj)
         let idx=this.layers[obj.layer].orden.indexOf(obj.id)
         if(idx>=0)this.layers[obj.layer].orden.splice(idx,1)
@@ -621,8 +658,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         if(cache){
             stream.write_uint24(cache.length)
-            stream.data.set(cache,stream.index)
-            stream.index += cache.length
+            stream.write_bytes(cache)
             return
         }
 
@@ -805,7 +841,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const co=stream.read_id()
                 const tp=stream.read_uint8()
                 //const bg=stream.read_boolean_group()
-                const obb=this.make_object_checkpoint(stream,id,layer,tp)
+                const obb=this.pools[tp]?this.pools[tp].allocate():this.make_object_checkpoint(stream,id,layer,tp)
                 if(!obb)continue
                 const obj=this.add_object(obb,layer,id)
                 obj.is_new=false

@@ -1,4 +1,4 @@
-import { AbstractServerGame, CircleHitbox2D, Client, FileManager, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, FileManager, GameObjectPool2D, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";

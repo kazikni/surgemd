@@ -61,8 +61,6 @@ export function write_kspr(data: KSPR, stream?: Stream): Stream {
             s.write_uint16(atlas.height)
             s.write_uint24(atlas.image.length)
             s.write_bytes(atlas.image)
-            s.data.set(atlas.image,s.index)
-            s.index += atlas.image.length
             // frames
             const entries = Object.entries(atlas.frames)
             s.write_uint16(entries.length)

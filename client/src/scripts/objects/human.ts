@@ -309,15 +309,6 @@ export class Human extends Humanoid{
     override on_render(_dt: number): void {
     }
     override on_tick(dt:number): void {
-        if(this.dead)return
-        super.on_tick(dt)
-        if(this.sprites.name){
-            this.sprites.name.position.x=this.position.x
-            this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
-            this.sprites.name.layer=this.layer
-        }
-        this.tick_footsteps(!this.seat)
-        this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
         if(this.sprites.emote_container.visible){
             this.sprites.emote_container.position=this.position
             v2m.add_component(this.sprites.emote_container.position,0,-1.5)
@@ -344,6 +335,15 @@ export class Human extends Humanoid{
                 })
             }
         }
+        if(this.dead)return
+        super.on_tick(dt)
+        if(this.sprites.name){
+            this.sprites.name.position.x=this.position.x
+            this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
+            this.sprites.name.layer=this.layer
+        }
+        this.tick_footsteps(!this.seat)
+        this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)
         for(const f of this.effects){
             f.lifetime+=dt
             if(f.def.particles){

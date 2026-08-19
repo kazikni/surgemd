@@ -256,8 +256,8 @@ export function make_menu_play_options(options:GamePlayOption[]){
                 }
                 mb.appendChild(btn)
                 parent.appendChild(mb)
+                m++
             }
-            m++
         }
     }
 }
@@ -1445,6 +1445,7 @@ ___
 * @kazikni
 * @cheerfulbull_29688
 * @endermanking
+* @yourhumbledrastic
 * @littlethief69
 * Suroi.io
 * Surviv.io
@@ -1485,10 +1486,6 @@ ___
 ## Videos And Trailers
 * @kazikni
 * @rapxtor_yt
-___
-# Discord Server
-@kazikni
-@Zahirralt2
 ___
 ## Inspirations
 * Hotline Miami 1 and 2

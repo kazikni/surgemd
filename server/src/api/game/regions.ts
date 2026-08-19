@@ -154,47 +154,30 @@ export class RegionManager {
             }, 3000);
 
             socket.addEventListener("message", (e) => {
-                if (logged) {
-                    return;
+                if(logged){
+                    return
                 }
-
-                const msg = JSON.parse(e.data);
-
+                const msg = JSON.parse(e.data)
                 if (msg.type !== "login") {
                     socket.close();
-                    return;
+                    return
                 }
-
-                const user =
-                    this.api.config.users?.[msg.authentication.user.name];
-
-                if (
-                    !user ||
-                    user.password !== msg.authentication.user.password ||
-                    !user.permitions?.allow_region
-                ) {
-                    socket.close();
-                    return;
+                const user=this.api.config.users?.[msg.authentication.user.name]
+                if(!user||user.password !== msg.authentication.user.password||!user.permitions?.allow_region){
+                    socket.close()
+                    return
                 }
-
-                const region = this.get(
-                    msg.region.name,
-                    user.permitions.allow_create_region
-                );
-
-                if (!region) {
-                    socket.close();
-                    return;
+                const region=this.get(msg.region.name,user.permitions.allow_create_region)
+                if(!region){
+                    socket.close()
+                    return
                 }
-
-                logged = true;
-                clearTimeout(timeout);
-
-                region.add(socket, user);
-
+                logged = true
+                clearTimeout(timeout)
+                region.add(socket, user)
                 socket.send(JSON.stringify({
                     type: "logged"
-                }));
+                }))
             });
 
             return result.response;

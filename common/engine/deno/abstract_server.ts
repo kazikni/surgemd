@@ -5,9 +5,8 @@ import { DenoFileManager } from "./file.ts";
 import { Server } from "./server.ts"
 import { ClientsManager } from "./websockets.ts";
 
-export type WorkerMessageBase<GameConfig, GameData, MainConfig> =
-    | {
-        type: 0 // Begin
+export type WorkerMessageBase<GameConfig, GameData, MainConfig>={
+        type:0 // Begin
 
         id: number
         port: number
@@ -16,23 +15,26 @@ export type WorkerMessageBase<GameConfig, GameData, MainConfig> =
         keyFile?: string
 
         config:MainConfig
-    }
-    | {
-        type: 1 // New Game
+    }|{
+        type:1 // New Game
         config?: GameConfig
-    }
-    | {
-        type: 2 // Set Data
+    }|{
+        type:2 // Set Data
         data: GameData
-    }
-    | {
-        type: 3 // Stop
+    }|{
+        type:3 // Stop
+    }|{
+        type:4 // Reset Worker
+    }|{
+        type:5 // Heartbeat
     }
 export enum WorkerMsg {
-    Begin = 0,
-    NewGame = 1,
-    SetData = 2,
-    Stop = 3,
+    Begin=0,
+    NewGame=1,
+    SetData=2,
+    Stop=3,
+    ResetWorker=4,
+    Heartbeat=5
 }
 export interface GameDataBase{
     running:boolean
@@ -86,6 +88,7 @@ export abstract class AbstractGameContainer<
     id = 0
     data?: GameData
     config?:GameConfig
+    running:boolean=false
 
     server!:AbstractGameServer<GameData,GameConfig,MainConfig,WorkerMessage>
 
@@ -109,6 +112,7 @@ export abstract class AbstractSelfGameContainer<
     constructor(packet_manager:PacketsManager){
         super()
         this.clients_manager=new ClientsManager(packet_manager)
+        this.running=true
     }
     abstract make_game(config:GameConfig):Promise<Game>
     override async new_game(config: GameConfig): Promise<void> {
@@ -136,6 +140,8 @@ export abstract class AbstractWorkerGameContainer<
     worker!: Worker
     abstract worker_path: URL
     port:number
+
+    last_heartbeat:number=0
     constructor(){
         super()
         this.port=8001
@@ -146,6 +152,9 @@ export abstract class AbstractWorkerGameContainer<
     }
     begin() {
         this.reset_worker()
+        setInterval(()=>{
+            if(this.running&&performance.now()-this.last_heartbeat>=40000)this.reset_worker()
+        },10000)
     }
     
     async new_game(config:GameConfig){
@@ -156,11 +165,28 @@ export abstract class AbstractWorkerGameContainer<
         this.config=config
     }
     stop() {
-        this.worker.postMessage({ type: 3 })
+        this.worker.postMessage({ type: WorkerMsg.Stop })
         this.config=undefined
     }
-    protected reset_worker() {
+
+    _handle_msg(e:MessageEvent){
+        const msg=e.data as WorkerMessage
+        switch (msg.type) {
+            case WorkerMsg.SetData:
+                this.data = msg.data
+                break
+            case WorkerMsg.ResetWorker:
+                this.reset_worker()
+                break
+            case WorkerMsg.Heartbeat:
+                this.last_heartbeat=performance.now()
+                this.running=true
+        }
+        this.on_message(msg)
+    }
+    protected reset_worker(){
         this.config=undefined
+        this.running=false
         if (this.worker) {
             this.worker.onerror = null
             this.worker.onmessage = null
@@ -168,9 +194,7 @@ export abstract class AbstractWorkerGameContainer<
                 this.worker.terminate()
             } catch {}
         }
-
-        console.log(`[GAME ${this.id}] Starting worker`)
-
+        console.log(`[GAME-CONTAINER-${this.id}] Starting worker`)
         const worker=new Worker(this.worker_path.href, {
             type: "module"
         })
@@ -186,19 +210,11 @@ export abstract class AbstractWorkerGameContainer<
         })
         this.worker.onerror = (e) => {
             e.preventDefault()
-            console.error(`[GAME ${this.id}] Worker crashed`)
+            console.error(`[GAME-CONTAINER-${this.id}] Worker crashed`)
             if (this.worker === worker) {
                 this.reset_worker()
             }
         }
-        this.worker.onmessage = (e) => {
-            const msg = e.data as WorkerMessage
-            switch (msg.type) {
-                case WorkerMsg.SetData:
-                    this.data = msg.data
-                    break
-            }
-            this.on_message(msg)
-        }
+        this.worker.onmessage=this._handle_msg.bind(this)
     }
 }

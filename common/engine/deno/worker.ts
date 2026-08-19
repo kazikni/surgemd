@@ -100,6 +100,14 @@ export abstract class SelfGameWorker<
             break
         }
     }
+    protected free_worker(){
+        this.game?.stop()
+        this.clients_manager.clear()
+        this.game = undefined
+        self.postMessage({
+            type: WorkerMsg.ResetWorker,
+        })
+    }
     protected async restartGame(config?: GameConfig) {
         if (this.game) {
             this.stopGame()
@@ -124,16 +132,19 @@ export abstract class SelfGameWorker<
         this.game?.stop()
         this.clients_manager.clear()
         this.game = undefined
-
         this.sendData({
             running:false
         } as GameData)
     }
     run(){
+        self.postMessage({type:WorkerMsg.Heartbeat})
         this.server?.run()
         this.sendData({
             running:false
         } as GameData)
+        setInterval(() => {
+            self.postMessage({type:WorkerMsg.Heartbeat})
+        }, 20000)
     }
     canConnect(ip:string){
         if (this.limiter) {

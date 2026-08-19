@@ -26,6 +26,9 @@ class App extends SelfGameWorker<Game,GameData,GameConfig,GameServerConfig>{
     }
     protected override async create_game(config?: GameConfig): Promise<Game> {
         const game=new Game(this.config,this.clients_manager,this.fs)
+        game.signals.on("stop",()=>{
+            this.free_worker()
+        })
         game.string_id=random.code(20)
         await game.auto_init(config!)
         return game

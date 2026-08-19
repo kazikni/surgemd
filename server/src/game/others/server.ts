@@ -96,7 +96,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     }
     make_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
-            if(g.data?.running)continue
+            if(!g.running||g.data?.running)continue
             if(!config||!config.mode){
                 config={
                     mode:"normal",

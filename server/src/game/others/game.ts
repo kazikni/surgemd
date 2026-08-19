@@ -352,9 +352,9 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             if(!this.can_finish){
                 return
             }
-            this.add_timeout(this.stop.bind(this),1)
             if(this.replay)this.replay.stopRecording()
             this.update_data()
+            this.running=false
         },finish_time)
     }
 

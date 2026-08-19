@@ -188,8 +188,10 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         }
     }
     stop(){
+        if(!this.running)return
         this.running=false
         this.clock.stop()
+        this.signals.emit("stop",{game:this})
     }
     clear(){
         this.scene_2d.objects.clear()

@@ -85,7 +85,7 @@ export const bullets_factory={
 
             critical_mult: 1.25,
             obstacle_mult: 1,
-            falloff:0.75,
+            falloff:0.85,
             tracer:tracers.medium
         }
     },
@@ -101,13 +101,36 @@ export const bullets_factory={
             tracer: tracer,
         }
     },
+    heavy_sniper(power:number,tracer=tracers.large):BulletDef{
+        return {
+            damage:105*power,
+            range:220*(1+(power-1)*0.01),
+            speed:39*(1+(power-1)*-0.5),
+
+            falloff:0.7,
+            critical_mult:1.1,
+            obstacle_mult:2,
+            tracer:tracer
+        }
+    },
     smg(power:number,tracer=tracers.small):BulletDef{
         return {
             damage:7 * power,
-            range:45* (1 + (power - 1) * 0.1),
-            speed:25 * (1 + (power - 1) * 0.3),
+            range:40* (1 + (power - 1) * 0.5),
+            speed:25 * (1 + (power - 1) * 0.5),
 
-            falloff:0.7,
+            falloff:0.6,
+            critical_mult:1.25,
+            tracer:tracer
+        }
+    },
+    ac_smg(power:number,tracer=tracers.small):BulletDef{
+        return {
+            damage:5.9 * power,
+            range:50* (1 + (power - 1) * 0.4),
+            speed:21 * (1 + (power - 1) * 0.5),
+
+            falloff:0.6,
             critical_mult:1.25,
             tracer:tracer
         }
@@ -125,11 +148,11 @@ export const bullets_factory={
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:2.8*power,
+            damage:2.7*power,
             speed:24*(1+(power-1)*0.4),
             range:31*(1+(power-1)*0.4),
 
-            falloff:0.3,
+            falloff:0.5,
             critical_mult:1.25,
             tracer
         }
@@ -233,7 +256,7 @@ export const guns_factory={
             rank:ItemRank.C,
 
             barrel_length:1,
-            idle_spread:0.7,
+            idle_spread:0.4,
 
             fire_delay:0.1,
             switch_delay:0.2,
@@ -618,25 +641,18 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Pfeifer-Zeliska",
             rank:ItemRank.S,
 
-            fire_delay:1.5,
+            fire_delay:1.6,
             switch_delay:0.1,
             spread:0.8,
             idle_spread:0.5,
             fire_mode:FireMode.Single,
 
             ammo_spawn:{
-                amount:25
+                amount:30
             },
 
             bullet:{
-                def:{
-                    damage:55,
-                    range:190,
-                    falloff:0.7,
-                    speed:45,
-                    obstacle_mult:1.7,
-                    tracer:tracers.large
-                }
+                def:bullets_factory.heavy_sniper(0.42)
             },
             reload:{
                 delay:3.2,
@@ -860,7 +876,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("micro_uzi","9mm",true,{
             name:"Micro-Uzi",
             rank:ItemRank.D,
-            fire_delay:0.03,
+            fire_delay:0.035,
             spread:8,
 
             ammo_spawn:{
@@ -883,15 +899,15 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.smg("vector","9mm",false,{
             name:"Vector",
             rank:ItemRank.A,
-            fire_delay:0.03,
-            spread:1.25,
+            fire_delay:0.037,
+            spread:2,
 
             ammo_spawn:{
                 amount:96
             },
 
             bullet:{
-                def:bullets_factory.smg(0.9)
+                def:bullets_factory.ac_smg(1)
             },
             reload:{
                 delay:1.7,
@@ -907,14 +923,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
-            spread:2,
+            spread:2.5,
 
             ammo_spawn:{
                 amount:90
             },
 
             bullet:{
-                def:bullets_factory.smg(1)
+                def:bullets_factory.ac_smg(1.12)
             },
             reload:{
                 delay:2.6,
@@ -998,15 +1014,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:105,
-                    range:160,
-                    falloff:0.7,
-                    speed:40,
-                    critical_mult:1.1,
-                    obstacle_mult:2,
-                    tracer:tracers.large
-                }
+                def:bullets_factory.heavy_sniper(1)
             },
             reload:{
                 delay:3.9,
@@ -1054,7 +1062,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             idle_spread:0.25,
 
             ammo_spawn:{
-                amount:12
+                amount:32
             },
 
             bullet:{
@@ -1231,7 +1239,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:4.5,
 
             ammo_spawn:{
-                amount:54
+                amount:60
             },
 
             bullet:{
@@ -1334,13 +1342,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
 
             bullet:{
-                def:{
-                    damage:10,
-                    obstacle_mult:1.5,
-                    range:170,
-                    speed:35,
-                    tracer:tracers.medium
-                }
+                def:bullets_factory.assault(0.87)
             },
             reload:{
                 delay:6,

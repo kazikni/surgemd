@@ -632,18 +632,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             }
         },
     } as Record<string,MenuSubTabDef>
-    const play_options:SubMenuOption[]=[
-        {
-            type:"label",
-            name:"menu.play.label-campaign",
-        },
-        {
-            type:"button",
-            id:"campaign-level-selector",
-            name:"menu.play.level-selector",
-            subtab:"campaign_level_selector"
-        },
-    ]
+    const play_options:SubMenuOption[]=[]
     if(sandbox_version){
         play_options.push(
             {
@@ -841,6 +830,16 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
         }
     }
     play_options.push(
+        {
+            type:"label",
+            name:"menu.play.label-campaign",
+        },
+        {
+            type:"button",
+            id:"campaign-level-selector",
+            name:"menu.play.level-selector",
+            subtab:"campaign_level_selector"
+        },
         {
             type:"label",
             name:"menu.play.label-files",

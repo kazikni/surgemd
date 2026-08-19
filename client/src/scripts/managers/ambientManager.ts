@@ -172,7 +172,7 @@ export class AmbientManager{
 
             const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)
-            this.music.set(menu_music)
+            if(!this.game.happening)this.music.set(menu_music)
             if(this.game.menu.intro_fineshed){
                 this.music.set(menu_music,{
                     loop:true

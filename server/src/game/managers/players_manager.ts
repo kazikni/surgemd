@@ -77,7 +77,9 @@ export class PlayerClient extends PlayerConnManager{
                 }
             }
             const scope_view:number=this.human.scope_zoom
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(26/scope_view,21/scope_view))
+
+            const size=v2(10/scope_view,5.5/scope_view)
+            const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)

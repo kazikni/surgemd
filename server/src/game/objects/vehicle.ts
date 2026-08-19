@@ -83,8 +83,8 @@ export class VehicleSeat {
     }
 
     set_human(p: Human) {
-        if (this.human) return
-        if (p.seat) p.seat.clear_human()
+        if(this.human)return
+        if(p.seat)p.seat.clear_human()
         p.physical_data.secondary_velocity=v2.zero()
         this.human = p
         p.seat = this
@@ -409,6 +409,7 @@ export class Vehicle extends MovingBody {
         for (const seat of this.seats) {
             stream.write_id(seat.human?.id ?? 0)
         }
+        stream.write_int8(this.seats.indexOf(this.pillot_seat!))
     }
     override on_decode_checkpoint(stream: Stream): void {
         const def = this.game.definitions.vehicles.valueNumber[
@@ -442,5 +443,6 @@ export class Vehicle extends MovingBody {
                 }
             }
         }
+        this.pillot_seat=this.seats[stream.read_int8()]
     }
 }

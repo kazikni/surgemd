@@ -50,7 +50,7 @@ export class ApiConnection {
                 const addr=game?.get_address?.()
                 this.send({
                     type: "find_game_response",
-                    request_id: msg.request_id,
+                    response_id: msg.request_id,
                     success: game ? true : false,
                     address: addr
                 })
@@ -87,7 +87,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
         for(const g of this.games.values()){
             if(
                 g.data&&g.data.running&&g.data.can_join&&
-                (!g.config||g.config.mode.mode===config?.mode?.mode&&g.config.group_size===config.group_size&&deepEqual(g.config.mode.settings,config.mode.settings))
+                (!g.config||g.config.mode===config?.mode&&g.config.group_size===config.group_size&&deepEqual(g.config.settings,config.settings))
             ){
                 return g as GameContainer
             }
@@ -99,13 +99,10 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
             if(g.data?.running)continue
             if(!config||!config.mode){
                 config={
-                    mode:{
-                        mode:"normal",
-                        settings:{
-                            map:{
-                            }
-                        }
-                    },
+                    mode:"normal",
+                    settings:{
+                        map:{}
+                    }
                 }
             }
             g.new_game(config)

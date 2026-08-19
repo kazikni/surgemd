@@ -16,7 +16,10 @@ import { Human } from "../objects/human.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
-        if(this.real_human)this.real_human.splashes=[]
+        if(this.real_human){
+            this.real_human.visible_humans=[]
+            this.real_human.visible_humans.length=0
+        }
         if(this.ai){
             this.ai.net_update(general_update)
         }
@@ -78,7 +81,7 @@ export class PlayerClient extends PlayerConnManager{
             }
             const scope_view:number=this.human.scope_zoom
 
-            const size=v2(10/scope_view,5.5/scope_view)
+            const size=v2(10/scope_view,6/scope_view)
             const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
@@ -167,6 +170,10 @@ export class PlayersManager{
             p.apply_score(type,amount)
         }
     }
+
+    validate_player_name(name:string):boolean{
+        return ValidString.simple_characters(name)
+    }
     clear_bots(){
         for(const b of this.connected_bots){
             if(b.human){
@@ -194,7 +201,7 @@ export class PlayersManager{
         const p=this.game.humans.add_human(player,id) as Player
         p.is_bot=is_bot
 
-        if(ValidString.simple_characters(packet.player_name)){
+        if(this.validate_player_name(packet.player_name)){
             p.name=packet.player_name
         }else{
             //Round6 Easter Egg

@@ -17,28 +17,28 @@
         },
         "game": {
             "regions":["local"],
-            "modes": [
+            "play_options":[
                 {
-                    "group_size": [
-                        1
-                    ],
-                    "mode": {
-                        "mode": "normal"
-                    }
+                    "tname":"modes.normal",
+                    "content":[
+                        {
+                            "mode":"normal"
+                        }
+                    ]
                 },
                 {
-                    "group_size": [
-                        2
-                    ],
-                    "mode": {
-                        "mode": "normal",
-                        "name": "modes.tundra",
-                        "settings": {
-                            "map": {
-                                "def": "tundra"
+                    "tname": "modes.tundra",
+                    "content":[
+                        {
+                            "group_size":2,
+                            "mode":"normal",
+                            "settings": {
+                                "map": {
+                                    "def": "tundra"
+                                }
                             }
                         }
-                    }
+                    ]
                 }
             ]
         }

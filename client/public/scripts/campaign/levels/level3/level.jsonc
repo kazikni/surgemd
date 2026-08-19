@@ -16,21 +16,19 @@
         }
     },
     "mode": {
-        "mode":{
-            "mode":"normal",
-            "settings":{
-                "teams":2,
-                "players":{
-                    "group_spawn":false
-                },
-                "map": {
-                    "def": "war"
-                },
-                "spawn_mode":{
-                    "type":3,
-                    "position_generator":"deadzone",
-                    "list":[1,2]
-                }
+        "mode":"normal",
+        "settings":{
+            "teams":2,
+            "players":{
+                "group_spawn":false
+            },
+            "map": {
+                "def": "war"
+            },
+            "spawn_mode":{
+                "type":3,
+                "position_generator":"deadzone",
+                "list":[1,2]
             }
         }
     }

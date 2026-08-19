@@ -9,12 +9,10 @@
     },
     "mode": {
         "group_size": 2,
-        "mode":{
-            "mode":"normal",
-            "settings":{
-                "map": {
-                    "def": "tundra"
-                }
+        "mode":"normal",
+        "settings":{
+            "map": {
+                "def": "tundra"
             }
         }
     },

@@ -232,15 +232,15 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             }
         }
         if(!has_mode){
-            switch(game_config.mode.mode){
+            switch(game_config.mode){
                 case "normal":
-                    await this.init(new BattleRoyale(game_config.mode.settings,game_config.group_size??1))
+                    await this.init(new BattleRoyale(game_config.settings,game_config.group_size??1))
                     break
                 case "counter_md":
                     //this.init(new CounterMD(game_config.mode_settings))
                     break
                 case "debug":
-                    await this.init(new BattleRoyaleDebug(game_config.mode.settings,game_config.group_size??1))
+                    await this.init(new BattleRoyaleDebug(game_config.settings,game_config.group_size??1))
                     break
             }
         }

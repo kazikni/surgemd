@@ -9,18 +9,23 @@ export class RegionConnection {
 
     constructor(public socket: WebSocket,public user: ApiUserDefinition) {
         socket.addEventListener("message", (e) => {
-            const msg = JSON.parse(e.data)
-            if (msg?.request_id===undefined) {
-                return;
+            const msg = this.handle_message(JSON.parse(e.data))
+            if(msg?.response_id!==undefined) {
+                const pending = this.pending.get(msg.response_id)
+                if (!pending) {
+                    return
+                }
+                this.pending.delete(msg.response_id)
+                pending.resolve(msg)
             }
-            const pending = this.pending.get(msg.request_id)
-            if (!pending) {
-                return
-            }
-            this.pending.delete(msg.request_id)
-            pending.resolve(msg)
         })
     }
+
+    handle_message(msg:any):any{
+        if(msg?.response_id)return msg
+        return msg
+    }
+
     send(data: unknown) {
         if (this.socket.readyState !== WebSocket.OPEN) {
             return
@@ -103,14 +108,10 @@ export class RegionManager {
                 error: "invalid_region"
             };
         }
-
         try {
             return await region.request({
                 type: "find_game",
-                config: this.api.get_game_config(
-                    data.mode,
-                    data.group_size ?? 0
-                )
+                config: this.api.modes[data.mode]
             }) as FindGameResult;
         } catch {
             return {
@@ -118,6 +119,11 @@ export class RegionManager {
                 error: "region_offline"
             };
         }
+    }
+    validate_game_rules(mode:number,rules:{group_size?:number}):boolean{
+        if(!this.api.modes[mode])return false
+        if(rules.group_size)return (this.api.modes[mode].group_size??1)>=rules.group_size
+        return true
     }
 
     get(region: string, allow_create_region = false) {

@@ -1,17 +1,15 @@
 import { HostConfig } from "../../engine/core.ts";
 
-export interface GameModeConfig{
+export interface GameConfig{
     mode:string
     settings?:any
+    group_size?:number
     name?:string
 }
-export interface GameConfig{
-    group_size?:number
-    mode:GameModeConfig
-}
-export interface ModeConfig{
-    group_size:(number[])|{time:number,index:number,value:number[]}
-    mode:GameModeConfig|{time:number,index:number,value:GameModeConfig[]}
+export interface GamePlayOption{
+    name?:string
+    tname?:string
+    content?:GameConfig[]
 }
 export interface GameDebugOptions{
     debug_menu:boolean
@@ -31,7 +29,7 @@ export interface PlayTimeConfig{
 }
 export interface ApiSettings{
     regions:string[]
-    modes:ModeConfig[]
+    play_options:GamePlayOption[]
     database:{
         enabled:boolean
     }
@@ -44,7 +42,6 @@ export interface FindGameData{
     region:string
     mode:number
     token?:string
-    group_size?:number
 }
 export type FindGameResult={
     success:true
@@ -67,8 +64,8 @@ export interface ApiServerConfig{
     host: HostConfig
     users?: Record<string,ApiUserDefinition>
     game:{
-        regions: string[]
-        modes: ModeConfig[]
+        regions:string[]
+        play_options:GamePlayOption[]
         play_time?:PlayTimeConfig
     }
     debug?:{
@@ -141,7 +138,7 @@ export function ZeroApiServerConfig():ApiServerConfig{
         },
         game:{
             regions:[],
-            modes:[],
+            play_options:[],
         }
     }
 }

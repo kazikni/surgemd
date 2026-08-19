@@ -381,14 +381,12 @@ export class MenuManager{
                 if(this.group_state){
                     this.group_state.locked=msg.locked
                 }
-
                 this.reload_group_ui()
                 break
             case "autofill_changed":
                 if(this.group_state){
                     this.group_state.autofill=msg.autofill
                 }
-
                 this.reload_group_ui()
                 break
             case "start_game":{
@@ -399,6 +397,10 @@ export class MenuManager{
             }
             case "kicked":
                 this.leave_group()
+                break
+            case "play_failed":
+                this.hide_loading_screen()
+                alert(msg.reason)
                 break
         }
     }

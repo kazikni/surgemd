@@ -513,7 +513,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 def:{
                     damage:8,
                     range:70,
-                    falloff:0.75,
+                    falloff:0.8,
                     speed:20,
                     tracer:tracers.tiny
                 }

@@ -3,7 +3,6 @@ import { type FileHandle } from "common/engine/core.ts";
 export type PlayArgs={
     type: "online"
     mode:number
-    group_size:number
     token?:string
 }|{
     type: "campaign"

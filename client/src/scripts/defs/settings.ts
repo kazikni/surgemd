@@ -78,6 +78,7 @@ export type SettingDef=({
     type:"input"
     placeholder?:string
     initial?:string
+    limit?:number
 }|{
     type:"text"
     placeholder?:string
@@ -183,6 +184,7 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
             e.className="text-input-green"
             e.placeholder=def.placeholder??""
             e.value=initial??def.initial??""
+            if(def.limit)e.maxLength=def.limit
             e.onchange=()=>{
                 const v=def.make_value?def.make_value(e.value,def,e):e.value
                 def.on_set?.(v,e)

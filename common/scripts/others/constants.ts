@@ -10,7 +10,7 @@ export const GameConstants={
     },
     player:{
         defaultName:"Player",
-        max_name_size:25,
+        max_name_size:27,
     },
     loot:{
         radius:{

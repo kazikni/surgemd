@@ -7,10 +7,12 @@ import { Debug, sandbox_version, socials } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
-import { ModeConfig } from "common/scripts/config/config.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { build_setting_input, SettingDef, SettingOption } from "./settings.ts";
+import { GamePlayOption } from "common/scripts/config/config.ts";
+import { PlayArgs } from "../others/constants.ts";
+import { GameConstants } from "common/scripts/others/constants.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -237,24 +239,25 @@ export function make_menu_campaign(campaign:Record<string,any>){
         }
     }
 }
-export function make_menu_modes(modes:ModeConfig[]){
+export function make_menu_play_options(options:GamePlayOption[]){
     return (parent:HTMLDivElement,manager:MenuManager)=>{
-        for(const m in modes){
-            const mode=modes[m]
+        let m=0
+        for(const p of options){
             const mb=document.createElement("div")
             mb.className="menu-panel-ss menu-panel-blue"
-            mb.innerHTML=`
-<h1>${mode.mode.name==undefined?mode.mode.mode:manager.translation.get(mode.mode.name)}</h1>`
-            for(const t in mode.group_size){
+            mb.innerHTML=`<h1>${manager.translation.get(p.tname??"",{},p.name)}</h1>`
+            for(const mode of p.content??[]){
                 const btn=document.createElement("button")
                 btn.className="btn-green"
-                btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+mode.group_size[t])})
+                btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+(mode.group_size??1))})
+                const play_a:PlayArgs={type:"online",mode:m}
                 btn.onclick=()=>{
-                    if(manager.play_callback)manager.play_callback({type:"online",mode:parseInt(m),group_size:parseInt(t)})
+                    if(manager.play_callback)manager.play_callback(play_a)
                 }
                 mb.appendChild(btn)
+                parent.appendChild(mb)
             }
-            parent.appendChild(mb)
+            m++
         }
     }
 }
@@ -740,7 +743,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             }
         )
         play_subtabs["play_online"]={
-            generate:make_menu_modes(menu.api_settings?.modes??[])
+            generate:make_menu_play_options(menu.api_settings?.play_options??[])
         }
         play_subtabs["group"]={
             generate:(p,m)=>{
@@ -1205,6 +1208,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             type:"input",
                             tname:"loadout.character.name",
                             var:"sv_loadout_name",
+                            limit:GameConstants.player.max_name_size
                         },
                         {
                             type:"color",

@@ -19,13 +19,11 @@
     },
     "mode": {
         "group_size":4,
-        "mode":{
-            "mode":"normal",
-            "settings":{
-                "map": {
-                    "def": "tutorial",
-                    "disable_minimap":true
-                }
+        "mode":"normal",
+        "settings":{
+            "map": {
+                "def": "tutorial",
+                "disable_minimap":true
             }
         }
     }

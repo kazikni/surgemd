@@ -467,6 +467,7 @@
             "5": "Kill Leader"
         },
         "modes": {
+            "normal": "Normal",
             "tundra": "Tundra",
             "group_size": {
                 "1": "Solo",

@@ -18,12 +18,10 @@
         "complete":"../level2"
     },
     "mode": {
-        "mode":{
-            "mode":"normal",
-            "settings":{
-                "map": {
-                    "def": "normal"
-                }
+        "mode":"normal",
+        "settings":{
+            "map": {
+                "def": "normal"
             }
         }
     }

@@ -1,4 +1,4 @@
-import { ApiServerConfig, ApiSettings, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
+import { ApiServerConfig, ApiSettings, GameConfig, GamePlayOption } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
 import { default_handlers, Server } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
@@ -7,7 +7,8 @@ export class ApiServer {
     server: Server
     groups = new GroupManager(this)
     regions = new RegionManager(this)
-    modes:ModeConfig[]=[]
+
+    modes:GameConfig[]=[]
 
     api_settings!:ApiSettings
 
@@ -25,7 +26,7 @@ export class ApiServer {
             config.host.key
         )
 
-        this.modes=config.game.modes
+        this.modes=[]
         this.update_settings()
         this.routes()
 
@@ -40,11 +41,17 @@ export class ApiServer {
         return !this.play_time||this.play_time.current_time!==undefined
     }
     update_settings(){
+        this.modes.length=0
+        for(const p of this.config.game.play_options){
+            for(const m of p.content??[]){
+                this.modes.push(m)
+            }
+        }
         this.api_settings={
             database:{
                 enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
             },
-            modes:this.modes,
+            play_options:this.config.game.play_options,
             regions:this.regions.regions,
             playtime:this.play_time?{
                 config:this.config.game.play_time!,
@@ -54,12 +61,6 @@ export class ApiServer {
                     duration:this.play_time.current_time
                 }
             }:undefined
-        }
-    }
-    get_game_config(mode:number,group_size:number):GameConfig{
-        return {
-            mode: this.modes[mode].mode! as GameModeConfig,
-            group_size: (this.modes[mode].group_size as unknown as number[])[group_size],
         }
     }
     routes(){

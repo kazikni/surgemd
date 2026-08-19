@@ -1,5 +1,6 @@
 import { Stream, Packet } from "../../engine/core.ts";
 import { PacketType } from "../definitions/utils.ts";
+import { GameConstants } from "../others/constants.ts";
 
 export class JoinPacket extends Packet{
     ID=PacketType.Join
@@ -26,7 +27,7 @@ export class JoinPacket extends Packet{
         super()
     }
     encode(stream: Stream): void {
-        stream.write_string_sized(this.player_name,30)
+        stream.write_string_sized(this.player_name,GameConstants.player.max_name_size)
         stream.write_string_sized(this.group_token,20)
         stream.write_boolean_group(this.skin!==undefined,this.skin?.female,this.badge!==undefined)
         if(this.skin!==undefined){
@@ -43,7 +44,7 @@ export class JoinPacket extends Packet{
         stream.write_uint16(this.death_emote)
     }
     decode(stream: Stream): void {
-        this.player_name=stream.read_string_sized(30)
+        this.player_name=stream.read_string_sized(GameConstants.player.max_name_size)
         this.group_token=stream.read_string_sized(20)
         const bg=stream.read_boolean_group()
         if(bg[0]){

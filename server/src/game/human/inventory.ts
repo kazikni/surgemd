@@ -1022,6 +1022,11 @@ export class GInventory extends GInventoryBase<LItem>{
             }
         }
         this.accessorys.clear()
+
+        for(const loot of l){
+            v2m.add(loot.velocity,loot.velocity,this.owner.physical_data.velocity)
+            v2m.add(loot.velocity,loot.velocity,this.owner.physical_data.secondary_velocity)
+        }
         for(let i=0;i<5;i++){
             for(const loot of l){
                 loot.tick(1/30)

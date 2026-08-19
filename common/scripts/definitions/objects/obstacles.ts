@@ -598,17 +598,6 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             parallax:PerspetiveSizes.medium,
         },
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
-        obstacles_factory.rock("giant_rock",{
-            tint:0x4e4f50,
-            spawn_hitbox:new CircleHitbox2D(v2.zero,5),
-            o:{
-                scale:{
-                    min:2.9,
-                    max:3
-                },
-                health:400,
-            },
-        }),
         obstacles_factory.rock("river_rock",{
             spawn_hitbox:new CircleHitbox2D(v2.zero,1.2),
             o:{
@@ -725,7 +714,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             }
         }),
         obstacles_factory.bush("squared_bush",{
-            hitbox:new RectHitbox2D(v2.new(-1,-1),v2.new(1,1)),
+            hitbox:new RectHitbox2D(v2.new(-1.1,-1.1),v2.new(1.1,1.1)),
             o:{
                 health:130,
                 scale:{

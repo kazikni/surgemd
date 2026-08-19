@@ -81,7 +81,7 @@ export class PlayerClient extends PlayerConnManager{
             }
             const scope_view:number=this.human.scope_zoom
 
-            const size=v2(10/scope_view,6/scope_view)
+            const size=v2(13/scope_view,8/scope_view)
             const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)

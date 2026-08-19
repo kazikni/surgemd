@@ -72,6 +72,10 @@ export class Bullet extends ServerGameObject{
         this.destroy()
     }
     override on_tick(dt:number): void {
+        if(this.owner?.dead){
+            this.destroy()
+            return
+        }
         this.old_position=v2.clone(this.position)
         this.tticks+=dt
         const disT=v2.distance(this.initial_position,this.position)/this.max_distance

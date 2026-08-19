@@ -3,6 +3,9 @@ return (class extends LevelPlayerScript{
         const pos=this.game.modeManager.get_human_spawn_position(player)
         if(pos)player.position=pos
         player.set_preset(this.preset)
+        player.status.kills=5
+        player.status.damage=865
+        player.status.damage_taken=312
     }
     async on_load(){
         await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_fall_music_1.mp3"}})
@@ -83,7 +86,7 @@ return (class extends LevelPlayerScript{
         await this.show_cutscene(cutscene)
     }
     on_start(){
-        this.game.deadzone.jump_stages(4)
+        this.game.deadzone.jump_stages(5)
         this.game.modeManager.add_enemies([
             {
                 "def": {
@@ -259,7 +262,7 @@ return (class extends LevelPlayerScript{
                     },
                     "team":1
                 },
-                "count": 12
+                "count": 10
             },
             {
                 "def": {
@@ -366,7 +369,7 @@ return (class extends LevelPlayerScript{
                     },
                     "team":1
                 },
-                "count": 24
+                "count": 14
             },//*/
             {
                 "def": {

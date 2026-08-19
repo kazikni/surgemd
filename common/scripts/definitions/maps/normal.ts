@@ -83,8 +83,8 @@ export const map_spawns={
     ],
     rocks:[
         {def:"rock",weight:130},
-        {def:"golden_rock",weight:0.1},
-        {def:"platinum_rock",weight:0.01},
+        {def:"golden_rock",weight:0.05},
+        {def:"platinum_rock",weight:0.05},
     ]
 }
 export const NormalMap:MapDef={

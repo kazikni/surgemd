@@ -259,7 +259,7 @@ export class Human extends Humanoid{
 
     temp_modifiers:Partial<HumanModifiers>={}
 
-    effects:Map<number,EffectInstance>=new Map()
+    effects:Map<number,EffectInstance&{owner?:Human}>=new Map()
     effects_dirty:boolean=true
     
     status:HumanStatus
@@ -520,16 +520,19 @@ export class Human extends Humanoid{
             case SideEffectType.AddEffect:{
                 const def=Effects.getFromString(sf.effect)
                 if(this.effects.has(def.idNumber!)){
+                    const e=this.effects.get(def.idNumber!)!
+                    e.owner=owner
                     if(sf.merge){
-                        this.effects.get(def.idNumber!)!.time+=sf.duration
+                        e.time+=sf.duration
                     }else{
-                        this.effects.get(def.idNumber!)!.time=sf.duration
+                        e.time=sf.duration
                     }
                 }else{
                     this.effects.set(def.idNumber!,{
                         effect:def,
                         tick_time:0,
-                        time:sf.duration
+                        time:sf.duration,
+                        owner
                     })
                     this.effects_dirty=true
                 }
@@ -834,7 +837,7 @@ export class Human extends Humanoid{
         }
     }
     tick_physics(current_floor:FloorDef,speed:number,dt:number){
-        const secondary_velocity=v2.len(this.physical_data.secondary_velocity)>0.05
+        const secondary_velocity=v2.len(this.physical_data.secondary_velocity)>0.07
         let acceleration=40*(this.downed||this.swimming?0.2:current_floor.acceleration)
         acceleration=Numeric.dt_expo_inter(acceleration,dt)
 
@@ -914,7 +917,7 @@ export class Human extends Humanoid{
             e.time-=dt
             if(e.tick_time<=0){
                 for(const sf of e.effect.side_effects){
-                    this.side_effect(sf)
+                    this.side_effect(sf,e.owner)
                 }
                 e.tick_time=2
             }
@@ -1257,7 +1260,7 @@ export class Human extends Humanoid{
         this.health.value=this.health.max
         this.clear_boost()
 
-        this.health.invensibility=1
+        this.health.invensibility=0.75
 
         this.inventory.set_weapon_index(0)
 
@@ -1269,7 +1272,7 @@ export class Human extends Humanoid{
 
         this.grenade_holding=undefined
         if(this.seat)this.seat.clear_human()
-        this.push(-5,params.direction)
+        this.push(-10,params.direction)
     }
     help_up(){
         if(!this.downed)return
@@ -1336,6 +1339,7 @@ export class Human extends Humanoid{
         this.downed_by=undefined
         this.last_damage_by=undefined
         this.human_data.pulse_movement=undefined
+        this.physical_data.secondary_velocity=v2.zero()
 
         this.equipment_data.scope=this.equipment_data.default_scope
         this.inventory.net_sync.aitems=true

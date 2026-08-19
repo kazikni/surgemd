@@ -60,14 +60,14 @@ export function create_hunt_house(id:string,settings:{
                     variation:doors_tint
                 },
                 {
-                    def:"stone_wall_4x1",
+                    def:"wood_wall_4x1",
                     position:v2(1.76,-1.21),
                     rotation:1,
                     id:10,
                     variation:walls_tint
                 },
                 {
-                    def:"stone_wall_4x1",
+                    def:"wood_wall_4x1",
                     position:v2(1.76,1.21),
                     rotation:1,
                     connections:[1],
@@ -76,14 +76,14 @@ export function create_hunt_house(id:string,settings:{
                 },
 
                 {
-                    def:"stone_wall_14x1",
+                    def:"wood_wall_14x1",
                     position:v2(0,-1.57),
                     rotation:0,
                     id:12,
                     variation:walls_tint
                 },
                 {
-                    def:"stone_wall_14x1",
+                    def:"wood_wall_14x1",
                     position:v2(0,1.57),
                     rotation:0,
                     id:13,
@@ -99,14 +99,14 @@ export function create_hunt_house(id:string,settings:{
                     variation:doors_tint
                 },
                 {
-                    def:"stone_wall_4x1",
+                    def:"wood_wall_4x1",
                     position:v2(-1.76,-1.21),
                     rotation:1,
                     id:14,
                     variation:walls_tint
                 },
                 {
-                    def:"stone_wall_4x1",
+                    def:"wood_wall_4x1",
                     position:v2(-1.76,1.21),
                     rotation:1,
                     connections:[2],
@@ -260,11 +260,7 @@ export const TundraMap:MapDef={
                     idString:"bush_group_1",
                     no_collisions:true,
                     no_bullet_collision:true,
-                    /*hitbox:{
-                        type:HitboxType2D.rect,
-                        min:v2(-10,-10),
-                        max:v2(10,10),
-                    },*/
+                    hitbox:new RectHitbox2D(v2(-8,-8),v2(8,8)),
                     generate:{
                         loots:[
                             {
@@ -345,11 +341,7 @@ export const TundraMap:MapDef={
                     idString:"bush_group_2",
                     no_collisions:true,
                     no_bullet_collision:true,
-                    /*hitbox:{
-                        type:HitboxType2D.rect,
-                        min:v2(-10,-10),
-                        max:v2(10,10),
-                    },*/
+                    hitbox:new RectHitbox2D(v2(-8,-8),v2(8,8)),
                     generate:{
                         loots:[
                             {
@@ -496,14 +488,16 @@ export const TundraMap:MapDef={
     generation:{
         base:FloorType.Ice,
         spawn:[
+            {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:20},
+
             {def:"storehouse_1",count:5},
             {def:map_spawns.containers,count:20},
 
             {def:"bunker_1",count:3},
             {def:[
                 {def:"shed_t",weight:1},
-                {def:"hunt_house_1",weight:2}
-            ],count:20},
+                {def:"hunt_house_1",weight:3}
+            ],count:30},
             {def:"sillo",count:3},
 
             {def:"golden_stone",count:1},
@@ -511,16 +505,15 @@ export const TundraMap:MapDef={
             {def:"tundra_crate",count:7},
             {def:"copper_crate",count:20},
             {def:"campfire_crate",count:10},
-            {def:map_spawns.crates,count:110},
+            {def:map_spawns.crates,count:130},
             {def:[
                 {def:"oak_tree",weight:100},
                 {def:"pine_tree",weight:75},
-            ],count:230},
-            {def:map_spawns.rocks,count:90},
+            ],count:300},
+            {def:map_spawns.rocks,count:140},
             {def:"river_rock",count:20},
-            {def:"bush",count:80},
-            {def:"barrel",count:40},
-            {def:[{def:"bush_group_1",weight:1},{def:"bush_group_2",weight:1}],count:15},
+            {def:"bush",count:120},
+            {def:"barrel",count:50},
 
             {def:"jeep",count:5},
             {def:"normal_loot",count:150}

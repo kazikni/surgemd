@@ -86,6 +86,7 @@ export const v2m=Object.freeze({
 
     clamp1(v:Vec2,min:number,max:number){v.x=Math.max(Math.min(v.x,max),min);v.y=Math.max(Math.min(v.y,max),min)},
     clamp2(v:Vec2,min:Vec2,max:Vec2){v.x=Math.max(Math.min(v.x,max.x),min.x);v.y=Math.max(Math.min(v.y,max.y),min.y)},
+
     normalizeSafe(v:Vec2,fallback?:Vec2) {
         const eps = 0.000001
         const len = v2.len(v)
@@ -94,13 +95,15 @@ export const v2m=Object.freeze({
             v.y/=len
         }else{
             v.x=fallback?.x??1
-            v.y=fallback?.x??0
+            v.y=fallback?.y??0
         }
     },
+
     lerp(a: Vec2, b: Vec2,interpolation: number) {a.x+=(b.x-a.x)*interpolation;a.y+=(b.y-a.y)*interpolation},
     abs(a: Vec2){a.x=Math.abs(a.x);a.y=Math.abs(a.y)},
     floor(a: Vec2) {a.x=Math.floor(a.x);a.y=Math.floor(a.y)},
     ceil(a: Vec2) {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y)},
+    round(a: Vec2) {a.x=Math.round(a.x);a.y=Math.round(a.y)},
 
     add_rotate_RadAngle(out:Vec2,a:Vec2,b:Vec2,angle:RadAngle){
         const cos = Math.cos(angle)
@@ -609,13 +612,11 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @returns A `Vec2` whose length is 1 and is parallel to the original Vec2
      */
     normalize(Vec2:Vec2): Vec2 {
-        const eps = 0.000001
         const len = this.len(Vec2)
-        return eps
-            ? {
-                x:Vec2.x/len,
-                y:Vec2.y/len
-            }: this.clone(Vec2)
+        return len==0?this.clone(Vec2):{
+            x:Vec2.x/len,
+            y:Vec2.y/len
+        }
     },
     /**
      * 

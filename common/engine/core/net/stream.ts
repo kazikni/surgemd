@@ -928,7 +928,7 @@ export class StaticStream extends Stream{
 
     override write_bytes(data: Uint8Array): void {
         this._u8Array.set(data, this.index)
-        this.index += data.length
+        this.index+=data.length
     }
     override read_bytes(size: number): Uint8Array {
         const out = this._u8Array.subarray(this.index, this.index + size)

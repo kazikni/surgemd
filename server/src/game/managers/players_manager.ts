@@ -1,4 +1,4 @@
-import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream } from "common/engine/core.ts";
+import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream, v2m } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
 import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -80,9 +80,10 @@ export class PlayerClient extends PlayerConnManager{
                 }
             }
             const scope_view:number=this.human.scope_zoom
+            const size=v2(16/scope_view,11/scope_view)
+            v2m.max1(size,110)
 
-            const size=v2(13/scope_view,8/scope_view)
-            const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
+            const camera_hb=new RectHitbox2D(v2.sub(this.human.position,size),v2.add(this.human.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
@@ -104,8 +105,9 @@ export class PlayerClient extends PlayerConnManager{
                 }
             }
 
-            const scope_view:number=this.human?.equipment_data.scope.scope_view??0.75
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
+            const scope_view:number=this.human.scope_zoom
+            const size=v2(13/scope_view,8/scope_view)
+            const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)

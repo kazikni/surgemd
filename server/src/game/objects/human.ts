@@ -641,7 +641,6 @@ export class Human extends Humanoid{
         v2m.add(this.physical_data.secondary_velocity,this.physical_data.secondary_velocity,vel)
     }
     override on_collided(obj: ServerGameObject,dt:number): void {
-        super.on_collided(obj,dt)
         switch(obj.number_type){
             case GameObjectType.Obstacle:{
                 if(this.input.interaction&&obj.can_interact(this)&&!this._interacted_objects.has(obj.id)){
@@ -687,6 +686,7 @@ export class Human extends Humanoid{
                 }
                 break
         }
+        super.on_collided(obj,dt)
     }
 
     tick_input(dt:number){
@@ -742,7 +742,7 @@ export class Human extends Humanoid{
                     }
                     break
                 case InputActionType.use_item:{
-                    if(this.downed||this.parachute)break
+                    if(this.downed||this.parachute||(this.physical_data.secondary_velocity_take_control&&this.physical_data.secondary_velocity_enabled))break
                     const item=this.inventory.slots[a.slot]?.item
                     if(item){
                         item.on_use(this,this.inventory.slots[a.slot])

@@ -47,6 +47,7 @@ export abstract class BaseObject2D{
     net_sync_deletion:boolean=true
     net_sync_dirty:boolean=true
     net_sync_creation:boolean=true
+    net_sync_cache:boolean=true
 
     physics_frozen:boolean=false
     is_new:boolean=true
@@ -98,9 +99,13 @@ export abstract class BaseObject2D{
     }
 
     set_dirty_part(){
+        if(this.manager.part_dirty_cache[this.id])delete this.manager.part_dirty_cache[this.id]
+        if(this.manager.full_dirty_cache[this.id])delete this.manager.full_dirty_cache[this.id]
         if(this.allow_dirty)this.manager.part_dirty_objects[this.id]=this
     }
     set_dirty_full(){
+        if(this.manager.full_dirty_cache[this.id])delete this.manager.full_dirty_cache[this.id]
+        if(this.manager.part_dirty_cache[this.id])delete this.manager.part_dirty_cache[this.id]
         if(this.allow_dirty)this.manager.full_dirty_objects[this.id]=this
     }
 }
@@ -124,7 +129,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 
     cell_pos(pos: Vec2) {
         v2m.dscale(pos,pos,this.cell_size)
-        v2m.floor(pos)
+        v2m.round(pos)
     }
 
     registry(obj: GameObject) {
@@ -231,11 +236,11 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         const dirX = dx * invLen
         const dirY = dy * invLen
 
-        let cx = Math.floor(origin.x / this.cell_size)
-        let cy = Math.floor(origin.y / this.cell_size)
+        let cx = Math.round(origin.x / this.cell_size)
+        let cy = Math.round(origin.y / this.cell_size)
 
-        const endX = Math.floor(dest.x / this.cell_size)
-        const endY = Math.floor(dest.y / this.cell_size)
+        const endX = Math.round(dest.x / this.cell_size)
+        const endY = Math.round(dest.y / this.cell_size)
 
         const stepX = dirX >= 0 ? 1 : -1
         const stepY = dirY >= 0 ? 1 : -1
@@ -347,8 +352,14 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     layers_orden:number[]=[]
 
     objects:Record<number,GameObject>={}
+
     full_dirty_objects:Record<number,GameObject>={}
     part_dirty_objects:Record<number,GameObject>={}
+
+    save_dirty_cache:boolean=true
+    full_dirty_cache:Record<number,Uint8Array>={}
+    part_dirty_cache:Record<number,Uint8Array>={}
+
     news_queue:Set<GameObject>=new Set()
     destroy_queue:GameObject[]=[]
 
@@ -372,6 +383,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects={}
         this.full_dirty_objects={}
         this.part_dirty_objects={}
+        this.part_dirty_cache={}
+        this.full_dirty_cache={}
         this.news_queue.clear()
         this.destroy_queue.length=0
         this.layers_orden.length=0
@@ -473,6 +486,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             idx=this.layers[obj.layer].render.indexOf(obj.id)
             if(idx>=0)this.layers[obj.layer].render.splice(idx,1)
         }
+        if(this.part_dirty_cache[obj.id])delete this.part_dirty_cache[obj.id]
+        if(this.full_dirty_cache[obj.id])delete this.full_dirty_cache[obj.id]
         delete this.objects[obj.id]
     }
     delete_object(obj:GameObject){
@@ -593,13 +608,31 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
     }
     encode_object_net(object:GameObject,full:boolean,stream:Stream,options:any){
+        const full_dirty=(full||this.full_dirty_objects[object.id])&&object.net_sync_dirty
+        const dirty_part=(full_dirty||this.part_dirty_objects[object.id])&&object.net_sync_dirty
+
+        let cache:Uint8Array|undefined
+        if(!options){
+            if(full_dirty){
+                cache=this.full_dirty_cache[object.id]
+            }else if(dirty_part){
+                cache=this.part_dirty_cache[object.id]
+            }
+        }
+        if(cache){
+            stream.write_uint24(cache.length)
+            stream.data.set(cache,stream.index)
+            stream.index += cache.length
+            return
+        }
+
         const sizePos = stream.index
         stream.write_uint24(0)
         const start = stream.index
 
         const bools=[
-            (full||this.part_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Part
-            (full||this.full_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Full
+            dirty_part, //Dirty Part
+            full_dirty, //Dirty Full
             object.destroyed&&object.net_sync_deletion, //Dirty Deletion
             object.net_sync_creation, //Dirty Creation
             object.is_new
@@ -616,8 +649,13 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         const end = stream.index
         stream.index = sizePos
-        stream.write_uint24(end - start)
+        stream.write_uint24(end-start)
         stream.index = end
+
+        if(!options&&this.save_dirty_cache&&object.net_sync_cache){
+            if(full_dirty)this.full_dirty_cache[object.id]=stream.data.slice(start,end)
+            else if(dirty_part)this.part_dirty_cache[object.id]=stream.data.slice(start,end)
+        }
     }
     encode_all_net(force_full:boolean=false,delete_all:boolean=false,stream?:Stream):Stream{
         if(!stream){

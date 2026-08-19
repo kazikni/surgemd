@@ -91,8 +91,7 @@ export class Loot extends ServerGameObject{
     }
     override on_tick(dt:number): void {
         const cf=Floors[this.current_floor]
-        const speed=1
-                * (cf.speed_mult??1)
+        const speed=1*(cf.speed_mult??1)
         if(this.current_floor === FloorType.Water){
             for(const river of this.game.map.rivers){
                 const col=river.get_point_inside(this.position)

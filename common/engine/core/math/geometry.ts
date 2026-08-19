@@ -142,12 +142,12 @@ export const Collision=Object.freeze({
         return v2.greater(rect_1_max,rect_2_min)&&v2.less(rect_1_min,rect_2_max)
     },
     circle_with_rect(circle_position: Vec2, circle_radius: number, rect_min: Vec2, rect_max: Vec2): boolean {
-        const closest = v2.clamp2(circle_position, rect_min, rect_max);
-        const distSq = v2.distanceSquared(circle_position, closest);
-        return distSq <= (circle_radius * circle_radius);
+        const closest=v2.clamp2(circle_position, rect_min, rect_max)
+        const distSq=v2.distanceSquared(circle_position, closest)
+        return distSq<=(circle_radius*circle_radius)
     },
     circle_with_rect_ov(circle_pos: Vec2, radius: number, rect_min: Vec2, rect_max: Vec2) {
-        if (circle_pos.x >= rect_min.x && circle_pos.x <= rect_max.x&&circle_pos.y >= rect_min.y && circle_pos.y <= rect_max.y) {
+        if(circle_pos.x>rect_min.x&&circle_pos.x<rect_max.x&&circle_pos.y>rect_min.y&&circle_pos.y<rect_max.y) {
             const left = circle_pos.x - rect_min.x
             const right = rect_max.x - circle_pos.x
             const top = circle_pos.y - rect_min.y
@@ -166,15 +166,13 @@ export const Collision=Object.freeze({
             }
             return { dir: v2(0, -1), pen: bottom + radius }
         }
-
         const closest = v2.clamp2(circle_pos, rect_min, rect_max)
         const diff = v2.sub(closest, circle_pos)
         const distSq = v2.squared(diff)
-
-        if (distSq <= radius * radius) {
+        if (distSq<radius*radius) {
             const dist = Math.sqrt(distSq)
             return {
-                dir: dist > 0.0001 ? v2.scale(diff, 1 / dist) : v2(1, 0),
+                dir: dist>0.00001?v2.scale(diff,1/dist):v2(1, 0),
                 pen: radius - dist
             }
         }

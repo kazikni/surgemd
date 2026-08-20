@@ -21,13 +21,13 @@
                 {
                     "tname":"modes.normal",
                     "content":[
-                        {"mode":"normal"}
+                        {"mode":"normal","settings":{"join_time":300}}
                     ]
                 },
                 {
                     "tname": "modes.tundra",
                     "content":[
-                        {"group_size":2,"mode":"normal","settings": {"map": {"def": "tundra"}}}
+                        {"group_size":2,"mode":"normal","settings": {"join_time":300,"map": {"def": "tundra"}}}
                     ]
                 }
             ]

@@ -14,9 +14,9 @@ export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     },
     damage:{
         advancing_scale:2,
-        waiting_scale:1.1,
-        limit:20,
-        initial:1
+        waiting_scale:1,
+        limit:10,
+        initial:2
     },
     wait_time:{
         initial:80,
@@ -204,7 +204,7 @@ export class DeadZoneManager {
             this.do_damage_timer-=dt
             this.do_damage=false
         }else{
-            this.do_damage_timer=2
+            this.do_damage_timer=1
             this.do_damage=true
         }
     }

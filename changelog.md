@@ -88,7 +88,6 @@ __                                                                              
 * Change Trees Sprites
 __                                                                                                                 __
 ### Menu
-* Final Screen Rework
 * Lock Skins Color Selection
 * Game over Improvements
 * Remove Blur Backdrop

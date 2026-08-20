@@ -1,4 +1,4 @@
-import { Definition, Definitions, tdm } from "../../../engine/core.ts";
+import { Definition, Definitions, Numeric, tdm } from "../../../engine/core.ts";
 import { TD, TDType } from "../../../engine/core/lang/td.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
@@ -42,21 +42,21 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     if(e.bullet.on_hit_explosion)return
-                    e.bullet.damage*=0.7
-                    e.bullet.tracer_height*=0.75
+                    e.bullet.damage*=0.6
+                    e.bullet.tracer_height*=0.6
 
-                    const spread=Math.max(e.spread*0.005,0.005)
+                    const spread=Numeric.clamp(e.spread*0.005,0.01,0.045)
 
                     let b=e.bullet.clone()
-                    b.damage*=0.2
+                    b.damage*=0.45
                     b.tracer_alpha*=0.7
-                    b.tracer_height*=0.4
+                    b.tracer_height*=0.45
                     b.set_direction(e.angle-spread)
 
                     b=e.bullet.clone()
-                    b.damage*=0.2
+                    b.damage*=0.45
                     b.tracer_alpha*=0.7
-                    b.tracer_height*=0.4
+                    b.tracer_height*=0.45
                     b.set_direction(e.angle+spread)
                 }
             },

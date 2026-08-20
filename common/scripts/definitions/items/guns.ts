@@ -91,7 +91,7 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 46 * power,
+            damage: 50 * power,
             range: 200 * (1 + (power - 1) * 0.5),
             speed: 57 * (1 + (power - 1) * 0.6),
 
@@ -103,7 +103,7 @@ export const bullets_factory={
     },
     heavy_sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage:105*power,
+            damage:99*power,
             range:220*(1+(power-1)*0.01),
             speed:39*(1+(power-1)*-0.5),
 
@@ -117,7 +117,7 @@ export const bullets_factory={
         return {
             damage:7 * power,
             range:40* (1 + (power - 1) * 0.5),
-            speed:25 * (1 + (power - 1) * 0.5),
+            speed:27 * (1 + (power - 1) * 0.5),
 
             falloff:0.6,
             critical_mult:1.25,
@@ -127,8 +127,8 @@ export const bullets_factory={
     ac_smg(power:number,tracer=tracers.small):BulletDef{
         return {
             damage:5.9 * power,
-            range:50* (1 + (power - 1) * 0.4),
-            speed:21 * (1 + (power - 1) * 0.5),
+            range:50* (1 + (power - 1) * 0.5),
+            speed:24 * (1 + (power - 1) * 0.5),
 
             falloff:0.6,
             critical_mult:1.25,
@@ -150,20 +150,20 @@ export const bullets_factory={
         return {
             damage:2.7*power,
             speed:24*(1+(power-1)*0.4),
-            range:31*(1+(power-1)*0.4),
+            range:32*(1+(power-1)*0.4),
 
-            falloff:0.5,
+            falloff:0.75,
             critical_mult:1.25,
             tracer
         }
     },
     flechette(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5.5 * power,
+            damage:5 * power,
             speed:30 * (1 + (power - 1) * 0.4),
             range:55 * (1 + (power - 1) * 0.2),
 
-            falloff:0.4,
+            falloff:0.85,
             critical_mult:1.2,
             tracer:tracer
         }
@@ -923,14 +923,14 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
-            spread:2.5,
+            spread:3,
 
             ammo_spawn:{
                 amount:90
             },
 
             bullet:{
-                def:bullets_factory.ac_smg(1.12)
+                def:bullets_factory.ac_smg(1.15)
             },
             reload:{
                 delay:2.6,
@@ -1302,7 +1302,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.lmg("pkp","762mm",{
             name:"PKP Pecheneg",
 
-            fire_delay:0.12,
+            fire_delay:0.1,
             switch_delay:1,
             spread:7.5,
 
@@ -1316,6 +1316,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                     obstacle_mult:1.5,
                     range:170,
                     speed:35,
+                    falloff:0.7,
                     tracer:tracers.large
                 }
             },

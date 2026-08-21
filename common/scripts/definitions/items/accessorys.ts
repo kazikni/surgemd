@@ -90,9 +90,10 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "bullet_reflect":(e)=>{
-                    if(e.bullet.reflection_count>1)return
-                    e.bullet.damage*=2*1.2
+                    e.bullet.damage*=2
                     e.bullet.tracer_alpha*=2
+                    if(e.bullet.reflection_count>1)return
+                    e.bullet.damage*=1.25
                     e.bullet.speed*=1.2
                     e.bullet.tracer_height*=1.75
                     e.bullet.set_satured(1)
@@ -104,7 +105,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.S,
             events:{
                 "gun_shoot":(e)=>{
-                    e.bullet.penetration*=0.2
+                    e.bullet.penetration*=0.3
                     e.bullet.set_satured(1)
                 }
             }

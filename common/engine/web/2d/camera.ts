@@ -7,7 +7,6 @@ import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Container2D } from "./container.ts";
 import { circle, Rect } from "../../core/math/geometry.ts";
 import { Vec2 } from "../../core.ts";
-import { Numeric } from "../../core/math/utils.ts";
 export function cam_sort_callback(a:Container2DObject,b:Container2DObject):number{
     return (a._layer-b._layer)||(a._zIndex-b._zIndex)||(a.id_on_parent-b.id_on_parent)
 }
@@ -25,6 +24,10 @@ export class Camera2D{
     screen_matrix!: Matrix
 
     camera_matrix!: Matrix
+
+    aspect_lock = false
+    reference_width = 1920
+    reference_height = 1080
 
     get zoom(): number { return this._zoom; }
     set zoom(zoom: number) {
@@ -104,21 +107,48 @@ export class Camera2D{
     }
 
     resize(): void {
-        const size=v2(this.renderer.canvas.width,this.renderer.canvas.height)
-        this.aspect=this.meter_size*this._zoom
-        const scale=v2.dscale(size,this.aspect)
+        const canvas = this.renderer.canvas
+        const size = v2(canvas.width, canvas.height)
 
-        const screen_size=v2.dscale(size,this.meter_size)
-        this.screen_matrix = matrix4.projection(screen_size,1000)
-        this.viewport_matrix = matrix4.projection(scale,1000)
-        if(this.center_pos){
-            this.screen_matrix=matrix4.mul(this.screen_matrix,matrix4.translation_2d(v2(screen_size.x/2,screen_size.y/2)))
-            this.viewport_matrix=matrix4.mul(this.viewport_matrix,matrix4.translation_2d(v2(scale.x/2,scale.y/2)))
+        if(this.aspect_lock){
+            const referenceWidth=this.reference_width/this.meter_size
+            const screenAspect=size.x/size.y
+            this.aspect=this.reference_width /(this.width || referenceWidth)
+            this.width=referenceWidth / this._zoom
+            this.height=this.width / screenAspect
+            this.size = v2(this.width, this.height)
+        }else{
+            this.aspect=this.meter_size*this._zoom
+            this.size=v2.dscale(size, this.aspect)
+            this.width=this.size.x
+            this.height=this.size.y
         }
 
-        this.width = scale.x
-        this.height = scale.y
-        this.size=scale
+        this.viewport_matrix=matrix4.projection(this.size, 1000)
+        this.screen_matrix=matrix4.projection(this.aspect_lock?this.size:v2.dscale(size, this.meter_size),1000)
+
+        if (this.center_pos) {
+            const center = v2(this.size.x / 2,this.size.y / 2)
+
+            this.viewport_matrix =
+                matrix4.mul(
+                    this.viewport_matrix,
+                    matrix4.translation_2d(center)
+                )
+
+            this.screen_matrix =
+                matrix4.mul(
+                    this.screen_matrix,
+                    matrix4.translation_2d(
+                        this.aspect_lock
+                            ? center
+                            : v2(
+                                size.x / this.meter_size / 2,
+                                size.y / this.meter_size / 2
+                            )
+                    )
+                )
+        }
     }
     stop_shake(){
         this._shake=undefined

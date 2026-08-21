@@ -53,7 +53,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.sounds=new AudioEngine()
         this.resources=new ResourcesManager(renderer as WebglRenderer,this.sounds)
 
-        this.input_manager=new InputManager(this.cam2d.meter_size)
+        this.input_manager=new InputManager(this.cam2d)
         this.renderer=renderer
 
         this.save.input_manager=this.input_manager
@@ -71,7 +71,6 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
     }
     set_meter_size(size:number){
         this.cam2d.meter_size=size
-        this.input_manager.meter_size=size
         this.cam2d.resize()
     }
     bind(){

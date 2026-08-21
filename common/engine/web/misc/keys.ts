@@ -1,6 +1,6 @@
 import { SignalManager } from "../../core/math/utils.ts"
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { Camera2D } from "../../client/2d/camera.ts"
+import { type Camera2D } from "../2d/camera.ts";
 export enum Key {
     A = 0,
     B,
@@ -11,7 +11,7 @@ export enum Key {
     G,
     H,
     I,
-    J,
+    J,  
     K,
     L,
     M,
@@ -210,7 +210,7 @@ export class InputManager {
 
     focus = true
 
-    meter_size: number
+    camera:Camera2D
 
     pressed = new Set<number>()
     down = new Set<number>()
@@ -240,8 +240,8 @@ export class InputManager {
 
     private previous_gamepads = new Map<number,{buttons: boolean[],axes: number[]}>()
 
-    constructor(meter_size: number) {
-        this.meter_size = meter_size
+    constructor(camera:Camera2D) {
+        this.camera=camera
     }
     bind(canvas: HTMLCanvasElement,elem: HTMLElement = document.body) {
         elem.tabIndex = 1
@@ -250,7 +250,7 @@ export class InputManager {
         elem.addEventListener("mousedown",this.on_mouse_down())
         elem.addEventListener("mouseup",this.on_mouse_up())
         elem.addEventListener("wheel",this.on_wheel(),{passive: false})
-        elem.addEventListener("pointermove",e => this.on_pointer_move(e, canvas))
+        elem.addEventListener("pointermove",this.on_pointer_move.bind(this))
     }
     private emit(event: InputEvent) {
         this.listener.emit(event.type, event)
@@ -316,16 +316,25 @@ export class InputManager {
             this.key_elements[key]=e.target as HTMLElement
         }
     }
-    private on_pointer_move(e: PointerEvent,canvas: HTMLCanvasElement) {
+    private on_pointer_move(e: PointerEvent) {
         if (!this.focus) return
-        const rect = canvas.getBoundingClientRect()
-        const scale = v2(canvas.width / rect.width, canvas.height / rect.height)
-        this.real_mouse_position=v2(e.clientX - rect.left,e.clientY - rect.top)
-        this.mouse_position=v2.mul(this.real_mouse_position,scale)
-        this.emit({type: InputEventType.MouseMove,position: this.world_mouse_position,delta: this.mouse_delta})
+        const rect=this.camera.renderer.canvas.getBoundingClientRect()
+
+        this.real_mouse_position = v2(e.clientX-rect.left,e.clientY-rect.top)
+
+        const canvas = this.camera.renderer.canvas
+        const scale = v2(canvas.width / rect.width,canvas.height / rect.height)
+
+        this.mouse_position=v2.mul(this.real_mouse_position, scale)
+
+        this.emit({
+            type: InputEventType.MouseMove,
+            position: this.world_mouse_position,
+            delta: this.mouse_delta
+        })
     }
     get world_mouse_position(): Vec2 {
-        return v2.dscale(this.mouse_position,this.meter_size)
+        return v2.dscale(this.mouse_position,this.camera.aspect)
     }
     camera_pos(camera: Camera2D): Vec2 {
         return v2.add(v2.scale(this.world_mouse_position,camera.zoom),camera.position)

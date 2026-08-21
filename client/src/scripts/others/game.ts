@@ -142,6 +142,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.set_meter_size(100)
         this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
+        this.cam2d.aspect_lock=true
 
         this.local_server=new LocalGameServer(this)
 
@@ -388,8 +389,8 @@ export class Game extends ClientGame<GameObject>{
         })
         this.input_manager.listener.on(InputEventType.MouseMove,(e:InputMouseMoveEvent)=>{
             if(!isMobile){
-                const cam_c=v2(this.cam2d.width/2,this.cam2d.height/2)
-                const mouse_p=v2.dscale(e.position,this.cam2d.zoom)
+                const cam_c=v2.dscale(this.cam2d.size,2)
+                const mouse_p=e.position
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
                 this.set_lookTo_angle(angle,dist)

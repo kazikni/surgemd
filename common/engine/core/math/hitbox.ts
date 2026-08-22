@@ -1,5 +1,4 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
-
 import { random } from "./random.ts";
 import { Stream } from "../net/stream.ts";
 import { Numeric } from "./utils.ts";
@@ -55,8 +54,13 @@ export interface JsonHitbox2DMapping {
 }
 export type Hitbox2D = Hitbox2DMapping[HitboxType2D]
 export type JsonHitbox2D = JsonHitbox2DMapping[HitboxType2D]
+type WasmFunctions={
+    circle_cw_rect(cx:number,cy:number,cr:number,minx:number,miny:number,maxx:number,maxy:number):boolean
+}
 export abstract class BaseHitbox2D{
     abstract type: HitboxType2D
+
+    static wasm?:WasmFunctions
 
     abstract colliding_with(other: Hitbox2D):boolean
     abstract colliding_with_line(a:Vec2,b:Vec2):boolean
@@ -88,6 +92,8 @@ export abstract class BaseHitbox2D{
     abstract clamp(position:Vec2,min:Vec2,max:Vec2):Vec2 // returns clamped position
     abstract encode(stream:Stream):void
     abstract to_json():JsonHitbox2D
+
+    abstract generate_code(linebreak?:string,divade?:string):string
 
     constructor(){
     }
@@ -161,6 +167,9 @@ export class NullHitbox2D extends BaseHitbox2D{
     static decode(stream:Stream):NullHitbox2D{
         return new NullHitbox2D(stream.read_pos2())
     }
+    generate_code(linebreak?:string,divade?:string):string{
+        return `new NullHitbox2D(${v2.generate_code(this.position,divade)})`
+    }
 }
 export class CircleHitbox2D extends BaseHitbox2D{
     override readonly type = HitboxType2D.circle
@@ -176,6 +185,7 @@ export class CircleHitbox2D extends BaseHitbox2D{
             case HitboxType2D.circle:
                 return v2.distance(this.position,other.position)<this.radius+other.radius
             case HitboxType2D.rect:
+                if(BaseHitbox2D.wasm)return BaseHitbox2D.wasm.circle_cw_rect(this.position.x,this.position.y,this.radius,other.min.x,other.min.y,other.max.x,other.max.y)
                 return Collision.circle_with_rect(this.position,this.radius,other.min,other.max)
             case HitboxType2D.group:
                 return other.hitboxes.some(hitbox => hitbox.colliding_with(this));
@@ -324,6 +334,9 @@ export class CircleHitbox2D extends BaseHitbox2D{
     }
     static decode(stream:Stream):CircleHitbox2D{
         return new CircleHitbox2D(stream.read_pos2(),stream.read_float(0,500,2))
+    }
+    generate_code(linebreak?:string,divade:string=", "):string{
+        return `new CircleHitbox2D(${v2.generate_code(this.position)}${divade}${this.radius})`
     }
 }
 
@@ -660,6 +673,9 @@ export class RectHitbox2D extends BaseHitbox2D{
     override is_null(): boolean {
       return false
     }
+    generate_code(linebreak?:string,divade:string=", "):string{
+        return `new RectHitbox2D(${v2.generate_code(this.min)}${divade}${v2.generate_code(this.max)})`
+    }
 }
 export class HitboxGroup2D extends BaseHitbox2D{
     hitboxes: Hitbox2D[];
@@ -795,6 +811,14 @@ export class HitboxGroup2D extends BaseHitbox2D{
             type:HitboxType2D.group,
             hitboxes:this.hitboxes.map((v)=>v.to_json()),
         }
+    }
+    generate_code(linebreak:string="",divade:string=", "):string{
+        let val="new HitboxGroup2D("
+        for(let i=0;i<this.hitboxes.length;i++){
+            if(i>0)val+=divade
+            val+=this.hitboxes[i].generate_code(linebreak,divade)+linebreak
+        }
+        return val+")"
     }
 }
 export class PolygonHitbox2D extends BaseHitbox2D {
@@ -1014,6 +1038,14 @@ export class PolygonHitbox2D extends BaseHitbox2D {
             edges.push([this.points[i], this.points[(i + 1) % this.points.length]]);
         }
         return edges;
+    }
+
+    generate_code(linebreak:string="",divade:string=", "):string{
+        let val="new PolygonGroup2D("
+        for(let i=0;i<this.points.length;i++){
+            val+=`v2(${this.points[i].x}${divade}${this.points[i].y})`
+        }
+        return val+")"
     }
 }
 

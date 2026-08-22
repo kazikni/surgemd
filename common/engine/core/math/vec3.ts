@@ -66,7 +66,7 @@ export const v3 = Object.assign((x:number, y:number,z:number)=>{
      * @param y `Vec3b`
      * @returns A new `Vec3` With `x`*`y`
      */
-    mult(x:Vec3, y:Vec3):Vec3 {
+    mul(x:Vec3, y:Vec3):Vec3 {
         return this.new(x.x*y.x,x.y*y.y,x.z*y.z)
     },
     /**

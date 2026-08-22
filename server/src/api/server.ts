@@ -1,12 +1,14 @@
-import { ApiServerConfig, ApiSettings, GameConfig, GameModeConfig, ModeConfig } from "common/scripts/config/config.ts";
+import { ApiServerConfig, ApiSettings, GameConfig, GamePlayOption } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
-import { Server } from "common/engine/server.ts";
+import { default_handlers, Server } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
+import { error } from "node:console";
 export class ApiServer {
     server: Server
     groups = new GroupManager(this)
     regions = new RegionManager(this)
-    modes:ModeConfig[]=[]
+
+    modes:GameConfig[]=[]
 
     api_settings!:ApiSettings
 
@@ -24,7 +26,7 @@ export class ApiServer {
             config.host.key
         )
 
-        this.modes=config.game.modes
+        this.modes=[]
         this.update_settings()
         this.routes()
 
@@ -39,11 +41,17 @@ export class ApiServer {
         return !this.play_time||this.play_time.current_time!==undefined
     }
     update_settings(){
+        this.modes.length=0
+        for(const p of this.config.game.play_options){
+            for(const m of p.content??[]){
+                this.modes.push(m)
+            }
+        }
         this.api_settings={
             database:{
                 enabled:this.config.database?.enabled!==undefined?this.config.database.enabled:false,
             },
-            modes:this.modes,
+            play_options:this.config.game.play_options,
             regions:this.regions.regions,
             playtime:this.play_time?{
                 config:this.config.game.play_time!,
@@ -55,17 +63,9 @@ export class ApiServer {
             }:undefined
         }
     }
-    get_game_config(mode:number,group_size:number):GameConfig{
-        return {
-            mode: this.modes[mode].mode! as GameModeConfig,
-            group_size: (this.modes[mode].group_size as unknown as number[])[group_size],
-        }
-    }
     routes(){
         this.server.route("/get-settings", () => {
-            return this.server.default_handlers.cors(
-                Response.json(this.api_settings)
-            )
+            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(this.api_settings)))
         })
         this.server.route("/find-game", async (req) => {
             if(req.method !== "POST"){
@@ -74,9 +74,7 @@ export class ApiServer {
             if(!this.can_play())return new Response("You Cant Play Now",{status:204})
             const body = await req.json()
             const game=await this.regions.find_game(body)
-            return this.server.default_handlers.cors(
-                Response.json(game)
-            )
+            return this.server.default_handlers.cors(default_handlers.no_cache(Response.json(game??{})))
         })
         this.groups.routes(this.server.router("group"))
         this.regions.routes(this.server.router("regions"))
@@ -110,8 +108,48 @@ export class ApiServer {
 
         this.last_frame_time = performance.now()
     }
+    async log_server_error(error: unknown, context?: string) {
+        if(this.config.debug?.disable_error_file)return
+        const time = new Date().toISOString()
+
+        let stack: string
+
+        if (error instanceof Error) {
+            stack = error.stack ?? `${error.name}: ${error.message}`
+        } else {
+            stack = String(error)
+        }
+
+        const content =
+`============================================================
+[${time}]
+${context ? `Context: ${context}\n` : ""}
+${stack}
+============================================================
+`
+
+        try {
+            await Deno.writeTextFile(
+                this.config.debug?.error_file??"database/error.log",
+                content,
+                {
+                    append: true,
+                    create: true,
+                }
+            )
+        } catch (logError) {
+            console.error("[SERVER] Failed to write error.log:", logError)
+            console.error("[SERVER] Original error:", error)
+        }
+
+        console.error(`[SERVER] ${context ?? "Error"}:`, error)
+    }
     run(){
-        this.server.run()
-        setInterval(this.tick.bind(this),1000)
+        try{
+            this.server.run()
+            setInterval(this.tick.bind(this),1000)
+        }catch(e){
+            this.log_server_error(error,"Error Catch")
+        }
     }
 }

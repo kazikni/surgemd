@@ -1,6 +1,7 @@
 import { CircleHitbox2D, Definition, Definitions, FrameDef, Hitbox2D, mergeDeep, v2 } from "../../../engine/core.ts";
 import { zIndexes } from "../../others/constants.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
+import { ScopeChange } from "../utils.ts";
 export interface SyncedParticleDef extends Definition{
     frame:FrameDef
     lifetime:number
@@ -9,7 +10,7 @@ export interface SyncedParticleDef extends Definition{
     no_hit_owner?:boolean
     single_use?:boolean
     hitbox?:Hitbox2D
-    force_default_scope?:boolean
+    scope_change?:ScopeChange
     movement?:({
         type:"walk"
         velocity:{
@@ -105,7 +106,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
         {
             idString:"smoke",
             lifetime:33,
-            force_default_scope:true,
+            scope_change:{},
             frame:{
                 image:"smoke_particle",
                 scale:0.01
@@ -115,7 +116,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 velocity:{
                     min:0,
                     max:1.7,
-                    decay:0.5
+                    decay:0.45
                 },
                 angular:{
                     min:0.6,
@@ -130,7 +131,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                         duration:2,
                     },
                     scale:{
-                        to:2,
+                        to:2.5,
                         duration:0.5,
                     }
                 },

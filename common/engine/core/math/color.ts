@@ -148,11 +148,19 @@ export const ColorM={
     hex2number(color: string): number {
         return parseInt(color.replace(/^#/, ''), 16)
     },
-    mult(dst:Color,x:Color,y:Color){
+    mul(dst:Color,x:Color,y:Color){
         dst.r=Math.floor(x.r*(y.r/255))
         dst.g=Math.floor(x.g*(y.g/255))
         dst.b=Math.floor(x.b*(y.b/255))
         dst.a=Math.floor(x.a*(y.a/255))
+    },
+    mult_rgba(x:Color,r:number,g:number,b:number,a:number){
+        return {
+            r:x.r*r,
+            g:x.g*g,
+            b:x.b*b,
+            a:x.a*a,
+        }
     },
     mult_hsv(
         color: Color,

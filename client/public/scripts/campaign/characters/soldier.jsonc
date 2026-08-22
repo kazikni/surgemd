@@ -1,0 +1,13 @@
+{
+    "inventory": {
+        "backpack": [
+            {"item": "military_pack","weight": 1}
+        ],
+        "vest": [
+            {"item": "military_vest","weight": 1}
+        ],
+        "helmet": [
+            {"item": "military_helmet","weight": 1}
+        ]
+    }
+}

@@ -1,7 +1,7 @@
-import { ColorM, Container2D, Stream, NullHitbox2D, Sprite2D, v2 } from "common/engine/client.ts";
+import { Container2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
-//import { Badges } from "common/scripts/definitions/loadout/badges.ts";
+import { ColorM, NullHitbox2D, Stream, v2 } from "common/engine/core.ts";
 export class HumanBody extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -50,10 +50,10 @@ export class HumanBody extends GameObject{
     async set_name(name:string,badge:number){
         if(this.sprite_text.frame)this.sprite_text.frame.free()
         const color=this.game.get_theme_color("tertiary")
-        this.sprite_text.frame=await this.game.resources.render_text(name,60,color)
+        this.sprite_text.frame=await this.game.resources.render_text(name,60,color,"Russo-One")
         if(badge){
             this.sprite_badge.visible=true
-            this.sprite_badge.frame=this.game.resources.get_frame(`${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
+            this.sprite_badge.frame=this.game.resources.get_frame(`badge_${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
             this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.cam2d.meter_size*4))-0.05
         }else{
             this.sprite_badge.visible=false

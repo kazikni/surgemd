@@ -1,8 +1,9 @@
 import { Floors, FloorType, TerrainManager } from "common/scripts/others/terrain.ts";
-import { MapConfig } from "common/scripts/packets/map_packet.ts";
+import { MapConfig } from "common/scripts/packets/map_message.ts";
 import { type Game } from "../others/game.ts";
-import { ColorM, Graphics2D } from "common/engine/client.ts";
+import { Graphics2D } from "common/engine/web.ts";
 import { Layers } from "common/scripts/others/constants.ts";
+import { ColorM, v2 } from "common/engine/core.ts";
 export class TerrainM extends TerrainManager{
     map!:MapConfig
     game:Game
@@ -12,8 +13,13 @@ export class TerrainM extends TerrainManager{
         super()
         this.game=game
     }
+    override clear(): void {
+        super.clear()
+        this.last_layer=undefined
+    }
     process_map(mp:MapConfig):Promise<void>{
         return new Promise<void>((resolve, _reject) => {
+            this.clear()
             this.game.minimap.biome=mp.biome
             this.map=mp
             for(const f of mp.terrain){
@@ -30,11 +36,9 @@ export class TerrainM extends TerrainManager{
             for(const f of this.floors){
                 if(layer<f.layer)continue
                 const flb=this.game.minimap.biome.floors[f.type as FloorType]
-
                 graphic.ctx.begin_path()
-                graphic.ctx.set_hitbox(f.hb)
+                graphic.ctx.hitbox(f.hb)
                 graphic.ctx.end_path()
-
                 graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
                 graphic.ctx.fill()
             }

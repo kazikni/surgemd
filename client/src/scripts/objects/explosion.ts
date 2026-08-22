@@ -1,8 +1,9 @@
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, random, Sprite2D, v2, v2m, Numeric } from "common/engine/client.ts";
+import { ABParticle2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, ColorM, Numeric, random, Stream, v2, v2m } from "common/engine/core.ts";
 export class Explosion extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -25,7 +26,7 @@ export class Explosion extends GameObject{
     constructor(){
         super()
         this.sprite.visible=false
-        this.sprite.hotspot=CenterHotspot
+        this.sprite.hotspot=v2.half_one
         this.sprite.size=v2(400,400)
 
         this.allow_tick=true
@@ -74,7 +75,7 @@ export class Explosion extends GameObject{
                 this.game.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
-                        hotspot:CenterHotspot,
+                        hotspot:v2.half_one,
                         zIndex:zIndexes.Decals,
                         layer:this.layer,
                         scale:0,
@@ -96,7 +97,7 @@ export class Explosion extends GameObject{
                     this.game.particles.add_particle(new ABParticle2D({
                         frame:{
                             layer:this.layer,
-                            hotspot:CenterHotspot,
+                            hotspot:v2.half_one,
                             ...p.frame,
                         },
                         scale:p.frame.scale,
@@ -131,7 +132,12 @@ export class Explosion extends GameObject{
 
         this.radius=stream.read_float(0,50,3)
 
-        this.set_definition(this.game.definitions.explosions.getFromNumber(stream.read_id()))
+        const def=this.game.definitions.explosions.getFromNumber(stream.read_id())
+        if(!def){
+            this.destroy()
+            return
+        }
+        this.set_definition(def)
 
         this._base_hitbox=new CircleHitbox2D(v2(0,0),this.radius)
 

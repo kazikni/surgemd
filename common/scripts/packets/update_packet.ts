@@ -1,7 +1,6 @@
 import { Numeric, UpdatePacketBase, Vec2 } from "../../engine/core.ts";
 import { Stream } from "../../engine/core/net/stream.ts";
 import { type GameDefinition, GameItem, WeaponDef } from "../definitions/game_defs.ts";
-import { BoostType } from "../definitions/player/boosts.ts";
 import { InventoryItemData, PacketType } from "../definitions/utils.ts";
 import { ActionsType } from "../others/constants.ts";
 export interface PingData{
@@ -26,6 +25,7 @@ export interface MapHumanData{
     downed:boolean
     id:number
     position:Vec2
+    default_map_color:number
 }
 export interface PrivateUpdate{
     splashes:DamageSplash[]
@@ -41,8 +41,8 @@ export interface PrivateUpdate{
 }
 export interface GroupMemberState{
     color:number
-    boost_type:BoostType
     boost:number
+    boost_def:number
     health:number
 }
 export interface SelfStateUpdate{
@@ -63,7 +63,7 @@ export interface SelfStateUpdate{
 
     boost:number
     max_boost:number
-    boost_type:BoostType
+    boost_def:number
 
     money:number
 
@@ -82,7 +82,7 @@ export interface SelfStateUpdate{
     action?:{delay:number,type:ActionsType}
 
     current_scope:number
-    force_default_scope:boolean
+    scope_zoom:number
 
     group?:Record<number,GroupMemberState>
     colors?:Record<string,number>
@@ -92,7 +92,7 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
     .write_uint8(state.max_health)
     .write_uint8(state.boost)
     .write_uint8(state.max_boost)
-    .write_uint8(state.boost_type)
+    .write_uint8(state.boost_def)
 
     .write_uint16(state.money)
 
@@ -110,8 +110,6 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         state.action!==undefined, //has Action
 
         state.inventory.hand?.liquid, // Is Liquid
-
-        state.force_default_scope,
 
         state.colors!==undefined
     )
@@ -163,20 +161,21 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
             stream.write_uint32(i.color)
             stream.write_float(i.health,0,1,1)
             stream.write_float(i.boost,0,1,1)
-            stream.write_uint8(i.boost_type)
+            stream.write_uint8(i.boost_def)
         },3)
     }
     if(state.colors!==undefined){
         stream.write_string_dict(state.colors,(i)=>stream.write_uint32(i))
     }
     stream.write_uint8(state.current_scope)
+    .write_float32(state.scope_zoom)
 }
 function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameDefinition){
     state.health=stream.read_uint8()
     state.max_health=stream.read_uint8()
     state.boost=stream.read_uint8()
     state.max_boost=stream.read_uint8()
-    state.boost_type=stream.read_uint8()
+    state.boost_def=stream.read_uint8()
     state.money=stream.read_uint16()
     const [
         dirtyItems,
@@ -191,8 +190,6 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         hasHand,
         hasAction,
         liquid,
-
-        force_default_scope,
 
         dirtyColors
     ]=stream.read_boolean_group2()
@@ -269,7 +266,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
                 color:stream.read_uint32(),
                 health:stream.read_float(0,1,1),
                 boost:stream.read_float(0,1,1),
-                boost_type:stream.read_uint8(),
+                boost_def:stream.read_uint8(),
             }
         },3)
     }
@@ -277,7 +274,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
         state.colors=stream.read_string_dict(()=>stream.read_uint32())
     }
     state.current_scope=stream.read_uint8()
-    state.force_default_scope=force_default_scope
+    state.scope_zoom=stream.read_float32()
 }
 export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     ID=PacketType.Update
@@ -310,6 +307,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             stream.write_boolean_group(d.dead,d.downed)
             stream.write_id(d.id)
             .write_pos2(d.position)
+            .write_uint32(d.default_map_color)
         })
         .write_array(this.priv.pings,(e)=>{
             stream.write_boolean_group(e.id!==undefined)
@@ -344,6 +342,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             return {
                 id:stream.read_id(),
                 position:stream.read_pos2(),
+                default_map_color:stream.read_uint32(),
                 dead:bg[0],
                 downed:bg[1],
             }
@@ -371,7 +370,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
 
                 max_boost:0,
                 boost:0,
-                boost_type:BoostType.Shield,
+                boost_def:0,
 
                 money:0,
 
@@ -395,7 +394,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                     hand:undefined
                 },
                 current_scope:0,
-                force_default_scope:false,
+                scope_zoom:1
             }
             decode_self_state(this.priv.self_state,stream,this.definition)
         }

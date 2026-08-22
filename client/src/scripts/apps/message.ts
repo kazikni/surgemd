@@ -17,7 +17,7 @@ export class MessageApp extends GameApp {
     constructor(){
         super({
             name:"Chitchat",
-            icon:"/img/menu/icons/chat.svg"
+            icon:"/assets/img/menu/icons/chat.svg"
         })
     }
     on_init(){

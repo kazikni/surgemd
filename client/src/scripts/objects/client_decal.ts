@@ -1,6 +1,7 @@
-import { Sound, Sprite2D, v2 } from "common/engine/client.ts";
+import { Sound, Sprite2D } from "common/engine/web.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
+import { v2 } from "common/engine/core.ts";
 export class ClientDecal extends GameObject{
     ////////////////////////////
     // Definition             //

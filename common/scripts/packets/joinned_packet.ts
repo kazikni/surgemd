@@ -35,14 +35,13 @@ export type ShopNode =
 export class JoinnedPacket extends Packet{
     ID=PacketType.Joinned
     Name="joinned"
+
     players:{id:number,name:string,badge?:number}[]=[]
     leader?:{id:number,kills:number}
     ntps:number=0
 
     date!:KDate
-    mode:{
-        shop?:ShopNode[]
-    }={}
+
     constructor(){
         super()
     }
@@ -57,9 +56,6 @@ export class JoinnedPacket extends Packet{
             stream.write_uint16((e.badge??-1)+1)
             stream.write_string_sized(e.name,28)
             stream.write_id(e.id)
-        },1)
-        stream.write_array(this.mode.shop??[],(n)=>{
-            stream.write_object(n,1,1)
         },1)
         stream.write_kdate(this.date)
     }
@@ -79,9 +75,6 @@ export class JoinnedPacket extends Packet{
                 id:stream.read_id(),
                 badge:b===0?undefined:b-1
             }
-        },1)
-        this.mode.shop=stream.read_array(()=>{
-            return stream.read_object(1,1) as ShopNode
         },1)
         this.date=stream.read_kdate()
     }

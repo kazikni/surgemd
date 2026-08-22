@@ -28,12 +28,12 @@
             "green_soda":"Refresco Verde",
             "black_soda":"Refresco negro",
 
-            "basic_vest":"Armadura Simple",
-            "basic_helmet":"Casco Simple",
+            "civil_vest":"Armadura Simple",
+            "military_helmet":"Casco Simple",
             "basic_pack":"Mochila Simple",
-            "regular_vest":"Armadura Medio",
-            "regular_helmet":"Casco Medio",
-            "regular_pack":"Mochila Medio",
+            "military_vest":"Armadura Medio",
+            "bike_helmet":"Casco Medio",
+            "military_pack":"Mochila Medio",
             "Military_vest":"Armadura Militar",
             "Military_helmet":"Casco Militar",
             "Military_pack":"Mochila Militar",
@@ -62,7 +62,7 @@
         },
         "feed":{
             "unirse":"${player} Entro",
-            "muertes":{
+            "kill":{
                 "abstinence":"${player} murio de abstinencia",
                 "player":"${player1} mato ${player2} con ${source}",
                 "explosion":"${player1} mato a ${player2} con ${source}",
@@ -79,12 +79,12 @@
                 "disconnect":"${player} Se Desconecto",
                 "bleend":"essa menssagem no feed e um bug. report."
             },
-            "killleader":{
+            "leader":{
                 "assigned":"${player} Se Convirtio en el Lider De Asesinatos",
                 "dead":" El Lider De Asesinatos Ha Muerto"
             }
         },
-        "killleader-wait":"Esperando Nuevo Lider",
+        "leader-wait":"Esperando Nuevo Lider",
         "interact":{
             "loot":"Pegar ${source}${count}",
             "obstacles":{

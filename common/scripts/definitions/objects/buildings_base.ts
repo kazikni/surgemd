@@ -1,12 +1,264 @@
-import { DeepPartial, Definition, Definitions, FrameDef, Hitbox2D, hitbox_from_json, HitboxGroup2D, JsonHitbox2D, mergeDeep, RectHitbox2D, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { DeepPartial, Definition, Definitions, FrameDef, FrameTD, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, TD, tdm, TDObject, TDType, v2, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
-import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, ScopeChange } from "../utils.ts";
 import { DecalTint } from "./decals.ts";
 //20mm = 0.17619
 //2mm  = 0.017619
+export const BuildingClientTD: TDObject = {
+    type: TDType.object,
+    content: [
+        ...GameObjectDefTD,
+
+        { name: "no_collisions", content: tdm.boolean },
+        { name: "no_bullet_collision", content: tdm.boolean },
+
+        { name: "hitbox", content: tdm.any },
+        
+        // Ceiling
+        {
+            name: "ceiling",
+            content: {
+                type: TDType.onu,
+                content: {
+                    type: TDType.array,
+                    len_bytes: 2,
+                    content: {
+                        type: TDType.object,
+                        content: [
+                            { name: "frame", content: FrameTD },
+                            { name: "variations", content: tdm.any },
+                            { name: "hitbox", content: tdm.any },
+
+                            {
+                                name: "below",
+                                content: {
+                                    type: TDType.onu,
+                                    content: {
+                                        type: TDType.object,
+                                        content: [
+                                            { name: "deenabled", content: tdm.boolean },
+                                            { name: "duration", content: tdm.float32_onu },
+                                            { name: "alpha", content: tdm.float32_onu },
+                                        ]
+                                    }
+                                }
+                            },
+
+                            { name: "layer", content: tdm.int8_onu },
+                            { name: "connections", content: tdm.any },
+                            { name: "scope_change", content: tdm.any },
+
+                            {
+                                name: "destroy",
+                                content: {
+                                    type: TDType.onu,
+                                    content: {
+                                        type: TDType.object,
+                                        content: [
+                                            { name: "frame", content: tdm.string1 },
+                                            { name: "sound", content: tdm.string1_onu },
+                                            { name: "count", content: tdm.uint8 },
+                                            {
+                                                name: "particles",
+                                                content: {
+                                                    type: TDType.onu,
+                                                    content: {
+                                                        type: TDType.object,
+                                                        content: [
+                                                            { name: "count", content: tdm.uint8 }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        // Floor Images
+        {
+            name: "floor_image",
+            content: {
+                type: TDType.onu,
+                content: {
+                    type: TDType.array,
+                    len_bytes: 1,
+                    content: {
+                        type: TDType.object,
+                        content: [
+                            ...FrameTD.content,
+                            { name: "create_shadow", content: tdm.boolean }
+                        ]
+                    }
+                }
+            }
+        },
+        // Assets
+        {
+            name: "assets",
+            content: {
+                type: TDType.onu,
+                content: {
+                    type: TDType.object,
+                    content: [
+                        { name: "sounds", content: tdm.any },
+                        { name: "particles", content: tdm.any },
+                    ]
+                }
+            }
+        }
+    ]
+}
+export const BuildingTD: TDObject={
+    type:TDType.object,
+    content:[
+        ...BuildingClientTD.content,
+        { name: "spawnHitbox", content: tdm.any },
+        { name: "spawnMode", content: tdm.any },
+        { name: "reflect_bullets", content: tdm.boolean },
+        {
+            name: "generate",
+            content: {
+                type: TDType.object,
+                content: [
+                    // Obstacles
+                    {
+                        name: "obstacles",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "def", content: tdm.any },
+                                        { name: "id", content: tdm.uint16_onu },
+                                        { name: "position", content: Vec2TD },
+                                        { name: "connections", content: tdm.any },
+                                        { name: "skin", content: tdm.uint8_onu },
+                                        { name: "variation", content: tdm.uint8_onu },
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "rotation", content: tdm.float32_onu },
+                                        { name: "scale", content: tdm.float32_onu },
+                                        { name: "stairs_dest", content: tdm.any },
+                                        { name: "only_side", content: tdm.uint8_onu },
+                                        { name: "allow_biome_skin", content: tdm.boolean },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    // Decals
+                    {
+                        name: "decals",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "def", content: tdm.string1 },
+                                        { name: "position", content: Vec2TD },
+                                        { name: "rotation", content: tdm.float32_onu },
+                                        { name: "scale", content: tdm.float32_onu },
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "tint", content: tdm.any },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    // Sub Buildings
+                    {
+                        name: "sub_building",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "def", content: tdm.any },
+                                        { name: "position", content: Vec2TD },
+                                        { name: "layer", content: tdm.int8_onu },
+                                        { name: "rotation", content: tdm.uint8_onu },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    // Loots
+                    {
+                        name: "loots",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "table", content: tdm.string1 },
+                                        { name: "position", content: Vec2TD },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    // Floors
+                    {
+                        name: "floors",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 2,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "hitbox", content: tdm.any },
+                                        { name: "type", content: tdm.uint8 },
+                                        { name: "layer", content: tdm.int8_onu },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    // Stair Data
+                    {
+                        name: "stair_data",
+                        content: {
+                            type: TDType.onu,
+                            content: {
+                                type: TDType.array,
+                                len_bytes: 1,
+                                content: {
+                                    type: TDType.object,
+                                    content: [
+                                        { name: "hitbox", content: tdm.any },
+                                        { name: "dest", content: tdm.uint8 },
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+    ]
+}
 export type BuildingCeilingDef={
     frame:FrameDef
+    variations?:number[]
     hitbox:Hitbox2D
     below?:{
         deenabled?:boolean
@@ -15,7 +267,7 @@ export type BuildingCeilingDef={
     }
     layer?:number
     connections?:number[]
-    no_scope_block?:boolean
+    scope_change?:ScopeChange
     destroy?:{
         frame:string
         sound?:string
@@ -25,8 +277,12 @@ export type BuildingCeilingDef={
         }
     }
 }
+export type PuzzlePiece={
+    id?:string
+    value?:string
+}
 export type BuildingObstacles={
-    def:string|((WeightDefinition&{def:string})[])
+    def:string|((WeightDefinition&{def?:string})[])
     id?:number
     position:Vec2
     connections?:number[]
@@ -36,8 +292,19 @@ export type BuildingObstacles={
     rotation?:number
     scale?:number
     stairs_dest?:Record<number,number>
-    only_side?:number
     allow_biome_skin?:boolean
+    press_data?:{
+        activated?:boolean
+        locked?:boolean
+        allow_switch?:boolean
+    }
+    door_data?:{
+        locked?:boolean
+        cant_close?:boolean
+        only_side?:-1|1
+        open_state?:-1|0|1
+    }
+    puzzle_piece?:PuzzlePiece
 }
 export type BuildingDecal={
     def:string
@@ -57,22 +324,78 @@ export type BuildingSubBuilding={
     layer?:number
     rotation?:0|1|2|3
 }
+export type PuzzleCondition=({
+    type:"code"
+    value?:string
+    dont_need_orden?:boolean
+}|{
+    type:"break"
+    id?:number|number[]
+}|{
+    type:"press"
+    id?:number|number[]
+})&{
+    negate?:boolean
+}
+export type PuzzleAction={
+    type:"door"
+    id:number|number[]
+    locked?:boolean
+    cant_close?:boolean
+    only_side?:-1|1
+    open_state?:-1|0|1
+}|{
+    type:"press"
+    id:number|number[]
+    locked?:boolean
+    can_switch?:boolean
+    activated?:boolean
+}|{
+    type:"wait"
+    time:number
+}|{
+    type:"puzzle"
+    id?:string // undefined = self
+    lock?:boolean
+    solved?:boolean
+}|{
+    type:"check_fail"
+}
+export interface BuildingPuzzleDef{
+    idString?:string // Default = "main"
+    global?:boolean
+    code?:{
+        value?:string
+        size:number
+    }
+
+    complete_actions?:PuzzleAction[]
+    complete_conditions?:PuzzleCondition[]
+
+    fail_actions?:PuzzleAction[]
+    fail_conditions?:PuzzleCondition[]
+
+    check_actions?:PuzzleAction[]
+}
 export interface BuildingDef extends Definition{
     no_collisions?: boolean
     no_bullet_collision?: boolean
     reflect_bullets?:boolean
-    content:{
-        ceiling?:BuildingCeilingDef[]
+
+    ceiling?:BuildingCeilingDef[]
+    floor_image?:(FrameDef&{create_shadow?:boolean})[]
+
+    generate:{
         obstacles?:BuildingObstacles[]
         decals?:BuildingDecal[]
         sub_building?:BuildingSubBuilding[]
         loots?:BuildingLoot[]
         floors?:{hitbox:Hitbox2D,type:FloorType,layer?:number}[]
-        floor_image?:(FrameDef&{layer?:number})[]
         stair_data?:{
             hitbox:Hitbox2D
             dest:number
         }[]
+        puzzles?:BuildingPuzzleDef[]
     }
     spawnHitbox?:Hitbox2D
     hitbox?:Hitbox2D
@@ -80,107 +403,6 @@ export interface BuildingDef extends Definition{
     assets?:{
         sounds?:HitSoundsDef
         particles?:HitParticlesDef
-    }
-}
-export type JSONBuildingCeilingDef={
-    frame:FrameDef
-    hitbox:JsonHitbox2D
-    below?:{
-        duration?:number
-        alpha?:number
-    }
-    layer?:number
-    connections?:number[]
-    no_scope_block?:boolean
-    destroy?:{
-        frame:string
-        sound?:string
-        count:number
-        particles?:{
-            count:number
-        }
-    }
-}
-export type JSONBuildingDef={
-    no_collisions?: boolean
-    no_bullet_collision?: boolean
-    reflect_bullets?:boolean
-    spawnHitbox?:JsonHitbox2D
-    hitbox?:JsonHitbox2D
-    spawnMode?:SpawnMode
-    assets?:{
-        sounds?:HitSoundsDef
-        particles?:HitParticlesDef
-    }
-    content:{
-        ceiling?: JSONBuildingCeilingDef[]
-        floors?: {hitbox:JsonHitbox2D,type:FloorType,layer?:number}[]
-        obstacles?:BuildingObstacles[]
-        decals?:BuildingDecal[]
-        sub_building?:BuildingSubBuilding[]
-        loots?:BuildingLoot[]
-        floor_image?:(FrameDef&{layer?:number})[]
-    }
-}&Definition
-
-export function building_to_json(b: BuildingDef): JSONBuildingDef {
-    return {
-        idString:b.idString,
-        idNumber:b.idNumber,
-        no_collisions: b.no_collisions,
-        no_bullet_collision: b.no_bullet_collision,
-        reflect_bullets: b.reflect_bullets,
-
-        spawnHitbox: b.spawnHitbox?.to_json(),
-        hitbox: b.hitbox?.to_json(),
-
-        spawnMode: b.spawnMode,
-
-        assets: b.assets,
-
-        content: {
-            ceiling: b.content.ceiling?.map(c => ({
-                frame: c.frame,
-                hitbox: c.hitbox.to_json(),
-                below: c.below,
-                layer: c.layer,
-                connections: c.connections,
-                no_scope_block: c.no_scope_block,
-                destroy: c.destroy,
-            })),
-            floors: b.content.floors?.map(f => ({
-                hitbox: f.hitbox.to_json(),
-                type: f.type,
-                layer: f.layer
-            })),
-            obstacles: b.content.obstacles,
-            sub_building: b.content.sub_building,
-            loots: b.content.loots,
-            floor_image: b.content.floor_image
-        }
-    }
-}
-export function building_from_json(b: JSONBuildingDef): BuildingDef {
-    return {
-        ...b,
-        spawnHitbox: b.spawnHitbox ? hitbox_from_json(b.spawnHitbox) : undefined,
-        hitbox: b.hitbox ? hitbox_from_json(b.hitbox) : undefined,
-        content: {
-            ceiling: b.content.ceiling?.map(c => ({
-                ...c,
-                hitbox: hitbox_from_json(c.hitbox)
-            })),
-
-            floors: b.content.floors?.map(f => ({
-                ...f,
-                hitbox: hitbox_from_json(f.hitbox)
-            })),
-
-            obstacles: b.content.obstacles,
-            sub_building: b.content.sub_building,
-            loots: b.content.loots,
-            floor_image: b.content.floor_image
-        }
     }
 }
 export const buildings_spawns={
@@ -208,6 +430,20 @@ export const buildings_factory={
                     top:true
                 },0.4),
                 spawnHitbox:new RectHitbox2D(min,max),
+                floor_image:[
+                    {image:settings.floor??"container_floor",tint:tint,scale:3},
+                    {image:settings.floor??"container_walls_1",tint:tint,zIndex:zIndexes.BuildingsWalls1}
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:settings.ceiling??"container_ceiling_1",
+                            tint:tint
+                        },
+                        hitbox:new RectHitbox2D(min,max),
+                        scope_change:{}
+                    }
+                ],
                 assets:{
                     particles:{
                         particle:"metal_particle",
@@ -215,23 +451,6 @@ export const buildings_factory={
                     },
                     sounds:hit_sounds.heavy_metal,
                 },
-                content:{
-                    floor_image:[
-                        {
-                            image:settings.floor??"container_floor_1",
-                            tint:tint
-                        }
-                    ],
-                    ceiling:[
-                        {
-                            frame:{
-                                image:settings.ceiling??"container_ceiling_1",
-                                tint:tint
-                            },
-                            hitbox:new RectHitbox2D(min,max),
-                        }
-                    ]
-                }
             } as BuildingDef,settings.b??{})
         },
         type_2(id:string,tint:number=0xffffff,settings:{
@@ -258,28 +477,25 @@ export const buildings_factory={
                     },
                     sounds:hit_sounds.heavy_metal,
                 },
-                content:{
-                    floor_image:[
-                        {
-                            image:settings.floor??"container_floor_2",
+                floor_image:[
+                    {image:settings.floor??"container_floor",tint:tint,scale:3},
+                    {image:settings.floor??"container_walls_2",tint:tint,zIndex:zIndexes.BuildingsWalls1}
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:settings.ceiling??"container_ceiling_2",
                             tint:tint
-                        }
-                    ],
-                    ceiling:[
-                        {
-                            frame:{
-                                image:settings.ceiling??"container_ceiling_2",
-                                tint:tint
-                            },
-                            hitbox:new RectHitbox2D(min,max),
-                        }
-                    ]
-                }
+                        },
+                        hitbox:new RectHitbox2D(min,max),
+                        scope_change:{}
+                    }
+                ]
             } as BuildingDef,settings.b??{})
         },
         simple(id:string,tint:number):BuildingDef[]{
             const b={
-                content:{
+                generate:{
                     loots:[
                         {table:"normal_loot",position:v2.new(-1,0)},
                         {table:"normal_loot",position:v2.new(1,0)}
@@ -287,15 +503,13 @@ export const buildings_factory={
                 }
             }
             return [
-                this.type_1(id+"_1",tint,{b}),
-                this.type_2(id+"_2",tint,{b}),
-                this.type_1(id+"_3",tint,{
+                this.type_1(id+"_1",tint,{
                     b,
-                    ceiling:"container_ceiling_3"
+                    ceiling:"container_ceiling_1",
                 }),
-                this.type_2(id+"_4",tint,{
+                this.type_2(id+"_2",tint,{
                     b,
-                    ceiling:"container_ceiling_4"
+                    ceiling:"container_ceiling_2",
                 }),
             ]
         }
@@ -325,17 +539,18 @@ export const buildings_factory={
                     left:false,
                     right:true
                 },wall_size),
-                content:{
-                    ceiling:[{
-                        frame:{
-                            image:ceiling,
-                            position:v2(0,0),
-                        },
-                        hitbox:spawn_hb,
-                    }],
-                    floor_image:[
-                        {image:floor+"_1"}
-                    ],
+                floor_image:[
+                    {image:floor+"_1"}
+                ],
+                ceiling:[{
+                    frame:{
+                        image:ceiling,
+                        position:v2(0,0),
+                    },
+                    hitbox:spawn_hb,
+                    scope_change:{}
+                }],
+                generate:{
                     stair_data:[{
                         hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
                         dest:-1,
@@ -350,19 +565,20 @@ export const buildings_factory={
                     left:false,
                     right:true
                 },wall_size),
-                content:{
-                    ceiling:[{
-                        frame:{
-                            image:ceiling,
-                            position:v2(0,0),
-                            rotation:Math.PI
-                        },
-                        hitbox:spawn_hb,
-                    }],
-                    floor_image:[
-                        {image:floor+"_1"},
-                        {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
-                    ],
+                ceiling:[{
+                    frame:{
+                        image:ceiling,
+                        position:v2(0,0),
+                        rotation:Math.PI
+                    },
+                    hitbox:spawn_hb,
+                    scope_change:{}
+                }],
+                floor_image:[
+                    {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
+                    {image:floor+"_1"},
+                ],
+                generate:{
                     stair_data:[{
                         hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
                         dest:1,
@@ -379,7 +595,7 @@ export const buildings_factory={
         return [
             mergeDeep({
                 idString:id,
-                content:{
+                generate:{
                     sub_building:[
                         {
                             def:"small_iron_stairs_down",
@@ -401,27 +617,28 @@ export const buildings_factory={
             mergeDeep({
                 idString:id+"_bottom",
                 reflect_bullets:true,
-                content:{
+                floor_image:[
+                    {image:"small_bunker_floor_2",scale:4,zIndex:zIndexes.BuildingFloor1},
+                    {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:"small_bunker_ceiling_1",
+                            position:v2(0,0),
+                            rotation:Math.PI
+                        },
+                        hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
+                        scope_change:{}
+                    }
+                ],
+                generate:{
                     sub_building:[
                         {
                             def:"small_iron_stairs_up",
                             position:v2.new(-3.28,0),
                             rotation:2,
                         },
-                    ],
-                    floor_image:[
-                        {image:"small_bunker_floor_2",scale:4,zIndex:zIndexes.BuildingFloor1},
-                        {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingFloor1},
-                    ],
-                    ceiling:[
-                        {
-                            frame:{
-                                image:"small_bunker_ceiling_1",
-                                position:v2(0,0),
-                                rotation:Math.PI
-                            },
-                            hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
-                        }
                     ],
                     obstacles:[
                         ...settings.content??[]
@@ -447,6 +664,76 @@ export const buildings_factory={
             },settings.bottom??{})
         ]
     },
+    meat_bunker(id:string,settings:{
+        top?:DeepPartial<BuildingDef>
+        bottom?:DeepPartial<BuildingDef>
+        content?:BuildingObstacles[]
+    }={}):BuildingDef[]{
+        return [
+            mergeDeep({
+                idString:id,
+                generate:{
+                    sub_building:[
+                        {
+                            def:"small_iron_stairs_down",
+                            position:v2.new(-3.5,0),
+                            rotation:0,
+                        },
+                        {
+                            def:id+"_bottom",
+                            position:v2.zero(),
+                            rotation:0,
+                            layer:-1
+                        }
+                    ],
+                },
+                no_bullet_collision:true,
+                no_collisions:true,
+                hitbox:RectHitbox2D.centered(v2(0,0),v2(1,1)),
+            },settings.top??{}),
+            mergeDeep({
+                idString:id+"_bottom",
+                reflect_bullets:true,
+                floor_image:[
+                    {image:"meat_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
+                ],
+                ceiling:[
+                    {
+                        frame:{
+                            image:"small_bunker_ceiling_1",
+                            position:v2(0,0),
+                            rotation:Math.PI
+                        },
+                        hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
+                        scope_change:{}
+                    }
+                ],
+                generate:{
+                    sub_building:[
+                        {
+                            def:"small_iron_stairs_up",
+                            position:v2.new(-3.28,0),
+                            rotation:2,
+                        },
+                    ],
+                    obstacles:[
+                        ...settings.content??[]
+                    ],
+                },
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x404143
+                    },
+                    sounds:hit_sounds,
+                },
+                hitbox:new HitboxGroup2D(
+                    new RectHitbox2D(v2(-2.65,-2.65),v2(-2.45,-0.85)),
+                    new RectHitbox2D(v2(-2.65,0.85),v2(-2.45,2.65))
+                ),
+            },settings.bottom??{})
+        ]
+    },
     house:{
         shed(id:string,settings:{
             walls_tint?:number
@@ -466,7 +753,33 @@ export const buildings_factory={
                         tint:0x656877,
                     }
                 },
-                content:{
+                ceiling:[
+                    {
+                        frame:{
+                            image:"shed_ceiling_1",
+                            position:v2.zero(),
+                            rotation:0
+                        },
+                        connections:[10,11,12,13,14],
+                        destroy:{
+                            frame:"shed_ceiling_break",
+                            sound:"ceiling_break_1",
+                            count:3,
+                            particles:{
+                                count:30
+                            }
+                        },
+                        hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
+                        scope_change:{}
+                    }
+                ],
+                floor_image:[
+                    {
+                        image:"shed_floor",
+                        position:v2(0.21,0),
+                    }
+                ],
+                generate:{
                     obstacles:[
                         {
                             def:"wood_door",
@@ -495,6 +808,7 @@ export const buildings_factory={
                             position:v2(0,-1.57),
                             rotation:0,
                             id:12,
+                            connections:[5],
                             variation:walls_tint
                         },
                         {
@@ -512,31 +826,6 @@ export const buildings_factory={
                             variation:walls_tint
                         },
                         ...(settings.content??[])
-                    ],
-                    ceiling:[ 
-                        {
-                            frame:{
-                                image:"shed_ceiling",
-                                position:v2.zero(),
-                                rotation:0
-                            },
-                            connections:[10,11,12,13,14],
-                            destroy:{
-                                frame:"shed_ceiling_break",
-                                sound:"ceiling_break_1",
-                                count:2,
-                                particles:{
-                                    count:30
-                                }
-                            },
-                            hitbox:new RectHitbox2D(v2(-1.75,-1.55),v2(1.75,1.55)),
-                        }
-                    ],
-                    floor_image:[
-                        {
-                            image:"shed_floor",
-                            position:v2(0.21,0)
-                        }
                     ],
                 },
                 hitbox:RectHitbox2D.centered(v2(0,0),v2(3.5,3.1)),
@@ -568,7 +857,19 @@ export const buildings_factory={
 
                     new RectHitbox2D(v2(min.x,max.y-wall_size),v2(max.x,max.y)),
                 ),
-                content:{
+                floor_image:[
+                    {
+                        image:"small_house_1_floor",
+                    }
+                ],
+                ceiling:[
+                    {
+                        frame:{image:"small_house_1_ceiling"},
+                        hitbox:new RectHitbox2D(min,max),
+                        scope_change:{}
+                    }
+                ],
+                generate:{
                     obstacles:[
                         {
                             def:"wood_door",
@@ -718,17 +1019,6 @@ export const buildings_factory={
                             position:v2(4,3),
                         },
                     ],
-                    floor_image:[
-                        {
-                            image:"small_house_1_floor",
-                        }
-                    ],
-                    ceiling:[
-                        {
-                            frame:{image:"small_house_1_ceiling"},
-                            hitbox:new RectHitbox2D(min,max),
-                        }
-                    ],
                 },
                 assets:{
                     sounds:hit_sounds.wood
@@ -769,23 +1059,17 @@ export const buildings_factory={
                 },
                 sounds:hit_sounds.heavy_metal,
             },
-            content:{
-                floor_image:[
-                    {
-                        image:settings.floor??"storehouse_floor_1",
-                        scale:2.5
-                    }
-                ],
-                ceiling:[
-                    {
-                        frame:{
-                            image:settings.ceiling??"storehouse_ceiling_1",
-                            scale:2.5
-                        },
-                        hitbox:new RectHitbox2D(min,max),
-                    }
-                ]
-            }
+            floor_image:[
+                {image:settings.floor??"storehouse_floor_1",position:v2(5.85,0),rotation:Math.PI,scale:2.5},
+                {image:settings.floor??"storehouse_floor_1",position:v2(-5.85,0),scale:2.5},
+            ],
+            ceiling:[
+                {
+                    frame:{image:settings.ceiling??"storehouse_ceiling_1",scale:2.5},
+                    hitbox:new RectHitbox2D(min,max),
+                    scope_change:{}
+                }
+            ]
         } as BuildingDef,settings.b??{})
     },
 }
@@ -798,7 +1082,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         
         buildings_factory.container.type_1("black_container",0x111620,{
             b:{
-                content:{
+                generate:{
                     loots:[
                         {table:"black_container",position:v2.new(-2,0)}
                     ]
@@ -808,6 +1092,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
 
         ...buildings_factory.stairs("small_iron_stairs",{
             both:{
+                reflect_bullets:true,
                 assets:{
                     particles:{
                         particle:"metal_particle",
@@ -829,15 +1114,19 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
 
         buildings_factory.house.shed("shed",{
             walls_tint:2,
-            doors_tint:2,
             content:[
                 {
                     def:"large_drawer",
                     position:v2(-1.21,0)
+                },
+                {
+                    def:[{weight:5},{weight:1,def:"hp18_mount"},{weight:0.5,def:"m870_mount"}],
+                    position:v2(0.3,-1.35),
+                    id:5,
                 }
             ],
             b:{
-                content:{
+                generate:{
                     loots:[
                         {table:"normal_loot",position:v2.new(0.5,0)},
                     ]
@@ -846,7 +1135,7 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         }),
         buildings_factory.storehouse("storehouse_1",{
             b:{
-                content:{
+                generate:{
                     obstacles:[
                         /*{def:buildings_spawns.box,position:v2(-0.5,-4)},
                         {def:buildings_spawns.box,position:v2(0.5,-4)},
@@ -903,6 +1192,46 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
         buildings_factory.house.small_house_1("small_house_1",{
             walls_tint:7,
             doors_tint:2,
-        })
+        }),
+        {
+            idString:"puzzle_test",
+            generate:{
+                loots:[{
+                    position:v2(3,0),
+                    table:"gold_crate"
+                }],
+                obstacles:[
+                    {def:"red_button",position:v2(-2,-2),rotation:1,id:1,press_data:{allow_switch:false},puzzle_piece:{value:"r"}},
+                    {def:"green_button",position:v2(0,-2),rotation:1,id:2,press_data:{allow_switch:false},puzzle_piece:{value:"g"}},
+                    {def:"blue_button",position:v2(-2,2),rotation:3,id:3,press_data:{allow_switch:false},puzzle_piece:{value:"b"}},
+                    {def:"yellow_button",position:v2(0,2),rotation:3,id:4,press_data:{allow_switch:false},puzzle_piece:{value:"y"}},
+
+                    {def:"metal_door",position:v2(1,-0.6),rotation:1,variation:7,id:10,door_data:{
+                        locked:true,
+                    }},
+                ],
+                puzzles:[{
+                    code:{
+                        value:"rgby",
+                        size:4
+                    },
+                    complete_conditions:[
+                        {type:"code"},
+                    ],
+                    complete_actions:[
+                        {type:"press",id:[1,2,3,4],activated:true,locked:true},
+                        {type:"door",id:10,locked:true,open_state:1}
+                    ],
+                    fail_conditions:[
+                        {type:"code",negate:true}
+                    ],
+                    fail_actions:[
+                        {type:"wait",time:1},
+                        {type:"press",id:[1,2,3,4],activated:false},
+                        {type:"puzzle",lock:false}
+                    ]
+                }]
+            },
+        }
     )
 }

@@ -6,7 +6,6 @@
     border-radius: 15px;
     border: 2px solid rgba(7, 170, 238, 0.5);
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     
     &:hover {
@@ -15,7 +14,7 @@
     }
 }
 
-.background-menu-green {
+.menu-panel-green {
     @extend .background-menu;
     border: 2px solid rgba(0, 170, 119, 0.5);
     

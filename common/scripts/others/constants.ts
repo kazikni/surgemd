@@ -1,12 +1,16 @@
+import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
+import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
-import { type BoostDef } from "../definitions/player/boosts.ts";
+import { WrappingDef } from "../definitions/loadout/wrapping.ts"
 import { FloorType } from "./terrain.ts";
 
 export const GameConstants={
+    humanoid:{
+        radius:0.42,
+    },
     player:{
         defaultName:"Player",
-        radius:0.42,
-        max_name_size:25,
+        max_name_size:27,
     },
     loot:{
         radius:{
@@ -26,6 +30,7 @@ export const GameConstants={
 }
 export enum GameObjectType{
     StaticBody,
+    Humanoid,
     Human,
     HumanBody,
     Loot,
@@ -40,6 +45,7 @@ export enum GameObjectType{
     Parachute,
     SyncedParticle,
     Plane,
+    Drone
 }
 
 export enum HumanAnimationType{
@@ -85,15 +91,18 @@ export enum zIndexes{
     Grid,
     BuildingFloor1,
     BuildingsFloor2,
+    BuildingsFloor3,
     Decals,
     DeadObstacles,
     DeadCeilings,
     ClientDecals,
     DeadCreatures,
     PlayersBody,
+
+    Loots,
+    DownedPlayers,
     Obstacles1,
     Obstacles2,
-    Loots,
     GrenadeGround,
     Rain2,
 
@@ -104,6 +113,7 @@ export enum zIndexes{
     Particles,
     GrenadeAir,
     Obstacles3,
+    BuildingsWalls1,
     Explosions,
     SyncedParticle,
     BuildingsCeiling,
@@ -112,7 +122,7 @@ export enum zIndexes{
     ParachutePlayers,
     Rain1,
     Parachute,
-    Planes,
+    Airbodys,
     DeadZone,
     Lights,
     DamageSplashs,
@@ -140,19 +150,25 @@ export type HumanModifiers={
 }
 export enum  SpawnModeType{
     any,
+    fixed,
     blacklist,
     whitelist,
     river
 }
 export type SpawnMode={
+    position_generator?:"normal"|"deadzone"
+}&({
     type:SpawnModeType.any
+}|{
+    type:SpawnModeType.fixed
+    position:Vec2
 }|{
     type:SpawnModeType.blacklist|SpawnModeType.whitelist
     list:FloorType[]
 }|{
     type:SpawnModeType.river
-    list:FloorType[]
-}
+    list:FloorType[],
+})
 
 export const Spawn={
     any:{
@@ -187,18 +203,7 @@ export const Spawn={
         list:[FloorType.Water,FloorType.Ice]
     },
 } satisfies Record<string,SpawnMode>
-
-export interface HumanHealthData{
-    health:number
-    max_health:number
-
-    boost:number
-    max_boost:number
-    boost_def:BoostDef
-
-    invensibility_time:number
-}
-export interface HumanLoadoutData {
+export interface HumanoidVisualData {
     body:{
         def:LoadoutBodyDef
         tint:number
@@ -212,9 +217,8 @@ export interface HumanLoadoutData {
     legs:LoadoutLegDef
     accessorys:LoadoutAccessoryDef[]
 }
-export interface HumanAnimationData{
-    dirty:boolean
-    switching:boolean
+export interface HumanVisualData extends HumanoidVisualData{
+    wrapping?:WrappingDef
 }
 export interface ObstacleVisualData{
     dirty:boolean
@@ -227,7 +231,6 @@ export enum ScoreApplyerType{
     Rank,
     DamageTaken,
     DamageDealth,
-    KillLeader
 }
 export type ScoreApplyer={
     type:number
@@ -245,3 +248,21 @@ export interface PlayerStatus extends HumanStatus{
     time_alive:number
     score_applyer:ScoreApplyer[]
 }
+export interface LootData{
+    count:number
+    item:GameItem
+    skin?:number
+    aditional?:LootData[]
+}
+export interface LootSetting{
+    without_ammo?:boolean
+    include_ammo?:boolean
+    all_skins?:boolean
+}
+export interface LootAditional extends LootSetting{
+    without_ammo?:boolean
+    include_ammo?:boolean
+    skin?:number
+}
+
+export type LootTable<A=LootAditional>=LootTableBase<A>

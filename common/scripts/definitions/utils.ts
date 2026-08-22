@@ -1,7 +1,6 @@
-import { Definition, Stream, Vec2, WeightDefinition } from "../../engine/core.ts";
-import { type HumanModifiers } from "../others/constants.ts";
-import { ItemRank } from "../others/item.ts";
-import { BoostType } from "./player/boosts.ts";
+import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1 } from "../../engine/core.ts"
+import { type HumanModifiers } from "../others/constants.ts"
+import { FireMode, ItemRank } from "../others/item.ts"
 export enum PacketType{
     Feed=1,
     GameOver,
@@ -36,8 +35,8 @@ export interface BulletDef{
     }
     reflection?:BulletReflection
     pass_through_humans?:boolean
-    obstacleMult?:number
-    criticalMult?:number
+    obstacle_mult?:number
+    critical_mult?:number
     on_hit_explosion?:string
 }
 export type ItemRankSetting={
@@ -90,7 +89,16 @@ export const ItemQualitySettings:Record<ItemRank,ItemRankSetting>={
         tint:0x11ef45
     },
 }
-export enum InventoryItemType{
+export const GameObjectDefTD:TDObjectProperty[]=[
+    ...DefinitionTD.content,
+    {name:"name",content:tdm.string1_onu},
+    {name:"tname",content:tdm.string1_onu},
+]
+export const GameItemDefTD:TDObjectProperty[]=[
+    ...GameObjectDefTD,
+    {name:"rank",content:tdm.uint8},
+]
+export enum GameItemType{
     gun,
     ammo,
     consumible,
@@ -102,8 +110,15 @@ export enum InventoryItemType{
     backpack,
     scope
 }
+export enum GameObjectDefinitionType{
+    item,
+    emote,
+    obstacle,
+    explosion,
+}
 export interface GameItemBase extends Definition{
-    item_type:InventoryItemType
+    def_type:GameObjectDefinitionType.item
+    item_type:GameItemType
     rank:ItemRank
 }
 export enum DamageReason{
@@ -116,10 +131,12 @@ export enum DamageReason{
     Connection,
     Bleend,
     Airdrop,
+    VehicleJump,
+    VehicleCollision
 }
 export interface InventoryItemData{
     count:number
-    type:InventoryItemType
+    type:GameItemType
     idNumber:number
 }
 export interface InventoryDroppable{
@@ -153,11 +170,6 @@ export interface InventoryPreset{
     hand?:number
     infinity_ammo?:boolean
     droppables?:Partial<InventoryDroppable>
-
-    boosts?:(WeightDefinition&{
-        boost:number
-        boost_type:BoostType
-    })[]
 }
 export interface LoadoutPreset{
     badge?:string
@@ -170,6 +182,7 @@ export interface LoadoutPreset{
     legs?:string
     accessorys?:string[]
     colors?:Record<string,string>
+    wrapping?:string|string[]
 }
 export type HumanAIDef={
     kind?:string
@@ -179,12 +192,22 @@ export type HumanAIDef={
 export type HumanDefinition={
     name?:string
     position?:Vec2
+    layer?:number
     loadout?:LoadoutPreset
     inventory?:InventoryPreset
+    human?:{
+        pacific_enabled?:boolean
+        show_name?:boolean
+    }
+    boosts?:(WeightDefinition&{
+        value:number
+        def:string
+    })[]
     team?:number
     group?:number
     group_color?:number
     ai?:HumanAIDef
+    script?:string
     modifiers?:Partial<HumanModifiers>
 }
 export type CharacterDefinition=HumanDefinition&{
@@ -254,5 +277,154 @@ export const hit_sounds:Record<string,HitSoundsDef>={
         hit:"tissue_hit",
         hit_variations:2,
         break:"tissue_break",
+    }
+}
+export const PerspetiveSizes={
+    tiny:1.01,
+    small:1.015,
+    medium:1.02,
+    large:1.04,
+    giant:1.06,
+    xl:1.07,
+
+}satisfies Record<string,number>
+export type ScopeChange={zoom?:number,zoom_mult?:number,def?:string|number}
+
+export interface RecoilDef{
+    duration:number
+    speed:number
+}
+
+export interface GasParticle{
+    count:number
+    size:{
+        min:number
+        max:number
+    }
+    speed:{
+        min:number
+        max:number
+    }
+    life_time:number
+    direction_variation:number
+}
+export const GasParticles={
+    shotgun:{
+        count:7,
+        size:{
+            min:0.5,
+            max:1.2
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:0.9,
+        direction_variation:0.4
+    } satisfies GasParticle,
+    sniper:{
+        count:8,
+        size:{
+            min:0.6,
+            max:1.4
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:1.1,
+        direction_variation:0.43
+    } satisfies GasParticle,
+    dmr:{
+        count:3,
+        size:{
+            min:0.6,
+            max:1.4
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:1.1,
+        direction_variation:0.43
+    } satisfies GasParticle,
+    automatic:{
+        count:1, 
+        size:{
+            min:0.8,
+            max:1
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:0.7,
+        direction_variation:0.2
+    } satisfies GasParticle,
+    pistols:{
+        count:3,
+        size:{
+            min:0.5,
+            max:0.8
+        },
+        speed:{
+            min:1,
+            max:2
+        },
+        life_time:0.5,
+        direction_variation:0.2
+    } satisfies GasParticle
+}
+export interface MuzzleFlash{
+    sprite:string
+}
+export const MuzzleFlash={
+    normal:{
+        sprite:"muzzle_flash_1",
+    }
+}
+export interface ItemFireDefinition{
+    ammo_type:string
+    fire_delay?:number
+
+    fire_mode?:FireMode
+    fire_on_release?:boolean
+    burst?:{
+        delay:number
+        sequence:number
+    }
+
+    spread?:number
+    idle_spread?:number
+    jitter_radius?:number
+
+    recoil?:RecoilDef
+    recoil_animation?:{
+        time_scale:number
+        walk:number
+    }
+    muzzle_flash?:MuzzleFlash
+    gas_particles?:GasParticle
+    case_particle?:{
+        position:Vec2
+        at_begin?:boolean
+        frame?:string
+        sound?:string
+    }
+
+    bullet?:{
+        def:BulletDef
+        count?:number
+    }
+    projectile?:{
+        def:string
+        count?:number
+        angular_speed?:number
+        speed?:number
+    }
+    synsed_particle?:{
+        def:string
+        count?:number
+        speed?:Random1
     }
 }

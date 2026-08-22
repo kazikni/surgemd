@@ -1,12 +1,12 @@
-import { GasParticles, GunClasses, MuzzleFlash } from "../definitions/items/guns.ts";
-import { InventoryItemType } from "../definitions/utils.ts";
+import { GunClasses } from "../definitions/items/guns.ts";
+import { GameItemType, GasParticles, MuzzleFlash } from "../definitions/utils.ts";
 import { FireMode, ItemRank, tracers, WeaponsArmRig, WeaponsRig } from "./item.ts";
 
 export function md_make_globals():Record<string,any>{
     return {
         GunClasses,
         ItemRank,
-        InventoryItemType,
+        GameItemType,
         WeaponsArmRig,
         WeaponsRig,
         tracers,

@@ -1,8 +1,9 @@
-import { ABParticle2D, Color, ColorM, Hitbox2D, random, Sound, Vec2 } from "common/engine/client.ts"
+import { ABParticle2D, Sound } from "common/engine/web.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
 import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
+import { Color, ColorM, Hitbox2D, random, Vec2 } from "common/engine/core.ts";
 export type StaticBodyPhysicalData={
     hitbox:Hitbox2D
     side:number
@@ -37,6 +38,7 @@ export abstract class StaticBody extends GameObject{
 
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         if(!this.assets_data.particles)return
+        const tint=this.assets_data.particles.tint
         const p=new ABParticle2D({
             frame:{
                 image:random.choose(this.assets_data.particles.images),
@@ -53,6 +55,7 @@ export abstract class StaticBody extends GameObject{
             to:{
                 speed:random.float(0.1,1),
                 angle:random.rad(),
+                tint:ColorM.mult_rgba(tint??ColorM.default.white,1,1,1,0),
             }
         })
         this.game.particles.add_particle(p)

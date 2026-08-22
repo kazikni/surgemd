@@ -1,4 +1,5 @@
 import { Angle, DegAngle, Orientation, PolarMovement, RadAngle } from "./geometry.ts"
+import { type Matrix } from "./matrix.ts";
 import { random, SeededRandom } from "./random.ts"
 
 export interface Vec2{
@@ -51,6 +52,25 @@ export const v2m=Object.freeze({
     scale(out:Vec2,a:Vec2, b:number){ out.x = a.x*b; out.y = a.y*b; },
     dscale(out:Vec2,a:Vec2, b:number){ out.x = a.x/b; out.y = a.y/b; },
 
+    mul_matrix(out:Vec2,vec:Vec2,matrix:Matrix){
+        out.x=matrix[0]*vec.x+matrix[4]*vec.y+matrix[12]
+        out.y=matrix[1]*vec.x+matrix[5]*vec.y+matrix[13]
+    },
+    div_matrix(out: Vec2, vec: Vec2, matrix: Matrix) {
+        const a = matrix[0]
+        const b = matrix[1]
+        const c = matrix[4]
+        const d = matrix[5]
+
+        const x = vec.x - matrix[12]
+        const y = vec.y - matrix[13]
+
+        const det = a * d - b * c
+
+        out.x = (d * x - c * y) / det
+        out.y = (-b * x + a * y) / det
+    },
+
     set(out:Vec2,x:number,y:number){out.x=x;out.y=y},
     add_component(out:Vec2,x:number,y:number){out.x+=x;out.y+=y},
     sub_component(out:Vec2,x:number,y:number){out.x-=x;out.y-=y},
@@ -66,6 +86,7 @@ export const v2m=Object.freeze({
 
     clamp1(v:Vec2,min:number,max:number){v.x=Math.max(Math.min(v.x,max),min);v.y=Math.max(Math.min(v.y,max),min)},
     clamp2(v:Vec2,min:Vec2,max:Vec2){v.x=Math.max(Math.min(v.x,max.x),min.x);v.y=Math.max(Math.min(v.y,max.y),min.y)},
+
     normalizeSafe(v:Vec2,fallback?:Vec2) {
         const eps = 0.000001
         const len = v2.len(v)
@@ -74,13 +95,15 @@ export const v2m=Object.freeze({
             v.y/=len
         }else{
             v.x=fallback?.x??1
-            v.y=fallback?.x??0
+            v.y=fallback?.y??0
         }
     },
+
     lerp(a: Vec2, b: Vec2,interpolation: number) {a.x+=(b.x-a.x)*interpolation;a.y+=(b.y-a.y)*interpolation},
     abs(a: Vec2){a.x=Math.abs(a.x);a.y=Math.abs(a.y)},
     floor(a: Vec2) {a.x=Math.floor(a.x);a.y=Math.floor(a.y)},
     ceil(a: Vec2) {a.x=Math.ceil(a.x);a.y=Math.ceil(a.y)},
+    round(a: Vec2) {a.x=Math.round(a.x);a.y=Math.round(a.y)},
 
     add_rotate_RadAngle(out:Vec2,a:Vec2,b:Vec2,angle:RadAngle){
         const cos = Math.cos(angle)
@@ -259,8 +282,30 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @param y `Vec_B`
      * @returns A new `Vec2` With `x`*`y`
      */
-    mult(x:Vec2, y:Vec2):Vec2 {
+    mul(x:Vec2, y:Vec2):Vec2 {
         return this.new(x.x*y.x,x.y*y.y)
+    },
+    mul_matrix(vec:Vec2,matrix:Matrix){
+        return {
+            x:matrix[0]*vec.x+matrix[4]*vec.y+matrix[12],
+            y:matrix[1]*vec.x+matrix[5]*vec.y+matrix[13]
+        }
+    },
+    div_matrix(vec: Vec2,matrix: Matrix) {
+        const a = matrix[0]
+        const b = matrix[1]
+        const c = matrix[4]
+        const d = matrix[5]
+
+        const x = vec.x - matrix[12]
+        const y = vec.y - matrix[13]
+
+        const det = a * d - b * c
+
+        return{
+            x:(d * x - c * y) / det,
+            y:(-b * x + a * y) / det
+        }
     },
     /**
      * @param x `Vec_A`
@@ -270,6 +315,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     div(x:Vec2, y:Vec2):Vec2 {
         return this.new(x.x/y.x,x.y/y.y)
     },
+    
     /**
      * @param x `Vec_A`
      * @param y `Vec_B`
@@ -496,7 +542,10 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
         return Vec.x*Vec.x+Vec.y*Vec.y
     },
     dot(x: Vec2, y: Vec2): number {
-        return x.x * y.x + x.y * y.y;
+        return x.x * y.x + x.y * y.y
+    },
+    cross(x: Vec2, y: Vec2): number {
+        return x.x * y.y - x.y * y.x
     },
     /**
      * @param Vec2 The `Vec2` used in length
@@ -563,13 +612,11 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
      * @returns A `Vec2` whose length is 1 and is parallel to the original Vec2
      */
     normalize(Vec2:Vec2): Vec2 {
-        const eps = 0.000001
         const len = this.len(Vec2)
-        return eps
-            ? {
-                x:Vec2.x/len,
-                y:Vec2.y/len
-            }: this.clone(Vec2)
+        return len==0?this.clone(Vec2):{
+            x:Vec2.x/len,
+            y:Vec2.y/len
+        }
     },
     /**
      * 
@@ -595,4 +642,7 @@ export const v2 = Object.assign((x: number, y: number): Vec2 => ({ x, y }),{
     toString(Vec2:Vec2):string{
         return `{${Vec2.x},${Vec2.y}}`
     },
+    generate_code(v:Vec2,divade:string=", "):string{
+        return `v2(${v.x}, ${v.y})`
+    }
 })

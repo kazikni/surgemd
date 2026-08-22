@@ -8,6 +8,7 @@ export enum FloorType {
     Snow,
     Sand,
     Water,
+    DeepWater,
     Ice,
 
     Metal
@@ -26,6 +27,7 @@ export interface FloorDef {
     drag: number
 
     floor_kind:FloorKind
+    deep?:boolean
     footstep_sounds?:string[]
     footstep_decal?:boolean
     skin_apply?:string
@@ -91,6 +93,19 @@ export const Floors: Record<FloorType, FloorDef> = {
         speed_mult: 0.65,
         acceleration: 0.85,
         drag:0.5,
+
+        floor_kind:FloorKind.Liquid,
+        footstep_sounds:["footstep_water_1","footstep_water_2"],
+        traction: 1,
+        rolling_resistance:0,
+    },
+    [FloorType.DeepWater]: {
+        default_color: 0x163a63,
+
+        speed_mult: 0.3,
+        acceleration: 0.7,
+        drag:0.5,
+        deep:true,
 
         floor_kind:FloorKind.Liquid,
         footstep_sounds:["footstep_water_1","footstep_water_2"],
@@ -164,7 +179,7 @@ export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainMana
     const center=shape.position??position
     const base = polygon2.island_silhouette(center,shape.radius,shape.points ?? 6,shape.variation ?? 50,shape.passes ?? 3,shape.variation_decay ?? 0.6,random)
     let poly = polygon2.clone(base)
-    for(const floor of shape.floors.sort((a,b)=>a.padding-b.padding)){
+    for(const floor of shape.floors){
         poly = polygon2.offset_polygon(base,floor.padding)
         poly = polygon2.distort_polygon(poly,floor.variation,floor.spacing,0.9,random)
         const hb=new PolygonHitbox2D(poly)
@@ -356,6 +371,7 @@ export class River{
 
                 let point1 = hitbox[startIndex]
                 let point2 = hitbox[endIndex]
+                if(!point1||!point2)continue
 
                 point1 = this.extend_point(point1,center,def.width * 1.7)
                 point2 = this.extend_point(point2,center,def.width * 1.7)
@@ -375,7 +391,7 @@ export class River{
         const dir = v2.normalizeSafe(v2.sub(point, center),v2(1,0))
         return v2.add(point,v2.scale(dir, amount))
     }
-    static generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 6,strength = 0.25): Vec2[] {
+    static generate_path(start: Vec2,end: Vec2,random: SeededRandom,passes = 7,strength = 0.25): Vec2[] {
         let points: Vec2[] = [start, end]
         const globalDir = v2.normalizeSafe(v2.sub(end, start), v2(1, 0))
         const globalNormal = v2(-globalDir.y, globalDir.x)

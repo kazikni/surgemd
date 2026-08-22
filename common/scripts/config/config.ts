@@ -1,17 +1,15 @@
 import { HostConfig } from "../../engine/core.ts";
 
-export interface GameModeConfig{
+export interface GameConfig{
     mode:string
     settings?:any
+    group_size?:number
     name?:string
 }
-export interface GameConfig{
-    group_size?:number
-    mode:GameModeConfig
-}
-export interface ModeConfig{
-    group_size:(number[])|{time:number,index:number,value:number[]}
-    mode:GameModeConfig|{time:number,index:number,value:GameModeConfig[]}
+export interface GamePlayOption{
+    name?:string
+    tname?:string
+    content?:GameConfig[]
 }
 export interface GameDebugOptions{
     debug_menu:boolean
@@ -31,7 +29,7 @@ export interface PlayTimeConfig{
 }
 export interface ApiSettings{
     regions:string[]
-    modes:ModeConfig[]
+    play_options:GamePlayOption[]
     database:{
         enabled:boolean
     }
@@ -44,7 +42,6 @@ export interface FindGameData{
     region:string
     mode:number
     token?:string
-    group_size?:number
 }
 export type FindGameResult={
     success:true
@@ -54,19 +51,26 @@ export type FindGameResult={
     success:false
     error:string
 }
+export type ApiUserDefinition={
+    password:string
+    permitions?:{
+        allow_moderate?:boolean // Ban, Unban, Kick
+        allow_region?:boolean // Give Region Access
+        allow_database?:boolean // Give Access To Database
+        allow_create_region?:boolean
+    }
+}
 export interface ApiServerConfig{
     host: HostConfig
-    users?: Record<string,{
-        password:string
-        permitions?:{
-            allow_moderate?:boolean // Ban, Unban, Kick
-            allow_region?:boolean // Give Region Access
-            allow_database?:boolean // Give Access To Database
-        }
-    }>
+    users?: Record<string,ApiUserDefinition>
     game:{
-        modes: ModeConfig[]
+        regions:string[]
+        play_options:GamePlayOption[]
         play_time?:PlayTimeConfig
+    }
+    debug?:{
+        error_file?:string
+        disable_error_file?:boolean
     }
     database?:{
         enabled?: boolean
@@ -82,6 +86,7 @@ export interface GameServerConfig{
     host: HostConfig
 
     max_games: number
+    use_workers: boolean
     ntps:number
     tps:number
 
@@ -104,7 +109,7 @@ export interface ViteServerConfig{
     port:number
     allowed_hosts?:true|string[]
     spritesheet:{
-        sheets:Record<string,string>
+        sheets:Record<string,{path:{dir:string,base?:string}[],save_assets?:boolean}>
         resolutions:{name:string,scale:number}[]
     }
     audios:{
@@ -132,7 +137,8 @@ export function ZeroApiServerConfig():ApiServerConfig{
             },
         },
         game:{
-            modes:[]
+            regions:[],
+            play_options:[],
         }
     }
 }
@@ -147,6 +153,7 @@ export function ZeroGameServerConfig():GameServerConfig{
         tps:100,
         ntps:32,
         max_games:1,
+        use_workers:false,
     }
 }
 export function ZeroConfig():ConfigType{

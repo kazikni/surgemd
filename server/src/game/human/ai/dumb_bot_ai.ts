@@ -295,7 +295,7 @@ export class DumbBotAI extends BotAi {
             const players = this.human.game.humans.humans
             for(let i=0;i<5;i++){
                 const target = random.choose(players)
-                if(target&&target.id!==this.human.id&&!this.human.game.modeManager.is_ally(this.human,target)||v2.distance(this.human.position,target.position)<=this.human.scope_zoom){
+                if(target&&target.id!==this.human.id&&!this.human.game.modeManager.is_ally(this.human,target)||v2.distance(this.human.position,target.position)<=11/this.human.scope_zoom){
                     this.target=target
                     break
                 }

@@ -1,7 +1,7 @@
-import { ColorM, HideElement, ShowElement, UIModule } from "common/engine/client.ts"
+import { HideElement, ShowElement, UIModule } from "common/engine/web.ts"
 import { Game } from "../others/game.ts"
-import { Boosts, BoostType } from "common/scripts/definitions/player/boosts.ts";
 import { GroupMemberState } from "common/scripts/packets/update_packet.ts";
+import { ColorM } from "common/engine/core.ts";
 
 type GroupElement = {
     container: HTMLDivElement
@@ -68,7 +68,6 @@ export class GroupMembersModule extends UIModule<Game>{
             if(!member){
                 member = this.create_member(id,state)
             }
-            
             const mh=this.game.ui.map_humans.find((v)=>v.id===id)
             if(mh){
                 if(mh.downed!==member.downed){
@@ -76,11 +75,11 @@ export class GroupMembersModule extends UIModule<Game>{
                     member.health.style.background=mh.downed?"#e33":"#fff"
                 }
             }
-            member.health.style.width = `${state.health*100}%`
-            member.boost.style.width = `${state.boost*100}%`
-            if(member.boost_type!==state.boost_type){
-                member.boost_type=state.boost_type
-                member.boost.style.backgroundColor=Boosts[member.boost_type as BoostType].color
+            member.health.style.width=`${state.health*100}%`
+            member.boost.style.width=`${state.boost*100}%`
+            if(member.boost_type!==state.boost_def){
+                member.boost_type=state.boost_def
+                member.boost.style.backgroundColor=this.game.definitions.boosts.getFromNumber(member.boost_type).color
             }
         }
 

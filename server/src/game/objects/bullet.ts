@@ -1,46 +1,56 @@
 import { BulletDef, BulletReflection, DamageReason } from "common/scripts/definitions/utils.ts";
 import { ServerGameObject } from "../others/gameObject.ts"; 
-import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
-import { CircleHitbox2D, Collision, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { SideEffect } from "common/scripts/definitions/player/effects.ts";
+import { CircleHitbox2D, Stream, Numeric, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
+import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 
 export class Bullet extends ServerGameObject{
     string_type:string="bullet"
     number_type:number=GameObjectType.Bullet
 
-    owner?:Human
-    hit_owner:boolean=false
-    def!:BulletDef
+    /*
+        Definition
+    */
+
+    // Physics
+    speed!:number
+    max_distance!:number
+    reflection!:BulletReflection
+    // Visual
+    tracer_color:number=0
+    tracer_alpha:number=255
+    tracer_width:number=1
+    tracer_height:number=1
+    // Damage
+    damage:number=0
+    penetration:number=1
+    obstacle_mult:number=1
+    critical_mult:number=1.25
+    falloff:number=1
+    on_hit_explosion?:ExplosionDef
+    effects?:SideEffect[]
+
+    // Status
     angle!:number
     old_position!:Vec2
     initial_position!:Vec2
-    max_distance!:number
     velocity:Vec2
-    dir:Vec2
+
     critical!:boolean
+    hit_owner:boolean=false
 
-    satured?:number
+    owner?:Human
     ammo?:AmmoDef
-
-    modifiers={
-        speed:1,
-        size:1,
-    }
-
     source?:DamageSourceDef
 
-    damage:number=0
-    penetration:number=1
     tticks:number=0
 
-    reflectionCount:number=0
-
-    tracerColor:number=0
-    tracerAlpha:number=255
+    reflection_count:number=0
 
     collided_with:Set<ServerGameObject>=new Set()
 
@@ -49,19 +59,23 @@ export class Bullet extends ServerGameObject{
     constructor(){
         super()
         this.velocity=v2(0,0)
-        this.dir=v2(0,0)
 
         this.net_sync_deletion=false
+        this.net_sync_can_unsee=false
 
         this.allow_tick=true
     }
     on_hit(){
-        if(this.def.on_hit_explosion){
-            this.game.add_explosion(this.position,this.game.definitions.explosions.getFromString(this.def.on_hit_explosion),this.owner,this.source,this.layer)
+        if(this.on_hit_explosion){
+            this.game.add_explosion(this.position,this.on_hit_explosion,this.owner,this.source,this.layer)
         }
         this.destroy()
     }
     override on_tick(dt:number): void {
+        if(this.owner?.dead){
+            this.destroy()
+            return
+        }
         this.old_position=v2.clone(this.position)
         this.tticks+=dt
         const disT=v2.distance(this.initial_position,this.position)/this.max_distance
@@ -102,29 +116,22 @@ export class Bullet extends ServerGameObject{
                             }
                             break
                         }
-                        const dmg:number=this.damage
-                            *(this.def.falloff?Numeric.lerp(1,this.def.falloff,disT):1)
-                            *(this.critical?(this.def.criticalMult??1.25):1)
+                        const dmg:number=this.damage*(this.falloff===1?1:Numeric.lerp(1,this.falloff,disT))*(this.critical?this.critical_mult:1)
 
                         ;(obj as Human).damage({
                             amount:dmg,
                             owner:this.owner,
+                            source:this.source as unknown as DamageSourceDef,
+                            object:this,
                             reason:DamageReason.Human,
                             position:v2.clone(chosen.point),
                             critical:this.critical,
-                            source:this.source as unknown as DamageSourceDef,
                             direction:this.angle+3.1415,
                             penetration:this.penetration
                         })
 
-                        if(this.def.effect){
-                            for(const e of this.def.effect){
-                                (obj as Human).side_effect({
-                                    type:SideEffectType.AddEffect,
-                                    duration:e.time,
-                                    effect:e.id
-                                })
-                            }
+                        if(this.effects){
+                            for(const e of this.effects)(obj as Human).side_effect(e,this.owner)
                         }
 
                         // Armor Reflect
@@ -145,12 +152,12 @@ export class Bullet extends ServerGameObject{
 
                     this.collided_with.add(obj)
                     if(!((obj as StaticBody).physical_data.passable_by_bullets||this.pass_through_everthing)){
-                        if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.def.reflection)&&this.def.reflection!==BulletReflection.None&&!this.def.on_hit_explosion){
+                        if(((obj as StaticBody).physical_data.reflect_bullets||BulletReflection.All===this.reflection)&&this.reflection!==BulletReflection.None&&!this.on_hit_explosion){
                             this.reflect(col1.dir,col1.point)
                         }
                         this.on_hit()
                     }
-                    const dmg:number=this.damage*(this.def.obstacleMult??1);
+                    const dmg:number=this.damage*this.obstacle_mult;
                     (obj as StaticBody).damage({
                         amount:dmg,
                         resistence:0,
@@ -159,6 +166,7 @@ export class Bullet extends ServerGameObject{
                         position:v2.clone(this.position),
                         critical:this.critical,
                         source:this.source as unknown as DamageSourceDef,
+                        object:this,
                         direction:Math.atan2(col1.dir.y,col1.dir.x),
                         penetration:this.penetration
                     })
@@ -170,85 +178,100 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    override on_create(args?: {def:BulletDef,position:Vec2,owner:Human,ammo:string,critical_chance?:number,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
+    override on_create(args?: {position:Vec2,owner:Human,ammo:AmmoDef,critical_chance?:number,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
-        if(args)this.set_configuration(args.def,args.position,args.owner,args.ammo,args.critical_chance,args.critical,args.source,args.satured)
+        if(args)this.set_configuration(args.position,args.owner,args.ammo,args.critical_chance,args.critical,args.source)
     }
-    set_configuration(def:BulletDef,position:Vec2,owner:Human,ammo:string,critical_chance:number=0.15,critical?:boolean,source?:DamageSourceDef,satured?:number){
-        this.def=def
+    set_definition(def:BulletDef){
+        this.speed=def.speed
+        this.max_distance=def.range/2.5
+        if(def.reflection!==undefined)this.reflection=def.reflection
+        else this.reflection=BulletReflection.Only_Reflective
+
+        this.tracer_width=def.tracer.width
+        this.tracer_height=def.tracer.height
+        this.tracer_alpha=255
+        this.tracer_color=def.tracer.color??this.ammo?.defaultTrail??0
+        if(def.tracer.alpha!==undefined)this.tracer_alpha*=def.tracer.alpha
+
+        this.damage=def.damage
+        this.penetration=1
+        if(def.obstacle_mult!==undefined)this.obstacle_mult=def.obstacle_mult
+        if(def.critical_mult!==undefined)this.critical_mult=def.critical_mult
+        if(def.falloff!==undefined)this.falloff=def.falloff
+        if(def.on_hit_explosion)this.on_hit_explosion=this.game.definitions.explosions.getFromStringSafe(def.on_hit_explosion)
+
+        this.pass_through_humans=def.pass_through_humans??false
+    }
+    set_configuration(position:Vec2,owner:Human,ammo:AmmoDef,critical_chance:number=0.15,critical?:boolean,source?:DamageSourceDef,satured?:number){
         this.position=position
         this.initial_position=v2.clone(position)
         this.old_position=v2.clone(this.position)
-        this.max_distance=this.def.range/2.5
-        if(this.def.tracer.alpha)this.tracerAlpha=255*this.def.tracer.alpha
 
-        const ad=ammo?this.game.definitions.ammos.getFromString(ammo):undefined
         this.owner=owner
         this.critical=critical===undefined?(Math.random()<=critical_chance):critical
         this.source=source
-        this.ammo=ad
-
-        this.damage=this.def.damage
-        this.pass_through_humans=this.def.pass_through_humans??false
-        this.set_color(satured)
-    }
-    set_color(satured?:number){
-        if(this.def.tracer.color){
-            this.tracerColor=this.def.tracer.color
-        }else{
-            if(satured!==undefined&&this.ammo?.strongTrail?.[satured]){
-                this.tracerColor=this.ammo.strongTrail[satured]
-            }else{
-                this.tracerColor=this.ammo?.defaultTrail===undefined?0xffffff:this.ammo.defaultTrail
-            }
-        }
-        this.satured=satured
+        this.ammo=ammo
     }
     set_direction(angle:number){
-        this.dir=v2.from_RadAngle(angle)
-        this.velocity=v2.scale(this.dir,this.def.speed*this.modifiers.speed)
+        this.angle=angle
+        this.velocity=v2.from_RadAngle(angle,this.speed)
         this.set_dirty_full()
-        this.angle=angle;
+    }
+    set_satured(satured:number){
+        if(satured!==undefined&&this.ammo?.strongTrail?.[satured]){
+            this.tracer_color=this.ammo.strongTrail[satured]
+        }else{
+            this.tracer_color=this.ammo?.defaultTrail===undefined?0xffffff:this.ammo.defaultTrail
+        }
     }
     reflect(normal: Vec2, point: Vec2):Bullet|undefined{
-        if(this.reflectionCount>=3)return
+        if(this.reflection_count>=3)return
         const n = v2.normalizeSafe(normal)
-        const d = this.dir
+        const d = v2.from_RadAngle(this.angle)
 
         const dot = v2.dot(d, n)
-
-        const newDir = v2.sub(
-            d,
-            v2.scale(n, 2 * dot)
-        )
-
+        const newDir = v2.sub(d,v2.scale(n, 2 * dot))
         const pos = v2.add(point, v2.scale(n, 0.05))
 
-        const b = this.game.add_bullet(
-            pos,
-            this.def,
-            this.owner,
-            this.ammo?.idString,
-            this.source,
-            this.layer,
-            this.satured
-        )
+        const b = this.clone(pos)
         b.hit_owner=true
-        b.modifiers.size=this.modifiers.size
-        b.modifiers.speed=this.modifiers.speed
-        b.tracerAlpha=this.tracerAlpha/2
-        b.damage=this.damage/2
-        b.reflectionCount = this.reflectionCount + 1
-        b.penetration=this.penetration
+        b.tracer_alpha/=2
+        b.damage/=2
+        b.reflection_count=this.reflection_count+1
         if(this.owner){
             this.owner.inventory.accessorys.call_event("bullet_reflect",{user:this.owner,item:this,bullet:b,angle:b.angle,position:pos})
         }
+
         b.set_direction(Math.atan2(newDir.y, newDir.x))
         return b
     }
-    clone(){
-        const b=this.game.add_bullet(this.position,this.def,this.owner,this.ammo?.idString,this.source,this.layer,this.satured)
+    clone(position?:Vec2){
+        const b=this.game.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer)
+        
+        b.speed=this.speed
+        b.max_distance=this.max_distance
+        b.reflection=this.reflection
+
+        b.tracer_width=this.tracer_width
+        b.tracer_height=this.tracer_height
+        b.tracer_alpha=this.tracer_alpha
+        b.tracer_color=this.tracer_color
+
+        b.damage=this.damage
         b.penetration=this.penetration
+        b.obstacle_mult=this.obstacle_mult
+        b.critical_mult=this.critical_mult
+        b.falloff=this.falloff
+        b.on_hit_explosion=this.on_hit_explosion
+        b.effects=this.effects
+
+        b.pass_through_humans=this.pass_through_humans
+        b.pass_through_everthing=this.pass_through_everthing
+
+        b.reflection_count=this.reflection_count
+        b.hit_owner=this.hit_owner
+        
         return b
     }
     override on_encode_net(stream: Stream, full: boolean): void {
@@ -257,13 +280,12 @@ export class Bullet extends ServerGameObject{
         if(full){
             stream.write_pos2(this.initial_position)
             .write_float32(this.max_distance)
-            .write_float32(this.def.speed*this.modifiers.speed)
+            .write_float32(this.speed)
             .write_rad(this.angle)
-            .write_float(this.def.tracer.width,0,100,3)
-            .write_float(this.def.tracer.height*this.modifiers.size,0,6,2)
-            .write_uint32(this.tracerColor)
-            .write_uint8(this.tracerAlpha)
-            .write_uint8(this.def.tracer.particles?.frame??0)
+            .write_float32(this.tracer_width)
+            .write_float32(this.tracer_height)
+            .write_uint32(this.tracer_color)
+            .write_uint8(this.tracer_alpha)
             .write_boolean_group(this.hit_owner,this.critical,this.pass_through_humans,this.pass_through_everthing)
             .write_id(this.owner?.id??0)
         }

@@ -1,9 +1,12 @@
-import { AKeyFrame, Angle, Definition, Definitions, ease, FrameDef, FrameTransform, Hitbox2D, v2, Vec2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, DeepPartial, Definition, Definitions, ease, FrameDef, FrameTransform, mergeDeep, v2, Vec2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { GameObjectDefinitionType, type GameItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.melee
+    name?:string
+    tname?:string
     rank:ItemRank
-    item_type?:InventoryItemType.melee
     description?:string|boolean
 
     offset:Vec2
@@ -22,12 +25,15 @@ export interface MeleeDef extends Definition{
     rig_image?:FrameTransform
     animation?:AKeyFrame[]
     alt_animation?:AKeyFrame[]
+
+    kill_transform_into?:string
     assets?:WeaponAssets&{
         hit_sound?:string
     }
     character_frame?:{
         equipped_frame:FrameDef
         unequipped_frame:FrameDef
+        downed?:FrameDef
     }
 
     reflective?:{
@@ -70,7 +76,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     type:"tween",
                     to:{
                         rotation:DefaultFistRig.right!.rotation+0.2,
-                        position:v2.add(DefaultFistRig.right!.position,v2(-0.07,0.05))
+                        position:v2.add(DefaultFistRig.right!.position,v2(-0.16,0.05))
                     },
                     ease:ease.quadraticInOut
                 },
@@ -83,7 +89,7 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"weapon",
                     type:"tween",
                     to:{
-                        rotation:r-1.1,
+                        rotation:r-1,
                         position:v2(DefaultFistRig.left!.position.x+0.05,DefaultFistRig.left!.position.y)
                     },
                     ease:ease.quadraticInOut
@@ -101,8 +107,8 @@ export function AnimationSwing(time:number):AKeyFrame[]{
                     fuser:"right_arm",
                     type:"tween",
                     to:{
-                        rotation:DefaultFistRig.right!.rotation-0.4,
-                        position:v2(DefaultFistRig.right!.position.x+0.3,DefaultFistRig.right!.position.y-0.3)
+                        rotation:DefaultFistRig.right!.rotation-0.35,
+                        position:v2(DefaultFistRig.right!.position.x+0.38,DefaultFistRig.right!.position.y-0.2)
                     },
                     ease:ease.quadraticInOut
                 },
@@ -260,6 +266,45 @@ export function AnimationBonesaw(time:number):AKeyFrame[]{
             ]
         },
     ]
+}
+
+export const melees_factorys={
+    bonesaw(id:string,e:DeepPartial<MeleeDef>={}):MeleeDef{
+        return mergeDeep({
+            idString:id,
+            rank:ItemRank.S,
+            offset:v2(0.5,0),
+            radius:0.35,
+            damage:20,
+            attack_delay:0.65,
+            switch_delay:0.5,
+            damage_delays:[0.4,0.7],
+            rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
+                right:{
+                    position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                    rotation:DefaultFistRig.right!.rotation+0.4,
+                    zIndex:2,
+                },
+            },
+            rig_image:{
+                position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
+                rotation:Angle.deg2rad(-13),
+                zIndex:1,
+                hotspot:v2(0.18,0.4)
+            },
+            animation:AnimationBonesaw(0.6),
+            assets:{
+                use_sound:"light_swing",
+                hit_sound:"bonesaw_hit",
+                switch_sound:"knife_switch"
+            }
+        },e)
+    },
 }
 export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
     melees.insert({
@@ -480,6 +525,43 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
             }
         },
         {
+            idString:"crowbar",
+            description:true,
+            rank:ItemRank.C,
+            offset:v2(0.7,0),
+            radius:0.4,
+            damage:40,
+            resistence_damage:1,
+            fire_mode:FireMode.Single,
+            attack_delay:0.3,
+            switch_delay:0.5,
+            damage_delays:[0.3],
+            rig_arms:{
+                left:{
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
+                    zIndex:2,
+                },
+                right:{
+                    position:DefaultFistRig.right!.position,
+                    rotation:DefaultFistRig.right!.rotation,
+                    zIndex:2,
+                },
+            },
+            rig_image:{
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
+                zIndex:1,
+                hotspot:v2(0.1,0.7)
+            },
+            animation:AnimationSwing(0.3),
+            assets:{
+                use_sound:"heavy_swing",
+                hit_sound:"crowbar_hit",
+                switch_sound:"medium_switch"
+            }
+        },
+        {
             idString:"katana",
             rank:ItemRank.B,
             offset:v2(0.8,0.25),
@@ -625,45 +707,23 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     hotspot:v2(1,0.5),
                     scale:2,
                     rotation:3.3
-                }
+                },
+                downed:{
+                    image:"katana_bag",
+                    position:v2.new(-1.1,0.27),
+                    hotspot:v2(1,0.5),
+                    scale:1.5,
+                    rotation:3.14
+                },
             }
         },
-        {
-            idString:"bonesaw",
-            rank:ItemRank.S,
-            offset:v2(0.5,0),
-            radius:0.35,
-            damage:20,
-            attack_delay:0.65,
-            switch_delay:0.5,
-            damage_delays:[0.4,0.7],
-            rig_arms:{
-                left:{
-                    position:DefaultFistRig.left!.position,
-                    rotation:DefaultFistRig.left!.rotation,
-                    zIndex:2,
-                },
-                right:{
-                    position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
-                    rotation:DefaultFistRig.right!.rotation+0.4,
-                    zIndex:2,
-                },
-            },
-            rig_image:{
-                position:v2(DefaultFistRig.right!.position.x-0.1,DefaultFistRig.right!.position.y+0.2),
-                rotation:Angle.deg2rad(-13),
-                zIndex:1,
-                hotspot:v2(0.18,0.4)
-            },
-            animation:AnimationBonesaw(0.6),
-            assets:{
-                use_sound:"light_swing",
-                hit_sound:"bonesaw_hit",
-                switch_sound:"knife_switch"
-            }
-        },
+        melees_factorys.bonesaw("bonesaw"),
+        melees_factorys.bonesaw("bonesaw_bloody",{
+            tname:"items.bonesaw"
+        }),
         {
             idString:"pan",
+            description:true,
             damage:25,
             offset:v2(0.8,0.1),
             radius:0.35,
@@ -786,6 +846,13 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                     hotspot:v2(0.5,0.5),
                     scale:2,
                     image:"pan_world"
+                },
+                downed:{
+                    position:v2(-0.45,0),
+                    rotation:Angle.deg2rad(85),
+                    image:"pan",
+                    scale:2,
+                    hotspot:v2(0.5,0.5),
                 }
             }
         },

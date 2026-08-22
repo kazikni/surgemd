@@ -1,16 +1,10 @@
 @use "common/engine/main.scss";
 kl-md-submenu{
     display: flex;
-    gap: 50px; /*Default*/
+    gap: 5vw; /*Default*/
     flex-direction: row;
     width: fit-content;
     height: fit-content;
-    @include main.medium_screen {
-        gap: 35px;
-    }
-    @include main.small_screen {
-        gap: 25px;
-    }
 }
 kl-md-submenu-options {
     display: flex;
@@ -20,34 +14,26 @@ kl-md-submenu-options {
 
 kl-md-submenu-options button,
 kl-md-submenu-options select {
-    width: 300px;
-    height: 50px;
-    margin-top:-2px;
-    @include main.medium_screen {
-        width: 200px;
-        height: 35px;
-    }
-    @include main.small_screen {
-        width: 150px;
-        height: 25px;
-    }
+    width: 20vw;
+    margin-top:-0.2vh;
 }
 
 kl-md-extra {
     position: relative;
+    transition: opacity 2s linear;
+    h1{
+        text-align: center;
+        font-size: 3vw;
+    }
 }
-
 .emote-wheel{
     position: absolute;
-    width: fit-content;
-    height: fit-content;
-
     transform: translate(-50%, -50%);
+    background: url("./assets/img/menu/gui/emote_wheel.svg");
     width: 300px;
     height: 300px;
-    background-size: cover;
-
-    background-image: url("./img/menu/gui/emote_wheel.svg");
+    background-repeat: no-repeat;
+    background-size: contain;
     .wheel-hover{
         position: absolute;
         transform: translate(-50%,-50%);
@@ -97,5 +83,25 @@ kl-md-extra {
     .wheel-hover-center {
         top: 50%;
         left: 50%;
+    }
+}
+.background-screen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    .background-bg,
+    .background-content {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+    }
+    @keyframes scroll-left-animation {
+        from { transform: translateX(33%); }
+        to   { transform: translateX(-33%); }
+    }
+    @keyframes scroll-right-animation {
+        from { transform: translateX(-33%); }
+        to   { transform: translateX(33%); }
     }
 }

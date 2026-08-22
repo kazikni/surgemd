@@ -1,15 +1,31 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
-import { InventoryItemType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
 export interface BackpackDef extends Definition{
-    max:Record<string,number>
-    item_type?:InventoryItemType.backpack
+    item_type?:GameItemType.backpack
+    def_type?:GameObjectDefinitionType.item
+    name?:string
+    tname?:string
     rank:ItemRank
+
+    max:Record<string,number>
     level:number
     special?:boolean
     no_world_image?:boolean
     slots:number
+}
+export const BackpackTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"max",content:tdm.any},
+        {name:"level",content:tdm.uint8},
+        {name:"special",content:tdm.boolean},
+        {name:"no_world_image",content:tdm.boolean},
+        {name:"slots",content:tdm.uint8},
+    ]
 }
 export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
     backpacks.insert(
@@ -18,20 +34,20 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             level:0,
             max:{
                 "12g":20,
-                "9mm":100,
+                "9mm":120,
                 "762mm":80,
                 "556mm":80,
                 "45acp":80,
-                "22lr":120,
+                "22lr":150,
 
                 "50cal":40,
                 "308sub":15,
                 "explosive_ammo":5,
                 "gasoline":5,
 
-                "frag_grenade":9,
+                "frag_grenade":12,
                 "smoke_grenade":12,
-                "mirv_grenade":7,
+                "mirv_grenade":10,
                 "molotov":5,
                 "red_flare":6,
                 "blue_flare":6,
@@ -68,11 +84,11 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             level:1,
             max:{
                 "12g":40,
-                "9mm":200,
+                "9mm":240,
                 "762mm":160,
                 "556mm":160,
                 "45acp":160,
-                "22lr":240,
+                "22lr":300,
 
                 "50cal":80,
                 "308sub":30,
@@ -83,15 +99,15 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             slots:5,
         },
         {
-            idString:"regular_pack",
+            idString:"military_pack",
             level:2,
             max:{
                 "12g":60,
-                "9mm":300,
+                "9mm":360,
                 "762mm":240,
                 "556mm":240,
                 "45acp":240,
-                "22lr":360,
+                "22lr":450,
 
                 "308sub":45,
                 "50cal":120,
@@ -102,16 +118,16 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             slots:6,
         },
         {
-            idString:"military_pack",
+            idString:"tactical_pack",
             level:3,
             special:true,
             max:{
                 "12g":80,
-                "9mm":400,
+                "9mm":480,
                 "762mm":320,
                 "556mm":320,
                 "45acp":320,
-                "22lr":480,
+                "22lr":600,
 
                 "308sub":60,
                 "50cal":160,

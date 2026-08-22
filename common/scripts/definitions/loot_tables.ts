@@ -1,4 +1,4 @@
-import { LootTable } from "../../engine/core.ts";
+import { LootAditional, LootTable } from "../others/constants.ts";
 
 export const LootTables={
     //Guns Quality
@@ -13,11 +13,11 @@ export const LootTables={
         {item:"ar15",weight:40},
         {item:"m1921",weight:40},
         {item:"m870",weight:39},
-        {item:"famas",weight:10},
-        {item:"rifle_cbc",weight:8},
-        {item:"spas12",weight:8},
-        {item:"model94",weight:8},
-        {item:"blr81",weight:8},
+        {item:"famas",weight:8},
+        {item:"rifle_cbc",weight:7},
+        {item:"spas12",weight:7},
+        {item:"model94",weight:1},
+        {item:"blr81",weight:1},
     ],
     mythic_guns:[
         {item:"sr25",weight:13},
@@ -29,35 +29,40 @@ export const LootTables={
         {item:"kar98k",weight:7},
         {item:"m2_2",weight:5},
         {item:"m79",weight:2},
-        {item:"awp",weight:2},
     ],
     legendary_guns:[
-        {item:"m1_garand",weight:15},
+        {item:"m1_garand",weight:13},
+        {item:"awp",weight:13},
         {item:"desert_eagle_dual",weight:10},
         {item:"pfeifer_zeliska",weight:10},
+        {item:"m249",weight:10},
         {item:"pkp",weight:10},
-        {item:"awm",weight:7},
-        {item:"rpg7",weight:2},
+        {item:"awm",weight:8},
+        {item:"xm556",weight:7},
+        {item:"rpg7",weight:5},
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:100},
+        {table:"common_guns",weight:150},
         {table:"mythic_guns",weight:5},
-        {table:"legendary_guns",weight:0.25}
+        {table:"legendary_guns",weight:0.2}
     ],
     melees:[
         {item:"survival_knife",weight:15},
         {item:"shovel",weight:15},
         {item:"axe",weight:10},
+        {item:"crowbar",weight:7},
         {item:"katana",weight:3},
         {item:"sledgehammer",weight:3},
-        {item:"bonesaw",weight:2},
         {item:"pan",weight:2},
+        {item:"bonesaw",weight:2},
+        {item:"bonesaw_bloody",weight:2},
     ],
-    military_melees:[
+    advanced_melees:[
         {item:"sledgehammer",weight:3},
-        {item:"bonesaw",weight:2},
         {item:"pan",weight:2},
+        {item:"bonesaw",weight:1},
+        {item:"bonesaw_bloody",weight:1},
     ],
     //Consumibles
     consumibles:[
@@ -69,16 +74,16 @@ export const LootTables={
         {table:"death_consumibles",count:1,weight:0.04},
     ],
     health_consumibles:[
-        {item:"bandage",count:5,weight:6},
+        {item:"bandage",count:5,weight:5},
         {item:"medikit",weight:1},
     ],
     adrenaline_consumibles:[
-        {item:"yellow_soda",count:1,weight:8},
+        {item:"yellow_soda",count:1,weight:5},
         {item:"inhaler",count:1,weight:1},
         {item:"yellow_pills",count:1,weight:0.1},
     ],
     shield_consumibles:[
-        {item:"blue_soda",count:2,weight:8},
+        {item:"blue_soda",count:2,weight:5},
         {item:"blue_potion",count:1,weight:1},
         {item:"blue_pills",count:1,weight:0.1},
     ],
@@ -88,7 +93,7 @@ export const LootTables={
         {item:"red_crystal",count:2,weight:0.1},
     ],
     mana_consumibles:[
-        {item:"purple_soda",count:2,weight:8},
+        {item:"purple_soda",count:2,weight:5},
         {item:"purple_potion",count:1,weight:1},
         {item:"purple_pills",count:1,weight:0.1},
     ],
@@ -101,11 +106,11 @@ export const LootTables={
     //Ammos
     ammos:[
         {item:"12g",count:10,weight:5},
-        {item:"9mm",count:50,weight:5},
+        {item:"9mm",count:60,weight:5},
         {item:"762mm",count:40,weight:5},
         {item:"556mm",count:40,weight:5},
-        {item:"45acp",count:40,weight:5},
-        {item:"22lr",count:60,weight:4},
+        {item:"45acp",count:40,weight:3.5},
+        {item:"22lr",count:80,weight:3.5},
         {item:"50cal",count:20,weight:0.1},
         {item:"308sub",count:5,weight:0.05},
         {item:"gasoline",count:5,weight:0.05},
@@ -123,28 +128,28 @@ export const LootTables={
     ],
     //Scopes
     scopes:[
-        {item:"scope_2",count:1,weight:27},
-        {item:"scope_3",count:1,weight:10},
-        {item:"scope_4",count:1,weight:1.5},
+        {item:"scope_2",count:1,weight:28},
+        {item:"scope_3",count:1,weight:11},
+        {item:"scope_4",count:1,weight:1.7},
         {item:"scope_5",count:1,weight:0.1},
-        {item:"scope_6",count:1,weight:0.05},
-        {item:"scope_7",count:1,weight:0.01},
+        //{item:"scope_6",count:1,weight:0.05},
+        //{item:"scope_7",count:1,weight:0.01},
     ],
     //Armors And Backpacks
     helmets:[
-        {item:"basic_helmet",weight:10},
-        {item:"regular_helmet",weight:1},
-        {item:"military_helmet",weight:0.1},
+        {item:"bike_helmet",weight:10,all_skins:true},
+        {item:"military_helmet",weight:1},
+        {item:"tactical_helmet",weight:0.1},
     ],
     vests:[
-        {item:"basic_vest",weight:10},
-        {item:"regular_vest",weight:1},
-        {item:"military_vest",weight:0.1},
+        {item:"civil_vest",weight:10},
+        {item:"military_vest",weight:1},
+        {item:"tactical_vest",weight:0.1},
     ],
     backpacks:[
         {item:"basic_pack",weight:10},
-        {item:"regular_pack",weight:1},
-        {item:"military_pack",weight:0.1},
+        {item:"military_pack",weight:1},
+        {item:"tactical_pack",weight:0.1},
     ],
     armors:[
         {table:"helmets",weight:1},
@@ -155,10 +160,10 @@ export const LootTables={
         {table:"vests",weight:1},
         {table:"backpacks",weight:1},
     ],
-    military_equipments:[
-        {item:"military_vest",weight:1},
-        {item:"military_helmet",weight:1},
-        {item:"military_pack",weight:1},
+    advanced_equipments:[
+        {item:"tactical_vest",weight:1},
+        {item:"tactical_helmet",weight:1},
+        {item:"tactical_pack",weight:1},
     ],
     accessorys:[
         {weight:5,item:"lucky_coin"},
@@ -182,29 +187,27 @@ export const LootTables={
         {weight:0.7,table:"scopes"},
         {weight:0.2,table:"throwables"},
         {weight:0.1,table:"guns"},
-        {weight:0.01,table:"melees"},
+        {weight:0.003,table:"melees"},
     ],
     normal_loot:[
         {weight:1,table:"ammos"},
         {weight:1,table:"consumibles"},
         {weight:0.8,table:"guns"},
-        {weight:0.6,table:"equipments"},
+        {weight:0.7,table:"equipments"},
         {weight:0.6,table:"scopes"},
         {weight:0.55,table:"throwables"},
-        {weight:0.04,table:"melees"},
+        {weight:0.01,table:"melees"},
     ],
-    loot_drawer:[
-        {weight:2,count:2,table:"normal_loot"},
-        {weight:1,count:3,table:"normal_loot"},
-        {weight:0.5,count:4,table:"normal_loot"},
-        {weight:0.5,count:1,table:"normal_loot"},
+    drawer_loot:[
+        {weight:1,table:"civil_loot",count:3},
+        {weight:0.1,table:"civil_loot",count:4},
     ],
     //Crates
     wood_crate:[
-        {weight:2,count:1,table:"normal_loot"},
+        {weight:1.5,count:1,table:"normal_loot"},
         {weight:1,count:2,table:"normal_loot"},
-        {weight:0.5,count:3,table:"normal_loot"},
-        {weight:0.2,count:4,table:"normal_loot"},
+        {weight:0.25,count:3,table:"normal_loot"},
+        {weight:0.05,count:4,table:"normal_loot"},
     ],
     campfire_crate:[
         [{weight:1,table:"ammos"}],
@@ -226,28 +229,35 @@ export const LootTables={
     iron_crate:[
         [{weight:1,table:"ammos",count:2}],
         [{weight:1,table:"consumibles",count:2}],
-        [{weight:1,table:"military_equipments"}],
+        [{weight:1,table:"advanced_equipments"}],
         [{weight:1,table:"mythic_guns"}],
         [{weight:1,table:"throwables"}],
         [{weight:1,table:"scopes"}],
-        [{weight:7,table:""},{weight:1,table:"military_melees"}],
+        [{weight:7,table:""},{weight:1,table:"advanced_melees"}],
     ],
     gold_crate:[
         [{weight:1,table:"ammos",count:2}],
         [{weight:1,table:"consumibles",count:2}],
-        [{weight:10,table:"military_equipments"},{weight:1,count:2,table:"military_equipments"}],
+        [{weight:20,table:"advanced_equipments"},{weight:1,count:2,table:"advanced_equipments"}],
         [{weight:10,table:"legendary_guns"}],
         [{weight:1,table:"throwables"}],
         [{weight:1,table:"scopes"}],
-        [{weight:1,table:""},{weight:4,table:"military_melees"}],
+        [{weight:1,table:""},{weight:4,table:"advanced_melees"}],
     ],
     ammo_crate:[
         {weight:1,count:4,table:"ammos"},
     ],
+    knife_crate:{
+        min:2,
+        max:4,
+        content:[
+            {weight:1,table:"melees"}
+        ]
+    },
     platinum_crate:[
         [{weight:1,table:"ammos",count:4}],
         [{weight:1,table:"consumibles",count:7}],
-        [{weight:1,count:6,table:"military_equipments"}],
+        [{weight:1,count:6,table:"advanced_equipments"}],
         [{weight:1,count:7,table:"mythic_guns"}],
         [{weight:1,count:2,table:"legendary_guns"}],
         [{weight:1,count:2,table:"melees"}],
@@ -272,12 +282,12 @@ export const LootTables={
         [{weight:1,item:"awp"}],
     ],
     black_container:[
-        [{weight:1,item:"military_helmet"}],
+        [{weight:1,table:"advanced_equipments"}],
         [{weight:1,table:"mythic_guns"}],
         [
             {item:"scope_5",weight:10},
-            {item:"scope_6",weight:5},
-            {item:"scope_7",weight:2},
+            /*{item:"scope_6",weight:5},
+            {item:"scope_7",weight:2},*/
         ]
     ]
-} satisfies Record<string,LootTable>
+} satisfies Record<string,LootTable<LootAditional>>

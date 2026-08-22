@@ -1,7 +1,7 @@
 import { Vec2 } from "../../engine/core.ts";
 import { MapDef } from "../definitions/maps/base.ts";
-import { JSONBuildingDef } from "../definitions/objects/buildings_base.ts";
 import { CharacterDefinition, HumanDefinition } from "../definitions/utils.ts";
+import { type GameConfig } from "./config.ts";
 export type LevelMapDefinition=string|(MapDef&{base:string})
 
 export type LevelEnemys={
@@ -11,22 +11,6 @@ export type LevelEnemys={
     position?:Vec2
     count?:number
 }[]
-export type LevelMode={
-    map: {
-        def:LevelMapDefinition
-        seed?:number
-    };   
-}&({
-    type:"kill_all_enemies",
-    enemies:LevelEnemys
-}|{
-    type:"battle_royale"
-    group_size:number
-    teams?:number
-    enemies:LevelEnemys[]
-})|{
-    type:"debug"
-}
 export enum GameOverScreenType{
     Normal,
     Restart,
@@ -40,8 +24,8 @@ export type GameOverScreen={
     type:GameOverScreenType.Light
 }
 export type LevelCharacter=CharacterDefinition&{
-    path?:string
-    ia?:LevelCharacterAI
+    path?:string|string[]
+    script_path?:string
 }
 export interface LevelDefinition{
     meta:{
@@ -52,26 +36,14 @@ export interface LevelDefinition{
         location: string
         date:string
     }
+    next_level?:{
+        complete?:string
+    }
     game_over?:GameOverScreen
-    cutscenes?:{
-        begin?:string
-    }
-    mode:LevelMode
-    deadzone?:{
-        stage?:number
-    }
-    player: LevelCharacter
-    characters_selection?:{
-        spawn_other?:boolean
-        characters:LevelCharacter[]
-    }
+    mode:GameConfig
+    script?:string
     assets?:{
-        background_music?:string
         assets?:Record<string,string>
         textures?:string[]
-    }
-    definitions?:{
-        enemies?:Record<string,EnemyDef>
-        buildings?:Record<string,JSONBuildingDef>
     }
 }

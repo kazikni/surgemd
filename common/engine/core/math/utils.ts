@@ -22,6 +22,34 @@ export function splitPath(path:string):string[]{
     }
     return ret
 }
+export function split_strings_array(text:string):string[]{
+    const out:string[]=[]
+
+    let current=""
+    let quote=""
+
+    for(let i=0;i<text.length;i++){
+        const c=text[i]
+
+        if(!quote){
+            if(c==="\""||c==="'"){
+                quote=c
+                current=""
+            }
+            continue
+        }
+
+        if(c===quote){
+            out.push(current)
+            quote=""
+            continue
+        }
+
+        current+=c
+    }
+
+    return out
+}
 export class Path {
     static join(...parts: string[]): string {
         const stack: string[] = []
@@ -47,6 +75,24 @@ export class Path {
         }
 
         return "/" + stack.join("/")
+    }
+    static extname(path:string):string{
+        const content=path.split(".")
+        return path.length>1?content[content.length-1]:""
+    }
+    static filename(path:string):string{
+        const content=path.split(".")
+        if(content.length>1){
+            content.pop()
+        }
+        return content.join(".")
+    }
+    static basename(path:string):string{
+        const val=path.split("/")
+        while(val.length>1&&val[val.length-1]===""){
+            val.pop()
+        }
+        return val[val.length-1]??""
     }
 }
 export type Tags=string[]

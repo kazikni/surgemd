@@ -5,7 +5,7 @@ import { CounterMapDef } from "common/scripts/definitions/maps/base.ts";
 import { Team, TeamsManager } from "./teams.ts";
 import { JoinnedPacket, ShopItemType, type ShopNode } from "common/scripts/packets/joinned_packet.ts";
 import { v2, Vec2 } from "common/engine/core.ts";
-import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GunClasses, GunDef } from "common/scripts/definitions/items/guns.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { NormalCounterMD } from "common/scripts/definitions/maps/normal.ts";
@@ -144,17 +144,17 @@ export class CounterMD extends ModeManager {
                 {id:"frag_grenade",cost:50},
                 {id:"mirv_grenade",cost:150},
 
-                {id:"basic_helmet",cost:100},
-                {id:"regular_helmet",cost:400},
-                {id:"military_helmet",cost:800},
+                {id:"military_helmet",cost:100},
+                {id:"bike_helmet",cost:400},
+                {id:"tactical_helmet",cost:800},
 
-                {id:"basic_vest",cost:100},
-                {id:"regular_vest",cost:400},
-                {id:"military_vest",cost:800},
+                {id:"civil_vest",cost:100},
+                {id:"military_vest",cost:400},
+                {id:"tactical_vest",cost:800},
 
                 {id:"basic_pack",cost:100},
-                {id:"regular_pack",cost:400},
-                {id:"military_pack",cost:800},
+                {id:"military_pack",cost:400},
+                {id:"tactical_pack",cost:800},
 
                 {id:"scope_2",cost:90},
                 {id:"scope_3",cost:250},
@@ -192,7 +192,7 @@ export class CounterMD extends ModeManager {
 
             switch (def.item_type) {
                 /* ---------------- WEAPONS ---------------- */
-                case InventoryItemType.gun: {
+                case GameItemType.gun: {
                     const gun = def as GunDef
                     let section = "misc"
 
@@ -208,36 +208,36 @@ export class CounterMD extends ModeManager {
                     push(weaponsSections, section, node)
                     break
                 }
-                case InventoryItemType.melee:{
+                case GameItemType.melee:{
                     push(weaponsSections, "melee", node)
                     break
                 }
-                case InventoryItemType.ammo:
+                case GameItemType.ammo:
                     push(weaponsSections, "ammo", node)
                     break
                 /* ---------------- CONSUMABLES ---------------- */
-                case InventoryItemType.consumible:
+                case GameItemType.consumible:
                     push(itemsSections, "health", node)
                     break
 
-                case InventoryItemType.grenade:
+                case GameItemType.grenade:
                     push(itemsSections, "grenades", node)
                     break
 
                 /* ---------------- EQUIPMENT ---------------- */
-                case InventoryItemType.helmet:
+                case GameItemType.helmet:
                     push(equipmentSections, "helmets", node)
                     break
 
-                case InventoryItemType.vest:
+                case GameItemType.vest:
                     push(equipmentSections, "vests", node)
                     break
 
-                case InventoryItemType.backpack:
+                case GameItemType.backpack:
                     push(equipmentSections, "backpacks", node)
                     break
 
-                case InventoryItemType.scope:
+                case GameItemType.scope:
                     push(equipmentSections, "scopes", node)
                     break
             }
@@ -446,7 +446,7 @@ export class CounterMD extends ModeManager {
                 (human as Player).status.money=Math.max((human as Player).status.money-i.cost,0)
 
                 human.inventory.give_item(item,i.count??1,true,true)
-                if(item.item_type===InventoryItemType.gun&&(item as GunDef).ammoSpawnAmount){
+                if(item.item_type===GameItemType.gun&&(item as GunDef).ammoSpawnAmount){
                     human.inventory.give_item(this.game.definitions.ammos.getFromString((item as GunDef).ammoSpawn??(item as GunDef).ammoType),((i.count??1)*(item as GunDef).ammoSpawnAmount!)-(item.reload?.capacity??0),true)
                 }
             }

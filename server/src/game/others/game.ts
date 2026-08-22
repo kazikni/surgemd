@@ -1,9 +1,9 @@
-import { AbstractServerGame, CircleHitbox2D, Client, ID,  KDate,  LootTableItemRet,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, FileManager, GameObjectPool2D, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-import { GameObjectType, Layers, LayersL, Spawn } from "common/scripts/others/constants.ts";
+import { GameObjectType, Layers, LayersL, LootAditional, LootData, LootSetting, LootTable, Spawn } from "common/scripts/others/constants.ts";
 import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { Human } from "../objects/human.ts";
@@ -11,22 +11,20 @@ import { HumansManager } from "../managers/humans_manager.ts";
 import { Loot } from "../objects/loot.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { Vehicle } from "../objects/vehicle.ts";
-import { Aditional, loot_table_get_item } from "common/scripts/definitions/maps/base.ts";
-import { BulletDef } from "common/scripts/definitions/utils.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { Explosion } from "../objects/explosion.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
-import { Building } from "../objects/building.ts";
+import { Building, BuildingPuzzle } from "../objects/building.ts";
 import {MDModModule, ModResult} from "common/scripts/others/mods.ts"
 import { BattleRoyale, BattleRoyaleDebug } from "../mode/battle_royale.ts";
-import { DamageSourceDef, GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
+import { DamageSourceDef, GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
-import { SyncedParticle } from "../objects/synced_particle.ts";
+import { SyncedParticle, SyncedParticlesCreator } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
@@ -37,6 +35,15 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
+import { loot_table_get_item } from "common/scripts/others/functions.ts";
+import { FeedMessage, MapZone } from "common/scripts/packets/general_update.ts";
+import * as Core from "common/engine/core.ts";
+import { HumanScript } from "../human/ai/script.ts";
+import { LevelPlayerScript } from "../mode/level_player.ts";
+import { JoinPacket } from "common/scripts/packets/join_packet.ts";
+import { OnlineMessageType } from "common/scripts/packets/messages.ts";
+import { Drone } from "../objects/drone.ts";
+import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
 export interface GameData {
     living_count: number[]
 
@@ -64,6 +71,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     game_config!:GameConfig
     string_id=""
 
+    fs:FileManager
     map:GameMap
 
     alt_db?:Record<string,{
@@ -77,6 +85,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     closed:boolean=false
     started:boolean=false
     fineshed:boolean=false
+    initialized:boolean=false
 
     statistics?:GameStatistic
 
@@ -90,9 +99,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     can_start:boolean=true
     can_finish:boolean=true
     
-    loot_tables:LootTablesManager<GameItem,Aditional>=new LootTablesManager(loot_table_get_item as (id: string, count: number, aditional: Aditional) => LootTableItemRet<GameItem>[])
+    loot_tables:LootTablesManager<LootData,LootAditional,LootSetting>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootSetting>)
 
+    always_visible:Record<number,ServerGameObject>={}
     pings:PingData[]=[]
+    map_zones:MapZone[]=[]
+    feed_messages:FeedMessage[]=[]
+    puzzles:Record<string,BuildingPuzzle>={}
 
     mods?:ModsManager<any,any,any,ModResult,MDModModule<Game,any,ModResult>>
 
@@ -143,8 +156,16 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         assets:{},
         languages_path:"",
     }
-    constructor(main_config:GameServerConfig,clients:OfflineClientsManager,id:ID){
-        super(main_config.tps,id,clients,[
+
+    globals:Record<string,any>={
+        core:Core,
+        HumanScript,
+        LevelPlayerScript,
+        JoinPacket,
+        OnlineMessageType,
+    }
+    constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
+        super(main_config.tps,clients,[
             Human,
             Loot,
             Grenade,
@@ -158,10 +179,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Parachute,
             SyncedParticle,
             Plane,
+            Drone
         ])
 
         this.ntps=main_config.ntps
         this.main_config=main_config
+        this.fs=fs
 
         for(const i of LayersL){
             this.scene_2d.objects.add_layer(i)
@@ -173,7 +196,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.deadzone=new DeadZoneManager(this)
     }
-    init(mode:ModeManager){
+    async init(mode:ModeManager){
+        this.initialized=false
         this.definitions.init_default()
         if(this.mods){
             for(const k of this.mods.getLoadOrder()){
@@ -187,11 +211,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.modeManager=mode
         mode.init(this)
-        mode.generate_map()
+        await mode.generate_map()
 
         this.players.encode_start_packet()
+        this.initialized=true
+        this.signals.emit("game_initialized",this)
     }
-    auto_init(game_config:GameConfig){
+    async auto_init(game_config:GameConfig){
         this.game_config=game_config
         let has_mode=false
         if(this.mods){
@@ -206,15 +232,15 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             }
         }
         if(!has_mode){
-            switch(game_config.mode.mode){
+            switch(game_config.mode){
                 case "normal":
-                    this.init(new BattleRoyale(game_config.mode.settings,game_config.group_size??1))
+                    await this.init(new BattleRoyale(game_config.settings,game_config.group_size??1))
                     break
                 case "counter_md":
                     //this.init(new CounterMD(game_config.mode_settings))
                     break
                 case "debug":
-                    this.init(new BattleRoyaleDebug(game_config.mode.settings,game_config.group_size??1))
+                    await this.init(new BattleRoyaleDebug(game_config.settings,game_config.group_size??1))
                     break
             }
         }
@@ -223,6 +249,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.players.net_update()
         this.modeManager.on_net_update()
         this.pings.length=0
+        this.feed_messages.length=0
         super.net_update(full)
     }
     override on_update(dt:number): void {
@@ -236,7 +263,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             living_count:this.modeManager.get_living_count(),
 
             can_join:this.modeManager.can_join()&&!this.fineshed&&!this.closed,
-            running:this.running,
+            running:this.running&&!this.fineshed,
 
             started_time:this.started_time,
             started:this.started,
@@ -257,11 +284,14 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.modeManager.reset()
         this.deadzone.reset()
         this.timeouts.length=0
-        this.started = false
-        this.closed = false
+        this.puzzles={}
+        this.always_visible={}
+        this.started=false
+        this.closed=false
         this.fineshed=false
         this.clock.timeScale=1
         this.pings.length=0
+        this.map_zones.length=0
     }
     override mainloop(rqf?:boolean,auto_mainloop?:boolean){
         this.fineshed=false
@@ -269,6 +299,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
+        this.modeManager.write_checkpoint(stream)
+        this.deadzone.write_checkpoint(stream)
         this.scene_2d.make_checkpoint(stream,{
             save_id:true,
             orden:[
@@ -277,6 +309,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 GameObjectType.Building,
             ]
         })
+    }
+    load_checkpoint(stream:Stream){
+        this.modeManager.decode_checkpoint(stream)
+        this.deadzone.decode_checkpoint(stream)
+        this.scene_2d.load_checkpoint(stream)
     }
     start(force:boolean=false){
         if(this.started)return
@@ -290,7 +327,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 return this.players.encode_frame(full)
             },this.ntps);
             /*(new DenoFileManager().open("database/replays/1.repl","rw")).then((v)=>{
-                this.replay!.startRecording(v,this.map.map_packet_stream)
+                this.replay!.startRecording(v,this.map.map_stream)
             })*/
         }
 
@@ -304,33 +341,41 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.update_data()
         console.log(`Game ${this.id} Clossed`)
     }
-    finish(){
+    finish(winners:Human[]=[],finish_time:number=0){
         if(this.fineshed)return
         console.log(`Game ${this.id} Fineshed`)
         this.fineshed=true
-        this.update_data()
-
-        this.modeManager.on_finish()
-        this.signals.emit("finish",{})
-
-        if(!this.can_finish){
+        this.add_timeout(()=>{
+            this.modeManager.on_finish(winners)
+            this.signals.emit("finish",{winners})
             this.clock.timeScale=0
-            return
-        }
-        this.add_timeout(()=>{ 
-            this.stop()
-        },1)
-        if(this.replay)this.replay.stopRecording()
+            if(!this.can_finish){
+                return
+            }
+            if(this.replay)this.replay.stopRecording()
+            this.update_data()
+            setTimeout(()=>{
+                this.running=false
+            },1000)
+        },finish_time)
     }
-    add_bullet(position:Vec2,def:BulletDef,owner?:Human,ammo?:string,source?:DamageSourceDef,layer:number=Layers.Normal,satured?:number,critical_chance?:number):Bullet{
+
+    
+    set_rain(rain:number){
+        this.ambient.target_rain=rain
+        this.ambient.rain_state=1
+        this.ambient.rain_timer=random.float(10,30)
+    }
+    get_loot_table(table:LootTable,settings?:LootAditional):LootData[]{
+        return this.loot_tables.get_loot(table,settings??this.modeManager.rules.loot_settings,this)
+    }
+    add_bullet(position:Vec2,owner?:Human,ammo?:AmmoDef,source?:DamageSourceDef,layer:number=Layers.Normal,critical_chance?:number):Bullet{
         const b=this.scene_2d.objects.add_object(new Bullet(),layer,undefined,{
-            def,
             position:v2.clone(position),
             owner:owner,
             ammo:ammo,
             source,
             critical_chance,
-            satured
         })as Bullet
         return b
     }
@@ -350,10 +395,10 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const p=this.scene_2d.objects.add_object(new Grenade(),layer,undefined,{def:def,owner,position:position}) as Grenade
         return p
     }
-    add_loot(position:Vec2,def:GameItem,count:number,layer:number=Layers.Normal):Loot{
-        const l=this.scene_2d.objects.add_object(new Loot(),layer,undefined,{item:def,count:count,position:position}) as Loot
+    add_loot(position:Vec2,data:LootData,layer:number=Layers.Normal):Loot{
+        const l=this.scene_2d.objects.add_object(new Loot(),layer,undefined,{loot:data,position}) as Loot
         if(this.statistics){
-            this.statistics.items.dropped[def.idString]=(this.statistics.items.dropped[def.idString]??0)+count
+            this.statistics.items.dropped[data.item.idString]=(this.statistics.items.dropped[data.item.idString]??0)+data.count
         }
         return l
     }
@@ -373,31 +418,34 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         const p=this.scene_2d.objects.add_object(new SyncedParticle(),layer,undefined,{def,position,owner}) as SyncedParticle
         return p
     }
+    add_synced_particles_creator(position:Vec2,def:SyncedParticleDef,owner?:Human,count?:number,time?:number,layer=Layers.Normal):SyncedParticle{
+        const p=this.scene_2d.objects.add_object(new SyncedParticlesCreator(),layer,undefined,{def,count,time,position,owner}) as SyncedParticle
+        return p
+    }
 
+    add_drone(position?:Vec2,args?:any,drone?:Drone){
+        if(!drone)drone=new Drone()
+        this.scene_2d.objects.add_object(drone,Layers.Normal,undefined,{position,...args})
+    }
     add_plane(position:Vec2,args:Record<string,any>,plane?:Plane){
         if(!plane)plane=new Plane()
-        const direction=random.rad()
-        const planePos = v2.from_RadAngle(direction,this.map.size.x+10)
         this.scene_2d.objects.add_object(
             plane,
             Layers.Normal,
             undefined,
             {
-                position: planePos,
                 target_pos: position,
                 ...args
             }
         )
     }
     add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
-        if(!position)position=this.map.getRandomPosition(new CircleHitbox2D(v2(0,0),2),-1,Layers.Normal,Spawn.ground,this.map.random,(_hitbox,_map,_random)=>{
-            return this.deadzone.random_point_inside_new()
-        })
+        if(!position)position=this.deadzone.next_position()
         if(!position)position=v2(3,3)
         if(!obstacle)obstacle=this.definitions.obstacles.getFromString("airdrop_locked")
 
         this.add_plane(position,{
-            speed: 20,
+            speed: 21,
             obstacle,
             type: 0
         })

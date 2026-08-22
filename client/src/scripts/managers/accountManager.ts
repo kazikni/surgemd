@@ -1,4 +1,4 @@
-import { ShowTab } from "common/engine/client.ts";
+import { ShowTab } from "common/engine/web.ts";
 import { API_BASE } from "../others/config.ts";
 import { type MenuManager } from "./menuManager.ts";
 import { CalculatePlayerLevel, CalculatePlayerLevelProgress} from "common/scripts/others/functions.ts";
@@ -88,19 +88,19 @@ export class AccountManager{
 <br>
 <div id="status-container-info">
     <span class="span" id="coin-status-span">
-        Coins: ${status.user.coins}<img class="span-large-icon" src="./img/menu/icons/coin.svg">
+        Coins: ${status.user.coins}<img class="span-large-icon" src="/assets/img/menu/icons/coin.svg">
     </span>
     <span class="span" id="kills-status-span">
-        Kills: ${status.user.kills}<img class="span-large-icon" src="./img/menu/icons/kills.svg">
+        Kills: ${status.user.kills}<img class="span-large-icon" src="/assets/img/menu/icons/kills.svg">
     </span>
     <span class="span" id="wins-status-span">
-        Wins: ${status.user.wins}<img class="span-large-icon" src="./img/menu/icons/win.svg">
+        Wins: ${status.user.wins}<img class="span-large-icon" src="/assets/img/menu/icons/win.svg">
     </span>
     <span class="span" id="special-wins-status-span">
-        Special Wins: ${status.user.special_wins}<img class="span-large-icon" src="./img/menu/icons/special_win.svg">
+        Special Wins: ${status.user.special_wins}<img class="span-large-icon" src="/assets/img/menu/icons/special_win.svg">
     </span>
     <span class="span" id="games-status-span">
-        Games Played: ${status.user.games_total}<img class="span-large-icon" src="./img/menu/icons/game.svg">
+        Games Played: ${status.user.games_total}<img class="span-large-icon" src="/assets/img/menu/icons/game.svg">
     </span>
 </div>
 `
@@ -143,13 +143,13 @@ export class AccountManager{
         <button class="btn-green" id="btn-account-register">Register</button>
     </kl-md-menu-options>
     <kl-md-extra id="account-sm-extra">
-        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-login">
+        <div class="background-menu-md menu-panel-ss menu-panel-blue" id="account-sm-login">
         <span class="span">Login</span>
         <input class="text-input" id="input-login-name" placeholder="Username">
         <input class="text-input" id="input-login-password" type="password" placeholder="Password">
         <button class="btn-green" id="btn-login">Login</button>
         </div>
-        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-register">
+        <div class="background-menu-md menu-panel-ss menu-panel-blue" id="account-sm-register">
         <span class="span">Registry</span>
         <input class="text-input" id="input-register-name" placeholder="Username">
         <input class="text-input" id="input-register-password" type="password" placeholder="Password">
@@ -196,9 +196,9 @@ export class AccountManager{
         <button class="btn-green" id="btn-account-others">Others</button>
     </kl-md-menu-options>
     <kl-md-extra id="account-sm-extra">
-        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-status">
+        <div class="background-menu-md menu-panel-ss menu-panel-blue" id="account-sm-status">
         </div>
-        <div class="background-menu-md background-menu-ss background-menu-blue" id="account-sm-others">
+        <div class="background-menu-md menu-panel-ss menu-panel-blue" id="account-sm-others">
             <button class="btn-green" id="btn-logout">Logout</button>
         </div>
     </kl-md-extra>

@@ -1,8 +1,9 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
-import { ABParticle2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, Particle2D, ParticlesEmitter2D, random, Sprite2D, v2, v2m } from "common/engine/client.ts";
+import { ABParticle2D, Sprite2D } from "common/engine/web.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, ColorM, matrix4, Particle2D, ParticlesEmitter2D, random, Stream, v2, v2m } from "common/engine/core.ts";
 export type HumanPhysicalData=MovingBodyPhysicalData&{
     zpos:number
 }
@@ -53,7 +54,7 @@ export class Grenade extends MovingBody{
                         direction:0,
                         frame:{
                             image:"riple",
-                            hotspot:CenterHotspot,
+                            hotspot:v2.half_one,
                             zIndex:zIndexes.Decals,
                             layer:this.layer,
                             scale:0,
@@ -69,15 +70,19 @@ export class Grenade extends MovingBody{
                 }
             }
             this.sprite.zIndex=zIndexes.GrenadeGround
+            this.sprite.matrix=undefined
         }else{
             this.sprite.zIndex=zIndexes.GrenadeAir
+            if(this.def.parralax!==undefined){
+                this.sprite.matrix=matrix4.parallax_2d(this.game.cam2d.position,1+(this.def.parralax*this.physical_data.zpos))
+            }
         }
     }
     set_definition(def:GrenadeDef){
         if(this.def)return
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
-        this.sprite.hotspot=CenterHotspot
+        this.sprite.hotspot=v2.half_one
         this.sprite.zIndex=zIndexes.GrenadeAir
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
@@ -99,6 +104,7 @@ export class Grenade extends MovingBody{
                         tint:col,
                         angle:ang,
                         scale:0.01,
+                        zIndex:zIndexes.Particles,
                         layer:this.layer,
                         to:{
                             scale:1,
@@ -113,7 +119,7 @@ export class Grenade extends MovingBody{
             },def.particles!.spawn_delay??0)
         }
     }
-    override on_decode_net(stream: Stream, full: boolean): void {
+    override on_decode_net(stream:Stream,full:boolean): void {
         this.decode_physical_data(stream,full)
         this.physical_data.zpos=stream.read_float(0,1,1)
         if(full){

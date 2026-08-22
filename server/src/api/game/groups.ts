@@ -1,4 +1,4 @@
-import { Router } from "common/engine/server.ts";
+import { Router } from "common/engine/deno.ts";
 import { random } from "common/engine/core.ts";
 import { type ApiServer } from "../server.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
@@ -16,6 +16,8 @@ export class GroupPlayer {
         this.send({
             type:"snapshot",
             code:this.group.code,
+            locked:this.group.locked,
+            autofill:this.group.autofill,
             leader:this.group.players_ids.indexOf(this.group.leader.id),
             self:this.group.players_ids.indexOf(this.id),
             players:this.group.players.map(p=>({
@@ -27,15 +29,18 @@ export class GroupPlayer {
 }
 
 export class Group {
-    code = random.code(5)
+    code = random.code(6,"ABCDEFGHIJKLMNOPQRSTUV1234567890")
+
     players: GroupPlayer[]=[]
     players_ids: string[]=[]
+
     current_match?: {
         address: string
         token: string
     }
     locked = false
     autofill = true
+
     constructor(public manager:GroupManager){}
     get leader(){
         return this.players[0]
@@ -62,6 +67,7 @@ export class Group {
         }
         this.send_snapshot()
         if(this.players.length<=0){
+            if(this.current_match&&this.manager.tokens[this.current_match.token])delete this.manager.tokens[this.current_match.token]
             this.manager.groups.delete(this.code)
         }
     }
@@ -98,27 +104,42 @@ export class Group {
                 break
             }
             case "play": {
-                if (player !== this.leader) return
-                const res:FindGameResult = await this.manager.api.regions.find_game({
-                    region: msg.region,
-                    mode: msg.mode,
-                    token:random.code(20),
-                    group_size: msg.group_size
-                })
-                if (!res.success) {
+                if(player!==this.leader){
                     player.send({
-                        type: "play_failed"
+                        type: "play_failed",
+                        reason: "not_the_group_leader"
                     })
                     return
                 }
-                this.current_match = {
+                if(!this.manager.api.regions.validate_game_rules(msg.mode,{group_size:this.players.length})){
+                    player.send({
+                        type: "play_failed",
+                        reason: "biggert_group_size"
+                    })
+                    return
+                }
+
+                const token=random.code(20)
+                const res:FindGameResult = await this.manager.api.regions.find_game({
+                    region: msg.region,
+                    mode: msg.mode,
+                    token:token,
+                })
+                if(!res.success){
+                    player.send({
+                        type:"play_failed",
+                        reason:res.error
+                    })
+                    return
+                }
+                this.current_match={
                     address: res.address,
-                    token: res.token!
+                    token: token!
                 }
                 this.send({
                     ...res,
                     type: "start_game",
-                    token: res.token,
+                    token: token,
                 })
                 break
             }
@@ -127,7 +148,11 @@ export class Group {
 }
 export class GroupManager {
     groups = new Map<string,Group>()
+
+    tokens:Record<string,Group>={}
+
     constructor(public api:ApiServer){}
+
     create(){
         const g = new Group(this)
         this.groups.set(g.code,g)

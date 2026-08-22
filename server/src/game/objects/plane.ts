@@ -1,24 +1,14 @@
 import { GameObjectType, Layers } from "common/scripts/others/constants.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { circle, CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { circle, CircleHitbox2D, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "./human.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
-import { type ServerGameObject } from "../others/gameObject.ts";
-
-export interface PlanePhysicalData extends MovingBodyPhysicalData {}
-
-export class Plane extends MovingBody {
+import { AirBody } from "./airbody.ts";
+export class Plane extends AirBody {
     override string_type = "plane"
     override number_type = GameObjectType.Plane
 
-    override physical_data: PlanePhysicalData = {
-        velocity: v2.zero(),
-        rotation: 0
-    }
-
     type = 0
-    speed = 10
     target_pos: Vec2 = v2.zero()
     called = false
     owner?: Human
@@ -27,20 +17,14 @@ export class Plane extends MovingBody {
     radius:number=0
     grenade_def?: GrenadeDef
     obstacle?: ObstacleDef
+
     constructor(){
         super()
-        this.allow_tick=true
-        this.clamp_hitbox=false
     }
 
-    override on_collided(_obj:ServerGameObject,_dt:number){
-
-    }
-
-    set_configuration(position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef){
-        this.position = position
+    override set_configuration(speed:number,position:Vec2|undefined,target_pos:Vec2,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef){
+        super.set_configuration(speed,position)
         this.target_pos = target_pos
-        this.speed = speed
         this.type = type
         this.owner = owner
         this.grenade_def = grenade
@@ -49,9 +33,13 @@ export class Plane extends MovingBody {
         this.radius=radius
     }
 
-    override on_create(args?: {position:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
-        this.base_hitbox=new CircleHitbox2D(v2.zero,100)
-        if(args)this.set_configuration(args.position,args.target_pos,args.speed,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
+    override on_create(args: {position?:Vec2,target_pos:Vec2,speed:number,type:number,count:number,radius:number,owner?:Human,grenade?:GrenadeDef,obstacle?:ObstacleDef}): void {
+        super.on_create(args)
+        if(args)this.set_configuration(args.speed,args.position,args.target_pos,args.type,args.count,args.radius,args.owner,args.grenade,args.obstacle)
+        
+    }
+    override on_destroy(): void {
+        super.on_destroy()
     }
     override on_tick(dt: number): void {
         super.on_tick(dt)
@@ -84,13 +72,12 @@ export class Plane extends MovingBody {
             this.physical_data.rotation=v2.lookTo(this.position, this.target_pos)
             this.physical_data.velocity=v2.from_RadAngle(this.physical_data.rotation,this.speed)
         }else{
-            if(this.position.x<=-40||this.position.y<=-40||this.position.x>=this.game.map.size.x+40||this.position.y>=this.game.map.size.y+40)this.destroy()
+            this.check_destroy()
         }
-
     }
     override on_encode_net(stream: Stream,full: boolean): void {
-        this.physical_encode(stream)
-        stream.write_uint8(this.type)
+        if(full)stream.write_uint8(this.type)
+        super.on_encode_net(stream,full)
     }
     override on_encode_checkpoint(stream: Stream): void {
         stream.write_pos2(this.position)

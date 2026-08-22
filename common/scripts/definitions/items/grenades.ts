@@ -1,6 +1,6 @@
-import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
-import { InventoryItemType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type Airstrike={
     count?:number
     delay:number
@@ -11,9 +11,48 @@ export type Airstrike={
         def:string
     }
 }
+export const GrenadeTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+
+        {name:"description",content:tdm.any},
+
+        {name:"explosion",content:tdm.string1},
+
+        {name:"call_airdrop",content:tdm.any},
+        {name:"call_airstrike",content:tdm.any},
+        {name:"particles",content:tdm.any},
+
+        {name:"push_force_resistence",content:tdm.float32},
+        {name:"zindex_set_resistence",content:tdm.boolean},
+
+        {name:"gravity",content:tdm.float32},
+        {name:"radius",content:tdm.float32},
+        {name:"zBaseScale",content:tdm.float32},
+        {name:"zScaleAdd",content:tdm.float32},
+
+        {name:"decays",content:tdm.any},
+
+        {name:"throw_time",content:tdm.float32},
+        {name:"cook_time",content:tdm.float32},
+        {name:"fuse",content:tdm.any},
+
+        {name:"throw_position",content:tdm.any},
+        {name:"throw_max_speed",content:tdm.float32},
+
+        {name:"collision_damage",content:tdm.float32},
+
+        {name:"speed_mod",content:tdm.float32},
+    ]
+}
 export type GrenadeDef={
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.grenade
+    name?:string
+    tname?:string
     rank:ItemRank
-    item_type?:InventoryItemType.grenade
+
     description?:string|boolean
 
     explosion?:string
@@ -38,18 +77,22 @@ export type GrenadeDef={
     radius:number
     zBaseScale:number
     zScaleAdd:number
+    parralax?:number
 
     decays:{
         ground_speed:number
         ground_rotation:number
     }
 
-    cook?:{
-        allow_hand:boolean
-        fuse_time?:number
+    throw_time?:number
+    cook_time?:number
+    fuse?:{
+        allow_hand?:boolean
+        time?:number
         ground?:boolean
         impact?:boolean
     }
+    throw_position?:Vec2
     throw_max_speed?:number
 
     frames:{
@@ -64,7 +107,7 @@ export type GrenadeDef={
     assets?:WeaponAssets
 }&Definition
 const GrenadeRig={
-    position:v2(0.6,0.23),
+    position:DefaultFistRig.right?.position,
     rotation:-0.5
 }
 export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
@@ -83,9 +126,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:true,
-                fuse_time:5
+                time:5
             },
             throw_max_speed:15,
             frames:{
@@ -111,9 +154,8 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
-                allow_hand:false,
-                fuse_time:4
+            fuse:{
+                time:4
             },
             throw_max_speed:17,
             rig_arms:DefaultFistRig,
@@ -139,8 +181,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
-                allow_hand:false,
+            fuse:{
                 ground:true
             },
             throw_max_speed:10,
@@ -169,9 +210,9 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
+            fuse:{
                 allow_hand:true,
-                fuse_time:5
+                time:5
             },
             throw_max_speed:15,
             frames:{
@@ -194,9 +235,8 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
-                allow_hand:false,
-                fuse_time:2
+            fuse:{
+                time:2
             },
             frames:{
                 world:{
@@ -240,9 +280,8 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
-                allow_hand:false,
-                fuse_time:20
+            fuse:{
+                time:20
             },
             throw_max_speed:20,
             frames:{
@@ -292,9 +331,8 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
-                allow_hand:false,
-                fuse_time:4
+            fuse:{
+                time:4
             },
             throw_max_speed:20,
             frames:{
@@ -347,9 +385,8 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
-                allow_hand:false,
-                fuse_time:3
+            fuse:{
+                time:3
             },
             throw_max_speed:20,
             frames:{
@@ -375,7 +412,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
                 ground_rotation:2,
                 ground_speed:2,
             },
-            cook:{
+            fuse:{
                 allow_hand:true,
                 ground:true,
                 impact:true,
@@ -396,12 +433,12 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             radius:0.6,
             zBaseScale:1,
             zScaleAdd:1,
+            parralax:0.5,
             decays:{
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
-                allow_hand:false,
+            fuse:{
                 ground:true,
             },
             explosion:"nuke_explosion",
@@ -422,12 +459,12 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             radius:0.6,
             zBaseScale:1,
             zScaleAdd:1,
+            parralax:0.5,
             decays:{
                 ground_rotation:2,
                 ground_speed:2
             },
-            cook:{
-                allow_hand:false,
+            fuse:{
                 ground:true,
             },
             explosion:"mini_nuke_explosion",
@@ -440,7 +477,7 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             rig_arms:DefaultFistRig,
             rig_image:GrenadeRig,
             rank:ItemRank.A,
-            push_force_resistence:0,
+            push_force_resistence:0.1,
         },
     )
 }

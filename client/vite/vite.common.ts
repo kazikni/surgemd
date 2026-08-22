@@ -3,9 +3,9 @@ import path, { resolve } from "node:path";
 import fs from "node:fs"
 import { type UserConfig } from "vite";
 import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
-import { AudiosLists } from "./plugins/audio_list.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { parseJSONC } from "../../common/engine/core/math/utils.ts";
+import { KSND } from "./plugins/ksnd.ts";
 const td=new TextDecoder()
 const txt=td.decode(fs.readFileSync("../config.jsonc"))
 export const config=(parseJSONC(txt) as ConfigType).vite;
@@ -48,8 +48,9 @@ export const uconfig: UserConfig = {
     },
     plugins: [
         svelte(),
-        spritesheet("public",config.spritesheet.sheets,undefined,config.spritesheet.resolutions),
-        AudiosLists(config.audios),
+        KSND(config.audios),
+        spritesheet(config.spritesheet.sheets,config.spritesheet.resolutions),
+        //AudiosLists(config.audios),
     ],
     css: {
         preprocessorOptions: {

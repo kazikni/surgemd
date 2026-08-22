@@ -1,7 +1,13 @@
 {
     "values": {
         "game-name": "Surgemd.io",
-        "barrel": "Barrel",
+        "objects":{
+            "barrel": "Barrel",
+            "wood_crate":"Wood Crate",
+            "wood_door":"Wood Door",
+            "small_stove":"Stove",
+            "stove":"Stove"
+        },
         "items": {
             "scope_1": "Scope 1x",
             "scope_2": "Scope 2x",
@@ -27,72 +33,40 @@
             "red_pills": "Red Pills",
             "green_soda": "Green Soda",
             "black_soda": "Black Soda",
-            "basic_vest": "Basic Vest",
-            "basic_helmet": "Basic Helmet",
-            "basic_pack": "Small Backpack",
-            "regular_vest": "Regular Vest",
-            "regular_helmet": "Regular Helmet",
-            "regular_pack": "Regular Backpack",
-            "military_vest": "Military Vest",
+
+            "bike_helmet": "Bike Helmet",
+            "civil_vest": "Civil Vest",
+            "basic_pack": "Basic Backpack",
+
             "military_helmet": "Military Helmet",
+            "military_vest": "Military Vest",
             "military_pack": "Military Backpack",
-            "12g": "12G",
-            "762mm": "7.62MM",
-            "556mm": "5.56MM",
-            "9mm": "9MM",
-            "45acp": "9MM",
-            "22lr": "22LR",
-            "50cal": "50Cal",
-            "308sub": ".308 Sub-Sonic",
+
+            "tactical_vest": "Tactical Vest",
+            "tactical_helmet": "Tactical Helmet",
+            "tactical_pack": "Tactical Backpack",
+
             "explosive_ammo": "Explosive Ammo",
             "gasoline": "Gasoline",
             "mana_mm": "Mana-MM LOL",
+
             "fist": "Fists",
             "survival_knife": "Survival Knife",
             "axe": "Axe",
+            "crowbar": "Crowbar",
             "shovel": "Shovel",
             "sledgehammer": "Sledgehammer",
             "katana": "Katana",
             "bonesaw": "Bonesaw",
             "pan": "Pan",
-            "m9": "M9",
+    
             "m9_dual": "Dual M9",
-            "colt1873": "Colt 1873",
-            "colt1873_dual": "Dual Colt 1873",
-            "desert_eagle": "Desert Eagle",
+            "taurustx_dual": "Dual Taurus-TX 22",
+            "colt1873_dual": "Dual Colt-1873",
             "desert_eagle_dual": "Dual Desert Eagle",
-            "taurustx": "Taurus TX 22",
-            "taurustx_dual": "Dual Taurus TX 22",
-            "yellow_laser_pistol": "Yellow Laser Pistol",
             "yellow_laser_pistol_dual": "Dual Yellow Laser Pistol",
-            "pfeifer_zeliska": "Pfeifer Zeliska 600 Nitro Express",
-            "pfeifer_zeliska_dual": "Dual Pfeifer Zeliska",
-            "ak47": "AK47",
-            "ar15": "AR15",
-            "m4a1": "M4A1",
-            "m16_gl": "M16 With Grenade Launcher",
-            "mp5": "MP5",
-            "m1921": "M1921",
-            "famas": "Famas",
-            "micro_uzi": "Micro-Uzi",
-            "vector": "Vector",
-            "p90": "P90",
-            "kar98k": "Kar98k",
-            "awp": "AWP",
-            "awm": "AWM",
-            "blr81": "BLR-81",
-            "model94": "Model-94",
-            "m870": "M870",
-            "spas12": "Spas-12",
-            "hp18": "HP18",
-            "sr25": "SR-25",
-            "vss": "VSS Vintorez",
-            "rifle_cbc": "Rifle-CBC",
-            "m1_garand": "M1 Garand",
-            "pkp": "PKP Pecheneg",
-            "rpg7": "RPG-7",
-            "m79": "M79",
-            "m2_2": "M2-2",
+            "pfeifer_zeliska_dual": "Dual Pfeifer-Zeliska",
+
             "rip_ammo": "R.I.P Ammo",
             "high_quality_projectiles": "High Quality Projectiles",
             "first_last_great": "First Last Great",
@@ -105,13 +79,18 @@
             "ghost_bullets": "Ghost Bullets",
             "biggest_magazine": "Biggest Magazine",
             "self_revive": "Self Revive",
+
             "frag_grenade": "Frag Grenade",
             "smoke_grenade": "Smoke Grenade",
             "molotov": "Molotov Cocktail",
             "mirv_grenade": "Mirv Grenade",
+            "submirv_grenade": "Mirv Grenade",
+            "m79_grenade": "M79",
             "blue_flare": "Blue flare",
             "yellow_flare": "Yellow flare",
             "red_flare": "Red Flare",
+            "nuke":"Nuke-333",
+            "mini_nuke":"Nuke-126",
             "description": {
                 "12g": "12 Gauge. Used in shotguns",
                 "762mm": "7.62mm used in snipers and AR.",
@@ -124,6 +103,9 @@
                 "explosive_ammo": "Boom Boom Motherfucker!",
                 "gasoline": "A good fuel.",
                 "mana_mm": "Mana-MM I'm tired of creating descriptions. It's already 18:50.",
+
+                "crowbar": "Rise and shine...",
+
                 "bandage": "A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
                 "medikit": "This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",
                 "yellow_soda": "A delicious soda that tastes like pure energy.<br>Grants 25 adrenaline.",
@@ -141,10 +123,47 @@
                 "blue_flare": "Call a airdrop",
                 "yellow_flare": "Call a airstrike",
                 "red_flare": "Call a nuke",
+
                 "helmet": "Reduces incoming damage by ${reduction}%.",
                 "vest": "Reduces incoming damage by ${reduction}%.",
                 "backpack": "Increases inventory capacity."
             }
+        },
+        "emotes":{
+            "happy":"Happy",
+            "sad":"Sad",
+            "neutral":"Neutral",
+            "angry":"Angry",
+            "angry_swearing":"Angry Swearing",
+            "very_love":"Very Love",
+            "demon":"Demon",
+            "peading":"Peading",
+
+            "heart":"Heart",
+            "skull":"Skull",
+            "ghost":"Ghost",
+
+            "logo_md":"MD Logo",
+            "logo_campfire":"Campfire Logo",
+            "logo_knife":"Knife Logo",
+            "logo_vasco_da_gama":"Vasco Da Gama",
+
+            "gg":"GG"
+        },
+        "wrapping":{
+            "":"None",
+            "gradient":"Gradient",
+            "shiny":"Shiny",
+            "aqua":"Aqua",
+            "aqua_blue":"Aqua Blue"
+        },
+        "badges":{
+            "stone_1":"Stone-1",
+            "stone_2":"Stone-2",
+            "stone_3":"Stone-3",
+
+            "md":"MD",
+            "campfire":"Campfire"
         },
         "characters": {
             "nick": "Nick",
@@ -161,8 +180,11 @@
         "feed": {
             "join": "${player} Joined",
             "kill": {
-                "abstinence": "${player} Died Of Abstinence",
                 "player": "${player1} Killed ${player2} With ${source}",
+                "explosion": "${player1} Explode ${player2} With ${source}"
+            },
+            "death": {
+                "abstinence": "${player} Died Of Abstinence",
                 "explosion": "${player1} Explode ${player2} With ${source}",
                 "deadzone": "${player} Was Caught By Deadzone",
                 "side-effect": "${player} Die For SideEffect",
@@ -307,6 +329,7 @@
                 "play-btn": "Play ${group_size}",
                 "group": "Group",
                 "label-files": "Files",
+                "editor":"Editor",
                 "replay": "Replay"
             },
             "settings": {
@@ -317,7 +340,10 @@
                 "keybinds": "Keybinds"
             },
             "loadout": {
-                "character": "Character"
+                "character": "Character",
+                "emotes": "Emotes",
+                "wrapping": "Wrapping",
+                "badges": "Badges"
             },
             "mods": {
                 "mods-list": "Mods List"
@@ -343,6 +369,8 @@
             },
             "graphics": {
                 "resolution": "Textures Quality",
+                "shadows": "Shadows",
+                "perspective": "Perspective",
                 "particles": "Particles",
                 "lights": "Lights",
                 "post_proccess": "Post Proccess",
@@ -364,7 +392,7 @@
                 "special_color": "Special Color",
                 "translation": "Translation",
                 "interactive": "Interactive UI",
-                "blur_backdrop": "Blur Backdrop"
+                "show_intro": "Show Intro"
             }
         },
         "keybinds": {
@@ -375,6 +403,7 @@
             "fire": "Fire/Use",
             "alt_fire": "Fire Alt/Use Alt",
             "emote_wheel": "Emote Wheel",
+            "message": "Message",
             "comunication_mode": "Comunication Mode",
             "reload": "Reload",
             "interact": "Interact",
@@ -408,6 +437,18 @@
                 "body_tint": "Body Color",
                 "female": "Is Female",
                 "shirt": "Shirt"
+            },
+            "emotes":{
+                "left":"Left",
+                "right":"Right",
+                "bottom":"Bottom",
+                "top":"Top",
+
+                "victory":"Victory",
+                "death":"Death"
+            },
+            "wrapping": {
+                "weapons":"Weapons"
             }
         },
         "region": {
@@ -426,6 +467,7 @@
             "5": "Kill Leader"
         },
         "modes": {
+            "normal": "Normal",
             "tundra": "Tundra",
             "group_size": {
                 "1": "Solo",

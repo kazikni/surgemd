@@ -1,32 +1,29 @@
-import { api, API_BASE, api_server } from "../others/config.ts";
+import { api, API_BASE, api_server, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, FileManager, GameSave, HideElement, ImageBuffer, InputManager, random, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, TranslationManager, typewriter } from "common/engine/client.ts";
+import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController } from "common/engine/web.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
-import { HistoryCommand, HistoryCommandType } from "common/scripts/config/history.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
+import { FileManager, random, TranslationManager } from "common/engine/core.ts";
+import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
+import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
+import { BackgroundManager } from "common/engine/web/misc/background.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
-type PhaseIntroConfig = {
-    location: string
-    name: string
-    date?: string
-    style?: "glitch" | "clean"
-    description?: string
-    text_speed?: number
-    wait_time?:number
-}
+
 export class MenuManager{
-    api_settings:ApiSettings
+    api_settings?:ApiSettings
     account:AccountManager
     tabs:Record<string,MenuTab>={}
     tabs_html:Record<string,HTMLDivElement>={}
     current_tab?:string
+    cam2d!:Camera2D
     content={
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
+        gameCanvas:document.querySelector("#game-canvas") as HTMLDivElement,
 
         menu_options:document.body.querySelector("#menu-options") as HTMLDivElement,
         menu_content:document.body.querySelector("#menu-content") as HTMLDivElement,
@@ -35,6 +32,11 @@ export class MenuManager{
 
         loading_screen:document.body.querySelector("#loading-screen") as HTMLDivElement,
         loading_screen_current:document.body.querySelector("#loading-current") as HTMLDivElement,
+        loading_screen_logo:document.body.querySelector("#loading-screen-logo") as HTMLDivElement,
+
+        loading_minigame:document.body.querySelector("#loading-minigame") as HTMLDivElement,
+        loading_target:document.querySelector("#loading-target") as HTMLDivElement,
+        loading_score:document.querySelector("#loading-score") as HTMLDivElement,
         
         gameover_text_screen:document.body.querySelector("#text-gameover-container") as HTMLDivElement,
         gameover_text_current:document.body.querySelector("#text-gameover") as HTMLSpanElement,
@@ -46,7 +48,14 @@ export class MenuManager{
         history_frame:document.body.querySelector("#history-frame") as HTMLImageElement,
         history_dialog_text:document.body.querySelector("#history-dialog-text") as HTMLDivElement,
         history_dialog_indicator:document.body.querySelector("#history-dialog-indicator") as HTMLDivElement,
+        history_content:document.body.querySelector("#history-content") as HTMLDivElement,
+
+        main_social:document.body.querySelector("#main-social") as HTMLDivElement,
+        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
+
+        menu_background_night:document.querySelector(".night-background") as HTMLDivElement,
+        menu_background_day:document.querySelector(".day-background") as HTMLDivElement,
     }
 
     save!:GameSave
@@ -56,14 +65,28 @@ export class MenuManager{
     submenu_param:boolean
     input!:InputManager
 
+    background:BackgroundManager
+
     definitions:GameDefinition
 
     play_callback?:(play_args:PlayArgs)=>void
     play_callback_hard?:(play:FindGameResult)=>void
 
-    cutscene:HistoryCommand[]=[]
+    cutscene!:CutsceneManager
 
     params:URLSearchParams
+
+    menu_time_state=0
+    menu_time_timer:number=0
+    menu_time_delay:number=30
+
+    loading_game = {
+        enabled:false,
+        clicks:0,
+        score:0,
+        target_x:0,
+        target_y:0,
+    }
 
     constructor(definitions:GameDefinition){
         this.params = new URLSearchParams(self.location.search)
@@ -73,35 +96,63 @@ export class MenuManager{
 
         this.submenu_param=!!this.params
 
-        this.api_settings={
-            modes:[
-                {
-                    mode:{
-                        mode:"normal"
-                    },
-                    group_size:[1]
-                },
-            ],
-            database:{
-                enabled:false,
-            },
-            regions:["local"],
-        }
-
-        HideElement(this.content.gameD)
-        ShowElement(this.content.menuD)
-
-        HideElement(this.content.loading_screen)
-        this.content.loading_screen.style.backgroundImage=`url("/img/menu/background/${
+        this.content.loading_screen.style.backgroundImage=`url("/assets/img/menu/background/${
             random.choose(["normal_background","tundra_background_1"])
         }.png")`
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
-        this.start_intro()
+
+        this.content.main_social.innerHTML=`
+<a href="${socials.discord}" target="_blank" class="social-link">
+    <i class="social-icon discord"></i>
+</a>
+<a href="${socials.youtube}" target="_blank" class="social-link">
+    <i class="social-icon youtube"></i>
+</a>
+<a href="${socials.github}" target="_blank" class="social-link">
+    <i class="social-icon github"></i>
+</a>
+`
+        this.update_content_creators([
+            {name:"Kazikni",url:"https://youtube.com/@kazikni"},
+        ])
+
+
+        this.content.loading_screen_logo.onclick=()=>{
+            this.enable_loading_game()
+        }
+        this.content.loading_target.onclick=()=>{
+            this.loading_game.score++
+            this.content.loading_score.innerText = this.loading_game.score.toString()
+            this.spawn_target()
+        }
+
+        this.background=new BackgroundManager()
+        this.background.initialize(this.content.menuD.querySelector("#menu-background") as HTMLDivElement)
     }
     intro_fineshed:boolean=false
     start_intro(): Promise<void> {
         return new Promise<void>((resolve) => {
+            const finish=()=>{
+                this.intro_fineshed=true
+                HideElement(screen, true)
+                screen.remove()
+                const invite = this.params.get("group-id")
+                if (invite) {
+                    this.join_group(invite)
+                    this.load_tab("play")
+                    const playTab = this.tabs["play"]
+                    if (playTab) {
+                        const groupOption = playTab.def.options.find(
+                            o => o.type === "button" && o.subtab === "group"
+                        )
+                        if (groupOption) {
+                            this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
+                        }
+                    }
+                }
+                resolve()
+            }
             if(this.intro_fineshed){
                 resolve()
                 return
@@ -109,6 +160,11 @@ export class MenuManager{
             const screen = this.content.initial_screen
             const video = document.getElementById("intro-video") as HTMLVideoElement
 
+            if(!this.save.get_variable("sv_ui_show_intro")){
+                screen.style.opacity = "0"
+                finish()
+                return
+            }
             ShowElement(screen)
 
             screen.style.opacity = "0"
@@ -133,30 +189,13 @@ export class MenuManager{
             video.addEventListener("ended",() => {
                 screen.style.opacity = "0"
                 setTimeout(() => {
-                    this.intro_fineshed=true
-                    HideElement(screen, true)
-                    screen.remove()
-                    const invite = this.params.get("group-id")
-                    if (invite) {
-                        this.join_group(invite)
-                        this.load_tab("play")
-                        const playTab = this.tabs["play"]
-                        if (playTab) {
-                            const groupOption = playTab.def.options.find(
-                                o => o.type === "button" && o.subtab === "group"
-                            )
-                            if (groupOption) {
-                                this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
-                            }
-                        }
-                    }
-                    resolve()
+                    finish()
                 },1000)
             })
         })
     }
     reload_tabs(tabs:(MenuTabDef|undefined)[]){
-        this.content.menu_options.innerHTML='<img id="title-section" src="/img/menu/logos/title.png" draggable="false"></img>'
+        this.content.menu_options.innerHTML='<img id="title-section" src="/assets/img/menu/logos/title.svg" draggable="false"></img>'
         this.content.menu_content.innerHTML=""
         this.tabs={}
         this.tabs_html={}
@@ -190,14 +229,19 @@ export class MenuManager{
             close_btn.textContent="X"
             close_btn.onclick=this.load_tab.bind(this,"")
 
+            const tab_title=document.createElement("span") as HTMLButtonElement
+            tab_title.className="tab-title span-text-base"
+            tab_title.textContent=btn.innerText
+
             tab_main.appendChild(options)
             tab_main.appendChild(content)
             tab_main.appendChild(close_btn)
+            tab_main.appendChild(tab_title)
             this.content.menu_content.appendChild(tab_main)
 
             for(const st of Object.keys(t.subtabs)){
                 const extra=document.createElement("kl-md-extra") as HTMLDivElement
-                extra.className="background-menu-md background-menu-blue"
+                extra.className="background-menu-md menu-panel-blue"
                 extra.id=`${t.id}-${st}-sm-extra`
 
                 t.subtabs[st].generate(extra,this)
@@ -262,21 +306,39 @@ export class MenuManager{
         }
         if(tab){
             this.content.menu_options.style.opacity="0"
+            this.content.menu_options.style.pointerEvents="none"
         }else{
             this.content.menu_options.style.opacity="1"
+            this.content.menu_options.style.pointerEvents=""
         }
     }
-    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager){
+    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager,music?:SoundController,ambient?:SoundController){
         this.save=save
         this.resources=resources
         this.sounds=sounds
         this.translation=transition
         this.input=input
-        this.update_api()
+        this.cam2d=cam2d
+        this.cam2d.visible=false
+        this.start_intro()
 
-        MenuInitDefault(this,definitions,fs,transition,mods)
+        await this.update_api()
 
+        this.game_end()
         ShowElement(this.content.menu_options,true)
+        if(this.interval===undefined){
+            this.interval=setInterval(this.update.bind(this),1000)
+        }
+        this.cutscene=new CutsceneManager(resources,sounds,input,transition)
+        this.cutscene.initialize(this.content.history_overlay)
+        this.cutscene.default_theme=default_cutscene_theme
+        this.cutscene.controllers={
+            music:music!,
+            ambience:ambient!
+        }
+    }
+    async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
+        await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)
     }
     async update_api(){
         if(api){
@@ -285,11 +347,12 @@ export class MenuManager{
                 js=await(await fetch(`${API_BASE}/get-settings`)).json()
             }catch(e){
                 console.log(e)
+                js=undefined
             }
             this.api_settings=js
         }
 
-        if(this.api_settings.database.enabled){
+        if(this.api_settings?.database.enabled){
             this.account.enable(this)
         }
     }
@@ -318,14 +381,12 @@ export class MenuManager{
                 if(this.group_state){
                     this.group_state.locked=msg.locked
                 }
-
                 this.reload_group_ui()
                 break
             case "autofill_changed":
                 if(this.group_state){
                     this.group_state.autofill=msg.autofill
                 }
-
                 this.reload_group_ui()
                 break
             case "start_game":{
@@ -336,6 +397,10 @@ export class MenuManager{
             }
             case "kicked":
                 this.leave_group()
+                break
+            case "play_failed":
+                this.hide_loading_screen()
+                alert(msg.reason)
                 break
         }
     }
@@ -376,14 +441,32 @@ export class MenuManager{
     
     // Loading Screen
     show_loading_screen(){
+        this.loading_game.enabled=false
+        HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen,true)
+        ShowElement(this.content.loading_screen_logo)
     }
     hide_loading_screen(){
         HideElement(this.content.loading_screen,true)
+        this.loading_game.enabled=false
+        HideElement(this.content.loading_minigame)
+        ShowElement(this.content.loading_screen_logo)
     }
-    
     set_loading_current(text="",unloading:boolean=false){
         this.content.loading_screen_current.innerHTML=`<p class="span-medium">${this.translation.get("menu.loading-screen."+(unloading?"unload":"load"),{text:text})}</p>`
+    }
+    enable_loading_game(){
+        this.loading_game.enabled=true
+        ShowElement(document.querySelector("#loading-minigame") as HTMLDivElement,true)
+        this.spawn_target()
+    }
+    spawn_target(){
+        const size = 80
+        const x = Math.random() * (self.innerWidth-size)
+        const y = Math.random() * (self.innerHeight-size)
+        this.content.loading_target.style.left=x+"px"
+        this.content.loading_target.style.top=y+"px"
+        HideElement(this.content.loading_screen_logo)
     }
 
     show_gameover_text(){
@@ -453,7 +536,7 @@ export class MenuManager{
             overlay.className="game-popup-overlay"
 
             const popup=document.createElement("div")
-            popup.className="game-popup background-menu-blue"
+            popup.className="game-popup menu-panel-blue"
 
             overlay.appendChild(popup)
             document.body.appendChild(overlay)
@@ -483,139 +566,13 @@ export class MenuManager{
             })
         })
     }
-    history_buffer:ImageBuffer=new ImageBuffer()
-    async preload_cutscene(path:string){
-        this.cutscene=await this.resources.load_json(path,this.set_loading_current)
-        this.history_buffer.clear()
-        await this.preload_history_frames(this.cutscene)
-    }
-    async preload_history_frames(commands: HistoryCommand[], max = 6){
-        let count = 0
-        for(const cmd of commands){
-            if(cmd.type === HistoryCommandType.SetFrame){
-                this.set_loading_current(cmd.frame)
-                await this.history_buffer.load(cmd.frame)
-                count++
-                if(count >= max) break
-            }
-        }
-    }
-    async show_history(commands: HistoryCommand[],resources: ResourcesManager,music_player: SoundController,ambient_player: SoundController,input:InputManager,time_scale: number = 1): Promise<void> {
-        ShowElement(this.content.history_overlay,true)
-        music_player.set(undefined)
-        ambient_player.set(undefined)
-        const sleep = (ms: number) => new Promise(res => setTimeout(res, (ms*1000)/time_scale))
-        sleep(1)
-        for (const cmd of commands) {
-            switch (cmd.type) {
-                case HistoryCommandType.Wait: {
-                    await sleep(cmd.time)
-                    this.content.history_dialog_text.style.opacity="0"
-                    break
-                }
-                case HistoryCommandType.WaitInput: {
-                    ShowElement(this.content.history_dialog_indicator)
-                    await input.wait_for_action("next")
-                    HideElement(this.content.history_dialog_indicator)
-                    this.content.history_dialog_text.style.opacity="0"
-                    break
-                }
-                case HistoryCommandType.SetFrame: {
-                    const currentIndex = commands.indexOf(cmd)
-
-                    for (let i = 1; i <= 3; i++) {
-                        const next = commands[currentIndex + i]
-                        if (next?.type === HistoryCommandType.SetFrame) {
-                            this.history_buffer.preload(next.frame)
-                        }
-                    }
-
-                    this.content.history_frame.style.opacity = "0"
-                    await sleep(0.4)
- 
-                    const img = await this.history_buffer.load(cmd.frame)
-                    this.content.history_frame.src = img.src
-
-                    requestAnimationFrame(() => {
-                        this.content.history_frame.style.opacity = "1"
-                    })
-
-                    break
-                }
-                case HistoryCommandType.SetDialog: {
-                    const text=cmd.text??(cmd.text_ln===undefined?"":this.translation.get(cmd.text_ln))
-                    if(text){
-                        ShowElement(this.content.history_dialog_text,true)
-
-                        const name=cmd.name??(cmd.name_ln===undefined?"":this.translation.get(cmd.name_ln))
-                        this.content.history_dialog_text.innerHTML = `
-                            ${name?`<p class="name">${name}</p>`:""}
-                            <p class="content"></p>
-                        `
-
-                        const content=this.content.history_dialog_text.querySelector(".content") as HTMLSpanElement
-
-                        await typewriter(content,text,cmd.typewriter_delay??20)
-                        content.style.color = cmd.color ?? "white"
-                        
-                    }else{
-                        HideElement(this.content.history_dialog_text,true)
-                    }
-                    break
-                }
-                case HistoryCommandType.SetMusic: {
-                    if (music_player && resources) {
-                        const s = resources.get_sound(cmd.music)
-                        music_player.set(s,{
-                            loop:cmd.loop!==undefined?cmd.loop:true,
-                            offset:cmd.start_at
-                        })
-                    }
-                    break
-                }
-                case HistoryCommandType.SetAmbient: {
-                    if (ambient_player&&resources) {
-                        const s = resources.get_sound(cmd.ambient)
-                        ambient_player.set(s,{
-                            loop:cmd.loop!==undefined?cmd.loop:true,
-                            offset:cmd.start_at
-                        })
-                    }
-                    break
-                }
-                case HistoryCommandType.PlaySoundEffect: {
-                    if (resources) {
-                        const s = resources.get_sound(cmd.sfx)
-                        const inst = this.sounds.play(s,{
-                          bus:cmd.category??"ui"  
-                        },)
-                    }
-                    break
-                }
-
-                case HistoryCommandType.ShowGameOverMessage: {
-                    if(!resources||!music_player)break
-                    await this.game_over_messages(
-                        cmd.text,
-                        resources.get_sound("gameover_music"),
-                        music_player,
-                        cmd.time_per_message,
-                        cmd.opacity_anim
-                    )
-                    break
-                }
-            }
-        }
-        HideElement(this.content.history_overlay,true)
-        if (music_player) music_player.set(undefined)
-    }
     select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
         return this.game_popup((ctx) => {
             let selected = 0
 
             ctx.parent.innerHTML = `
                 <div class="character-selector-screen">
-                    <div class="character-main background-menu-blue">
+                    <div class="character-main menu-panel-blue">
                         <h1 class="character-name"></h1>
                         <div class="character-image-wrapper">
                             <img class="character-icon">
@@ -677,12 +634,48 @@ export class MenuManager{
             update()
         })
     }
+    update_content_creators(content_creators:{name:string,url:string}[]){
+        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
+        for(const creator of content_creators){
+            this.content.content_creators.innerHTML+=`<div class="btn-blue content-creator" onclick="location.href='${creator.url}'">${creator.name}</div>`
+        }
+    }
+
+    interval?:any
+    update(){
+        /*this.menu_time_timer-=1
+        if(this.menu_time_timer<=0){
+            this.menu_time_timer+=this.menu_time_delay
+            if(this.menu_time_state===0){
+                this.content.menu_background_day.style.opacity="0"
+                this.content.menu_background_night.style.opacity="1"
+                this.menu_time_state=0
+            }else{
+                this.content.menu_background_day.style.opacity="1"
+                this.content.menu_background_night.style.opacity="0"
+                this.menu_time_state=0
+            }
+        }*/
+    }
     game_start(){
         ShowElement(this.content.gameD)
+        ShowElement(this.content.gameCanvas)
         HideElement(this.content.menuD)
+        this.cam2d.visible=true
+        if(this.interval!==undefined){
+            clearInterval(this.interval)
+            this.interval=undefined
+        }
     }
     game_end(){
         ShowElement(this.content.menuD)
         HideElement(this.content.gameD)
+        HideElement(this.content.gameCanvas)
+        this.cam2d.visible=false
+        if(this.interval===undefined){
+            this.interval=setInterval(this.update.bind(this),1)
+        }
+        this.background.set_def(backgrounds.city_river)
+        this.background.show()
     }
 }

@@ -1,13 +1,12 @@
-import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream } from "common/engine/core.ts";
+import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream, v2m } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
-import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
-import { FeedMessage, FeedMessageType, FeedPacket } from "common/scripts/packets/feed_packet.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
@@ -17,6 +16,10 @@ import { Human } from "../objects/human.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
+        if(this.real_human){
+            this.real_human.visible_humans=[]
+            this.real_human.visible_humans.length=0
+        }
         if(this.ai){
             this.ai.net_update(general_update)
         }
@@ -61,9 +64,10 @@ export class PlayerClient extends PlayerConnManager{
                 dirty:true,
                 id:this.human.id,
             }
-            if(this.human.loadout.ping)up.priv.pings.push(this.human.loadout.ping)
+            if(this.human.input.ping)up.priv.pings.push(this.human.input.ping)
             if(this.human.team_data.group?.pings)up.priv.pings.push(...this.human.team_data.group.pings)
             up.priv.map_humans=this.human.map_humans()
+            this.human.visible_humans.length=0
 
             up.priv.self_state=this.human.self_state(this.human.is_new)
             if(this.human instanceof Player){
@@ -75,8 +79,11 @@ export class PlayerClient extends PlayerConnManager{
                     this.human.splash_delay--
                 }
             }
-            const scope_view:number=(this.human.equipment_data.force_default_scope?this.human.equipment_data.default_scope.scope_view:this.human.equipment_data.scope.scope_view)
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(26/scope_view,21/scope_view))
+            const scope_view:number=this.human.scope_zoom
+            const size=v2(16/scope_view,11/scope_view)
+            v2m.max1(size,110)
+
+            const camera_hb=new RectHitbox2D(v2.sub(this.human.position,size),v2.add(this.human.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
@@ -98,8 +105,9 @@ export class PlayerClient extends PlayerConnManager{
                 }
             }
 
-            const scope_view:number=this.human?.equipment_data.scope.scope_view??0.75
-            const camera_hb=RectHitbox2D.centered(v2.clone(this.human!.position),v2(40/scope_view,20/scope_view))
+            const scope_view:number=this.human.scope_zoom
+            const size=v2(13/scope_view,8/scope_view)
+            const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
@@ -125,11 +133,18 @@ export class PlayerClient extends PlayerConnManager{
 
         this.client!.emit_packet(p)
     }
+    stream:DynamicStream=new DynamicStream(1000)
     net_update(general_update:Stream){
+        this.stream.clear(true)
         if(this.client.opened){
+            this.stream.write_stream(general_update)
             const packet=this.get_update_packet()
-            if(packet.objects)this.client!.emit_packet(packet)
-            this.client.send_stream(general_update)
+            if(packet.objects)this.client.manager.encode(packet,this.stream)
+
+            const old_len=this.stream.length
+            this.stream.length=Math.max(this.stream.length,1000)
+            this.client.send_stream(this.stream)
+            this.stream.length=old_len
         }
     }
 }
@@ -149,6 +164,7 @@ export class PlayersManager{
     global_buffer_2?:Stream
 
     first_tick:boolean=false
+    connect_add_player:boolean=true
 
     start_packet_stream:Stream=new DynamicStream()
 
@@ -159,6 +175,10 @@ export class PlayersManager{
         for(const p of this.living_players){
             p.apply_score(type,amount)
         }
+    }
+
+    validate_player_name(name:string):boolean{
+        return ValidString.simple_characters(name)
     }
     clear_bots(){
         for(const b of this.connected_bots){
@@ -187,7 +207,7 @@ export class PlayersManager{
         const p=this.game.humans.add_human(player,id) as Player
         p.is_bot=is_bot
 
-        if(ValidString.simple_characters(packet.player_name)){
+        if(this.validate_player_name(packet.player_name)){
             p.name=packet.player_name
         }else{
             //Round6 Easter Egg
@@ -201,11 +221,11 @@ export class PlayersManager{
             this.match_players_count=this.living_players.length
         }
 
-        this.send_feed_message({
+        this.game.feed_messages.push({
             type:FeedMessageType.join,
             playerId:p.id,
             playerName:p.name,
-            playerBadge:p.loadout.badge?.idNumber
+            playerBadge:p.visual.badge?.idNumber
         })
 
         if(this.game.statistics)this.game.statistics.player.players++
@@ -259,6 +279,7 @@ export class PlayersManager{
         this.start_packet_stream.clear()
         const packet=new StartPacket()
         packet.settings=this.game.start_settings
+        packet.settings.map=this.game.map.map_stream
         this.game.clients.packets_manager.encode(packet,this.start_packet_stream)
         ;(this.start_packet_stream as DynamicStream).lock()
     }
@@ -272,11 +293,14 @@ export class PlayersManager{
         s.clear()
 
         this.general_update.content.started=this.game.started
-        this.general_update.content.deadzone=undefined
-        this.general_update.content.ambient=this.game.ambient
-        this.general_update.content.living_count=this.game.modeManager.get_living_count()
+        this.general_update.content.leader_enabled=false
+        this.general_update.content.feed=this.game.feed_messages
         this.general_update.content.deadzone=this.game.deadzone.state
+        this.general_update.content.ambient=this.game.ambient
+        this.general_update.content.map_zones=this.game.map_zones
+        this.general_update.content.living_count=this.game.modeManager.get_living_count()
 
+        this.game.modeManager.manage_general_packet(this.general_update)
         this.game.clients.packets_manager.encode(this.general_update,s)
 
         for(const p of Object.values(this.connected_players)){
@@ -289,16 +313,13 @@ export class PlayersManager{
         if(this.game.replay)this.game.replay.update()
         this.first_tick=false
     }
-    send_feed_message(msg:FeedMessage){
-        const p=new FeedPacket()
-        p.message=msg
-        this.game.clients.emit_packet(p)
-    }
-    connection(client:Client,username:string){
+    async connection(client:Client,username:string){
         if(this.connected_players[client.ID])return
         this.connected_players[client.ID]=new PlayerClient(this.game,client)
+        if(!this.game.initialized)await this.game.signals.wait("game_initialized")
+
         client.send_stream(this.start_packet_stream)
-        client.send_stream(this.game.map.map_packet_stream)
+        client.send_stream(this.game.map.map_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
             if(this.game.closed)return
@@ -308,16 +329,16 @@ export class PlayersManager{
             this.connected_players[client.ID].join_packet=packet
             this.game.modeManager.on_player_connect(this.connected_players[client.ID])
             this.game.signals.emit("player_connect",{client:client})
-            const p = this.connected_players[client.ID].add_player()
-            if(p!==undefined){
+            const p=this.connect_add_player?this.connected_players[client.ID].add_player():undefined
+            if(p!==undefined||!this.connect_add_player){
                 const jp=new JoinnedPacket()
                 jp.ntps=this.game.ntps
                 for(const lp of this.living_players){
-                    if(lp.id===p.id)continue
+                    if(p&&lp.id===p.id)continue
                     jp.players.push({
                         id:lp.id,
                         name:lp.name,
-                        badge:lp.loadout.badge?.idNumber
+                        badge:lp.visual.badge?.idNumber
                     })
                 }
                 jp.date=this.game.ambient.date
@@ -330,7 +351,7 @@ export class PlayersManager{
                 }
                 this.game.modeManager.manage_joinned_packet(jp)
                 client.emit_packet(jp)
-                console.log(`${p.name} Join`)
+                if(p)console.log(`${p.name} Join`)
             }
         })
         client.on("input",(p:InputPacket)=>{

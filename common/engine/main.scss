@@ -1,8 +1,8 @@
 html, body {
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
     touch-action: none;
     overscroll-behavior: none;
@@ -30,9 +30,11 @@ html, body {
     width: 100%;
     height: 100%;
 }
-$screen_small:       700px;
-$screen_medium:      800px;
-$screen_large:       1280px;
+$screen_tiny:   620px;
+$screen_small:  880px;
+$screen_medium: 1150px;
+$screen_large:  1400px;
+$screen_big:  1920px;
 
 $facebook_bg:   #253763;
 $twitter_bg:    #1a78b2;
@@ -49,13 +51,96 @@ $discord:       #5865f2;
 $youtube:       #ff0000;
 $github:        #252525;
 
-@mixin medium_screen {
+@mixin large_screen {
     @media screen and (max-width: $screen_large) {
         @content;
     }
 }
-@mixin small_screen {
+@mixin medium_screen {
     @media screen and (max-width: $screen_medium) {
         @content;
+    }
+}
+@mixin small_screen {
+    @media screen and (max-width: $screen_small) {
+        @content;
+    }
+}
+@mixin tiny_screen {
+    @media screen and (max-width: $screen_tiny) {
+        @content;
+    }
+}
+
+.cutscene-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: black;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: var(--cutscene-text-font);
+    color: var(--cutscene-text-color);
+    font-size: var(--cutscene-text-size);
+    font-weight: var(--cutscene-text-weight);
+
+    .cutscene-frame {
+        position: absolute;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: opacity .75s ease;
+    }
+    .cutscene-dialog {
+        position: absolute;
+        background: var(--cutscene-dialog-background);
+        padding: var(--cutscene-dialog-padding);
+        border: var(--cutscene-dialog-border);
+        border-radius: var(--cutscene-dialog-radius);
+        transform: translateX(-50%);
+        left: 50%;
+        bottom: 20px;
+        width: fit-content;
+        max-width: var(--cutscene-dialog-max-width);
+        display: inline-flex;
+        flex-direction: column;
+        overflow-y: auto;
+        text-align: center;
+    }
+    .cutscene-dialog .content {
+        margin: 0;
+        font-family: var(--cutscene-dialog-content-font);
+        color: var(--cutscene-dialog-content-color);
+        font-size: var(--cutscene-dialog-content-size);
+        font-weight: var(--cutscene-dialog-content-weight);
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+    }
+    .cutscene-dialog .name {
+        margin: 0;
+        font-family: var(--cutscene-dialog-name-font);
+        color: var(--cutscene-dialog-name-color);
+        font-size: var(--cutscene-dialog-name-size);
+        font-weight: var(--cutscene-dialog-name-weight);
+    }
+    .cutscene-dialog-indicator {
+        position: absolute;
+        transform: translateX(-50%);
+        left: 50%;
+        bottom: 0px;
+        opacity: .7;
+        rotate: 0deg;
+    }
+    .cutscene-content {
+        position: absolute;
+    }
+    .cutscene-content-centered {
+        display: flex;
+        flex-direction: column;
+        gap: 2vh;
+        text-align: center;
     }
 }

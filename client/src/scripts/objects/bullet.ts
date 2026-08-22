@@ -1,11 +1,9 @@
-import { ABParticle2D, BaseGameObject2D, Camera2D, CenterHotspot, CircleHitbox2D, ColorM, Stream, random, Sprite2D, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { Camera2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
-import { StaticBody } from "./static_body.ts";
-const particles=[
-    "gas_smoke_particle"
-]
+import { type StaticBody } from "./static_body.ts";
+import { BaseGameObject2D, CircleHitbox2D, ColorM, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export class Bullet extends GameObject{
     ////////////////////////////
     // Definition             //
@@ -25,8 +23,8 @@ export class Bullet extends GameObject{
     // Distance And Length    //
     ////////////////////////////
     initialPosition!:Vec2
-    maxDistance:number=1
-    maxLength:number=0.3
+    max_distance:number=1
+    max_length:number=0.3
 
     ////////////////////////////
     // Visual                 //
@@ -51,8 +49,8 @@ export class Bullet extends GameObject{
     ////////////////////////////
     owner_id:number=0
 
-    particles=0
-    par_time=0
+    //particles=0
+    //par_time=0
 
     collided_with:Set<GameObject>=new Set()
 
@@ -76,7 +74,7 @@ export class Bullet extends GameObject{
     }
     override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
-        this.sprite_trail.size=v2(this.game.cam2d.meter_size*2,16) // Metter Size * 2
+        this.sprite_trail.size=v2(200,17) // Metter Size * 2
         this.game.cam2d.add_object(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
@@ -87,7 +85,8 @@ export class Bullet extends GameObject{
 
     }
     override on_tick(dt:number): void {
-        if(v2.distance(this.initialPosition,this.position)>this.maxDistance)this.die()
+        if(v2.distance(this.initialPosition,this.position)>this.max_distance)this.die()
+        //dt*=0.01
         if(this.dying){
             this.dying=true
             this.tticks-=dt
@@ -96,7 +95,7 @@ export class Bullet extends GameObject{
             }
         }else{
             this.old_position=v2.clone(this.position)
-            if(this.sprite_trail.scale.x<this.maxLength)this.tticks+=dt
+            if(this.sprite_trail.scale.x<this.max_length)this.tticks+=dt
             // Collisions
             const dst=v2.scale(this.velocity,dt)
 
@@ -160,7 +159,7 @@ export class Bullet extends GameObject{
                 }
             }
             // Particles
-            if(this.particles>0){
+            /*if(this.particles>0){
                 this.par_time-=dt
                 if(this.par_time<=0){
                     const p=new ABParticle2D({
@@ -169,7 +168,7 @@ export class Bullet extends GameObject{
                         position:this.position,
                         frame:{
                             image:particles[this.particles-1],
-                            hotspot:CenterHotspot
+                            hotspot:v2.half_one
                         },
                         speed:random.float(0.5,1.2),
                         angle:0,
@@ -183,7 +182,7 @@ export class Bullet extends GameObject{
                     this.game.particles.add_particle(p)
                     this.par_time=0.01
                 }
-            }
+            }*/
 
             // Update Visual Position
             this.sprite_trail.position=this.position
@@ -196,7 +195,7 @@ export class Bullet extends GameObject{
                 this.speed * this.tticks,
                 traveledDistance
             ),
-            this.maxLength
+            this.max_length
         );
     }
     die(){
@@ -210,20 +209,17 @@ export class Bullet extends GameObject{
         this.tticks=stream.read_float(0,60,2)
         if(full){
             this.initialPosition=stream.read_pos2()
-            this.maxDistance=stream.read_float32()
-
+            this.max_distance=stream.read_float32()
             this.speed=stream.read_float32()
             this.sprite_trail.rotation=stream.read_rad()
 
-            this.velocity=v2.from_RadAngle(this.sprite_trail.rotation,this.speed)
-
-            this.maxLength=stream.read_float(0,100,3)
-            this.sprite_trail.scale!.y=stream.read_float(0,6,2)
+            this.max_length=stream.read_float32()
+            this.sprite_trail.scale!.y=stream.read_float32()
             const col=ColorM.number(stream.read_uint32())
             col.a=stream.read_uint8()
             this.sprite_trail.tint=col
 
-            this.particles=stream.read_uint8()
+            //this.particles=stream.read_uint8()
             this.sprite_trail.visible=true
             const bg=stream.read_boolean_group()
             this.hit_owner=bg[0]
@@ -231,6 +227,8 @@ export class Bullet extends GameObject{
             this.pass_through_humans=bg[2]
             this.pass_through_everthing=bg[3]
             this.owner_id=stream.read_id()
+            
+            this.velocity=v2.from_RadAngle(this.sprite_trail.rotation,this.speed)
         }
     }
 }

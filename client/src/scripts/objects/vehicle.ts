@@ -1,9 +1,10 @@
 import { VehicleDef, WheelDef } from "common/scripts/definitions/objects/vehicles.ts"
-import { Container2D, Stream, Numeric, RectHitbox2D, Sprite2D, v2, v2m } from "common/engine/client.ts"
+import { Container2D, Sprite2D } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
+import { Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
 export class Vehicle extends MovingBody {
     string_type = "vehicle"
     number_type = GameObjectType.Vehicle
@@ -106,7 +107,7 @@ export class Vehicle extends MovingBody {
                         image:wheel.def.marks.frame??"tire_mark",
                         position:worldPos,
                         rotation:this.container.rotation,
-                        alpha:Numeric.clamp((this.tire_stress-stress_resistance)*0.15,0.1,1),
+                        alpha:Numeric.clamp((this.tire_stress-stress_resistance)*0.2,30,255),
                         scale:wheel.def.scale,
                     },this.game.resources)
                     d.sprite.transform_frame(wheel.def.marks.frame_transform??{})

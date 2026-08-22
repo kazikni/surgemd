@@ -42,35 +42,46 @@ class TabsContainer extends HTMLElement{
         });
     }
 }
-class Menu extends HTMLElement {
+class SMDEMenu extends HTMLElement {
     constructor(){
         super()
+        this._connected=false
+        this.hover=false
+    }
+    get innerHTML(){
+        return super.innerHTML
+    }
+    set innerHTML(val){
+        super.innerHTML=val
+        if(this._connected){
+            this.rebuild()
+        }
+    }
+
+    set_hover(hover){
+        this.hover=hover
+        if(this.parent_menu){
+            this.parent_menu.set_hover(hover)
+        }
+    }
+    close(){
+        if(this.parent_menu){
+            return this.parent_menu.close()
+        }
+        const event = new CustomEvent("close",{
+            bubbles: true,
+            cancelable: true
+        })
+        const canClose = this.dispatchEvent(event)
+        if(canClose)this.remove()
     }
     connectedCallback(){
-        const eventoMouseEnter = new Event('mouseenter')
-        this.addEventListener("mouseenter",()=>{
-            if(this.parentElement!=null&&this.parentElement.tagName=="kl-submenu"){
-                this.parentElement.style.display="block"
-                this.style.display="block"
-                this.parentElement.parentElement.dispatchEvent(eventoMouseEnter)
-            }
-        })
-        this.addEventListener("mouseleave",()=>{
-            if(this.parentElement!=null&&this.parentElement.tagName=="kl-submenu"){
-                this.style.display="none"
-                setTimeout(() => {
-                    if(!this.parentElement.parentElement.mouse_inside){
-                        this.parentElement.style.display="none"
-                        this.style.display="none"
-                    }
-                }, 10)
-            }
-        })
-        this.addEventListener("click",()=>{
-            setTimeout(()=>{
-                this.remove()
-            },100)
-        })
+        this._connected=true
+        this.rebuild()
+        this.addEventListener("mouseenter",(e)=>this.set_hover(true))
+        this.addEventListener("mouseleave",(e)=>this.set_hover(false))
+    }
+    rebuild(){
     }
     /**
      * 
@@ -78,10 +89,14 @@ class Menu extends HTMLElement {
      * @param {(event:MouseEvent)=>void} onclick 
      */
     add_option(text,onclick=(_e)=>{}){
-        const node=document.createElement("kl-option")
+        const node=document.createElement("smde-option")
         node.innerText=text
-        node.addEventListener("click",onclick)
+        node.addEventListener("click",(e)=>{
+            onclick(e)
+            this.close()
+        })
         this.appendChild(node)
+        return node
     }
     /**
      * 
@@ -89,33 +104,25 @@ class Menu extends HTMLElement {
      * @param {Menu} menu
      * @param {(event:MouseEvent)=>void} onclick
      */
-    add_submenu(text,menu,onclick=(_e)=>{}){
-        const node=document.createElement("kl-submenu")
-        node.innerText=text
-        node.addEventListener("click",onclick)
-        node.appendChild(menu)
-        this.appendChild(node)
+    add_submenu(text, menu){
+        menu.parent_menu=this
+        const option = document.createElement("smde-option-submenu")
+        const label = document.createElement("div")
+        label.textContent = text
+        option.appendChild(label)
+        option.appendChild(menu)
+        this.appendChild(option)
+        return option
     }
 }
-class SubMenu extends HTMLElement{
+class SMDEOptionSubMenu extends HTMLElement{
     constructor(){
         super()
-        this.mouse_inside=false
-        this.menu=null
     }
     connectedCallback(){
-        this.addEventListener("mouseenter",()=>{
-            this.menu=this.querySelector("kl-menu")
-            this.mouse_inside=true
-            this.menu.style.display="block"
-        })
-        this.addEventListener("mouseleave",()=>{
-            this.mouse_inside=false
-            this.menu.style.display="none"
-        })
     }
 }
-class KLJoystick extends HTMLElement {
+class SMDEJoystick extends HTMLElement {
     constructor() {
         super();
         this.knob = document.createElement("div");
@@ -201,8 +208,111 @@ class KLJoystick extends HTMLElement {
         this.knob.style.transform = "translate(-50%, -50%)";
     }
 }
+class SMDEWindow extends HTMLElement{
+    get movable(){
+        return this._movable||this.dataset.movable
+    }
+    set movable(val){
+        this._movable=val
+    }
+    get innerHTML(){
+        return this.content?this.content.innerHTML:super.innerHTML
+    }
+    set innerHTML(val){
+        if(!this.content){
+            super.innerHTML=val
+            return
+        }
+        this.content.innerHTML=val
+    }
+    constructor(){
+        super()
+        this.content=null
+        this._movable=true
+        this.moving=false
+        this.dragOffset={x:0,y:0}
+    }
+    appendChild(n){
+        if(!this.content){
+            super.appendChild(n)
+            return
+        }
+        this.content.appendChild(n)
+    }
+    connectedCallback(){
+        const content=document.createElement("div")
+        content.innerHTML=this.innerHTML
+        content.className="smde-window-content"
+        content.style.height=`calc(100% - 30px)`
+        this.innerHTML=""
 
-customElements.define("kl-joystick", KLJoystick);
+        this.top=document.createElement("div")
+        this.top.className="smde-window-top"
+        this.appendChild(this.top)
+
+        this.set_size(600,600)
+        
+        this.mouse_down_listener=(e)=>{
+            if(!this.movable) return
+            this.moving=true
+            this.dragOffset.x=e.clientX-this.offsetLeft
+            this.dragOffset.y=e.clientY-this.offsetTop
+        }
+        this.mouse_up_listener=(e)=>{
+            this.moving=false
+        }
+        this.mouse_move_listener=(e)=>{
+            if(!this.moving)return
+            this.style.left=(e.clientX-this.dragOffset.x)+"px"
+            this.style.top=(e.clientY-this.dragOffset.y)+"px"
+        }
+
+        this.top.addEventListener("mousedown",this.mouse_down_listener)
+        document.addEventListener("mouseup",this.mouse_up_listener)
+        document.addEventListener("mousemove",this.mouse_move_listener)
+
+        this.add_close_button()
+
+        this.appendChild(content)
+        this.content=content
+    }
+    add_close_button(){
+        this.close_button=document.createElement("button")
+        this.close_button.classList="smde-window-close-btn"
+        this.close_button.innerText="X"
+        this.close_button.onclick=()=>{
+            const event = new CustomEvent("close",{
+                bubbles: true,
+                cancelable: true
+            })
+            const canClose = this.dispatchEvent(event)
+            if(canClose)this.remove()
+        }
+        this.top.appendChild(this.close_button)
+    }
+    add_title(){
+        this.title=document.createElement("span")
+        this.tille.class="smde-window-title"
+        this.top.appendChild(this.title)
+    }
+    disconnectedCallback() {
+        document.removeEventListener("mouseup",this.mouse_up_listener)
+        document.removeEventListener("mousemove",this.mouse_move_listener)
+    }
+    set_size(width,height){
+        this.style.width=width+"px"
+        this.style.height=height+"px"
+    }
+    set_top(val){
+        this.top.innerHTML=val
+    }
+    set_title(val){
+        if(!this.title)this.add_title()
+        this.tilte.innerHTML=val
+    }
+}
+customElements.define("smde-joystick", SMDEJoystick);
 customElements.define('tabs-container', TabsContainer)
-customElements.define("kl-menu", Menu)
-customElements.define("kl-submenu", SubMenu)
+customElements.define("smde-menu", SMDEMenu)
+customElements.define("smde-option-submenu", SMDEOptionSubMenu)
+customElements.define("smde-window", SMDEWindow)

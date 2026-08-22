@@ -1,6 +1,6 @@
-import { InventoryItemType } from "common/scripts/definitions/utils.ts";
-import { type LItem, type ConsumibleItem, type GunItem } from "./inventory.ts";
-import { ActionsType } from "common/scripts/others/constants.ts";
+import { GameItemType } from "common/scripts/definitions/utils.ts";
+import { GunItem, type LItem, type ConsumibleItem } from "./inventory.ts";
+import { ActionsType, HumanAnimationType } from "common/scripts/others/constants.ts";
 import { type Human } from "../objects/human.ts";
 import { BaseAction, v2, type Slot } from "common/engine/core.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
@@ -12,6 +12,7 @@ export class ReloadAction extends Action{
     delay:number
     item:GunItem
     alt_reload:boolean=false
+    type: number=ActionsType.Reload
     constructor(item:GunItem){
         super()
         if(item.def.reload?.reload_alt&&item.ammo===0){
@@ -23,7 +24,7 @@ export class ReloadAction extends Action{
         this.item=item
     }
     on_execute(user:Human){
-        if(this.item.item_type!=InventoryItemType.gun)return
+        if(this.item.item_type!=GameItemType.gun)return
         const def=this.item.def
         const capacity=this.item.get_capacity()
         const request=Math.min(
@@ -45,7 +46,15 @@ export class ReloadAction extends Action{
         user.inventory.net_sync.items=true
         user.animation_data.dirty=true
     }
-    type: number=ActionsType.Reload
+    override on_cancel(user: Human): void {
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Reset
+        })
+        if(user.inventory.hand_item instanceof GunItem){
+            user.inventory.hand_item.reloading=false
+        }
+        user.animation_data.dirty=true
+    }
 }
 export class ConsumingActionA extends Action{
     delay:number
@@ -71,6 +80,16 @@ export class ConsumingActionA extends Action{
         user.animation_data.dirty=true
 
         this.slot.remove(1)
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Reset
+        })
+        user.animation_data.dirty=true
+    }
+    override on_cancel(user: Human): void {
+        user.animation_data.current_animation.push({
+            type:HumanAnimationType.Reset
+        })
+        user.animation_data.dirty=true
     }
 }
 export class HelpupAction extends Action<Human>{
@@ -89,6 +108,7 @@ export class HelpupAction extends Action<Human>{
     }
     override on_cancel(user: Human): void {
         this.human.actions.cancel()
+        this.human.being_helpup_by=undefined
     }
     on_execute(user:Human){
         this.human.help_up()
@@ -96,6 +116,7 @@ export class HelpupAction extends Action<Human>{
     override update(user: Human, dt: number): void {
         if(v2.distance(user.position,this.human.position)>user.game.modeManager.rules.humans.help_up.distance){
             user.actions.cancel()
+            user.animation_data.dirty=true
         }
     }
 }
@@ -110,6 +131,7 @@ export class BeingHelpupAction extends Action<Human>{
     override on_cancel(user: Human): void {
         if(user.being_helpup_by){
             user.being_helpup_by.actions.cancel()
+            user.animation_data.dirty=true
             user.being_helpup_by=undefined
         }
     }

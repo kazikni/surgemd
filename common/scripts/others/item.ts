@@ -47,6 +47,16 @@ export const DefaultFistRig:FistRig={
         rotation:0,
     }
 }
+export const DefaultDownedWalkFistRig:FistRig={
+    left:{
+        position:v2(0.52,-0.22),
+        rotation:0.05,
+    },
+    right:{
+        position:v2(0.52,0.22),
+        rotation:-0.05,
+    }
+}
 export const WeaponsArmRig={
     0:{
         left:{
@@ -94,7 +104,7 @@ export const WeaponsRig={
 export const tracers={
     tiny:{
         width:4,
-        height:0.8,
+        height:0.7,
         proj:{
             img:0,
             width:1,
@@ -103,7 +113,7 @@ export const tracers={
     },
     small:{
         width:6,
-        height:1,
+        height:0.85,
         proj:{
             img:0,
             width:1,
@@ -111,8 +121,8 @@ export const tracers={
         }
     },
     medium:{
-        width:10,
-        height:1.2,
+        width:9,
+        height:1,
         proj:{
             img:0,
             width:1,
@@ -120,8 +130,8 @@ export const tracers={
         }
     },
     large:{
-        width:12,
-        height:1.6,
+        width:10,
+        height:1.3,
         proj:{
             img:0,
             width:1,
@@ -129,8 +139,8 @@ export const tracers={
         }
     },
     xl:{
-        width:15,
-        height:2,
+        width:11,
+        height:1.7,
         proj:{
             img:0,
             width:1,

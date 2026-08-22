@@ -1,5 +1,6 @@
 import { Stream, Packet } from "../../engine/core.ts";
 import { PacketType } from "../definitions/utils.ts";
+import { GameConstants } from "../others/constants.ts";
 
 export class JoinPacket extends Packet{
     ID=PacketType.Join
@@ -17,22 +18,33 @@ export class JoinPacket extends Packet{
         body_tint:number
         hair_tint:number
     }
+
+    wrapping:number=0
+    badge?:number
+    victory_emote:number=0
+    death_emote:number=0
     constructor(){
         super()
     }
     encode(stream: Stream): void {
-        stream.write_string_sized(this.player_name,30)
+        stream.write_string_sized(this.player_name,GameConstants.player.max_name_size)
         stream.write_string_sized(this.group_token,20)
-        stream.write_boolean_group(this.skin!==undefined,this.skin?.female)
+        stream.write_boolean_group(this.skin!==undefined,this.skin?.female,this.badge!==undefined)
         if(this.skin!==undefined){
             stream.write_uint16(this.skin.shirt)
             stream.write_uint16(this.skin.hair)
             stream.write_uint32(this.skin.body_tint)
             stream.write_uint32(this.skin.hair_tint)
         }
+        stream.write_uint16(this.wrapping)
+        if(this.badge!==undefined){
+            stream.write_uint16(this.badge)
+        }
+        stream.write_uint16(this.victory_emote)
+        stream.write_uint16(this.death_emote)
     }
     decode(stream: Stream): void {
-        this.player_name=stream.read_string_sized(30)
+        this.player_name=stream.read_string_sized(GameConstants.player.max_name_size)
         this.group_token=stream.read_string_sized(20)
         const bg=stream.read_boolean_group()
         if(bg[0]){
@@ -49,5 +61,13 @@ export class JoinPacket extends Packet{
             this.skin.hair_tint=stream.read_uint32()
             this.skin.female=bg[1]
         }
+        this.wrapping=stream.read_uint16()
+        if(bg[2]){
+            this.badge=stream.read_uint16()
+        }else{
+            this.badge=undefined
+        }
+        this.victory_emote=stream.read_uint16()
+        this.death_emote=stream.read_uint16()
     }
 }

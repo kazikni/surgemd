@@ -1,59 +1,58 @@
 @use "common/engine/main.scss" as main;
 .btn-base {
-    border-radius: 5px;
+    border-radius: 0.3vw;
     font-family: "Russo-One";
     transition: 0.25s ease;
     cursor: pointer;
 
-    padding: 8px 18px;
-    font-size: 28px;
+    padding: 0.5vw 0.5vh;
+    font-size: 1.5vw;
 
-    border: 2px solid var(--item-border);
+    border: 0.13vw solid var(--item-border);
     background: var(--item-bg);
+    backdrop-filter: blur(7px);
     color: white;
+    //text-shadow: 0.2vh 0.2vh var(--item-text-shadow);
 
     &:hover {
         background: var(--item-bg-hover);
         border-color: var(--item-border-hover);
-        box-shadow: 0 0 20px var(--item-border-hover);
+        box-shadow: 0 0 2vw var(--item-border-hover);
     }
-
+    &:focus{
+        outline: none !important;
+    }
     &:active {
-        transform: translateY(1px);
-    }
-    @include main.medium_screen{
-        font-size: 20px;
-        padding: 6px 10px;
-    }
-    @include main.small_screen{
-        font-size: 15px;
-        padding: 4px 7px;
+        transform: translateY(0.2vh);
     }
 }
 .btn-blue {
     @extend .btn-base;
 
-    --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
-    --item-bg-hover: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
+    --item-bg: linear-gradient(135deg, #07aaee30 0%, #07aaee44 100%);
+    --item-bg-hover: linear-gradient(135deg, #07aaee44 0%, #07aaee5f 100%);
 
     --item-border: #07aaeeaa;
     --item-border-hover: #07aaeeaa;
+    --item-text-shadow: #07aaee44;
 }
 .btn-green {
     @extend .btn-base;
 
-    --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
-    --item-bg-hover: linear-gradient(135deg, #00aa7733 0%, #00aa774d 100%);
+    --item-bg: linear-gradient(135deg, #00aa7730 0%, #00aa7744 100%);
+    --item-bg-hover: linear-gradient(135deg, #00aa7744 0%, #00aa775f 100%);
 
     --item-border: #00aa77aa;
     --item-border-hover: #00aa77aa;
+    --item-text-shadow: #0bd89a44;
 }
 .btn-red {
     @extend .btn-base;
 
-    --item-bg: linear-gradient(135deg, #b01c4166 0%, #75042b66 100%);
-    --item-bg-hover: linear-gradient(135deg, #bd2a4e66 0%, #a3124466 100%);
+    --item-bg: linear-gradient(135deg, #b01c4130 0%, #75042b44 100%);
+    --item-bg-hover: linear-gradient(135deg, #bd2a4e44 0%, #a312445f 100%);
 
     --item-border: #40041eaa;
     --item-border-hover: #40041eaa;
+    --item-text-shadow: #75042b44;
 }

@@ -1,17 +1,18 @@
-import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, StaticStream, DynamicStream } from "common/engine/core.ts";
+import { CircleHitbox2D,Hitbox2D, Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2, DynamicStream, Rect } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
-import { IslandDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
-import { MapPacket,MapObjectEncode, MapRegion } from "common/scripts/packets/map_packet.ts"
+import { MapBiomeDef, MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
+import { encode_map_config, MapConfig, MapObjectEncode, MapRegion } from "common/scripts/packets/map_message.ts"
 import { Floors, FloorType, generate_terrain_shape, River, TerrainManager } from "common/scripts/others/terrain.ts"
 import { GameObjectType, Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { StaticBody } from "../objects/static_body.ts";
 import { Obstacle } from "../objects/obstacle.ts"
-import { building_from_json, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
+import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { Building } from "../objects/building.ts";
 import { VehicleDef } from "common/scripts/definitions/objects/vehicles.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { ServerGameObject } from "./gameObject.ts";
+import { GameADefinitions } from "common/scripts/definitions/game_defs.ts";
 export type map_gen_position=(hitbox:Hitbox2D,map:GameMap,random:SeededRandom)=>Vec2
 export type map_gen_valid=(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap)=>boolean
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
@@ -22,55 +23,20 @@ export interface MapStructure{
     circle_hb:CircleHitbox2D
     position:Vec2
 }
-export const generation={
-    island:(def:IslandDef)=>{
-        return (map:GameMap,random:SeededRandom)=>{
-            //Terrain
-            map.size=def.size
-            map.terrain.add_floor({
-                type:def.terrain.base,
-                hb:new RectHitbox2D(v2(0,0),v2(map.size.x,map.size.y)),
-                layer:Layers.Normal,
-                visible:true,
-                smooth:false,
-            
-                tint:def.terrain.base_tint,
-            })
-            const center=v2.scale(map.size,0.5)
-            const base=generate_terrain_shape(def.terrain,map.terrain,random,Layers.Normal,center)
-
-            if(def.terrain.rivers){
-                const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
-                map.rivers=rivers
-                for(const r of rivers){
-                    for(const layer of r.layers){
-                        map.terrain.add_floor({
-                            type:layer.floor,
-                            hb:layer.hb,
-                            visible:true,
-                            smooth:true,
-                            tint:layer.floor_tint,
-                            layer:layer.layer??Layers.Normal,
-                        })
-                    }
-                }
-            }
-            map.generate_structures(def.structures??[],new CircleHitbox2D(center,map.size.x*0.3),random)
-            for(const spawn of def.spawn??[]){
-                map.generate_objects(spawn,random)
-            }
-        }
-    }
-}
 
 export class GameMap{
     size:Vec2
+    seed:number=0
+    bounds:Rect
+    air_bounds:Rect
     game:Game
     constructor(game:Game,_seed:number=0){
         this.size=v2(10,10)
+        this.bounds={min:v2.zero(),max:v2.zero()}
+        this.air_bounds={min:v2.zero(),max:v2.zero()}
         this.game=game
     }
-    map_packet_stream:Stream=new DynamicStream()
+    map_stream:Stream=new DynamicStream()
     terrain:TerrainManager=new TerrainManager()
     random!:SeededRandom
 
@@ -78,9 +44,12 @@ export class GameMap{
     rivers:River[]=[]
     objects:StaticBody[]=[]
     structures:MapStructure[]=[]
-    def!:MapDef
 
+    definitions:GameADefinitions={}
+    biome!:MapBiomeDef
     default_floor:FloorType=FloorType.Void
+
+    minimap_enabled:boolean=true
 
     point_is_valid(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:GameMap){
         switch(mode.type){
@@ -126,13 +95,18 @@ export class GameMap{
         return v2.random2_s(v2.zero,map.size,random)
     }
     getRandomPosition(hitbox:Hitbox2D,id:number,layer:number=Layers.Normal,mode:SpawnMode,random:SeededRandom,gp?:map_gen_position,valid?:map_gen_valid,maxAttempts:number=100):Vec2|undefined{
+        if(mode.type===SpawnModeType.fixed)return mode.position
         let pos:Vec2|undefined=undefined
         let attempt=0
         if(!valid){
             valid=this.point_is_valid
         }
         if(!gp){
-            gp=this.random_point_inside
+            if(mode.position_generator==="deadzone"){
+                gp=this.game.deadzone.random_point_inside_cb.bind(this.game.deadzone)
+            }else{
+                gp=this.random_point_inside
+            }
         }
         const hb=hitbox.clone()
         while(!pos){
@@ -147,8 +121,12 @@ export class GameMap{
         }
         return pos
     }
+    
+    get_biome(pos:Vec2):MapBiomeDef{
+        return this.biome
+    }
     clamp_hitbox(position:Vec2,hb:Hitbox2D):Vec2{
-        return hb.clamp(position,v2(0,0),this.size)
+        return hb.clamp(position,this.bounds.min,this.bounds.max)
     }
     clamp(v:Vec2){
         v2m.clamp2(v,v2.zero,this.size)
@@ -183,11 +161,11 @@ export class GameMap{
             obj=this.generate_vehicle(def,random,spawn,layer)
             if(obj)(obj as Vehicle).physical_data.rotation=random.rad()
         }else if(this.game.loot_tables.tables.has(name)){
-            const loot=this.game.loot_tables.get_loot(name,{withammo:true},this.game)
+            const loot=this.game.get_loot_table(name)
             const pos:Vec2|undefined=this.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer??Layers.Normal,Spawn.grass,random,gen_position,gen_valid)
             if(!pos)return
             for(const ll of loot){
-                const l = this.game.add_loot(pos,ll.item,ll.count,layer)
+                const l = this.game.add_loot(pos,ll,layer)
                 if(!obj)obj=l
             }
         }
@@ -202,14 +180,16 @@ export class GameMap{
     }
     generate_obstacle(def:ObstacleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers,gen_position?:map_gen_position,gen_valid?:map_gen_valid):Obstacle|undefined{
         const o=this.add_obstacle(def,layer)
-        o.initialize(undefined,undefined,undefined,undefined,true)
+        o.initialize()
 
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
         if(!p){
+            const idx=this.objects.indexOf(o)
+            if(idx!==-1)this.objects.splice(idx,1)
             o.destroy()
             return undefined
         }
-        o.set_position(p)
+        o.set_position(p,true)
 
         const floor=this.terrain.get_floor_type(p,o.layer,FloorType.Void)
         const skin_apply=Floors[floor as FloorType]?.skin_apply
@@ -245,7 +225,6 @@ export class GameMap{
             b.destroy()
             return undefined
         }
-        
         this.game.scene_2d.objects.add_object(b,b.layer,undefined,{
             def:def
         })
@@ -289,22 +268,27 @@ export class GameMap{
     }
     generate_structure_after(struct:MapStructure,random:SeededRandom){
         for(const spawn of struct.def.spawn??[]){
-            this.generate_objects(spawn,random,undefined,(hb,id,layer,mode,map)=>{
+            this.generate_objects(spawn,random,(h,m,r)=>{
+                    const pos=r.random_in_circle(struct.circle_hb.radius)
+                    v2m.add(pos,pos,struct.circle_hb.position)
+                    return pos
+                },(hb,id,layer,mode,map)=>{
                 const ok=struct.hb.point_inside(hb.position)&&map.point_is_valid(hb,id,layer,mode,map)
                 return ok
             })
         }
     }
     
-    generate(definition:MapDef,seed:number=random.float(0,231412)){
+    generate(definition:MapDef,seed:number=random.int(0,231412),minimap_enabled:boolean=true){
+        this.seed=seed
         const random=new SeededRandom(definition.seed??seed)
         this.random=random
-        this.def=definition
+        this.minimap_enabled=minimap_enabled
 
         this.game.loot_tables.clear()
         this.game.loot_tables.add_tables(definition.loot_tables)
 
-        this.game.definitions.buildings.insert(...((definition.buildings??[]).map(v=>building_from_json(v))))
+        this.game.definitions.add_definitions(definition.definitions??{})
         if(this.game.mods){
             for(const k of this.game.mods.getLoadOrder()){
                 const mod=this.game.mods.loaded.get(k)
@@ -314,22 +298,92 @@ export class GameMap{
             }
         }
 
-        if(definition.generation.island)generation.island(definition.generation.island)(this,random)
-        if(definition.gen_callback)definition.gen_callback(this)
+        const bounds_size=definition.bounds_size===undefined?100:definition.bounds_size
+        this.size=definition.size
+        this.bounds=definition.bounds??{
+            min:v2(-bounds_size,-bounds_size),
+            max:v2(this.size.x+bounds_size,this.size.y+bounds_size)
+        }
+        this.air_bounds=definition.bounds??{
+            min:v2(-40,-40),
+            max:v2(this.size.x+40,this.size.y+40)
+        }
+        this.biome=definition.biome
+        this.definitions=definition.definitions??{}
+        //Terrain
+        this.rivers.length=0
+        this.terrain.add_floor({
+            type:definition.generation.base,
+            hb:new RectHitbox2D(v2(0,0),this.size),
+            layer:Layers.Normal,
+            visible:true,
+            smooth:false,
+            tint:definition.generation.base_tint
+        })
+        for(const def of definition.generation.islands??[]){
+            const position=def.position??v2.scale(this.size,0.5)
+            const size=def.size??this.size
+            const rect=RectHitbox2D.centered(position,size)
+            if(def.terrain){
+                const base=generate_terrain_shape(def.terrain,this.terrain,random,Layers.Normal,position)
+                if(def.terrain.rivers){
+                    const rivers=River.generate_rivers(base,def.terrain.rivers.defs,random)
+                    this.rivers.push(...rivers)
+                    for(const r of rivers){
+                        for(const layer of r.layers){
+                            this.terrain.add_floor({
+                                type:layer.floor,
+                                hb:layer.hb,
+                                visible:true,
+                                smooth:true,
+                                tint:layer.floor_tint,
+                                layer:layer.layer??Layers.Normal,
+                            })
+                        }
+                    }
+                }
+            }
+            this.generate_structures(def.structures??[],new CircleHitbox2D(position,Math.max(size.x,size.y)*0.3),random)
+            for(const spawn of def.spawn??[]){
+                this.generate_objects(spawn,random,(h,m,r)=>{
+                    return v2(r.float(rect.min.x,rect.max.x),r.float(rect.min.y,rect.max.y))
+                })
+            }
+        }
+        if(definition.generation.callback)definition.generation.callback(this)
+        for(const spawn of definition.generation.spawn??[]){
+            this.generate_objects(spawn,random)
+        }
 
+        for(const b of definition.generation.objects?.buildings??[]){
+            const obj=this.add_building(this.game.definitions.buildings.getFromString(b.def),b.layer)
+            obj.init(b.side)
+            obj.generate(b.position)
+        }
+        for(const i of definition.generation.objects?.items??[]){
+            const obj=this.game.add_loot(i.position,{count:i.count,item:this.game.definitions.game_items.valueString[i.def],skin:i.skin},i.layer)
+            if(i.velocity)obj.velocity=v2.clone(i.velocity)
+        }
+
+        this.game.start_settings.textures.push(...definition.assets?.textures??[])
         this.game.start_settings.textures.push(...definition.biome.textures)
         this.game.start_settings.musics.push(...definition.biome.musics)
 
         this.game.deadzone.reset()
-        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
-        this.map_packet_stream.lock()
+
+        this.map_stream.clear(true)
+        this.encode(this.map_stream)
+        this.map_stream.lock()
     }
     generate_with_algorithm(algorithm:map_gen_algorithm,seed:number=random.float(0,231412)){
+        this.seed=seed
         const random=new SeededRandom(seed)
         this.random=random
         algorithm(this,random)
-        this.game.clients.packets_manager.encode(this.encode(seed),this.map_packet_stream)
-        this.map_packet_stream.lock()
+
+        this.map_stream.clear(true)
+        this.encode(this.map_stream)
+        this.map_stream.lock()
     }
     soft_reset(){
         this.random.reset()
@@ -341,8 +395,8 @@ export class GameMap{
     }
     add_building(def:BuildingDef,layer:number=Layers.Normal){
         const b=new Building()
-        this.game.scene_2d.objects.add_object(b,layer,undefined,{})
         b.set_definition(def)
+        this.game.scene_2d.objects.add_object(b,layer,undefined,{})
         return b
     }
     add_region(position:Vec2,name:string):MapRegion{
@@ -353,8 +407,8 @@ export class GameMap{
         this.regions.push(ret)
         return ret
     }
-    encode(seed:number):MapPacket{
-        const p=new MapPacket()
+
+    encode(stream:Stream){
         const objects:MapObjectEncode[]=[]
         for(const o of this.objects){
             if(o instanceof Obstacle){
@@ -371,15 +425,17 @@ export class GameMap{
                 }
             }
         }
-        p.map={
+        const map:MapConfig={
+            minimap_enabled:this.minimap_enabled,
             terrain:this.terrain.floors,
             size:this.size,
-            seed:seed,
+            seed:this.seed,
             objects,
-            biome:this.def.biome,
-            buildings:this.def.buildings,
-            regions:this.regions
+            biome:this.biome,
+            definitions:this.definitions,
+            regions:this.regions,
         }
-        return p
+        encode_map_config(map,stream)
+        return map
     }
 }

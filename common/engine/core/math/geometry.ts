@@ -142,12 +142,12 @@ export const Collision=Object.freeze({
         return v2.greater(rect_1_max,rect_2_min)&&v2.less(rect_1_min,rect_2_max)
     },
     circle_with_rect(circle_position: Vec2, circle_radius: number, rect_min: Vec2, rect_max: Vec2): boolean {
-        const closest = v2.clamp2(circle_position, rect_min, rect_max);
-        const distSq = v2.distanceSquared(circle_position, closest);
-        return distSq <= (circle_radius * circle_radius);
+        const closest=v2.clamp2(circle_position, rect_min, rect_max)
+        const distSq=v2.distanceSquared(circle_position, closest)
+        return distSq<=(circle_radius*circle_radius)
     },
     circle_with_rect_ov(circle_pos: Vec2, radius: number, rect_min: Vec2, rect_max: Vec2) {
-        if (circle_pos.x >= rect_min.x && circle_pos.x <= rect_max.x&&circle_pos.y >= rect_min.y && circle_pos.y <= rect_max.y) {
+        if(circle_pos.x>rect_min.x&&circle_pos.x<rect_max.x&&circle_pos.y>rect_min.y&&circle_pos.y<rect_max.y) {
             const left = circle_pos.x - rect_min.x
             const right = rect_max.x - circle_pos.x
             const top = circle_pos.y - rect_min.y
@@ -166,15 +166,13 @@ export const Collision=Object.freeze({
             }
             return { dir: v2(0, -1), pen: bottom + radius }
         }
-
         const closest = v2.clamp2(circle_pos, rect_min, rect_max)
         const diff = v2.sub(closest, circle_pos)
         const distSq = v2.squared(diff)
-
-        if (distSq <= radius * radius) {
+        if (distSq<radius*radius) {
             const dist = Math.sqrt(distSq)
             return {
-                dir: dist > 0.0001 ? v2.scale(diff, 1 / dist) : v2(1, 0),
+                dir: dist>0.00001?v2.scale(diff,1/dist):v2(1, 0),
                 pen: radius - dist
             }
         }
@@ -398,9 +396,10 @@ export const polygon2={
             const normal1 = v2(-edge1.y, edge1.x)
             const normal2 = v2(-edge2.y, edge2.x)
 
-            const normal = v2.normalizeSafe(v2.add(normal1, normal2),normal1)
+            const normal = v2.normalizeSafe(v2.add(normal1, normal2), normal1)
+            const d = Math.max(0.15,v2.dot(normal, normal1))
 
-            out.push(v2.add(cur,v2.scale(normal, amount)))
+            out.push(v2.add(cur,v2.scale(normal, amount / d)))
         }
 
         return out
@@ -528,24 +527,53 @@ export interface PackedRect<T> {
     data: T
 }
 
+interface SkylineNode {
+    x: number
+    y: number
+    width: number
+}
+
 export interface Bin<T> {
     width: number
     height: number
     rects: PackedRect<T>[]
+    skyline: SkylineNode[]
 }
 
 export class RectPacker<T> {
     bins: Bin<T>[] = []
 
-    constructor(public maxWidth: number,public maxHeight: number,public margin: number = 0) {}
+    constructor(
+        public maxWidth: number,
+        public maxHeight: number,
+        public margin: number = 0
+    ) {}
 
     add(w: number, h: number, data: T) {
         const paddedW = w + this.margin * 2
         const paddedH = h + this.margin * 2
 
+        if (
+            paddedW > this.maxWidth ||
+            paddedH > this.maxHeight
+        ) {
+            throw new Error("Rect too big for bin")
+        }
+
+        // Primeiro tenta os bins existentes.
         for (const bin of this.bins) {
             const pos = this.tryPlace(bin, paddedW, paddedH)
+
             if (pos) {
+                this.place(
+                    bin,
+                    pos.index,
+                    pos.x,
+                    pos.y,
+                    paddedW,
+                    paddedH
+                )
+
                 bin.rects.push({
                     x: pos.x + this.margin,
                     y: pos.y + this.margin,
@@ -553,6 +581,7 @@ export class RectPacker<T> {
                     h,
                     data
                 })
+
                 return
             }
         }
@@ -560,11 +589,32 @@ export class RectPacker<T> {
         const bin: Bin<T> = {
             width: this.maxWidth,
             height: this.maxHeight,
-            rects: []
+            rects: [],
+            skyline: [{
+                x: 0,
+                y: 0,
+                width: this.maxWidth
+            }]
         }
 
-        const pos = this.tryPlace(bin, paddedW, paddedH)
-        if (!pos) throw new Error("Rect too big for bin")
+        const pos = this.tryPlace(
+            bin,
+            paddedW,
+            paddedH
+        )
+
+        if (!pos) {
+            throw new Error("Rect too big for bin")
+        }
+
+        this.place(
+            bin,
+            pos.index,
+            pos.x,
+            pos.y,
+            paddedW,
+            paddedH
+        )
 
         bin.rects.push({
             x: pos.x + this.margin,
@@ -577,29 +627,123 @@ export class RectPacker<T> {
         this.bins.push(bin)
     }
 
-    private tryPlace(bin: Bin<T>, w: number, h: number) {
-        for (let y = 0; y + h <= bin.height; y++) {
-            for (let x = 0; x + w <= bin.width; x++) {
-                if (!this.collides(bin, x, y, w, h)) {
-                    return { x, y }
-                }
+    private tryPlace(
+        bin: Bin<T>,
+        w: number,
+        h: number
+    ): { x: number, y: number, index: number } | undefined {
+
+        let bestX = 0
+        let bestY = Infinity
+        let bestIndex = -1
+
+        const skyline = bin.skyline
+
+        for (let i = 0; i < skyline.length; i++) {
+            const node = skyline[i]
+
+            if (node.x + w > bin.width)
+                break
+
+            let x = node.x
+            let y = node.y
+            let widthLeft = w
+
+            let j = i
+
+            while (widthLeft > 0) {
+                const current = skyline[j]
+
+                if (current.y > y)
+                    y = current.y
+
+                if (y + h > bin.height)
+                    break
+
+                widthLeft -= current.width
+                j++
+
+                if (j >= skyline.length && widthLeft > 0)
+                    break
+            }
+
+            if (widthLeft > 0)
+                continue
+
+            // Bottom-left heuristic:
+            // menor Y primeiro, depois menor X.
+            if (
+                y < bestY ||
+                (y === bestY && x < bestX)
+            ) {
+                bestX = x
+                bestY = y
+                bestIndex = i
             }
         }
-        return null
+
+        if (bestIndex < 0)
+            return undefined
+
+        return {
+            x: bestX,
+            y: bestY,
+            index: bestIndex
+        }
     }
 
-    private collides(bin: Bin<T>, x: number, y: number, w: number, h: number) {
-        for (const r of bin.rects) {
-            const rx = r.x - this.margin
-            const ry = r.y - this.margin
-            const rw = r.w + this.margin * 2
-            const rh = r.h + this.margin * 2
+    private place(
+        bin: Bin<T>,
+        index: number,
+        x: number,
+        y: number,
+        w: number,
+        h: number
+    ) {
+        const skyline = bin.skyline
 
-            if (x < rx + rw && x + w > rx &&y < ry + rh &&y + h > ry) {
-                return true
+        const newNode: SkylineNode = {
+            x,
+            y: y + h,
+            width: w
+        }
+
+        skyline.splice(index, 0, newNode)
+
+        // Remove/encurta nós cobertos pelo novo retângulo.
+        const endX = x + w
+
+        for (
+            let i = index + 1;
+            i < skyline.length;
+        ) {
+            const node = skyline[i]
+
+            if (node.x >= endX)
+                break
+
+            const overlap = endX - node.x
+
+            if (overlap >= node.width) {
+                skyline.splice(i, 1)
+            } else {
+                node.x += overlap
+                node.width -= overlap
+                break
             }
         }
-        return false
+
+        for (let i = 0; i < skyline.length - 1;) {
+            const a = skyline[i]
+            const b = skyline[i + 1]
+
+            if (a.y === b.y) {
+                a.width += b.width
+                skyline.splice(i + 1, 1)
+            } else {
+                i++
+            }
+        }
     }
 }
 export const circle={

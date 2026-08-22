@@ -1,7 +1,8 @@
-import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, type Tween, v2} from "common/engine/client.ts"
+import { Sprite2D, type Tween } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
+import { CircleHitbox2D, Stream, v2 } from "common/engine/core.ts";
 
 export class SyncedParticle extends MovingBody{
     override physical_data: MovingBodyPhysicalData;
@@ -75,7 +76,7 @@ export class SyncedParticle extends MovingBody{
     set_definition(def:SyncedParticleDef){
         if(this.def)return
         this.def=def
-        this.sprite.hotspot=CenterHotspot
+        this.sprite.hotspot=v2.half_one
         this.sprite.zIndex=zIndexes.SyncedParticle
 
         this.sprite.set_frame(def.frame,this.game.resources)

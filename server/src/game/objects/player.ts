@@ -2,7 +2,6 @@ import { SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { Human } from "./human.ts";
 import { DamageParams } from "../others/utils.ts";
 import { DamageReason, HumanDefinition } from "common/scripts/definitions/utils.ts";
-import { FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { type Game } from "../others/game.ts";
@@ -12,6 +11,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
+import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
@@ -64,7 +64,7 @@ export abstract class PlayerConnManager{
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
         const layers=[layer-2,layer-1,layer,layer+1,layer+2]
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
-        return objs
+        return [...objs,...Object.values(this.game.always_visible)]
     }
     abstract net_update(general_update:Stream):void
 }
@@ -156,18 +156,18 @@ export class Player extends Human{
     override down(params: DamageParams): void {
         super.down(params)
         if(params.owner&&params.owner instanceof Player){
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
-                    used:this.game.definitions.game_items.keysString[params.source!.idString]
                 }:undefined,
                 victimId:this.id,
+                used:this.game.definitions.game_objects.keysString[params.source!.idString],
                 damage_reason:params.reason,
                 type:FeedMessageType.down,
             })
         }else{
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
@@ -180,17 +180,13 @@ export class Player extends Human{
         if(this.dead)return
         super.die(params)
 
-        if(params.owner&&params.owner instanceof Player){
-            if(params.owner.id!==this.id&&(params.owner.username===""||params.owner.username!==this.username)&&!this.game.modeManager.is_ally(this,params.owner)){
-                params.owner.earned.coins+=3
-                params.owner.earned.xp+=1
-            }
-            this.player_manager.send_feed_message({
-                killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
-                    id:params.owner.id,
-                    kills:params.owner.status.kills,
-                    used:this.game.definitions.game_items.keysString[params.source!.idString]
-                }:undefined,
+        if(this.killed_by&&this.killed_by instanceof Player){
+            this.game.feed_messages.push({
+                killer:{
+                    id:this.killed_by.id,
+                    kills:this.killed_by.status.kills,
+                },
+                used:this.game.definitions.game_objects.keysString[params.source?.idString??""]??0,
                 victimId:this.id,
                 type:FeedMessageType.kill,
                 damage_reason:params.reason,
@@ -200,7 +196,7 @@ export class Player extends Human{
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
         }else{
-            this.player_manager.send_feed_message({
+            this.game.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 type:FeedMessageType.kill,
@@ -208,7 +204,6 @@ export class Player extends Human{
             })
         }
 
-        //Respawn
         this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);
 
         this.game.modeManager.on_player_die(this)
@@ -224,7 +219,7 @@ export class Player extends Human{
         if(this.conn&&this.conn.real_human===this){
             this.conn.on_revive(this)
         }
-        this.game.players.send_feed_message({
+        this.game.feed_messages.push({
             type:FeedMessageType.set_name,
             playerId:this.id,
             playerName:this.name
@@ -246,11 +241,12 @@ export class Player extends Human{
         return ret
     }
     proccess_input(i:InputPacket){
+        if(this.script)return
         this.input.movement=i.movement
 
-        this.input.auto_click=i.auto_fire
+        this.input.auto_click=i.auto_fire??true
         if(this.input.auto_click){
-            this.input.using_item_down=i.use_weapon
+            this.input.using_item_down=true
         }else if(!this.input.using_item&&i.use_weapon){
             this.input.using_item_down=true
         }
@@ -265,22 +261,27 @@ export class Player extends Human{
         this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
         this.input.actions.push(...i.actions)
 
-        if(i.cancel)this.actions.cancel()
+        this.input.cancel=i.cancel
     }
     proccess_join_packet(jp:JoinPacket){
-        this.loadout.dirty=true
+        this.visual.dirty=true
         if(jp.skin){
-            this.loadout.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
-            this.loadout.hair={
+            this.visual.eyes=this.game.definitions.loadout.getFromString(jp.skin.female?"eyes_2":"eyes_1") as LoadoutEyesDef
+            this.visual.hair={
                 tint:jp.skin.hair_tint,
                 def:this.game.definitions.loadout.getFromNumber(jp.skin.hair) as LoadoutHairDef
             }
-            this.loadout.body.tint=jp.skin.body_tint
-            this.loadout.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
-            this.loadout.accessorys=[]
+            this.visual.body.tint=jp.skin.body_tint
+            this.visual.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
+            this.visual.accessorys=[]
             if(jp.skin.female){
-                this.loadout.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
+                this.visual.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
             }
         }
+        this.visual.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]
+        if(jp.badge)this.visual.badge=this.game.definitions.badges.valueNumber[jp.badge]
+        else this.visual.badge=undefined
+        this.visual.emotes.victory=this.game.definitions.emotes.valueNumber[jp.victory_emote-1]
+        this.visual.emotes.death=this.game.definitions.emotes.valueNumber[jp.death_emote-1]
     }
 }

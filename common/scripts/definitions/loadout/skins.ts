@@ -25,7 +25,8 @@ export interface LoadoutBodyDef extends Definition{
 export interface LoadoutHairDef extends Definition{
     item:LoadoutItemKind.Hair
     frame?:{
-        base?:FrameDef
+        front?:FrameDef
+        back?:FrameDef
     }
     rank:ItemRank
 }
@@ -83,7 +84,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"hair_1",
             rank:ItemRank.E,
             frame:{
-                base:{
+                front:{
                     position:v2(-0.15,0)
                 }
             },
@@ -93,7 +94,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"hair_2",
             rank:ItemRank.E,
             frame:{
-                base:{
+                front:{
                     position:v2(-0.22,0)
                 }
             }
@@ -103,7 +104,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"hair_3",
             rank:ItemRank.E,
             frame:{
-                base:{
+                front:{
                     position:v2(-0.12,0)
                 }
             }
@@ -113,7 +114,7 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"hair_4",
             rank:ItemRank.E,
             frame:{
-                base:{
+                front:{
                     position:v2(-0.15,0)
                 }
             }

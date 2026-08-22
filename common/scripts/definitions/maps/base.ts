@@ -1,50 +1,11 @@
-import { InventoryItemType } from "../utils.ts";
-import { GunDef } from "../items/guns.ts";
 import { FloorType, RiversDef } from "../../others/terrain.ts";
-import { SpawnMode, type Layers } from "../../others/constants.ts";
-import { NormalLobby, NormalMap } from "./normal.ts";
-import { DebugMap, SingleBuildMap } from "./debug.ts";
-import { Hitbox2D, LootTable, LootTableItemRet, Random1, Vec2, WeightDefinition } from "../../../engine/core.ts";
-import { GameDefinition, GameItem } from "../game_defs.ts";
-import { TundraMap } from "./tundra.ts";
-import { JSONBuildingDef } from "../objects/buildings_base.ts"
+import { LootAditional, SpawnMode, type Layers } from "../../others/constants.ts";
+import { Hitbox2D, LootTable, Orientation, Random1, Rect,  tdm,  Vec2, WeightDefinition } from "../../../engine/core.ts";
+import { GameDefinition, type GameADefinitions } from "../game_defs.ts";
 
-import {type GameMap} from "../../../../server/src/game/others/map.ts"
-import { type Game } from "../../../../server/src/game/others/game.ts";
-import { MapRegion } from "../../packets/map_packet.ts";
-export interface Aditional{
-    withammo:boolean
-}
-export function loot_table_get_item(item:string,count:number,_aditional:Aditional,game:Game):LootTableItemRet<GameItem>[]{
-    const itemD=(game.definitions as GameDefinition).game_items.valueString[item]
-    if(!itemD){
-        console.error(item,"Not Founded")
-        return []
-    }
-    if(itemD.item_type===InventoryItemType.gun){
-        const ret:LootTableItemRet<GameItem>[]=[
-            {
-                item:itemD,
-                count:count
-            }
-        ]
-        if(itemD.ammo_spawn){
-            const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammo_spawn?.type??(itemD as unknown as GunDef).ammo_type]
-            ret.push({
-                item:ammo_def,
-                count:(itemD as GunDef).ammo_spawn!.amount
-            })
-        }
-        return ret
-    }else{
-        return [
-            {
-                item:itemD,
-                count:count
-            }
-        ]
-    }
-}
+import { type GameMap } from "../../../../server/src/game/others/map.ts"
+import { type MapRegion } from "../../packets/map_message.ts";
+
 export type MapObjectGeneration={def:string|(WeightDefinition&{def:string})[],count:Random1,layer?:Layers,spawn?:SpawnMode}
 export interface TerrainLayerDef {
     type:FloorType
@@ -71,12 +32,11 @@ export interface MapStructureDef extends TerrainShapeDef{
     region?:MapRegion
 }
 export interface IslandDef{
-    size:Vec2
+    position?:Vec2
+    size?:Vec2
     spawn?:MapObjectGeneration[]
     structures?:MapStructureDef[]
-    terrain:{
-        base:FloorType
-        base_tint?:number
+    terrain?:{
         rivers?:{
             defs:RiversDef[]
             expansion?:number
@@ -85,8 +45,26 @@ export interface IslandDef{
         }
     }&TerrainShapeDef,
 }
+export const MapBiomeTD = tdm.ctx.parse(`{
+    skin:string1?,
+    skin_chance:float32?,
+
+    skins_replace:any,
+
+    floors:any,
+
+    particles:string1[1],
+    particles_tint:uint32?,
+
+    ambient_sound:string1?,
+
+    musics:string1[1],
+    textures:string1[1],
+}`)
 export interface MapBiomeDef{
     skin?:string
+    skin_chance?:number
+    skins_replace?:Record<string,string|string[]>
     floors:Partial<Record<FloorType,number>>
     particles:string[]
     particles_tint?:number
@@ -94,26 +72,90 @@ export interface MapBiomeDef{
     musics:string[]
     textures:string[]
 }
-export interface MapDef{
-    loot_tables:Record<string,LootTable>
-    default_floor?:FloorType
+export const MapTD = tdm.ctx.parse(`{
+    loot_tables:any,
+    default_floor:uint8?,
+    size:{x:uint16,y:uint16},
+    bounds:any,
+    bounds_size:float32?,
     generation:{
-        island?:IslandDef
+        base:uint8,
+        base_tint:uint32?,
+        spawn:any,
+        islands:{
+            position:vec2?,
+            size:vec2?,
+            spawn:any,
+            structures:{
+                radius:float32,
+                position:vec2?,
+                variation:float32?,
+                points:uint8?,
+                passes:uint8?,
+                variation_decay:float32?,
+                floors:any,
+                spawn:any,
+                region:any,
+            }[2]?,
+            terrain:{
+                rivers:any,
+                radius:float32,
+                position:vec2?,
+                variation:float32?,
+                points:uint8?,
+                passes:uint8?,
+                variation_decay:float32?,
+                floors:any,
+            },
+        }[2]?,
+        callback:any,
+    },
+    definitions:GameDefinitions?,
+    seed:uint32?,
+    biome:MapBiome,
+    deadzone_initial_size:float32?,
+}`,{MapBiome:MapBiomeTD,GameDefinitions:GameDefinition.add_td})
+export interface MapObjectItem{
+    def:string
+    position:Vec2
+    layer?:number
+    count:number
+    velocity?:Vec2
+    skin?:number
+    aditional?:{count:number,item:string}[]
+}
+export interface MapObjectBuilding{
+    def:string
+    position:Vec2
+    side?:Orientation
+    layer?:number
+}
+export interface MapDef{
+    loot_tables:Record<string,LootTable<LootAditional>>
+    default_floor?:FloorType
+    size:Vec2
+    bounds?:Rect
+    bounds_size?:number
+    generation:{
+        base:FloorType
+        base_tint?:number
+        spawn?:MapObjectGeneration[]
+        islands?:IslandDef[]
+        callback?:(map:GameMap)=>void
+        objects?:{
+            buildings?:MapObjectBuilding[]
+            items?:MapObjectItem[]
+        }
     }
-    buildings?:JSONBuildingDef[]
+    assets?:{
+        textures?:string[]
+    }
+    players_spawn?:SpawnMode
+    definitions?:GameADefinitions
     seed?:number
     biome:MapBiomeDef
     deadzone_initial_size?:number
-    gen_callback?:(map:GameMap)=>void
 }
 export interface CounterMapDef extends MapDef{
     spawn:Hitbox2D[]
-}
-export const Maps:Record<string,MapDef>={
-    normal:NormalMap,
-    lobby:NormalLobby,
-    tundra:TundraMap,
-
-    debug:DebugMap,
-    single_building:SingleBuildMap,
 }

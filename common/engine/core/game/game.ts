@@ -128,6 +128,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         for(const c of this.components){
             c.on_render(dt)
         }
+        this.scene_2d.objects.render(dt)
     }
     update(dt:number,net_update:boolean=true,destroy_queue:boolean=true){
         this.clock.profiler.start(1)
@@ -187,8 +188,10 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         }
     }
     stop(){
+        if(!this.running)return
         this.running=false
         this.clock.stop()
+        this.signals.emit("stop",{game:this})
     }
     clear(){
         this.scene_2d.objects.clear()

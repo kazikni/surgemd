@@ -1,6 +1,6 @@
 import { GameItems } from "common/scripts/definitions/alldefs.ts";
 import "../scss/main.scss"
-import { BulletDef, GameItem, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { BulletDef, GameItem, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GunClasses, GunDef } from "common/scripts/definitions/items/guns.ts";
 const params = new URLSearchParams(self.location.search);
 
@@ -24,7 +24,7 @@ const gunClasses:Record<GunClasses,string>={
 }
 
 function set_item(item:GameItem){
-    if(item.item_type===InventoryItemType.gun){
+    if(item.item_type===GameItemType.gun){
         const gun=item as unknown as GunDef
         content.id.innerHTML=gun.idString
         content.name.innerHTML=gun.idString.toUpperCase()
@@ -72,11 +72,11 @@ function bullet_text(def:BulletDef):string{
 </tr>
 <tr>
     <th>Critical Multiply</th>
-    <td>${def.criticalMult}</td>
+    <td>${def.critical_mult}</td>
 </tr>
 <tr>
     <th>Obstacle Multiply</th>
-    <td>${def.obstacleMult}</td>
+    <td>${def.obstacle_mult}</td>
 </tr>
 <tr>
     <th>Fallof</th>

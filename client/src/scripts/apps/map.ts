@@ -1,6 +1,6 @@
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
 import { GameApp } from "../managers/deviceManager.ts";
-import { ColorM, v2, Vec2 } from "common/engine/client.ts";
+import { ColorM, v2, Vec2 } from "common/engine/web.ts";
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts";
 type MapPing={
     id:number
@@ -43,7 +43,7 @@ export class MapApp extends GameApp {
     constructor(){
         super({
             name:"Map",
-            icon:"/img/menu/gui/tab/icons/map.svg"
+            icon:"/assets/img/menu/gui/tab/icons/map.svg"
         })
     }
 
@@ -172,7 +172,7 @@ export class MapApp extends GameApp {
         el.id="ping-"+ping.id
         el.innerHTML=`
 <div class="map-ping-pulse"></div>
-<img class="map-ping-icon" src="/img/menu/gui/pings/${def.idString}.svg" draggable="false">`
+<img class="map-ping-icon" src="/assets/img/menu/gui/pings/${def.idString}.svg" draggable="false">`
 
         ping.el=el
         ping.icon_el=ping.el.querySelector(".map-ping-icon") as HTMLImageElement

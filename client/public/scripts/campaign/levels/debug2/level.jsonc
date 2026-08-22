@@ -7,10 +7,11 @@
         "dificulty":"easy"
     },
     "mode":{
-        "type":"debug",
-        "map":{
-            "def":"single_building"
+        "mode":"debug",
+        "settings":{
+            "map":{
+                "def":"single_building"
+            }
         }
-    },
-    "player":{}
+    }
 }

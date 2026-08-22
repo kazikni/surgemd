@@ -1,23 +1,36 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition, Definitions, Numeric, tdm } from "../../../engine/core.ts";
+import { TD, TDType } from "../../../engine/core/lang/td.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { InventoryItemType } from "../utils.ts";
+import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
+export const AccessoryTD:TD={
+    type:TDType.object,
+    content:[
+        ...GameItemDefTD,
+        {name:"property",content:{type:TDType.array,content:tdm.string1,len_bytes:1}},
+        {name:"modifiers",content:tdm.any},
+    ]
+}
 export interface AccessoryDef extends Definition{
+    def_type?:GameObjectDefinitionType.item
+    item_type?:GameItemType.accessory
+    name?:string
+    tname?:string
     rank:ItemRank
+
     property?:string[]
     modifiers?:Partial<HumanModifiers>
     events?:Record<string,(e:any)=>void>
-    item_type?:InventoryItemType.accessory
 }
 
 export function AccessoryDropLootFromObstacle(table:string){
     return (e:any)=>{
-        const loot=e.human.game.loot_tables.get_loot(table,{withammo:true},e.human.game)
+        const loot=e.human.game.get_loot_table(table)
 
         for(const l of loot){
-            e.human.game.add_loot(e.obstacle.hitbox.random_point(),l.item,l.count,e.obstacle.layer)
+            e.human.game.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
         }
     }
 }
@@ -28,26 +41,22 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "gun_shoot":(e)=>{
-                    e.bullet.damage*=0.7
+                    if(e.bullet.on_hit_explosion)return
+                    e.bullet.damage*=0.6
+                    e.bullet.tracer_height*=0.6
 
-                    const spread=Math.max(e.spread*0.004,0.01)
+                    const spread=Numeric.clamp(e.spread*0.005,0.01,0.045)
 
                     let b=e.bullet.clone()
-                    b.damage*=0.2
-                    b.tracerAlpha*=0.7
-                    b.modifiers={
-                        speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.4,
-                    }
+                    b.damage*=0.45
+                    b.tracer_alpha*=0.7
+                    b.tracer_height*=0.45
                     b.set_direction(e.angle-spread)
 
                     b=e.bullet.clone()
-                    b.damage*=0.2
-                    b.tracerAlpha*=0.7
-                    b.modifiers={
-                        speed:e.user.modifiers.bullet_speed,
-                        size:e.user.modifiers.bullet_size*0.4,
-                    }
+                    b.damage*=0.45
+                    b.tracer_alpha*=0.7
+                    b.tracer_height*=0.45
                     b.set_direction(e.angle+spread)
                 }
             },
@@ -58,7 +67,7 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             events:{
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=1.05
-                    e.bullet.set_color(0)
+                    e.bullet.set_satured(0)
                 }
             }
         },
@@ -69,9 +78,9 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 "gun_shoot":(e)=>{
                     if(e.item.ammo===0||e.item.ammo===e.item.get_capacity()-1){
                         e.bullet.damage*=1.2
-                        e.bullet.modifiers.speed*=1.2
-                        e.bullet.modifiers.size*=1.75
-                        e.bullet.set_color(1)
+                        e.bullet.speed*=1.2
+                        e.bullet.tracer_height*=1.75
+                        e.bullet.set_satured(1)
                     }
                 }
             }
@@ -81,11 +90,13 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.A,
             events:{
                 "bullet_reflect":(e)=>{
-                    e.bullet.damage*=2*1.2
-                    e.bullet.tracerAlpha*=2
-                    e.bullet.modifiers.speed*=1.2
-                    e.bullet.modifiers.size*=1.75
-                    e.bullet.set_color(1)
+                    e.bullet.damage*=2
+                    e.bullet.tracer_alpha*=2
+                    if(e.bullet.reflection_count>1)return
+                    e.bullet.damage*=1.25
+                    e.bullet.speed*=1.2
+                    e.bullet.tracer_height*=1.75
+                    e.bullet.set_satured(1)
                 }
             }
         },
@@ -94,18 +105,31 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             rank:ItemRank.S,
             events:{
                 "gun_shoot":(e)=>{
-                    e.bullet.penetration*=0.2
-                    e.bullet.set_color(1)
+                    e.bullet.penetration*=0.3
+                    e.bullet.set_satured(1)
                 }
             }
         },
+        {
+            idString:"ghost_bullets",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.pass_through_everthing=true
+                    e.bullet.speed*=0.7
+                    e.bullet.damage*=0.7
+                    e.bullet.tracer_alpha*=0.5
+                }
+            }
+        },
+
         {
             idString:"liquid_insanity",
             rank:ItemRank.A,
             events:{
                 "kill":(e)=>{
                     e.owner.give_boost(25)
-                    e.owner.health_data.health+=25
+                    e.owner.health.value+=25
                     e.owner.side_effect({
                         type:SideEffectType.AddEffect,
                         duration:4,
@@ -143,15 +167,6 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
             }
         },
 
-        {
-            idString:"ghost_bullets",
-            rank:ItemRank.A,
-            events:{
-                "gun_shoot":(e)=>{
-                    e.bullet.pass_through_everthing=true
-                }
-            }
-        },
         {
             idString:"sprite_ammo",
             rank:ItemRank.A,

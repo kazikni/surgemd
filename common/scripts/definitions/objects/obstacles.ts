@@ -1,8 +1,130 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, LootTable, mergeDeep, model2d, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition } from "../../../engine/core.ts";
-import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
+import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
-import { hit_sounds, HitParticlesDef, HitSoundsDef } from "../utils.ts";
+import { MeleeDef } from "../items/melees.ts";
+import { GameObjectDefinitionType, GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, PerspetiveSizes } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
+export const ObstacleTD:TD={
+    type: TDType.object,
+    content: [
+        ...GameObjectDefTD,
+
+        // Life
+        { name: "health", content: tdm.float32_onu },
+        { name: "imortal", content: tdm.boolean },
+        { name: "resistence", content: tdm.float32_onu },
+
+        // Collision
+        { name: "hitbox", content: tdm.any },
+        { name: "spawnHitbox", content: tdm.any },
+        {
+            name: "below",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "hitbox", content: tdm.any },
+                    { name: "duration", content: tdm.float32_onu },
+                    { name: "alpha", content: tdm.float32 },
+                ]
+            }}
+        },
+
+        { name: "no_collision", content: tdm.boolean },
+        { name: "no_pathfinding_collision", content: tdm.boolean },
+        { name: "passable_by_bullets", content: tdm.boolean },
+        { name: "no_bullets_collision", content: tdm.boolean },
+
+        { name: "invisible_on_map", content: tdm.boolean },
+
+        {
+            name: "scale",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "min", content: tdm.float32_onu },
+                    { name: "max", content: tdm.float32_onu },
+                    { name: "destroy", content: tdm.float32_onu },
+                ]
+            }}
+        },
+
+        {
+            name: "world_shadow",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "disabled", content: tdm.boolean },
+                    { name: "model", content: tdm.any },
+                    { name: "hitbox", content: tdm.any },
+                ]
+            }}
+        },
+
+        {
+            name: "assets",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    {
+                        name: "aditional_sprites",
+                        content: {
+                            type: TDType.array,
+                            len_bytes: 1,
+                            content: FrameTD
+                        }
+                    },
+                    {
+                        name: "frame",
+                        content: {type:TDType.onu,content:{
+                            type: TDType.object,
+                            content: [
+                                { name: "base", content: tdm.string1_onu },
+                                { name: "dead", content: tdm.string1_onu },
+                                { name: "transform", content: {type:TDType.onu,content:FrameTransformTD} },
+                                { name: "dead_transform", content: {type:TDType.onu,content:FrameTransformTD} },
+                                { name: "variations", content: tdm.any },
+                                { name: "tint_variations", content: tdm.any },
+                                { name: "sprite_variations", content: tdm.boolean },
+                                { name: "biome_skins", content: tdm.any },
+                            ]
+                        }}
+                    },
+
+                    { name: "sounds", content: tdm.any },
+                    { name: "particles", content: tdm.any },
+                ]
+            }}
+        },
+
+        {
+            name: "zIndex",
+            content: {type:TDType.onu,content:{
+                type: TDType.object,
+                content: [
+                    { name: "base", content: tdm.float32_onu },
+                    { name: "dead", content: tdm.float32_onu },
+                ]
+            }}
+        },
+
+        { name: "rotation_mode", content: tdm.uint8_onu },
+
+        { name: "onDestroyExplosion", content: tdm.string1_onu },
+
+        { name: "decal", content: tdm.any },
+        { name: "loot_table", content: tdm.any },
+
+        { name: "interactDestroy", content: tdm.boolean },
+        { name: "reflect_bullets", content: tdm.boolean },
+
+        { name: "spawnMode", content: tdm.any },
+
+        { name: "height", content: tdm.uint8_onu },
+
+        { name: "expanded_behavior", content: tdm.any },
+        { name: "stair_data", content: tdm.any },
+    ]
+}
 export interface ObstacleBehaviorDoor{
     type:0,
     open_delay?:number
@@ -12,12 +134,6 @@ export interface ObstacleBehaviorDoor{
 
     open_sound?:string
     close_sound?:string
-}
-export interface ObstacleDoorData{
-    open:-1|0|1
-    hitboxes:Record<number,Hitbox2D>
-    locked:boolean
-    opening:boolean
 }
 export interface ObstacleBehaviorPlaySound{
     type:1
@@ -48,7 +164,16 @@ export interface ObstacleBehaviorTransformInto{
     delay:number
     sound?:string
 }
+export interface ObstacleBehaviorPress{
+    type:4
+    pressed_frame?:FrameDef
+    press_sound?:string
+}
 export interface ObstacleDef extends Definition{
+    def_type?:GameObjectDefinitionType.obstacle
+    name?:string
+    tname?:string
+
     // Life
     health?:number
     imortal?:boolean
@@ -63,6 +188,7 @@ export interface ObstacleDef extends Definition{
         alpha:number
     }
     no_collision?:boolean
+    no_pathfinding_collision?:boolean
     passable_by_bullets?:boolean
     no_bullets_collision?:boolean
 
@@ -73,7 +199,9 @@ export interface ObstacleDef extends Definition{
         destroy?:number
     }
     world_shadow?:{
-        model:Model2D
+        disabled?:boolean
+        model?:Model2D
+        hitbox?:Hitbox2D
     }
 
     assets?:{
@@ -100,7 +228,7 @@ export interface ObstacleDef extends Definition{
     onDestroyExplosion?:string
 
     decal?:DecalInstanceDef
-    lootTable?:LootTable
+    loot_table?:LootTable
 
     interactDestroy?:boolean
     reflect_bullets?:boolean
@@ -108,22 +236,23 @@ export interface ObstacleDef extends Definition{
     spawnMode?:SpawnMode
 
     height?:0|1|2 // 0 = Invisible | 1 = Mayble | 2 = All
+    parallax?:number
 
-    expanded_behavior?:(
-        ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto
-    )
+    expanded_behavior?:(ObstacleBehaviorDoor|ObstacleBehaviorPlaySound|ObstacleBehaviorScalable|ObstacleBehaviorTransformInto|ObstacleBehaviorPress)
+
     stair_data?:{
         hitbox:Hitbox2D
     }[]
 }
 export const obstacles_factory={
-    gun_mount(id:string,gun:GunDef,settings:{
+    gun_mount(weapon:GunDef,settings:{
         o?:DeepPartial<ObstacleDef>
+        id?:string
     }){
-        return mergeDeep({idString:id},{
+        return mergeDeep({idString:settings.id??(weapon.idString+"_mount")},{
             health:65,
             height:1,
-            hitbox:new RectHitbox2D(v2(-0.7,-0.2),v2(0.7,0.2)),
+            hitbox:new RectHitbox2D(v2(-0.6,-0.15),v2(0.6,0.15)),
             scale:{
                 destroy:0.8
             },
@@ -135,9 +264,9 @@ export const obstacles_factory={
                     }
                 },
                 aditional_sprites:[{
-                    ...gun.rig_image,
-                    image:gun.assets?.world??gun.idString+"_world",
-                    tint:gun.assets?.world_tint,
+                    ...weapon.rig_image,
+                    image:weapon.assets?.world??weapon.idString+"_world",
+                    tint:weapon.assets?.world_tint,
                     hotspot:v2.half_one,
                     scale:2,
                     zIndex:1,
@@ -146,9 +275,9 @@ export const obstacles_factory={
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            lootTable:[{
+            loot_table:[{
                 weight:1,
-                item:gun.idString
+                item:weapon.idString
             }],
         },settings.o??{})
     },
@@ -160,7 +289,7 @@ export const obstacles_factory={
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
             health:190,
-            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.82),
+            hitbox:settings.hitbox??new CircleHitbox2D(v2(0,0),0.84),
             spawnHitbox:settings.spawn_hitbox,
             scale:{
                 destroy:0.7,
@@ -184,6 +313,7 @@ export const obstacles_factory={
             rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
             height:1,
+            parallax:PerspetiveSizes.medium,
         },settings.o??{})
     },
     bush(id:string,settings:{
@@ -214,8 +344,9 @@ export const obstacles_factory={
             rotation_mode:RotationMode.full,
             spawnMode:Spawn.grass,
             below:{
-                alpha:60
+                alpha:30
             },
+            parallax:PerspetiveSizes.medium,
             height:2
         },settings.o??{})
     },
@@ -229,8 +360,7 @@ export const obstacles_factory={
                 destroy:0.8,
             },
             rotation_mode:RotationMode.null,
-            lootTable:id,
-            height:1,
+            loot_table:id,
             assets:{
                 frame:{
                     dead:"box_dead",
@@ -240,7 +370,9 @@ export const obstacles_factory={
                     tint:0xda946d,
                 },
                 sounds:hit_sounds.tissue
-            }
+            },
+            height:1,
+            parallax:PerspetiveSizes.tiny,
         },settings.o??{})
     },
     crate(id:string,settings:{
@@ -253,8 +385,7 @@ export const obstacles_factory={
                 destroy:0.7,
             },
             rotation_mode:RotationMode.null,
-            lootTable:id,
-            height:1,
+            loot_table:id,
             assets:{
                 frame:{
                     dead:"wood_residue_1x1",
@@ -263,7 +394,9 @@ export const obstacles_factory={
                         scale:2.3,
                     }
                 }
-            }
+            },
+            parallax:PerspetiveSizes.medium,
+            height:1,
         },settings.o??{})
     },
     chest(id:string,settings:{
@@ -276,8 +409,48 @@ export const obstacles_factory={
                 destroy:0.75,
             },
             rotation_mode:RotationMode.limited,
-            lootTable:id,
+            loot_table:id,
             height:1,
+            parallax:PerspetiveSizes.medium,
+        },settings.o??{})
+    },
+    button(id:string,settings:{
+        o?:DeepPartial<ObstacleDef>,
+    }={}){
+        return mergeDeep({idString:id},{
+            health:1,
+            expanded_behavior:{
+                type:4,
+                press_sound:"button_press_1",
+                pressed_frame:{
+                    image:id+"_pressed"
+                }
+            },
+            imortal:true,
+            reflect_bullets:true,
+            no_pathfinding_collision:true,
+            hitbox:new RectHitbox2D(v2(0,-0.2),v2(0.17,0.2)),
+            scale:{
+                destroy:0.75,
+            },
+            assets:{
+                frame:{
+                    transform:{hotspot:v2(0,0.5)},
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0x484848,
+                    }
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0x484848
+                },
+                sounds:hit_sounds.heavy_metal
+            },
+            rotation_mode:RotationMode.limited,
+            loot_table:id,
+            height:1,
+            parallax:PerspetiveSizes.medium,
         },settings.o??{})
     },
     walls:{
@@ -314,10 +487,11 @@ export const obstacles_factory={
                     offset:0,
                     open_sound:sounds+"_open",
                     close_sound:sounds+"_close"
-                }
+                },
+                parallax:PerspetiveSizes.large,
             },settings.o??{})
         },
-        wall(id:string,frame:string,tint:number|(number[]),health:number=200,width:number=0.2466,height:number=0.1233,particle:string="metal_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
+        wall(id:string,frame:string,tint:number|(number[]),health:number=200,width:number=0.2466,height:number=0.1233,particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
             return mergeDeep({
                 health:health,
                 idString:id,
@@ -339,6 +513,7 @@ export const obstacles_factory={
                 },
                 rotation_mode:RotationMode.limited,
                 spawnMode:Spawn.grass,
+                parallax:PerspetiveSizes.large,
             },o)
         },
         column_1(id:string,tint:number|(number[]),particle:string="plank_particle",o:DeepPartial<ObstacleDef>={}):ObstacleDef{
@@ -364,6 +539,7 @@ export const obstacles_factory={
                 },
                 rotation_mode:RotationMode.null,
                 spawnMode:Spawn.grass,
+                parallax:PerspetiveSizes.large,
             },o)
         },
         group(id:string,tint:number|(number[]),settings:{
@@ -391,13 +567,12 @@ export const obstacles_factory={
         }
     }
 }
-export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x00ff0d,0x4e4f50]
-export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>){
+export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x42a64a,0x4e4f50]
+export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>,melees:Definitions<MeleeDef,{}>){
     obstacles.insert(
         {
             idString:"barrel",
             health:110,
-            height:1,
             hitbox:new CircleHitbox2D(v2(0,0),0.65),
             scale:{
                 destroy:0.5
@@ -419,19 +594,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             onDestroyExplosion:"barrel_explosion",
             reflect_bullets:true,
             spawnMode:Spawn.grass,
+            height:1,
+            parallax:PerspetiveSizes.medium,
         },
         obstacles_factory.rock("rock",{tint:0x4e4f50}),
-        obstacles_factory.rock("giant_rock",{
-            tint:0x4e4f50,
-            spawn_hitbox:new CircleHitbox2D(v2.zero,5),
-            o:{
-                scale:{
-                    min:2.9,
-                    max:3
-                },
-                health:400,
-            },
-        }),
         obstacles_factory.rock("river_rock",{
             spawn_hitbox:new CircleHitbox2D(v2.zero,1.2),
             o:{
@@ -445,18 +611,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             tint:0x353638,
         }),
         obstacles_factory.rock("golden_rock",{tint:0xffd92b,o:{
-            lootTable:"golden_rock",
+            loot_table:"golden_rock",
             health:200,
         }}),
         obstacles_factory.rock("platinum_rock",{tint:0x468edb,o:{
-            lootTable:"platinum_rock",
+            loot_table:"platinum_rock",
             health:230,
         }}),
         {
             idString:"sillo",
             health:1,
             imortal:true,
-            hitbox:new CircleHitbox2D(v2(0,0),3),
+            hitbox:new CircleHitbox2D(v2(0,0),3.05),
             onDestroyExplosion:"barrel_explosion",
             assets:{
                 particles:{
@@ -465,8 +631,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 },
                 sounds:hit_sounds.heavy_metal
             },
+            zIndex:{
+                base:zIndexes.Obstacles5
+            },
             rotation_mode:RotationMode.full,
             reflect_bullets:true,
+            parallax:PerspetiveSizes.xl,
             spawnMode:Spawn.grass,
         },
         {
@@ -479,10 +649,13 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 max:1.2,
                 destroy:0.75,
             },
+            world_shadow:{
+                hitbox:new CircleHitbox2D(v2(0,0),2),
+            },
             assets:{
                 particles:{},
                 frame:{
-                    biome_skins:["snow"],
+                    biome_skins:["snow","fall_1","fall_2"],
                 },
                 sounds:hit_sounds.tree
             },
@@ -491,20 +664,24 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2.2),
-                alpha:60
+                hitbox:new CircleHitbox2D(v2(0,0),2),
+                alpha:30
             },
+            parallax:PerspetiveSizes.large,
             spawnMode:Spawn.grass,
         },
         {
             idString:"pine_tree",
             health:180,
             hitbox:new CircleHitbox2D(v2(0,0),0.5),
-            spawnHitbox:new CircleHitbox2D(v2(0,0),1.8),
+            spawnHitbox:new CircleHitbox2D(v2(0,0),2),
             scale:{
                 min:1,
                 max:1.2,
                 destroy:0.75,
+            },
+            world_shadow:{
+                hitbox:new CircleHitbox2D(v2(0,0),2.8),
             },
             assets:{
                 particles:{
@@ -512,7 +689,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 },
                 frame:{
                     dead:"oak_tree_dead",
-                    biome_skins:["snow"],
+                    biome_skins:["snow","fall_1","fall_2"],
                 },
                 sounds:hit_sounds.tree
             },
@@ -521,16 +698,17 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.full,
             below:{
-                hitbox:new CircleHitbox2D(v2(0,0),2.5),
-                alpha:60
+                hitbox:new CircleHitbox2D(v2(0,0),2.8),
+                alpha:30
             },
+            parallax:PerspetiveSizes.giant,
             spawnMode:Spawn.grass,
         },
         obstacles_factory.bush("bush",{
             o:{
                 assets:{
                     frame:{
-                        biome_skins:["snow"],
+                        biome_skins:["snow","fall_1","fall_2"],
                     },
                 }
             }
@@ -545,7 +723,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 },
                 assets:{
                     frame:{
-                        biome_skins:["snow"],
+                        biome_skins:["snow","fall_1","fall_2"],
                         dead:"bush_dead",
                     },
                 }
@@ -553,7 +731,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
         }),
         obstacles_factory.box("box",{
             o:{
-                lootTable:"normal_loot",
+                loot_table:"normal_loot",
                 assets:{
                     frame:{
                         variations:2
@@ -614,16 +792,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 interactDestroy:true,
             }
         }),
-        obstacles_factory.crate("tundra_crate",{
+        obstacles_factory.crate("knife_crate",{
             o:{
                 assets:{
                     particles:{
                         particle:"plank_particle",
-                        tint:0x3e58c4,
+                        tint:0x414860
                     },
                     frame:{
                         dead_transform:{
-                            tint:0x3e58c4,
+                            tint:0x414860,
                         },
                         biome_skins:["snow"],
                     },
@@ -722,14 +900,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     def:"wood_pallet",
                     scale:1.6
                 },
-                lootTable:"ammo_crate",
+                loot_table:"ammo_crate",
             }
         }),
-
+        obstacles_factory.button("red_button"),
+        obstacles_factory.button("blue_button"),
+        obstacles_factory.button("green_button"),
+        obstacles_factory.button("yellow_button"),
         {
             idString:"airdrop_locked",
             imortal:true,
-            health:1,
             hitbox:new RectHitbox2D(v2(-0.88,-0.88),v2(0.88,0.88)),
             assets:{
                 particles:{
@@ -775,9 +955,10 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         delay:0
                     }
                 ]
-            }
+            },
+            health:1,
+            parallax:PerspetiveSizes.large,
         },
-
         obstacles_factory.chest("military_chest",{
             o:{
                 assets:{
@@ -821,7 +1002,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 imortal:true,
                 reflect_bullets:true,
                 assets:{
-                    sounds:hit_sounds.light_metal
+                    sounds:hit_sounds.heavy_metal
                 }
             }
         }),
@@ -831,6 +1012,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     sounds:hit_sounds.wood
                 }
             }
+        }),
+        ...obstacles_factory.walls.group("stone",WallColors,{
+            o:{
+                assets:{
+                    sounds:hit_sounds.rock,
+                    particles:{
+                        variations:2,
+                    }
+                },
+            },
+            particle:"rock_particle",
+            health:80,
         }),
         {
             idString:"iron_ladder_bottom",
@@ -854,7 +1047,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     dest_pos:v2(0.7,0)
                 }],
                 floor_walk:1,
-            }
+            },
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"iron_ladder_top",
@@ -881,7 +1075,8 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                     dest_pos:v2(-0.7,0)
                 }],
                 floor_walk:-1,
-            }
+            },
+            parallax:PerspetiveSizes.medium,
         },
         /*
         obstacles_factory.crate("platinum_crate",0x468edb,{
@@ -921,6 +1116,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             zIndex:{
                 base:zIndexes.Obstacles2
             },
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"couch_3x1",
@@ -938,6 +1134,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.limited,
             height:1,
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"large_drawer",
@@ -956,11 +1153,16 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                         tint:0x5f3d07,
                     }
                 },
+                particles:{
+                    particle:"plank_particle",
+                    tint:0x583b08
+                },
                 sounds:hit_sounds.wood
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"wood_crate",
+            loot_table:"drawer_loot",
             height:1,
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"small_stove",
@@ -990,6 +1192,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             onDestroyExplosion:"barrel_explosion",
             reflect_bullets:true,
             height:1,
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"sink",
@@ -1015,11 +1218,12 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             rotation_mode:RotationMode.limited,
             reflect_bullets:true,
             height:1,
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"large_kitchen_drawer",
             health:70,
-            hitbox:new RectHitbox2D(v2(-0.56,-1.12),v2(0.56,1.12)),
+            hitbox:new RectHitbox2D(v2(-0.56,-1.1),v2(0.56,1.1)),
             scale:{
                 destroy:0.9
             },
@@ -1041,8 +1245,9 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.wood,
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"wood_crate",
+            loot_table:"wood_crate",
             height:1,
+            parallax:PerspetiveSizes.medium,
         },
 
         {
@@ -1071,6 +1276,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 base:zIndexes.Obstacles3
             },
             rotation_mode:RotationMode.limited,
+            parallax:PerspetiveSizes.medium,
         },
         {
             idString:"wood_chair",
@@ -1094,6 +1300,7 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             },
             rotation_mode:RotationMode.limited,
             height:1,
+            parallax:PerspetiveSizes.small,
         },
         {
             idString:"small_bed",
@@ -1118,9 +1325,18 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
                 sounds:hit_sounds.tissue
             },
             rotation_mode:RotationMode.limited,
-            lootTable:"wood_crate",
+            loot_table:"wood_crate",
             height:1,
+            parallax:PerspetiveSizes.medium,
         },
-        obstacles_factory.gun_mount("pkp_mounth",guns.getFromString("pkp"),{}),
+
+        obstacles_factory.gun_mount(guns.getFromString("hp18"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("m870"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("model94"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("blr81"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("kar98k"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("rifle_cbc"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("vss"),{}),
+        obstacles_factory.gun_mount(guns.getFromString("awp"),{}),
     )
 }

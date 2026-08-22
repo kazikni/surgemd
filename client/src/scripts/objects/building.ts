@@ -1,8 +1,9 @@
-import { Hitbox2D, Container2DObject, Sprite2D, ColorM, Stream, Angle, v2, Orientation, Sound, NullHitbox2D, model2d, Color, Tween } from "common/engine/client.ts"
+import { Container2DObject, Sprite2D, Sound, Tween } from "common/engine/web.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Debug } from "../others/config.ts";
+import { Angle, Color, ColorM, Hitbox2D, NullHitbox2D, Orientation, Stream, v2, v2m } from "common/engine/core.ts";
 export class BuildingCeiling{
     parent:Building
     def:BuildingCeilingDef
@@ -124,29 +125,42 @@ export class Building extends StaticBody{
         this.physical_data.no_collision=this.def.no_collisions??false
         this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
 
-        for(const f of def.content.floor_image??[]){
+        for(const f of def.floor_image??[]){
             const sprite=new Sprite2D()
-
             sprite.hotspot=v2.half_one
             sprite._scale.set(2,2)
-            sprite.zIndex=zIndexes.BuildingsFloor2
-
+            sprite.zIndex=zIndexes.BuildingsFloor3
             sprite.set_frame({
                 image:f.image,
                 position:f.position?v2.add_with_orientation(this.position,f.position,this.physical_data.side as Orientation):this.position,
                 rotation:rot+(f.rotation??0),
                 layer:this.layer+(f.layer??0),
 
+                alpha:f.alpha,
                 scale:f.scale,
                 scale2:f.scale2,
                 zIndex:f.zIndex,
                 tint:f.tint,
             },this.game.resources)
+            if(f.create_shadow){
+                const shadow_sprite=new Sprite2D()
+                shadow_sprite.frame=sprite.frame
+                shadow_sprite.layer=sprite.layer
+                shadow_sprite.position=sprite.position
+                shadow_sprite.rotation=sprite.rotation
+                shadow_sprite.scale=sprite.scale
+                shadow_sprite.hotspot=sprite.hotspot
+                shadow_sprite.zIndex=sprite.zIndex
+                shadow_sprite.tint=this.game.world_shadow.color
+                v2m.add(shadow_sprite.position,shadow_sprite.position,this.game.world_shadow.offset)
+                this.game.cam2d.add_object(shadow_sprite)
+                this.objects.push(shadow_sprite)
+            }
 
             this.game.cam2d.add_object(sprite)
             this.objects.push(sprite)
         }
-        for(const c of def.content.ceiling??[]){
+        for(const c of def.ceiling??[]){
             const sprite=new Sprite2D()
 
             sprite.hotspot=v2.half_one
@@ -159,6 +173,7 @@ export class Building extends StaticBody{
                 rotation:rot+(c.frame.rotation??0),
                 layer:this.layer+(c.frame.layer??0),
 
+                alpha:c.frame.alpha,
                 scale:c.frame.scale,
                 scale2:c.frame.scale2,
                 zIndex:zIndexes.DeadCeilings,
@@ -174,10 +189,6 @@ export class Building extends StaticBody{
         if(this.def.assets?.sounds)this.set_hit_sounds_def(this.def.assets.sounds)
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,0,this.def.assets.particles)
 
-        if(Debug.hitbox){
-            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-            this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
-        }
     }
     override on_decode_net(stream: Stream, full: boolean): void {
         const [physical_data]=stream.read_boolean_group()
@@ -196,5 +207,10 @@ export class Building extends StaticBody{
             }
         },1)
         this.update_ceilings(ceilings)
+        if(Debug.hitbox&&full){
+            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.fill()
+        }
     }
 }

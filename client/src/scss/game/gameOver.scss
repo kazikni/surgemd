@@ -8,6 +8,7 @@
     height: 100%;
     transform-origin: 0 0;
     z-index: 10;
+    transition: opacity 1s linear;
     #gameover-status-container{
         @extend .span-text-base;
         display: flex;
@@ -19,10 +20,15 @@
         left: 50%;
         top: 50%;
         transform: translate(-50%,-50%);
-        .background-menu-blue{
+        .menu-panel-blue{
             display: flex;
             flex-direction: column;
             padding: 20px;
+            border-color:var(--ui-theme-primary);
+            box-shadow:
+                0 0 10px var(--ui-theme-primary),
+                0 0 30px rgba(0,0,0,.4);
+            background-color: color-mix(in srgb,var(--ui-theme-secondary) 90%, #0000);
         }
     }
     #gameover-main-message{
@@ -49,7 +55,7 @@
         bottom: 0px;
         width: 100%;
         height: fit-content;
-        background:linear-gradient(90deg, rgb(3, 21, 71),rgb(1, 4, 43));
+        background-color: color-mix(in srgb,var(--ui-theme-secondary) 90%, #0000);
         position: absolute;
         display: flex;
         flex-direction: row-reverse;

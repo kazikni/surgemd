@@ -1,7 +1,6 @@
 [
     {"type":4,"music":"history_music_1"},
-    {"type":3,"name_ln":"characters.nick","text_ln":"dialog.0"},
-    {"type":1},
+    {"type":3,"name_ln":"characters.nick","text_ln":"dialog.0"},{"type":1},
 
     {"type":3,"name_ln":"characters.nick_mom","text_ln":"dialog.1"},{"type":1},
     {"type":3,"name_ln":"characters.nick","text_ln":"dialog.2"},{"type":1},

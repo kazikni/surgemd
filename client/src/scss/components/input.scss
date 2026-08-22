@@ -3,43 +3,36 @@
     border-radius: 5px;
     font-family: "Russo-One";
     transition: 0.25s ease;
-    cursor: pointer;
+    cursor: text;
 
-    padding: 8px 18px;
-    font-size: 25px;
+    padding: 0.5vw 0.5vh;
+    font-size: 1.5vw;
 
-    border: 2px solid var(--item-border);
+    border: 0.13vw solid var(--item-border);
     background: var(--item-bg);
+    backdrop-filter: blur(7px);
     color: white;
     outline: none;
 
     &:active {
-        transform: translateY(1px);
+        transform: translateY(0.2vh);
     }
     &:focus {
         border-color: var(--item-bg-hover);
-        box-shadow: 0 0 15px var(--item-border-hover);
+        box-shadow: 0 0 2vw var(--item-border-hover);
+        outline: none !important;
     }
+    &:ot
     &::placeholder {
         text-align: left;
         color: rgba(255, 255, 255, 0.5);
-    }
-
-
-    @include main.medium_screen{
-        font-size: 18px;
-        padding: 6px 10px;
-    }
-    @include main.small_screen{
-        font-size: 10px;
-        padding: 4px 7px;
     }
 }
 .text-input-blue {
     @extend .text-input-base;
 
-    --item-bg: linear-gradient(135deg, #07aaee1a 0%, #07aaee33 100%);
-    --item-bg-hover: linear-gradient(135deg, #07aaee33 0%, #07aaee4d 100%);
+    --item-bg: linear-gradient(135deg, #07aaee30 0%, #07aaee44 100%);
+    --item-bg-hover: linear-gradient(135deg, #07aaee44 0%, #07aaee5f 100%);
 
     --item-border: #07aaeeaa;
     --item-border-hover: #07aaeeaa;
@@ -47,8 +40,8 @@
 .text-input-green {
     @extend .text-input-base;
 
-    --item-bg: linear-gradient(135deg, #00aa771a 0%, #00aa7733 100%);
-    --item-bg-hover: linear-gradient(135deg, #00aa7733 0%, #00aa774d 100%);
+    --item-bg: linear-gradient(135deg, #00aa7730 0%, #00aa7744 100%);
+    --item-bg-hover: linear-gradient(135deg, #00aa7744 0%, #00aa775f 100%);
 
     --item-border: #00aa77aa;
     --item-border-hover: #00aa77aa;
@@ -56,8 +49,8 @@
 .text-input-red {
     @extend .text-input-base;
 
-    --item-bg: linear-gradient(135deg, #b01c4166 0%, #75042b66 100%);
-    --item-bg-hover: linear-gradient(135deg, #bd2a4e66 0%, #a3124466 100%);
+    --item-bg: linear-gradient(135deg, #b01c4144 0%, #75042b66 100%);
+    --item-bg-hover: linear-gradient(135deg, #bd2a4e44 0%, #a3124466 100%);
 
     --item-border: #40041eaa;
     --item-border-hover: #40041eaa;

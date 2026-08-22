@@ -1,5 +1,5 @@
 import { type Game } from "../../others/game.ts";
-import { Stream, Numeric, PolarMovement, random, v2, Vec2 } from "common/engine/core.ts";
+import { Stream, Numeric, PolarMovement, random, v2, Vec2, Random1, astar_path2d } from "common/engine/core.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../../objects/human.ts";
 import { GameObjectDef } from "common/scripts/definitions/game_defs.ts";
@@ -72,10 +72,10 @@ export class SimpleBotAi extends BotAi{
         this.rot_speed=random.float(-0.1,0.1)
 
         this.emotes=[
-            human.game.definitions.emotes.getFromString("emote_sad"),
-            human.game.definitions.emotes.getFromString("emote_happy"),
-            human.game.definitions.emotes.getFromString("emote_md_logo"),
-            human.game.definitions.emotes.getFromString("emote_neutral"),
+            human.game.definitions.emotes.getFromString("sad"),
+            human.game.definitions.emotes.getFromString("happy"),
+            human.game.definitions.emotes.getFromString("logo_md"),
+            human.game.definitions.emotes.getFromString("neutral"),
             ...Object.values(human.game.definitions.ammos.value),
             ...Object.values(human.game.definitions.consumibles.value)
         ]
@@ -89,7 +89,7 @@ export class SimpleBotAi extends BotAi{
 
         this.human.input.interaction=this.human.seat?Math.random()<0.001:Math.random()<0.1
         this.human.input.using_item=Math.random()<0.2
-        this.human.input.using_item_down=this.human.input.using_item
+        if(this.human.input.using_item)this.human.input.using_item_down=true
 
         this.human.input.rotation=Numeric.lerp_rad(this.human.physical_data.rotation,this.human.physical_data.rotation+this.rot_speed,0.9)
         if(this.movement_time>0){

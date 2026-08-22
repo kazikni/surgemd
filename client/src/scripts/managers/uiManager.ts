@@ -1,36 +1,30 @@
 import { Game } from "../others/game.ts";
-import { DamageReason, InventoryItemType } from "common/scripts/definitions/utils.ts";
+import { DamageReason, GameItemType, GameObjectDefinitionType } from "common/scripts/definitions/utils.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
-import { FeedMessage, FeedMessageLeader, FeedMessageType } from "common/scripts/packets/feed_packet.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { GroupMemberState, MapHumanData, PrivateUpdate, SelfStateUpdate } from "common/scripts/packets/update_packet.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { Angle, ColorM, disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement, v2, v2m, Vec2 } from "common/engine/client.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { DefaultCrosshair } from "../defs/crosshair.ts";
+import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
-import { HealthModule } from "../uim/health.ts";
-import { BoostModule } from "../uim/boosts.ts";
-import { AItemsModule } from "../uim/aitems.ts";
-import { IItemsModule } from "../uim/iitems.ts";
-import { WeaponsModule } from "../uim/weapons.ts";
-import { HandInfoModule } from "../uim/hand_info.ts";
-import { ItemsModule } from "../uim/items.ts";
-import { ActionsModule } from "../uim/actions.ts";
-import { EquipmentModule } from "../uim/equipment.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, FeedMessageLeader, FeedMessageType, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { GroupMembersModule } from "../uim/groups.ts";
 import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
+import { BottomLeftModule } from "../uim/bottom_left_container.ts";
+import { InventoryModule } from "../uim/inventory.ts";
+import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
+import { Angle, ColorM, random, v2, v2m, Vec2 } from "common/engine/core.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -60,6 +54,7 @@ export class UiManager{
 
         feed:document.querySelector("#feed-container") as HTMLDivElement,
 
+        leader_container:document.querySelector("#leader-container") as HTMLSpanElement,
         leader_span:document.querySelector("#leader-text") as HTMLSpanElement,
 
         help_gui:document.querySelector("#help-gui") as HTMLDivElement,
@@ -82,8 +77,6 @@ export class UiManager{
             ]
         },
 
-        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
-
         tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
@@ -98,6 +91,11 @@ export class UiManager{
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
         btn_emotes:document.querySelector("#btn-mobile-emotes") as HTMLButtonElement,
     }
+
+    feed_enabled:boolean=false
+
+    leader_enabled:boolean=true
+    old_leader_enabled:boolean=true
     leader?:{
         id:number
         kills:number
@@ -122,28 +120,14 @@ export class UiManager{
             this.mobile_init()
         }
 
-        this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game)
+        this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game,false)
 
-        this.game.ui_manager.add(new HealthModule())
-        this.game.ui_manager.add(new BoostModule())
-        this.game.ui_manager.add(new AItemsModule())
-        this.game.ui_manager.add(new IItemsModule())
-        this.game.ui_manager.add(new WeaponsModule())
-        this.game.ui_manager.add(new HandInfoModule())
-        this.game.ui_manager.add(new ItemsModule())
-        this.game.ui_manager.add(new ActionsModule())
-        this.game.ui_manager.add(new EquipmentModule())
+        this.game.ui_manager.add(new BottomLeftModule())
+        this.game.ui_manager.add(new InventoryModule())
         this.game.ui_manager.add(new MinimapModule())
         this.game.ui_manager.add(new InformationBoxModule())
         this.game.ui_manager.add(new AdditionalInfoModule())
         this.game.ui_manager.add(new GroupMembersModule())
-
-        this.update_content_creators([
-            {
-                name:"Kazikni",
-                url:"https://youtube.com/@kazikni",
-            },
-        ])
     }
     clear(){
         this.content.feed.innerHTML=""
@@ -153,6 +137,7 @@ export class UiManager{
 
         this.players_name={}
         this.group_members={}
+        this.game.theme_colors={}
         this.map_humans.length=0
 
         HideElement(this.content.game_gui)
@@ -166,12 +151,24 @@ export class UiManager{
         this.hover_objects.clear()
     }
     update_theme(){
-        this.content.game_gui.style.setProperty("--ui-theme-primary",this.game.get_theme_color("primary"))
-        this.content.game_gui.style.setProperty("--ui-theme-secondary",this.game.get_theme_color("secondary"))
-        this.content.game_gui.style.setProperty("--ui-theme-tertiary",this.game.get_theme_color("tertiary"))
+        const primary=this.game.get_theme_color("primary")
+        const secondary=this.game.get_theme_color("secondary")
+        const tertiary=this.game.get_theme_color("tertiary")
+
+        this.content.game_gui.style.setProperty("--ui-theme-primary",primary)
+        this.content.game_gui.style.setProperty("--ui-theme-secondary",secondary)
+        this.content.game_gui.style.setProperty("--ui-theme-tertiary",tertiary)
         this.content.game_gui.style.setProperty("--ui-theme-positive",this.game.get_theme_color("positive"))
         this.content.game_gui.style.setProperty("--ui-theme-negative",this.game.get_theme_color("negative"))
         this.content.game_gui.style.setProperty("--ui-theme-special",this.game.get_theme_color("special"))
+
+        let color=ColorM.hex(secondary)
+        color=ColorM.mult_rgba(color,1,1,1,0.4)
+        this.content.game_gui.style.setProperty("--ui-panel-background",ColorM.rgba2hex(color))
+        this.content.game_gui.style.setProperty("--ui-panel-border",`0.2vh solid ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.get_variable("sv_ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
+
+        this.game.ui_manager.signal("update_theme",{})
     }
     _makeHint(texts: string[]) {
         const div = document.createElement("div")
@@ -211,12 +208,12 @@ export class UiManager{
             rotating=true
             this.game.aim_line.enabled=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==InventoryItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
+            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==GameItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
                 
             }*/
 
             if(this.game.active_entity?.current_weapon){
-                if(this.game.active_entity.current_weapon.item_type===InventoryItemType.gun){
+                if(this.game.active_entity.current_weapon.item_type===GameItemType.gun){
                     if(dist>0.9){
                         this.game.input.use_weapon=true
                     }else{
@@ -248,9 +245,9 @@ export class UiManager{
         active:false,
         up_enable:true,
         current_side:-1,
-        emotes:[] as (EmoteDef|PingDef)[],
+        emotes:[] as (EmoteDef|PingDef|undefined)[],
     }
-    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef)[]){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef|undefined)[]){
         ShowElement(this.content.emote_wheel.main)
         HideElement(this.mobile_content.btn_emotes)
         this.content.emote_wheel.main.style.left=`${position.x}px`
@@ -266,10 +263,10 @@ export class UiManager{
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.emotes.getFromString("emote_neutral"), //Right
-                    this.game.definitions.emotes.getFromString("emote_md_logo"), //Bottom
-                    this.game.definitions.emotes.getFromString("emote_sad"), //Left
-                    this.game.definitions.emotes.getFromString("emote_happy"), //Top
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_right")), //Right
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_bottom")), //Bottom
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_left")), //Left
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_top")), //Top
                 ]
             }
             
@@ -288,7 +285,7 @@ export class UiManager{
         if(selected_emote){
             if(this.game.definitions.ping.exist(selected_emote.idString)){
                 const pos=v2.dscale(this.emote_wheel.positon,this.game.cam2d.meter_size*this.game.cam2d.zoom)
-                v2m.add(pos,pos,this.game.cam2d.visual_position)
+                v2m.add(pos,pos,this.game.cam2d.position)
                 this.game.input.actions.push({
                     type:InputActionType.ping,
                     ping:selected_emote.idNumber!,
@@ -304,13 +301,11 @@ export class UiManager{
     }
     update_emote_wheel(){
         if (this.emote_wheel.active) {
-            const angle = Angle.rad2deg(
-                v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position)
-            )
+            const angle = Angle.rad2deg(v2.lookTo(this.emote_wheel.positon, this.game.input_manager.mouse_position))
             const distance = v2.distance(this.emote_wheel.positon, this.game.input_manager.mouse_position)
 
-            const chsrc = "/img/menu/gui/emote_wheel_hover_center.svg"
-            const shsrc = "/img/menu/gui/emote_wheel_hover.svg"
+            const chsrc = "/assets/img/menu/gui/emote_wheel_hover_center.svg"
+            const shsrc = "/assets/img/menu/gui/emote_wheel_hover.svg"
 
             const norm = (angle + 360) % 360
 
@@ -344,14 +339,17 @@ export class UiManager{
             }
         }
     }
-    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef)[]){
+    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef|undefined)[]){
         for(const ev in this.content.emote_wheel.emotes){
             const emote=emotes[ev]
             if(emote){
-                ShowElement(this.content.emote_wheel.emotes[ev])
-                this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
-                this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame(emote.idString).src
-                this.content.emote_wheel.emotes[ev].draggable=false
+                const frame=this.game.resources.get_frame("emote_"+emote.idString)
+                if(frame){
+                    ShowElement(this.content.emote_wheel.emotes[ev])
+                    this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
+                    this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).url!
+                    this.content.emote_wheel.emotes[ev].draggable=false
+                }
             }else{
                 HideElement(this.content.emote_wheel.emotes[ev])
             }
@@ -391,8 +389,8 @@ export class UiManager{
     players_name:Record<number,{name:string,badge:string,full:string}>={}
     proccess_joinned_packet(jp:JoinnedPacket){
         for(const p of jp.players){
-            const badge_frame=p.badge!==undefined?this.game.definitions.badges.getFromNumber(p.badge).idString:""
-            const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
+            const badge_frame=this.game.resources.get_frame(p.badge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(p.badge).idString:"")
+            const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
         if(jp.leader){
@@ -403,6 +401,17 @@ export class UiManager{
         }
     }
     proccess_general_update(up:GeneralUpdate){
+        this.feed_enabled=up.feed_enabled
+        this.leader_enabled=up.leader_enabled
+        if(this.leader_enabled!==this.old_leader_enabled){
+            this.old_leader_enabled=this.leader_enabled
+            if(this.leader_enabled)ShowElement(this.content.leader_container)
+            else HideElement(this.content.leader_container)
+        }
+        for(const msg of up.feed){
+            this.add_feed_message(msg)
+        }
+        this.game.ui_manager.signal("general_update",up)
     }
     state:HelpGuiState={
         driving:false,
@@ -438,107 +447,148 @@ export class UiManager{
         this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
     }
     feed_queue: HTMLDivElement[] = []
-    max_feed_messages = 7
+    max_feed_messages = 13
     add_feed_message(msg:FeedMessage){
         const elem=document.createElement("div") as HTMLDivElement
         elem.classList.add("feed-message")
-        this.content.feed.appendChild(elem)
-        this.feed_queue.push(elem)
-        let block_message:boolean=false
-        while (this.feed_queue.length > this.max_feed_messages) {
-            const old = this.feed_queue.shift()
-            if (old) {
-                old.remove()
-            }
-        }
+        let block_message:boolean=!this.feed_enabled
         switch(msg.type){
             // deno-lint-ignore no-fallthrough
             case FeedMessageType.set_name:
                 block_message=true
             case FeedMessageType.join:{
-                const badge_frame=msg.playerBadge!==undefined?this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:""
-                const badge_html=badge_frame===""?"":`<img class="badge-icon" src="/img/game/main/loadout/badges/${badge_frame}.svg">`
+                const badge_frame=this.game.resources.get_frame(msg.playerBadge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:"")
+                const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
                 elem.innerHTML=this.game.language.get("feed.join",{"player":this.players_name[msg.playerId].full})
                 break
             }
             case FeedMessageType.kill:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
+                let text=""
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("feed.kill.abstinence",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Explosion:
                     case DamageReason.Human:{
                         if(!msg.killer)break
-                        const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("feed.kill.player",{
+                        const dsd=this.game.definitions.game_objects.valueNumber[msg.used??0] as DamageSourceDef
+                        text=this.game.language.get("feed.kill.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get("items."+dsd.idString),
+                            source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
-                        if(msg.victimId===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-negative")
-                        }else if(msg.killer.id===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-good")
-                            this.game.ui_manager.signal("info-kill",{msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
-                        }
-
                         if(this.leader&&msg.killer.id===this.leader.id){
                             this.leader.kills=msg.killer.kills
                             this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.killer.id].name}`
                         }
                         break
                     }
+                    case DamageReason.VehicleCollision:{
+                        const dsd=this.game.definitions.vehicles.getFromNumberSafe(msg.used??0)
+                        const sn=dsd?this.game.language.get("vehicles."+dsd.idString):""
+                        if(msg.killer){
+                            text=this.game.language.get("feed.kill.vehicle_collision_direct",{
+                                player1:this.players_name[msg.killer.id].full,
+                                player2:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
+                        }else{
+                            text=this.game.language.get("feed.kill.vehicle_collision_indirect",{
+                                player:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
+                        }
+                        break
+                    }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("feed.kill.deadzone",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("feed.kill.side-effect",{player:this.players_name[msg.victimId].full})
+                        if(msg.killer){
+                            text=this.game.language.get("feed.kill.side-effect",{
+                                player1:this.players_name[msg.killer.id].full,
+                                player2:this.players_name[msg.victimId].full,
+                            })
+                        }else{
+                            text=this.game.language.get("feed.death.side-effect",{player:this.players_name[msg.victimId].full})
+                        }
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("feed.kill.disconnect",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("feed.kill.bleend",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.death.bleend",{player:this.players_name[msg.victimId].full})
                         break
+                }
+
+                elem.innerHTML=text
+                if(msg.victimId===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-negative")
+                }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-good")
+                    this.game.ui_manager.signal("info-kill",{player_id:msg.victimId,msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                 }
                 break
             }
             case FeedMessageType.down:{
                 if(!this.players_name[msg.victimId]||(msg.killer&&!this.players_name[msg.killer.id]))break
+                let text=""
                 switch(msg.damage_reason){
                     case DamageReason.Abstinence:
-                        elem.innerHTML=this.game.language.get("feed.down.abstinence",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.abstinence",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Human:
                     case DamageReason.Explosion:{
                         if(!msg.killer)break
-                        const dsd=this.game.definitions.game_items.valueNumber[msg.killer.used]
-                        elem.innerHTML=this.game.language.get("feed.down.player",{
+                        const dsd=this.game.definitions.game_objects.valueNumber[msg.used??0] as DamageSourceDef
+                        text=this.game.language.get("feed.down.player",{
                             player1:this.players_name[msg.killer.id].full,
                             player2:this.players_name[msg.victimId].full,
-                            source:this.game.language.get("items."+dsd.idString)
+                            source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
-                        if(msg.victimId===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-negative")
-                        }else if(msg.killer.id===this.game.active_entity?.id){
-                            elem.classList.add("feed-message-good")
+                        break
+                    }
+                    case DamageReason.VehicleCollision:{
+                        const dsd=this.game.definitions.vehicles.getFromNumberSafe(msg.used??0)
+                        const sn=dsd?this.game.language.get("vehicles."+dsd.idString):""
+                        if(msg.killer){
+                            text=this.game.language.get("feed.down.vehicle_collision_direct",{
+                                player1:this.players_name[msg.killer.id].full,
+                                player2:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
+                        }else{
+                            text=this.game.language.get("feed.down.vehicle_collision_indirect",{
+                                player:this.players_name[msg.victimId].full,
+                                source:sn,
+                            })
                         }
                         break
                     }
                     case DamageReason.DeadZone:
-                        elem.innerHTML=this.game.language.get("feed.down.deadzone",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.deadzone",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.SideEffect:
-                        elem.innerHTML=this.game.language.get("feed.down.side-effect",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.side-effect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Disconnect:
-                        elem.innerHTML=this.game.language.get("feed.down.disconnect",{player:this.players_name[msg.victimId].full})
+                        text=this.game.language.get("feed.down.disconnect",{player:this.players_name[msg.victimId].full})
                         break
                     case DamageReason.Bleend:
-                        elem.innerHTML=this.game.language.get("feed.down.bleend",{})
+                        text=this.game.language.get("feed.down.bleend",{})
                         break
+                    case DamageReason.VehicleJump:
+                        text=this.game.language.get("feed.down.vehicle_jump",{player:this.players_name[msg.victimId].full})
+                        break
+                }
+                elem.innerHTML=text
+                if(msg.victimId===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-negative")
+                }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
+                    elem.classList.add("feed-message-good")
+                    this.game.ui_manager.signal("info-down",{player_id:msg.victimId,msg:`You Knockout ${this.game.ui.players_name[msg.victimId].name}`})
                 }
                 break
             }
@@ -563,22 +613,33 @@ export class UiManager{
                 break
             }
         }
-        this.game.add_timeout(()=>{
-            elem.remove()
-        },4)
-        if(!block_message)this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
+        if(!block_message){
+            this.content.feed.appendChild(elem)
+            this.feed_queue.push(elem)
+            while (this.feed_queue.length > this.max_feed_messages) {
+                const old = this.feed_queue.shift()
+                if (old) {
+                    old.remove()
+                }
+            }
+            this.game.add_timeout(()=>{
+                elem.remove()
+            },4)
+            this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
+        }
     }
     crosshair=false
     crosshair_manager:CrosshairManager=new CrosshairManager(document.body)
     enableCrosshair() {
-        //CrosshairManager.setCursor(this.content.gameD,DynamicCrosshair)
-        this.crosshair_manager.set(new StaticCrosshair(document.body,DefaultCrosshair))
-        //this.crosshair_manager.set(new AnimatedCrosshair(document.body,DefaultCrosshair))
+        const v=new StaticCrosshair(document.body,random.choose([DefaultCrosshair,AimCrosshair]))
+        v.rainbow=Math.random()<=0.01
+        this.crosshair_manager.set(v)
         this.crosshair=true
     }
     disableCrosshair() {
         document.body.style.cursor = this.game.cursors.default
         this.crosshair=false
+        this.crosshair_manager.clear("")
     }
     update_crosshair(dt:number){
         if(!this.crosshair)return
@@ -586,12 +647,10 @@ export class UiManager{
     }
     proccess_private(priv:PrivateUpdate){
         this.game.ui.map_humans=priv.map_humans
-        if(priv.self_state){
-            this.update_self_state(priv.self_state)
-            this.game.device.update_self_state(priv.self_state)
-        }
     }
     update_self_state(state:SelfStateUpdate){
+        this.game.device.update_self_state(state)
+
         if (state.dirty.inventory.aitems) {
             this.game.inventory.aitems = {}
             for (const a of Object.keys(state.inventory.aitems)) {
@@ -602,7 +661,7 @@ export class UiManager{
         if(state.dirty.inventory.iitems) {
             this.game.inventory.iitems = state.inventory.iitems
         }
-        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope),state.force_default_scope)
+        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope))
         if(state.dirty.inventory.weapons){
             for(const idx in state.inventory.weapons){
                 this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
@@ -716,34 +775,52 @@ export class UiManager{
                 break
             }
             case GameOverScreenType.Restart:
-                HideElement(this.content.game_gui)
-                this.content.restart_gameOver.classList.remove("hidden")
-                await this.game.input_manager.wait_for_action("reload")
-                this.game.finish_game_over()
+                if(!g.status.win){
+                    HideElement(this.content.game_gui)
+                    this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                        bus:"ui"
+                    })
+                    this.content.restart_gameOver.classList.remove("hidden")
+                    this.game.scope_zoom*=0.75
+                    this.game.zoom_speed*=0.05
+                    await this.game.input_manager.wait_for_action("reload")
+                }
+                    this.game.finish_game_over(g.status.win)
                 break
             case GameOverScreenType.Light:
                 break
         }
     }
     normal_game_over(g:GameOverPacket){
-        ShowElement(this.content.normal_gameOver)
         HideElement(this.content.game_gui)
         this.disableCrosshair()
         disableContextMenuPrevent()
         if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
+            ShowElement(this.content.normal_gameOver)
+            this.content.normal_gameOver.style.opacity="1"
         }else{
             this.game.ambient.last_music_pos=this.game.ambient.music.offset
             this.game.ambient.music.set(null)
+                this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                    bus:"ui"
+                })
             if(!this.players_name[g.status.eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
+            this.game.scope_zoom*=0.75
+            this.game.zoom_speed*=0.05
+            this.content.normal_gameOver.style.opacity="0"
+            this.game.add_timeout(()=>{
+                ShowElement(this.content.normal_gameOver)
+                self.requestAnimationFrame(()=>this.content.normal_gameOver.style.opacity="1")
+            },3)
         }
         let content=""
         for(const status of g.status.status){
             content+=`
-<div class="background-menu-blue">
+<div class="menu-panel-blue">
     <h1>${this.players_name[status.id].full}</h1>
     <span>Kills: ${status.kills}</span>
     <span>Damage: ${status.damage}</span>
@@ -770,12 +847,18 @@ export class UiManager{
         if(this.content.tooltip.classList.contains("tooltip-visible")){
             this.content.tooltip.style.left=`${this.game.input_manager.real_mouse_position.x-10}px`
             this.content.tooltip.style.top=`${this.game.input_manager.real_mouse_position.y-10}px`
+            if(this.tooltip_element&&(this.tooltip_element.style.visibility==="hidden"||!this.tooltip_element.isConnected)){
+                this.tooltip_hide()
+            }
         }
         this.update_emote_wheel()
         this.update_crosshair(dt)
     }
     current_interaction?: GameObject
     update_active_player(player: Human,dt:number=0) {
+        if(player.dead){
+            HideElement(this.content.game_gui)
+        }
         const old_inter=this.current_interaction
 
         this.current_interaction = undefined
@@ -836,7 +919,7 @@ export class UiManager{
         if(!this.current_interaction&&old_inter){
             this.game.ui_manager.signal("interaction_hint", "")
         }
-        this.state.gun=player.current_weapon?.item_type===InventoryItemType.gun
+        this.state.gun=player.current_weapon?.item_type===GameItemType.gun
         this.update_hint()
 
         if(player.backpack?.idString!==this.game.inventory.backpack.idString){
@@ -845,18 +928,6 @@ export class UiManager{
         }
         
         this.game.ui_manager.signal("active_player_update",{dt,player})
-    }
-    update_content_creators(content_creators:{name:string,url:string}[]){
-        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
-        for(const creator of content_creators){
-            this.content.content_creators.innerHTML+=`
-<a href="${creator.url}" target="_blank">
-    <div class="background-menu content-creator">
-        <img id="youtube-logo" src="./img/menu/thirdpartys/youtube-icon.svg" alt="YouTube icon" width="36" height="25">
-        <span>${creator.name}</span>
-    </div>
-</a>`
-        }
     }
 
     items: {id:number,count:number}[] = []
@@ -874,7 +945,7 @@ export class UiManager{
 
     tooltip_show(title:string|null|undefined,description:string,element?:HTMLElement){
         if(!title)return
-        this.content.tooltip_title.innerText=this.game.language.get(title)
+        this.content.tooltip_title.innerText=title
         this.content.tooltip_description.innerHTML=description
         this.tooltip_element=element
         this.content.tooltip.classList.add("tooltip-visible")

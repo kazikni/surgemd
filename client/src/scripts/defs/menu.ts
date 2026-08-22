@@ -1,13 +1,18 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { BrowserFileManager, formatToHtml, GameSave, isMobile } from "common/engine/client.ts";
+import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
-import { sandbox_version } from "../others/config.ts";
+import { Debug, sandbox_version, socials } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
-import { ModeConfig } from "common/scripts/config/config.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+import { build_setting_input, SettingDef, SettingOption } from "./settings.ts";
+import { GamePlayOption } from "common/scripts/config/config.ts";
+import { PlayArgs } from "../others/constants.ts";
+import { GameConstants } from "common/scripts/others/constants.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -48,45 +53,6 @@ export interface MenuTab{
     tabs:Record<string,HTMLElement>
     current_tab:string
 }
-type SettingOption = {
-  name: string
-  value: string | number
-}
-
-type SettingDef =
-    {
-        type:"input"
-        name:string
-        var:string
-        placeholder?:string
-    }|{
-        var: string
-        name: string
-        type: "choose"
-        options: SettingOption[]
-        on_set?:(val:number|string)=>void
-    }|{
-        var: string
-        name: string
-        type: "toggle"
-        on_set?:(val:boolean)=>void
-    }|{
-        var: string
-        name: string
-        type: "range"
-        min: number
-        max: number
-        step?: number
-        on_set?:(val:number)=>void
-    }|{
-        type:"h1"|"h2"|"h3"|"h4"|"h5"
-        name:string
-    }|{
-        var: string
-        name: string
-        type: "color"
-        on_set?:(val:string)=>void
-    }
 export type ModeSettingsPopupDef={
     title?:string
     inputs:SettingDef[]
@@ -133,124 +99,6 @@ export function game_popup_builder(def:PopupBuilderDef){
         }
     }
 }
-function build_setting_input(def: SettingDef,translation:TranslationManager,onChange:(val:any)=>void,initial?:any): HTMLElement {
-    if(def.type==="h1"||def.type==="h2"||def.type==="h3"||def.type==="h4"||def.type==="h5"){
-        const header=document.createElement(def.type)
-        header.className="span-text-base"
-        header.textContent=translation.get(def.name)
-        return header
-    }
-
-    const row=document.createElement("div")
-    row.className="settings-row"
-
-    const label=document.createElement("span")
-    label.className="span-text"
-    label.textContent=translation.get(def.name)
-    row.appendChild(label)
-
-    let el:HTMLElement
-
-    switch(def.type){
-        case "input":{
-            const i=document.createElement("input")
-            i.className="text-input-green"
-            if(def.placeholder)i.placeholder=def.placeholder
-            if(initial!==undefined)i.value=initial
-            i.onchange=()=>onChange(i.value)
-            el=i
-            break
-        }
-        case "toggle":{
-            const c=document.createElement("input")
-            c.type="checkbox"
-            c.className="checkbox-blue"
-            if(initial!==undefined){
-                c.checked=!!initial
-                def.on_set?.(c.checked)
-            }
-            c.onchange=()=>{
-                onChange(c.checked)
-                def.on_set?.(c.checked)
-            }
-            el=c
-            break
-        }
-        case "choose":{
-            const s=document.createElement("select")
-            s.className="select-blue"
-
-            for(const opt of def.options){
-                const o=document.createElement("option")
-                o.textContent=opt.name
-                o.value=String(opt.value)
-                def.on_set?.(opt.value)
-                s.appendChild(o)
-            }
-
-            if(initial!==undefined){
-                s.value=String(initial)
-                def.on_set?.(initial)
-            }
-
-            s.onchange=()=>onChange(s.value)
-
-            el=s
-            break
-        }
-        case "range":{
-            const slider=document.createElement("input")
-            slider.type="range"
-            slider.className="slider-blue"
-            slider.min=String(def.min)
-            slider.max=String(def.max)
-            slider.step=String(def.step??1)
-
-            if(initial!==undefined){
-                slider.value=String(initial)
-                def.on_set?.(initial)
-            }
-
-            const valueLabel=document.createElement("span")
-            valueLabel.className="span-text"
-            valueLabel.textContent=slider.value
-
-            slider.oninput=()=>{
-                const val=Number(slider.value)
-                valueLabel.textContent=slider.value
-                def.on_set?.(val)
-                onChange(val)
-            }
-
-            const wrap=document.createElement("div")
-            wrap.append(slider,valueLabel)
-
-            el=wrap
-            break
-        }
-        case "color":{
-            const input=document.createElement("input")
-            input.type="color"
-            input.className="input-color"
-
-            if(initial!==undefined){
-                input.value=initial
-                def.on_set?.(initial)
-            }
-
-            input.oninput=()=>{
-                onChange(input.value)
-                def.on_set?.(input.value)
-            }
-
-            el=input
-            break
-        }
-    }
-
-    row.appendChild(el)
-    return row
-}
 
 export function game_mode_settings_manager_popup(settings:any,translation:TranslationManager,def?:ModeSettingsPopupDef){
     return (ctx:GamePopupCTX)=>{
@@ -274,20 +122,22 @@ export function game_mode_settings_manager_popup(settings:any,translation:Transl
             const row=build_setting_input(
                 input,
                 translation,
-                (val)=>{
-                    if(val){
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        setDeep(settings,input.var,val)
-                    }else{
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        deleteDeep(settings,input.var)
-                    }
-                },
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                input.var?getDeep(settings,input.var):""
+                input.var?getDeep(settings,input.var):"",
+                {
+                    on_change(val:any){
+                        if(val){
+                            // deno-lint-ignore ban-ts-comment
+                            //@ts-ignore
+                            setDeep(settings,input.var,val)
+                        }else{
+                            // deno-lint-ignore ban-ts-comment
+                            //@ts-ignore
+                            deleteDeep(settings,input.var)
+                        }
+                    },
+                },
             )
 
             container.appendChild(row)
@@ -323,23 +173,41 @@ export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupF
         }
     }
 }
-export function make_menu_settings(save: GameSave, defs: (SettingDef|undefined)[],translation:TranslationManager){
+export function input_popup(msg:string,placeholder="message",enter_msg="Enter",limit?:number): PopupFunction {
+    return (popup) => {
+        popup.parent.innerHTML=`
+<p class="span-text">${msg}</p>
+<div style="display:flex;flex-direction:column;gap:3px">
+    <input id="popup-input" class="text-input-green" placeholder="${placeholder}"></input>
+    <button id="popup-enter" class="btn-green">${enter_msg}</button>
+</div>`
+        const input = popup.parent.querySelector("#popup-input") as HTMLInputElement
+        const enter = popup.parent.querySelector("#popup-enter") as HTMLButtonElement
+        input.onkeydown=(e)=>{
+            if(e.keyCode===13)popup.resolve(input.value)
+        }
+        enter.onclick = () => {
+            popup.resolve(input.value)
+        }
+    }
+}
+export function make_menu_settings(save: GameSave,name:string, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
-        parent.innerHTML=""
+        parent.innerHTML=`<h1 class="span-text-base">${translation.get(name)}</h1>`
         for(const def of defs){
             if(!def)continue
             parent.appendChild(
-                build_setting_input(
-                    def,
-                    translation,
-                    (val)=>{
-                        // deno-lint-ignore ban-ts-comment
-                        //@ts-ignore
-                        save.set_variable(def.var,val)
-                    },
+                build_setting_input(def,translation,
                     // deno-lint-ignore ban-ts-comment
                     //@ts-ignore
                     def.var?save.get_variable(def.var):"",
+                    {
+                        on_change(val:any){
+                            // deno-lint-ignore ban-ts-comment
+                            //@ts-ignore
+                            save.set_variable(def.var,val)
+                        },
+                    },
                 )
             )
         }
@@ -356,7 +224,7 @@ export function make_menu_campaign(campaign:Record<string,any>){
             for(const l in charpter.levels){
                 const level=charpter.levels[l]
                 const level_div = document.createElement("div")
-                level_div.className="background-menu-ss background-menu-blue"
+                level_div.className="menu-panel-ss menu-panel-blue"
                 level_div.innerHTML = `
 <h1>${level.meta.name}</h1>
 <p>${level.meta.description}</p>
@@ -371,28 +239,242 @@ export function make_menu_campaign(campaign:Record<string,any>){
         }
     }
 }
-export function make_menu_modes(modes:ModeConfig[]){
+export function make_menu_play_options(options:GamePlayOption[]){
     return (parent:HTMLDivElement,manager:MenuManager)=>{
-        for(const m in modes){
-            const mode=modes[m]
+        let m=0
+        for(const p of options){
             const mb=document.createElement("div")
-            mb.className="background-menu-ss background-menu-blue"
-            mb.innerHTML=`
-<h1>${mode.mode.name==undefined?mode.mode.mode:manager.translation.get(mode.mode.name)}</h1>`
-            for(const t in mode.group_size){
+            mb.className="menu-panel-ss menu-panel-blue"
+            mb.innerHTML=`<h1>${manager.translation.get(p.tname??"",{},p.name)}</h1>`
+            for(const mode of p.content??[]){
                 const btn=document.createElement("button")
                 btn.className="btn-green"
-                btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+mode.group_size[t])})
+                btn.innerText=manager.translation.get("menu.play.play-btn",{group_size:manager.translation.get("modes.group_size."+(mode.group_size??1))})
+                const play_a:PlayArgs={type:"online",mode:m}
                 btn.onclick=()=>{
-                    if(manager.play_callback)manager.play_callback({type:"online",mode:parseInt(m),group_size:parseInt(t)})
+                    if(manager.play_callback)manager.play_callback(play_a)
                 }
                 mb.appendChild(btn)
+                parent.appendChild(mb)
+                m++
             }
-            parent.appendChild(mb)
         }
     }
 }
+export function make_emotes_settings(save: GameSave,resources:ResourcesManager,definitions:GameDefinition,emotes: EmoteDef[],translation: TranslationManager){
+    return (parent: HTMLDivElement)=>{
+        let selected_elem: HTMLElement|null=null
+        let selected_elem_out: HTMLElement|null=null
+        const vv:Record<string, HTMLDivElement>={}
 
+        parent.innerHTML=`  
+<span class="span-text">Active Emotes</span>
+<div class="loadout-icons-group active-emotes"></div>
+<span class="span-text">Emotes Inventory</span>
+<div class="loadout-icons-group emotes-inventory"></div>
+        `
+
+        const emotes_g=parent.querySelector(".emotes-inventory") as HTMLDivElement
+        function emote_click(e:MouseEvent){
+            if(!selected_elem_out)return
+            const t=e.currentTarget as HTMLDivElement
+            const id=t.dataset.idString as string
+
+            if(selected_elem)selected_elem.classList.remove("selected")
+            selected_elem=t
+            selected_elem.classList.add("selected")
+
+            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,id)
+            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+id).url!
+        }
+        for(const e of emotes){
+            const frame=resources.get_frame("emote_"+e.idString)
+            const container=document.createElement("div")
+            container.className="litem"
+            if(frame){
+                container.innerHTML=`
+<span class="name">${translation.get("emotes."+e.idString)}</span>
+<img class="icon" src="${frame.src}"/>
+`
+            }else{
+                container.innerHTML=`
+<span class="name">${translation.get("emotes."+e.idString)}</span>
+`
+            }
+            container.dataset.idString=e.idString
+            container.onclick=emote_click
+            emotes_g.appendChild(container)
+            vv[e.idString]=container
+        }
+
+        const active_g=parent.querySelector(".active-emotes") as HTMLDivElement
+        const slots=[
+            "top",
+            "right",
+            "bottom",
+            "left",
+            "victory",
+            "death"
+        ]
+
+        for(const slot of slots){
+            const cur_emote=definitions.emotes.getFromStringSafe(save.get_variable("sv_loadout_emote_"+slot))
+            const container=document.createElement("div")
+            container.className="litem emote-slot-"+slot
+            container.dataset.slot=slot
+            const name=translation.get("loadout.emotes."+slot)
+            if(cur_emote){
+                container.innerHTML=`
+<span class="name">${name}</span>
+<img class="icon" src="${resources.get_frame("emote_"+cur_emote.idString).url}"/>
+`
+            }else{
+                container.innerHTML=`
+<span class="name">${name}</span>
+<img class="icon"/>
+`
+            }
+
+            container.onclick=(e:MouseEvent)=>{
+                const t=e.currentTarget as HTMLDivElement
+                if(selected_elem_out===t){
+                    selected_elem_out=null
+                    t.classList.remove("selected")
+                    if(selected_elem)selected_elem.classList.remove("selected")
+                }else{
+                    if(selected_elem_out)selected_elem_out.classList.remove("selected")
+                    selected_elem_out=t
+                    t.classList.add("selected")
+
+                    const sv=save.get_variable("sv_loadout_emote_"+container.dataset.slot!)
+                    if(selected_elem)selected_elem.classList.remove("selected")
+                    selected_elem=vv[sv]
+                    selected_elem.classList.add("selected")
+                }
+            }
+
+            active_g.appendChild(container)
+        }
+    }
+}
+export function make_badges_settings(save: GameSave,resources: ResourcesManager,badges:BadgeDef[],translation: TranslationManager) {
+    return (parent: HTMLDivElement) => {
+        let selected: string=save.get_variable("sv_loadout_badge")
+
+        parent.innerHTML = `
+<div class="loadout-icons-group items">
+    <div class="litem" idString=""></div>
+</div>
+`
+
+        const null_elem=parent.querySelector(".litem") as HTMLDivElement
+        null_elem.onclick=(e)=>{
+            if(selectedElem)selectedElem.classList.remove("selected")
+            selected=null_elem.dataset.idString!
+            selectedElem=null_elem
+            null_elem.classList.add("selected")
+            save.set_variable("sv_loadout_badge",selected)
+        }
+        let selectedElem: HTMLDivElement|null
+        if(!selected){
+            selectedElem=null_elem
+            selectedElem.classList.add("selected")
+        }
+        const inventory = parent.querySelector(".items") as HTMLDivElement
+        for (const b of badges) {
+            const div = document.createElement("div")
+            div.className = "litem"
+            div.dataset.idString = b.idString
+            const icon=resources.get_frame("badge_"+b.idString)?.url
+            div.innerHTML = `
+<span class="name">${translation.get("badges."+b.idString)}</span>
+<img class="icon" src="${icon}">`
+
+            if(b.idString===selected){
+                selectedElem=div
+                div.classList.add("selected")
+            }
+            div.onclick = () => {
+                if(selectedElem)selectedElem.classList.remove("selected")
+                selected=div.dataset.idString!
+                selectedElem=div
+                div.classList.add("selected")
+                save.set_variable("sv_loadout_badge",selected)
+            }
+
+            inventory.appendChild(div)
+        }
+    }
+}
+export function select_loadout_item(save: GameSave,resources: ResourcesManager,items: string[],slots:string[],icon_placeholder:string,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
+    return (parent: HTMLDivElement) => {
+        let selectedElem: HTMLDivElement | null = null
+        let selectedSlot: HTMLDivElement | null = null
+
+        parent.innerHTML = `
+<span class="span-text">Active</span>
+<div class="loadout-icons-group active-items"></div>
+<span class="span-text">Inventory</span>
+<div class="loadout-icons-group items"></div>
+`
+        const inventory = parent.querySelector(".items") as HTMLDivElement
+        const vv:Record<string,HTMLDivElement>={}
+        for (const id of items) {
+            const div = document.createElement("div")
+            div.className = "litem"
+            div.dataset.idString = id
+            const icon=icon_placeholder+id+".svg"
+            div.innerHTML = `
+<span class="name">${translation.get(translation_item_begin + id)}</span>
+<img class="icon" src="${icon}">
+`
+            div.onclick = () => {
+                if(!selectedSlot)return
+
+                const img = selectedSlot.querySelector(".icon") as HTMLImageElement
+                img.src = icon_placeholder+id+".svg"
+
+                if(selectedElem)selectedElem.classList.remove("selected")
+                selectedElem=div
+                div.classList.add("selected")
+                save.set_variable(variable+selectedSlot.dataset.slot,id)
+            }
+
+            inventory.appendChild(div)
+            vv[id]=div
+        }
+        const active = parent.querySelector(".active-items") as HTMLDivElement
+
+        for (const slot of slots) {
+            const value = save.get_variable(variable + slot)
+            const div = document.createElement("div")
+            div.className = "litem"
+            div.dataset.slot = slot
+            const icon = (value!=="")?icon_placeholder+value+".svg":""
+            div.innerHTML = `
+<span class="name">${translation.get(translation_slot_begin + slot)}</span>
+<img class="icon" src="${icon}">
+`
+            div.onclick = () => {
+                if (selectedSlot === div) {
+                    div.classList.remove("selected")
+                    selectedSlot = null
+                    if(selectedElem)selectedElem.classList.remove("selected")
+                } else {
+                    selectedSlot?.classList.remove("selected")
+                    selectedSlot = div
+                    div.classList.add("selected")
+                    
+                    const sv=save.get_variable(variable+selectedSlot.dataset.slot)
+                    if(selectedElem)selectedElem.classList.remove("selected")
+                    selectedElem=vv[sv]
+                    selectedElem.classList.add("selected")
+                }
+            }
+            active.appendChild(div)
+        }
+    }
+}
 export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     normal:{
         title:"Normal Mode Settings",
@@ -400,13 +482,13 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
             {type:"h2",name:"Players"},
             {
                 type:"input",
-                name:"Limit",
+                tname:"Limit",
                 var:"players.limit",
                 placeholder:"100"
             },
             {
                 type:"input",
-                name:"Map",
+                tname:"Map",
                 var:"map.def",
                 placeholder:"normal"
             },
@@ -418,7 +500,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
             {type:"h2",name:"Players"},
             {
                 type:"input",
-                name:"Limit",
+                tname:"Limit",
                 var:"players.limit",
                 placeholder:"100"
             },
@@ -428,64 +510,64 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
         title:"Counter MD Settings",
         inputs:[
             //Players
-            {type:"h2",name:"Players"},
+            {type:"h2",tname:"Players"},
             {
                 type:"input",
-                name:"Limit",
+                tname:"Limit",
                 var:"players.limit",
                 placeholder:"10"
             },
             //Earns
-            {type:"h3",name:"Earns"},
+            {type:"h3",tname:"Earns"},
             {
                 type:"input",
-                name:"Kill",
+                tname:"Kill",
                 var:"players.earns.kill",
                 placeholder:"150"
             },
             {
                 type:"input",
-                name:"Join",
+                tname:"Join",
                 var:"players.earns.join",
                 placeholder:"300"
             },
             {
                 type:"input",
-                name:"Win",
+                tname:"Win",
                 var:"players.earns.win",
                 placeholder:"500"
             },
             {
                 type:"input",
-                name:"Lose",
+                tname:"Lose",
                 var:"players.earns.Lose",
                 placeholder:"700"
             },
             //Rules
-            {type:"h2",name:"Game Rules"},
+            {type:"h2",tname:"Game Rules"},
             {
                 type:"input",
-                name:"Team Need Win",
+                tname:"Team Need Win",
                 var:"rules.team_need_win",
                 placeholder:"5"
             },
             {
                 type:"input",
-                name:"Freeze Time",
+                tname:"Freeze Time",
                 var:"rules.freeze_time",
                 placeholder:"8"
             },
             {
                 type:"input",
-                name:"Round Time",
+                tname:"Round Time",
                 var:"rules.round_time",
                 placeholder:"120"
             },
             // Map
-            {type:"h2",name:"Map"},
+            {type:"h2",tname:"Map"},
             {
                 type:"input",
-                name:"Map",
+                tname:"Map",
                 var:"map",
                 placeholder:"counter_md_normal"
             },
@@ -493,7 +575,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     }
 }
 
-export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,mods?:CModsManager){
+export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager,mods?:CModsManager){
     const campaign_path="scripts/campaign"
     const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
     for(const c in campaign.charpters){
@@ -508,11 +590,23 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
         "campaign_level_selector":{
             generate:make_menu_campaign(campaign)
         },
+        "editor":{
+            generate:(parent,m)=>{
+                parent.innerHTML = `
+<h2>Start Editor</h2>
+<button class="btn-green" id="btn-open-editor">Open Editor</button>
+`
+                const btn = parent.querySelector("#btn-open-editor") as HTMLButtonElement
+                btn.onclick=(_e)=>m.play_callback?.({
+                    type:"editor",
+                })
+            }
+        },
         "replays":{
             generate: (parent, manager) => {
                 parent.innerHTML = `
                 <h2>Play Replay</h2>
-                <div class="replay-upload background-menu-blue">
+                <div class="replay-upload menu-panel-blue">
                     <input type="file" id="replay-file-input" accept=".replay,.repl, .rpl" class="text-input-green"/>
                     <button class="btn-green" id="btn-load-replay">Load Replay</button>
                 </div>`
@@ -539,26 +633,15 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                     }
                 }
             }
-        }
+        },
     } as Record<string,MenuSubTabDef>
-    const play_options:SubMenuOption[]=[
-        {
-            type:"label",
-            name:"menu.play.label-campaign",
-        },
-        {
-            type:"button",
-            id:"campaign-level-selector",
-            name:"menu.play.level-selector",
-            subtab:"campaign_level_selector"
-        },
-        {
-            type:"label",
-            name:"menu.play.label-online",
-        },
-    ]
+    const play_options:SubMenuOption[]=[]
     if(sandbox_version){
         play_options.push(
+            {
+                type:"label",
+                name:"menu.play.label-online",
+            },
             {
                 type:"button",
                 id:"host_game",
@@ -640,8 +723,12 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                 }
             }
         }
-    }else{
+    }else if(menu.api_settings){
         play_options.push(
+            {
+                type:"label",
+                name:"menu.play.label-online",
+            },
             {
                 type:"button",
                 id:"play-online",
@@ -656,7 +743,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             }
         )
         play_subtabs["play_online"]={
-            generate:make_menu_modes(menu.api_settings.modes)
+            generate:make_menu_play_options(menu.api_settings?.play_options??[])
         }
         play_subtabs["group"]={
             generate:(p,m)=>{
@@ -748,7 +835,23 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
     play_options.push(
         {
             type:"label",
+            name:"menu.play.label-campaign",
+        },
+        {
+            type:"button",
+            id:"campaign-level-selector",
+            name:"menu.play.level-selector",
+            subtab:"campaign_level_selector"
+        },
+        {
+            type:"label",
             name:"menu.play.label-files",
+        },
+        {
+            type:"button",
+            id:"editor",
+            name:"menu.play.editor",
+            subtab:"editor"
         },
         {
             type:"button",
@@ -816,10 +919,10 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             ],
             subtabs:{
                 "game":{
-                    generate:make_menu_settings(menu.save,[
-                        {
-                            type:"choose",
-                            name:"settings.game.region",
+                    generate:make_menu_settings(menu.save,"menu.settings.game",[
+                        menu.api_settings?{
+                            type:"enum",
+                            tname:"settings.game.region",
                             var:"sv_game_region",
                             options:menu.api_settings.regions.map((v)=>{
                                 return {
@@ -827,34 +930,34 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                     value:v
                                 }
                             }),
-                        },
+                        }:undefined,
                         {
                             type:"toggle",
-                            name:"settings.game.interpolation",
+                            tname:"settings.game.interpolation",
                             var:"sv_game_interpolation",
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.client_rot",
+                            tname:"settings.game.client_rot",
                             var:"sv_game_client_rot",
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.friendly_fire",
+                            tname:"settings.game.friendly_fire",
                             var:"sv_game_friendly_fire",
                         },
                         {
                             type:"toggle",
-                            name:"settings.game.ammo_outline",
+                            tname:"settings.game.ammo_outline",
                             var:"sv_game_ammo_outline",
                         },
                     ],translation)
                 },
                 "graphics":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.graphics",[
                         {
-                            type:"choose",
-                            name:"settings.graphics.resolution",
+                            type:"enum",
+                            tname:"settings.graphics.resolution",
                             var:"sv_graphics_resolution",
                             options:[
                                 {name:"Low",value:"low"},
@@ -862,8 +965,8 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             ],
                         },
                         {
-                            type:"choose",
-                            name:"settings.graphics.particles",
+                            type:"enum",
+                            tname:"settings.graphics.particles",
                             var:"sv_graphics_particles",
                             options:[
                                 {name:"No",value:"0"},
@@ -872,18 +975,28 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                             ],
                         },
                         {
-                            type:"choose",
-                            name:"settings.graphics.lights",
-                            var:"sv_graphics_lights",
-                            options:[
-                                {name:"No",value:"0"},
-                                {name:"Minimum",value:"1"},
-                                {name:"Normal",value:"2"},
-                            ],
+                            type:"toggle",
+                            tname:"settings.graphics.shadows",
+                            var:"sv_graphics_shadows",
                         },
                         {
-                            type:"choose",
-                            name:"settings.graphics.post_proccess",
+                            type:"toggle",
+                            tname:"settings.graphics.perspective",
+                            var:"sv_graphics_perspective",
+                        },
+                        /*{
+                            type:"enum",
+                            tname:"settings.graphics.lights",
+                            var:"sv_graphics_lights",
+                            options:[
+                                {tname:"No",value:"0"},
+                                {tname:"Minimum",value:"1"},
+                                {tname:"Normal",value:"2"},
+                            ],
+                        },*/
+                        {
+                            type:"enum",
+                            tname:"settings.graphics.post_proccess",
                             var:"sv_graphics_post_proccess",
                             options:[
                                 {name:"No",value:"0"},
@@ -893,12 +1006,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings.graphics.climate",
+                            tname:"settings.graphics.climate",
                             var:"sv_graphics_climate",
                         },
                         {
                             type:"toggle",
-                            name:"settings.graphics.fullscreen",
+                            tname:"settings.graphics.fullscreen",
                             var:"sv_graphics_fullscreen",
                             on_set(enable:boolean){
                                 set_full_screen(enable)
@@ -907,10 +1020,10 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     ],translation),
                 },
                 "sounds":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.sounds",[
                         {
                             type:"range",
-                            name:"settings.sounds.master_volume",
+                            tname:"settings.sounds.master_volume",
                             var:"sv_sounds_master_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.master_bus.set_volume(Numeric.clamp(v,0,1))
@@ -921,7 +1034,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"settings.sounds.music_volume",
+                            tname:"settings.sounds.music_volume",
                             var:"sv_sounds_music_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.get_bus("music").set_volume(Numeric.clamp(v,0,1))
@@ -932,7 +1045,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"range",
-                            name:"settings.sounds.ambient_volume",
+                            tname:"settings.sounds.ambient_volume",
                             var:"sv_sounds_ambient_volume",
                             on_set:(v:number)=>{
                                 menu.sounds.get_bus("ambience").set_volume(Numeric.clamp(v,0,1))
@@ -943,46 +1056,46 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         },
                         {
                             type:"toggle",
-                            name:"settings.sounds.gameplay_music",
+                            tname:"settings.sounds.gameplay_music",
                             var:"sv_sounds_gameplay_music",
                         },
                     ],translation),
                 },
                 "ui":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.settings.ui",[
                         {
                             type:"color",
-                            name:"settings.ui.primary_color",
+                            tname:"settings.ui.primary_color",
                             var:"sv_ui_primary_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.secondary_color",
+                            tname:"settings.ui.secondary_color",
                             var:"sv_ui_secondary_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.tertiary_color",
+                            tname:"settings.ui.tertiary_color",
                             var:"sv_ui_tertiary_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.positive_color",
+                            tname:"settings.ui.positive_color",
                             var:"sv_ui_positive_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.negative_color",
+                            tname:"settings.ui.negative_color",
                             var:"sv_ui_negative_color",
                         },
                         {
                             type:"color",
-                            name:"settings.ui.special_color",
+                            tname:"settings.ui.special_color",
                             var:"sv_ui_special_color",
                         },
                         {
-                            type:"choose",
-                            name:"settings.ui.translation",
+                            type:"enum",
+                            tname:"settings.ui.translation",
                             var:"sv_ui_translation",
                             options:[
                                 {name:"English",value:"en"},
@@ -992,29 +1105,22 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 {name:"Ak-47",value:"ak47"},
                             ],
                         },
-                        isMobile?undefined:{
+                        (isMobile||Debug.force_mobile)?undefined:{
                             type:"toggle",
-                            name:"settings.ui.interactive",
+                            tname:"settings.ui.interactive",
                             var:"sv_ui_interactive",
                         },
                         {
                             type:"toggle",
-                            name:"settings.ui.blur_backdrop",
-                            var:"sv_ui_blur_backdrop",
-                            on_set(v:boolean){
-                                if(v){
-                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","blur(10px)")
-                                }else{
-                                    menu.content.gameD.style.setProperty("--ui-backdrop-filter","none")
-                                }
-                            }
+                            tname:"settings.ui.show_intro",
+                            var:"sv_ui_show_intro",
                         }
                     ],translation),
                 },
                 "keybinds":{
                     generate:(parent,_m)=>{
                         const generate_actions=()=>{
-                            parent.innerHTML=""
+                            parent.innerHTML=`<h1 class="span-text-base">${translation.get("menu.settings.keybinds")}</h1>`
                             const actions=menu.save.input_manager?.actions ?? {}
                             for(const [name,action] of Object.entries(actions)){
                                 const row=document.createElement("div")
@@ -1029,6 +1135,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                                 btn.textContent=translation.get("keybinds."+name)
 
                                 btn.onclick=async()=>{
+                                    btn.blur()
                                     const key=await menu.game_popup(async(ctx)=>{
                                         ctx.parent.innerHTML=`
                                         <h2>Waiting Key</h2>
@@ -1075,47 +1182,103 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     name:"menu.loadout.character",
                     subtab:"character"
                 },
+                {
+                    id:"emotes",
+                    type:"button",
+                    name:"menu.loadout.emotes",
+                    subtab:"emotes"
+                },
+                {
+                    id:"wrapping",
+                    type:"button",
+                    name:"menu.loadout.wrapping",
+                    subtab:"wrapping"
+                },
+                {
+                    id:"badge",
+                    type:"button",
+                    name:"menu.loadout.badges",
+                    subtab:"badges"
+                },
             ],
             subtabs:{
                 "character":{
-                    generate:make_menu_settings(menu.save,[
+                    generate:make_menu_settings(menu.save,"menu.loadout.character",[
                         {
                             type:"input",
-                            name:"loadout.character.name",
+                            tname:"loadout.character.name",
                             var:"sv_loadout_name",
+                            limit:GameConstants.player.max_name_size
                         },
                         {
                             type:"color",
-                            name:"loadout.character.hair_tint",
+                            tname:"loadout.character.hair_tint",
                             var:"sv_loadout_hair_tint",
                         },
                         {
-                            type:"choose",
-                            name:"loadout.character.hair_type",
+                            type:"enum",
+                            tname:"loadout.character.hair_type",
                             var:"sv_loadout_hair",
                             options:hairs_types,
                         },
                         {
-                            type:"color",
-                            name:"loadout.character.body_tint",
+                            type:"enum",
+                            tname:"loadout.character.body_tint",
                             var:"sv_loadout_body_tint",
+                            options:[
+                                {
+                                    name:"1",
+                                    value:"#f0a93f"
+                                },
+                                {
+                                    name:"2",
+                                    value:"#a06e22"
+                                },
+                                {
+                                    name:"3",
+                                    value:"#a06e22"
+                                },
+                                {
+                                    name:"4",
+                                    value:"#d8a14e"
+                                },
+                                {
+                                    name:"5",
+                                    value:"#ffcb7c"
+                                },
+                                {
+                                    name:"6",
+                                    value:"#f39f67"
+                                }
+                            ]
                         },
                         {
                             type:"toggle",
-                            name:"loadout.character.female",
+                            tname:"loadout.character.female",
                             var:"sv_loadout_female",
                         },
                         {
-                            type:"choose",
-                            name:"loadout.character.shirt",
+                            type:"enum",
+                            tname:"loadout.character.shirt",
                             var:"sv_loadout_shirt",
                             options:shirts_types,
                         },
                     ],translation)
                 },
-                "body":{
-                    generate:make_menu_settings(menu.save,[
-                    ],translation)
+                "emotes":{
+                    generate:make_emotes_settings(menu.save,resources,definitions,Object.values(definitions.emotes.value),translation)
+                },
+                "wrapping":{
+                    generate:(()=>{
+                        const wrapping=Object.values(definitions.wrapping.value)
+                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/assets/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                    })()
+                },
+                "badges":{
+                    generate:(()=>{
+                        const badges=Object.values(definitions.badges.value)
+                        return make_badges_settings(menu.save,resources,badges,translation)
+                    })()
                 },
             },
         },
@@ -1149,35 +1312,30 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "social":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
                         parent.innerHTML=`
-<div id="social-links">
-<a href="https://discord.gg/7czkBvtmSU" target="_blank" class="social-link">
-    <i class="social-icon discord"></i>
-</a>
-<a href="https://youtube.com/@kazikni" target="_blank" class="social-link">
-    <i class="social-icon youtube"></i>
-</a>
-<a href="https://github.com/kazikni/surgemd" target="_blank" class="social-link">
-    <i class="social-icon github"></i>
-</a>
-<a href="/files/surgemd-windows-lasted.zip" target="_blank" class="social-link">
-    <i class="social-icon selfs"></i>
-</a>
-<a href="/files/surgemd-linux-lasted.zip" target="_blank" class="social-link">
-    <i class="social-icon linux"></i>
-</a>
+<h1 class="span-text-base">${translation.get("menu.about.social")}</h1>
+<div class="social-links">
+    <a href="${socials.discord}" target="_blank" class="social-link">
+        <i class="social-icon discord"></i>
+    </a>
+    <a href="${socials.youtube}" target="_blank" class="social-link">
+        <i class="social-icon youtube"></i>
+    </a>
+    <a href="${socials.github}" target="_blank" class="social-link">
+        <i class="social-icon github"></i>
+    </a>
 </div>`
                     }
                 },
                 "news":{
                     generate:async(parent:HTMLDivElement,_m:MenuManager)=>{
                         const news_path="/scripts/news/"
-                        parent.innerHTML=""
+                        parent.innerHTML=`<h1 class="span-text-base">${translation.get("menu.about.news")}</h1>`
                         const news=await(await fetch(news_path+"main.json")).json() as {order:{title:string,id:string}[]}
                         for(const n of news.order){
                             parent.innerHTML+=`<h2 class="span-text">${n.title}</h2>`
                             const d=document.createElement("div")
                             d.classList.add("update-item")
-                            d.innerHTML=`<div class="background-menu-blue background-menu-tt">${formatToHtml(await (await fetch(news_path+"content/"+n.id+".md")).text())}</div>`
+                            d.innerHTML=`<div class="menu-panel-blue background-menu-tt">${formatToHtml(await (await fetch(news_path+"content/"+n.id+".md")).text())}</div>`
                             //d.innerHTML+=`<a href="/pages/news/?id=${n.id}"><h3 class="span-text">See More</h3></a>`
                             parent.appendChild(d)
                         }
@@ -1186,6 +1344,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 "rules":{
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
                         parent.innerHTML=`
+<h1 class="span-text-base">${translation.get("menu.about.rules")}</h1>
 <span>
 <h2>Rules</h2>
 <hr>
@@ -1273,9 +1432,10 @@ copyright theft, scan, harassment, doxing
                         parent.innerHTML=`
 <span>
 ${formatToHtml(`
+<h1 class="span-text-base">${translation.get("menu.about.credits")}</h1>
 # Surgemd.io
 ___
-## Creator
+## Created By
 * Kazikni
 ___
 ## Programmers
@@ -1285,6 +1445,7 @@ ___
 * @kazikni
 * @cheerfulbull_29688
 * @endermanking
+* @yourhumbledrastic
 * @littlethief69
 * Suroi.io
 * Surviv.io
@@ -1295,6 +1456,7 @@ ___
 * @namerio
 ___
 ## Sound Designers
+* Kazikni
 * Surviv.io
 * Suroi.io
 * @teardwop
@@ -1325,10 +1487,6 @@ ___
 * @kazikni
 * @rapxtor_yt
 ___
-# Discord Server Developers
-@kazikni
-@Zahirralt2
-___
 ## Inspirations
 * Hotline Miami 1 and 2
 * Surviv.io
@@ -1338,9 +1496,11 @@ ___
 * Fortnite
 ___
 ## Special Thanks To
+* surviv.io creators
 * @hasanger
 * @1092384
-* surviv.io creators
+* @mamoun0
+* @namerio
 * @guiz3rabrr2466._24385
 * @jgpow
 * Everyone Who Played

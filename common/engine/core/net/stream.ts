@@ -1,9 +1,9 @@
 import { KDate } from "../definition/definitions.ts"
+import { TDType, type TD } from "../lang/td.ts";
 import { PolarMovement } from "../math/geometry.ts"
-import { CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
+import { BaseHitbox2D, CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
 import { ID } from "../math/utils.ts"
-import { Vec2,v2 } from "../math/vec2.ts"
-import { v3 } from "../math/vec3.ts"
+import { Vec2} from "../math/vec2.ts"
 export abstract class Stream{
     static readonly decoder = new TextDecoder();
     static readonly encoder = new TextEncoder();
@@ -15,7 +15,7 @@ export abstract class Stream{
     abstract get data():Uint8Array
     abstract get buffer():ArrayBufferLike
 
-    abstract clear():void
+    abstract clear(hard?:boolean):void
 
     abstract write_uint8(val:number):this
     abstract read_uint8():number
@@ -53,9 +53,26 @@ export abstract class Stream{
 
     abstract write_stream(src: Stream, offset?:number, length?:number):this
 
-    abstract write_stream_dynamic(src: Stream): this
+    abstract write_stream_dynamic(src?:Stream): this
     abstract read_stream_dynamic(): Stream
 
+    write_int(value:number,bytes:1|2|3|4):this{
+        switch (bytes) {
+            case 1: this.write_int8(value); break
+            case 2: this.write_int16(value); break
+            case 3: this.write_int24(value); break
+            case 4: this.write_int32(value); break
+        }
+        return this
+    }
+    read_int(bytes:1|2|3|4):number{
+        switch (bytes) {
+            case 1: return this.read_int8()
+            case 2: return this.read_int16()
+            case 3: return this.read_int24()
+            case 4: return this.read_int32()
+        }
+    }
     write_uint(value:number,bytes:1|2|3|4):this{
         switch (bytes) {
             case 1: this.write_uint8(value); break
@@ -349,7 +366,7 @@ export abstract class Stream{
         return obj
     }
 
-    write_object(obj: any,bytes1?:1|2|3|4,bytes2?:1|2|3|4): this {
+    write_any(obj: any,bytes1?:1|2|3|4,bytes2?:1|2|3|4): this {
         if (obj==null) {
             this.write_uint8(0)
             return this
@@ -370,17 +387,22 @@ export abstract class Stream{
             case "object":
                 if (Array.isArray(obj)) {
                     this.write_uint8(4)
-                    this.write_array(obj, (v) => this.write_object(v,bytes1,bytes2), bytes1)
+                    this.write_array(obj, (v) => this.write_any(v,bytes1,bytes2), bytes1)
+                    return this
+                }
+                if(obj instanceof BaseHitbox2D){
+                    this.write_uint8(6)
+                    this.write_hitbox(obj as Hitbox2D)
                     return this
                 }
                 this.write_uint8(5)
-                this.write_string_dict(obj, (v) => this.write_object(v,bytes1,bytes2), bytes1, bytes2)
+                this.write_string_dict(obj, (v) => this.write_any(v,bytes1,bytes2), bytes1, bytes2)
                 return this
         }
 
         throw new Error("Unsupported type in writeObject")
     }
-    read_object(bytes1?:1|2|3|4,bytes2?:1|2|3|4): any {
+    read_any(bytes1?:1|2|3|4,bytes2?:1|2|3|4): any {
         const type = this.read_uint8()
         switch (type) {
             case 0: return null
@@ -391,81 +413,148 @@ export abstract class Stream{
             case 3:
                 return this.read_string(bytes2)
             case 4:
-                return this.read_array(_s => this.read_object(bytes1,bytes2),bytes1)
+                return this.read_array(_s => this.read_any(bytes1,bytes2),bytes1)
             case 5:
-                return this.read_string_dict(_s => this.read_object(bytes1,bytes2),bytes1,bytes2)
-        }
-        throw new Error("Invalid type in readObject")
-    }
-
-    
-    write_object_advanced(obj: any,bytes1?:1|2|3|4,bytes2?:1|2|3|4): this {
-        if (obj==null) {
-            this.write_uint8(0)
-            return this
-        }
-        switch (typeof obj) {
-            case "boolean":
-                this.write_uint8(1)
-                this.write_uint8(obj ? 1 : 0)
-                return this
-            case "number":
-                this.write_uint8(2)
-                this.write_float32(obj)
-                return this
-            case "string":
-                this.write_uint8(3)
-                this.write_string(obj,bytes2)
-                return this
-            case "object":
-                if (v3.is_vec3(obj)) {
-                    this.write_uint8(4)
-                    this.write_float32(obj.x)
-                    this.write_float32(obj.y)
-                    this.write_float32(obj.z)
-                }else if (v2.is_vec2(obj)) {
-                    this.write_uint8(5)
-                    this.write_float32(obj.x)
-                    this.write_float32(obj.y)
-                }else if (Array.isArray(obj)) {
-                    this.write_uint8(6)
-                    this.write_array(obj, (v) => this.write_object_advanced(v,bytes1,bytes2))
-                }else{
-                    this.write_uint8(7)
-                    this.write_string_dict(obj,(v)=>this.write_object_advanced(v,bytes1,bytes2),bytes1,bytes2)
-                }
-                return this
-        }
-
-        throw new Error("Unsupported type in writeObject")
-    }
-    read_object_advanced(bytes1?:1|2|3|4,bytes2?:1|2|3|4): any {
-        const type = this.read_uint8()
-        switch (type) {
-            case 0: return null
-            case 1:
-                return this.read_uint8() === 1
-            case 2:
-                return this.read_float32()
-            case 3:
-                return this.read_string(bytes2)
-            case 4:// vec3
-                return v3(
-                    this.read_float32(),
-                    this.read_float32(),
-                    this.read_float32()
-                )
-            case 5:// vec2
-                return v2(
-                    this.read_float32(),
-                    this.read_float32()
-                )
+                return this.read_string_dict(_s => this.read_any(bytes1,bytes2),bytes1,bytes2)
             case 6:
-                return this.read_array(_s => this.read_object_advanced(bytes1,bytes2),bytes1)
-            case 7:
-                return this.read_string_dict(_s => this.read_object_advanced(bytes1,bytes2),bytes1,bytes2)
+                return this.read_hitbox()
         }
         throw new Error("Invalid type in readObject")
+    }
+
+    write_td(val: any, td: TD): this {
+        switch (td.type) {
+            case TDType.int:
+                td.unsigned?this.write_uint(val, td.bytes):this.write_int(val, td.bytes)
+                break
+            case TDType.float:
+                td.bytes===4?this.write_float32(val):this.write_float64(val)
+                break
+            case TDType.string:
+                this.write_string(val, td.len_bytes)
+                break
+            case TDType.boolean:
+                switch(val){
+                    case true:this.write_uint8(1); break
+                    case false:this.write_uint8(0); break
+                    case null:this.write_uint8(2); break
+                    case undefined:this.write_uint8(3); break
+                }
+                break
+            case TDType.onu:
+                if(val===undefined){
+                    this.write_uint8(0)
+                }else if(val===null){
+                    this.write_uint8(1)
+                }else{
+                    this.write_uint8(2)
+                    this.write_td(val,td.content)
+                }
+                break
+            case TDType.map: {
+                const lenBytes = td.len_bytes ?? 1
+                const max = (1 << (lenBytes * 8)) - 1
+
+                const keys = Object.keys(val ?? {})
+                const length = Math.min(keys.length, max)
+
+                this.write_uint(length, lenBytes)
+
+                for (let i = 0; i < length; i++) {
+                    let key: any = keys[i]
+                    switch (td.key.type) {
+                        case TDType.int:
+                            key = Number(key)
+                            break
+                        case TDType.float:
+                            key = Number(key)
+                            break
+                        case TDType.boolean:
+                            key = key === "true"
+                            break
+                    }
+                    this.write_td(key, td.key)
+                    this.write_td(val[keys[i]], td.value)
+                }
+                break
+            }
+            case TDType.object:
+                for (const field of td.content) {
+                    this.write_td(val[field.name], field.content)
+                }
+                break
+            case TDType.array:
+                this.write_array(val??[],(v)=>this.write_td(v, td.content),td.len_bytes)
+                break
+            case TDType.options: {
+                const option = td.get_option(val)
+                this.write_uint8(option)
+                this.write_td(val, td.options[option])
+                break
+            }
+            case TDType.advanced:
+                td.on_encode(val, this)
+                break
+            case TDType.any:
+                this.write_any(val,td.bytes1 as 1 | 2 | 3 | 4 | undefined,td.bytes2 as 1 | 2 | 3 | 4 | undefined)
+                break
+        }
+        return this
+    }
+    read_td(td: TD): any {
+        switch (td.type) {
+            case TDType.int:
+                return td.unsigned?this.read_uint(td.bytes):this.read_int(td.bytes)
+            case TDType.float:
+                return td.bytes===4?this.read_float32():this.read_float64()
+            case TDType.string:
+                return this.read_string(td.len_bytes)
+            case TDType.boolean:
+                switch(this.read_uint8()){
+                    case 0:return false
+                    case 1:return true
+                    case 2:return null
+                    case 3:return undefined
+                    default:return undefined
+                }
+            case TDType.onu:{
+                const val=this.read_uint8()
+                if(val===0){
+                    return undefined
+                }else if(val===1){
+                    return null
+                }else if(val===2){
+                    return this.read_td(td.content)
+                }
+                return undefined
+            }
+            case TDType.map:{
+                const length=this.read_uint(td.len_bytes??1)
+                const ret:Record<any,any>={}
+                for(let i=0;i<length;i++){
+                    const key=this.read_td(td.key)
+                    ret[key]=this.read_td(td.key)
+                }
+                return ret
+            }
+            case TDType.object: {
+                const obj: Record<string, any>={}
+                for(const field of td.content){
+                    obj[field.name]=this.read_td(field.content)
+                }
+                return obj
+            }
+            case TDType.array:
+                return this.read_array(() => this.read_td(td.content),td.len_bytes)
+            case TDType.options: {
+                const option = this.read_uint8()
+                return this.read_td(td.options[option])
+            }
+            case TDType.advanced:
+                return td.on_decode(this)
+            case TDType.any:
+                return this.read_any(td.bytes1 as 1 | 2 | 3 | 4 | undefined,td.bytes2 as 1 | 2 | 3 | 4 | undefined)
+        }
     }
 
     write_vec2(vector: Vec2,min: number, max: number,bytes: 1 | 2 | 3 | 4): this {
@@ -577,7 +666,8 @@ export class StaticStream extends Stream{
         this._u8Array = new Uint8Array(source, byteOffset, byteLength)
     }
 
-    clear(){
+    clear(hard:boolean=false){
+        if(hard)this._u8Array.fill(0,0,this.length)
         this.index=0
         this.length=0
     }
@@ -813,7 +903,11 @@ export class StaticStream extends Stream{
         return this
     }
 
-    write_stream_dynamic(src: Stream): this {
+    write_stream_dynamic(src?: Stream): this {
+        if(!src){
+            this.write_uint24(0)
+            return this
+        }
         this.write_uint24(src.length)
         this._u8Array.set(src.data.subarray(0, src.length), this.index)
         this.index += src.length
@@ -834,7 +928,8 @@ export class StaticStream extends Stream{
 
     override write_bytes(data: Uint8Array): void {
         this._u8Array.set(data, this.index)
-        this.index += data.length
+        this.index+=data.length
+        if(this.index>this.length)this.length=this.index
     }
     override read_bytes(size: number): Uint8Array {
         const out = this._u8Array.subarray(this.index, this.index + size)
@@ -854,9 +949,10 @@ export class DynamicStream extends Stream{
         this._u8Array = new Uint8Array(b)
     }
 
-    clear(){
+    clear(hard:boolean=false){
         this.index=0
         this.length=0
+        if(hard)this._u8Array.fill(0)
     }
 
     ensure(extra: number): void {
@@ -1135,11 +1231,7 @@ export class DynamicStream extends Stream{
     }
     read_stream_dynamic(): Stream {
         const len = this.read_uint24()
-        const stream = new StaticStream(
-            this._view.buffer as ArrayBuffer,
-            this.index,
-            len
-        )
+        const stream = new StaticStream(this._view.buffer as ArrayBuffer,this.index,len)
         if(this._index+len>this.length)return stream
         stream.length = len
         this.index += len
@@ -1149,6 +1241,7 @@ export class DynamicStream extends Stream{
     override write_bytes(data: Uint8Array): void {
         this.ensure(data.length)
         this._u8Array.set(data, this.index)
+        this.index+=data.length
         if(this.index>this.length)this.length=this.index
     }
     override read_bytes(size: number): Uint8Array {

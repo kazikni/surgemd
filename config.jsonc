@@ -3,7 +3,7 @@
         "host": {
             "port": 8000,
             "ssl": false,
-            "cert": "./private/api/certificate.crt",
+            "cert": "./private/api/fullchain.crt",
             "key": "./private/api/private.key",
             "ca": "./private/api/ca_bundle.crt"
         },
@@ -16,34 +16,26 @@
             }
         },
         "game": {
-            "modes": [
+            "regions":["local"],
+            "play_options":[
                 {
-                    "group_size": [
-                        1
-                    ],
-                    "mode": {
-                        "mode": "normal"
-                    }
+                    "tname":"modes.normal",
+                    "content":[
+                        {"mode":"normal","settings":{"join_time":250}}
+                    ]
                 },
                 {
-                    "group_size": [
-                        2
-                    ],
-                    "mode": {
-                        "mode": "normal",
-                        "name": "modes.tundra",
-                        "settings": {
-                            "map": {
-                                "def": "tundra"
-                            }
-                        }
-                    }
+                    "tname": "modes.tundra",
+                    "content":[
+                        {"group_size":2,"mode":"normal","settings": {"join_time":250,"map": {"def": "tundra"}}}
+                    ]
                 }
             ]
         }
     },
     "game": {
-        "max_games": 5,
+        "max_games": 6,
+        "use_workers": false,
         "tps": 100,
         "ntps": 32,
         "debug": {
@@ -52,7 +44,7 @@
         "host": {
             "port": 8080,
             "ssl": false,
-            "cert": "./private/game/certificate.crt",
+            "cert": "./private/game/fullcain.crt",
             "ca": "./private/game/ca_bundle.crt",
             "key": "./private/game/private.key"
         },
@@ -61,7 +53,6 @@
             "ip": "localhost"
         },
         "authentication": {
-            "region": "local",
             "server": "ws://localhost:8000/regions/ws",
             "user": {
                 "name": "region",
@@ -74,25 +65,25 @@
         "allowed_hosts": true,
         "spritesheet": {
             "sheets": {
-                "main": "img/game/main",
-                "common": "img/game/common",
-                "snow": "img/game/snow"
+                "assets/img/kspr/main": {"path":[{"dir":"assets/img/game/main","base":"public"},{"dir":"assets/img/game/main"}]},
+
+                "assets/img/kspr/common": {"path":[{"dir":"assets/img/game/common"}]},
+                "assets/img/kspr/snow": {"path":[{"dir":"assets/img/game/snow"}]},
+                "assets/img/kspr/fall": {"path":[{"dir":"assets/img/game/fall"}]},
+
+                "assets/img/kspr/maps/tundra": {"path":[{"dir":"assets/img/game/maps/tundra"}]},
+
+                "scripts/campaign/levels/prologue/sprites":{"path":[{"dir":"assets/img/game/levels/prologue"}]}
             },
             "resolutions": [
-                {
-                    "name": "low",
-                    "scale": 0.5
-                },
-                {
-                    "name": "medium",
-                    "scale": 1
-                }
+                {"name": "low","scale": 0.5},
+                {"name": "medium","scale": 1}
             ]
         },
         "audios": [
             {
-                "input": "sounds/game/main",
-                "output": "assets/main-sounds.json"
+                "input": "assets/sounds/game/main",
+                "output": "assets/sounds/ksnd/main"
             }
         ]
     }

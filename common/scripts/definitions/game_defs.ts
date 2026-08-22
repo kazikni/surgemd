@@ -1,4 +1,5 @@
 import { Definitions, DefinitionsMerge, mergeDeep } from "../../engine/core.ts";
+import { TD, TDType } from "../../engine/core/lang/td.ts";
 import { AccessoryDef, Accessorys_Default_Init } from "./items/accessorys.ts";
 import { AmmoDef, Ammos_Default_Init } from "./items/ammo.ts";
 import { BackpackDef, Backpacks_Default_Init } from "./items/backpacks.ts";
@@ -12,19 +13,21 @@ import { BadgeDef, Badges_Default_Init } from "./loadout/badges.ts";
 import { EmoteDef, Emotes_Default_Init } from "./loadout/emotes.ts";
 import { Ping_Default_Init, PingDef } from "./loadout/ping.ts";
 import { Loadout_Default_Init, LoadoutItemDef } from "./loadout/skins.ts";
-import { BuildingDef, Buildings_Default_Init } from "./objects/buildings_base.ts";
+import { Wrapping_Default_Init, WrappingDef } from "./loadout/wrapping.ts";
+import { BuildingClientTD, BuildingDef, Buildings_Default_Init, BuildingTD } from "./objects/buildings_base.ts";
 import { CreatureDef, Creatures_Default_Init } from "./objects/creatures.ts";
 import { DecalDef, Decals_Default_Init } from "./objects/decals.ts";
 import { ExplosionDef, Explosions_Default_Init } from "./objects/explosions.ts";
-import { ObstacleDef, Obstacles_Default_Init } from "./objects/obstacles.ts";
+import { ObstacleDef, Obstacles_Default_Init, ObstacleTD } from "./objects/obstacles.ts";
 import { SyncedParticle_Default_Init, SyncedParticleDef } from "./objects/synced_particle.ts";
 import { VehicleDef, Vehicles_Default_Init } from "./objects/vehicles.ts";
-import { InventoryItemType } from "./utils.ts";
+import { Boosts_Default_Init, BoostDef } from "./player/boosts.ts";
+import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
 
 export type GameItem=GunDef|MeleeDef|GrenadeDef|AmmoDef|ConsumibleDef|VestDef|HelmetDef|BackpackDef|AccessoryDef|ScopeDef
 export type GameObjectDef=GameItem|EmoteDef|BadgeDef|ObstacleDef|ExplosionDef|BuildingDef|VehicleDef|VehicleDef|CreatureDef|SyncedParticleDef|LoadoutItemDef|PingDef
 export type WeaponDef=MeleeDef|GunDef|GrenadeDef
-export type DamageSourceDef=MeleeDef|GunDef|ObstacleDef|ExplosionDef|GrenadeDef
+export type DamageSourceDef=WeaponDef|ObstacleDef
 
 export interface GameADefinitions{
     items?:{
@@ -38,55 +41,87 @@ export interface GameADefinitions{
         melees?:MeleeDef[]
         scopes?:ScopeDef[]
     }
+    loadout?:{
+        
+    }
     objects?:{
         obstacles?:ObstacleDef[]
         buildings?:BuildingDef[]
     }
 }
 export class GameDefinition{
+    static add_td:TD={type:TDType.onu,content:{
+        type: TDType.object,
+        content: [
+            {name: "objects",content: {type:TDType.onu,content:{type:TDType.object,content:[
+                {name:"obstacles",content:{type:TDType.array,content:ObstacleTD,len_bytes:2}},
+                {name:"buildings",content:{type:TDType.array,content:BuildingTD,len_bytes:2}},
+            ]}}}
+        ]
+    }} satisfies TD
+    static add_client_td:TD={type:TDType.onu,content:{
+        type: TDType.object,
+        content: [
+            {name: "objects",content: {type:TDType.onu,content:{type:TDType.object,content:[
+                {name:"obstacles",content:{type:TDType.array,content:ObstacleTD,len_bytes:2}},
+                {name:"buildings",content:{type:TDType.array,content:BuildingClientTD,len_bytes:2}},
+            ]}}}
+        ]
+    }} satisfies TD
     //Items
     ammos=new Definitions<AmmoDef,{}>((i)=>{
-        i.item_type=InventoryItemType.ammo
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.ammo
     })
-    backpacks=new Definitions<BackpackDef,{}>((g)=>{
-        g.item_type=InventoryItemType.backpack
+    backpacks=new Definitions<BackpackDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.backpack
     })
     consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
-        i.item_type=InventoryItemType.consumible
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.consumible
     })
-    vests=new Definitions<VestDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.vest
+    vests=new Definitions<VestDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.vest
     })
-    helmets=new Definitions<HelmetDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.helmet
+    helmets=new Definitions<HelmetDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.helmet
     })
-    accessorys=new Definitions<AccessoryDef,{}>((obj)=>{
-        obj.item_type=InventoryItemType.accessory
+    accessorys=new Definitions<AccessoryDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.accessory
     })
-    grenades=new Definitions<GrenadeDef,{}>((v)=>{
-        v.item_type=InventoryItemType.grenade
+    grenades=new Definitions<GrenadeDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.grenade
     })
-    guns=new Definitions<GunDef,{}>((g)=>{
-        g.item_type=InventoryItemType.gun
-        if(g.dual&&!g.dual_from){
-            const dd=mergeDeep({},g,g.dual,{dual_from:g.idString}) as GunDef
+    guns=new Definitions<GunDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.gun
+        if(i.dual&&!i.dual_from){
+            const dd=mergeDeep({},i,i.dual,{dual_from:i.idString}) as GunDef
             dd.idString=dd.idString+"_dual"
             this.guns.insert(dd)
         }
     })
-    melees=new Definitions<MeleeDef,{}>((g)=>{
-        g.item_type=InventoryItemType.melee
+    melees=new Definitions<MeleeDef,{}>((i)=>{
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.melee
     })
     scopes=new Definitions<ScopeDef,{}>((i)=>{
-        i.item_type=InventoryItemType.scope
+        i.def_type=GameObjectDefinitionType.item
+        i.item_type=GameItemType.scope
     })
 
     // Loadout
     loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
     badges=new Definitions<BadgeDef,{}>((i)=>{})
     emotes=new Definitions<EmoteDef,{}>((e)=>{
-        e.idString="emote_"+e.idString
+        e.def_type=GameObjectDefinitionType.emote
     })
+    wrapping=new Definitions<WrappingDef,{}>((w)=>{})
     ping=new Definitions<PingDef,{}>((e)=>{
         e.idString="ping_"+e.idString
     })
@@ -96,9 +131,14 @@ export class GameDefinition{
     creatures=new Definitions<CreatureDef,{}>((i)=>{})
     decals=new Definitions<DecalDef,{}>((_v)=>{})
     explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
-    obstacles=new Definitions<ObstacleDef,{}>((_v)=>{})
+    obstacles=new Definitions<ObstacleDef,{}>((o)=>{
+        o.def_type=GameObjectDefinitionType.obstacle
+    })
     vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
     synced_particle=new Definitions<SyncedParticleDef,{}>((_v)=>{})
+
+    // Player
+    boosts=new Definitions<BoostDef,{}>((_v)=>{})
 
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
@@ -123,6 +163,7 @@ export class GameDefinition{
         this.loadout.clear()
         this.badges.clear()
         this.emotes.clear()
+        this.wrapping.clear()
         this.ping.clear()
 
         this.buildings.clear()
@@ -151,15 +192,18 @@ export class GameDefinition{
         Loadout_Default_Init(this.loadout)
         Badges_Default_Init(this.badges)
         Emotes_Default_Init(this.emotes)
+        Wrapping_Default_Init(this.wrapping)
         Ping_Default_Init(this.ping)
 
         Buildings_Default_Init(this.buildings)
         Creatures_Default_Init(this.creatures)
         Decals_Default_Init(this.decals)
         Explosions_Default_Init(this.explosions)
-        Obstacles_Default_Init(this.obstacles,this.guns)
+        Obstacles_Default_Init(this.obstacles,this.guns,this.melees)
         Vehicles_Default_Init(this.vehicles)
         SyncedParticle_Default_Init(this.synced_particle)
+
+        Boosts_Default_Init(this.boosts)
 
         this.game_items.insert_def(this.melees.value)
         this.game_items.insert_def(this.guns.value)

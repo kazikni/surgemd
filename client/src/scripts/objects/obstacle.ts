@@ -1,11 +1,12 @@
-import { ABParticle2D, ClientParticle2D, Color, ColorM, Container2D, Hitbox2D, Stream, NullHitbox2D, Numeric, ParticlesEmitter2D, random, Sound, Sprite2D, type Tween, v2 } from "common/engine/client.ts";
-import { ObstacleBehaviorDoor, ObstacleBehaviorTransformInto, ObstacleDef, ObstacleDoorData } from "common/scripts/definitions/objects/obstacles.ts";
+import { ABParticle2D, ClientParticle2D, Container2D, Sound, Sprite2D, type Tween, Shape2D } from "common/engine/web.ts";
+import { ObstacleBehaviorDoor, ObstacleBehaviorPress, ObstacleBehaviorTransformInto, ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { Debug, GraphicsDConfig } from "../others/config.ts";
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
+import { Angle, Color, ColorM, Hitbox2D, matrix4, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
     if(skin>0&&def.assets?.frame?.biome_skins){
@@ -34,11 +35,20 @@ export class Obstacle extends StaticBody{
         rotation:0,
         side:0
     }
-    door_data?:ObstacleDoorData&{tween?:Tween<any>}
+    door_data?:{
+        open:-1|0|1
+        hitboxes:Record<number,Hitbox2D>
+        locked:boolean
+        opening:boolean
+        tween?:Tween<any>
+    }
     def!:ObstacleDef
 
     container:Container2D=new Container2D()
     sprite=new Sprite2D()
+    
+    shadow?:Container2D
+    shadow_sprite?:Sprite2D
     aditional_sprite:Sprite2D[]=[]
 
     health_data:{
@@ -52,6 +62,12 @@ export class Obstacle extends StaticBody{
 
     transform_into_data?:{
         activated:boolean
+    }
+    press_data?:{
+        activated:boolean
+        old_data?:boolean
+        locked:boolean
+        allow_switch:boolean
     }
 
     ////////////////////////////
@@ -90,11 +106,19 @@ export class Obstacle extends StaticBody{
     }
     override on_layer_set(): void {
         this.container.layer=this.layer
+        if(this.shadow)this.shadow.layer=this.layer
     }
     // deno-lint-ignore no-explicit-any
     override on_create(_args: Record<string,any>): void {
         this.game.cam2d.add_object(this.container)
     }
+    override on_destroy(): void {
+        this.container.destroy()
+        if(this.emitter_1)this.emitter_1.destroyed=true
+        if(this.shadow)this.shadow.destroy()
+        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
+    }
+
 
     // Below
     can_below(other:Hitbox2D):boolean{
@@ -111,12 +135,10 @@ export class Obstacle extends StaticBody{
                 a:below?this.def.below.alpha:255
             }
         })
+        if(this.shadow){
+            this.shadow.tint.a=below?0:255
+        }
     }
-    override on_destroy(): void {
-        this.container.destroy()
-        if(this.emitter_1)this.emitter_1.destroyed=true
-    }
-
     update_frame(){
         this.sprite.transform_frame({
             tint:0xffffff,
@@ -124,6 +146,8 @@ export class Obstacle extends StaticBody{
             hotspot:v2.half_one
         })
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
+        this.sprite.matrix=undefined
+        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
         if(this.health_data.dead){
             if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
@@ -134,15 +158,29 @@ export class Obstacle extends StaticBody{
                 spr.visible=false
             }
             if(this.def.assets?.frame?.dead_transform)this.sprite.transform_frame(this.def.assets?.frame.dead_transform)
+            if(this.shadow)this.shadow.visible=false
         }else{
             this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.base)
             this.container.zIndex=this.def.zIndex?.base===undefined?zIndexes.Obstacles1:this.def.zIndex?.base
-
             this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
             this.physical_data.no_collision=this.def.no_collision??false
             for(const spr of this.aditional_sprite){
                 spr.visible=true
             }
+            if(this.shadow){
+                this.shadow.visible=true
+                this.shadow.zIndex=this.container.zIndex-0.5
+                if(this.shadow_sprite){
+                    this.shadow_sprite.frame=this.sprite.frame
+                    this.shadow_sprite.transform_frame({
+                        scale:2,
+                        hotspot:v2.half_one
+                    })
+                    if(this.def.assets?.frame?.transform)this.shadow_sprite.transform_frame(this.def.assets.frame.transform)
+                    this.shadow_sprite.tint=this.game.world_shadow.color
+                }
+            }
+            if(this.def.parallax!==undefined)this.game.parallax[this.id]=this
         }
 
         this.container.visible=true
@@ -150,6 +188,15 @@ export class Obstacle extends StaticBody{
         const tid=this.def.assets?.frame?.tint_variations
         if(tid){
             this.sprite.tint=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+        }
+    }
+    update_shadow(){
+        if(this.shadow){
+            this.shadow.scale=v2.mul(this.container.scale,this.game.world_shadow.scale)
+            const vv=v2.scale(this.game.world_shadow.offset,this.container.scale.x)
+            v2m.add(vv,vv,this.container.position)
+            this.shadow.position=vv
+            this.shadow.rotation=this.container.rotation
         }
     }
     die(){
@@ -220,7 +267,24 @@ export class Obstacle extends StaticBody{
             this.container.add_child(s)
             this.aditional_sprite.push(s)
         }
+        if(this.game.world_shadow.enabled&&!this.def.world_shadow?.disabled){
+            this.shadow=new Container2D()
+
+            this.shadow_sprite=new Sprite2D()
+            this.shadow_sprite.tint=this.game.world_shadow.color
+            this.shadow.add_child(this.shadow_sprite)
+
+            this.shadow.layer=this.layer
+            this.game.cam2d.add_object(this.shadow)
+        }
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        if(this.def.expanded_behavior?.type===4){
+            this.press_data={
+                activated:false,
+                allow_switch:false,
+                locked:false
+            }
+        }
     }
 
     override set_hit_sounds_def(sounds: HitSoundsDef): void {
@@ -230,10 +294,7 @@ export class Obstacle extends StaticBody{
         }
         super.set_hit_sounds_def(sounds)
     }
-    initialized:boolean=false
     initialize_hitboxes(){
-        if(this.initialized)return
-        this.initialized=false
         if(this.def.hitbox)this.physical_data.hitbox=this.def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
         this.base_hitbox=this.physical_data.hitbox
         if(this.def.expanded_behavior){
@@ -249,6 +310,9 @@ export class Obstacle extends StaticBody{
         }
         if(this.def.below?.hitbox){
             this.below_hitbox=this.def.below.hitbox.transform(this.position,this.physical_data.scale)
+        }
+        if(this.shadow&&this.shadow instanceof Shape2D){
+            this.shadow.model=this.def.world_shadow?.model??model2d.hitbox(this.def.world_shadow?.hitbox??this.physical_data.hitbox,50)
         }
     }
     transform_into_update(def:number){
@@ -314,6 +378,7 @@ export class Obstacle extends StaticBody{
             if(ne===1)new_rot-=(Math.PI/2)
             if(ne===-1)new_rot+=(Math.PI/2)
             this.physical_data.hitbox=this.door_data!.hitboxes[this.door_data!.open]
+            this.base_hitbox=this.physical_data.hitbox
             if(force){
                 this.container.rotation=new_rot
             }else{
@@ -334,14 +399,33 @@ export class Obstacle extends StaticBody{
                     to:{rotation:new_rot},
                     onComplete:()=>{
                         this.door_data!.tween=undefined
+                        this.update_shadow()
                     }
                 })
             }
         }
     }
+    update_press_data(){
+        if(this.press_data!.old_data!==this.press_data?.activated){
+            const old=this.press_data!.old_data
+            this.press_data!.old_data=this.press_data?.activated
+            if(old!==undefined){
+                this.game.sounds.play(this.game.resources.get_sound((this.def.expanded_behavior as ObstacleBehaviorPress).press_sound??""),{
+                    bus:"obstacles",
+                    max_distance:20,
+                    position:this.position
+                })
+            }
+            if(this.press_data!.activated){
+                this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorPress).pressed_frame??{},this.game.resources)
+            }else{
+                this.update_frame()
+            }
+        }
+    }
     override on_interact(h:Human){
         if(this.def.expanded_behavior){
-            if(this.def.expanded_behavior.type==1){
+            if(this.def.expanded_behavior.type===1){
                 if(this.interacted)return
                 this.interacted=true
                 this.game.sounds.play(this.game.resources.get_sound(this.def.expanded_behavior.click_sound),{
@@ -363,17 +447,17 @@ export class Obstacle extends StaticBody{
             switch(this.def.expanded_behavior.type){
                 case 0:
                     return h.game.language.get("interact.obstacles.door."+(this.door_data?.open?"open":"close"),{
-                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                        obstacle:(h.game.language.get("objects."+this.def.idString))
                     })
                 case 1:
                     return h.game.language.get("interact.obstacles.playaudio",{
-                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                        obstacle:(h.game.language.get("objects."+this.def.idString))
                     })
                 case 2:
                     return h.game.language.get("interact.obstacles.scalable",{})
                 case 3:
                     return h.game.language.get("interact.obstacles.transform-into."+this.def.idString,{
-                        obstacle:(h.game.language.get("obstacles."+this.def.idString))
+                        obstacle:(h.game.language.get("objects."+this.def.idString))
                     })
             }
         }
@@ -386,7 +470,40 @@ export class Obstacle extends StaticBody{
         return (this.def.interactDestroy===true)
     }
 
-    override on_decode_net(stream: Stream, full: boolean): void {
+    set_visual(skin?:number,variation?:number){
+        this.skin=skin??0
+        if(!variation&&this.def?.assets?.frame?.variations){
+            this.variation=random.int(1,this.def.assets.frame.variations)
+        }else{
+            this.variation=variation??0
+        }
+        this.assets_data.frame.base=GetObstacleBaseFrame(this.def,this.variation,this.skin)
+        this.update_frame()
+    }
+    set_physical(scale:number,position?:Vec2,rotation?:number,side?:number){
+        this.physical_data.scale=scale
+        if(position!==undefined&&rotation!==undefined){
+            this.position=position
+            if(side!==undefined){
+                this.physical_data.rotation=rotation
+                this.physical_data.side=side
+            }else if(this.def.rotation_mode===RotationMode.limited){
+                this.physical_data.rotation=Angle.side_rad(rotation as Orientation)
+                this.physical_data.side=(side??0 as Orientation)
+            }else{
+                this.physical_data.rotation=rotation
+                this.physical_data.side=side??0
+            }
+            this.initialize_hitboxes()
+            this.container.rotation=this.physical_data.rotation
+            this.container.position=this.position
+        }
+        this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
+        this.container.scale.x=this.physical_data.scale
+        this.container.scale.y=this.physical_data.scale
+        this.update_shadow()
+    }
+    override on_decode_net(stream:Stream,full:boolean):void{
         const [
             visual,
             physical_data,physical_data_part,
@@ -394,42 +511,30 @@ export class Obstacle extends StaticBody{
             dead,
 
             door_dirty,
-            transform_into_active
+            transform_into_active,
+            press_active
         ]=stream.read_boolean_group()
-        if(visual||full){
-            this.variation=stream.read_uint8()
-            this.skin=stream.read_uint8()
-        }
         if(full){
             const id=stream.read_uint16()
             this.set_definition(this.game.definitions.obstacles.getFromNumber(id))
-            this.update_frame()
+        }
+        if(visual||full){
+            this.set_visual(stream.read_uint8(),stream.read_uint8())
         }
         if(physical_data_part||physical_data||full){
-            this.physical_data.scale=stream.read_float(0,10,2)
-
+            const scale=stream.read_float(0,10,2)
+            let position:Vec2|undefined
+            let rotation:number|undefined
+            let side:number|undefined
             if(full||physical_data){
-                this.position=stream.read_pos2()
-                this.physical_data.rotation=stream.read_rad()
-                this.physical_data.side=stream.read_uint8()
-
-                this.initialize_hitboxes()
-                if(Debug.hitbox){
-                    this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-                    this.game.hitboxes_gfx.ctx.set_hitbox(this.hitbox)
-                }
+                position=stream.read_pos2()
+                rotation=stream.read_rad()
+                side=stream.read_uint8()
             }
-
-            this.base_hitbox=this.physical_data.hitbox.transform(undefined,this.physical_data.scale)
-            this.container.scale.x=this.physical_data.scale
-            this.container.scale.y=this.physical_data.scale
-
-            this.container.rotation=this.physical_data.rotation
-            this.container.position=this.position
+            this.set_physical(scale,position,rotation,side)
         }
         if(health_data||full){
             this.health_data.health=stream.read_float(0,1,1)
-
             if(dead){
                 this.die()
             }else if(!dead&&this.health_data.dead){
@@ -441,7 +546,6 @@ export class Obstacle extends StaticBody{
                 }
             }
         }
-
         if(door_dirty){
             this.update_door(stream.read_int8(),full)
         }
@@ -451,6 +555,18 @@ export class Obstacle extends StaticBody{
             }else if(transform_into_active){
                 this.transform_into_update(stream.read_uint8())
             }
+        }
+        if(this.press_data&&(press_active||full)){
+            const bg=stream.read_boolean_group()
+            this.press_data.activated=bg[0]
+            this.press_data.locked=bg[1]
+            this.press_data.allow_switch=bg[2]
+            this.update_press_data()
+        }
+        if(Debug.hitbox&&full){
+            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.fill()
         }
     }
 }

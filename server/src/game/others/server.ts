@@ -1,13 +1,14 @@
-import { Server, AbstractGameContainer, AbstractGameServer} from "common/engine/server.ts"
+import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameContainer, AbstractSelfGameContainer, DenoFileManager} from "common/engine/deno.ts"
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
-import { GameData } from "./game.ts";
+import { Game, GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
-import { deepEqual } from "common/engine/core.ts";
+import { deepEqual, FileManager, random } from "common/engine/core.ts";
+import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 export class ApiConnection {
     socket?: WebSocket
     logged:boolean=false
     constructor(public game: GameServer,public config: GameServerConfig) {}
-    connect(attempts=5) {
+    connect(attempts=20) {
         if(attempts<=0)return
         this.logged=false
         const ws = new WebSocket(this.config.authentication!.server)
@@ -49,7 +50,7 @@ export class ApiConnection {
                 const addr=game?.get_address?.()
                 this.send({
                     type: "find_game_response",
-                    request_id: msg.request_id,
+                    response_id: msg.request_id,
                     success: game ? true : false,
                     address: addr
                 })
@@ -70,23 +71,23 @@ export class ApiConnection {
 }
 export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     api_conn?:ApiConnection
+    fs:FileManager
     constructor(server: Server,config:GameServerConfig){
         super(server,config)
-
+        this.fs=new DenoFileManager()
         if(config.authentication&&config.region){
             this.api_conn=new ApiConnection(this,config)
             this.api_conn.connect()
         }
-
-        for(let i=0;i<6;i++){
-            this.add_container(new GameContainer())
+        for(let i=0;i<=config.max_games;i++){
+            this.add_container(config.use_workers?new WorkerGameContainer():new SelfGameContainer())
         }
     }
     get_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
             if(
-                g.data.running&&g.data.can_join&&
-                (!g.config||g.config.mode.mode===config?.mode?.mode&&g.config.group_size===config.group_size&&deepEqual(g.config.mode.settings,config.mode.settings))
+                g.data&&g.data.running&&g.data.can_join&&
+                (!g.config||g.config.mode===config?.mode&&g.config.group_size===config.group_size&&deepEqual(g.config.settings,config.settings))
             ){
                 return g as GameContainer
             }
@@ -95,32 +96,52 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     }
     make_game(config?:GameConfig):GameContainer|undefined{
         for(const g of this.games.values()){
-            if(!g.data.running){
-                if(!config||!config.mode){
-                    config={
-                        mode:{
-                            mode:"normal",
-                            settings:{
-                                map:{
-                                }
-                            }
-                        },
+            if(!g.running||g.data?.running)continue
+            if(!config||!config.mode){
+                config={
+                    mode:"normal",
+                    settings:{
+                        map:{}
                     }
                 }
-                g.new_game(config)
-                return g as GameContainer
             }
+            g.new_game(config)
+            return g
         }
         return undefined
     }
 }
-export class GameContainer extends AbstractGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>{
+export type GameContainer = AbstractGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>
+export class SelfGameContainer extends AbstractSelfGameContainer<Game,GameData,GameConfig,GameServerConfig,WorkerMessage>{
+    constructor(){
+        super(PacketManager)
+    }
+    override async make_game(config: GameConfig): Promise<Game> {
+        const game=new Game(this.server.config,this.clients_manager,(this.server as unknown as GameServer).fs)
+        game.string_id=random.code(20)
+        await game.auto_init(config!)
+        game.update_data()
+        return game
+    }
+    override on_message(msg: WorkerMessage): void {
+    }
+    override begin(): void {
+        this.server.server!.route("/api/ws/"+this.id,this.clients_manager.handler())
+    }
+    get_address():string{
+        const ssl=this.server.config.region?.ssl===undefined?this.server.config.host.ssl:this.server.config.region.ssl
+        return `ws${ssl?"s":""}://${this.server.config.region?.ip??"localhost"}:${this.server.server.port}/api/ws/${this.id}`
+    }
+}
+export class WorkerGameContainer extends AbstractWorkerGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>{
     override worker_path: URL
     constructor(){
         super()
 
         const worker_path=import.meta.filename?.endsWith(".ts")?"./game_worker.ts":"./game_worker.js"
         this.worker_path=new URL(worker_path, import.meta.url)
+    }
+    override on_message(msg: WorkerMessage): void {
     }
     override get_address():string{
         const ssl=this.server.config.region?.ssl===undefined?this.server.config.host.ssl:this.server.config.region.ssl

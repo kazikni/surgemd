@@ -1,0 +1,41 @@
+@use "../components/background.scss";
+@use "../components/button.scss";
+.game-editor-ui{
+    position: absolute;
+    z-index: 10;
+}
+.editor-window{
+    @extend .menu-panel-blue;
+    position: absolute;
+    .smde-window-top{
+        border-bottom: #07aaeeaa 2px solid;
+    }
+    .smde-window-close-btn{
+        @extend .btn-red;
+        border-left: none;
+        border-top: none;
+        border-bottom: none;
+        border-radius: 0;
+        font-size: 13px;
+    }
+}
+.editor-menu{
+    @extend .menu-panel-blue;
+    position: absolute;
+    height: fit-content;
+    smde-option, smde-option-submenu{
+        @extend .btn-blue;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-radius: 0;
+    }
+    smde-option-submenu{
+        border-right: #07aaeeaa 5px inset;
+    }
+}
+.editor-object-row{
+    width: fit-content;
+    height: fit-content;
+    pointer-events: all;
+}

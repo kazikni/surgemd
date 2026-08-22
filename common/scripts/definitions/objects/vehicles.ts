@@ -1,6 +1,7 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode } from "../../others/constants.ts";
 import { FloorKind } from "../../others/terrain.ts";
+import { ScopeChange } from "../utils.ts";
 export interface WheelDef{
     movable: boolean
     position: Vec2
@@ -10,6 +11,12 @@ export interface WheelDef{
         stress_resistance?:number
         frame_transform?:FrameTransform
     }
+}
+export interface VehicleSeatDef{
+    position: Vec2
+    leave: Vec2
+    doors: Vec2[]
+    scope_change?:ScopeChange
 }
 export interface VehicleDef extends Definition {
     hitbox: Hitbox2D
@@ -37,16 +44,8 @@ export interface VehicleDef extends Definition {
 
         floor_kind?:Record<number,{rolling_resistance:number,traction:number}>
     }
-    pillot_seat?: {
-        position: Vec2
-        leave: Vec2
-        doors: Vec2[]
-    }
-    seats?: {
-        position: Vec2
-        leave: Vec2
-        doors: Vec2[]
-    }[]
+    pillot_seat?: VehicleSeatDef
+    seats?: VehicleSeatDef[]
     wheels: {
         stress_distance?:number
         defs: WheelDef[]
@@ -73,15 +72,13 @@ export const VehicleTemplates = {
         pillot_seat: {
             position: v2(0, 0),
             leave: v2(0, 1),
-            doors: [v2(0, 0.5), v2(0, -0.5)]
+            doors: [v2(0, 0.5), v2(0, -0.5)],
+            scope_change:{zoom:0.25}
         },
         wheels: {
             defs: [
-                {
-                    movable: true,
-                    position: v2(0.5, 0),
-                    scale: 2.5
-                }
+                {movable: true,position: v2(0.75, 0),scale: 1},
+                {movable: true,position: v2(-0.75, 0),scale: 1}
             ]
         },
         physics:{
@@ -120,25 +117,26 @@ export const VehicleTemplates = {
         physics:{
             mass:1200,
 
-            engine_force:4500,
+            engine_force:20000,
             brake_force:1000,
-            reverse_speed_mult:0.45,
+            reverse_speed_mult:0.75,
 
-            traction:1,
-            drag:0.3,
-            max_steer_speed:12,
-            steer_force:12,
+            traction:1.5,
+            drag:1.4,
+            max_steer_speed:25,
+            steer_force:20,
             floor_kind:{
                 [FloorKind.Liquid]:{
                     traction:0.2,
-                    rolling_resistance:5,
+                    rolling_resistance:4,
                 }
             }
         },
         pillot_seat:{
             position:v2(0,-0.7),
             leave:v2(0,-1.5),
-            doors:[v2(0,-1.5)]
+            doors:[v2(0,-1.5)],
+            scope_change:{zoom:0.3}
         },
 
         seats:[
@@ -223,7 +221,8 @@ export const VehicleTemplates = {
         pillot_seat:{
             position:v2(-2,0),
             leave:v2(-2,-1.5),
-            doors:[v2(-2,-1.5)]
+            doors:[v2(-2,-1.5)],
+            scope_change:{zoom:0.3}
         },
         seats:[
             {

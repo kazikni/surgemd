@@ -3,8 +3,42 @@ import { type Human } from "./human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { MovingBody } from "./moving_body.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
-import { type ServerGameObject } from "../others/gameObject.ts";
+import { ServerGameObject } from "../others/gameObject.ts";
 import { type StaticBody } from "./static_body.ts";
+export class SyncedParticlesCreator extends ServerGameObject{
+    override number_type: number=-1
+    override string_type: string=""
+
+    count:number=7
+    time:number=0.2
+    timer:number=0
+    owner?:Human
+    def!:SyncedParticleDef
+    constructor(){
+        super()
+
+        this.allow_tick=true
+    }
+    
+    
+    override on_create(args:{position:Vec2,def:SyncedParticleDef,owner?:Human,count?:number,time?:number}){
+        if(args.count!==undefined)this.count=args.count
+        if(args.time!==undefined)this.time=args.time
+        this.def=args.def
+        this.position=args.position
+    }
+    override on_tick(dt: number): void {
+        this.timer-=dt
+        if(this.timer<=0){
+            this.game.add_synced_particle(this.position,this.def,this.owner,this.layer)
+
+            this.timer+=this.time
+            this.count--
+
+            if(this.count<=0)this.destroy()
+        }
+    }
+}
 export class SyncedParticle extends MovingBody {
     string_type="synced"
     number_type=GameObjectType.SyncedParticle

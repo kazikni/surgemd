@@ -1,7 +1,8 @@
-import { CenterHotspot, CircleHitbox2D, Stream, Sprite2D, v2, v2m, ColorM, random, ABParticle2D } from "common/engine/client.ts"
+import { Sprite2D, ABParticle2D } from "common/engine/web.ts"
 import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { CircleHitbox2D, ColorM, random, Stream, v2, v2m } from "common/engine/core.ts";
 
 export class Parachute extends GameObject{
     ////////////////////////////
@@ -28,7 +29,7 @@ export class Parachute extends GameObject{
         this.sprite.set_frame({
             image:"parachute",
             scale:2,
-            hotspot:CenterHotspot,
+            hotspot:v2.half_one,
             zIndex:zIndexes.Parachute
         },this.game.resources)
         this.game.cam2d.add_object(this.sprite)
@@ -50,7 +51,7 @@ export class Parachute extends GameObject{
                 this.game.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
-                        hotspot:CenterHotspot,
+                        hotspot:v2.half_one,
                         zIndex:zIndexes.Decals,
                         layer:this.layer,
                         scale:0,
@@ -66,7 +67,10 @@ export class Parachute extends GameObject{
                 }))
             }
         }else{
-            this.game.sounds.play(this.game.resources.get_sound("airdrop_landed"))
+            this.game.sounds.play(this.game.resources.get_sound("airdrop_landed"),{
+                position:this.position,
+                max_distance:30,
+            })
         }
     }
     override on_tick(dt: number): void {
@@ -81,7 +85,7 @@ export class Parachute extends GameObject{
         v2m.add(this.sprite.scale,s,v2(1.35,1.35))
         this.sprite.position=this.position
     }
-    override on_decode_net(stream:Stream,full: boolean):void{
+    override on_decode_net(stream:Stream,full:boolean):void{
         this.time=stream.read_float(0,30,2)
         if(full){
             this.position=stream.read_pos2()

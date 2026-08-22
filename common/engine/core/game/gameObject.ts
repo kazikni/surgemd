@@ -36,22 +36,25 @@ export abstract class BaseObject2D{
     public id!:GameObjectID
     public layer!:number
 
-
     allow_tick:boolean=false
     allow_physics_update:boolean=false
-    allow_net_update:boolean=false
     allow_render:boolean=false
+    allow_net_update:boolean=false
+    allow_dirty:boolean=true
     allow_checkpoint:boolean=true
 
+    net_sync_can_unsee:boolean=true
     net_sync_deletion:boolean=true
     net_sync_dirty:boolean=true
     net_sync_creation:boolean=true
+    net_sync_cache:boolean=true
 
     physics_frozen:boolean=false
     is_new:boolean=true
 
     // deno-lint-ignore no-explicit-any
     public manager!:GameObjectManager2D<any>
+    pool?:GameObjectPool2D<any>
 
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
@@ -86,6 +89,7 @@ export abstract class BaseObject2D{
     on_layer_set():void{}
     on_tick(_dt:number):void{}
     on_physics_tick(_dt:number):void{}
+    on_render(_dt:number):void{}
     on_net_update():void{}
     on_destroy():void{}
 
@@ -96,18 +100,22 @@ export abstract class BaseObject2D{
     }
 
     set_dirty_part(){
-        this.manager.part_dirty_objects[this.id]=this
+        if(this.manager.part_dirty_cache[this.id])delete this.manager.part_dirty_cache[this.id]
+        if(this.manager.full_dirty_cache[this.id])delete this.manager.full_dirty_cache[this.id]
+        if(this.allow_dirty)this.manager.part_dirty_objects[this.id]=this
     }
     set_dirty_full(){
-        this.manager.full_dirty_objects[this.id]=this
+        if(this.manager.full_dirty_cache[this.id])delete this.manager.full_dirty_cache[this.id]
+        if(this.manager.part_dirty_cache[this.id])delete this.manager.part_dirty_cache[this.id]
+        if(this.allow_dirty)this.manager.full_dirty_objects[this.id]=this
     }
 }
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cell_size: number;
-    cells: Map<bigint,GameObject[]> = new Map();
-    object_cells: Map<number, bigint[]> = new Map();
-
+    cells: Map<bigint,GameObject[]> = new Map()
+    object_cells: Map<number, bigint[]> = new Map()
     dirty_objects:Set<GameObject>=new Set()
+    modules?:WebAssembly.Module
 
     constructor(cell_size = 5) {
         this.cell_size = cell_size;
@@ -122,7 +130,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
 
     cell_pos(pos: Vec2) {
         v2m.dscale(pos,pos,this.cell_size)
-        v2m.floor(pos)
+        v2m.round(pos)
     }
 
     registry(obj: GameObject) {
@@ -229,11 +237,11 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
         const dirX = dx * invLen
         const dirY = dy * invLen
 
-        let cx = Math.floor(origin.x / this.cell_size)
-        let cy = Math.floor(origin.y / this.cell_size)
+        let cx = Math.round(origin.x / this.cell_size)
+        let cy = Math.round(origin.y / this.cell_size)
 
-        const endX = Math.floor(dest.x / this.cell_size)
-        const endY = Math.floor(dest.y / this.cell_size)
+        const endX = Math.round(dest.x / this.cell_size)
+        const endY = Math.round(dest.y / this.cell_size)
 
         const stepX = dirX >= 0 ? 1 : -1
         const stepY = dirY >= 0 ? 1 : -1
@@ -328,25 +336,65 @@ export type CheckpointContext={
     idco:Record<number,number> // Record<ObjectID, CheckpointObjectID>
     coid:Record<number,number> // Record<CheckpointObjectID, ObjectID>
 }
-export interface Layer2D<GameObject extends BaseObject2D> {
-    //objects:Record<GameObjectID,GameObject>
+export interface Layer2D{
     orden:number[]
     ticks:number[]
     physics_update:number[]
     net_update:number[]
     render:number[]
 }
+
+export class GameObjectPool2D<GameObject extends BaseObject2D> {
+    objects: GameObject[] = []
+    available: GameObject[] = []
+
+    constructor(private factory:()=>GameObject){}
+
+    allocate(): GameObject {
+        let obj=this.available.pop()
+        if(!obj){
+            obj=this.factory()
+            obj.pool=this
+            this.objects.push(obj)
+        }
+        return obj
+    }
+    release(obj: GameObject) {
+        this.available.push(obj)
+    }
+    preallocate(count: number) {
+        for (let i = 0; i < count; i++) {
+            const obj = this.factory()
+            obj.pool = this
+            this.objects.push(obj)
+            this.available.push(obj)
+        }
+    }
+    free() {
+        this.objects.length = 0
+        this.available.length = 0
+    }
+}
+
 export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
 export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number|undefined,layer:number,type:number)=>GameObject|undefined
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
+    modules?:WebAssembly.Module
     cells:CellsManager2D<GameObject>
 
-    layers:Record<number,Layer2D<GameObject>>={}
+    layers:Record<number,Layer2D>={}
     layers_orden:number[]=[]
 
     objects:Record<number,GameObject>={}
+    pools:Record<number,GameObjectPool2D<GameObject>>={}
+
     full_dirty_objects:Record<number,GameObject>={}
     part_dirty_objects:Record<number,GameObject>={}
+
+    save_dirty_cache:boolean=true
+    full_dirty_cache:Record<number,Uint8Array>={}
+    part_dirty_cache:Record<number,Uint8Array>={}
+
     news_queue:Set<GameObject>=new Set()
     destroy_queue:GameObject[]=[]
 
@@ -362,6 +410,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     clear(){
         for(const obj in this.objects){
             this.objects[obj].on_destroy()
+            if(this.objects[obj].pool)this.objects[obj].pool.release(obj)
             this.objects[obj].registred=false
             this.objects[obj].destroyed=true
         }
@@ -370,11 +419,21 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.objects={}
         this.full_dirty_objects={}
         this.part_dirty_objects={}
+        this.part_dirty_cache={}
+        this.full_dirty_cache={}
         this.news_queue.clear()
         this.destroy_queue.length=0
         this.layers_orden.length=0
 
         this.cells.clear()
+    }
+    update_layers_orden(){
+        for(const l of this.layers_orden){
+            this.layers[l].ticks=this.layers[l].orden.filter((v)=>this.objects[v].allow_tick)
+            this.layers[l].render=this.layers[l].orden.filter((v)=>this.objects[v].allow_render)
+            this.layers[l].net_update=this.layers[l].orden.filter((v)=>this.objects[v].allow_net_update)
+            this.layers[l].physics_update=this.layers[l].orden.filter((v)=>this.objects[v].allow_physics_update)
+        }
     }
     set_layer(obj: GameObject, new_layer: number) {
         if (!obj.registred) return
@@ -388,7 +447,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         let ret=0
         do {
             ret = random.id()
-        } while (this.objects[ret])
+        } while (this.objects[ret]||ret===0)
         return ret
     }
     // deno-lint-ignore no-explicit-any
@@ -444,6 +503,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     unregister_object(obj:GameObject){
         if(!obj.registred)return
         obj.registred=false
+        if(obj.pool)obj.pool.release(obj)
         this.cells.unregistry(obj)
         let idx=this.layers[obj.layer].orden.indexOf(obj.id)
         if(idx>=0)this.layers[obj.layer].orden.splice(idx,1)
@@ -463,12 +523,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             idx=this.layers[obj.layer].render.indexOf(obj.id)
             if(idx>=0)this.layers[obj.layer].render.splice(idx,1)
         }
+        if(this.part_dirty_cache[obj.id])delete this.part_dirty_cache[obj.id]
+        if(this.full_dirty_cache[obj.id])delete this.full_dirty_cache[obj.id]
         delete this.objects[obj.id]
     }
     delete_object(obj:GameObject){
         if(!obj.deleted)
         obj.deleted=true
         this.unregister_object(obj)
+        obj.on_net_update()
         obj.on_destroy()
     }
     get_object(id:number):GameObject|undefined{
@@ -492,6 +555,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         const size = stream.read_uint24()
         const start = stream.index
         const end = start + size
+        let tp:number|undefined
         try{
             const b = stream.read_boolean_group()
             if (!(b[0] || b[1] || b[2])) {
@@ -502,7 +566,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             if (!this.layers[layer]) {
                 this.add_layer(layer)
             }
-            const tp = stream.read_uint8()
+            tp = stream.read_uint8()
             let obj:GameObject|undefined = this.objects[oid]
             if (b[3] && !obj && !b[2]) {
                 const obb = this.make_object_net(oid, layer, tp)
@@ -535,7 +599,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             console.error(e)
         }finally{
             if(stream.index !== end){
-                console.warn(`Size mismatch (${stream.index-start}/${size})`)
+                console.warn(`Size mismatch (${stream.index-start}/${size}) tp:${tp}`)
             }
             stream.index = start + size
         }
@@ -581,13 +645,30 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
     }
     encode_object_net(object:GameObject,full:boolean,stream:Stream,options:any){
+        const full_dirty=(full||this.full_dirty_objects[object.id])&&object.net_sync_dirty
+        const dirty_part=(full_dirty||this.part_dirty_objects[object.id])&&object.net_sync_dirty
+
+        let cache:Uint8Array|undefined
+        if(!options){
+            if(full_dirty){
+                cache=this.full_dirty_cache[object.id]
+            }else if(dirty_part){
+                cache=this.part_dirty_cache[object.id]
+            }
+        }
+        if(cache){
+            stream.write_uint24(cache.length)
+            stream.write_bytes(cache)
+            return
+        }
+
         const sizePos = stream.index
         stream.write_uint24(0)
         const start = stream.index
 
         const bools=[
-            (full||this.part_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Part
-            (full||this.full_dirty_objects[object.id])&&object.net_sync_dirty, //Dirty Full
+            dirty_part, //Dirty Part
+            full_dirty, //Dirty Full
             object.destroyed&&object.net_sync_deletion, //Dirty Deletion
             object.net_sync_creation, //Dirty Creation
             object.is_new
@@ -604,8 +685,13 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
 
         const end = stream.index
         stream.index = sizePos
-        stream.write_uint24(end - start)
+        stream.write_uint24(end-start)
         stream.index = end
+
+        if(!options&&this.save_dirty_cache&&object.net_sync_cache){
+            if(full_dirty)this.full_dirty_cache[object.id]=stream.data.slice(start,end)
+            else if(dirty_part)this.part_dirty_cache[object.id]=stream.data.slice(start,end)
+        }
     }
     encode_all_net(force_full:boolean=false,delete_all:boolean=false,stream?:Stream):Stream{
         if(!stream){
@@ -623,37 +709,65 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         return stream
     }
-    encode_list_net(objects:GameObject[],last_list:GameObject[],force_full:boolean=false,delete_all:boolean=false,object_options?:(obj:GameObject)=>any,stream?:Stream):{last:GameObject[],strm:Stream}{
-        if(!stream){
-            if(!this.stream_cache)this.stream_cache=new DynamicStream()
-            stream=this.stream_cache
+    encode_list_net(objects: GameObject[],last_list: GameObject[],force_full: boolean = false,delete_all: boolean = false,object_options?: (obj: GameObject) => any,stream?: Stream):{ last: GameObject[], strm: Stream } {
+        if (!stream) {
+            if (!this.stream_cache) this.stream_cache = new DynamicStream()
+            stream = this.stream_cache
             this.stream_cache.clear()
         }
-        stream.write_uint8(200) // List Encode
-        stream.write_boolean_group(force_full,delete_all)
 
-        const list:[GameObject,boolean][]=[]
-        objects.forEach((v)=>{
-            const full=force_full||this.full_dirty_objects[v.id]!==undefined||!last_list.includes(v)
-            if(full||this.part_dirty_objects[v.id])list.push([v,full])
-        })
+        stream.write_uint8(200)
+        stream.write_boolean_group(force_full, delete_all)
+
+        const current = new Map<number, GameObject>()
+        for (const obj of objects) {
+            current.set(obj.id, obj)
+        }
+
+        const effective:GameObject[]=[...objects]
+        for (const obj of last_list) {
+            if(current.has(obj.id))continue
+            if(!obj.net_sync_can_unsee&&!obj.destroyed) {
+                effective.push(obj)
+            }
+        }
+
+        const unique=new Map<number,GameObject>()
+        for(const obj of effective){
+            unique.set(obj.id, obj)
+        }
+
+        const next_list = [...unique.values()]
+
+        const list: [GameObject, boolean][]=[]
+        for(const obj of next_list){
+            const full=force_full||this.full_dirty_objects[obj.id]!==undefined||!last_list.some(v => v.id === obj.id)
+            if(full||this.part_dirty_objects[obj.id]!==undefined){
+                list.push([obj, full])
+            }
+        }
 
         stream.write_uint16(list.length)
-        for(const o of list){
-            this.encode_object_net(o[0],o[1],stream,object_options?object_options(o[0]):null)
+        for(const [obj, full] of list) {
+            this.encode_object_net(obj,full,stream,object_options?object_options(obj):null)
         }
 
-        // Destroy Queue
         const deletions: GameObject[] = []
-        for (const obj of last_list){
-            if (obj.net_sync_deletion && !objects.includes(obj))deletions.push(obj)
-        }
-        stream.write_uint16(deletions.length)
-        for(let i=0;i<deletions.length;i++){
-            stream.write_id(deletions[i].id)
+        for(const obj of last_list){
+            if(obj.net_sync_deletion&&!next_list.some(v => v.id === obj.id)){
+                deletions.push(obj)
+            }
         }
 
-        return {strm:stream,last:objects}
+        stream.write_uint16(deletions.length)
+        for(const obj of deletions){
+            stream.write_id(obj.id)
+        }
+
+        return {
+            strm: stream,
+            last: next_list
+        }
     }
     encode_checkpoint(stream:Stream,settings:CheckpointSettings={}){
         const save_id=settings.save_id??false
@@ -717,8 +831,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             coid:{},
             idco:{}
         }
-        
-
         for(let i=0;i<layers_count;i++){
             const objects:GameObject[]=[]
             const layer=stream.read_uint8()
@@ -729,7 +841,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const co=stream.read_id()
                 const tp=stream.read_uint8()
                 //const bg=stream.read_boolean_group()
-                const obb=this.make_object_checkpoint(stream,id,layer,tp)
+                const obb=this.pools[tp]?this.pools[tp].allocate():this.make_object_checkpoint(stream,id,layer,tp)
                 if(!obb)continue
                 const obj=this.add_object(obb,layer,id)
                 obj.is_new=false
@@ -745,6 +857,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 obj.on_decode_checkpoint(stream,ctx)
             }
         }
+        this.update_layers_orden()
         return layers
     }
     tick(dt:number){
@@ -753,6 +866,19 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const obj=this.objects[o]
                 try{
                     obj.tick(dt)
+                }catch(err){
+                    console.error(err)
+                }
+            }
+        }
+        this.cells.update()
+    }
+    render(dt:number){
+        for(const l of this.layers_orden){
+            for(const o of this.layers[l].ticks){
+                const obj=this.objects[o]
+                try{
+                    obj.on_render(dt)
                 }catch(err){
                     console.error(err)
                 }

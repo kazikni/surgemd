@@ -1,7 +1,8 @@
-import { ABParticle2D, CircleHitbox2D, ClientParticle2D, ColorM, ease, KDate, Lights2D, ParticlesEmitter2D, RainParticle2D, random, Sound, SoundController, Tween, v2 } from "common/engine/client.ts";
+import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, Sound, SoundController, Tween } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
+import { CircleHitbox2D, ColorM, ease, KDate, matrix4, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
 
 export class AmbientManager{
     game:Game
@@ -18,6 +19,8 @@ export class AmbientManager{
     fog_constrast:number=1
     fog_enabled:boolean=false
 
+    finalization:boolean=false
+
     //light_map:Lights2D=new Lights2D()
     // Temporaly
     _global_ilumination:number=1
@@ -29,7 +32,7 @@ export class AmbientManager{
         if(this.fog_enabled){
             this.game.renderer.canvas.style.filter=`hue-rotate(${this.fog_color}deg) saturate(${this.fog_saturate}) contrast(${this.fog_constrast}) brightness(${val})`
         }else{
-            this.game.renderer.canvas.style.filter=`brightness(${val})`
+            this.game.renderer.canvas.style.filter=`brightness(${val}) contrast(${1 + Math.max(0, val - 1) * 0.25})`
         }
     }
 
@@ -84,6 +87,14 @@ export class AmbientManager{
                         speed,
                         lifetime:lifetime,
                         decay_time:10,
+                        on_tick:(o:RainParticle2D,dt:number)=>{
+                            if(o.stage===0){
+                                if(!o.sprite.matrix)o.sprite.matrix=matrix4.identity()
+                                this.game.cam2d.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
+                            }else{
+                                o.sprite.matrix=undefined
+                            }
+                        }
                     })
                 },
             enabled:false
@@ -103,7 +114,7 @@ export class AmbientManager{
                     zIndex:zIndexes.Particles,
                     life_time:random.float(10,30),
                     direction:dir,
-                    position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height))),
+                    position:v2.random2(v2.sub(this.game.cam2d.position,this.game.cam2d.size),v2.add(this.game.cam2d.position,this.game.cam2d.size)),
                     speed:random.float(0.4,1),
                     angle:ang,
                     scale:random.float(0.5,1),
@@ -132,7 +143,7 @@ export class AmbientManager{
                     zIndex:zIndexes.Particles,
                     life_time:random.float(5,10),
                     direction:dir,
-                    position:v2.random2(this.game.cam2d.visual_position,v2.add(this.game.cam2d.visual_position,v2(this.game.cam2d.width,this.game.cam2d.height))),
+                    position:v2.random2(v2.sub(this.game.cam2d.position,this.game.cam2d.size),v2.add(this.game.cam2d.position,this.game.cam2d.size)),
                     speed:random.float(0.1,0.7),
                     angle:ang,
                     scale:random.float(0.4,0.7),
@@ -154,17 +165,18 @@ export class AmbientManager{
         this.ambience=this.game.sounds.create_controller("ambience")
         this.deadzone_ambience=this.game.sounds.create_controller("ambience")
 
-        this.music.set_volume(0.5)
+        this.music.volume=0.4
 
         this.game.sounds.signals.on("unlock",async()=>{
-            await this.game.resources.load_sound("menu_music",{src:`/sounds/musics/menu_music.mp3`,volume:1},"essentials")
-            this.game.resources.load_sound("gameover_music",{src:`/sounds/musics/game_over_music_1.mp3`,volume:1},"essentials")
+            await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1},"essentials")
 
             const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)
-            this.music.set(menu_music)
+            if(!this.game.happening)this.music.set(menu_music)
             if(this.game.menu.intro_fineshed){
-                this.music.set(menu_music)
+                this.music.set(menu_music,{
+                    loop:true
+                })
             }else{
                 video.addEventListener("ended",()=>{
                     this.music.set(menu_music)
@@ -179,26 +191,28 @@ export class AmbientManager{
         this.game.cam2d.add_object(this.light_map)*/
     }
     on_game_close(){
-        this.end_game=false
         this.music.set(this.game.resources.get_sound("menu_music"),{
             loop:true,
         })
         this.ambience.set(undefined)
         this.last_music_pos=0
+        this.finalization=false
     }
     on_game_start(){
-        this.end_game=false
         this.music.set(this.game.resources.get_sound("level_music"),{
             loop:true
         })
-        this.reload()
         this.last_music_pos=0
+        this.music.set(undefined)
+        this.ambience.set(undefined)
+        this.reload()
     }
     clear(){
         this.music.set(undefined)
         this.ambience.set(undefined)
     }
     update_day_light() {
+        if(this.bolt_tween)return
         const time = this.date.hour + this.date.minute / 60
 
         let light = 0
@@ -217,9 +231,9 @@ export class AmbientManager{
         }
 
         light = ease.quadraticInOut(light)
-        const rainDark = this.rain_value * 0.2
+        const rainDark = this.rain_value * 0.3
 
-        this.global_ilumination = Math.max(light * (1 - rainDark),0.4)
+        this.global_ilumination = Math.max(light * (1 - rainDark),0.3)
     }
     set_rain_state(value:number=0,thunderstorm:number=0){
         if(!this.game.minimap.biome)return
@@ -267,16 +281,12 @@ export class AmbientManager{
         this.set_rain_state(0,0)
         this.deadzone_ambience_sound=this.game.resources.get_sound("deadzone_ambience")
     }
-    /*musics:string[]=[
-        "game_snow_music_1",
-        "game_snow_music_2",
-    ]*/
     end_game=false
     update_camera(){
         if(!this.game.active_entity)return
         this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*7)
-        if(this.rain_value>0)this.rain_particles_emitter.limit=(this.rain_value*150)/this.game.cam2d.zoom
-        this.ambient_particles_emitter.limit=6/this.game.cam2d.zoom
+        if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.cam2d.zoom
+        else this.rain_particles_emitter.limit=0
     }
     render(){
     }
@@ -290,27 +300,29 @@ export class AmbientManager{
                 this.date.hour+=1
             }
             
-            if(this.thunders){
-                if(Math.random()<=0.05){
+            if(this.thunders>0&&this.rain_value){
+                if(Math.random()<=this.thunders*0.75){
                     this.bolt()
                 }
             }
 
-            if(!this.game.game_over){
-                if(this.game.save.get_variable("sv_sounds_gameplay_music")){
-                    if(this.finding_music&&!this.music.running&&this.musics.length>0){
-                        if(Math.random()<=0.01){
-                            const music=random.choose(this.musics)
-                            this.game.resources.unload_sound("gameplay_music")
-                            this.game.resources.load_sound("gameplay_music",{
-                                src:music,
-                                volume:1
-                            }).then((v)=>{
-                                this.music.set(v)
-                                this.finding_music=true
-                            })
-                            this.finding_music=false
-                        }
+            if(!this.game.game_over&&!this.game.game_over&&!this.finalization&&!this.music.running&&this.musics.length>0){
+                if(Math.random()<=0.009){
+                    if(this.finding_music&&this.game.save.get_variable("sv_sounds_gameplay_music")){
+                        const music=random.choose(this.musics)
+                        this.game.resources.unload_sound("gameplay_music")
+                        this.game.resources.load_sound("gameplay_music",{
+                            src:music,
+                            volume:1
+                        }).then((v)=>{
+                            if(this.finalization){
+                                this.game.resources.unload_sound("gameplay_music")
+                                return
+                            }
+                            this.music.set(v)
+                            this.finding_music=true
+                        })
+                        this.finding_music=false
                     }
                 }
             }
@@ -333,21 +345,44 @@ export class AmbientManager{
         if(this.bolt_tween){
         //
         }else{
-        this.game.sounds.play(this.game.resources.get_sound(`thunder_${random.int(1,3)}`),{
-            bus:"ambience"
+            this.game.sounds.play(this.game.resources.get_sound(`thunder_${random.int(1,3)}`),{
+                bus:"ambience"
+            })
+            this.bolt_tween=this.game.add_tween({
+                target: this,
+                // deno-lint-ignore ban-ts-comment
+                //@ts-ignore
+                to: { global_ilumination: 1.5 },
+                duration: 0.3,
+                yoyo: true,
+                ease:ease.elasticOut,
+                onComplete: () => {
+                    this.bolt_tween = undefined;
+                    
+                },
+            }) as unknown as Tween<Lights2D>
+        }
+    }
+    start_finalization(){
+        if(this.finalization)return
+        this.finalization=true
+        this.music.set(null)
+        this.game.sounds.play(this.game.resources.get_sound("ui_final"),{
+            bus:"ui",
+            volume:0.75
         })
-        this.bolt_tween=this.game.add_tween({
-            target: this,
-            // deno-lint-ignore ban-ts-comment
-            //@ts-ignore
-            to: { global_ilumination: 1 },
-            duration: 0.3,
-            yoyo: true,
-            ease:ease.elasticOut,
-            onComplete: () => {
-                this.bolt_tween = undefined;
-            },
-        }) as unknown as Tween<Lights2D>
+        if(this.game.save.get_variable("sv_sounds_gameplay_music")){
+            this.game.resources.unload_sound("gameplay_music")
+            this.game.resources.load_sound("gameplay_music",{
+                src:"/assets/sounds/musics/finalization_music_1.mp3",
+                volume:1
+            }).then((v)=>{
+                if(this.game.game_over){
+                    this.game.resources.unload_sound("gameplay_music")
+                    return
+                }
+                this.music.set(v)
+            })
         }
     }
 }

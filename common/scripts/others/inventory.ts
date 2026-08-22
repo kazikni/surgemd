@@ -6,10 +6,10 @@ import { ConsumibleDef } from "../definitions/items/consumibles.ts";
 import { GrenadeDef } from "../definitions/items/grenades.ts";
 import { GunDef } from "../definitions/items/guns.ts";
 import { MeleeDef } from "../definitions/items/melees.ts";
-import { InventoryItemType } from "../definitions/utils.ts";
+import { GameItemType } from "../definitions/utils.ts";
 
 export abstract class MDItem extends Item{
-    abstract item_type:InventoryItemType
+    abstract item_type:GameItemType
     abstract def:GameItem
     droppable:boolean=true
     inventory!:GInventoryBase
@@ -25,7 +25,7 @@ export abstract class MDItem extends Item{
 export class GunItemBase extends MDItem{
     def:GunDef
     liquid:boolean=false
-    item_type=InventoryItemType.gun
+    item_type=GameItemType.gun
     constructor(def?:GunDef){
         super()
         this.def=def!
@@ -38,7 +38,7 @@ export class GunItemBase extends MDItem{
 }
 export class AmmoItemBase extends MDItem{
     def:AmmoDef
-    item_type: InventoryItemType.ammo=InventoryItemType.ammo
+    item_type: GameItemType.ammo=GameItemType.ammo
     constructor(def:AmmoDef){
         super()
         this.def=def
@@ -50,7 +50,7 @@ export class AmmoItemBase extends MDItem{
 }
 export class ConsumibleItemBase extends MDItem{
   def:ConsumibleDef
-  item_type: InventoryItemType.consumible=InventoryItemType.consumible
+  item_type: GameItemType.consumible=GameItemType.consumible
   constructor(def:ConsumibleDef){
       super()
       this.def=def
@@ -61,7 +61,7 @@ export class ConsumibleItemBase extends MDItem{
 }
 export class GrenadeItemBase extends MDItem{
     def:GrenadeDef
-    item_type: InventoryItemType.grenade=InventoryItemType.grenade
+    item_type: GameItemType.grenade=GameItemType.grenade
     constructor(def:GrenadeDef){
         super()
         this.def=def
@@ -72,7 +72,7 @@ export class GrenadeItemBase extends MDItem{
 }
 export class MeleeItemBase extends MDItem{
     def:MeleeDef
-    item_type: InventoryItemType.melee=InventoryItemType.melee
+    item_type: GameItemType.melee=GameItemType.melee
     constructor(def:MeleeDef){
       super()
       this.limit_per_slot=1

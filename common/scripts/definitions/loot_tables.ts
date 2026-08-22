@@ -238,7 +238,7 @@ export const LootTables={
     gold_crate:[
         [{weight:1,table:"ammos",count:2}],
         [{weight:1,table:"consumibles",count:2}],
-        [{weight:10,table:"advanced_equipments"},{weight:1,count:2,table:"advanced_equipments"}],
+        [{weight:20,table:"advanced_equipments"},{weight:1,count:2,table:"advanced_equipments"}],
         [{weight:10,table:"legendary_guns"}],
         [{weight:1,table:"throwables"}],
         [{weight:1,table:"scopes"}],

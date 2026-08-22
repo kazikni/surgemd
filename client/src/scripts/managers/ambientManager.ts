@@ -300,7 +300,7 @@ export class AmbientManager{
                 this.date.hour+=1
             }
             
-            if(this.thunders){
+            if(this.thunders>0&&this.rain_value){
                 if(Math.random()<=this.thunders*0.75){
                     this.bolt()
                 }
@@ -352,8 +352,8 @@ export class AmbientManager{
                 target: this,
                 // deno-lint-ignore ban-ts-comment
                 //@ts-ignore
-                to: { global_ilumination: 2 },
-                duration: 0.5,
+                to: { global_ilumination: 1.5 },
+                duration: 0.3,
                 yoyo: true,
                 ease:ease.elasticOut,
                 onComplete: () => {

@@ -68,7 +68,6 @@ export class GroupMembersModule extends UIModule<Game>{
             if(!member){
                 member = this.create_member(id,state)
             }
-            
             const mh=this.game.ui.map_humans.find((v)=>v.id===id)
             if(mh){
                 if(mh.downed!==member.downed){
@@ -76,8 +75,8 @@ export class GroupMembersModule extends UIModule<Game>{
                     member.health.style.background=mh.downed?"#e33":"#fff"
                 }
             }
-            member.health.style.width = `${state.health*100}%`
-            member.boost.style.width = `${state.boost*100}%`
+            member.health.style.width=`${state.health*100}%`
+            member.boost.style.width=`${state.boost*100}%`
             if(member.boost_type!==state.boost_def){
                 member.boost_type=state.boost_def
                 member.boost.style.backgroundColor=this.game.definitions.boosts.getFromNumber(member.boost_type).color

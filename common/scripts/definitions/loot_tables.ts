@@ -128,12 +128,12 @@ export const LootTables={
     ],
     //Scopes
     scopes:[
-        {item:"scope_2",count:1,weight:27},
-        {item:"scope_3",count:1,weight:10},
-        {item:"scope_4",count:1,weight:1.5},
+        {item:"scope_2",count:1,weight:28},
+        {item:"scope_3",count:1,weight:11},
+        {item:"scope_4",count:1,weight:1.7},
         {item:"scope_5",count:1,weight:0.1},
-        {item:"scope_6",count:1,weight:0.05},
-        {item:"scope_7",count:1,weight:0.01},
+        //{item:"scope_6",count:1,weight:0.05},
+        //{item:"scope_7",count:1,weight:0.01},
     ],
     //Armors And Backpacks
     helmets:[
@@ -282,12 +282,12 @@ export const LootTables={
         [{weight:1,item:"awp"}],
     ],
     black_container:[
-        [{weight:1,item:"tactical_helmet"}],
+        [{weight:1,table:"advanced_equipments"}],
         [{weight:1,table:"mythic_guns"}],
         [
             {item:"scope_5",weight:10},
-            {item:"scope_6",weight:5},
-            {item:"scope_7",weight:2},
+            /*{item:"scope_6",weight:5},
+            {item:"scope_7",weight:2},*/
         ]
     ]
 } satisfies Record<string,LootTable<LootAditional>>

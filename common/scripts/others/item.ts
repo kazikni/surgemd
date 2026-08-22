@@ -113,7 +113,7 @@ export const tracers={
     },
     small:{
         width:6,
-        height:0.8,
+        height:0.85,
         proj:{
             img:0,
             width:1,
@@ -130,7 +130,7 @@ export const tracers={
         }
     },
     large:{
-        width:11,
+        width:10,
         height:1.3,
         proj:{
             img:0,
@@ -139,8 +139,8 @@ export const tracers={
         }
     },
     xl:{
-        width:12,
-        height:1.6,
+        width:11,
+        height:1.7,
         proj:{
             img:0,
             width:1,

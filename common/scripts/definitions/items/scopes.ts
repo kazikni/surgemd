@@ -23,7 +23,7 @@ export interface ScopeDef extends Definition{
 
 
 export function Scopes_Default_Init(scopes:Definitions<ScopeDef,{}>){
-    let scope_view:number=0.85
+    let scope_view:number=0.87
     scopes.insert({
         idString:"scope_1", // 1x
         scope_view:scope_view,
@@ -31,7 +31,7 @@ export function Scopes_Default_Init(scopes:Definitions<ScopeDef,{}>){
         rank:ItemRank.E
     })
     for(let i=2;i<=7;i++){
-        scope_view*=0.755
+        scope_view*=0.743
         scopes.insert({
             idString:"scope_"+i,
             scope_view:scope_view,

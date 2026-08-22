@@ -694,6 +694,7 @@ export class Game extends ClientGame<GameObject>{
         this.ui.update_self_state(state)
     }
     process_private(priv:PrivateUpdate){
+        this.ui.proccess_private(priv)
         if(priv.active_entity.dirty){
             if(priv.active_entity.id){
                 this.active_entity_id=priv.active_entity.id
@@ -708,7 +709,6 @@ export class Game extends ClientGame<GameObject>{
             }
         }
         if(priv.self_state)this.process_self_state(priv.self_state)
-        this.ui.proccess_private(priv)
         this.device.update_private(priv)
         this.ui_manager.signal("private",priv)
     }

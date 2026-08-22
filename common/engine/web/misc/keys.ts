@@ -334,7 +334,12 @@ export class InputManager {
         })
     }
     get world_mouse_position(): Vec2 {
-        return v2.dscale(this.mouse_position,this.camera.aspect)
+        const canvas = this.camera.renderer.canvas
+
+        return v2(
+            this.mouse_position.x / canvas.width * this.camera.width,
+            this.mouse_position.y / canvas.height * this.camera.height
+        )
     }
     camera_pos(camera: Camera2D): Vec2 {
         return v2.add(v2.scale(this.world_mouse_position,camera.zoom),camera.position)

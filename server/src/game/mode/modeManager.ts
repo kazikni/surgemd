@@ -40,9 +40,11 @@ export interface GameRules{
     ambient:{
         day_night_cycle:number
 
+        thunderstorm_chance:number
+        thunderstorm_stop_chance:number
+
         rain_lerp_speed:number
         rain_cycle:number
-        thunderstorm_cycle:number
         rain_chance:number
         rain_stop_chance:number
     }
@@ -122,11 +124,13 @@ export abstract class ModeManager{
         ambient:{
             day_night_cycle:1,
 
-            rain_lerp_speed:1,
+            thunderstorm_chance:0.25,
+            thunderstorm_stop_chance:0.1,
+
             rain_cycle:1,
-            thunderstorm_cycle:1,
-            rain_stop_chance:0.3,
-            rain_chance:0.02,
+            rain_lerp_speed:1,
+            rain_stop_chance:0.2,
+            rain_chance:0.01,
         },
         deadzone:{
             enabled:true,
@@ -186,17 +190,18 @@ export abstract class ModeManager{
         const amb = this.game.ambient
         const rules = this.rules.ambient
 
-        const dt_scaled = dt * rules.rain_cycle
-        amb.rain_timer -= dt_scaled
+        amb.rain_timer-=dt*rules.rain_cycle
         if (amb.rain_timer <= 0) {
             if (amb.rain===0&&amb.target_rain === 0) {
-                if (Math.random() < rules.rain_chance) {
+                if(Math.random()<rules.rain_chance) {
                     amb.target_rain = random.float(0.1, 1)
-                    amb.rain_state = 1
+                    amb.rain_state=1
+                    amb.thunder_storm=0
+                    if(Math.random()<rules.thunderstorm_chance)amb.thunder_storm=random.float(0.1,1)
                 }
-                amb.rain_timer = random.float(10, 30)
+                amb.rain_timer+=10
             }else if(amb.rain_state === 2) {
-                if (Math.random() < rules.rain_stop_chance) {
+                if (Math.random()<rules.rain_stop_chance) {
                     amb.target_rain = 0
                 } else {
                     amb.target_rain = random.float(0.1, 1)
@@ -204,20 +209,24 @@ export abstract class ModeManager{
 
                 amb.rain_state = 1
                 amb.rain_timer = random.float(5, 15)
+                if(this.game.ambient.thunder_storm===0){
+                    if(Math.random()<rules.thunderstorm_chance)amb.thunder_storm=random.float(0.1,1)
+                }else{
+                    if(Math.random()<rules.thunderstorm_stop_chance)amb.thunder_storm=0
+                }
             }
         }
 
-        const dist = Math.abs(amb.target_rain - amb.rain)
-
+        const dist = Math.abs(amb.target_rain-amb.rain)
         if (dist > 0.01) {
             amb.rain = Numeric.lerp(
                 amb.rain,
                 amb.target_rain,
-                Numeric.dt_expo_inter(rules.rain_lerp_speed*0.1, dt)
+                Numeric.dt_expo_inter(rules.rain_lerp_speed*0.1, dt*rules.rain_cycle)
             )
         } else {
             amb.rain = amb.target_rain
-            if (amb.rain_state === 1) {
+            if (amb.rain_state === 1&&amb.target_rain!==0) {
                 amb.rain_state = 2
                 amb.rain_timer = random.float(20, 60)
             }

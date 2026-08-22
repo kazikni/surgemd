@@ -261,7 +261,7 @@ export class Player extends Human{
         this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
         this.input.actions.push(...i.actions)
 
-        if(i.cancel)this.actions.cancel()
+        this.input.cancel=i.cancel
     }
     proccess_join_packet(jp:JoinPacket){
         this.visual.dirty=true

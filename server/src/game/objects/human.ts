@@ -200,6 +200,7 @@ export class Human extends Humanoid{
         reload:boolean
         interaction:boolean
         swamp_guns:boolean
+        cancel:boolean
     }={
         movement:{
             dir:0,
@@ -217,6 +218,7 @@ export class Human extends Humanoid{
         reload:false,
         interaction:false,
         swamp_guns:false,
+        cancel:false
     }
 
     _interact_object?:ServerGameObject
@@ -704,6 +706,10 @@ export class Human extends Humanoid{
             }else if(this.human_data.movement_enabled&&this._interact_object){
                 (this._interact_object as ServerGameObject).on_interact(this)
             }
+        }
+        if(this.input.cancel){
+            this.actions.cancel()
+            this.input.cancel=false
         }
         const executed:InputActionType[]=[]
         for(const a of this.input.actions){
@@ -1252,7 +1258,9 @@ export class Human extends Humanoid{
     }
     down(params:DamageParams){
         if(this.downed)return
+        if(this.team_data.group)this.team_data.group.dirty=true
         this.downed=true
+        this.knocked=true
         this.downed_by=params.owner
         this.downed_time=0
 
@@ -1276,8 +1284,9 @@ export class Human extends Humanoid{
     }
     help_up(){
         if(!this.downed)return
-
+        if(this.team_data.group)this.team_data.group.dirty=true
         this.downed=false
+        this.knocked=false
         this.downed_by=undefined
         this.killed_by=undefined
         this.last_damage_by=undefined

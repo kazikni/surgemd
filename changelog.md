@@ -86,7 +86,6 @@ __                                                                              
 * Change Quickswitch
 * Allow Reload After Delay
 * Perspective On Airstrike and Nukes
-* Change Trees Sprites
 __                                                                                                                 __
 ### Menu
 * Lock Skins Color Selection

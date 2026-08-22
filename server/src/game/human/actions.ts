@@ -53,6 +53,7 @@ export class ReloadAction extends Action{
         if(user.inventory.hand_item instanceof GunItem){
             user.inventory.hand_item.reloading=false
         }
+        user.animation_data.dirty=true
     }
 }
 export class ConsumingActionA extends Action{
@@ -82,11 +83,13 @@ export class ConsumingActionA extends Action{
         user.animation_data.current_animation.push({
             type:HumanAnimationType.Reset
         })
+        user.animation_data.dirty=true
     }
     override on_cancel(user: Human): void {
         user.animation_data.current_animation.push({
             type:HumanAnimationType.Reset
         })
+        user.animation_data.dirty=true
     }
 }
 export class HelpupAction extends Action<Human>{
@@ -113,6 +116,7 @@ export class HelpupAction extends Action<Human>{
     override update(user: Human, dt: number): void {
         if(v2.distance(user.position,this.human.position)>user.game.modeManager.rules.humans.help_up.distance){
             user.actions.cancel()
+            user.animation_data.dirty=true
         }
     }
 }
@@ -127,6 +131,7 @@ export class BeingHelpupAction extends Action<Human>{
     override on_cancel(user: Human): void {
         if(user.being_helpup_by){
             user.being_helpup_by.actions.cancel()
+            user.animation_data.dirty=true
             user.being_helpup_by=undefined
         }
     }

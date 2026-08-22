@@ -329,13 +329,12 @@ export class MinimapModule extends UIModule<Game>{
                 this.ctx.drawImage(img,pos.x-size*0.5,pos.y-size*0.5,size,size)
             }
             if(ping.pulseTime<100){
-                const pulseSize=(7*ping.pulseTime)/this.scale
+                const pulseSize=(50*ping.pulseTime)
                 const alpha=Math.max(Math.floor(255-255*(ping.pulseTime/100)),0)
-
                 this.ctx.beginPath()
                 this.ctx.arc(pos.x,pos.y,pulseSize*0.5,0,Math.PI*2)
-                this.ctx.strokeStyle=ColorM.number2hex(ping.color)+alpha.toString(16)
-                this.ctx.lineWidth=4/this.scale
+                this.ctx.strokeStyle=ColorM.number2hex(ping.color)+alpha.toString(16).padStart(2, "0")
+                this.ctx.lineWidth=7/this.scale
                 this.ctx.stroke()
             }
         }

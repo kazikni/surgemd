@@ -1,7 +1,7 @@
 ## News
 ___
 ### Mains
-* *Big Changes On the game Code!*
+* !Big Changes On the game Code
 * No Hope Rework
 * Fall Biome
 * Swimming
@@ -13,6 +13,7 @@ ___
 * Scanner Drone
 * Puzzle Test
 * Complete The level will start the next
+* Screen Size Keep Aspect
 ___
 ### Menu
 * Main Menu Rework
@@ -86,7 +87,6 @@ ___
 * Perspective On Airstrike and Nukes
 ___
 ### Menu
-* Final Screen Rework
 * Lock Skins Color Selection
 * Game over Improvements
 * Remove Blur Backdrop

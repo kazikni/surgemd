@@ -13,7 +13,7 @@ export class Bullet extends ServerGameObject{
     string_type:string="bullet"
     number_type:number=GameObjectType.Bullet
 
-    /*    
+    /*
         Definition
     */
 

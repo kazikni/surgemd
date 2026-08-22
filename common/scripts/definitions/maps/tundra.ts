@@ -162,12 +162,12 @@ export const TundraMap:MapDef={
             {item:"explosive_ammo",count:4,weight:0.2},
         ],
         scopes:[
-            {item:"scope_3",count:1,weight:10},
+            {item:"scope_3",count:1,weight:11},
             {item:"scope_4",count:1,weight:1.7},
-            {item:"scope_2",count:1,weight:0.4},
+            {item:"scope_2",count:1,weight:1},
             {item:"scope_5",count:1,weight:0.1},
-            {item:"scope_6",count:1,weight:0.05},
-            {item:"scope_7",count:1,weight:0.01},
+            /*{item:"scope_6",count:1,weight:0.05},
+            {item:"scope_7",count:1,weight:0.01},*/
         ],
         guns:[
             // Too Common Pistols

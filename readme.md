@@ -7,16 +7,16 @@ Coming soon...
 
 ## 🖥️ Self-Host Instructions
 
-### ⚙️ Setup
+### Setup
 To run **Surgemd.io**, you’ll need to install a few programs first.  
 The main ones are:
 
 - [Deno](https://deno.com/)  
-- [Node.js](https://nodejs.org/) (via [NVM](https://github.com/nvm-sh/nvm))  
-- [Golang](https://go.dev/)
+- [Node.js](https://nodejs.org/) (via [NVM](https://github.com/nvm-sh/nvm))
 - [Python](https://www.python.org/)
+- [FFmpeg](https://www.ffmpeg.org)
 ---
-### 1️⃣ Install Dependencies
+### 1 - Install Dependencies
 * Install Deno
 Follow the instructions here: [Deno Installation Guide](https://deno.com/)
 * Install Node.js with NVM
@@ -26,23 +26,18 @@ Then, install the recommended Node.js version (`v20.12.0`):
 nvm install 20.12.0
 nvm use 20.12.0
 ```
-* Install Golang
-Download and install from: [Golang](https://go.dev/)
 * Install Python
-Download and install from: [Golang](https://www.python.org/)
+Download and install from: [Python](https://www.python.org/)
 * Install FFmpeg
 Download and install from: [FFmpeg](https://www.ffmpeg.org)
 ---
-### 2️⃣ Install Golang
-
----
-### 4️⃣ Get the Surgemd.io Code
+### 2 - Get the Surgemd.io Code
 You have three options:
 * Download the source code directly from GitHub
 * Clone the repository using Git
 * (Recommended) Fork the repository on GitHub and clone your fork with Git
 ---
-### 5️⃣ Install Dependencies
+### 3 - Install Dependencies
 Open the project folder in your terminal and run:
 ```bash
 python3 setup.py
@@ -50,7 +45,7 @@ python3 setup.py
 This will install all required dependencies.
 **Note: If you encounter errors, double-check your installation or the deno.json file.**
 ---
-### 6️⃣ Run the Project
+### 4 - Run the Project
 Start the development server with:
 ```bash
 deno task dev

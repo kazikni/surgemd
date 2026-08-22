@@ -81,7 +81,7 @@ export const bullets_factory={
         return {
             damage:10*power,
             range: 170*(1+(power-1) * 0.5),
-            speed: 36*(1+(power-1) * 0.5),
+            speed: 37*(1+(power-1) * 0.5),
 
             critical_mult: 1.25,
             obstacle_mult: 1,
@@ -105,7 +105,7 @@ export const bullets_factory={
         return {
             damage:99*power,
             range:220*(1+(power-1)*0.01),
-            speed:39*(1+(power-1)*-0.5),
+            speed:40*(1+(power-1)*-0.5),
 
             falloff:0.7,
             critical_mult:1.1,
@@ -115,9 +115,9 @@ export const bullets_factory={
     },
     smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:7 * power,
-            range:40* (1 + (power - 1) * 0.5),
-            speed:27 * (1 + (power - 1) * 0.5),
+            damage:7*power,
+            range:40*(1 + (power - 1) * 0.5),
+            speed:28*(1 + (power - 1) * 0.5),
 
             falloff:0.6,
             critical_mult:1.25,
@@ -126,9 +126,9 @@ export const bullets_factory={
     },
     ac_smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5.9 * power,
-            range:50* (1 + (power - 1) * 0.5),
-            speed:24 * (1 + (power - 1) * 0.5),
+            damage:5.9*power,
+            range:50*(1 + (power - 1) * 0.5),
+            speed:25*(1 + (power - 1) * 0.5),
 
             falloff:0.6,
             critical_mult:1.25,
@@ -1085,7 +1085,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.shotgun("m870","12g",{
             name:"M870",
             fire_delay:1,
-            spread:4,
+            spread:4.5,
             jitter_radius:0.35,
 
             ammo_spawn:{

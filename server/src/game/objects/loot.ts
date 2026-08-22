@@ -140,7 +140,7 @@ export class Loot extends ServerGameObject{
             const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
             this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
         }
-        if(!v2.is(this.position,this.old_position)){
+        if(!v2.is(this.position,this.old_position)||this.velocity.x!=0||this.velocity.y!=0){
             this.old_position=v2.clone(this.position)
             this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
             this.set_dirty_part()

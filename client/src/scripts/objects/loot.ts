@@ -280,6 +280,8 @@ export class Loot extends GameObject{
         }else{
             if(this.game.save.get_variable("sv_game_interpolation")){
                 this.dest_pos=position
+            }else{
+                this.position=position
             }
         }
     }

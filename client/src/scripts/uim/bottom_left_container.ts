@@ -14,6 +14,7 @@ export class BottomLeftModule extends UIModule<Game>{
     hand_info_container!:HTMLDivElement
     hand_info_count!:HTMLSpanElement
     hand_info_consume_type!:HTMLImageElement
+    last_consume_type?:string
 
     action_container!: HTMLDivElement
     action_text!: HTMLSpanElement
@@ -114,13 +115,20 @@ export class BottomLeftModule extends UIModule<Game>{
             this.hand_info_container.style.visibility=""
             this.hand_info_container.style.display=""
             this.hand_info_count.innerText=`${this.game.inventory.hand_settings.ammo}/${(weapon.def as GunDef).reload?.capacity}`
-            this.hand_info_consume_type.src=this.game.resources.get_frame((weapon.def as GunDef).ammo_type).url!
-            this.hand_info_consume_type.style.display=""
-            this.hand_info_consume_type.dataset.item_id=(weapon.def as GunDef).ammo_type
+
+            const consume=(weapon.def as GunDef).ammo_type
+            if(this.last_consume_type!==consume&&consume){
+                this.last_consume_type=consume
+                this.hand_info_consume_type.src=this.game.resources.get_frame(consume).url!
+                this.hand_info_consume_type.style.display=""
+                this.hand_info_consume_type.dataset.item_id=consume
+            }
         }else{
             this.hand_info_container.style.visibility="hidden"
             this.hand_info_container.style.display="none"
+            this.last_consume_type=undefined
         }
+        
     }
     render_health(){
         const p=this.health/this.max_health

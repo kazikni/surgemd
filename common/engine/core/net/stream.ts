@@ -667,9 +667,9 @@ export class StaticStream extends Stream{
     }
 
     clear(hard:boolean=false){
+        if(hard)this._u8Array.fill(0,0,this.length)
         this.index=0
         this.length=0
-        if(hard)this._u8Array.fill(0)
     }
 
 

@@ -45,7 +45,7 @@ import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 export class Game extends ClientGame<GameObject>{
@@ -132,6 +132,8 @@ export class Game extends ClientGame<GameObject>{
     ntps:number=30
 
     parallax:Record<number,Obstacle>={}
+
+    objects_process_queue:Stream[]=[]
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
@@ -553,6 +555,7 @@ export class Game extends ClientGame<GameObject>{
         this.soft_close_game()
     }
     soft_close_game(){
+        this.objects_process_queue.length=0
         this.clear()
         this.ui.clear()
         this.cam2d.stop_shake()
@@ -580,6 +583,12 @@ export class Game extends ClientGame<GameObject>{
         }
     }
     override on_update(dt:number){
+        if(this.objects_process_queue){
+            for(const s of this.objects_process_queue){
+                this.scene_2d.objects.proccess_net(s,true)
+            }
+            this.objects_process_queue.length=0
+        }
         super.on_update(dt)
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
@@ -761,19 +770,19 @@ export class Game extends ClientGame<GameObject>{
         if(!client.opened)return
         if(this.client===client)return
         if(this.client&&this.client.opened)this.client.disconnect()
+        this.objects_process_queue.length=0
         this.client=client
         client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
         client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
 
         this.world_shadow.enabled=this.save.get_variable("sv_graphics_shadows")
+
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)
         })
         client.on("update",(p:UpdatePacket)=>{
-            this.clock.profiler.start(100)
             this.process_private(p.priv)
-            this.scene_2d.objects.proccess_net(p.objects!,true)
-            this.clock.profiler.end(100)
+            if(p.objects)this.objects_process_queue.push(p.objects)
         })
         client.on("connect",(_p:ConnectPacket)=>{
         })

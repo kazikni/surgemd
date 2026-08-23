@@ -321,7 +321,7 @@ export class Human extends Humanoid{
                 tint:random.choose([0xffc166,0xf0a93f])
             },
             hair:{
-                def:this.game.definitions.loadout.getFromString(female?random.choose(["hair_2","hair_3"]):random.choose(["hair_1","hair_4"])) as LoadoutHairDef,
+                def:this.game.definitions.loadout.getFromString(female?random.choose(["hair_2","hair_3","hair_5"]):random.choose(["hair_1","hair_4"])) as LoadoutHairDef,
                 tint:random.choose([0x222222,0xffffff,0xf01041,0x0066ff,0x331f00,0x4d3108,0xfbff05])
             },
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,

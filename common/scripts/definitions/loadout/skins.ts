@@ -123,6 +123,16 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 }
             }
         },
+        {
+            item:LoadoutItemKind.Hair,
+            idString:"hair_5",
+            rank:ItemRank.E,
+            frame:{
+                front:{
+                    position:v2(-0.1,0)
+                }
+            }
+        },
         //Eyes
         {
             item:LoadoutItemKind.Eyes,

@@ -44,7 +44,7 @@
         "host": {
             "port": 8080,
             "ssl": false,
-            "cert": "./private/game/fullcain.crt",
+            "cert": "./private/game/fullchain.crt",
             "ca": "./private/game/ca_bundle.crt",
             "key": "./private/game/private.key"
         },

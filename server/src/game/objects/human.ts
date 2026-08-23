@@ -330,7 +330,7 @@ export class Human extends Humanoid{
 
             emotes:{},
             accessorys:female?[
-                this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef
+                this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef
             ]:[],
             colors:{},
         }

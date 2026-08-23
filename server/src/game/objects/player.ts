@@ -275,7 +275,7 @@ export class Player extends Human{
             this.visual.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
             this.visual.accessorys=[]
             if(jp.skin.female){
-                this.visual.accessorys=[this.game.definitions.loadout.getFromString("hair_bow") as LoadoutAccessoryDef]
+                this.visual.accessorys=[this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef]
             }
         }
         this.visual.wrapping=this.game.definitions.wrapping.valueNumber[jp.wrapping-1]

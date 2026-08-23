@@ -383,7 +383,7 @@ return (class extends LevelPlayerScript{
                         "eyes": "eyes_2",
                         "shirt": "red_shirt",
                         "legs": "jeans_pants",
-                        "accessorys": [],
+                        "accessorys": ["white_hair_bow"],
                         "wrapping":"aqua_blue"
                     },
                     "ai": {

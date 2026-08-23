@@ -285,11 +285,13 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
         // Accessorys
         {
             item:LoadoutItemKind.Accessory,
-            idString:"hair_bow",
+            idString:"white_hair_bow",
             rank:ItemRank.E,
             frame:{
-                position:v2(-0.15,-0.3),
-                rotation:-0.4
+                image:"hair_bow",
+                position:v2(-0.1,-0.26),
+                rotation:-0.4,
+                zIndex:9 
             }
         },
     )

@@ -1,6 +1,6 @@
 import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
 import { FloorType } from "./terrain.ts";
 
@@ -213,6 +213,7 @@ export interface HumanoidVisualData {
         tint:number
     }
     eyes?:LoadoutEyesDef
+    foot?:LoadoutFootDef
     shirt:LoadoutShirtDef
     legs:LoadoutLegDef
     accessorys:LoadoutAccessoryDef[]

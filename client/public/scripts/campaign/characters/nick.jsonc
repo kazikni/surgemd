@@ -8,7 +8,8 @@
         "body_tint": 15771967,
         "eyes": "eyes_1",
         "shirt": "blue_shirt",
-        "legs": "jeans_pants",
+        "legs": "grey_jeans_pants",
+        "foot": "blue_shoes",
         "accessorys": [],
         "colors": {
             "primary": "#4f6ef7",

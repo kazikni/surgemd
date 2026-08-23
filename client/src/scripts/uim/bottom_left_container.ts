@@ -161,7 +161,7 @@ export class BottomLeftModule extends UIModule<Game>{
 
         this.boost=0
         this.max_boost=0
-        this.boost_def=this.game.definitions.boosts.getFromNumber(0)
+        this.boost_def=this.game.definitions.boosts.getFromNumber(1)
 
         this.health_bar_interior.style.width = "100%"
         this.health_bar_animation.style.width = "100%"

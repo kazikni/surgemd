@@ -17,7 +17,7 @@ import { GInventory, GunItem, LItem, MeleeItem } from "../human/inventory.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GrenadeDef } from "common/scripts/definitions/items/grenades.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 import { type Building } from "./building.ts";
@@ -326,15 +326,15 @@ export class Human extends Humanoid{
             },
             eyes:this.game.definitions.loadout.getFromString(female?"eyes_2":"eyes_1") as LoadoutEyesDef,
             shirt:this.game.definitions.loadout.getFromString(random.choose(female?["white_dress","blue_dress","yellow_dress","red_dress","blue_shirt","white_shirt","red_shirt","yellow_shirt"]:["blue_shirt","white_shirt","red_shirt","yellow_shirt"])) as LoadoutShirtDef,
-            legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
-
+            legs:this.game.definitions.loadout.getFromString(random.choose(["blue_jeans_pants","grey_jeans_pants"])) as LoadoutLegDef,
+            foot:this.game.definitions.loadout.getFromStringSafe(random.choose(["blue_shoes","black_shoes","grey_shoes"])) as LoadoutFootDef,
             emotes:{},
             accessorys:female?[
                 this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef
             ]:[],
             colors:{},
         }
-        const default_scope=this.game.definitions.scopes.getFromNumber(0)
+        const default_scope=this.game.definitions.scopes.getFromNumber(1)
         this.equipment_data={
             dirty:true,
             dirty_part:true,
@@ -384,6 +384,7 @@ export class Human extends Humanoid{
         }
         if(preset.shirt)this.visual.shirt=this.game.definitions.loadout.getFromString(preset.shirt) as LoadoutShirtDef
         if(preset.legs)this.visual.legs=this.game.definitions.loadout.getFromString(preset.legs) as LoadoutLegDef
+        if(preset.foot!==undefined)this.visual.foot=this.game.definitions.loadout.getFromStringSafe(preset.foot??"") as LoadoutFootDef
         if(preset.eyes)this.visual.eyes=this.game.definitions.loadout.getFromString(preset.eyes) as LoadoutEyesDef
         if(preset.hair!==undefined){
             if(preset.hair===""){
@@ -1126,7 +1127,7 @@ export class Human extends Humanoid{
         this.boost={
             value:0,
             max:100,
-            def:this.game.definitions.boosts.getFromNumber(0),
+            def:this.game.definitions.boosts.getFromNumber(1),
             old:-1,
             time:0,
         }

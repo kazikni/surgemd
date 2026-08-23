@@ -8,7 +8,7 @@ import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts"
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
 import { EffectDef, Effects } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
@@ -213,7 +213,8 @@ export class Human extends Humanoid{
         this.set_skin(this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
             undefined,undefined,
             this.game.definitions.loadout.getFromString("white_shirt") as LoadoutShirtDef,
-            this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
+            this.game.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
+            undefined,
             0xffffff,
             []
         )
@@ -309,6 +310,7 @@ export class Human extends Humanoid{
     override on_render(_dt: number): void {
     }
     override on_tick(dt:number): void {
+        super.on_tick(dt)
         if(this.sprites.emote_container.visible){
             this.sprites.emote_container.position=this.position
             v2m.add_component(this.sprites.emote_container.position,0,-1.5)
@@ -336,7 +338,6 @@ export class Human extends Humanoid{
             }
         }
         if(this.dead)return
-        super.on_tick(dt)
         if(this.sprites.name){
             this.sprites.name.position.x=this.position.x
             this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
@@ -1048,27 +1049,23 @@ export class Human extends Humanoid{
             //this.update_helmet_health()
         }
         if(loadout_dirty||full){
-            const [has_hair,has_eyes]=stream.read_boolean_group()
             const body_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutBodyDef
-            let hair_def:LoadoutHairDef|undefined
-            let hair_tint:number=0
-            let eyes_def:LoadoutEyesDef|undefined
-            if(has_hair){
-                hair_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutHairDef
-                hair_tint=stream.read_uint32()
-            }
-            if(has_eyes){
-                eyes_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutEyesDef
-            }
+            const hair_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutHairDef|undefined
+            const eyes_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutEyesDef|undefined
             const shirt_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutShirtDef
             const legs_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutLegDef
+            const foot_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutFootDef|undefined
+            let hair_tint:number=0
+            if(hair_def){
+                hair_tint=stream.read_uint32()
+            }
             const body_tint=stream.read_uint32()
             const accessorys:LoadoutAccessoryDef[]=stream.read_array(()=>{
                 return this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef
             },1)
-            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,body_tint,accessorys)
+            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,foot_def,body_tint,accessorys)
             const wrapping=stream.read_uint16()
-            this.visual.wrapping=wrapping>0?this.game.definitions.wrapping.valueNumber[wrapping-1]:undefined
+            this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(wrapping)
         }
         if(has_emote){
             this.add_emote(this.game.definitions.game_objects.valueNumber[stream.read_uint16()] as GameItem|EmoteDef)

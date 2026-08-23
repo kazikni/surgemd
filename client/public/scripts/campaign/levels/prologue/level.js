@@ -74,7 +74,7 @@ return (class extends LevelPlayerScript{
                     body_tint: 15771967,
                     eyes: "eyes_2",
                     shirt: "red_shirt",
-                    legs: "jeans_pants",
+                    legs: "blue_jeans_pants",
                     accessorys: [],
                     wrapping:"aqua_blue"
                 }
@@ -89,7 +89,7 @@ return (class extends LevelPlayerScript{
                     body_tint: 15771967,
                     eyes: "eyes_2",
                     shirt: "blue_shirt",
-                    legs: "jeans_pants",
+                    legs: "blue_jeans_pants",
                     accessorys: [],
                 }
             },
@@ -103,7 +103,7 @@ return (class extends LevelPlayerScript{
                     body_tint: 15771967,
                     eyes: "eyes_2",
                     shirt: "blue_shirt",
-                    legs: "jeans_pants",
+                    legs: "blue_jeans_pants",
                     accessorys: [],
                 }
             },
@@ -117,7 +117,7 @@ return (class extends LevelPlayerScript{
                     body_tint: 15771967,
                     eyes: "eyes_2",
                     shirt: "blue_shirt",
-                    legs: "jeans_pants",
+                    legs: "blue_jeans_pants",
                     accessorys: [],
                 }
             }

@@ -180,6 +180,7 @@ export interface LoadoutPreset{
     eyes?:string
     shirt?:string
     legs?:string
+    foot?:string|null
     accessorys?:string[]
     colors?:Record<string,string>
     wrapping?:string|string[]

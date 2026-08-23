@@ -126,7 +126,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
             0:definitions.melees.getFromString("fist")
         }
         this.clear_weapons()
-        this.iitems.push(definitions.scopes.getFromNumber(0))
+        this.iitems.push(definitions.scopes.getFromNumber(1))
 
         this.set_weapon_index(0)
     }

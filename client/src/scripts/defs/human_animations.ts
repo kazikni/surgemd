@@ -194,8 +194,12 @@ export const DefaultHumanModes={
         h.sprites.right_leg.position=v2(-0.8,0.22)
         h.sprites.left_leg.rotation=0.1
         h.sprites.right_leg.rotation=-0.1
-        h.sprites.left_leg_foot.position=v2(0.05,0)
-        h.sprites.right_leg_foot.position=v2(0.05,0)
+        h.sprites.left_leg_foot.position=v2(0.02,0)
+        h.sprites.right_leg_foot.position=v2(0.02,0)
+        if(h.visual.foot&&h.visual.foot.downed_frame){
+            h.sprites.left_leg_foot.set_frame(h.visual.foot.downed_frame,h.game.resources)
+            h.sprites.right_leg_foot.set_frame(h.visual.foot.downed_frame,h.game.resources)
+        }
         h.animation.walk_cycle=1
 
         h.sprites.left_arm.visible=true
@@ -217,6 +221,10 @@ export const DefaultHumanModes={
         h.sprites.backpack.visible=true
         h.sprites.left_leg.visible=false
         h.sprites.right_leg.visible=false
+        if(h.visual.foot&&h.visual.foot.frame){
+            h.sprites.left_leg_foot.set_frame(h.visual.foot.frame,h.game.resources)
+            h.sprites.right_leg_foot.set_frame(h.visual.foot.frame,h.game.resources)
+        }
         h.container.zIndex=zIndexes.Players
         h.container.callmode("set_current_weapon",h.current_weapon)
         if(h.sprites.shadow)h.sprites.shadow.zIndex=h.container.zIndex-0.5

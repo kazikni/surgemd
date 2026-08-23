@@ -1255,7 +1255,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         }),
         guns_factory.dmr("rifle_cbc","22lr",{
             name:"Rifle-CBC",
-            fire_delay:0.12,
+            fire_delay:0.14,
             spread:4.5,
 
             ammo_spawn:{
@@ -1264,8 +1264,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:15.5,
-                    falloff:0.6,
+                    damage:14,
+                    falloff:0.5,
                     range:165,
                     speed:40,
                     pass_through_humans:true,
@@ -1276,7 +1276,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 }
             },
             reload:{
-                delay:0.7,
+                delay:0.8,
                 capacity:10,
                 extended_capacity:20,
                 reload_count:2

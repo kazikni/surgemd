@@ -72,7 +72,7 @@ export class Humanoid extends MovingBody {
         this.visual={
             accessorys:[],
             body:{def:this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,tint:0x000000},
-            legs:this.game.definitions.loadout.getFromString("jeans_pants") as LoadoutLegDef,
+            legs:this.game.definitions.loadout.getFromString("blue_jeans_pants") as LoadoutLegDef,
             shirt:this.game.definitions.loadout.getFromString("black_shirt") as LoadoutShirtDef,
             
         }
@@ -116,21 +116,16 @@ export class Humanoid extends MovingBody {
         this.animation_data.alt_animations.length=0
     }
     encode_net_visual(stream:Stream){
-        stream.write_boolean_group(
-            this.visual.hair!==undefined,
-            this.visual.eyes!==undefined,
-        )
         stream.write_uint16(this.visual.body.def.idNumber!)
-        if(this.visual.hair){
-            stream.write_uint16(this.visual.hair.def.idNumber!)
-            .write_uint32(this.visual.hair.tint)
-        }
-        if(this.visual.eyes){
-            stream.write_uint16(this.visual.eyes.idNumber!)
-        }
-        stream.write_uint16(this.visual.shirt.idNumber!)
+        .write_uint16(this.visual.hair?.def.idNumber??0)
+        .write_uint16(this.visual.eyes?.idNumber??0)
+        .write_uint16(this.visual.shirt.idNumber!)
         .write_uint16(this.visual.legs.idNumber!)
-        .write_uint32(this.visual.body.tint)
+        .write_uint16(this.visual.foot?.idNumber??0)
+        if(this.visual.hair){
+            stream.write_uint32(this.visual.hair.tint)
+        }
+        stream.write_uint32(this.visual.body.tint)
         .write_array(this.visual.accessorys,(v)=>{
             stream.write_uint16(v.idNumber!)
         },1)

@@ -7,6 +7,7 @@ export enum LoadoutItemKind{
     Eyes,
     Shirt,
     Leg,
+    Foot,
     Accessory
 }
 export interface LoadoutBodyDef extends Definition{
@@ -50,10 +51,13 @@ export interface LoadoutShirtDef extends Definition{
 }
 export interface LoadoutLegDef extends Definition{
     item:LoadoutItemKind.Leg
-    frame?:{
-        foot?:FrameDef
-        leg?:FrameDef
-    }
+    frame?:FrameDef
+    rank:ItemRank
+}
+export interface LoadoutFootDef extends Definition{
+    item:LoadoutItemKind.Foot
+    frame?:FrameDef
+    downed_frame?:FrameDef
     rank:ItemRank
 }
 export interface LoadoutAccessoryDef extends Definition{
@@ -62,7 +66,7 @@ export interface LoadoutAccessoryDef extends Definition{
     hide_helmet?:boolean
     rank:ItemRank
 }
-export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef|LoadoutAccessoryDef
+export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef|LoadoutFootDef|LoadoutAccessoryDef
 export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
     loadout.insert(
         {
@@ -269,18 +273,76 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
         //Legs
         {
             item:LoadoutItemKind.Leg,
-            idString:"jeans_pants",
+            idString:"blue_jeans_pants",
             rank:ItemRank.E,
             frame:{
-                leg:{
-                    image:"human_leg_1_1",
-                    tint:0x667994
-                },
-                foot:{
-                    image:"human_leg_1_2",
-                    tint:0x222233,
-                },
+                image:"human_leg_1_1",
+                tint:0x233537
             }
+        },
+        {
+            item:LoadoutItemKind.Leg,
+            idString:"grey_jeans_pants",
+            rank:ItemRank.E,
+            frame:{
+                image:"human_leg_1_1",
+                tint:0x2f2f2f
+            }
+        },
+        {
+            item:LoadoutItemKind.Leg,
+            idString:"green_grey_jeans_pants",
+            rank:ItemRank.E,
+            frame:{
+                image:"human_leg_1_1",
+                tint:0x3c4c42
+            }
+        },
+        // Foot
+        {
+            item:LoadoutItemKind.Foot,
+            idString:"black_shoes",
+            rank:ItemRank.D,
+            frame:{
+                image:"human_foot_1_2",
+                tint:0x222233,
+                zIndex:0
+            },
+            downed_frame:{
+                image:"human_foot_1_3",
+                tint:0x7e7e7e,
+                zIndex:2,
+            },
+        },
+        {
+            item:LoadoutItemKind.Foot,
+            idString:"blue_shoes",
+            rank:ItemRank.D,
+            frame:{
+                image:"human_foot_1_2",
+                tint:0x213258,
+                zIndex:0,
+            },
+            downed_frame:{
+                image:"human_foot_1_3",
+                tint:0x667db0,
+                zIndex:2,
+            },
+        },
+        {
+            item:LoadoutItemKind.Foot,
+            idString:"gray_shoes",
+            rank:ItemRank.D,
+            frame:{
+                image:"human_foot_1_2",
+                tint:0x2f4338,
+                zIndex:0,
+            },
+            downed_frame:{
+                image:"human_foot_1_3",
+                tint:0x878787,
+                zIndex:2,
+            },
         },
         // Accessorys
         {

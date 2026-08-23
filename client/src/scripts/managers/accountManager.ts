@@ -73,7 +73,7 @@ export class AccountManager{
     }
     // deno-lint-ignore no-explicit-any
     set_account_status(status:any){
-        const badge=this.definitions.badges.getFromNumber(0)
+        const badge=this.definitions.badges.getFromNumberSafe(1)
         const dd=document.body.querySelector("#account-sm-status") as HTMLDivElement
             dd.innerHTML=`
 <span class="span" style="text-align:center; align-content:center;" id="coin-status-span">

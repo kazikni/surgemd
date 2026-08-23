@@ -553,6 +553,7 @@ export class Game extends ClientGame<GameObject>{
         this.cam_type=0
         this.language.clear("ingame")
         this.soft_close_game()
+        this.showing_menu=false
     }
     soft_close_game(){
         this.objects_process_queue.length=0
@@ -563,7 +564,7 @@ export class Game extends ClientGame<GameObject>{
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
-        this.set_scope(this.definitions.scopes.getFromNumber(0))
+        this.set_scope(this.definitions.scopes.getFromNumber(1))
         this.cam2d.zoom=6
         this.zoom_speed=4
     }

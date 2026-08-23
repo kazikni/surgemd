@@ -14,7 +14,7 @@ export interface Definition{
 export class DefinitionsSimple<Type,Base=null>{
     public value:Record<string,Type&Base>
     public valueNumber:Record<number,Type&Base>
-    protected did=0
+    protected did=1
     forall?:(obj:Type&Partial<Base>)=>void
     constructor(forall?:(obj:Type&Partial<Base>)=>void){
         this.value={}
@@ -53,7 +53,7 @@ export class DefinitionsSimple<Type,Base=null>{
     clear(){
         this.value={}
         this.valueNumber={}
-        this.did=0
+        this.did=1
     }
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
@@ -86,7 +86,7 @@ export class DefinitionsMerge<TP extends Definition>{
     }
     insert(...val:TP[]):void{
         for(const vv of val){
-            const idn=Object.keys(this.keysNumber).length
+            const idn=Object.keys(this.keysNumber).length+1
             this.valueNumber[idn]=vv
             this.valueString[vv.idString]=vv
             this.keysNumber[idn]=vv.idString
@@ -95,7 +95,7 @@ export class DefinitionsMerge<TP extends Definition>{
     }
     insert_def(def:Record<string,TP>){
         for(const dv of Object.values(def)){
-            const idn=Object.keys(this.keysNumber).length
+            const idn=Object.keys(this.keysNumber).length+1
             this.valueNumber[idn]=dv
             this.valueString[dv.idString]=dv
             this.keysNumber[idn]=dv.idString

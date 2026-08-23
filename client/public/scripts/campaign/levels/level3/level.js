@@ -382,7 +382,7 @@ return (class extends LevelPlayerScript{
                         "body_tint": 15771967,
                         "eyes": "eyes_2",
                         "shirt": "red_shirt",
-                        "legs": "jeans_pants",
+                        "legs": "blue_jeans_pants",
                         "accessorys": ["white_hair_bow"],
                         "wrapping":"aqua_blue"
                     },

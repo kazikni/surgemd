@@ -393,6 +393,11 @@ export interface ItemFireDefinition{
         delay:number
         sequence:number
     }
+    fire_sequence?:{
+        spread?:{begin:number,end?:number}
+        increse:number
+        decay:number
+    }
 
     spread?:number
     idle_spread?:number

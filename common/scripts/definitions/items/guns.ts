@@ -225,6 +225,11 @@ export const guns_factory={
             fire_delay:0.1,
             switch_delay:0.2,
             unload_delay:1,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.07,
+                spread:{begin:0.1}
+            },
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -261,6 +266,11 @@ export const guns_factory={
             fire_delay:0.1,
             switch_delay:0.2,
             unload_delay:1,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.05,
+                spread:{begin:0.5}
+            },
 
             gas_particles:GasParticles.automatic,
             case_particle:{
@@ -710,6 +720,11 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             ammo_spawn:{
                 amount:60
             },
+            fire_sequence:{
+                decay:0.55,
+                increse:0.05,
+                spread:{begin:0.25}
+            },
 
             bullet:{
                 def:bullets_factory.assault(0.85)
@@ -727,7 +742,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("m4a1","556mm",{
             name:"M4A1",
             fire_delay:0.1,
-            spread:2,
+            spread:6.5,
+            fire_sequence:{
+                decay:0.39,
+                increse:0.052,
+                spread:{begin:0.5},
+            },
 
             ammo_spawn:{
                 amount:60
@@ -877,7 +897,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"Micro-Uzi",
             rank:ItemRank.D,
             fire_delay:0.035,
-            spread:8,
+            spread:10,
 
             ammo_spawn:{
                 amount:96
@@ -1304,7 +1324,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.1,
             switch_delay:1,
-            spread:7.5,
+            spread:9,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.012,
+                spread:{begin:0.4}
+            },
 
             ammo_spawn:{
                 amount:200
@@ -1312,7 +1337,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:14,
+                    damage:12.5,
                     obstacle_mult:1.5,
                     range:170,
                     speed:35,
@@ -1335,8 +1360,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.1,
             switch_delay:1,
-            spread:5,
+            spread:6,
             idle_spread:0.4,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.013,
+                spread:{begin:0.45}
+            },
 
             ammo_spawn:{
                 amount:200
@@ -1360,8 +1390,13 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             fire_delay:0.045,
             switch_delay:1,
-            spread:3,
+            spread:8,
             idle_spread:0.35,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.011,
+                spread:{begin:0.2}
+            },
 
             ammo_spawn:{
                 amount:200

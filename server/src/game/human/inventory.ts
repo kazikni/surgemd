@@ -32,6 +32,7 @@ export class GunItem extends GunItemBase implements LItem{
         super(def)
     }
     use_delay:number=0
+    fire_sequence:number=0
     burst?:{
         t:number
         c:number
@@ -139,9 +140,14 @@ export class GunItem extends GunItemBase implements LItem{
 
     fire_item(user:Human,position:Vec2,def:ItemFireDefinition){
         let spread=def.spread??0
-        const is_idle=v2.len(user.physical_data.velocity)<=0.1
+        const is_idle=v2.len(user.physical_data.velocity)<=0.01
         if(is_idle&&def.idle_spread!==undefined){
             spread*=def.idle_spread
+        }
+        if(def.fire_sequence){
+            if(def.fire_sequence.spread)spread*=Numeric.lerp(def.fire_sequence.spread.begin,def.fire_sequence.spread.end??1,this.fire_sequence)
+            this.fire_sequence=Math.min(this.fire_sequence+def.fire_sequence.increse,1)
+            //console.log(this.fire_sequence)
         }
 
         if(def.bullet){
@@ -271,6 +277,10 @@ export class GunItem extends GunItemBase implements LItem{
     }
     update(user:Human,dt:number){
         if(this.use_delay>0)this.use_delay-=dt
+        else if(this.fire_sequence>0){
+            if(this.def.fire_sequence?.decay)this.fire_sequence=Math.max(this.fire_sequence-this.def.fire_sequence.decay*dt,0)
+            //console.log(this.fire_sequence)
+        }
         if(user.inventory.hand_item===this&&!user.actions.current_action){
             if((this.ammo<=0||this.reloading)&&this.def.reload){
                 this.reloading=true

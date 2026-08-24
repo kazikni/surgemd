@@ -1,7 +1,10 @@
 import { AKeyFrame } from "../../core/definition/definitions.ts";
-import { KSPR } from "../../core/lang/kspr.ts"
+import { audios, AudioSheet } from "../../core/lang/audiosheet.ts";
+import { kspr, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
+import { Path } from "../../core/math/utils.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
+import { StaticStream } from "../../core/net/stream.ts";
 import { type Renderer, type Texture } from "../rendering/renderer.ts"
 import { type AudioEngine } from "./sounds.ts";
 export interface SourceBase{
@@ -123,6 +126,12 @@ export class ResourcesManager {
             return await this.load_sound(id,{src:src,volume:volume},callback)
         }else if(src.endsWith(".kanim")){
             return await this.load_animation(id,src,callback)
+        }else if(src.endsWith(".kspr")){
+            const v=new StaticStream(await(await(fetch(src))).arrayBuffer())
+            await this.parse_kspr(kspr.load(v),id,undefined,callback)
+        }else if(src.endsWith(".ksnd")){
+            const v=new StaticStream(await(await(fetch(src))).arrayBuffer())
+            await this.parse_ksnd(audios.read(v),id,callback)
         }
         return undefined
     }
@@ -151,9 +160,8 @@ export class ResourcesManager {
 
         return frame
     }
-    async parse_kspr(kspr:KSPR,resolution:string,imported:string="",callback?:(item:string)=>void){
+    async parse_kspr(kspr:KSPR,imported:string="",resolution?:string,callback?:(item:string)=>void){
         if(imported&&!this.imported[imported])this.imported[imported]={frames:[],sounds:[]}
-        const res=kspr.sheets[resolution]
         /*for(const asset of kspr.assets) {
             if(asset.type !== "text")continue
             if(!asset.path.endsWith(".svg"))continue
@@ -164,62 +172,69 @@ export class ResourcesManager {
                 group
             }
         }*/
-        for(const atlas of res.atlases){
-            const blob=new Blob([atlas.image as BlobPart])
-            const url=URL.createObjectURL(blob)
-            const image=await this.load_image(url)
-            URL.revokeObjectURL(url)
-            const texture=this.renderer.load_texture(image)
-            const iw=image.width
-            const ih=image.height
-            for(const [id,data] of Object.entries(atlas.frames)){
-                if(callback)callback(data.src)
-                const rect={
-                    min:v2(data.x/iw,1-((data.y+data.h)/ih)),
-                    max:v2((data.x+data.w)/iw,1-(data.y/ih)),
+        for(const r in kspr.sheets){
+            if(resolution&&r!==r)continue
+            const res=kspr.sheets[r]
+            for(const atlas of res.atlases){
+                const blob=new Blob([atlas.image as BlobPart])
+                const url=URL.createObjectURL(blob)
+                const image=await this.load_image(url)
+                URL.revokeObjectURL(url)
+                const texture=this.renderer.load_texture(image)
+                const iw=image.width
+                const ih=image.height
+                for(const [id,data] of Object.entries(atlas.frames)){
+                    if(callback)callback(data.src)
+                    const rect={
+                        min:v2(data.x/iw,1-((data.y+data.h)/ih)),
+                        max:v2((data.x+data.w)/iw,1-(data.y/ih)),
+                    }
+                    const frame=this.create_frame(texture,rect,data.src??id)
+                    frame.image=image
+                    frame.id=id
+                    frame.url=frame.src
+                    frame.frame_rect={
+                        min:v2(data.x,data.y),
+                        max:v2(data.x+data.w,data.y+data.h)
+                    }
+                    frame.frame_size=v2(
+                        data.w/res.scale,
+                        data.h/res.scale
+                    )
+                    if(this.blobs[frame.id]){
+                        frame.blob=this.blobs[frame.id].blob
+                        frame.url=this.blobs[frame.id].url
+                    }
+                    this.frames[frame.id]=frame
+                    if(this.imported[imported])this.imported[imported].frames.push(frame.id)
                 }
-                const frame=this.create_frame(texture,rect,data.src??id)
-                frame.image=image
-                frame.id=id
-                frame.url=frame.src
-                frame.frame_rect={
-                    min:v2(data.x,data.y),
-                    max:v2(data.x+data.w,data.y+data.h)
-                }
-                frame.frame_size=v2(
-                    data.w/res.scale,
-                    data.h/res.scale
-                )
-                if(this.blobs[frame.id]){
-                    frame.blob=this.blobs[frame.id].blob
-                    frame.url=this.blobs[frame.id].url
-                }
-                this.frames[frame.id]=frame
-                if(this.imported[imported])this.imported[imported].frames.push(frame.id)
             }
         }
         for(const v in kspr.audios){
-            const s=kspr.audios[v]
-            const sound:Sound={
-                buffer:await this.audio.ctx.decodeAudioData((s.audio??new Uint8Array()).buffer as ArrayBuffer),
-                id:"audio_buffer_"+v,
-                src:"audio_buffer_"+v,
-                volume:1
-            }
-            for(const sd of s.sounds){
-                callback?.(sd.name)
-                this.sounds[sd.name] = {
-                    id:sd.name,
-                    src:sound.src,
-                    volume:sound.volume,
-                    buffer:sound.buffer,
-                    slice:{
-                        start:sd.startSample/s.sampleRate,
-                        duration:sd.sampleCount/s.sampleRate,
-                    }
+            await this.parse_ksnd(kspr.audios[v],imported)
+        }
+    }
+    async parse_ksnd(val:AudioSheet,imported:string="",callback?:(item:string)=>void){
+        if(imported&&!this.imported[imported])this.imported[imported]={frames:[],sounds:[]}
+        const sound:Sound={
+            buffer:await this.audio.ctx.decodeAudioData((val.audio??new Uint8Array()).buffer as ArrayBuffer),
+            id:"audio_buffer_"+val,
+            src:"audio_buffer_"+val,
+            volume:1
+        }
+        for(const sd of val.sounds){
+            callback?.(sd.name)
+            this.sounds[sd.name] = {
+                id:sd.name,
+                src:sound.src,
+                volume:sound.volume,
+                buffer:sound.buffer,
+                slice:{
+                    start:sd.startSample/val.sampleRate,
+                    duration:sd.sampleCount/val.sampleRate,
                 }
-                if(this.imported[imported])this.imported[imported].sounds.push(sd.name)
             }
+            if(this.imported[imported])this.imported[imported].sounds.push(sd.name)
         }
     }
     async load_sound(id:string,def:SoundDef,callback?:(msg:string)=>void){

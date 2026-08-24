@@ -24,16 +24,16 @@ import { Boosts_Default_Init } from "./player/boosts.ts";
 
 export const DefaultDefinitions:GameADefinitions={
     items:{
+        guns:Guns_Default_Init(),
+        melees:Melees_Default_Init(),
         ammos:Ammos_Default_Init(),
         backpacks:Backpacks_Default_Init(),
         vests:Vests_Default_Init(),
         helmets:Helmets_Default_Init(),
-        accessorys:Accessorys_Default_Init(),
+        scopes:Scopes_Default_Init(),
         grenades:Grenades_Default_Init(),
         consumibles:Consumibles_Default_Init(),
-        guns:Guns_Default_Init(),
-        melees:Melees_Default_Init(),
-        scopes:Scopes_Default_Init()
+        accessorys:Accessorys_Default_Init(),
     },
     loadout:{
         loadout:Loadout_Default_Init(),

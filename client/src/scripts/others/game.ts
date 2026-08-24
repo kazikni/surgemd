@@ -45,7 +45,7 @@ import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, deepEqual, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, StaticStream, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, deepEqual, DisconnectPacket, FileManager, Language, Numeric, Path, ReplayWatcher, sleep, StaticStream, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 export class Game extends ClientGame<GameObject>{
@@ -456,18 +456,21 @@ export class Game extends ClientGame<GameObject>{
             if(agro.includes(p))continue
             this.resources.unload_imported(p)
         }
+        let resolution = this.save.get_variable("sv_graphics_resolution")
         for(const tt of agro){
             if(this.resources.imported[tt])continue
-            this.menu.set_loading_current(`${tt}.kspr`)
-            const res=await fetch(`${tt}.kspr`)
-            const buffer=await res.arrayBuffer()
-            const data=kspr.load(new StaticStream(buffer))
-            let resolution = this.save.get_variable("sv_graphics_resolution")
-            if(!["low","medium"].includes(resolution)){
-                resolution="low"
-                this.save.set_variable("sv_graphics_resolution",resolution)
+            const v=await this.resources.load_json(`${tt}/settings.json`,this.menu.set_loading_current)
+            
+            for(const f of (v.files as string[])){
+                const path=Path.join_simple(tt,f)
+                this.menu.set_loading_current(path)
+                if(f.startsWith("sounds")){
+                    await this.resources.load_source(tt,path)
+                }else if(f.startsWith("sheets/sheet_"+resolution)){
+                    resolution=""
+                    await this.resources.load_source(tt,path)
+                }
             }
-            await this.resources.parse_kspr(data,resolution,tt)
         }
         if(languages_path!=""){
             try{

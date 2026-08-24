@@ -130,7 +130,7 @@ export class GameDefinition{
         if(i.dual&&!i.dual_from){
             const dd=mergeDeep({},i,i.dual,{dual_from:i.idString}) as GunDef
             dd.idString=dd.idString+"_dual"
-            this.guns.insert(dd)
+            this.insert_item("guns",dd)
         }
     })
     melees=new Definitions<MeleeDef,{}>((i)=>{
@@ -190,12 +190,15 @@ export class GameDefinition{
         this.clear()
         this.init_default()
     }
+    insert_item(category:DefinitionItemCategoryType,def:GameItem){
+        this[category].insert(def as any)
+        this.game_items.insert(def)
+        this.game_objects.insert(def)
+    }
     add_definitions(mm:GameADefinitions){
         for(const c in mm.items){
             for(const def of mm.items[c as DefinitionItemCategoryType]??[]){
-                this[c as DefinitionItemCategoryType].insert(def as any)
-                this.game_items.insert(def)
-                this.game_objects.insert(def)
+                this.insert_item(c as DefinitionItemCategoryType,def)
             }
         }
         for(const c in mm.loadout){

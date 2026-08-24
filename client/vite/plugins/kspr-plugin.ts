@@ -20,9 +20,17 @@ export function kspr_plugin(list: Record<string,KSPRDefinition>,resolutions: KSP
         for (const [name, sheet] of Object.entries(list)) {
             console.log("Building - ", name)
             const data=await kspr.compile({resolutions:resolutions,...sheet},fs,audio_decoder,audio_encoder,canvas,ctx,loadImage)
+
+            /*
             stream.clear()
             kspr.write(data,stream)
-            outputs[name]=stream.data.slice(0,stream.length)
+            outputs[name+".kspr"]=stream.data.slice(0,stream.length)
+            */
+
+            const disassembled=kspr.disassemble(data)
+            for(const v in disassembled){
+                outputs[name+"/"+v]=disassembled[v]
+            }
         }
         return outputs
     }
@@ -39,7 +47,7 @@ export function kspr_plugin(list: Record<string,KSPRDefinition>,resolutions: KSP
                 for (const [name, buffer] of Object.entries(outputs)) {
                     this.emitFile({
                         type: "asset",
-                        fileName: `${name}.kspr`,
+                        fileName: `${name}`,
                         source: buffer
                     })
                 }
@@ -61,7 +69,7 @@ export function kspr_plugin(list: Record<string,KSPRDefinition>,resolutions: KSP
                 server.middlewares.use((req, res, next) => {
                     if (!req.url) return next()
                     for (const name of Object.keys(files)) {
-                        if (req.url === `/${name}.kspr`) {
+                        if (req.url === `/${name}`) {
                             res.writeHead(200, {
                                 "Content-Type": "application/octet-stream"
                             })

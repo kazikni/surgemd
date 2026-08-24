@@ -1,7 +1,7 @@
 import { type FileManager } from "../definition/file.ts";
 import { RectPacker } from "../math/geometry.ts";
 import { Path } from "../math/utils.ts";
-import { type Stream } from "../net/stream.ts";
+import { DynamicStream, Stream } from "../net/stream.ts";
 import { audios, AudioSheet,AudioDecoder,AudioEncoder } from "./audiosheet.ts";
 export enum KSPRImageFormat {
     RawRGBA = 0,
@@ -279,5 +279,28 @@ export const kspr={
         },1)
 
         return out
+    },
+
+    disassemble(val:KSPR,settings_name="settings.json",sound_name="sounds/${i}.ksnd",sheet_name="sheets/sheet_${i}.kspr"):Record<string,Uint8Array>{
+        const stream=new DynamicStream(2000)
+        const ret:Record<string,Uint8Array>={}
+        for(let i=0;i<val.audios.length;i++){
+            stream.clear()
+            audios.write(val.audios[i],stream)
+            ret[sound_name.replaceAll("${i}",(i+1).toString())]=stream.data.slice(0,stream.length)
+        }
+
+        for(const s in val.sheets){
+            const nkspr:KSPR=this.zero()
+            nkspr.sheets[s]=val.sheets[s]
+            stream.clear()
+            this.write(nkspr,stream)
+            ret[sheet_name.replaceAll("${i}",(s).toString())]=stream.data.slice(0,stream.length)
+        }
+
+        ret[settings_name]=Stream.encoder.encode(JSON.stringify({
+            files:Object.keys(ret)
+        }))
+        return ret
     }
 }

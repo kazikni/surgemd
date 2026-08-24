@@ -26,8 +26,8 @@ export interface LoadoutBodyDef extends Definition{
 export interface LoadoutHairDef extends Definition{
     item:LoadoutItemKind.Hair
     frame?:{
-        front?:FrameDef
-        back?:FrameDef
+        front?:FrameDef&{paint?:string}
+        back?:FrameDef&{paint?:string}
     }
     rank:ItemRank
 }
@@ -129,8 +129,9 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             rank:ItemRank.E,
             frame:{
                 front:{
-                    position:v2(-0.1,0)
-                }
+                    position:v2(-0.1,0),
+                    paint:"human_hair_5_front_paint"
+                },
             }
         },
         //Eyes
@@ -314,12 +315,12 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"black_shoes",
             rank:ItemRank.D,
             frame:{
-                image:"human_foot_1_2",
+                image:"human_foot_2_1",
                 tint:0x222233,
                 zIndex:0
             },
             downed_frame:{
-                image:"human_foot_1_3",
+                image:"human_foot_1_2",
                 tint:0x7e7e7e,
                 zIndex:2,
             },
@@ -329,27 +330,27 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
             idString:"blue_shoes",
             rank:ItemRank.D,
             frame:{
-                image:"human_foot_1_2",
+                image:"human_foot_2_1",
                 tint:0x213258,
                 zIndex:0,
             },
             downed_frame:{
-                image:"human_foot_1_3",
+                image:"human_foot_1_2",
                 tint:0x667db0,
                 zIndex:2,
             },
         },
         {
             item:LoadoutItemKind.Foot,
-            idString:"gray_shoes",
+            idString:"grey_shoes",
             rank:ItemRank.D,
             frame:{
-                image:"human_foot_1_2",
+                image:"human_foot_2_1",
                 tint:0x2f4338,
                 zIndex:0,
             },
             downed_frame:{
-                image:"human_foot_1_3",
+                image:"human_foot_1_2",
                 tint:0x878787,
                 zIndex:2,
             },

@@ -175,6 +175,7 @@ export interface LoadoutPreset{
     badge?:string
     hair?:string
     hair_tint?:number
+    hair_paint?:{id:number,tint:number}
     body?:string
     body_tint?:number
     eyes?:string

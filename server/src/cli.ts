@@ -138,10 +138,8 @@ export const game_command:CommandDef={
                     ntps:ctx.args.ntps,
                 }, clients,new DenoFileManager())
                 await game.auto_init({
-                    mode:{
-                        mode:ctx.args.mode,
-                        settings:ctx.args["mode-settings"]
-                    },
+                    mode:ctx.args.mode,
+                    settings:ctx.args["mode-settings"],
                     group_size:ctx.args["group-size"]
                 })
 

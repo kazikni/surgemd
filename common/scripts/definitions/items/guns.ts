@@ -220,15 +220,15 @@ export const guns_factory={
             rank:ItemRank.C,
 
             barrel_length:1.06,
-            idle_spread:0.15,
+            idle_spread:0.2,
 
             fire_delay:0.1,
             switch_delay:0.2,
             unload_delay:1,
             fire_sequence:{
                 decay:0.55,
-                increse:0.07,
-                spread:{begin:0.1}
+                increse:0.073,
+                spread:{begin:0.15}
             },
 
             gas_particles:GasParticles.automatic,
@@ -690,7 +690,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
         guns_factory.assault("ak47","762mm",{
             name:"AK-47",
             fire_delay:0.1,
-            spread:7,
+            spread:7.5,
 
             ammo_spawn:{
                 amount:60
@@ -721,9 +721,9 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
                 amount:60
             },
             fire_sequence:{
-                decay:0.55,
-                increse:0.05,
-                spread:{begin:0.25}
+                decay:0.56,
+                increse:0.06,
+                spread:{begin:0.2}
             },
 
             bullet:{
@@ -836,6 +836,11 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"M1921",
             fire_delay:0.1,
             spread:8,
+            fire_sequence:{
+                decay:0.5,
+                increse:0.045,
+                spread:{begin:0.75}
+            },
             idle_spread:0.35,
             rank:ItemRank.B,
 
@@ -943,7 +948,12 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
-            spread:3,
+            spread:6,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.05,
+                spread:{begin:0.2}
+            },
 
             ammo_spawn:{
                 amount:90
@@ -1326,8 +1336,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             switch_delay:1,
             spread:9,
             fire_sequence:{
-                decay:0.55,
-                increse:0.012,
+                decay:0.13,
+                increse:0.02,
                 spread:{begin:0.4}
             },
 
@@ -1337,8 +1347,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
 
             bullet:{
                 def:{
-                    damage:12.5,
-                    obstacle_mult:1.5,
+                    damage:12,
+                    obstacle_mult:2,
                     range:170,
                     speed:35,
                     falloff:0.7,
@@ -1363,8 +1373,8 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:6,
             idle_spread:0.4,
             fire_sequence:{
-                decay:0.55,
-                increse:0.013,
+                decay:0.25,
+                increse:0.04,
                 spread:{begin:0.45}
             },
 
@@ -1393,7 +1403,7 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             spread:8,
             idle_spread:0.35,
             fire_sequence:{
-                decay:0.55,
+                decay:0.07,
                 increse:0.011,
                 spread:{begin:0.2}
             },

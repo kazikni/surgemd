@@ -30,6 +30,22 @@ export function Scopes_Default_Init(scopes:Definitions<ScopeDef,{}>){
         droppable:false,
         rank:ItemRank.E
     })
+    /*scopes.insert({
+        idString:"scope_0d1", // 1x
+        scope_view:scope_view*1.25,
+        rank:ItemRank.E,
+        droppable:true
+    },{
+        idString:"scope_0d2", // 1x
+        scope_view:scope_view*1.5,
+        rank:ItemRank.E,
+        droppable:true
+    },{
+        idString:"scope_0d3", // 1x
+        scope_view:scope_view*2,
+        rank:ItemRank.E,
+        droppable:true
+    })*/
     for(let i=2;i<=7;i++){
         scope_view*=0.743
         scopes.insert({

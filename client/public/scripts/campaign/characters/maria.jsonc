@@ -17,6 +17,10 @@
     "loadout": {
         "hair": "hair_5",
         "hair_tint": 2174256,
+        "hair_paint": {
+            "id":1,
+            "tint":15144984
+        },
         "body": "body_1",
         "body_tint": 15771967,
         "eyes": "eyes_2",

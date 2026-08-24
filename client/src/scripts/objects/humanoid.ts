@@ -397,7 +397,7 @@ export class Humanoid extends MovingBody{
             this.set_eyes()
         }
     }
-    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,foot_def:LoadoutFootDef|undefined,body_tint:number,accessorys:LoadoutAccessoryDef[]){
+    set_skin(body_def:LoadoutBodyDef,hair:{tint:number,def:LoadoutHairDef,paint?:{tint:number,id:number}}|undefined,eyes_def:LoadoutEyesDef|undefined,shirt_def:LoadoutShirtDef,legs_def:LoadoutLegDef,foot_def:LoadoutFootDef|undefined,body_tint:number,accessorys:LoadoutAccessoryDef[]){
         if(this.visual&&this.visual.body.def===body_def&&this.visual.body.tint===body_tint&&this.visual.hair?.def===hair?.def&&this.visual.hair?.tint===hair?.tint&&this.visual.eyes===eyes_def)return
         this.visual={
             body:{
@@ -418,8 +418,16 @@ export class Humanoid extends MovingBody{
         const hand_f=body_def.frame?.hand??"human_"+body_def.idString+"_hand"
 
         if(hair){
-            if(hair.def.frame?.front)this.sprites.hair.set_frame(Object.assign({image:"human_"+hair.def.idString+"_front"},hair.def.frame?.front),this.game.resources)
             this.sprites.hair.tint=ColorM.number(hair.tint)
+            this.sprites.hair.child_sprites=undefined
+            if(hair.def.frame?.front){
+                const sub_sprites=[]
+                if(hair.paint&&hair.def.frame.front.paint)sub_sprites.push({image:hair.def.frame.front.paint,tint:hair.paint.tint})
+                this.sprites.hair.set_frame(Object.assign({
+                    image:"human_"+hair.def.idString+"_front",
+                    sub_sprites
+                },hair.def.frame?.front),this.game.resources)
+            }
         }
         if(eyes_def){
             this.assets.eyes=[eyes_def.frame?.base??"human_"+eyes_def.idString+"_1",eyes_def.frame?.blink??"human_"+eyes_def.idString+"_2"]

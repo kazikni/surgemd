@@ -729,27 +729,15 @@ export class Game extends ClientGame<GameObject>{
         packet.skin={
             female:this.save.get_variable("sv_loadout_female"),
             body_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint")),
-            hair:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_hair"))).idNumber!,
+            hair:(this.definitions.loadout.getFromStringSafe(this.save.get_variable("sv_loadout_hair")))?.idNumber??0,
             hair_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint")),
             shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
         }
         packet.group_token=this.group_token
-        let sv=this.save.get_variable("sv_loadout_emote_victory")
-        if(sv!=""){
-            packet.victory_emote=this.definitions.emotes.getFromString(sv).idNumber!+1
-        }
-        sv=this.save.get_variable("sv_loadout_emote_death")
-        if(sv!=""){
-            packet.death_emote=this.definitions.emotes.getFromString(sv).idNumber!+1
-        }
-        sv=this.save.get_variable("sv_loadout_wrapping_weapons")
-        if(sv!=""){
-            packet.wrapping=this.definitions.wrapping.getFromString(sv).idNumber!+1
-        }
-        sv=this.save.get_variable("sv_loadout_badge")
-        if(sv!=""){
-            packet.badge=this.definitions.badges.getFromStringSafe(sv)?.idNumber
-        }
+        packet.victory_emote=this.definitions.emotes.getFromStringSafe(this.save.get_variable("sv_loadout_emote_victory"))?.idNumber??1
+        packet.death_emote=this.definitions.emotes.getFromStringSafe(this.save.get_variable("sv_loadout_emote_death"))?.idNumber??0
+        packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.get_variable("sv_loadout_wrapping_weapons"))?.idNumber??0
+        packet.badge=this.definitions.badges.getFromStringSafe(this.save.get_variable("sv_loadout_badge"))?.idNumber??0
         this.client.emit_packet(packet)
 
         if(this.offline){

@@ -8,10 +8,13 @@ __                                                                              
 
 __                                                                                                                 __
 ### Items
-
+* Guns Fire Sequence Spread
 __                                                                                                                 __
 ### Loadout
-
+* Different Shoes
+* Grey Jeans Pants
+* Green Gray Jeans Pants
+* Hair Paints
 __                                                                                                                 __
 ### Others
 

@@ -124,6 +124,10 @@ export class Humanoid extends MovingBody {
         .write_uint16(this.visual.foot?.idNumber??0)
         if(this.visual.hair){
             stream.write_uint32(this.visual.hair.tint)
+            .write_uint8(this.visual.hair.paint?.id??0)
+            if(this.visual.hair.paint?.id){
+                stream.write_uint32(this.visual.hair.paint.tint)
+            }
         }
         stream.write_uint32(this.visual.body.tint)
         .write_array(this.visual.accessorys,(v)=>{

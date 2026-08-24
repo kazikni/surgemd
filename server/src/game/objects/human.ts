@@ -392,11 +392,14 @@ export class Human extends Humanoid{
             }else{
                 this.visual.hair={
                     def:this.game.definitions.loadout.getFromString(preset.hair) as LoadoutHairDef,
-                    tint:0
+                    tint:0,
                 }
             }
         }
-        if(preset.hair_tint!==undefined&&this.visual.hair)this.visual.hair.tint=preset.hair_tint
+        if(this.visual.hair){
+            if(preset.hair_tint!==undefined)this.visual.hair.tint=preset.hair_tint
+            if(preset.hair_paint!==undefined)this.visual.hair.paint=preset.hair_paint
+        }
         if(preset.body)this.visual.body={
             def:this.game.definitions.loadout.getFromString(preset.body) as LoadoutBodyDef,
             tint:0
@@ -1452,7 +1455,7 @@ export class Human extends Humanoid{
         // Loadout  
         if(full||this.visual.dirty){
             this.encode_net_visual(stream)
-            stream.write_uint16(this.visual.wrapping===undefined?0:(this.visual.wrapping.idNumber!+1))
+            stream.write_uint16(this.visual.wrapping?.idNumber??0)
         }
         if(this.input.emote){
             stream.write_uint16(this.game.definitions.game_objects.keysString[this.input.emote.idString])

@@ -1056,14 +1056,17 @@ export class Human extends Humanoid{
             const legs_def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutLegDef
             const foot_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutFootDef|undefined
             let hair_tint:number=0
+            let hair_paint:{id:number,tint:number}|undefined
             if(hair_def){
                 hair_tint=stream.read_uint32()
+                const hair_paint_id=stream.read_uint8()
+                if(hair_paint_id)hair_paint={id:hair_paint_id,tint:stream.read_uint32()}
             }
             const body_tint=stream.read_uint32()
             const accessorys:LoadoutAccessoryDef[]=stream.read_array(()=>{
                 return this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef
             },1)
-            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint}:undefined,eyes_def,shirt_def,legs_def,foot_def,body_tint,accessorys)
+            this.set_skin(body_def,hair_def?{def:hair_def,tint:hair_tint,paint:hair_paint}:undefined,eyes_def,shirt_def,legs_def,foot_def,body_tint,accessorys)
             const wrapping=stream.read_uint16()
             this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(wrapping)
         }

@@ -301,7 +301,7 @@ export class AmbientManager{
             }
             
             if(this.thunders>0&&this.rain_value){
-                if(Math.random()<=this.thunders*0.75){
+                if(Math.random()<=this.thunders*0.5){
                     this.bolt()
                 }
             }

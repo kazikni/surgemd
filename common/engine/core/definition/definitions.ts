@@ -305,7 +305,7 @@ export interface FrameTransform{
     layer?:number
     visible?:boolean
 }
-export type FrameDef={image?:string}&FrameTransform
+export type FrameDef={image?:string,sub_sprites?:{image:string,tint?:number}[]}&FrameTransform
 export type KeyFrameSpriteDef={
     delay:number
 }&FrameDef

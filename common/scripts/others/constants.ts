@@ -211,6 +211,10 @@ export interface HumanoidVisualData {
     hair?:{
         def:LoadoutHairDef
         tint:number
+        paint?:{
+            tint:number
+            id:number
+        }
     }
     eyes?:LoadoutEyesDef
     foot?:LoadoutFootDef

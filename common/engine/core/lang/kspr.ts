@@ -51,6 +51,7 @@ export interface KSPR {
     assets:KSPR_Asset[]
     sheets:Record<string, KSPRSheet>
     audios:AudioSheet[]
+    sections:Record<string,Uint8Array>
 }
 
 export const kspr={
@@ -63,7 +64,7 @@ export const kspr={
         const removeExtensions=def.remove_extensions??true
         const maximumSize=def.maximum_size??2048
 
-        const kspr: KSPR = {sheets:{},assets:[],audios:[]}
+        const kspr:KSPR=this.zero()
         const sprites_file:[string,string][]=[]
 
         for(const f of def.sprites){
@@ -156,6 +157,14 @@ export const kspr={
         return kspr
     },
 
+    zero():KSPR{
+        return {
+            assets:[],
+            sheets:{},
+            audios:[],
+            sections:{}
+        }
+    },
     write(data: KSPR, stream: Stream){
         // HEADER
         stream.write_string_sized(".KSPR",5)
@@ -170,6 +179,10 @@ export const kspr={
                     break
             }
         },2)
+        stream.write_string_dict(data.sections,(i)=>{
+            stream.write_uint32(i.length)
+            stream.write_bytes(i)
+        },1,1)
         stream.write_array(data.audios,(v)=>audios.write(v,stream),1)
         stream.write_array(Object.entries(data.sheets),(v)=>{
             stream.write_string(v[0])
@@ -200,11 +213,7 @@ export const kspr={
         const magic = stream.read_string_sized(5)
         if (magic !== ".KSPR") throw "Invalid KSPR file"
         const version = stream.read_uint8()
-        const out: KSPR = {
-            assets:[],
-            sheets:{},
-            audios:[]
-        }
+        const out: KSPR = this.zero()
         out.assets=stream.read_array(()=>{
             const id=stream.read_string(1)
             const path=stream.read_string(1)
@@ -224,6 +233,10 @@ export const kspr={
                 path
             }
         },2) as KSPR_Asset[]
+        out.sections=stream.read_string_dict((v)=>{
+            const size=v.read_uint32()
+            return stream.read_bytes(size,true)
+        })
         stream.read_array(()=>{
             out.audios.push(audios.read(stream))
         },1)

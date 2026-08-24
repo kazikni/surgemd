@@ -25,7 +25,7 @@ import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle, SyncedParticlesCreator } from "../objects/synced_particle.ts";
-import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
 import { Plane } from "../objects/plane.ts";

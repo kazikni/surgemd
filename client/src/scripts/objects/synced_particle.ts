@@ -1,6 +1,6 @@
 import { Sprite2D, type Tween } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { CircleHitbox2D, Stream, v2 } from "common/engine/core.ts";
 
@@ -119,7 +119,7 @@ export class SyncedParticle extends MovingBody{
         if (full) {
             this.time=stream.read_float(0,60,2)
             const id=stream.read_uint8()
-            this.set_definition(this.game.definitions.synced_particle.getFromNumber(id))
+            this.set_definition(this.game.definitions.synced_particles.getFromNumber(id))
         }
     }
 }

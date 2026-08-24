@@ -568,8 +568,8 @@ export const obstacles_factory={
     }
 }
 export const WallColors=[0xffffff,0x583b08,0xffd92b,0x468edb,0xb6071e,0x42a64a,0x4e4f50]
-export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,guns:Definitions<GunDef,{}>,melees:Definitions<MeleeDef,{}>){
-    obstacles.insert(
+export function Obstacles_Default_Init():ObstacleDef[]{
+    return [
         {
             idString:"barrel",
             health:110,
@@ -1329,14 +1329,5 @@ export function Obstacles_Default_Init(obstacles:Definitions<ObstacleDef,{}>,gun
             height:1,
             parallax:PerspetiveSizes.medium,
         },
-
-        obstacles_factory.gun_mount(guns.getFromString("hp18"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("m870"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("model94"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("blr81"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("kar98k"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("rifle_cbc"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("vss"),{}),
-        obstacles_factory.gun_mount(guns.getFromString("awp"),{}),
-    )
+    ]
 }

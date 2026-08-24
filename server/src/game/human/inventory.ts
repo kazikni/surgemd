@@ -170,7 +170,7 @@ export class GunItem extends GunItemBase implements LItem{
         if(def.synsed_particle){
             const scc=def.synsed_particle.count??1
             const patternPoint = getPatterningShape(scc, def.jitter_radius??0)
-            const pdef=user.game.definitions.synced_particle.getFromString(def.synsed_particle.def)
+            const pdef=user.game.definitions.synced_particles.getFromString(def.synsed_particle.def)
 
             for(let i=0;i<scc;i++){
                 const pos=def.jitter_radius?v2.add(position,patternPoint[i]):position
@@ -391,7 +391,7 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
                     const scc=this.def.consuming.synsed_particle.count??1
                     const patternPoint = getPatterningShape(scc, this.def.consuming.jitterRadius??1)
                     if(this.def.consuming.synsed_particle){
-                        const pdef=user.game.definitions.synced_particle.getFromString(this.def.consuming.synsed_particle.def)
+                        const pdef=user.game.definitions.synced_particles.getFromString(this.def.consuming.synsed_particle.def)
                         for(let i=0;i<scc;i++){
                             const pos=this.def.consuming.jitterRadius?v2.add(position,patternPoint[i]):position
                             const part=user.game.add_synced_particle(pos,pdef,user,user.layer)

@@ -19,8 +19,8 @@ export interface BoostDef extends Definition{
     }
 }
 
-export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
-    boosts.insert(
+export function Boosts_Default_Init():BoostDef[]{
+    return [
         {
             idString:"adrenaline",
             color:"#ff0",
@@ -131,5 +131,5 @@ export function Boosts_Default_Init(boosts:Definitions<BoostDef,{}>){
                 },
             }
         }
-    )
+    ]
 }

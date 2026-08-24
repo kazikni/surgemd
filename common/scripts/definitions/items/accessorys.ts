@@ -1,4 +1,4 @@
-import { Definition, Definitions, Numeric, tdm } from "../../../engine/core.ts";
+import { Definition, Numeric, tdm } from "../../../engine/core.ts";
 import { TD, TDType } from "../../../engine/core/lang/td.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
@@ -34,8 +34,8 @@ export function AccessoryDropLootFromObstacle(table:string){
         }
     }
 }
-export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>){
-    accessorys.insert(
+export function Accessorys_Default_Init():AccessoryDef[]{
+    return [
         {
             idString:"rip_ammo",
             rank:ItemRank.A,
@@ -206,5 +206,5 @@ export function Accessorys_Default_Init(accessorys:Definitions<AccessoryDef,{}>)
                 }
             }
         },
-    )
+    ]
 }

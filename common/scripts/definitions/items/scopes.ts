@@ -1,4 +1,4 @@
-import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
+import { Definition, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export const ScopeTD:TD={
@@ -22,37 +22,42 @@ export interface ScopeDef extends Definition{
 }
 
 
-export function Scopes_Default_Init(scopes:Definitions<ScopeDef,{}>){
+export function Scopes_Default_Init():ScopeDef[]{
     let scope_view:number=0.87
-    scopes.insert({
-        idString:"scope_1", // 1x
-        scope_view:scope_view,
-        droppable:false,
-        rank:ItemRank.E
-    })
-    /*scopes.insert({
-        idString:"scope_0d1", // 1x
-        scope_view:scope_view*1.25,
-        rank:ItemRank.E,
-        droppable:true
-    },{
-        idString:"scope_0d2", // 1x
-        scope_view:scope_view*1.5,
-        rank:ItemRank.E,
-        droppable:true
-    },{
-        idString:"scope_0d3", // 1x
-        scope_view:scope_view*2,
-        rank:ItemRank.E,
-        droppable:true
-    })*/
+    const ret:ScopeDef[]=[
+        {
+            idString:"scope_1", // 1x
+            scope_view:scope_view,
+            droppable:false,
+            rank:ItemRank.E
+        }
+        /*
+        {
+            idString:"scope_0d1", // 1x
+            scope_view:scope_view*1.25,
+            rank:ItemRank.E,
+            droppable:true
+        },{
+            idString:"scope_0d2", // 1x
+            scope_view:scope_view*1.5,
+            rank:ItemRank.E,
+            droppable:true
+        },{
+            idString:"scope_0d3", // 1x
+            scope_view:scope_view*2,
+            rank:ItemRank.E,
+            droppable:true
+        }
+        */
+    ]
     for(let i=2;i<=7;i++){
         scope_view*=0.743
-        scopes.insert({
+        ret.push({
             idString:"scope_"+i,
             scope_view:scope_view,
             droppable:true,
             rank:ItemRank.E
         })
     }
+    return ret
 }

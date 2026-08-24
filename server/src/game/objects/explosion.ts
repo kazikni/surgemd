@@ -41,7 +41,7 @@ export class Explosion extends ServerGameObject{
             }
         }
         if(this.def.synced_particles){
-            const def=this.game.definitions.synced_particle.getFromString(this.def.synced_particles.def)
+            const def=this.game.definitions.synced_particles.getFromString(this.def.synced_particles.def)
             
             if(this.def.synced_particles.creator){
                 this.game.add_synced_particles_creator(this.position,def,this.owner,this.def.synced_particles.count,this.def.synced_particles.creator_time,this.layer)

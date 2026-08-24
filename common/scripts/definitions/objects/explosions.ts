@@ -120,8 +120,8 @@ export const explostion_factory={
         }
     }
 }
-export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>){
-    explosions.insert(
+export function Explosions_Default_Init():ExplosionDef[]{
+    return [
         {
             idString:"barrel_explosion",
             tint:"#9c3932",
@@ -492,5 +492,5 @@ export function Explosions_Default_Init(explosions:Definitions<ExplosionDef,{}>)
                 intensity:explosion_cam_shakes.normal.intensity*2,
             }
         },
-    )
+    ]
 }

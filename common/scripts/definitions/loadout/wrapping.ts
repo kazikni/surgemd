@@ -6,8 +6,8 @@ export interface WrappingDef extends Definition{
     replace:Record<string,FrameDef>
 }
 
-export function Wrapping_Default_Init(wrapping:Definitions<WrappingDef,{}>){
-    wrapping.insert(
+export function Wrapping_Default_Init():WrappingDef[]{
+    return [
         {
             idString:"gradient",
             rank:ItemRank.E,
@@ -71,5 +71,5 @@ export function Wrapping_Default_Init(wrapping:Definitions<WrappingDef,{}>){
                 }
             }
         },
-    )
+    ]
 }

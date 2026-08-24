@@ -1,4 +1,4 @@
-import { AKeyFrame, DeepPartial, Definition, Definitions, mergeDeep, Random1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
+import { AKeyFrame, DeepPartial, Definition,  mergeDeep, Random1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, ItemRank } from "../../others/item.ts";
 import { SideEffect, SideEffectType } from "../player/effects.ts";
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
@@ -208,8 +208,8 @@ export function CreateSpray(color:string,item:DeepPartial<ConsumibleDef>={}):Con
         },
     },item)
 }
-export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{}>){
-    consumibles.insert(
+export function Consumibles_Default_Init():ConsumibleDef[]{
+    return [
         {
             idString:"bandage",
             consuming:{
@@ -375,5 +375,5 @@ export function Consumibles_Default_Init(consumibles:Definitions<ConsumibleDef,{
         CreateSoda("green","green_bless",undefined,100),
         //Death
         CreateSoda("black","death",undefined,1),
-    )
+    ]
 }

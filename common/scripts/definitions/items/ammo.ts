@@ -1,4 +1,4 @@
-import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
+import { Definition, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export const AmmoTD:TD={
@@ -31,8 +31,8 @@ export interface AmmoDef extends Definition{
     liquid?:boolean
     drop_count?:number
 }
-export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
-    ammos.insert(
+export function Ammos_Default_Init():AmmoDef[]{
+    return [
         //Main
         {
             idString:"12g",
@@ -146,5 +146,5 @@ export function Ammos_Default_Init(ammos:Definitions<AmmoDef,{}>){
             tint:0x001330,
             rank:ItemRank.S
         }
-    )
+    ]
 }

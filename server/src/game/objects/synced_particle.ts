@@ -2,7 +2,7 @@ import { CircleHitbox2D, Stream, Numeric, random, v2, v2m, Vec2 } from "common/e
 import { type Human } from "./human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { MovingBody } from "./moving_body.ts";
-import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particle.ts";
+import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { type StaticBody } from "./static_body.ts";
 export class SyncedParticlesCreator extends ServerGameObject{

@@ -54,7 +54,7 @@ export interface SyncedParticleDef extends Definition{
         }
     }
 }
-export const synsed_particle_factory={
+export const synsed_particles_factory={
     spray(id:string,tint:number,side_effect:SideEffect[]=[]):SyncedParticleDef{
         return mergeDeep({
             idString:id,
@@ -101,8 +101,8 @@ export const synsed_particle_factory={
         })
     }
 }
-export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedParticleDef,{}>){
-    synced_particles.insert(
+export function SyncedParticles_Default_Init():SyncedParticleDef[]{
+    return [
         {
             idString:"smoke",
             lifetime:33,
@@ -283,7 +283,7 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 }
             }
         },
-        synsed_particle_factory.spray("healing_spray_particle",0x33ff55,[
+        synsed_particles_factory.spray("healing_spray_particle",0x33ff55,[
             {
                 type:SideEffectType.Heal,
                 health:{
@@ -291,5 +291,5 @@ export function SyncedParticle_Default_Init(synced_particles:Definitions<SyncedP
                 }
             }
         ])
-    )
+    ]
 }

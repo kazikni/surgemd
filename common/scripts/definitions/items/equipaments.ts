@@ -1,6 +1,6 @@
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 import { ItemRank } from "../../others/item.ts";
-import { DeepPartial, Definition, Definitions, mergeDeep, TD, tdm, TDType, v2, Vec2, Vec2TD } from "../../../engine/core.ts";
+import { DeepPartial, Definition, mergeDeep, TD, tdm, TDType, v2, Vec2, Vec2TD } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { HumanModifiers } from "../../others/constants.ts";
 export const equipment_factorys={
@@ -205,8 +205,8 @@ export interface HelmetDef extends Definition{
     events?:Record<string,(e:any)=>void>
     modifiers?:Partial<HumanModifiers>
 }
-export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
-    helmets.insert(
+export function Helmets_Default_Init():HelmetDef[]{
+    return [
         equipment_factorys.helmet_1("bike",{
             skins:["red_bike_helmet","yellow_bike_helmet","green_bike_helmet"]
         }),
@@ -249,10 +249,10 @@ export function Helmets_Default_Init(helmets:Definitions<HelmetDef,{}>){
                 }
             }
         })
-    )
+    ]
 }
-export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
-    vests.insert(
+export function Vests_Default_Init():VestDef[]{
+    return [
         //Normals Vest
         equipment_factorys.vest_1("civil"),
         equipment_factorys.vest_2("military"),
@@ -260,5 +260,5 @@ export function Vests_Default_Init(vests:Definitions<VestDef,{}>){
         equipment_factorys.vest_4("elite",{
             reflect_bullets:true
         }),
-    )
+    ]
 }

@@ -1,4 +1,4 @@
-import { Definition, Definitions, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type Airstrike={
@@ -110,8 +110,8 @@ const GrenadeRig={
     position:DefaultFistRig.right?.position,
     rotation:-0.5
 }
-export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
-    grenades.insert(
+export function Grenades_Default_Init():GrenadeDef[]{
+    return [
         {
             idString:"frag_grenade",
             rank:ItemRank.E,
@@ -479,5 +479,5 @@ export function Grenades_Default_Init(grenades:Definitions<GrenadeDef,{}>){
             rank:ItemRank.A,
             push_force_resistence:0.1,
         },
-    )
+    ]
 }

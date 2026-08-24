@@ -1,4 +1,4 @@
-import { AKeyFrame, Angle, DeepPartial, Definition, Definitions, ease, FrameDef, FrameTransform, mergeDeep, v2, Vec2, } from "../../../engine/core.ts";
+import { AKeyFrame, Angle, DeepPartial, Definition, ease, FrameDef, FrameTransform, mergeDeep, v2, Vec2, } from "../../../engine/core.ts";
 import { DefaultFistRig, FireMode, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts";
 import { GameObjectDefinitionType, type GameItemType } from "../utils.ts";
 export interface MeleeDef extends Definition{
@@ -306,8 +306,8 @@ export const melees_factorys={
         },e)
     },
 }
-export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
-    melees.insert({
+export function Melees_Default_Init():MeleeDef[]{
+    return [{
             idString:"fist",
             rank:ItemRank.E,
             offset:v2(0.5,0),
@@ -856,5 +856,5 @@ export function Melees_Default_Init(melees:Definitions<MeleeDef,{}>){
                 }
             }
         },
-    )
+    ]
 }

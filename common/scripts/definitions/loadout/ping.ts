@@ -1,4 +1,4 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
+import { Definition } from "../../../engine/core.ts";
 export interface PingDef extends Definition{
     lifetime?:number
 
@@ -9,8 +9,8 @@ export interface PingDef extends Definition{
         scale?:number
     }
 }
-export function Ping_Default_Init(pings:Definitions<PingDef,{}>){
-    pings.insert(
+export function Ping_Default_Init():PingDef[]{
+    return [
         {
             idString:"airdrop",
             lifetime:13
@@ -18,5 +18,5 @@ export function Ping_Default_Init(pings:Definitions<PingDef,{}>){
         {
             idString:"alert",
         },
-    )
+    ]
 }

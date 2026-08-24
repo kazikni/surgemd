@@ -33,7 +33,7 @@ export class Parachute extends ServerGameObject{
 
         this.game.pings.push({
             position:this.position,
-            def:this.game.definitions.ping.getFromString("ping_airdrop").idNumber!,
+            def:this.game.definitions.pings.getFromString("ping_airdrop").idNumber!,
             color:0xffffff,
         })
     }
@@ -73,7 +73,7 @@ export class Parachute extends ServerGameObject{
                     })
                 }
             }
-            const def=this.game.definitions.synced_particle.getFromString("airdrop_smoke")
+            const def=this.game.definitions.synced_particles.getFromString("airdrop_smoke")
             for(let i=0;i<6;i++){
                 this.game.add_synced_particle(this.position,def,undefined,this.layer)
             }

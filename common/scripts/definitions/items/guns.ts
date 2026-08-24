@@ -1,4 +1,4 @@
-import { DeepPartial, Definition, Definitions, FrameTransform, mergeDeep, Random1, v2, Vec2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
 import { GasParticles, ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type GunDef={
@@ -458,8 +458,8 @@ export const guns_factory={
         },extend??{})
     },
 }
-export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
-    guns.insert(
+export function Guns_Default_Init():GunDef[]{
+    return [
         /////////////////////////////////////////////
         //                 PISTOLS                 //
         /////////////////////////////////////////////
@@ -1595,5 +1595,5 @@ export function Guns_Default_Init(guns:Definitions<GunDef,{}>){
             },
             speed_mod:0.6,
         },
-    )
+    ]
 }

@@ -1,4 +1,4 @@
-import { Definition, Definitions, TD, tdm, TDType } from "../../../engine/core.ts";
+import { Definition, TD, tdm, TDType } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
@@ -27,8 +27,8 @@ export const BackpackTD:TD={
         {name:"slots",content:tdm.uint8},
     ]
 }
-export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
-    backpacks.insert(
+export function Backpacks_Default_Init():BackpackDef[]{
+    return [
         {
             idString:"null_pack",
             level:0,
@@ -137,5 +137,5 @@ export function Backpacks_Default_Init(backpacks:Definitions<BackpackDef,{}>){
             rank:ItemRank.C,
             slots:7,
         }
-    )
+    ]
 }

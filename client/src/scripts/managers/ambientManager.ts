@@ -238,7 +238,7 @@ export class AmbientManager{
     set_rain_state(value:number=0,thunderstorm:number=0){
         if(!this.game.minimap.biome)return
         this.rain_value=value
-        if(value===0||this.game.cam2d.layer<Layers.Normal){
+        if(value<=0||this.game.cam2d.layer<Layers.Normal){
             if(this.game.minimap.biome.ambient_sound){
                 this.ambience.set(this.game.resources.get_sound(this.game.minimap.biome.ambient_sound),{
                     loop:true,
@@ -246,10 +246,11 @@ export class AmbientManager{
             }else{
                 this.ambience.set(null)
             }
-            this.thunders=thunderstorm
+            this.thunders=0
             this.rain_particles_emitter.enabled=false
             this.snow_particles_emitter.enabled=false
         }else{
+            this.rain_value=0
             this.thunders=thunderstorm
             this.rain_particles_emitter.enabled=true
             this.snow_particles_emitter.enabled=false

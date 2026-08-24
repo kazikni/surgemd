@@ -1,4 +1,4 @@
-import { Definition, Definitions, FrameDef, v2, Vec2 } from "../../../engine/core.ts";
+import { Definition, FrameDef, v2, Vec2 } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
 
 export enum LoadoutItemKind{
@@ -67,8 +67,8 @@ export interface LoadoutAccessoryDef extends Definition{
     rank:ItemRank
 }
 export type LoadoutItemDef=LoadoutBodyDef|LoadoutHairDef|LoadoutEyesDef|LoadoutShirtDef|LoadoutLegDef|LoadoutFootDef|LoadoutAccessoryDef
-export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
-    loadout.insert(
+export function Loadout_Default_Init():LoadoutItemDef[]{
+    return [
         {
             item:LoadoutItemKind.Body,
             idString:"body_1",
@@ -367,5 +367,5 @@ export function Loadout_Default_Init(loadout:Definitions<LoadoutItemDef,{}>){
                 zIndex:9 
             }
         },
-    )
+    ]
 }

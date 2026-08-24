@@ -237,10 +237,10 @@ export const VehicleTemplates = {
     },...merge)
 } satisfies Record<string, (id: string, ...merge: DeepPartial<VehicleDef>[]) => VehicleDef>
 
-export function Vehicles_Default_Init(vehicles: Definitions<VehicleDef, {}>) {
-    vehicles.insert(
+export function Vehicles_Default_Init() {
+    return [
         VehicleTemplates.bike("bike"),
         VehicleTemplates.jeep("jeep"),
         VehicleTemplates.boat("boat"),
-    )
+    ]
 }

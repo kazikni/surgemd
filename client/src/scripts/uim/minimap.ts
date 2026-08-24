@@ -382,7 +382,7 @@ export class MinimapModule extends UIModule<Game>{
         switch(signal){
             case "private":
                 for(const p of (data as PrivateUpdate).pings){
-                    this.add_ping(p.position,this.game.definitions.ping.getFromNumber(p.def),p.color,p.id)
+                    this.add_ping(p.position,this.game.definitions.pings.getFromNumber(p.def),p.color,p.id)
                 }
                 break
             case "general_update":

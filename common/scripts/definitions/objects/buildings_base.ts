@@ -1073,8 +1073,8 @@ export const buildings_factory={
         } as BuildingDef,settings.b??{})
     },
 }
-export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
-    buildings.insert(
+export function Buildings_Default_Init():BuildingDef[]{
+    return [
         ...buildings_factory.container.simple("blue_container",0x0c40b1),
         ...buildings_factory.container.simple("yellow_container",0xffd900),
         ...buildings_factory.container.simple("red_container",0xb6071e),
@@ -1233,5 +1233,5 @@ export function Buildings_Default_Init(buildings:Definitions<BuildingDef,{}>){
                 }]
             },
         }
-    )
+    ]
 }

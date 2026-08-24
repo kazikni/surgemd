@@ -384,7 +384,7 @@ export class MapApp extends GameApp {
         if(type!=="private")return
 
         for(const p of data.pings){
-            this.add_ping(p.position,this.device.game.definitions.ping.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
+            this.add_ping(p.position,this.device.game.definitions.pings.getFromNumber(p.def),ColorM.number2hex(p.color),p.id)
         }
     }
 }

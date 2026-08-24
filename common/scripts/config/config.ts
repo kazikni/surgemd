@@ -1,4 +1,5 @@
-import { HostConfig } from "../../engine/core.ts";
+import { type HostConfig } from "../../engine/core.ts";
+import { KSPRResolutionDefinition, type KSPRDefinition } from "../../engine/core/lang/kspr.ts";
 
 export interface GameConfig{
     mode:string
@@ -108,14 +109,10 @@ export interface GameServerConfig{
 export interface ViteServerConfig{
     port:number
     allowed_hosts?:true|string[]
-    spritesheet:{
-        sheets:Record<string,{path:{dir:string,base?:string}[],save_assets?:boolean}>
-        resolutions:{name:string,scale:number}[]
+    kspr:{
+        sheets:Record<string,KSPRDefinition>
+        resolutions:KSPRResolutionDefinition[]
     }
-    audios:{
-        input:string
-        output:string
-    }[]
 }
 export interface ConfigType{
     api: ApiServerConfig
@@ -163,11 +160,10 @@ export function ZeroConfig():ConfigType{
         vite:{
             port:3000,
             allowed_hosts:true,
-            spritesheet:{
+            kspr:{
                 resolutions:[],
-                sheets:{}
+                sheets:{},
             },
-            audios:[]
         }
     }
 }

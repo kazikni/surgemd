@@ -652,7 +652,7 @@ export abstract class Stream{
     }
 
     abstract write_bytes(bytes:Uint8Array):void
-    abstract read_bytes(count:number):void
+    abstract read_bytes(count:number,slice?:boolean):Uint8Array
     abstract lock():void
 }
 export class StaticStream extends Stream{
@@ -931,8 +931,8 @@ export class StaticStream extends Stream{
         this.index+=data.length
         if(this.index>this.length)this.length=this.index
     }
-    override read_bytes(size: number): Uint8Array {
-        const out = this._u8Array.subarray(this.index, this.index + size)
+    override read_bytes(size: number,slice:boolean=false): Uint8Array {
+        const out=slice?this._u8Array.slice(this.index, this.index + size):this._u8Array.subarray(this.index, this.index + size)
         this.index += size
         return out
     }
@@ -1244,8 +1244,8 @@ export class DynamicStream extends Stream{
         this.index+=data.length
         if(this.index>this.length)this.length=this.index
     }
-    override read_bytes(size: number): Uint8Array {
-        const out = this._u8Array.subarray(this.index, this.index + size)
+    override read_bytes(size: number,slice:boolean=false): Uint8Array {
+        const out=slice?this._u8Array.slice(this.index, this.index + size):this._u8Array.subarray(this.index, this.index + size)
         this.index += size
         return out
     }

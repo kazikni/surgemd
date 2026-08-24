@@ -147,7 +147,7 @@ export class EditorManager{
 
     settings:Record<string,any>={}
     settings_default:Record<string,any>={
-        "textures":'"assets/img/kspr/common"',
+        "textures":'"assets/kspr/common"',
 
         "m.size":v2(100,100),
     }

@@ -1,7 +1,7 @@
 import { join, extname } from "https://deno.land/std/path/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { serveFile } from "https://deno.land/std/http/file_server.ts";
-import { splitPath } from "../core/math/utils.ts";
+import { Path } from "../core/math/utils.ts";
 
 export type HandlerFunc = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Response | null;
 export type HandlerFuncAsync = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Promise<Response | null>;
@@ -204,16 +204,16 @@ export class Router {
     }
 
     remove_route(url: string) {
-        this._remove_route(splitPath(url));
+        this._remove_route(Path.split(url));
     }
 
     route(url: string, ...handlers: (HandlerFunc | HandlerFuncAsync | Router)[]) {
         handlers.forEach(handler => {
-            this._route(splitPath(url), handler);
+            this._route(Path.split(url), handler);
         });
     }
     router(url: string): Router {
-        const path = splitPath(url)
+        const path = Path.split(url)
         let current: Router = this
         for (const part of path) {
             if (!current.sub_routers.has(part)) {
@@ -285,7 +285,7 @@ export class Server extends Router {
         const url = new URL(req.url)
 
         const path = [""]
-        path.push(...splitPath(url.pathname))
+        path.push(...Path.split(url.pathname))
 
         let response = await this._handler()(
             req,

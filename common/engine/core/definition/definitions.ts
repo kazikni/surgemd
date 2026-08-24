@@ -1,5 +1,5 @@
 import { FrameTD, FrameTransformTD, tdm, TDObject, TDType } from "../lang/td.ts";
-import { EaseFunction, mergeDeep, splitPath } from "../math/utils.ts"
+import { EaseFunction, mergeDeep, Path } from "../math/utils.ts"
 import { type Vec2 } from "../math/vec2.ts"
 import { type Stream } from "../net/stream.ts";
 
@@ -135,7 +135,7 @@ export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{
     }
     //** mysub/sub/1 */
     get_item(name:string):Type|undefined{
-        const divisions:string[]=splitPath(name)
+        const divisions:string[]=Path.split(name)
         // deno-lint-ignore no-this-alias
         let act:Tree<Type,Base>=this
         for(let i=0;i<divisions.length;i++){

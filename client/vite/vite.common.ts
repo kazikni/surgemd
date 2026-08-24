@@ -2,10 +2,9 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path, { resolve } from "node:path";
 import fs from "node:fs"
 import { type UserConfig } from "vite";
-import { spritesheet } from "./plugins/image-spritesheet-plugin.ts";
+import { kspr_plugin } from "./plugins/kspr-plugin.ts";
 import { ConfigType } from "common/scripts/config/config.ts";
 import { parseJSONC } from "../../common/engine/core/math/utils.ts";
-import { KSND } from "./plugins/ksnd.ts";
 const td=new TextDecoder()
 const txt=td.decode(fs.readFileSync("../config.jsonc"))
 export const config=(parseJSONC(txt) as ConfigType).vite;
@@ -48,9 +47,7 @@ export const uconfig: UserConfig = {
     },
     plugins: [
         svelte(),
-        KSND(config.audios),
-        spritesheet(config.spritesheet.sheets,config.spritesheet.resolutions),
-        //AudiosLists(config.audios),
+        kspr_plugin(config.kspr.sheets,config.kspr.resolutions),
     ],
     css: {
         preprocessorOptions: {

@@ -6,22 +6,7 @@ import { v2, Vec2 } from "./vec2.ts";
 export const halfpi=Math.PI/2
 
 export type ID=number
-export function joinPath(...p: string[]) {
-    return p.join("/").replace(/\/+/g, "/")
-}
-export function splitPath(path:string):string[]{
-    const ret=path.split(/[\\/]/)
-    for(let i=0;i<ret.length;i++){
-        if(ret[i]==""){
-            ret.splice(i,1)
-            i--
-        }
-    }
-    if(ret.length==0){
-        ret.push("")
-    }
-    return ret
-}
+
 export function split_strings_array(text:string):string[]{
     const out:string[]=[]
 
@@ -50,8 +35,26 @@ export function split_strings_array(text:string):string[]{
 
     return out
 }
-export class Path {
-    static join(...parts: string[]): string {
+export const Path={
+   split(path:string):string[]{
+        const ret=path.split(/[\\/]/)
+        for(let i=0;i<ret.length;i++){
+            if(ret[i]==""){
+                ret.splice(i,1)
+                i--
+            }
+        }
+        if(ret.length==0){
+            ret.push("")
+        }
+        return ret
+    },
+    join_simple(...path:string[]){
+        let ret=path.join("/").replace(/\/+/g, "/")
+        if(path[0]=="")ret=ret.substring(1)
+        return ret
+    },
+    join(...parts: string[]): string {
         const stack: string[] = []
 
         const joined = parts
@@ -75,25 +78,25 @@ export class Path {
         }
 
         return "/" + stack.join("/")
-    }
-    static extname(path:string):string{
+    },
+    extname(path:string):string{
         const content=path.split(".")
         return path.length>1?content[content.length-1]:""
-    }
-    static filename(path:string):string{
+    },
+    filename(path:string):string{
         const content=path.split(".")
         if(content.length>1){
             content.pop()
         }
         return content.join(".")
-    }
-    static basename(path:string):string{
+    },
+    basename(path:string):string{
         const val=path.split("/")
         while(val.length>1&&val[val.length-1]===""){
             val.pop()
         }
         return val[val.length-1]??""
-    }
+    },
 }
 export type Tags=string[]
 export function hasTag(tags:Tags,tag:string):boolean{
@@ -477,7 +480,7 @@ export function deepEqual(a: any, b: any): boolean {
         return false
     }
 
-    for (const key of keysA) {
+    for(const key of keysA) {
         if (!deepEqual(a[key], b[key])) {
             return false
         }

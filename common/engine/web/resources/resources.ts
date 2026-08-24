@@ -1,25 +1,12 @@
 import { AKeyFrame } from "../../core/definition/definitions.ts";
-import { FrameData, KSPR } from "../../core/lang/kspr.ts"
+import { KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
-import { StaticStream, Stream } from "../../core/net/stream.ts";
 import { type Renderer, type Texture } from "../rendering/renderer.ts"
 import { type AudioEngine } from "./sounds.ts";
 export interface SourceBase{
     id:string
-    group:string
     src:string
-}
-export interface SpritesheetJSON{
-    meta:{
-        image:string
-        scale:number
-        size:{
-            w:number
-            h:number
-        }
-    }
-    frames:Record<string,FrameData>
 }
 export interface SoundDef {
     src:string
@@ -29,7 +16,6 @@ export interface SoundDef {
 export interface SoundSlice{
     start:number
     duration:number
-    parent:string
 }
 export interface Sound extends SourceBase{
     volume:number
@@ -45,7 +31,6 @@ export class Frame implements SourceBase{
     url:string=""
     blob?:Blob
     blob_created?:boolean
-    group:string=""
 
     image?:HTMLImageElement
     texture?:Texture
@@ -72,12 +57,12 @@ export class Frame implements SourceBase{
 export type Source=Frame|Sound|Animation
 export class ResourcesManager {
     // Sources
+    imported:Record<string,{frames:string[],sounds:string[]}>={}
     frames:Record<string,Frame>={}
     sounds:Record<string,Sound>={}
     animations:Record<string,Animation>={}
 
     blobs:Record<string,{blob:Blob,url:string,group:string}>={}
-    imported:Record<string,string[]>={}
 
     canvas:HTMLCanvasElement
     ctx:CanvasRenderingContext2D
@@ -125,28 +110,21 @@ export class ResourcesManager {
             ])
             frame.id="default"
             frame.src="default"
-            frame.group="internal"
             this.default_frame=frame
         }
 
         image.src=canvas.toDataURL()
     }
 
-    async load_source(id:string,src:string,volume:number=1,group:string="",callback?:(msg:string)=>void):Promise<Source|undefined>{
+    async load_source(id:string,src:string,volume:number=1,callback?:(msg:string)=>void):Promise<Source|undefined>{
         if(src.endsWith(".svg")||src.endsWith(".png")){
-            return await this.load_frame(id,src,group,callback)
+            //return await this.load_frame(id,src,group,callback)
         }else if(src.endsWith(".mp3")||src.endsWith(".wav")){
-            return await this.load_sound(id,{src:src,volume:volume},group,callback)
+            return await this.load_sound(id,{src:src,volume:volume},callback)
         }else if(src.endsWith(".kanim")){
-            return await this.load_animation(id,src,group,callback)
+            return await this.load_animation(id,src,callback)
         }
         return undefined
-    }
-    async load_group(path:string,name:string="",callback?:(msg:string)=>void){
-        const files=await(await fetch(path)).json()
-        for(const f of Object.keys(files.files)){
-            await this.load_source(f,files.files[f],undefined,name,callback)
-        }
     }
     load_image(src:string){
         return new Promise<HTMLImageElement>((resolve,reject)=>{
@@ -156,6 +134,7 @@ export class ResourcesManager {
             img.src=src
         })
     }
+
     create_frame(texture:Texture,rect:Rect,src:string=""){
         const frame=new Frame(texture,[
             rect.min.x,rect.max.y,
@@ -172,79 +151,19 @@ export class ResourcesManager {
 
         return frame
     }
-    async create_frame_blob(frame: Frame,from_src:boolean=true): Promise<void> {
-        if (!frame.image || !frame.frame_rect) return
-        frame.blob_created=true
-        if(from_src){
-            const width  = frame.frame_rect.max.x - frame.frame_rect.min.x
-            const height = frame.frame_rect.max.y - frame.frame_rect.min.y
-            const canvas = document.createElement("canvas")
-            canvas.width = width
-            canvas.height = height
-            const ctx = canvas.getContext("2d")!
-            ctx.drawImage(frame.image,frame.frame_rect.min.x,frame.frame_rect.min.y,width,height,0,0,width,height)
-            frame.blob = await new Promise<Blob>(resolve =>
-                canvas.toBlob(blob => resolve(blob!), "image/png")
-            )
-            frame.url = URL.createObjectURL(frame.blob)
-        }else{
-            let tp="image/svg+xml"
-            if(frame.src.endsWith(".png")){
-                tp="image/png"
-            }
-            const text = await (await fetch(frame.src)).text()
-            frame.blob = new Blob([text],{type:tp})
-            frame.url = URL.createObjectURL(frame.blob)
-        }
-    }
-    async load_frame(id:string,src:string,group:string="",callback?:(msg:string)=>void){
-        if(callback)callback(src)
-        if(this.frames[id]){
-            return this.frames[id]
-        }
-        const image=await this.load_image(src)
-        const frame=this.create_frame(this.renderer.load_texture(image),{min:v2.zero(),max:v2.one()},src)
-        frame.id=id
-        frame.group=group
-        this.frames[id]=frame
-        return frame
-    }
-    async load_spritesheet(prefix:string,json:SpritesheetJSON,image_override?:string,group:string="",callback?:(item:string)=>void){
-        const image=await this.load_image(image_override??json.meta.image)
-        const texture=this.renderer.load_texture(image)
-
-        const iw=image.width
-        const ih=image.height
-
-        for(const [id,data] of Object.entries(json.frames)){
-            if(callback)callback(data.src)
-            const rect={
-                min:v2(data.x/iw,1-((data.y+data.h)/ih)),
-                max:v2((data.x+data.w)/iw,1-(data.y/ih)),
-            }
-            const frame=this.create_frame(texture,rect,data.src??id)
-            frame.id=prefix+id
-            frame.group=group
-            frame.frame_rect={
-                min:v2(data.x,data.y),
-                max:v2(data.x+data.w,data.y+data.h)
-            }
-            frame.frame_size=v2(data.w/json.meta.scale,data.h/json.meta.scale)
-            this.frames[frame.id]=frame
-        }
-    }
-    async load_kspr(kspr:KSPR,resolution:string,group:string="",prefix:string="",create_blob:boolean=false,from_src?:boolean,callback?:(item:string)=>void){
-        const res=kspr.resolutions[resolution]
-        for (const asset of kspr.assets) {
+    async parse_kspr(kspr:KSPR,resolution:string,imported:string="",callback?:(item:string)=>void){
+        if(imported&&!this.imported[imported])this.imported[imported]={frames:[],sounds:[]}
+        const res=kspr.sheets[resolution]
+        /*for(const asset of kspr.assets) {
             if(asset.type !== "text")continue
             if(!asset.path.endsWith(".svg"))continue
             const blob = new Blob([asset.content],{type:"image/svg+xml"})
-            this.blobs[prefix+asset.id]={
+            this.blobs[asset.id]={
                 blob,
                 url:URL.createObjectURL(blob),
                 group
             }
-        }
+        }*/
         for(const atlas of res.atlases){
             const blob=new Blob([atlas.image as BlobPart])
             const url=URL.createObjectURL(blob)
@@ -261,9 +180,8 @@ export class ResourcesManager {
                 }
                 const frame=this.create_frame(texture,rect,data.src??id)
                 frame.image=image
-                frame.id=prefix+id
+                frame.id=id
                 frame.url=frame.src
-                frame.group=group
                 frame.frame_rect={
                     min:v2(data.x,data.y),
                     max:v2(data.x+data.w,data.y+data.h)
@@ -275,59 +193,36 @@ export class ResourcesManager {
                 if(this.blobs[frame.id]){
                     frame.blob=this.blobs[frame.id].blob
                     frame.url=this.blobs[frame.id].url
-                }else if(create_blob)await this.create_frame_blob(frame,from_src)
-                this.frames[frame.id]=frame
-            }
-        }
-    }
-    parse_ksnd(sound: Sound,stream: Stream,group = "",callback?: (item: string) => void){
-        this.imported[sound.src]=[]
-        const magic = stream.read_string_sized(5)
-        if (magic !== ".KSND") {
-            throw new Error("Invalid KSND file.")
-        }
-        const version = stream.read_uint16()
-        if (version !== 0) {
-            throw new Error(`Unsupported KSND version ${version}.`)
-        }
-        const sampleRate = stream.read_float32()
-        callback?.(sound.src)
-        stream.read_array(() => {
-            const id = stream.read_string()
-            this.imported[sound.src].push(id)
-            callback?.(id)
-            const sampleCount = stream.read_uint32()
-            const startSample = stream.read_uint32()
-            this.sounds[id] = {
-                id,
-                src: sound.src,
-                volume: sound.volume,
-                buffer: sound.buffer,
-                group,
-                slice: {
-                    start: startSample/sampleRate,
-                    duration: sampleCount/sampleRate,
-                    parent:sound.src
                 }
+                this.frames[frame.id]=frame
+                if(this.imported[imported])this.imported[imported].frames.push(frame.id)
             }
-        }, 2)
-    }
-    async load_ksnd(path:string,group:string,codec:string=".ogg",callback?: (item: string) => void){
-        if(this.imported[path+codec])return
-        callback?.(path+".ksnd")
-        const stream=new StaticStream(await(await fetch(path+".ksnd")).arrayBuffer())
-        callback?.(path+codec)
-        const buffer=await this.audio.ctx.decodeAudioData(await(await fetch(path+codec)).arrayBuffer())
-        const sound:Sound={
-            id:group,
-            group,
-            src:path+codec,
-            volume:1,
-            buffer,
         }
-        await this.parse_ksnd(sound,stream,group,callback)
+        for(const v in kspr.audios){
+            const s=kspr.audios[v]
+            const sound:Sound={
+                buffer:await this.audio.ctx.decodeAudioData((s.audio??new Uint8Array()).buffer as ArrayBuffer),
+                id:"audio_buffer_"+v,
+                src:"audio_buffer_"+v,
+                volume:1
+            }
+            for(const sd of s.sounds){
+                callback?.(sd.name)
+                this.sounds[sd.name] = {
+                    id:sd.name,
+                    src:sound.src,
+                    volume:sound.volume,
+                    buffer:sound.buffer,
+                    slice:{
+                        start:sd.startSample/s.sampleRate,
+                        duration:sd.sampleCount/s.sampleRate,
+                    }
+                }
+                if(this.imported[imported])this.imported[imported].sounds.push(sd.name)
+            }
+        }
     }
-    async load_sound(id:string,def:SoundDef,group:string="",callback?:(msg:string)=>void){
+    async load_sound(id:string,def:SoundDef,callback?:(msg:string)=>void){
         if(callback)callback(def.src)
         if(this.sounds[id]){
             return this.sounds[id]
@@ -343,7 +238,6 @@ export class ResourcesManager {
             src:def.src,
             volume:def.volume??1,
             buffer,
-            group,
             slice:def.slice
         }
 
@@ -351,14 +245,13 @@ export class ResourcesManager {
 
         return sound
     }
-    async load_animation(id:string,keyframes:AKeyFrame[]|string,group:string="",callback?:(item:string)=>void):Promise<Animation>{
+    async load_animation(id:string,keyframes:AKeyFrame[]|string,callback?:(item:string)=>void):Promise<Animation>{
         let path=""
         if(typeof keyframes==="string"){
             path=keyframes
             keyframes=(await this.load_json(keyframes,callback)) as AKeyFrame[]
         }
         this.animations[id]={
-            group:group,
             id:id,
             src:path,
             keyframes:keyframes,
@@ -453,6 +346,7 @@ export class ResourcesManager {
             image.src=src
         })
     }
+
     get_frame(id:string):Frame{
         if(!this.frames[id]){
             if(this.default_frame_enabled){
@@ -478,10 +372,6 @@ export class ResourcesManager {
     }
     unload_sound(id:string){
         if(!this.sounds[id])return
-        if(this.sounds[id].slice&&this.imported[this.sounds[id].slice.parent]){
-            const idx=this.imported[this.sounds[id].slice.parent].indexOf(id)
-            if(idx!==-1)this.imported[this.sounds[id].slice.parent].splice(idx,1)
-        }
         delete this.sounds[id]
     }
     unload_animation(id:string){
@@ -494,43 +384,26 @@ export class ResourcesManager {
         URL.revokeObjectURL(this.blobs[blob].url)
         delete this.blobs[blob]
     }
-    unload_group(group:string){
-        for(const id in this.frames){
-            if(this.frames[id].group===group){
-                this.unload_frame(id)
-            }
+    unload_imported(imported:string){
+        for(const v of this.imported[imported].frames){
+            this.unload_frame(v)
         }
-        for(const id in this.sounds){
-            if(this.sounds[id].group===group){
-                this.unload_sound(id)
-            }
+        for(const v of this.imported[imported].sounds){
+            this.unload_sound(v)
         }
-        for(const id in this.animations){
-            if(this.animations[id].group===group){
-                this.unload_animation(id)
-            }
-        }
-        for(const id in this.blobs){
-            if(this.blobs[id].group===group){
-                this.unload_blob(id)
-            }
-        }
+        delete this.imported[imported]
     }
-    clear(blacklist:string[]=[]){
+    clear(){
         for(const r of Object.keys(this.frames)){
-            if(blacklist.includes(r)||blacklist.includes(this.frames[r].group))continue
             this.unload_frame(r)
         }
         for(const r of Object.keys(this.sounds)){
-            if(blacklist.includes(r)||blacklist.includes(this.sounds[r].group))continue
             this.unload_sound(r)
         }
         for(const r of Object.keys(this.animations)){
-            if(blacklist.includes(r)||blacklist.includes(this.animations[r].group))continue
             this.unload_sound(r)
         }
         for(const r of Object.keys(this.blobs)){
-            if(blacklist.includes(r)||blacklist.includes(this.blobs[r].group))continue
             this.unload_blob(r)
         }
     }

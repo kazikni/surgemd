@@ -63,28 +63,24 @@
     "vite": {
         "port": 3000,
         "allowed_hosts": true,
-        "spritesheet": {
+        "kspr": {
             "sheets": {
-                "assets/img/kspr/main": {"path":[{"dir":"assets/img/game/main","base":"public"},{"dir":"assets/img/game/main"}]},
+                "assets/kspr/main": {
+                    "sprites":[{"dir":"assets/img/game/main","base":"public"},{"dir":"assets/img/game/main"}],
+                    "audios": ["assets/sounds/game/main"]
+                },
+                "assets/kspr/common": {"sprites":[{"dir":"assets/img/game/common"}]},
+                "assets/kspr/snow": {"sprites":[{"dir":"assets/img/game/snow"}]},
+                "assets/kspr/fall": {"sprites":[{"dir":"assets/img/game/fall"}]},
 
-                "assets/img/kspr/common": {"path":[{"dir":"assets/img/game/common"}]},
-                "assets/img/kspr/snow": {"path":[{"dir":"assets/img/game/snow"}]},
-                "assets/img/kspr/fall": {"path":[{"dir":"assets/img/game/fall"}]},
+                "assets/kspr/maps/tundra": {"sprites":[{"dir":"assets/img/game/maps/tundra"}]},
 
-                "assets/img/kspr/maps/tundra": {"path":[{"dir":"assets/img/game/maps/tundra"}]},
-
-                "scripts/campaign/levels/prologue/sprites":{"path":[{"dir":"assets/img/game/levels/prologue"}]}
+                "scripts/campaign/levels/prologue/sprites":{"sprites":[{"dir":"assets/img/game/levels/prologue"}]}
             },
             "resolutions": [
                 {"name": "low","scale": 0.5},
                 {"name": "medium","scale": 1}
             ]
-        },
-        "audios": [
-            {
-                "input": "assets/sounds/game/main",
-                "output": "assets/sounds/ksnd/main"
-            }
-        ]
+        }
     }
 }

@@ -8,7 +8,7 @@ export const NormalBiome:MapBiomeDef={
 
     },
     textures:[
-        "/assets/img/kspr/common"
+        "/assets/kspr/common"
     ],
     particles:["leaf_1_particle_1"],
     particles_tint:0x2b7317,
@@ -24,7 +24,7 @@ export const SnowBiome:MapBiomeDef={
         [FloorType.Sand]:0x505659
     },
     skin:"snow",
-    textures:["/assets/img/kspr/common","/assets/img/kspr/snow"],
+    textures:["/assets/kspr/common","/assets/kspr/snow"],
     ambient_sound:"snowstorm_ambience",
     musics:[],
     particles:[],
@@ -34,7 +34,7 @@ export const DesertBiome:MapBiomeDef={
     floors:{
         [FloorType.Sand]:0xa1761a
     },
-    textures:["/assets/img/kspr/common","/assets/img/kspr/desert"],
+    textures:["/assets/kspr/common","/assets/kspr/desert"],
     musics:[],
     particles:[],
 }
@@ -50,7 +50,7 @@ export const FallBiome:MapBiomeDef={
         "squared_bush":["fall_1","fall_2"],
     },
     skin_chance:0.2,
-    textures:["/assets/img/kspr/common","/assets/img/kspr/fall"],
+    textures:["/assets/kspr/common","/assets/kspr/fall"],
     musics:[
         "/assets/sounds/musics/online/game_fall_music_1.mp3",
         "/assets/sounds/musics/online/game_fall_music_2.mp3",

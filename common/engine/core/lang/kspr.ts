@@ -1,4 +1,8 @@
-import { DynamicStream, StaticStream, Stream } from "../net/stream.ts";
+import { type FileManager } from "../definition/file.ts";
+import { RectPacker } from "../math/geometry.ts";
+import { Path } from "../math/utils.ts";
+import { type Stream } from "../net/stream.ts";
+import { audios, AudioSheet,AudioDecoder,AudioEncoder } from "./audiosheet.ts";
 export enum KSPRImageFormat {
     RawRGBA = 0,
     PNG = 1,
@@ -18,9 +22,21 @@ export interface KSPRAtlas {
     image: Uint8Array
     frames: Record<string, FrameData>
 }
-export interface KSPRResolution {
+export interface KSPRSheet {
     scale: number
     atlases: KSPRAtlas[]
+}
+export interface KSPRResolutionDefinition{name:string,scale:number}
+export interface KSPRDefinition{
+    save_assets?:boolean
+    sprites:{dir:string,base?:string}[]
+    resolutions?:{name:string,scale:number}[]
+    audios?:string[]
+
+    output_format?:string
+    margin?:number
+    remove_extensions?:boolean
+    maximum_size?: number
 }
 export type KSPR_Asset=({
     type:"null"
@@ -33,114 +49,222 @@ export type KSPR_Asset=({
 }
 export interface KSPR {
     assets:KSPR_Asset[]
-    resolutions: Record<string, KSPRResolution>
+    sheets:Record<string, KSPRSheet>
+    audios:AudioSheet[]
 }
-export function write_kspr(data: KSPR, stream?: Stream): Stream {
-    const s = stream ?? new DynamicStream()
-    // HEADER
-    s.write_string_sized(".KSPR",5)
-    s.write_uint8(3)
-    s.write_array(data.assets,(i)=>{
-        s.write_string(i.id,1)
-        s.write_string(i.path,1)
-        switch(i.type){
-            case "text":
-                s.write_uint8(0)
-                s.write_string(i.content,4)
-                break
-        }
-    },2)
-    s.write_array(Object.entries(data.resolutions),(v)=>{
-        s.write_string(v[0])
-        s.write_float32(v[1].scale)
-        s.write_uint16(v[1].atlases.length)
-        for (const atlas of v[1].atlases) {
-            // imagem
-            s.write_uint8(atlas.format)
-            s.write_uint16(atlas.width)
-            s.write_uint16(atlas.height)
-            s.write_uint24(atlas.image.length)
-            s.write_bytes(atlas.image)
-            // frames
-            const entries = Object.entries(atlas.frames)
-            s.write_uint16(entries.length)
-            for (const [id, f] of entries) {
-                s.write_string(id)
-                s.write_string(f.src,2)
-                s.write_uint16(f.x)
-                s.write_uint16(f.y)
-                s.write_uint16(f.w)
-                s.write_uint16(f.h)
-            }
-        }
-    },1)
-    return s
-}
-export function load_kspr(buffer: ArrayBuffer): KSPR {
-    const stream = new StaticStream(buffer)
-    const magic = stream.read_string_sized(5)
-    if (magic !== ".KSPR") throw "Invalid KSPR file"
-    const version = stream.read_uint8()
-    const out: KSPR = {
-        assets:[],
-        resolutions: {},
-    }
-    out.assets=stream.read_array(()=>{
-        const id=stream.read_string(1)
-        const path=stream.read_string(1)
-        const tp=stream.read_uint8()
-        switch(tp){
-            case 0:
-                return {
-                    type:"text",
-                    path,
-                    id,
-                    content:stream.read_string(4)
-                }
-        }
-        return {
-            type:"null",
-            id,
-            path
-        }
-    },2) as KSPR_Asset[]
-    stream.read_array(()=>{
-        const resName = stream.read_string()
-        const scale = stream.read_float32()
-        const atlasCount = stream.read_uint16()
-        const atlases: KSPRAtlas[] = []
-        for (let a = 0; a < atlasCount; a++) {
-            // imagem
-            const format = stream.read_uint8()
-            const width = stream.read_uint16()
-            const height = stream.read_uint16()
-            const imgSize = stream.read_uint24()
-            const image = stream.read_bytes(imgSize)
-            // frames
-            const frameCount = stream.read_uint16()
-            const frames: Record<string, any> = {}
-            for (let i = 0; i < frameCount; i++) {
-                const id = stream.read_string()
-                const src = stream.read_string(2)
-                const x = stream.read_uint16()
-                const y = stream.read_uint16()
-                const w = stream.read_uint16()
-                const h = stream.read_uint16()
-                frames[id] = {src,x,y,w,h}
-            }
-            atlases.push({
-                format,
-                width,
-                height,
-                image: new Uint8Array(image),
-                frames
-            })
-        }
-        out.resolutions[resName] = {
-            scale,
-            atlases
-        }
-    },1)
 
-    return out
+export const kspr={
+    is_image(img:string):boolean{
+        return img.endsWith(".png")||img.endsWith(".svg")||img.endsWith(".webp")
+    },
+    async compile(def:KSPRDefinition,fs:FileManager,audio_decoder:AudioDecoder,audio_encoder:AudioEncoder,canvas:any,ctx:any,image_loader:(path:string)=>any):Promise<KSPR>{
+        const outputFormat=def.output_format??"png"
+        const margin=def.margin??8
+        const removeExtensions=def.remove_extensions??true
+        const maximumSize=def.maximum_size??2048
+
+        const kspr: KSPR = {sheets:{},assets:[],audios:[]}
+        const sprites_file:[string,string][]=[]
+
+        for(const f of def.sprites){
+            for(const p of await fs.list_dir_recursive(f.dir,f.base)){
+                if(this.is_image(p))sprites_file.push([Path.join_simple(f.base??"",p),p])
+            }
+        }
+        // Compile KSPR
+        const images: { image: any, path: string,id:string }[] = []
+        for (const file of sprites_file) {
+            let id = Path.basename(file[0])
+            if(removeExtensions) {
+                id = id.split(".").slice(0, -1).join("")
+            }
+            let src = file[1]
+            if (!src.startsWith("/"))src="/"+src
+            images.push({
+                image:await image_loader(file[0]),
+                path:src,
+                id
+            })
+            if(def.save_assets){
+                if(file[0].endsWith(".svg")){
+                    kspr.assets.push({
+                        type:"text",
+                        id,
+                        path:src,
+                        content:(await fs.read_file(file[1])).toString()
+                    })
+                }
+            }
+        }
+        images.sort((a, b)=>(b.image.width * b.image.height)-(a.image.width * a.image.height))
+        for(const res of def.resolutions??[]){
+            const packer = new RectPacker<typeof images[0]>(Math.floor(maximumSize * res.scale),Math.floor(maximumSize * res.scale),margin)
+            for(const img of images){
+                packer.add(Math.ceil(img.image.width * res.scale),Math.ceil(img.image.height * res.scale),img)
+            }
+            const atlases=[]
+            for (const bin of packer.bins) {
+                canvas.width=bin.width
+                canvas.height=bin.height
+                ctx.clearRect(0,0,canvas.width,canvas.height)
+                const frames: Record<string, any> = {}
+                for (const rect of bin.rects) {
+                    const data = rect.data
+                    ctx.drawImage(
+                        data.image,
+                        rect.x,
+                        rect.y,
+                        rect.w,
+                        rect.h
+                    )
+                    frames[data.id] = {
+                        src:data.path,
+                        x: rect.x,
+                        y: rect.y,
+                        w: rect.w,
+                        h: rect.h
+                    }
+                }
+
+                let buffer = canvas.toBuffer?.("image/png")
+                if(!buffer){
+                    const blob = await new Promise<Blob>((resolve) => {
+                        canvas.toBlob(resolve, "image/png")!
+                    })
+                    buffer=await blob.arrayBuffer()
+                }
+                atlases.push({
+                    image: new Uint8Array(buffer),
+                    frames,
+                    width:bin.width,
+                    height:bin.height,
+                    format:KSPRImageFormat.PNG,
+                })
+            }
+            kspr.sheets[res.name] = {
+                scale: res.scale,
+                atlases,
+            }
+        }
+
+        // Build Audios
+        for(const path of def.audios??[]){
+            console.log(`Compiling ${path}`)
+            const sheet = await audios.compile_group(fs,audio_decoder,audio_encoder,path)
+            kspr.audios.push(sheet)
+        }
+        return kspr
+    },
+
+    write(data: KSPR, stream: Stream){
+        // HEADER
+        stream.write_string_sized(".KSPR",5)
+        stream.write_uint8(4)
+        stream.write_array(data.assets,(i)=>{
+            stream.write_string(i.id,1)
+            stream.write_string(i.path,1)
+            switch(i.type){
+                case "text":
+                    stream.write_uint8(0)
+                    stream.write_string(i.content,4)
+                    break
+            }
+        },2)
+        stream.write_array(data.audios,(v)=>audios.write(v,stream),1)
+        stream.write_array(Object.entries(data.sheets),(v)=>{
+            stream.write_string(v[0])
+            stream.write_float32(v[1].scale)
+            stream.write_uint16(v[1].atlases.length)
+            for (const atlas of v[1].atlases) {
+                // imagem
+                stream.write_uint8(atlas.format)
+                stream.write_uint16(atlas.width)
+                stream.write_uint16(atlas.height)
+                stream.write_uint24(atlas.image.length)
+                stream.write_bytes(atlas.image)
+                // frames
+                const entries = Object.entries(atlas.frames)
+                stream.write_uint16(entries.length)
+                for (const [id, f] of entries) {
+                    stream.write_string(id)
+                    stream.write_string(f.src,2)
+                    stream.write_uint16(f.x)
+                    stream.write_uint16(f.y)
+                    stream.write_uint16(f.w)
+                    stream.write_uint16(f.h)
+                }
+            }
+        },1)
+    },
+    load(stream:Stream): KSPR {
+        const magic = stream.read_string_sized(5)
+        if (magic !== ".KSPR") throw "Invalid KSPR file"
+        const version = stream.read_uint8()
+        const out: KSPR = {
+            assets:[],
+            sheets:{},
+            audios:[]
+        }
+        out.assets=stream.read_array(()=>{
+            const id=stream.read_string(1)
+            const path=stream.read_string(1)
+            const tp=stream.read_uint8()
+            switch(tp){
+                case 0:
+                    return {
+                        type:"text",
+                        path,
+                        id,
+                        content:stream.read_string(4)
+                    }
+            }
+            return {
+                type:"null",
+                id,
+                path
+            }
+        },2) as KSPR_Asset[]
+        stream.read_array(()=>{
+            out.audios.push(audios.read(stream))
+        },1)
+        stream.read_array(()=>{
+            const resName = stream.read_string()
+            const scale = stream.read_float32()
+            const atlasCount = stream.read_uint16()
+            const atlases: KSPRAtlas[] = []
+            for (let a = 0; a < atlasCount; a++) {
+                // imagem
+                const format = stream.read_uint8()
+                const width = stream.read_uint16()
+                const height = stream.read_uint16()
+                const imgSize = stream.read_uint24()
+                const image = stream.read_bytes(imgSize)
+                // frames
+                const frameCount = stream.read_uint16()
+                const frames: Record<string, any> = {}
+                for (let i = 0; i < frameCount; i++) {
+                    const id = stream.read_string()
+                    const src = stream.read_string(2)
+                    const x = stream.read_uint16()
+                    const y = stream.read_uint16()
+                    const w = stream.read_uint16()
+                    const h = stream.read_uint16()
+                    frames[id] = {src,x,y,w,h}
+                }
+                atlases.push({
+                    format,
+                    width,
+                    height,
+                    image: new Uint8Array(image),
+                    frames
+                })
+            }
+            out.sheets[resName] = {
+                scale,
+                atlases
+            }
+        },1)
+
+        return out
+    }
 }

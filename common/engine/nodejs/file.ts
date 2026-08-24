@@ -1,6 +1,6 @@
 
-import * as fs from "node:fs/promises";
-import { open, FileHandle as NodeFile } from "node:fs/promises";
+import * as fs from "node:fs";
+import { open, FileHandle as NodeFile,readFile,writeFile,readdir } from "node:fs/promises";
 
 import {
     FileHandle,
@@ -40,30 +40,29 @@ export class NodeFileHandle extends FileHandle {
 }
 
 export class NodeFileManager extends FileManager {
-    async read_file(path: string): Promise<string> {
-        return await fs.readFile(path, "utf8");
+    override is_directory(path: string): boolean {
+        const stat = fs.statSync(path)
+        return stat.isDirectory()
+    }
+    read_file(path: string): Promise<string> {
+        return readFile(path, "utf8")
+    }
+    write_file(path: string, content: string): Promise<void> {
+        return writeFile(path, content, "utf8")
     }
 
-    async write_file(path: string, content: string): Promise<void> {
-        await fs.writeFile(path, content, "utf8");
+    async read_fileb(path:string):Promise<Uint8Array> {
+        return new Uint8Array(await readFile(path))
+    }
+    async write_fileb(path:string,content:Uint8Array): Promise<void> {
+        writeFile(path, content)
     }
 
-    async read_fileb(path: string): Promise<Uint8Array> {
-        return new Uint8Array(await fs.readFile(path));
+    list_dir(path: string): Promise<string[]> {
+        return readdir(path);
     }
 
-    async write_fileb(path: string, content: Uint8Array): Promise<void> {
-        await fs.writeFile(path, content);
-    }
-
-    async list_dir(path: string): Promise<string[]> {
-        return await fs.readdir(path);
-    }
-
-    async open(
-        path: string,
-        mode: "r" | "w" | "rw"
-    ): Promise<FileHandle> {
+    async open(path: string,mode: "r" | "w" | "rw"): Promise<FileHandle>{
         const flags =
             mode === "r"
                 ? "r"
@@ -72,7 +71,6 @@ export class NodeFileManager extends FileManager {
                 : "r+";
 
         const file = await open(path, flags);
-
         return new NodeFileHandle(file);
     }
 }

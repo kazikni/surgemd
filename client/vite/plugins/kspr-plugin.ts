@@ -1,14 +1,28 @@
 import { type Plugin } from "vite";
-import { buildKSPRGroup, CompilerOptions, Resolution } from "./utils/spritesheet.ts";
-
+import { DynamicStream } from "../../../common/engine/core/net/stream.ts";
+import { kspr, KSPRDefinition, KSPRResolutionDefinition } from "../../../common/engine/core/lang/kspr.ts";
+import { NodeFileManager } from "../../../common/engine/nodejs/file.ts";
+import { FFmpegDecoder,FFmpegEncoder } from "../../../common/engine/nodejs/audio.ts";
+import { createCanvas, loadImage } from "canvas";
 const PLUGIN_NAME = "vite-spritesheet-plugin";
 
-export function spritesheet(atlas_list: Record<string,{path:{dir:string,base?:string}[],save_assets?:boolean}>,resolutions: Resolution[] = [{ name: "low", scale: 0.5 }],options?:CompilerOptions): Plugin[] {
+export function kspr_plugin(list: Record<string,KSPRDefinition>,resolutions: KSPRResolutionDefinition[]): Plugin[] {
     async function buildAll() {
+        const stream=new DynamicStream(3000)
+
+        const fs=new NodeFileManager()
+        const audio_decoder=new FFmpegDecoder()
+        const audio_encoder=new FFmpegEncoder()
+        const canvas=createCanvas(200,200)
+        const ctx=canvas.getContext("2d")
+
         const outputs: Record<string, Uint8Array> = {}
-        for (const [name, folder] of Object.entries(atlas_list)) {
+        for (const [name, sheet] of Object.entries(list)) {
             console.log("Building - ", name)
-            outputs[name] = await buildKSPRGroup(folder.path,resolutions,folder.save_assets,options)
+            const data=await kspr.compile({resolutions:resolutions,...sheet},fs,audio_decoder,audio_encoder,canvas,ctx,loadImage)
+            stream.clear()
+            kspr.write(data,stream)
+            outputs[name]=stream.data.slice(0,stream.length)
         }
         return outputs
     }

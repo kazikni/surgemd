@@ -1,8 +1,6 @@
-import { createCanvas } from "https://deno.land/x/canvas/mod.ts";
-import { CommandDef, DynamicStream, GameConsole } from "common/engine/core.ts";
-import { KSPRImageFormat,load_kspr } from "common/engine/core/lang/kspr.ts";
-import { audios } from "common/engine/core/lang/audiosheet.ts";
-import { FFmpegDecoder, FFmpegEncoder } from "common/engine/deno/audio.ts";
+import { createCanvas } from "npm:@napi-rs/canvas";
+import { CommandDef, DynamicStream, GameConsole, StaticStream } from "common/engine/core.ts";
+import { KSPRImageFormat,kspr } from "common/engine/core/lang/kspr.ts";
 import { ClientsManager, DenoFileManager, Server } from "common/engine/deno.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Game } from "./game/others/game.ts";
@@ -13,7 +11,10 @@ function ensureDir(path: string) {
         Deno.mkdirSync(path, { recursive: true });
     } catch {}
 }
-async function saveAtlasPNG(image: Uint8Array,width: number,height: number,format: KSPRImageFormat,output: string) {
+async function saveAtlasPNG(image: Uint8Array,width: number,height: number,format: KSPRImageFormat,output: string,canvas:any,ctx:any) {
+    canvas.width=width
+    canvas.height=height
+    ctx.clearRect(0,0,canvas.width,canvas.height)
     switch (format) {
         case KSPRImageFormat.PNG:
         case KSPRImageFormat.JPEG: {
@@ -21,8 +22,6 @@ async function saveAtlasPNG(image: Uint8Array,width: number,height: number,forma
             return;
         }
         case KSPRImageFormat.RawRGBA: {
-            const canvas = createCanvas(width, height)
-            const ctx = canvas.getContext("2d")
             const imgData = new ImageData(new Uint8ClampedArray(image),width,height)
             ctx.putImageData(imgData, 0, 0)
             await Deno.writeFile(output,new Uint8Array(canvas.toBuffer("image/png")))
@@ -31,24 +30,26 @@ async function saveAtlasPNG(image: Uint8Array,width: number,height: number,forma
     }
 }
 export async function extract_kspr(input:string,output:string){
-    const buffer = await Deno.readFile(input);
-    const kspr = load_kspr(
-        buffer.buffer.slice(
-            buffer.byteOffset,
-            buffer.byteOffset + buffer.byteLength
-        )
-    )
-    ensureDir(output);
-    for (const [resName, res] of Object.entries(kspr.resolutions)) {
-        const resDir = `${output}/${resName}`;
-        ensureDir(resDir);
-        let atlasIndex = 0;
+    const buffer=await Deno.readFile(input);
+    const data=kspr.load(new StaticStream(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset + buffer.byteLength)))
+    ensureDir(output)
+    for(const i in data.audios){
+        const out = `${output}/audios/audiosheet_${i}`;
+        ensureDir(`${output}/audios/`)
+        if(data.audios[i].audio)await Deno.writeFile(out+"."+data.audios[i].codec,data.audios[i].audio)
+    }
+        const canvas = createCanvas(200,200)
+        const ctx = canvas.getContext("2d")
+    for(const [resName, res] of Object.entries(data.sheets)) {
+        const resDir = `${output}/${resName}`
+        ensureDir(resDir)
+        let atlasIndex = 0
 
         for (const atlas of res.atlases) {
             const atlasName = `atlas_${atlasIndex}`
             const imagePath = `${resDir}/${atlasName}.png`
             const jsonPath = `${resDir}/${atlasName}.json`
-            await saveAtlasPNG(atlas.image,atlas.width,atlas.height,atlas.format,imagePath)
+            await saveAtlasPNG(atlas.image,atlas.width,atlas.height,atlas.format,imagePath,canvas,ctx)
             await Deno.writeTextFile(
                 jsonPath,
                 JSON.stringify({
@@ -61,30 +62,6 @@ export async function extract_kspr(input:string,output:string){
             atlasIndex++;
         }
     }
-}
-export async function compile_audio(input: string,output: string){
-    const fs = new DenoFileManager()
-
-    const decoder = new FFmpegDecoder()
-    const encoder = new FFmpegEncoder()
-
-    console.log(`Compiling "${input}"...`)
-
-    const sheet = await audios.compile_group(fs,decoder,encoder,input)
-
-    const stream = new DynamicStream()
-    audios.write_definitions(stream, sheet)
-
-    await Deno.writeFile(output+".ogg",sheet.audio)
-    await Deno.writeFile(output+".ksnd",stream.data.slice(0, stream.length))
-
-    console.log(`Generated ${output+".ogg"}`)
-    console.log(`Generated ${output+".ksnd"}`)
-
-    console.log(`Duration   : ${sheet.duration.toFixed(2)} s`)
-    console.log(`SampleRate : ${sheet.sampleRate}`)
-    console.log(`Channels   : ${sheet.channels}`)
-    console.log(`Sounds     : ${Object.keys(sheet.sounds).length}`)
 }
 export const game_command:CommandDef={
     name:"game",
@@ -209,10 +186,10 @@ export const kspr_command: CommandDef = {
                 "input"
             ],
             async execute(ctx) {
-                const buffer = await Deno.readFile(ctx.args.input)
-                const kspr = load_kspr(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset + buffer.byteLength))
+                const buffer=await Deno.readFile(ctx.args.input)
+                const data=kspr.load(new StaticStream(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset + buffer.byteLength)))
                 ctx.console.log("Resolutions:")
-                for (const [name, res] of Object.entries(kspr.resolutions)) {
+                for (const [name, res] of Object.entries(data.sheets)){
                     ctx.console.log(`- ${name}`)
                     ctx.console.log(`  Scale: ${res.scale}`)
                     ctx.console.log(`  Atlases: ${res.atlases.length}`)
@@ -221,42 +198,16 @@ export const kspr_command: CommandDef = {
         }
     ]
 }
-export const audio_command: CommandDef = {
-    name: "audio",
-    flags: {},
-    childrens: [
-        {
-            name: "compile",
-            flags: {
-                input: {
-                    type: "string"
-                },
-                output: {
-                    type: "string",
-                    default: "output"
-                }
-            },
-            flags_orden: [
-                "input"
-            ],
-            async execute(ctx) {
-                await compile_audio(ctx.args.input,ctx.args.output)
-            }
-        }
-    ]
-}
 async function main(args:string[]) {
     const cmd=new GameConsole({})
     cmd.register(game_command)
     cmd.register(kspr_command)
-    cmd.register(audio_command)
     await cmd.run(args)
 }
-
 if (import.meta.main) {
     await main(Deno.args)
 }
 
-//deno run -A ./server/src/cli.ts kspr extract client/dist/assets/img/kspr/common.kspr
+//deno run -A ./server/src/cli.ts kspr extract client/dist/assets/kspr/main.kspr
 //deno run -A ./server/src/cli.ts game map compile common/scripts/definitions/maps/tundra.ts
 //deno run -A ./server/src/cli.ts audio compile client/public/assets/sounds/game/main

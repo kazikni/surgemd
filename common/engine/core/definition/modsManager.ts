@@ -1,6 +1,6 @@
 import { type AbstractGame } from "../game/game.ts";
 import { FileManager } from "./file.ts";
-import { joinPath, importFromString, mergeDeep, cloneDeep } from "../math/utils.ts"
+import { Path, importFromString, mergeDeep, cloneDeep } from "../math/utils.ts"
 import { v2 } from "../math/vec2.ts";
 import { Angle } from "../math/geometry.ts";
 import { random } from "../math/random.ts";
@@ -119,7 +119,7 @@ export class ModsManager<
 
         for (const manifest of this.getLoadOrder()) {
             try {
-                const entry = joinPath(manifest.path, manifest.main)
+                const entry = Path.join_simple(manifest.path, manifest.main)
                 const source = await this.fs.read_file(entry)
                 const module = await importFromString(source) as Module
 

@@ -36,7 +36,7 @@ import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
-import { load_kspr } from "common/engine/core/lang/kspr.ts";
+import { kspr } from "common/engine/core/lang/kspr.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { HumanBody } from "../objects/human_body.ts";
@@ -45,7 +45,7 @@ import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { EditorManager } from "../managers/editorManager.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, deepEqual, DisconnectPacket, FileManager, Language, Numeric, ReplayWatcher, sleep, StaticStream, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 export class Game extends ClientGame<GameObject>{
@@ -94,7 +94,6 @@ export class Game extends ClientGame<GameObject>{
     grid=new Grid2D()
 
     loaded=false
-    loaded_textures:string[]=[]
 
     definitions!:GameDefinition
 
@@ -446,32 +445,30 @@ export class Game extends ClientGame<GameObject>{
         this.inventory.scope=scope
         this.ui_manager.signal("current_scope_dirty",scope)
     }
-    async load_resources(textures:string[]=[],assets:Record<string,string>,languages_path:string="",show_loading_screen:boolean=true){
-        if(!this.resources||(this.loaded_textures.length==textures.length&&textures==this.loaded_textures))return
+    async load_resources(agro:string[]=[],assets:Record<string,string>,languages_path:string="",show_loading_screen:boolean=true){
+        if(!this.resources)return
         this.loaded=false
         if(show_loading_screen)this.menu.show_loading_screen()
         this.menu.set_loading_current("Somethings",true)
 
-        textures=["/assets/img/kspr/main",...textures]
-        this.resources.clear([
-            "essentials",
-            "main",
-            ...textures
-        ])
-
-        for (const tt of textures) {
+        agro=["/assets/kspr/main",...agro]
+        for(const p in this.resources.imported){
+            if(agro.includes(p))continue
+            this.resources.unload_imported(p)
+        }
+        for(const tt of agro){
+            if(this.resources.imported[tt])continue
             this.menu.set_loading_current(`${tt}.kspr`)
-            const res = await fetch(`${tt}.kspr`)
-            const buffer = await res.arrayBuffer()
-            const kspr = load_kspr(buffer)
+            const res=await fetch(`${tt}.kspr`)
+            const buffer=await res.arrayBuffer()
+            const data=kspr.load(new StaticStream(buffer))
             let resolution = this.save.get_variable("sv_graphics_resolution")
             if(!["low","medium"].includes(resolution)){
                 resolution="low"
                 this.save.set_variable("sv_graphics_resolution",resolution)
             }
-            await this.resources.load_kspr(kspr,resolution,tt,"",undefined,undefined,this.menu.set_loading_current)
+            await this.resources.parse_kspr(data,resolution,tt)
         }
-        await this.resources.load_ksnd("/assets/sounds/ksnd/main","main",undefined,this.menu.set_loading_current)
         if(languages_path!=""){
             try{
                 this.language.load_default_language(await this.resources.load_json(`${languages_path}/en.json`),"ingame")
@@ -808,7 +805,7 @@ export class Game extends ClientGame<GameObject>{
                 case OnlineMessageType.Load:{
                     if(msg.assets){
                         for(const a in msg.assets){
-                            await this.resources.load_source(a,msg.assets[a],undefined,"level",this.menu.set_loading_current)
+                            await this.resources.load_source(a,msg.assets[a],undefined,this.menu.set_loading_current)
                         }
                     }
                     client.emit("_end")

@@ -207,7 +207,7 @@ export class CutsceneManager {
                 break
             }
             case CutsceneCommandType.SetSoundController:{
-                const sound=command.path?await this.resources.load_sound(command.source,{src:command.path},undefined,this.set_loading_current):this.resources.get_sound(command.source)
+                const sound=command.path?await this.resources.load_sound(command.source,{src:command.path},this.set_loading_current):this.resources.get_sound(command.source)
                 this.controllers[command.controller].set(sound,{
                     loop:command.loop!==undefined?command.loop:true,
                     offset:command.start_at

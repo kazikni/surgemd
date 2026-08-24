@@ -168,7 +168,7 @@ export class AmbientManager{
         this.music.volume=0.4
 
         this.game.sounds.signals.on("unlock",async()=>{
-            await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1},"essentials")
+            await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1})
 
             const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)

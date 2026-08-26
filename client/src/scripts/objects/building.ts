@@ -208,6 +208,7 @@ export class Building extends StaticBody{
         },1)
         this.update_ceilings(ceilings)
         if(Debug.hitbox&&full){
+                this.game.hitboxes_gfx.ctx.begin_path()
             this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
             this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
             this.game.hitboxes_gfx.ctx.fill()

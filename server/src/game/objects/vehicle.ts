@@ -245,7 +245,7 @@ export class Vehicle extends MovingBody {
 
         // Tire Stress
         const lateralStress=Math.abs(lateralSpeed)*1
-        const steeringStress=Math.abs(pd.angular_velocity)*Numeric.lerp(0.4, 1.4,Numeric.clamp(speedAbs / 12, 0, 1))
+        const steeringStress=Math.abs(pd.angular_velocity)*Numeric.lerp(0.4, 3,Numeric.clamp(speedAbs/5, 0, 1))
         const accelStress=Math.max(0,throttle)*Numeric.clamp(speedAbs*0.2,0,2)
         const brakeStress=Math.max(0-throttle)*Numeric.clamp(speedAbs*5,0,10)
         this.tire_stress=lateralStress+steeringStress+accelStress+brakeStress

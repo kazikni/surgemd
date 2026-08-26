@@ -4,7 +4,8 @@ import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
-import { Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
+import { ColorM, Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
+import { Debug } from "../others/config.ts";
 export class Vehicle extends MovingBody {
     string_type = "vehicle"
     number_type = GameObjectType.Vehicle
@@ -48,10 +49,11 @@ export class Vehicle extends MovingBody {
             const w = def.wheels.defs[i]
             const spr = new Sprite2D()
             spr.frame = this.game.resources.get_frame("wheel")
-            spr.position = v2.clone(w.position)
-            spr.scale = v2(w.scale, w.scale)
-            spr.zIndex = 1
-            spr.hotspot = v2(0.5, 0.5)
+            spr.transform_frame({
+                zIndex:1,
+                hotspot:v2(0.5, 0.5)
+            })
+            spr.set_frame(w,this.game.resources)
 
             this.wheels.push({
                 def:def.wheels.defs[i],
@@ -93,7 +95,7 @@ export class Vehicle extends MovingBody {
                     const stress_resistance=(wheel.def.marks.stress_resistance??1.5)
                     if(stress_resistance>=this.tire_stress)continue
 
-                    const localPos = v2.clone(wheel.def.position)
+                    const localPos = v2.clone(wheel.def.position??v2.zero)
                     v2m.rotate_RadAngle(localPos,this.container.rotation)
 
                     const worldPos = v2.add(this.position,localPos)
@@ -109,6 +111,7 @@ export class Vehicle extends MovingBody {
                         rotation:this.container.rotation,
                         alpha:Numeric.clamp((this.tire_stress-stress_resistance)*0.2,30,255),
                         scale:wheel.def.scale,
+                        scale2:wheel.def.scale2
                     },this.game.resources)
                     d.sprite.transform_frame(wheel.def.marks.frame_transform??{})
                     this.game.scene_2d.objects.add_object(d,this.layer)
@@ -133,6 +136,12 @@ export class Vehicle extends MovingBody {
         if (full) {
             const defId = stream.read_uint8()
             this.set_def(this.game.definitions.vehicles.getFromNumber(defId))
+            if(Debug.hitbox){
+                this.game.hitboxes_gfx.ctx.begin_path()
+                this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+                this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+                this.game.hitboxes_gfx.ctx.fill()
+            }
         }
     }
 }

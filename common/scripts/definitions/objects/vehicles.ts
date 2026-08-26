@@ -1,11 +1,9 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
+import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, HitboxGroup2D, mergeDeep, v2, Vec2 } from "../../../engine/core.ts";
 import { Spawn, SpawnMode } from "../../others/constants.ts";
 import { FloorKind } from "../../others/terrain.ts";
 import { ScopeChange } from "../utils.ts";
-export interface WheelDef{
+export interface WheelDef extends FrameDef{
     movable: boolean
-    position: Vec2
-    scale: number
     marks?: {
         frame?:string
         stress_resistance?:number
@@ -144,6 +142,17 @@ export const VehicleTemplates = {
                 position:v2(0,0.7),
                 leave:v2(0,2),
                 doors:[v2(0,1.5)]
+            },
+
+            {
+                position:v2(-1.3,0.7),
+                leave:v2(-1.3,2),
+                doors:[v2(-1.3,1.5)]
+            },
+            {
+                position:v2(-1.3,-0.7),
+                leave:v2(-1.3,-2),
+                doors:[v2(-1.3,-1.5)]
             }
         ],
 
@@ -151,33 +160,35 @@ export const VehicleTemplates = {
             defs:[
                 {
                     movable:true,
-                    position:v2(.4,-1.4),
+                    position:v2(1.4,-1.2),
                     marks:{
-                        stress_resistance:2.5,
+                        stress_resistance:3,
                     },
-                    scale:2.5,
+                    scale2:v2(2.5,3.2),
                 },
                 {
                     movable:true,
-                    position:v2(.4,1.4),
+                    position:v2(1.4,1.2),
                     marks:{
-                        stress_resistance:2.5,
+                        stress_resistance:3,
                     },
-                    scale:2.5
+                    scale2:v2(2.5,3.2),
                 },
                 {
                     movable:false,
-                    position:v2(-1.5,-1.4),
+                    position:v2(-2,-1.2),
                     marks:{
+                        stress_resistance:1
                     },
-                    scale:2.5
+                    scale2:v2(2.5,3),
                 },
                 {
                     movable:false,
-                    position:v2(-1.5,1.4),
+                    position:v2(-2,1.2),
                     marks:{
+                        stress_resistance:1
                     },
-                    scale:2.5
+                    scale2:v2(2.5,3),
                 }
             ]
         },

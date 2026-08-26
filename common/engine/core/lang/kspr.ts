@@ -310,7 +310,7 @@ export const kspr={
             this.write(nkspr,stream)
 
             const res_name=sheet_name.replaceAll("${r}",(s).toString())
-            ret[res_name.replaceAll("${e}",".kspr")]=stream.data.slice(0,stream.length)
+            ret[res_name.replaceAll("${e}","kspr")]=stream.data.slice(0,stream.length)
             /*const res_name=sheet_name.replaceAll("${r}",(s).toString())
             let i=0
             for(const v of nkspr.sheets[s].atlases){

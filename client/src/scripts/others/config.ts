@@ -26,7 +26,7 @@ export const socials={
     github:"https://github.com/kazikni/surgemd",
 } satisfies Record<string,string>
 export const Debug={
-    hitbox:false,
+    hitbox:true,
     force_mobile:false
 }
 export enum GraphicsDConfig {

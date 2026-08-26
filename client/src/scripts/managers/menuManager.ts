@@ -114,7 +114,10 @@ export class MenuManager{
 </a>
 `
         this.update_content_creators([
-            {name:"Kazikni",url:"https://youtube.com/@kazikni"},
+            random.choose([
+                {name:"Kazikni",url:"https://youtube.com/@kazikni"},
+                {name:"Namerio",url:"https://youtube.com/@namerio1"},
+            ]),
         ])
 
 

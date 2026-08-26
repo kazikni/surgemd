@@ -163,11 +163,11 @@ return (class extends LevelPlayerScript{
                             }
                         ],
                         "aitems": {
-                            "556mm": 100,
-                            "762mm": 100,
-                            "45acp": 100,
-                            "9mm": 150,
-                            "22lr": 150
+                            "c45": 100,
+                            "c51": 100,
+                            "c22": 100,
+                            "l19": 150,
+                            "l15": 150
                         },
                         "items": [
                             [

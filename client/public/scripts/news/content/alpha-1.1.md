@@ -25,9 +25,9 @@ ___
 *  Obstacles Residues
 ___
 ### Guns
-* AR15 - 556mm Automatic
-* MP5 - 9mm Automatic
-* Uzi - 9mm Automatic
+* AR15 - c45 Automatic
+* MP5 - l19 Automatic
+* Uzi - l19 Automatic
 * Bullet Image
 ___
 ### Player

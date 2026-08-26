@@ -37,7 +37,7 @@ ___
 ### Items
 * Survival Knife Animation
 * Survival Knife Redesign
-* Famas - 556mm Epic Gun. The First Burst Gun
+* Famas - c45 Epic Gun. The First Burst Gun
 * Hammer Redesign
 * Axe Redesign
 * Swing Melee Animation

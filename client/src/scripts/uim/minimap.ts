@@ -1,7 +1,7 @@
 import { HideElement,ShowElement,UIModule } from "common/engine/web.ts"
 import { Game } from "../others/game.ts"
 import { PrivateUpdate } from "common/scripts/packets/update_packet.ts"
-import { PingDef } from "common/scripts/definitions/loadout/ping.ts"
+import { PingDef } from "common/scripts/definitions/loadout/pings.ts"
 import { ColorM, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GeneralUpdate, MapZone } from "common/scripts/packets/general_update.ts";
 type MinimapPing = {

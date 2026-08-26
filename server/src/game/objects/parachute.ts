@@ -31,6 +31,7 @@ export class Parachute extends ServerGameObject{
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
         this.position=position
 
+        console.log(this.game.definitions.pings.getFromStringSafe("ping_airdrop"))
         this.game.pings.push({
             position:this.position,
             def:this.game.definitions.pings.getFromString("ping_airdrop").idNumber!,

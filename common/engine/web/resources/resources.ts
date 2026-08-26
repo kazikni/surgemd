@@ -1,6 +1,6 @@
 import { AKeyFrame } from "../../core/definition/definitions.ts";
 import { audios, AudioSheet } from "../../core/lang/audiosheet.ts";
-import { kspr, KSPR } from "../../core/lang/kspr.ts"
+import { FrameData, kspr, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
 import { Path } from "../../core/math/utils.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
@@ -160,6 +160,37 @@ export class ResourcesManager {
 
         return frame
     }
+
+    load_frames(frames:Record<string,FrameData>,scale:number,imported:string="",image:HTMLImageElement,callback?:(item:string)=>void){
+        const texture=this.renderer.load_texture(image)
+        const iw=image.width
+        const ih=image.height
+        for(const [id,data] of Object.entries(frames)){
+            if(callback)callback(data.src)
+            const rect={
+                min:v2(data.x/iw,1-((data.y+data.h)/ih)),
+                max:v2((data.x+data.w)/iw,1-(data.y/ih)),
+            }
+            const frame=this.create_frame(texture,rect,data.src??id)
+            frame.image=image
+            frame.id=id
+            frame.url=frame.src
+            frame.frame_rect={
+                min:v2(data.x,data.y),
+                max:v2(data.x+data.w,data.y+data.h)
+            }
+            frame.frame_size=v2(
+                data.w/scale,
+                data.h/scale
+            )
+            if(this.blobs[frame.id]){
+                frame.blob=this.blobs[frame.id].blob
+                frame.url=this.blobs[frame.id].url
+            }
+            this.frames[frame.id]=frame
+            if(this.imported[imported])this.imported[imported].frames.push(frame.id)
+        }
+    }
     async parse_kspr(kspr:KSPR,imported:string="",resolution?:string,callback?:(item:string)=>void){
         if(imported&&!this.imported[imported])this.imported[imported]={frames:[],sounds:[]}
         /*for(const asset of kspr.assets) {
@@ -176,38 +207,12 @@ export class ResourcesManager {
             if(resolution&&r!==r)continue
             const res=kspr.sheets[r]
             for(const atlas of res.atlases){
-                const blob=new Blob([atlas.image as BlobPart])
+                if(!atlas.image)continue
+                const blob=new Blob([atlas.image.data as BlobPart])
                 const url=URL.createObjectURL(blob)
                 const image=await this.load_image(url)
                 URL.revokeObjectURL(url)
-                const texture=this.renderer.load_texture(image)
-                const iw=image.width
-                const ih=image.height
-                for(const [id,data] of Object.entries(atlas.frames)){
-                    if(callback)callback(data.src)
-                    const rect={
-                        min:v2(data.x/iw,1-((data.y+data.h)/ih)),
-                        max:v2((data.x+data.w)/iw,1-(data.y/ih)),
-                    }
-                    const frame=this.create_frame(texture,rect,data.src??id)
-                    frame.image=image
-                    frame.id=id
-                    frame.url=frame.src
-                    frame.frame_rect={
-                        min:v2(data.x,data.y),
-                        max:v2(data.x+data.w,data.y+data.h)
-                    }
-                    frame.frame_size=v2(
-                        data.w/res.scale,
-                        data.h/res.scale
-                    )
-                    if(this.blobs[frame.id]){
-                        frame.blob=this.blobs[frame.id].blob
-                        frame.url=this.blobs[frame.id].url
-                    }
-                    this.frames[frame.id]=frame
-                    if(this.imported[imported])this.imported[imported].frames.push(frame.id)
-                }
+                this.load_frames(atlas.frames,res.scale,imported,image,callback)
             }
         }
         for(const v in kspr.audios){

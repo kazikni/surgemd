@@ -1,6 +1,6 @@
 import { type FileManager } from "../definition/file.ts";
 import { RectPacker } from "../math/geometry.ts";
-import { Path } from "../math/utils.ts";
+import { cloneDeep, Path } from "../math/utils.ts";
 import { DynamicStream, Stream } from "../net/stream.ts";
 import { audios, AudioSheet,AudioDecoder,AudioEncoder } from "./audiosheet.ts";
 export enum KSPRImageFormat {
@@ -16,10 +16,12 @@ export interface FrameData {
     src:string
 }
 export interface KSPRAtlas {
-    format: KSPRImageFormat
-    width:number
-    height:number
-    image: Uint8Array
+    image?: {
+        format: KSPRImageFormat
+        width:number
+        height:number
+        data:Uint8Array
+    }
     frames: Record<string, FrameData>
 }
 export interface KSPRSheet {
@@ -135,11 +137,13 @@ export const kspr={
                     buffer=await blob.arrayBuffer()
                 }
                 atlases.push({
-                    image: new Uint8Array(buffer),
+                    image:{
+                        data:new Uint8Array(buffer),
+                        width:bin.width,
+                        height:bin.height,
+                        format:KSPRImageFormat.PNG,
+                    },
                     frames,
-                    width:bin.width,
-                    height:bin.height,
-                    format:KSPRImageFormat.PNG,
                 })
             }
             kspr.sheets[res.name] = {
@@ -190,11 +194,14 @@ export const kspr={
             stream.write_uint16(v[1].atlases.length)
             for (const atlas of v[1].atlases) {
                 // imagem
-                stream.write_uint8(atlas.format)
-                stream.write_uint16(atlas.width)
-                stream.write_uint16(atlas.height)
-                stream.write_uint24(atlas.image.length)
-                stream.write_bytes(atlas.image)
+                stream.write_boolean_group(atlas.image!==undefined)
+                if(atlas.image){
+                    stream.write_uint8(atlas.image.format)
+                    stream.write_uint16(atlas.image.width)
+                    stream.write_uint16(atlas.image.height)
+                    stream.write_uint24(atlas.image.data.length)
+                    stream.write_bytes(atlas.image.data)
+                }
                 // frames
                 const entries = Object.entries(atlas.frames)
                 stream.write_uint16(entries.length)
@@ -247,11 +254,21 @@ export const kspr={
             const atlases: KSPRAtlas[] = []
             for (let a = 0; a < atlasCount; a++) {
                 // imagem
-                const format = stream.read_uint8()
-                const width = stream.read_uint16()
-                const height = stream.read_uint16()
-                const imgSize = stream.read_uint24()
-                const image = stream.read_bytes(imgSize)
+                const [has_image]=stream.read_boolean_group()
+                let img:any
+                if(has_image){
+                    const format = stream.read_uint8()
+                    const width = stream.read_uint16()
+                    const height = stream.read_uint16()
+                    const imgSize = stream.read_uint24()
+                    const data = stream.read_bytes(imgSize,true)
+                    img={
+                        format,
+                        width,
+                        height,
+                        data:data
+                    }
+                }
                 // frames
                 const frameCount = stream.read_uint16()
                 const frames: Record<string, any> = {}
@@ -265,11 +282,8 @@ export const kspr={
                     frames[id] = {src,x,y,w,h}
                 }
                 atlases.push({
-                    format,
-                    width,
-                    height,
-                    image: new Uint8Array(image),
-                    frames
+                    frames,
+                    image:img
                 })
             }
             out.sheets[resName] = {
@@ -281,7 +295,7 @@ export const kspr={
         return out
     },
 
-    disassemble(val:KSPR,settings_name="settings.json",sound_name="sounds/${i}.ksnd",sheet_name="sheets/sheet_${i}.kspr"):Record<string,Uint8Array>{
+    disassemble(val:KSPR,settings_name="settings.json",sound_name="sounds/${i}.ksnd",sheet_name="sheets/sheet_${r}.${e}"/*"sheets/sheet_${r}${n}.${e}"*/):Record<string,Uint8Array>{
         const stream=new DynamicStream(2000)
         const ret:Record<string,Uint8Array>={}
         for(let i=0;i<val.audios.length;i++){
@@ -289,15 +303,23 @@ export const kspr={
             audios.write(val.audios[i],stream)
             ret[sound_name.replaceAll("${i}",(i+1).toString())]=stream.data.slice(0,stream.length)
         }
-
         for(const s in val.sheets){
             const nkspr:KSPR=this.zero()
             nkspr.sheets[s]=val.sheets[s]
             stream.clear()
             this.write(nkspr,stream)
-            ret[sheet_name.replaceAll("${i}",(s).toString())]=stream.data.slice(0,stream.length)
-        }
 
+            const res_name=sheet_name.replaceAll("${r}",(s).toString())
+            ret[res_name.replaceAll("${e}",".kspr")]=stream.data.slice(0,stream.length)
+            /*const res_name=sheet_name.replaceAll("${r}",(s).toString())
+            let i=0
+            for(const v of nkspr.sheets[s].atlases){
+                const name=res_name.replaceAll("${n}","_"+(i+1).toString())
+                if(v.image)ret[name.replaceAll("${e}","png")]=v.image.data
+                ret[name.replaceAll("${e}","json")]=Stream.encoder.encode(JSON.stringify({frames:v.frames,scale:nkspr.sheets[s].scale}))
+                i++
+            }*/
+        }
         ret[settings_name]=Stream.encoder.encode(JSON.stringify({
             files:Object.keys(ret)
         }))

@@ -35,9 +35,9 @@ export function Ammos_Default_Init():AmmoDef[]{
     return [
         //Main
         {
-            idString:"12g",
-            name:"12G",
-            ammoType:"12g",
+            idString:"p76",
+            name:"P-76",
+            ammoType:"p76",
             description:true,
             defaultTrail:0xcfada0,
             strongTrail:[0xdb2218,0x96231d],
@@ -46,9 +46,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"762mm",
-            name:"7.62-MM",
-            ammoType:"762mm",
+            idString:"c51",
+            name:"C-51",
+            ammoType:"c51",
             description:true,
             defaultTrail:0xb8ccde,
             strongTrail:[0x0034f2,0x14319c],
@@ -56,9 +56,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"556mm",
-            name:"5.56-MM",
-            ammoType:"556mm",
+            idString:"c45",
+            name:"C-45",
+            ammoType:"c45",
             description:true,
             defaultTrail:0xa7f2b2,
             strongTrail:[0x27f227,0x00a41c],
@@ -66,9 +66,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"45acp",
-            name:".45-ACP",
-            ammoType:"45acp",
+            idString:"c22",
+            name:"C-22",
+            ammoType:"c22",
             description:true,
             defaultTrail:0xcea2e0,
             strongTrail:[0x791390,0x4a0659],
@@ -76,9 +76,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"9mm",
-            name:"9-MM",
-            ammoType:"9mm",
+            idString:"l19",
+            name:"L-19",
+            ammoType:"l19",
             description:true,
             defaultTrail:0xefef9f,
             strongTrail:[0xefef33,0x8a7b0e],
@@ -86,9 +86,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.E
         },
         {
-            idString:"22lr",
-            name:"22-LR",
-            ammoType:"22lr",
+            idString:"l15",
+            name:"L-15",
+            ammoType:"l15",
             description:true,
             defaultTrail:0xaaaaaa,
             strongTrail:[0xefefff,0x9c9cb8],
@@ -98,9 +98,9 @@ export function Ammos_Default_Init():AmmoDef[]{
 
         //Exotic
         {
-            idString:"50cal",
-            name:".50-Cal",
-            ammoType:"50cal",
+            idString:"p99",
+            name:"P-99",
+            ammoType:"p99",
             description:true,
             defaultTrail:0x555555,
             strongTrail:[0x654747,0x653339],
@@ -108,9 +108,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.B
         },
         {
-            idString:"308sub",
-            name:".308 Sub-Sonic",
-            ammoType:"308sub",
+            idString:"p51",
+            name:"P-51",
+            ammoType:"p51",
             description:true,
             defaultTrail:0x222835,
             strongTrail:[0x0c1420,0x050d1a],

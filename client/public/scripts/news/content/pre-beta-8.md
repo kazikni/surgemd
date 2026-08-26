@@ -33,12 +33,12 @@ ___
 ___
 ### Items
 * Melees Switch Sounds
-* VSS - 9mm DMR
-* Rifle CBC - 22lr DMR
-* P90 - 45acp SMG
-* M4A1 - 556mm Assault
+* VSS - l19 DMR
+* Rifle CBC - l15 DMR
+* P90 - c22 SMG
+* M4A1 - c45 Assault
 * Desert Eagle - 50Cal Pistol
-* M16 With Grenade Launcher - Unfineshed 556mm AR with a grenade launcher
+* M16 With Grenade Launcher - Unfineshed c45 AR with a grenade launcher
 * Ghost Bullets - A Accessory When Do Your Bullets Go Through Everything
 * HP Bullets - A Accessory when give 80% of armor penetration
 * Bonesaw

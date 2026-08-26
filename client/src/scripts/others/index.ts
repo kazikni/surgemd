@@ -10,7 +10,7 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
-import { BasicSocket, CutsceneCommandType, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
+import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -54,7 +54,7 @@ import { BasicSocket, CutsceneCommandType, FetchFileManager, FileManager, Offlin
 
         constructor(){
             this.definitions=new GameDefinition()
-            this.definitions.init_default()
+            this.definitions.reset()
             PacketManager.pre_packet=(p)=>{
                 if(p.Name==="update")(p as UpdatePacket).definition=this.definitions
             }

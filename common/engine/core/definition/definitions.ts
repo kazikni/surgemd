@@ -14,18 +14,18 @@ export interface Definition{
 export class DefinitionsSimple<Type,Base=null>{
     public value:Record<string,Type&Base>
     public valueNumber:Record<number,Type&Base>
-    protected did=1
-    forall?:(obj:Type&Partial<Base>)=>void
-    constructor(forall?:(obj:Type&Partial<Base>)=>void){
+    did=1
+    forall?:(obj:Type&Partial<Base>)=>Type
+    constructor(forall?:(obj:Type&Partial<Base>)=>Type){
         this.value={}
         this.valueNumber={}
         this.forall=forall
     }
     set(val:Type,id:string,n:number|undefined=undefined):number{
-        if(this.forall)this.forall(val as (Type&Partial<Base>))
+        if(this.forall)val=this.forall((val as (Type&Partial<Base>)))
         this.value[id]=val as (Type&Base)
         this.valueNumber[n??this.did]=val as (Type&Base)
-        this.did++;
+        this.did++
         return this.did
     }
     getFromString(id:string):Type{
@@ -35,7 +35,9 @@ export class DefinitionsSimple<Type,Base=null>{
         return this.value[id]
     }
     getFromNumber(id:number):Type{
-        if(!this.valueNumber[id])throw new Error(`idNumber:${id} Dont Exist In Definition`)
+        if(!this.valueNumber[id]){
+            throw new Error(`idNumber:${id} Dont Exist In Definition`)
+        }
         return this.valueNumber[id]
     }
     getFromStringSafe(id:string):Type|undefined{
@@ -58,8 +60,9 @@ export class DefinitionsSimple<Type,Base=null>{
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
     insert(...val:Type[]):void{
-        for(const vv of val){
-            if(this.forall)this.forall(vv as (Type&Partial<Base>))
+        for(let vv of val){
+            if(this.forall)vv=this.forall(vv as (Type&Partial<Base>))
+            vv.idNumber=undefined
             this.value[vv.idString]=vv as (Type&Base)
             if(vv.idNumber===undefined){
                 vv.idNumber=this.did
@@ -111,7 +114,7 @@ export class DefinitionsMerge<TP extends Definition>{
 }
 export class Tree<Type,Base> extends DefinitionsSimple<Type,Base>{
     childs:Record<string,Tree<Type,Base>>
-    constructor(forall?:(tp:Type&Partial<Base>)=>void){
+    constructor(forall?:(tp:Type&Partial<Base>)=>Type){
         super(forall)
         this.childs={}
     }

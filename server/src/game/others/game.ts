@@ -198,7 +198,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     async init(mode:ModeManager){
         this.initialized=false
-        this.definitions.init_default()
+        this.definitions.reset()
         if(this.mods){
             for(const k of this.mods.getLoadOrder()){
                 const mod=this.mods.loaded.get(k.id)

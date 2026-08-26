@@ -13,7 +13,7 @@ import { MeleeDef } from "./items/melees.ts";
 import { ScopeDef } from "./items/scopes.ts";
 import { BadgeDef } from "./loadout/badges.ts";
 import { EmoteDef } from "./loadout/emotes.ts";
-import { PingDef } from "./loadout/ping.ts";
+import { PingDef } from "./loadout/pings.ts";
 import { LoadoutItemDef } from "./loadout/skins.ts";
 import { WrappingDef } from "./loadout/wrapping.ts";
 import { BuildingClientTD, BuildingDef,BuildingTD } from "./objects/buildings_base.ts";
@@ -99,30 +99,37 @@ export class GameDefinition{
     ammos=new Definitions<AmmoDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.ammo
+        return i
     })
     backpacks=new Definitions<BackpackDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.backpack
+        return i
     })
     vests=new Definitions<VestDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.vest
+        return i
     })
     helmets=new Definitions<HelmetDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.helmet
+        return i
     })
     accessorys=new Definitions<AccessoryDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.accessory
+        return i
     })
     consumibles=new Definitions<ConsumibleDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.consumible
+        return i
     })
     grenades=new Definitions<GrenadeDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.grenade
+        return i
     })
     guns=new Definitions<GunDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
@@ -132,40 +139,48 @@ export class GameDefinition{
             dd.idString=dd.idString+"_dual"
             this.insert_item("guns",dd)
         }
+        return i
     })
     melees=new Definitions<MeleeDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.melee
+        return i
     })
     scopes=new Definitions<ScopeDef,{}>((i)=>{
         i.def_type=GameObjectDefinitionType.item
         i.item_type=GameItemType.scope
+        return i
     })
 
     // Loadout
-    loadout=new Definitions<LoadoutItemDef,{}>((i)=>{})
-    badges=new Definitions<BadgeDef,{}>((i)=>{})
+    loadout=new Definitions<LoadoutItemDef,{}>()
+    badges=new Definitions<BadgeDef,{}>()
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.def_type=GameObjectDefinitionType.emote
+        return e
     })
-    wrapping=new Definitions<WrappingDef,{}>((w)=>{})
+    wrapping=new Definitions<WrappingDef,{}>()
     pings=new Definitions<PingDef,{}>((e)=>{
-        e.idString="ping_"+e.idString
+        return {
+            ...e,
+            idString:"ping_"+e.idString
+        }
     })
 
     // Objects
-    buildings=new Definitions<BuildingDef,{}>((i)=>{})
-    creatures=new Definitions<CreatureDef,{}>((i)=>{})
-    decals=new Definitions<DecalDef,{}>((_v)=>{})
-    explosions=new Definitions<ExplosionDef,{}>((_v)=>{})
+    buildings=new Definitions<BuildingDef,{}>()
+    creatures=new Definitions<CreatureDef,{}>()
+    decals=new Definitions<DecalDef,{}>()
+    explosions=new Definitions<ExplosionDef,{}>()
     obstacles=new Definitions<ObstacleDef,{}>((o)=>{
         o.def_type=GameObjectDefinitionType.obstacle
+        return o
     })
-    vehicles=new Definitions<VehicleDef,{}>((_g)=>{})
-    synced_particles=new Definitions<SyncedParticleDef,{}>((_v)=>{})
+    vehicles=new Definitions<VehicleDef,{}>()
+    synced_particles=new Definitions<SyncedParticleDef,{}>()
 
     // Others
-    boosts=new Definitions<BoostDef,{}>((_v)=>{})
+    boosts=new Definitions<BoostDef,{}>()
 
     game_items=new DefinitionsMerge<GameItem>()
     game_objects=new DefinitionsMerge<GameObjectDef>()
@@ -179,7 +194,6 @@ export class GameDefinition{
         for(const c of [...DefinitionItemCategoryList,...DefinitionLoadoutCategoryList,...DefinitionObjectsCategoryList,...DefinitionOthersCategoryList]){
             this[c].clear()
         }
-
         this.game_items.clear()
         this.game_objects.clear()
     }

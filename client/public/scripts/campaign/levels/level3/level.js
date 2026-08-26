@@ -48,13 +48,13 @@ return (class extends LevelPlayerScript{
                     [{"item": "red_flare","count": 1,"weight": 1}]
                 ],
                 "aitems":{
-                    "12g":80,
-                    "556mm":320,
-                    "762mm":320,
-                    "9mm":400,
-                    "22lr":400,
-                    "45acp":320,
-                    "308sub":40
+                    "p76":80,
+                    "c45":320,
+                    "c51":320,
+                    "l19":400,
+                    "l15":400,
+                    "c22":320,
+                    "p51":40
                 },
                 "iitems": [
                     "scope_2",
@@ -252,12 +252,12 @@ return (class extends LevelPlayerScript{
                             }
                         ],
                         "aitems": {
-                            "12g": 15,
-                            "556mm": 100,
-                            "762mm": 100,
-                            "45acp": 100,
-                            "9mm": 100,
-                            "22lr": 100
+                            "p76": 15,
+                            "c45": 100,
+                            "c51": 100,
+                            "c22": 100,
+                            "l19": 100,
+                            "l15": 100
                         }
                     },
                     "team":1
@@ -356,12 +356,12 @@ return (class extends LevelPlayerScript{
                             {"item": "pkp","weight": 0.1}
                         ],
                         "aitems": {
-                            "12g": 30,
-                            "556mm": 160,
-                            "762mm": 160,
-                            "45acp": 160,
-                            "9mm": 200,
-                            "22lr": 200
+                            "p76": 30,
+                            "c45": 160,
+                            "c51": 160,
+                            "c22": 160,
+                            "l19": 200,
+                            "l15": 200
                         }
                     },
                     "loadout":{
@@ -413,12 +413,12 @@ return (class extends LevelPlayerScript{
                             {"item": "awm","weight": 0.1}
                         ],
                         "aitems": {
-                            "12g": 80,
-                            "556mm": 320,
-                            "762mm": 320,
-                            "45acp": 320,
-                            "9mm": 400,
-                            "22lr": 400
+                            "p76": 80,
+                            "c45": 320,
+                            "c51": 320,
+                            "c22": 320,
+                            "l19": 400,
+                            "l15": 400
                         }
                     },
                     "team":1

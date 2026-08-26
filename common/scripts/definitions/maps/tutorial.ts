@@ -79,7 +79,7 @@ export const TutorialMap:MapDef={
                 {def:"military_vest",count:1,position:v2(16,50)},
                 {def:"military_pack",count:1,position:v2(17,50)},
                 {def:"ak47",count:1,position:v2(19,49.5)},
-                {def:"762mm",count:240,position:v2(19,50.5)}
+                {def:"c51",count:240,position:v2(19,50.5)}
             ]
         }
     },

@@ -100,11 +100,11 @@ export class CounterMD extends ModeManager {
                 round_time:settings.rules?.round_time??120,
             },
             shop:settings.shop??[
-                {id:"9mm",count:30,cost:30},
-                {id:"762mm",count:30,cost:50},
-                {id:"556mm",count:30,cost:50},
-                {id:"12g",count:10,cost:70},
-                {id:"308sub",count:5,cost:250},
+                {id:"l19",count:30,cost:30},
+                {id:"c51",count:30,cost:50},
+                {id:"c45",count:30,cost:50},
+                {id:"p76",count:10,cost:70},
+                {id:"p51",count:5,cost:250},
 
                 {id:"m9",cost:60},
                 {id:"pfeifer_zeliska",cost:3000},

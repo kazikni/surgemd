@@ -63,7 +63,7 @@ export const Floors: Record<FloorType, FloorDef> = {
         rolling_resistance:0,
     },
     [FloorType.Snow]: {
-        default_color: 0xbec8cf,
+        default_color: 0xabbcc7,
 
         speed_mult:1,
         acceleration:0.9,

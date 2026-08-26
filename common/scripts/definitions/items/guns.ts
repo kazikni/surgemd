@@ -463,7 +463,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                 PISTOLS                 //
         /////////////////////////////////////////////
-        guns_factory.pistol("m9","9mm",{
+        guns_factory.pistol("m9","l19",{
             name:"M9",
             fire_delay:0.2,
             fire_mode:FireMode.Single,
@@ -505,7 +505,7 @@ export function Guns_Default_Init():GunDef[]{
                 }
             },
         }),
-        guns_factory.pistol("taurustx","22lr",{
+        guns_factory.pistol("taurustx","l15",{
             name:"Taurus-TX 22",
             fire_delay:0.4,
             fire_mode:FireMode.Burst,
@@ -554,7 +554,7 @@ export function Guns_Default_Init():GunDef[]{
                 }
             },
         }),
-        guns_factory.pistol("colt1873","45acp",{
+        guns_factory.pistol("colt1873","c22",{
             name:"Colt-1873",
             fire_delay:0.3,
             switch_delay:0.2,
@@ -599,7 +599,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0xb7c1c3
             }
         }),
-        guns_factory.pistol("desert_eagle","50cal",{
+        guns_factory.pistol("desert_eagle","p99",{
             name:"Desert-Eagle",
             fire_delay:0.3,
             fire_mode:FireMode.Single,
@@ -647,7 +647,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0xd8b818
             }
         }),
-        guns_factory.pistol("pfeifer_zeliska","308sub",{
+        guns_factory.pistol("pfeifer_zeliska","p51",{
             name:"Pfeifer-Zeliska",
             rank:ItemRank.S,
 
@@ -687,7 +687,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                 ASSAULT                 //
         /////////////////////////////////////////////
-        guns_factory.assault("ak47","762mm",{
+        guns_factory.assault("ak47","c51",{
             name:"AK-47",
             fire_delay:0.1,
             spread:7.5,
@@ -712,7 +712,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x573c05
             }
         }),
-        guns_factory.assault("ar15","556mm",{
+        guns_factory.assault("ar15","c45",{
             name:"AR-15",
             fire_delay:0.07,
             spread:8,
@@ -739,7 +739,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
         }),
-        guns_factory.assault("m4a1","556mm",{
+        guns_factory.assault("m4a1","c45",{
             name:"M4A1",
             fire_delay:0.1,
             spread:6.5,
@@ -766,7 +766,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.7
             },
         }),
-        guns_factory.assault("m16_gl","556mm",{
+        guns_factory.assault("m16_gl","c45",{
             name:"M16-GL",
             fire_delay:0.08,
             spread:8,
@@ -808,7 +808,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
         }),
-        guns_factory.assault("mp5","9mm",{
+        guns_factory.assault("mp5","l19",{
             name:"MP5",
             rank:ItemRank.D,
 
@@ -832,7 +832,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.8
             },
         }),
-        guns_factory.assault("m1921","45acp",{
+        guns_factory.assault("m1921","c22",{
             name:"M1921",
             fire_delay:0.1,
             spread:8,
@@ -864,7 +864,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x573c05
             }
         }),
-        guns_factory.assault("famas","556mm",{
+        guns_factory.assault("famas","c45",{
             name:"FAMAS",
             rank:ItemRank.B,
 
@@ -898,7 +898,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                   SMG                   //
         /////////////////////////////////////////////
-        guns_factory.smg("micro_uzi","9mm",true,{
+        guns_factory.smg("micro_uzi","l19",true,{
             name:"Micro-Uzi",
             rank:ItemRank.D,
             fire_delay:0.035,
@@ -921,7 +921,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.77
             },
         }),
-        guns_factory.smg("vector","9mm",false,{
+        guns_factory.smg("vector","l19",false,{
             name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.037,
@@ -944,7 +944,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.77
             },
         }),
-        guns_factory.smg("p90","45acp",false,{
+        guns_factory.smg("p90","c22",false,{
             name:"P90",
             rank:ItemRank.A,
             fire_delay:0.04,
@@ -975,7 +975,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                 SNIPERS                 //
         /////////////////////////////////////////////
-        guns_factory.sniper("kar98k","762mm",{
+        guns_factory.sniper("kar98k","c51",{
             name:"Kar98-K",
             fire_delay:1.6,
             spread:0.4,
@@ -1006,7 +1006,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x573c05
             }
         }),
-        guns_factory.sniper("awp","762mm",{
+        guns_factory.sniper("awp","c51",{
             name:"AWP",
             rank:ItemRank.S,
             fire_delay:1.6,
@@ -1032,7 +1032,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x040c29
             }
         }),
-        guns_factory.sniper("awm","308sub",{
+        guns_factory.sniper("awm","p51",{
             name:"AWM",
             rank:ItemRank.S,
 
@@ -1059,7 +1059,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x334736
             }
         }),
-        guns_factory.sniper("blr81","556mm",{
+        guns_factory.sniper("blr81","c45",{
             name:"BLR-81",
             rank:ItemRank.B,
 
@@ -1083,7 +1083,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
         }),
-        guns_factory.sniper("model94","45acp",{
+        guns_factory.sniper("model94","c22",{
             name:"Model-94",
             rank:ItemRank.B,
 
@@ -1112,7 +1112,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                SHOTGUNS                 //
         /////////////////////////////////////////////
-        guns_factory.shotgun("m870","12g",{
+        guns_factory.shotgun("m870","p76",{
             name:"M870",
             fire_delay:1,
             spread:4.5,
@@ -1140,7 +1140,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x573c05
             }
         }),
-        guns_factory.shotgun("spas12","12g",{
+        guns_factory.shotgun("spas12","p76",{
             name:"Spas12",
             rank:ItemRank.B,
 
@@ -1170,7 +1170,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x47527d
             }
         }),
-        guns_factory.shotgun("hp18","12g",{
+        guns_factory.shotgun("hp18","p76",{
             name:"HP-18",
             rank:ItemRank.D,
 
@@ -1204,7 +1204,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                   DMR                   //
         /////////////////////////////////////////////
-        guns_factory.dmr("sr25","762mm",{
+        guns_factory.dmr("sr25","c51",{
             name:"sr25",
             fire_delay:0.25,
             spread:2,
@@ -1230,7 +1230,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
         }),
-        guns_factory.dmr("vss","9mm",{
+        guns_factory.dmr("vss","l19",{
             name:"VSS Vintorez",
             fire_delay:0.15,
             spread:3,
@@ -1263,7 +1263,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.8
             },
         }),
-        guns_factory.dmr("rifle_cbc","22lr",{
+        guns_factory.dmr("rifle_cbc","l15",{
             name:"Rifle-CBC",
             fire_delay:0.14,
             spread:4.5,
@@ -1299,7 +1299,7 @@ export function Guns_Default_Init():GunDef[]{
                 cycle_sound:true,
             }
         }),
-        guns_factory.dmr("m1_garand","762mm",{
+        guns_factory.dmr("m1_garand","c51",{
             name:"M1-Garand",
             fire_delay:0.3,
             spread:3,
@@ -1329,7 +1329,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                   LMG                   //
         /////////////////////////////////////////////
-        guns_factory.lmg("pkp","762mm",{
+        guns_factory.lmg("pkp","c51",{
             name:"PKP Pecheneg",
 
             fire_delay:0.1,
@@ -1365,7 +1365,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
         }),
-        guns_factory.lmg("m249","556mm",{
+        guns_factory.lmg("m249","c45",{
             name:"M249",
 
             fire_delay:0.1,
@@ -1395,7 +1395,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
         }),
-        guns_factory.lmg("xm556","556mm",{
+        guns_factory.lmg("xm556","c45",{
             name:"XM556-Minigun",
 
             fire_delay:0.045,

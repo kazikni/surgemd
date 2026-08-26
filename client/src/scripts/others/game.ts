@@ -460,7 +460,7 @@ export class Game extends ClientGame<GameObject>{
         for(const tt of agro){
             if(this.resources.imported[tt])continue
             const v=await this.resources.load_json(`${tt}/settings.json`,this.menu.set_loading_current)
-            
+
             for(const f of (v.files as string[])){
                 const path=Path.join_simple(tt,f)
                 this.menu.set_loading_current(path)

@@ -9,7 +9,7 @@ export interface PingDef extends Definition{
         scale?:number
     }
 }
-export function Ping_Default_Init():PingDef[]{
+export function Pings_Default_Init():PingDef[]{
     return [
         {
             idString:"airdrop",

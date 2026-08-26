@@ -58,8 +58,7 @@ export type SideEffect=({
 }|{
     type:SideEffectType.Parachute,
 })
-export const Effects=new Definitions<EffectDef,{}>((i)=>{
-})
+export const Effects=new Definitions<EffectDef,{}>()
 
 export interface EffectInstance{
     effect:EffectDef

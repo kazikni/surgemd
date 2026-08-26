@@ -10,7 +10,7 @@ import { Melees_Default_Init } from "./items/melees.ts";
 import { Scopes_Default_Init } from "./items/scopes.ts";
 import { Badges_Default_Init } from "./loadout/badges.ts";
 import { Emotes_Default_Init } from "./loadout/emotes.ts";
-import { Ping_Default_Init } from "./loadout/ping.ts";
+import { Pings_Default_Init } from "./loadout/pings.ts";
 import { Loadout_Default_Init } from "./loadout/skins.ts";
 import { Wrapping_Default_Init } from "./loadout/wrapping.ts";
 import { Buildings_Default_Init } from "./objects/buildings_base.ts";
@@ -40,7 +40,7 @@ export const DefaultDefinitions:GameADefinitions={
         badges:Badges_Default_Init(),
         emotes:Emotes_Default_Init(),
         wrapping:Wrapping_Default_Init(),
-        pings:Ping_Default_Init(),
+        pings:Pings_Default_Init(),
     },
     objects:{
         buildings:Buildings_Default_Init(),

@@ -20,7 +20,7 @@ import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { GroupMembersModule } from "../uim/groups.ts";
-import { PingDef } from "common/scripts/definitions/loadout/ping.ts";
+import { PingDef } from "common/scripts/definitions/loadout/pings.ts";
 import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";

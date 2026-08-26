@@ -33,8 +33,8 @@ ___
 * Readd Level Title Screen
 ___
 ### Items
-* XM556 - 556mm LMG
-* M249 - 556mm LMG
+* XM556 - c45 LMG
+* M249 - c45 LMG
 * M2-2 Sprite
 * RPG7 Sprite
 * 50Cal Ammo Outline

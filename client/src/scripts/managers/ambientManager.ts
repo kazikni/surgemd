@@ -292,7 +292,7 @@ export class AmbientManager{
     render(){
     }
     update(dt:number){
-        if(this.game.started)this.date.second+=dt
+        if(this.game.match_started)this.date.second+=dt
         if(this.date.second>=1){
             this.date.second=0
             this.date.minute++

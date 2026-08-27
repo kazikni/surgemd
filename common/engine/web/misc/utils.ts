@@ -86,34 +86,36 @@ export class Tween<T> {
         this.game.remove_tween(this as unknown as Tween<unknown>);
     }
 }
-export function HideElement(elem: HTMLElement, useOpacity = false,timeout:number=2000) {
-    if (useOpacity) {
-        elem.style.opacity = "0"
-        elem.style.pointerEvents = "none"
-        elem.style.userSelect = "none"
+export function HideElement(elem:HTMLElement,useOpacity=false,timeout:number=2000) {
+    if(useOpacity){
+        if(elem.style.opacity=="0")return
+        elem.style.opacity="0"
+        elem.style.pointerEvents="none"
+        elem.style.userSelect="none"
         setTimeout(()=>{
             if(elem.style.opacity==="0"){
-                elem.style.display = "none"
-                elem.style.visibility = "hidden"
+                elem.style.display="none"
+                elem.style.visibility="hidden"
             }
         },timeout)
     }else{
-        elem.style.pointerEvents = "none"
-        elem.style.userSelect = "none"
-        elem.style.display = "none"
-        elem.style.visibility = "hidden"
+        if(elem.style.display=="none")return
+        elem.style.pointerEvents="none"
+        elem.style.userSelect="none"
+        elem.style.display="none"
+        elem.style.visibility="hidden"
     }
 }
-export function ShowElement(elem: HTMLElement, useOpacity = false) {
-    elem.style.display = "" 
-    elem.style.pointerEvents = ""
-    elem.style.userSelect = ""
-    elem.style.visibility = "visible"
-    if (useOpacity) {
+export function ShowElement(elem: HTMLElement, useOpacity = false){
+    if(useOpacity){
         requestAnimationFrame(() => {
             elem.style.opacity = "1"
         })
     }
+    elem.style.display = "" 
+    elem.style.pointerEvents = ""
+    elem.style.userSelect = ""
+    elem.style.visibility = "visible"
 }
 export function ToggleElement(elem: HTMLElement, useOpacity = false) {
     if (useOpacity) {

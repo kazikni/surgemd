@@ -88,11 +88,11 @@ export class MinimapManager {
     draw_grid(cam_position:Vec2){
         const ctx=this.ctx
 
-        const step=this.game.grid.size*this.meter_size
+        const step=this.game.terrain.grid_gfx.size*this.meter_size
 
         ctx.save()
-        ctx.strokeStyle=ColorM.rgba2hex(this.game.grid.stroke!)
-        ctx.lineWidth=this.game.grid.line_width*this.meter_size
+        ctx.strokeStyle=ColorM.rgba2hex(this.game.terrain.grid_gfx.stroke!)
+        ctx.lineWidth=this.game.terrain.grid_gfx.line_width*this.meter_size
         ctx.beginPath()
 
         const start_x=(-(cam_position.x*this.meter_size))%step

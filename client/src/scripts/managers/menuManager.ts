@@ -450,8 +450,8 @@ export class MenuManager{
         ShowElement(this.content.loading_screen_logo)
     }
     hide_loading_screen(){
-        HideElement(this.content.loading_screen,true)
         this.loading_game.enabled=false
+        HideElement(this.content.loading_screen,true)
         HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen_logo)
     }

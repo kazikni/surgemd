@@ -116,7 +116,6 @@ export class Obstacle extends StaticBody{
         this.container.destroy()
         if(this.emitter_1)this.emitter_1.destroyed=true
         if(this.shadow)this.shadow.destroy()
-        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
     }
 
 
@@ -147,7 +146,6 @@ export class Obstacle extends StaticBody{
         })
         if(this.def.assets?.frame?.transform)this.sprite.transform_frame(this.def.assets.frame.transform)
         this.sprite.matrix=undefined
-        if(this.game.parallax[this.id])delete this.game.parallax[this.id]
         if(this.health_data.dead){
             if(this.assets_data.frame.dead)this.sprite.frame=this.game.resources.get_frame(this.assets_data.frame.dead)
             this.container.zIndex=this.def.zIndex?.dead===undefined?zIndexes.DeadObstacles:this.def.zIndex?.dead
@@ -180,7 +178,6 @@ export class Obstacle extends StaticBody{
                     this.shadow_sprite.tint=this.game.world_shadow.color
                 }
             }
-            if(this.def.parallax!==undefined)this.game.parallax[this.id]=this
         }
 
         this.container.visible=true

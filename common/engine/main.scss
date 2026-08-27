@@ -7,6 +7,12 @@ html, body {
     touch-action: none;
     overscroll-behavior: none;
 }
+.hidden-element{
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    
+}
 .game-canvas{
     position: absolute;
 

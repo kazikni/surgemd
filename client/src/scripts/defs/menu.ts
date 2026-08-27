@@ -677,7 +677,6 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                 btn.onclick = async () => {
                     const port=parseInt(port_input.value)
                     const settings = JSON.parse(game_settings_input.value)
-                    menu.show_loading_screen()
                     menu.set_loading_current("Creating Server")
                     await exec_server(
                         port,

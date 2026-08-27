@@ -1,6 +1,6 @@
 import { Rect } from "../math/geometry.ts";
 import { HitboxType2D, type Hitbox2D } from "../math/hitbox.ts"
-import { Matrix, matrix4 } from "../math/matrix.ts";
+import { Matrix } from "../math/matrix.ts";
 import { v2, v2m, Vec2 } from "../math/vec2.ts";
 import { v3, Vec3 } from "../math/vec3.ts";
 
@@ -425,6 +425,126 @@ export const model2d={
             inner,
             outer,
         )
+    },
+    wall(points: Vec2[], width: number, closed = false): Model2D {
+        if (points.length < 2) {
+            return this.zero()
+        }
+        const half = width * 0.5
+        const vertices: number[] = []
+
+        const segment_count=closed?points.length:points.length-1
+
+        for (let i = 0; i < segment_count; i++) {
+            const a = points[i]
+            const b = points[(i + 1) % points.length]
+
+            const dx = b.x - a.x
+            const dy = b.y - a.y
+
+            const len = Math.hypot(dx, dy)
+            if(len < 0.000001)continue
+
+            const nx = -dy / len
+            const ny = dx / len
+
+            const offset = v2(nx * half,ny * half)
+
+            const l0 = v2(a.x + offset.x,a.y + offset.y)
+            const r0 = v2(a.x - offset.x,a.y - offset.y)
+            const l1 = v2(b.x + offset.x,b.y + offset.y)
+            const r1 = v2(b.x - offset.x,b.y - offset.y)
+            vertices.push(
+                l0.x, l0.y,
+                l1.x, l1.y,
+                r1.x, r1.y,
+
+                l0.x, l0.y,
+                l1.x, l1.y,
+                r0.x, r0.y
+            )
+        }
+
+        /*
+        * Add joins.
+        *
+        * Instead of doing a complicated miter,
+        * just fill the outside of the corner with
+        * a triangle.
+        */
+        const join_count = closed
+            ? points.length
+            : points.length - 2
+
+        for (let i = 0; i < join_count; i++) {
+
+            const index = closed
+                ? i
+                : i + 1
+
+            const prev = points[
+                (index - 1 + points.length) % points.length
+            ]
+
+            const current = points[index]
+
+            const next = points[
+                (index + 1) % points.length
+            ]
+
+            const d1 = v2.normalizeSafe(
+                v2.sub(current, prev)
+            )
+
+            const d2 = v2.normalizeSafe(
+                v2.sub(next, current)
+            )
+
+            const n1 = v2(
+                -d1.y,
+                d1.x
+            )
+
+            const n2 = v2(
+                -d2.y,
+                d2.x
+            )
+
+            const cross = d1.x * d2.y - d1.y * d2.x
+
+            if (cross > 0) {
+                const a = v2(
+                    current.x + n1.x * half,
+                    current.y + n1.y * half
+                )
+
+                const b = v2(
+                    current.x + n2.x * half,
+                    current.y + n2.y * half
+                )
+
+                vertices.push(current.x, current.y,a.x, a.y,b.x, b.y)
+
+            } else if (cross < 0) {
+
+                const a = v2(
+                    current.x - n1.x * half,
+                    current.y - n1.y * half
+                )
+
+                const b = v2(
+                    current.x - n2.x * half,
+                    current.y - n2.y * half
+                )
+
+                vertices.push(current.x, current.y,a.x, a.y,b.x, b.y)
+            }
+        }
+
+        return {
+            vertices: new Float32Array(vertices),
+            tex_coords: new Float32Array()
+        }
     },
     triangulateConvex(polygon: Vec2[], texSize = 32,matrix?:Matrix): Model2D {
         if (!polygon || polygon.length < 3) return { vertices: new Float32Array(0), tex_coords: new Float32Array(0) }

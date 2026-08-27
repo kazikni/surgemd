@@ -2,7 +2,6 @@ import { type Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition } from "common/scripts/config/level_definition.ts";
 import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType, sleep } from "common/engine/core.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
-import { GameConfig } from "common/scripts/config/config.ts";
 import { type Player } from "../objects/player.ts";
 import { type Human } from "../objects/human.ts";
 export class LevelPlayerScript{
@@ -12,8 +11,8 @@ export class LevelPlayerScript{
 
     }
 
-    async initialize_mode(config:GameConfig){
-        await this.game.auto_init(config)
+    async initialize_mode(){
+        await this.game.auto_init(this.level.def.mode)
     }
 
     on_load_character(character:LevelCharacter){return character}
@@ -124,7 +123,7 @@ export class LevelPlayer {
         this.game.can_start=false
         this.game.can_finish=false
 
-        await this.script.initialize_mode(this.def.mode)
+        await this.script.initialize_mode()
         await this.script.on_begin()
     
         this.save_checkpoint()

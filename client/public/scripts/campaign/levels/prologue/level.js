@@ -1,12 +1,24 @@
 return (class extends LevelPlayerScript{
+    async initialize_mode(){
+        await this.game.auto_init({
+            //"group_size":4,
+            mode:"normal",
+            settings:{
+                map: {
+                    def: "tutorial",
+                    //disable_minimap:true
+                }
+            }
+        })
+    }
     on_spawn_player(player){
         player.set_preset(this.preset)
-        this.group.add_human(player)
+        //this.group.add_human(player)
     }
     on_start(){
         this.game.modeManager.rules.feed.enabled=false
         this.game.modeManager.rules.leader.enabled=false
-        this.group=this.game.modeManager.create_group()
+        /*this.group=this.game.modeManager.create_group()
 
         const gigi=this.game.humans.add_npc()
         gigi.set_preset(this.characters[0])
@@ -48,7 +60,13 @@ return (class extends LevelPlayerScript{
 
         bot=this.game.players.add_bot(new JoinPacket())
         bot.human.set_preset(this.characters[3])
-        this.group.add_human(bot.human)
+        this.group.add_human(bot.human)*/
+
+        this.game.modeManager.add_enemies([
+            {
+                "def":{ai: {kind:"dumb"},"position":core.v2(10,49)}
+            }
+        ])
 
         /*npc=this.game.players.add_bot(new JoinPacket())
         npc.position=core.v2(10,46)

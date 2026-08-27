@@ -62,7 +62,8 @@ export class LocalGameServer{
                 this.connect()
                 break
             case "start_level":
-                this.begin_level(msg.path)
+                console.log({type:"campaign",path:msg.path,start_with_intro:true})
+                this.game.play_game({type:"campaign",path:msg.path,start_with_intro:true})
                 break
             case "stop":{
                 this.stop()

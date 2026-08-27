@@ -50,7 +50,7 @@ export class Loot extends GameObject{
         this.allow_tick=true
     }
     override on_create(_args: Record<string, void>): void {
-        this.game.cam2d.add_object(this.container)
+        this.game.scene_2d.camera.add_object(this.container)
     }
     override on_layer_set(): void {
         this.container.layer=this.layer

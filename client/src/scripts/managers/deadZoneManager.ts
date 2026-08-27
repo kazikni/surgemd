@@ -25,8 +25,8 @@ export class DeadZoneManager{
         this.sprite.zIndex=zIndexes.DeadZone
     }
     append(){
-        this.sprite.initialize(this.game.cam2d.ctx)
-        this.game.cam2d.add_object(this.sprite)
+        this.sprite.initialize(this.game.scene_2d.camera.ctx)
+        this.game.scene_2d.camera.add_object(this.sprite)
     }
     tick(dt:number){
         if(this.game.active_entity){
@@ -65,7 +65,7 @@ export class DeadZoneManager{
         const rm=ease.quadraticIn(Numeric.clamp(1-((radius*1.4)/map_size),0,1))
         const color=ColorM.lerp(ColorM.hex("#00a2ff"),ColorM.hex("#ff0055"),rm)
 
-        const model=model2d.outlineCircle(this.radius,1000*this.game.cam2d.meter_size,200)
+        const model=model2d.outlineCircle(this.radius,1000*this.game.scene_2d.camera.meter_size,200)
 
         const col=ColorM.clone(color)
         col.a=76+102*rm

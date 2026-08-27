@@ -110,7 +110,7 @@ export class Obstacle extends StaticBody{
     }
     // deno-lint-ignore no-explicit-any
     override on_create(_args: Record<string,any>): void {
-        this.game.cam2d.add_object(this.container)
+        this.game.scene_2d.camera.add_object(this.container)
     }
     override on_destroy(): void {
         this.container.destroy()
@@ -226,7 +226,7 @@ export class Obstacle extends StaticBody{
         if(this.def.assets?.particles)this.set_hit_particles_def(this.def.idString,this.variation-1,this.def.assets.particles)
         if(this.def.onDestroyExplosion){
             if(!this.emitter_1){
-                this.emitter_1=this.game.particles.add_emiter({
+                this.emitter_1=this.game.scene_2d.particles.add_emiter({
                     delay:0.4,
                     particle:()=>new ABParticle2D({
                         frame:{
@@ -272,7 +272,7 @@ export class Obstacle extends StaticBody{
             this.shadow.add_child(this.shadow_sprite)
 
             this.shadow.layer=this.layer
-            this.game.cam2d.add_object(this.shadow)
+            this.game.scene_2d.camera.add_object(this.shadow)
         }
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
         if(this.def.expanded_behavior?.type===4){
@@ -323,7 +323,7 @@ export class Obstacle extends StaticBody{
         for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).first_particles??[]){
             this.game.clock.add_timeout(()=>{
                 for(let c=0;c<p.count;c++){
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
                         frame:{layer:this.layer,...p.frame},
                         position:this.position,
                         speed:random.float(1,2),
@@ -346,7 +346,7 @@ export class Obstacle extends StaticBody{
             for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
                 this.game.clock.add_timeout(()=>{
                     for(let c=0;c<p.count;c++){
-                        this.game.particles.add_particle(new ABParticle2D({
+                        this.game.scene_2d.particles.add_particle(new ABParticle2D({
                             frame:{layer:this.layer,...p.frame},
                             position:this.hitbox.random_point(),
                             speed:random.float(1,4),

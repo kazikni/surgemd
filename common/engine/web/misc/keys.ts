@@ -210,7 +210,7 @@ export class InputManager {
 
     focus = true
 
-    camera:Camera2D
+    camera?:Camera2D
 
     pressed = new Set<number>()
     down = new Set<number>()
@@ -240,7 +240,7 @@ export class InputManager {
 
     private previous_gamepads = new Map<number,{buttons: boolean[],axes: number[]}>()
 
-    constructor(camera:Camera2D) {
+    constructor(camera?:Camera2D) {
         this.camera=camera
     }
     bind(canvas: HTMLCanvasElement,elem: HTMLElement = document.body) {
@@ -317,7 +317,7 @@ export class InputManager {
         }
     }
     private on_pointer_move(e: PointerEvent) {
-        if (!this.focus) return
+        if(!this.focus||!this.camera)return
         const rect=this.camera.renderer.canvas.getBoundingClientRect()
 
         this.real_mouse_position = v2(e.clientX-rect.left,e.clientY-rect.top)
@@ -334,8 +334,8 @@ export class InputManager {
         })
     }
     get world_mouse_position(): Vec2 {
+        if(!this.camera)return this.mouse_position
         const canvas = this.camera.renderer.canvas
-
         return v2(
             this.mouse_position.x / canvas.width * this.camera.width,
             this.mouse_position.y / canvas.height * this.camera.height

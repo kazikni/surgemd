@@ -108,7 +108,7 @@ export class ABParticle2D extends ClientParticle2D{
     override on_create(): void {
         super.on_create()
         this.sprite.set_frame(this.config.frame,(this.manager.game as unknown as ClientGame).resources);
-        (this.manager.game as unknown as ClientGame).cam2d.add_object(this.sprite)
+        (this.manager.game as unknown as ClientGame).scene_2d.camera.add_object(this.sprite)
     }
     override on_destroy(): void {
         this.sprite.destroy()
@@ -180,7 +180,7 @@ export class RainParticle2D extends ClientParticle2D{
     override on_create(): void {
         super.on_create()
         this.sprite.set_frame(this.config.frame.main,(this.manager.game as unknown as ClientGame).resources);
-        (this.manager.game as unknown as ClientGame).cam2d.add_object(this.sprite)
+        (this.manager.game as unknown as ClientGame).scene_2d.camera.add_object(this.sprite)
         this.sprite.visible=true
     }
     override on_destroy(): void {

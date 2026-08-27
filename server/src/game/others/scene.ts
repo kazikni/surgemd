@@ -47,12 +47,12 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
         this.game.players.clear_bots()
         this.puzzles={}
         this.always_visible={}
+        this.map_zones.length=0
         this.game.clock.clear()
         this.net_update()
     }
     net_update(){
         this.pings.length=0
-        this.map_zones.length=0
         this.feed_messages.length=0
     }
 

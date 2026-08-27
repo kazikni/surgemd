@@ -79,7 +79,7 @@ import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, rand
                 }
             }
             await this.game.bind(fs)
-            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.cam2d,this.game.definitions,this.game.language,mods,this.game.ambient.music,this.game.ambient.ambience)
+            await this.menu_manager.init(this.game.input_manager,this.game.save,this.file,this.game.resources,this.game.sounds,this.game.scene_2d.camera,this.game.definitions,this.game.language,mods,this.game.ambient.music,this.game.ambient.ambience)
             await this.game.load_resources([],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
 

@@ -37,7 +37,7 @@ export class Explosion extends GameObject{
     override on_create(_args: Record<string, void>): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0)
         this.sprite.frame=this.game.resources.get_frame("base_explosion")
-        this.game.cam2d.add_object(this.sprite)
+        this.game.scene_2d.camera.add_object(this.sprite)
     }
     override on_tick(dt:number): void {
         this.explode()
@@ -72,7 +72,7 @@ export class Explosion extends GameObject{
             for(let i=0;i<5;i++){
                 const pos=random.random_in_circle(this.radius/2)
                 v2m.add(pos,pos,this.position)
-                this.game.particles.add_particle(new ABParticle2D({
+                this.game.scene_2d.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
                         hotspot:v2.half_one,
@@ -94,7 +94,7 @@ export class Explosion extends GameObject{
         if(this.def.particles){
             for(const p of this.def.particles){
                 for(let i=0;i<p.count;i++){
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
                         frame:{
                             layer:this.layer,
                             hotspot:v2.half_one,
@@ -116,7 +116,7 @@ export class Explosion extends GameObject{
             }
         }
         if(this.def.cam_shake){
-            if(v2.distance(this.position,this.game.cam2d.position)<=(this.def.cam_shake.distance??40))this.game.cam2d.shake(this.def.cam_shake.intensity*0.2,this.def.cam_shake.duration)
+            if(v2.distance(this.position,this.game.scene_2d.camera.position)<=(this.def.cam_shake.distance??40))this.game.scene_2d.camera.shake(this.def.cam_shake.intensity*0.2,this.def.cam_shake.duration)
         }
     }
     set_definition(def:ExplosionDef){

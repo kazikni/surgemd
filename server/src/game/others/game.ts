@@ -162,7 +162,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             SyncedParticle,
             Plane,
             Drone
-        ],new ServerGameScene2D())
+        ])
+        this.set_scene2d(new ServerGameScene2D())
 
         this.ntps=main_config.ntps
         this.main_config=main_config

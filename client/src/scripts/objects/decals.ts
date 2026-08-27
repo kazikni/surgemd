@@ -28,11 +28,11 @@ export class Decal extends GameObject{
         this.def=def
         if(def.assets?.frames){
             this.sprite=new AnimatedSprite2D()
-            this.sprite.frames=[]
+            ;(this.sprite as AnimatedSprite2D).frames=[]
         }else{
             this.sprite=new Sprite2D()
         }
-        this.game.cam2d.add_object(this.sprite)
+        this.game.scene_2d.camera.add_object(this.sprite)
         this.sprite.set_frame({
             image:def.idString,
             zIndex:zIndexes.Decals,
@@ -44,7 +44,7 @@ export class Decal extends GameObject{
         },this.game.resources)
         if(def.assets){
             if(def.assets.main)this.sprite.set_frame(def.assets.main,this.game.resources)
-            if(def.assets.frames)this.sprite.frames=def.assets.frames
+            if(def.assets.frames)(this.sprite as AnimatedSprite2D).frames=def.assets.frames
         }
         if(def.hitbox)this.base_hitbox=def.hitbox
     }

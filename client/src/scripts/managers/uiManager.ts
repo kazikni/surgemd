@@ -284,8 +284,8 @@ export class UiManager{
         }
         if(selected_emote){
             if(this.game.definitions.pings.exist(selected_emote.idString)){
-                const pos=v2.dscale(this.emote_wheel.positon,this.game.cam2d.meter_size*this.game.cam2d.zoom)
-                v2m.add(pos,pos,this.game.cam2d.position)
+                const pos=v2.dscale(this.emote_wheel.positon,this.game.scene_2d.camera.meter_size*this.game.scene_2d.camera.zoom)
+                v2m.add(pos,pos,this.game.scene_2d.camera.position)
                 this.game.input.actions.push({
                     type:InputActionType.ping,
                     ping:selected_emote.idNumber!,

@@ -176,11 +176,11 @@ export class Human extends Humanoid{
 
         this.container.zIndex=zIndexes.Players
 
-        this.game.cam2d.add_object(this.container)
+        this.game.scene_2d.camera.add_object(this.container)
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
         this.sprites.vest._frame=this.game.resources.get_frame("human_vest")
         this.sprites.vest.sync_rotation=false
-        this.consumible_particles=this.game.particles.add_emiter({
+        this.consumible_particles=this.game.scene_2d.particles.add_emiter({
             delay:0.2,
             particle:()=>new ABParticle2D({
                 direction:-3.141592/2,
@@ -207,7 +207,7 @@ export class Human extends Humanoid{
         this.sprites.emote_bg.hotspot=v2.half_one
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
-        this.game.cam2d.add_object(this.sprites.emote_container)
+        this.game.scene_2d.camera.add_object(this.sprites.emote_container)
         this.sprites.emote_container.visible=false
 
         this.set_skin(this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
@@ -351,7 +351,7 @@ export class Human extends Humanoid{
                 if(f.lifetime>=f.def.particles.delay){
                     f.lifetime=0
                     const angle=random.rad()
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
                         frame:f.def.particles.frame,
 
                         zIndex:zIndexes.Particles,
@@ -539,7 +539,7 @@ export class Human extends Humanoid{
                         scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)
                     }
                 })
-                this.game.particles.add_particle(p)
+                this.game.scene_2d.particles.add_particle(p)
             }
         }
         if(def.case_particle&&!def.case_particle.at_begin){
@@ -573,7 +573,7 @@ export class Human extends Humanoid{
                     bus:"humans"
                 })
             },0.75)
-            this.game.particles.add_particle(p)
+            this.game.scene_2d.particles.add_particle(p)
         }
 
         let sound:Sound|undefined
@@ -943,7 +943,7 @@ export class Human extends Humanoid{
             this.sprites.name=new Sprite2D()
             this.sprites.name.zIndex=zIndexes.UI
             this.sprites.name.hotspot=v2.half_one()
-            this.game.cam2d.add_object(this.sprites.name)
+            this.game.scene_2d.camera.add_object(this.sprites.name)
         }
         const color=this.game.get_theme_color("primary")
         this.game.resources.render_text(name,60,color,"Russo-One").then((frame)=>{

@@ -23,7 +23,7 @@ export abstract class AirBody extends MovingBody {
         this.shadow=new Sprite2D()
         this.container.add_child(this.shadow)
 
-        this.game.cam2d.add_object(this.container)
+        this.game.scene_2d.camera.add_object(this.container)
     }
     override on_layer_set(){
         this.container.layer = this.layer

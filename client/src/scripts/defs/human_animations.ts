@@ -16,7 +16,7 @@ export const DefaultHumanModes={
         if(particles>=GraphicsDConfig.Advanced){
             for(let p=0;p<14;p++){
                 const a=random.rad()
-                h.game.particles.add_particle(new ABParticle2D({
+                h.game.scene_2d.particles.add_particle(new ABParticle2D({
                     direction:random.rad(),
                     life_time:0.5+(Math.random()*0.5),
                     position:h.position,
@@ -39,7 +39,7 @@ export const DefaultHumanModes={
             }
         }
         if(particles>=GraphicsDConfig.Normal){
-            h.game.particles.add_particle(new ABParticle2D({
+            h.game.scene_2d.particles.add_particle(new ABParticle2D({
                 direction:0,
                 life_time:0.4,
                 position:h.position,
@@ -89,7 +89,7 @@ export const DefaultHumanModes={
                 h.game.scene_2d.objects.add_object(d,h.layer)
             }
             const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
-            h.game.particles.add_particle(new ABParticle2D({
+            h.game.scene_2d.particles.add_particle(new ABParticle2D({
                 scale:0.1,
                 frame:{
                     image:`blood_splash_${random.int(1,3)}`,
@@ -128,7 +128,7 @@ export const DefaultHumanModes={
     die(h:Human){
         for(let i=0;i<5;i++){
             const angle=random.rad()
-            h.game.particles.add_particle(new ABParticle2D({
+            h.game.scene_2d.particles.add_particle(new ABParticle2D({
                 frame:{
                     image:`blood_splash_${random.int(1,3)}`,
                     layer:h.layer,
@@ -160,7 +160,7 @@ export const DefaultHumanModes={
 
         for(let i=0;i<4;i++){
             const angle=random.rad()
-            h.game.particles.add_particle(new ABParticle2D({
+            h.game.scene_2d.particles.add_particle(new ABParticle2D({
                 frame:{
                     image:`human_gore_${random.int(1,2)}`,
                     layer:h.layer,

@@ -44,6 +44,9 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         return new (this.game.objects.getFromNumber(t))()
     }
 
+    begin(){
+
+    }
     clear(){
         this.objects.clear()
     }
@@ -77,7 +80,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
     components:GameComponent<this>[]=[]
 
     objects:DefinitionsSimple<new()=>DefaultGameObject2D>=new DefinitionsSimple()
-    scene_2d:Scene2DInstance<DefaultGameObject2D>
+    scene_2d!:Scene2DInstance<DefaultGameObject2D>
 
     running:boolean=false
 
@@ -85,7 +88,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
 
     delta_time:number=0
 
-    constructor(tps: number,objects:Array<new()=>DefaultGameObject2D>,scene_2d:Scene2DInstance<DefaultGameObject2D>=new Scene2DInstance<DefaultGameObject2D>()){
+    constructor(tps: number,objects:Array<new()=>DefaultGameObject2D>){
         this.tps=tps
         this.clock=new Clock(tps,1,(dt)=>{this.update(dt),this.draw(dt)})
 
@@ -93,9 +96,11 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
             const oi=new o()
             this.objects.set(o,oi.string_type,oi.number_type)
         }
-
-        scene_2d.game=this
-        this.scene_2d=scene_2d
+    }
+    set_scene2d(scene:Scene2DInstance<DefaultGameObject2D>){
+        this.scene_2d=scene
+        scene.game=this
+        scene.begin()
     }
     add_component(component:GameComponent<this>){
         this.components.push(component)
@@ -110,13 +115,12 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         this.clock.profiler.start(1)
         this.delta_time=dt
 
+        this.scene_2d.update(dt,net_update,destroy_queue)
         this.signals.emit("update")
         this.on_update(dt)
         for(const c of this.components){
             c.on_update(dt)
         }
-
-        this.scene_2d.update(dt,net_update,destroy_queue)
 
         if(!this.running){
             this.clock.stop()

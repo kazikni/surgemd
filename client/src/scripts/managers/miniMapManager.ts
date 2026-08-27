@@ -164,8 +164,8 @@ export class MinimapManager {
         const sh=(frame.frame_rect?.max.y ?? frame.image.height)-sy
 
         const base_scale=(def.assets?.frame?.transform?.scale ?? 2)*obj.scale*this.meter_size
-        const w=(sw/(this.game.cam2d.meter_size*2))*base_scale
-        const h=(sh/(this.game.cam2d.meter_size*2))*base_scale
+        const w=(sw/(this.game.scene_2d.camera.meter_size*2))*base_scale
+        const h=(sh/(this.game.scene_2d.camera.meter_size*2))*base_scale
 
         const pos=v2.scale(obj.position,this.meter_size)
         v2m.sub(pos,pos,cam_position)

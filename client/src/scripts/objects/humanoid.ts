@@ -185,7 +185,7 @@ export class Humanoid extends MovingBody{
             this.sprites.shadow.color=this.game.world_shadow.color
             this.sprites.shadow.matrix=this.game.world_shadow.matrix
             this.sprites.shadow.zIndex=this.container.zIndex-0.5
-            this.game.cam2d.add_object(this.sprites.shadow)
+            this.game.scene_2d.camera.add_object(this.sprites.shadow)
         }
     }
 
@@ -235,7 +235,7 @@ export class Humanoid extends MovingBody{
                     this.footstep_alternate=!this.footstep_alternate
                 }
                 if(Floors[f as FloorType].floor_kind===FloorKind.Liquid){
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
                         direction:0,
                         frame:{
                             image:"riple",

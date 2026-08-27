@@ -17,14 +17,14 @@ export class TerrainM extends TerrainManager{
         this.game=game
     }
     append(){
-        this.terrain_gfx.initialize(this.game.cam2d.ctx)
+        this.terrain_gfx.initialize(this.game.scene_2d.camera.ctx)
 
         this.grid_gfx.size=0.05
         this.grid_gfx.size=5
         this.grid_gfx.stroke=ColorM.rgba(0,0,0,25)
 
-        this.game.cam2d.add_object(this.terrain_gfx)
-        this.game.cam2d.add_object(this.grid_gfx)
+        this.game.scene_2d.camera.add_object(this.terrain_gfx)
+        this.game.scene_2d.camera.add_object(this.grid_gfx)
 
         this.terrain_gfx.zIndex=zIndexes.Terrain
         this.grid_gfx.zIndex=zIndexes.Grid
@@ -34,7 +34,7 @@ export class TerrainM extends TerrainManager{
         this.game.dead_zone.sprite.layer=grid.layer
         this.game.ui_gfx.layer=grid.layer
         this.game.hitboxes_gfx.layer=grid.layer
-        if(this.game.cam2d.layer<Layers.Normal){
+        if(this.game.scene_2d.camera.layer<Layers.Normal){
             this.grid_gfx.visible=false
             return
         }
@@ -68,8 +68,8 @@ export class TerrainM extends TerrainManager{
         })
     }
     tick(){
-        this.update_grid(this.grid_gfx,this.game.cam2d.position,this.game.cam2d.size)
-        this.draw(this.terrain_gfx,this.game.cam2d.layer)
+        this.update_grid(this.grid_gfx,this.game.scene_2d.camera.position,this.game.scene_2d.camera.size)
+        this.draw(this.terrain_gfx,this.game.scene_2d.camera.layer)
     }
     draw(graphic:Graphics2D,layer:number=Layers.Normal){
         if(this.last_layer!==layer){

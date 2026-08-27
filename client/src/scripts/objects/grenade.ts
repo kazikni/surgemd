@@ -24,7 +24,7 @@ export class Grenade extends MovingBody{
         super()
     }
     override on_create(_args: Record<string, void>): void {
-        this.game.cam2d.add_object(this.sprite)
+        this.game.scene_2d.camera.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer
@@ -50,7 +50,7 @@ export class Grenade extends MovingBody{
                     bus:"explosions"
                 })
                 if(floor_def.floor_kind===FloorKind.Liquid){
-                    this.game.particles.add_particle(new ABParticle2D({
+                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
                         direction:0,
                         frame:{
                             image:"riple",
@@ -74,7 +74,7 @@ export class Grenade extends MovingBody{
         }else{
             this.sprite.zIndex=zIndexes.GrenadeAir
             if(this.def.parralax!==undefined){
-                this.sprite.matrix=matrix4.parallax_2d(this.game.cam2d.position,1+(this.def.parralax*this.physical_data.zpos))
+                this.sprite.matrix=matrix4.parallax_2d(this.game.scene_2d.camera.position,1+(this.def.parralax*this.physical_data.zpos))
             }
         }
     }
@@ -86,7 +86,7 @@ export class Grenade extends MovingBody{
         this.sprite.zIndex=zIndexes.GrenadeAir
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
-            this.particles_spawner=this.game.particles.add_emiter({
+            this.particles_spawner=this.game.scene_2d.particles.add_emiter({
                 delay:def.particles!.delay,
                 particle:()=>{
                     const ang=random.rad()

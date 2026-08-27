@@ -92,10 +92,10 @@ export class EditorObjectsManager{
     tick(dt:number){
         if(this.editor.can_act){
             if(this.editor.game.input_manager.keyPress(Key.F)){
-                if(this.selected_object)this.selected_object.on_drag(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.cam2d.meter_size))
+                if(this.selected_object)this.selected_object.on_drag(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.scene_2d.camera.meter_size))
             }
             if(this.editor.game.input_manager.keyUp(Key.F)){
-                if(this.selected_object)this.selected_object.on_drag_over(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.cam2d.meter_size))
+                if(this.selected_object)this.selected_object.on_drag_over(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.scene_2d.camera.meter_size))
             }
             if(this.editor.game.input_manager.keyDown(Key.C)){
                 if(this.selected_object)this.clone_object(this.selected_object)
@@ -313,8 +313,8 @@ export class EditorManager{
         HideElement(this.game.ui.content.post_proccess.tiltshift)
         HideElement(this.game.ui.content.post_proccess.vignetting)
 
-        this.game.cam2d.layer=Layers.Normal
-        this.game.cam2d.position=v2(0,0)
+        this.game.scene_2d.camera.layer=Layers.Normal
+        this.game.scene_2d.camera.position=v2(0,0)
         this.game.terrain.clear()
         this.game.terrain.draw(this.game.terrain_gfx,Layers.Normal)
 

@@ -52,7 +52,7 @@ export class Drone extends AirBody {
         this.visual.add_child(this.visual_sprite)
         this.container.add_child(this.visual)
 
-        this.game.cam2d.add_object(this.container)
+        this.game.scene_2d.camera.add_object(this.container)
     }
     override on_tick(dt:number){
         super.on_tick(dt)
@@ -64,7 +64,7 @@ export class Drone extends AirBody {
         }
 
         v2m.single(this.shadow.scale,1/Math.max(this.z*2,0.1))
-        this.visual.matrix=matrix4.parallax_2d(this.game.cam2d.position,1+(this.z*0.5))
+        this.visual.matrix=matrix4.parallax_2d(this.game.scene_2d.camera.position,1+(this.z*0.5))
         this.set_hidden(this.can_hide(this.game.scope_zoom))
     }
     override on_initial(): void {

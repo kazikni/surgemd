@@ -153,7 +153,7 @@ export class FloorImageEditorObject extends EditorObject{
         super()
     }
     override on_create(): void{
-        this.editor.game.cam2d.add_object(this.sprite)
+        this.editor.game.scene_2d.camera.add_object(this.sprite)
         this.update_sprite()
     }
     override on_destroy(): void{

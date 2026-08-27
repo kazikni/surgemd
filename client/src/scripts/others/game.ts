@@ -49,13 +49,16 @@ import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { PlayArgs } from "./constants.ts";
+import { Scene2D } from "./scene.ts";
 export class Game extends ClientGame<GameObject>{
+    declare scene_2d: Scene2D
     client?:Client
     input:InputPacket=new InputPacket()
     comunication_mode:boolean=false
     showing_menu:boolean=false
 
     offline:boolean=false
+    happening:boolean=false
     can_act:boolean=true
     get play_sounds():boolean{
         return this.menu.content.gameover_text_screen.style.opacity=="0"
@@ -129,18 +132,15 @@ export class Game extends ClientGame<GameObject>{
     theme_colors:Record<string,string>={}
     ntps:number=30
 
-    objects_process_queue:Stream[]=[]
-
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
             translation,
             [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
-
-        this.set_meter_size(100)
-        this.cam2d.visible_callback=(o)=>o.layer<=this.cam2d.layer
-        this.cam2d.aspect_lock=true
+        this.set_scene2d(new Scene2D())
+        this.scene_2d.camera.visible_callback=(o)=>o.layer<=this.scene_2d.camera.layer
+        this.scene_2d.camera.aspect_lock=true
 
         this.local_server=new LocalGameServer(this)
 
@@ -168,8 +168,8 @@ export class Game extends ClientGame<GameObject>{
         this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
 
-        this.cam2d.add_object(this.hitboxes_gfx)
-        this.cam2d.add_object(this.ui_gfx)
+        this.scene_2d.camera.add_object(this.hitboxes_gfx)
+        this.scene_2d.camera.add_object(this.ui_gfx)
 
         this.ui_gfx.zIndex=zIndexes.UI
         this.hitboxes_gfx.zIndex=zIndexes.UI
@@ -188,8 +188,8 @@ export class Game extends ClientGame<GameObject>{
             2:GunItem as (new(item:GameItem)=>LItem)
         })
 
-        this.hitboxes_gfx.initialize(this.cam2d.ctx)
-        this.ui_gfx.initialize(this.cam2d.ctx)
+        this.hitboxes_gfx.initialize(this.scene_2d.camera.ctx)
+        this.ui_gfx.initialize(this.scene_2d.camera.ctx)
         this.dead_zone.append()
         this.terrain.append()
     }
@@ -375,14 +375,13 @@ export class Game extends ClientGame<GameObject>{
         })
         this.input_manager.listener.on(InputEventType.MouseMove,(e:InputMouseMoveEvent)=>{
             if(!isMobile){
-                const cam_c=v2.dscale(this.cam2d.size,2)
+                const cam_c=v2.dscale(this.scene_2d.camera.size,2)
                 const mouse_p=e.position
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
                 this.set_lookTo_angle(angle,dist)
             }
         })
-        
         this.ui_manager.init()
     }
     override async bind(fs?:FileManager): Promise<void> {
@@ -484,10 +483,8 @@ export class Game extends ClientGame<GameObject>{
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
         this.menu.game_start()
 
-        this.cam2d.position.x=-10000
-        this.cam2d.position.y=-10000
-        this.sounds.set_listener_position(this.cam2d.position)
-        this.cam2d.zoom=6
+        this.scene_2d.set_camera_position(v2(-10000,-10000))
+        this.scene_2d.camera.zoom=6
         this.zoom_speed=4
 
         if(settings.map){
@@ -539,16 +536,14 @@ export class Game extends ClientGame<GameObject>{
         this.showing_menu=false
     }
     soft_close_game(){
-        this.objects_process_queue.length=0
-        this.clear()
+        this.scene_2d.clear()
         this.ui.clear()
-        this.cam2d.stop_shake()
         this.game_over=false
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
         this.set_scope(this.definitions.scopes.getFromNumber(1))
-        this.cam2d.zoom=6
+        this.scene_2d.camera.zoom=6
         this.zoom_speed=4
     }
     finish_game_over(win:boolean){
@@ -566,12 +561,6 @@ export class Game extends ClientGame<GameObject>{
         }
     }
     override on_update(dt:number){
-        if(this.objects_process_queue){
-            for(const s of this.objects_process_queue){
-                this.scene_2d.objects.proccess_net(s,true)
-            }
-            this.objects_process_queue.length=0
-        }
         super.on_update(dt)
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
@@ -592,8 +581,8 @@ export class Game extends ClientGame<GameObject>{
                 this.free_cam_pos.x+=Math.cos(move.dir)*this.free_cam_speed*dt
                 this.free_cam_pos.y+=Math.sin(move.dir)*this.free_cam_speed*dt
             }
-            this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
-            v2m.lerp(this.cam2d.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
+            this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
+            v2m.lerp(this.scene_2d.camera.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
             if(this.input_manager.keyPress(Key.E)){
                 v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
             }
@@ -602,13 +591,13 @@ export class Game extends ClientGame<GameObject>{
                 this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
             }
             if(this.active_entity){
-                this.cam2d.position=this.active_entity.position
-                this.cam2d.zoom=Numeric.lerp(this.cam2d.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
-                this.cam2d.layer=this.active_entity.layer
+                this.scene_2d.camera.position=this.active_entity.position
+                this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
+                this.scene_2d.camera.layer=this.active_entity.layer
                 if(this.active_entity.dead)this.active_entity=undefined
             }
         }
-        this.sounds.set_listener_position(this.cam2d.position)
+        this.scene_2d.set_camera_position(this.scene_2d.camera.position)
         this.terrain.tick()
         this.ambient.update_camera()
         if(this.client&&this.client.opened){
@@ -757,7 +746,6 @@ export class Game extends ClientGame<GameObject>{
         if(!client.opened)return
         if(this.client===client)return
         if(this.client&&this.client.opened)this.client.disconnect()
-        this.objects_process_queue.length=0
         this.client=client
         client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
         client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
@@ -769,7 +757,7 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("update",(p:UpdatePacket)=>{
             this.process_private(p.priv)
-            if(p.objects)this.objects_process_queue.push(p.objects)
+            if(p.objects)this.scene_2d.objects_process_queue.push(p.objects)
         })
         client.on("connect",(_p:ConnectPacket)=>{
         })

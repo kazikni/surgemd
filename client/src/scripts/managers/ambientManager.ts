@@ -57,17 +57,17 @@ export class AmbientManager{
 
     constructor(game:Game){
         this.game=game
-        this.rain_particles_emitter=this.game.particles.add_emiter({
+        this.rain_particles_emitter=this.game.scene_2d.particles.add_emiter({
                 delay:0,
                 limit:100,
                 particle:()=>{
                     const speed=random.float(25,30)
-                    const radius = Math.max(this.game.cam2d.width, this.game.cam2d.height) * random.float(0.9,1.1)
+                    const radius = Math.max(this.game.scene_2d.camera.width, this.game.scene_2d.camera.height) * random.float(0.9,1.1)
                     const ang = random.rad()
 
-                    const spawn = v2.add(this.game.cam2d.position, v2.from_RadAngle(ang,radius))
+                    const spawn = v2.add(this.game.scene_2d.camera.position, v2.from_RadAngle(ang,radius))
 
-                    const dirVec = v2.sub(this.game.cam2d.position, spawn)
+                    const dirVec = v2.sub(this.game.scene_2d.camera.position, spawn)
                     const dir = Math.atan2(dirVec.y, dirVec.x)
 
                     const dist = v2.len(dirVec)*random.float(0.13,0.95)
@@ -75,7 +75,7 @@ export class AmbientManager{
 
                     return new RainParticle2D({
                         frame:{
-                            main:{ image:"raindrop_1",layer:this.game.cam2d.layer,scale:random.float(0.4,0.7), },
+                            main:{ image:"raindrop_1",layer:this.game.scene_2d.camera.layer,scale:random.float(0.4,0.7), },
                             wave:{ image:"raindrop_2" },
                         },
                         zindex:{
@@ -90,7 +90,7 @@ export class AmbientManager{
                         on_tick:(o:RainParticle2D,dt:number)=>{
                             if(o.stage===0){
                                 if(!o.sprite.matrix)o.sprite.matrix=matrix4.identity()
-                                this.game.cam2d.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
+                                this.game.scene_2d.camera.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
                             }else{
                                 o.sprite.matrix=undefined
                             }
@@ -99,7 +99,7 @@ export class AmbientManager{
                 },
             enabled:false
         })
-        this.ambient_particles_emitter=this.game.particles.add_emiter({
+        this.ambient_particles_emitter=this.game.scene_2d.particles.add_emiter({
             delay:0,
             limit:10,
             particle:()=>{
@@ -108,13 +108,13 @@ export class AmbientManager{
                 const ret=new ABParticle2D({
                     frame:{
                         image:random.choose(this.game.minimap.biome!.particles),
-                        layer:this.game.cam2d.layer,
+                        layer:this.game.scene_2d.camera.layer,
                     },
                     tint:ColorM.number(this.game.minimap.biome.particles_tint??0),
                     zIndex:zIndexes.Particles,
                     life_time:random.float(10,30),
                     direction:dir,
-                    position:v2.random2(v2.sub(this.game.cam2d.position,this.game.cam2d.size),v2.add(this.game.cam2d.position,this.game.cam2d.size)),
+                    position:v2.random2(v2.sub(this.game.scene_2d.camera.position,this.game.scene_2d.camera.size),v2.add(this.game.scene_2d.camera.position,this.game.scene_2d.camera.size)),
                     speed:random.float(0.4,1),
                     angle:ang,
                     scale:random.float(0.5,1),
@@ -130,7 +130,7 @@ export class AmbientManager{
         const snow_color1=ColorM.number(0xededff)
         snow_color1.a=0
         const snow_color2=ColorM.number(0xededff)
-        this.snow_particles_emitter=this.game.particles.add_emiter({
+        this.snow_particles_emitter=this.game.scene_2d.particles.add_emiter({
             delay:0.05,
             particle:()=>{
                 const ang=random.rad()
@@ -138,12 +138,12 @@ export class AmbientManager{
                 const ret=new ABParticle2D({
                     frame:{
                         image:"snow_particle",
-                        layer:this.game.cam2d.layer,
+                        layer:this.game.scene_2d.camera.layer,
                     },
                     zIndex:zIndexes.Particles,
                     life_time:random.float(5,10),
                     direction:dir,
-                    position:v2.random2(v2.sub(this.game.cam2d.position,this.game.cam2d.size),v2.add(this.game.cam2d.position,this.game.cam2d.size)),
+                    position:v2.random2(v2.sub(this.game.scene_2d.camera.position,this.game.scene_2d.camera.size),v2.add(this.game.scene_2d.camera.position,this.game.scene_2d.camera.size)),
                     speed:random.float(0.1,0.7),
                     angle:ang,
                     scale:random.float(0.4,0.7),
@@ -188,7 +188,7 @@ export class AmbientManager{
         this.light_map.layer=1000
         this.light_map.ambient = 0
         this.light_map.quality=2
-        this.game.cam2d.add_object(this.light_map)*/
+        this.game.scene_2d.camera.add_object(this.light_map)*/
     }
     on_game_close(){
         this.music.set(this.game.resources.get_sound("menu_music"),{
@@ -238,7 +238,7 @@ export class AmbientManager{
     set_rain_state(value:number=0,thunderstorm:number=0){
         if(!this.game.minimap.biome)return
         this.rain_value=value
-        if(value<=0||this.game.cam2d.layer<Layers.Normal){
+        if(value<=0||this.game.scene_2d.camera.layer<Layers.Normal){
             if(this.game.minimap.biome.ambient_sound){
                 this.ambience.set(this.game.resources.get_sound(this.game.minimap.biome.ambient_sound),{
                     loop:true,
@@ -286,7 +286,7 @@ export class AmbientManager{
     update_camera(){
         if(!this.game.active_entity)return
         this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*7)
-        if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.cam2d.zoom
+        if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.scene_2d.camera.zoom
         else this.rain_particles_emitter.limit=0
     }
     render(){

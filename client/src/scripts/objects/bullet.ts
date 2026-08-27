@@ -75,7 +75,7 @@ export class Bullet extends GameObject{
     override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
         this.sprite_trail.size=v2(200,17) // Metter Size * 2
-        this.game.cam2d.add_object(this.sprite_trail)
+        this.game.scene_2d.camera.add_object(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
     override on_destroy(): void {
@@ -179,7 +179,7 @@ export class Bullet extends GameObject{
                             scale:1
                         }
                     })
-                    this.game.particles.add_particle(p)
+                    this.game.scene_2d.particles.add_particle(p)
                     this.par_time=0.01
                 }
             }*/

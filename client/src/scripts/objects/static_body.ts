@@ -58,7 +58,7 @@ export abstract class StaticBody extends GameObject{
                 tint:ColorM.mult_rgba(tint??ColorM.default.white,1,1,1,0),
             }
         })
-        this.game.particles.add_particle(p)
+        this.game.scene_2d.particles.add_particle(p)
     }
     on_hitted(position:Vec2,critical:boolean){
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)

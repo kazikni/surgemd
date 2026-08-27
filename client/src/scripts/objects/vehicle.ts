@@ -27,7 +27,7 @@ export class Vehicle extends MovingBody {
     }
 
     override on_create() {
-        this.game.cam2d.add_object(this.container)
+        this.game.scene_2d.camera.add_object(this.container)
         this.container.add_child(this.main_sprite)
     }
     override on_layer_set(): void {

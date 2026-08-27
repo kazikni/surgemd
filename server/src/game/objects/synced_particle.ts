@@ -30,7 +30,7 @@ export class SyncedParticlesCreator extends ServerGameObject{
     override on_tick(dt: number): void {
         this.timer-=dt
         if(this.timer<=0){
-            this.game.add_synced_particle(this.position,this.def,this.owner,this.layer)
+            this.game.scene_2d.add_synced_particle(this.position,this.def,this.owner,this.layer)
 
             this.timer+=this.time
             this.count--

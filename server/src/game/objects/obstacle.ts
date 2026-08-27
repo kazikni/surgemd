@@ -118,7 +118,7 @@ export class Obstacle extends StaticBody{
         if(this.door_data!.opening||val===this.door_data!.open)return
         if((this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay){
             this.door_data!.opening=true
-            this.game.add_timeout(()=>this.set_door_open_state(val),(this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay!)
+            this.game.clock.add_timeout(()=>this.set_door_open_state(val),(this.def.expanded_behavior as ObstacleBehaviorDoor).open_delay!)
         }else{
             this.door_data!.opening=true
             this.set_door_open_state(val)
@@ -179,7 +179,7 @@ export class Obstacle extends StaticBody{
                             def:this.def.expanded_behavior.obstacles.indexOf(choose)
                         }
                         const def=this.game.definitions.obstacles.getFromString(choose.id)
-                        this.game.add_timeout(()=>{
+                        this.game.clock.add_timeout(()=>{
                             this.destroy()
 
                             const obs=this.game.map.add_obstacle(def,this.layer)
@@ -329,7 +329,7 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){
-            this.decal=this.game.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+            this.decal=this.game.scene_2d.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
         }
 
         if(allow_biome_skin&&this.def.assets?.frame?.biome_skins){
@@ -414,11 +414,11 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
-            this.game.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
+            this.game.scene_2d.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
-            loots.push(this.game.add_loot(this.hitbox.random_point(),l,this.layer))
+            loots.push(this.game.scene_2d.add_loot(this.hitbox.random_point(),l,this.layer))
         }
 
         this.set_dirty_part()

@@ -114,7 +114,7 @@ export class Grenade extends MovingBody{
                 },
                 enabled:false
             }),
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 if(this.particles_spawner)this.particles_spawner.enabled=true
             },def.particles!.spawn_delay??0)
         }

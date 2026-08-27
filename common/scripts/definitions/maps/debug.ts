@@ -37,7 +37,7 @@ export const DebugMap:MapDef={
             let y=map.size.y/2
             let i=0
             for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
-                map.game.add_loot(v2(x,y),{item,count:Infinity})
+                map.game.scene_2d.add_loot(v2(x,y),{item,count:Infinity})
                 i++
                 if(i>=10){
                     i=0
@@ -48,7 +48,7 @@ export const DebugMap:MapDef={
                 }
                 if((item as any).skins){
                     for(let skin=0;skin<((item as any).skins as string[]).length;skin++){
-                        map.game.add_loot(v2(x,y),{item,count:Infinity,skin})
+                        map.game.scene_2d.add_loot(v2(x,y),{item,count:Infinity,skin})
                         i++
                         if(i>=10){
                             i=0
@@ -77,7 +77,7 @@ export const DebugMap:MapDef={
                 }
             }
             for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
-                const v=map.game.add_vehicle(v2(x,y),def,Layers.Normal)
+                const v=map.game.scene_2d.add_vehicle(v2(x,y),def,Layers.Normal)
                 i++
                 if(i>=25){
                     i=0

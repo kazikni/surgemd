@@ -140,7 +140,7 @@ export class GameMap{
         let obj:ServerGameObject|undefined
         if(this.game.definitions.creatures.exist(name)){
             const def=this.game.definitions.creatures.getFromString(name)
-            obj=this.game.add_creature(v2(0,0),def,layer)
+            obj=this.game.scene_2d.add_creature(v2(0,0),def,layer)
             const pos=this.getRandomPosition(obj.hitbox,obj.id,obj.layer,spawn??def.spawn??{
                 type:SpawnModeType.whitelist,
                 list:[FloorType.Grass,FloorType.Ice]
@@ -165,7 +165,7 @@ export class GameMap{
             const pos:Vec2|undefined=this.getRandomPosition(new CircleHitbox2D(v2(0,0),0.6),-1,layer??Layers.Normal,Spawn.grass,random,gen_position,gen_valid)
             if(!pos)return
             for(const ll of loot){
-                const l = this.game.add_loot(pos,ll,layer)
+                const l = this.game.scene_2d.add_loot(pos,ll,layer)
                 if(!obj)obj=l
             }
         }
@@ -204,7 +204,7 @@ export class GameMap{
         return o
     }
     generate_vehicle(def:VehicleDef,random:SeededRandom,spawn?:SpawnMode,layer?:Layers,gen_position?:map_gen_position,gen_valid?:map_gen_valid):Vehicle|undefined{
-        const o=this.game.add_vehicle(v2(0,0),def,layer)
+        const o=this.game.scene_2d.add_vehicle(v2(0,0),def,layer)
         const p=this.getRandomPosition(o.base_hitbox,o.id,layer??o.layer,spawn??def.spawn??Spawn.grass,random,gen_position,gen_valid)
         if(!p){
             o.destroy()
@@ -361,7 +361,7 @@ export class GameMap{
             obj.generate(b.position)
         }
         for(const i of definition.generation.objects?.items??[]){
-            const obj=this.game.add_loot(i.position,{count:i.count,item:this.game.definitions.game_items.valueString[i.def],skin:i.skin},i.layer)
+            const obj=this.game.scene_2d.add_loot(i.position,{count:i.count,item:this.game.definitions.game_items.valueString[i.def],skin:i.skin},i.layer)
             if(i.velocity)obj.velocity=v2.clone(i.velocity)
         }
 

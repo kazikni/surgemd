@@ -30,7 +30,7 @@ export class Loot extends ServerGameObject{
         this.loot_data.count-=count
         this.destroy()
         if(this.loot_data.count>0){
-            this.game.add_loot(this.position,this.loot_data,this.layer)
+            this.game.scene_2d.add_loot(this.position,this.loot_data,this.layer)
         }
     }
     override can_interact(user: Human): boolean {

@@ -206,8 +206,8 @@ export class Clock {
     private frameDuration: number
     private lastFrameTime: number
     accumulator:number=0
-    public timeScale: number
-    public callback: (dt:number)=>void
+    public timeScale:number
+    public callback:(dt:number)=>void
     public intervals:Map<number,(dt:number)=>void>=new Map()
 
     running:boolean=false
@@ -227,7 +227,12 @@ export class Clock {
     }
 
     private interval?:number=undefined
+    timeouts:{c:()=>void,delay:number}[]=[]
 
+    clear(){
+        this.intervals.clear()
+        this.timeouts.length=0
+    }
     add_interval(cb:(dt:number)=>void):number{
         let id=0
         while(this.intervals.has(id)){
@@ -249,6 +254,14 @@ export class Clock {
 
             const dt = (elapsedTime / 1000) * this.timeScale
 
+            for(let i=0;i<this.timeouts.length;i++){
+                this.timeouts[i].delay-=dt
+                if(this.timeouts[i].delay<=0){
+                    this.timeouts[i].c()
+                    this.timeouts.splice(i,1) 
+                    i--
+                }
+            }
             this.callback(dt);
             for (const i of this.intervals.values()) {
                 i(dt);
@@ -270,7 +283,7 @@ export class Clock {
             this.lastFrameTime = performance.now()
             this.interval=setInterval(() => {
                 this.tick()
-            }, this.frameDuration)
+            }, this.frameDuration) as unknown as number
         }
     }
     public startRAF() {
@@ -282,6 +295,14 @@ export class Clock {
             this.frameDuration=1000/this.tps
             self.requestAnimationFrame(this._tick)
         }
+    }
+    add_timeout(callback:()=>void,delay:number):number{
+        if(delay==0){
+            callback()
+            return -1
+        }
+        this.timeouts.push({c:callback,delay:delay})
+        return this.timeouts.length-1
     }
     public stop(){
         this.running=false

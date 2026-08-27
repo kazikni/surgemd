@@ -67,7 +67,7 @@ export class Bullet extends ServerGameObject{
     }
     on_hit(){
         if(this.on_hit_explosion){
-            this.game.add_explosion(this.position,this.on_hit_explosion,this.owner,this.source,this.layer)
+            this.game.scene_2d.add_explosion(this.position,this.on_hit_explosion,this.owner,this.source,this.layer)
         }
         this.destroy()
     }
@@ -247,7 +247,7 @@ export class Bullet extends ServerGameObject{
         return b
     }
     clone(position?:Vec2){
-        const b=this.game.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer)
+        const b=this.game.scene_2d.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer)
         
         b.speed=this.speed
         b.max_distance=this.max_distance

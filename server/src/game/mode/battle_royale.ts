@@ -115,16 +115,16 @@ export class BattleRoyale extends ModeManager{
     override on_start(){
         this.game.deadzone.start()
         for(const p of this.settings.airdrops.spawn){
-            this.game.add_timeout(()=>{
-                this.game.add_airdrop()
+            this.game.clock.add_timeout(()=>{
+                this.game.scene_2d.add_airdrop()
             },p)
         }
         for(const d of this.settings.drones.spawn){
-            this.game.add_timeout(()=>{
-                this.game.add_drone(undefined,undefined,new LocationDrone())
+            this.game.clock.add_timeout(()=>{
+                this.game.scene_2d.add_drone(undefined,undefined,new LocationDrone())
             },d)
         }
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             this.game.close()
         },this.settings.join_time)
     }
@@ -183,7 +183,7 @@ export class BattleRoyale extends ModeManager{
     assign_leader(p:Human):boolean{
         if(this.can_be_leader(p)){
             this.leader=p as Player
-            this.game.feed_messages.push({
+            this.game.scene_2d.feed_messages.push({
                 type:FeedMessageType.leader_assigned,
                 player:{
                     id:p.id,
@@ -196,7 +196,7 @@ export class BattleRoyale extends ModeManager{
     }
     leader_die(p:Human){
         this.leader=undefined
-        this.game.feed_messages.push({
+        this.game.scene_2d.feed_messages.push({
             type:FeedMessageType.leader_dead,
             player:{
                 id:p.id,
@@ -232,7 +232,7 @@ export class BattleRoyale extends ModeManager{
         if(this.game.fineshed){
             return
         }
-        this.game.leaderboards.push({
+        this.game.scene_2d.leaderboards.push({
             id:p.id,
             kills:p.status.kills,
             score:p.status.score,
@@ -269,7 +269,7 @@ export class BattleRoyale extends ModeManager{
     override on_finish(winners:Player[]): void {
         for(const p of this.game.players.living_players){
             this.give_rank_score()
-            this.game.leaderboards.push({
+            this.game.scene_2d.leaderboards.push({
                 id:p.id,
                 kills:p.status.kills,
                 score:p.status.score,

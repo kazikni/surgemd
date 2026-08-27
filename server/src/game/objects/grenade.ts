@@ -135,19 +135,19 @@ export class Grenade extends Projectile{
         if(this.def.explosion)this.projectile_data.explosion=this.game.definitions.explosions.getFromString(this.def.explosion)
 
         if(this.def.call_airdrop){
-            this.game.add_timeout(()=>{
-                this.game.add_airdrop(this.position)
+            this.game.clock.add_timeout(()=>{
+                this.game.scene_2d.add_airdrop(this.position)
             },this.def.call_airdrop.delay)
         }
         if(this.def.call_airstrike){
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 const pos=v2.clone(this.position)
                 const def=this.game.definitions.grenades.getFromString(this.def.call_airstrike!.bomb.def)
                 const count=this.def.call_airstrike?.count??1
                 const gap=this.def.call_airstrike?.delay_gap??1
                 for(let c=0;c<count;c++){
-                    this.game.add_timeout(()=>{
-                        this.game.add_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
+                    this.game.clock.add_timeout(()=>{
+                        this.game.scene_2d.add_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
                     },c*gap)
                 }
             },this.def.call_airstrike.delay)

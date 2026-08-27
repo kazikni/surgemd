@@ -57,7 +57,7 @@ export class PlayerClient extends PlayerConnManager{
     get_update_packet():UpdatePacket{
         const up=new UpdatePacket()
         up.definition=this.game.definitions
-        up.priv.pings=[...this.game.pings]
+        up.priv.pings=[...this.game.scene_2d.pings]
         const first_tick=this.first_tick||this.game.players.first_tick
         if(this.human&&!this.spectating){
             up.priv.active_entity={
@@ -127,8 +127,8 @@ export class PlayerClient extends PlayerConnManager{
         if(!p.status.win){
             p.status.eliminator=eliminated_by
         }
-        if(this.game.leaderboards.length>0){
-            p.status.leaderboards=this.game.leaderboards
+        if(this.game.scene_2d.leaderboards.length>0){
+            p.status.leaderboards=this.game.scene_2d.leaderboards
         }
 
         this.client!.emit_packet(p)
@@ -221,7 +221,7 @@ export class PlayersManager{
             this.match_players_count=this.living_players.length
         }
 
-        this.game.feed_messages.push({
+        this.game.scene_2d.feed_messages.push({
             type:FeedMessageType.join,
             playerId:p.id,
             playerName:p.name,
@@ -294,10 +294,10 @@ export class PlayersManager{
 
         this.general_update.content.started=this.game.started
         this.general_update.content.leader_enabled=false
-        this.general_update.content.feed=this.game.feed_messages
+        this.general_update.content.feed=this.game.scene_2d.feed_messages
         this.general_update.content.deadzone=this.game.deadzone.state
         this.general_update.content.ambient=this.game.ambient
-        this.general_update.content.map_zones=this.game.map_zones
+        this.general_update.content.map_zones=this.game.scene_2d.map_zones
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
 
         this.game.modeManager.manage_general_packet(this.general_update)

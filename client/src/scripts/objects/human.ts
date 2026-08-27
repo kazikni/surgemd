@@ -240,7 +240,7 @@ export class Human extends Humanoid{
         this.dead=true
         if(this.sprites.shadow)this.sprites.shadow.destroy()
         this.container.callmode("die")
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             this.container.destroy()
             this.destroy()
         },5)
@@ -486,7 +486,7 @@ export class Human extends Humanoid{
         }
     }
     for(const delay of def.damage_delays??[]){
-        this.game.add_timeout(att,delay)
+        this.game.clock.add_timeout(att,delay)
     }
     }
     play_fire_animation(def:GunDef,alt:boolean,last:boolean,alt_func:boolean){
@@ -566,7 +566,7 @@ export class Human extends Humanoid{
                 }
             })
             const audio=this.game.resources.get_sound(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
-            if(audio)this.game.add_timeout(()=>{
+            if(audio)this.game.clock.add_timeout(()=>{
                 this.game.sounds.play(audio,{
                     position:this.position,
                     max_distance:10,

@@ -34,7 +34,7 @@ export class SyncedParticle extends MovingBody{
     override on_destroy(): void {
         for(const t of this.tweens)t.kill()
         const time=this.time>=0.98?this.def.animation?.destroy?.time??0:0
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             this.sprite.destroy()
             for(const t of this.tweens)t.kill()
         },time)

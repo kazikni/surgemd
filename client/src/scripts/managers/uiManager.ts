@@ -622,7 +622,7 @@ export class UiManager{
                     old.remove()
                 }
             }
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 elem.remove()
             },4)
             this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
@@ -812,7 +812,7 @@ export class UiManager{
             this.game.scope_zoom*=0.75
             this.game.zoom_speed*=0.05
             this.content.normal_gameOver.style.opacity="0"
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 ShowElement(this.content.normal_gameOver)
                 self.requestAnimationFrame(()=>this.content.normal_gameOver.style.opacity="1")
             },3)

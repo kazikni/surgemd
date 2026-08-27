@@ -141,7 +141,7 @@ export class LocationDrone extends Drone{
             id:this.id,
             radius:5
         }
-        this.game.map_zones.push(this.zone)
+        this.game.scene_2d.map_zones.push(this.zone)
         this.lifetime=120
         
         this.dest=this.choose_next_dest()
@@ -150,8 +150,8 @@ export class LocationDrone extends Drone{
     override on_destroy(): void {
         super.on_destroy()
         if(this.zone){
-            const idx=this.game.map_zones.indexOf(this.zone)
-            if(idx!==-1)this.game.map_zones.splice(idx,1)
+            const idx=this.game.scene_2d.map_zones.indexOf(this.zone)
+            if(idx!==-1)this.game.scene_2d.map_zones.splice(idx,1)
         }
     }
     override on_net_update(): void {

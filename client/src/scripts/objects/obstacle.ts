@@ -321,7 +321,7 @@ export class Obstacle extends StaticBody{
             bus:"obstacles"
         })
         for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).first_particles??[]){
-            this.game.add_timeout(()=>{
+            this.game.clock.add_timeout(()=>{
                 for(let c=0;c<p.count;c++){
                     this.game.particles.add_particle(new ABParticle2D({
                         frame:{layer:this.layer,...p.frame},
@@ -342,9 +342,9 @@ export class Obstacle extends StaticBody{
         if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites&&(this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def]){
             this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def],this.game.resources)
         }
-        this.game.add_timeout(()=>{
+        this.game.clock.add_timeout(()=>{
             for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
-                this.game.add_timeout(()=>{
+                this.game.clock.add_timeout(()=>{
                     for(let c=0;c<p.count;c++){
                         this.game.particles.add_particle(new ABParticle2D({
                             frame:{layer:this.layer,...p.frame},
@@ -428,7 +428,7 @@ export class Obstacle extends StaticBody{
                 this.game.sounds.play(this.game.resources.get_sound(this.def.expanded_behavior.click_sound),{
                     position:this.position,
                 })
-                this.game.add_timeout(()=>{
+                this.game.clock.add_timeout(()=>{
                     this.game.sounds.play(this.game.resources.get_sound("menu_music"),{
                         position:this.position,
                     })

@@ -28,7 +28,7 @@ export abstract class Projectile extends MovingBody{
     kill(){
         this.destroy()
         if(this.projectile_data.explosion){
-            const explosion=this.game.add_explosion(this.position,this.projectile_data.explosion,this.owner,this.source,this.layer)
+            const explosion=this.game.scene_2d.add_explosion(this.position,this.projectile_data.explosion,this.owner,this.source,this.layer)
             explosion.parent=this
         }
     }

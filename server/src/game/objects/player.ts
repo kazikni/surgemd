@@ -64,7 +64,7 @@ export abstract class PlayerConnManager{
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
         const layers=[layer-2,layer-1,layer,layer+1,layer+2]
         const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
-        return [...objs,...Object.values(this.game.always_visible)]
+        return [...objs,...Object.values(this.game.scene_2d.always_visible)]
     }
     abstract net_update(general_update:Stream):void
 }
@@ -156,7 +156,7 @@ export class Player extends Human{
     override down(params: DamageParams): void {
         super.down(params)
         if(params.owner&&params.owner instanceof Player){
-            this.game.feed_messages.push({
+            this.game.scene_2d.feed_messages.push({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
@@ -167,7 +167,7 @@ export class Player extends Human{
                 type:FeedMessageType.down,
             })
         }else{
-            this.game.feed_messages.push({
+            this.game.scene_2d.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
@@ -181,7 +181,7 @@ export class Player extends Human{
         super.die(params)
 
         if(this.killed_by&&this.killed_by instanceof Player){
-            this.game.feed_messages.push({
+            this.game.scene_2d.feed_messages.push({
                 killer:{
                     id:this.killed_by.id,
                     kills:this.killed_by.status.kills,
@@ -196,7 +196,7 @@ export class Player extends Human{
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
         }else{
-            this.game.feed_messages.push({
+            this.game.scene_2d.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 type:FeedMessageType.kill,
@@ -219,7 +219,7 @@ export class Player extends Human{
         if(this.conn&&this.conn.real_human===this){
             this.conn.on_revive(this)
         }
-        this.game.feed_messages.push({
+        this.game.scene_2d.feed_messages.push({
             type:FeedMessageType.set_name,
             playerId:this.id,
             playerName:this.name

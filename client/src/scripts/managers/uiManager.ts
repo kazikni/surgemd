@@ -650,33 +650,6 @@ export class UiManager{
     }
     update_self_state(state:SelfStateUpdate){
         this.game.device.update_self_state(state)
-
-        if (state.dirty.inventory.aitems) {
-            this.game.inventory.aitems = {}
-            for (const a of Object.keys(state.inventory.aitems)) {
-                const def = this.game.definitions.ammos.getFromNumber(a as unknown as number)
-                this.game.inventory.aitems[def.idString] = state.inventory.aitems[a as unknown as number]
-            }
-        }
-        if(state.dirty.inventory.iitems) {
-            this.game.inventory.iitems = state.inventory.iitems
-        }
-        this.game.set_scope(this.game.definitions.scopes.getFromNumber(state.current_scope))
-        if(state.dirty.inventory.weapons){
-            for(const idx in state.inventory.weapons){
-                this.game.inventory.set_weapon(idx as unknown as number,state.inventory.weapons[idx])
-            }
-        }
-        if(state.dirty.inventory.hand){
-            this.game.inventory.hand_settings=state.inventory.hand
-            if(state.inventory.hand)this.game.inventory.set_weapon_index(state.inventory.hand.slot,true)
-        }
-        if(state.dirty.inventory.items) {
-            this.items.length=0
-            for (let i = 0; i < state.inventory.items.length; i++) {
-                this.items.push({id:state.inventory.items[i].idNumber,count:state.inventory.items[i].count})
-            }
-        }
         if(state.dirty.group){
             this.group_members=state.group??{}
             this.game.ui_manager.signal("update_group_members",null)
@@ -728,7 +701,7 @@ export class UiManager{
                     break
                 case 3:
                     if(this.game.comunication_mode){
-                        if(this.items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote_item,item:this.items[item_value].id})
+                        if(this.game.inventory._items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.inventory._items[item_value].id})
                     }else{
                         this.game.input.actions.push({type:InputActionType.use_item,slot:item_value})
                     }
@@ -928,19 +901,6 @@ export class UiManager{
         }
         
         this.game.ui_manager.signal("active_player_update",{dt,player})
-    }
-
-    items: {id:number,count:number}[] = []
-    free_slot(id:string,limit:number):boolean{
-        return this.items.some((v)=>{
-            return v.count===0||(v.id===this.game.definitions.game_items.keysString[id]&&v.count<limit)
-        })
-    }
-    melee_free():boolean{
-        return this.game.inventory.weapon_is_free(0)
-    }
-    gun_free():boolean{
-        return this.game.inventory.weapon_is_free(1)||this.game.inventory.weapon_is_free(2)
     }
 
     tooltip_show(title:string|null|undefined,description:string,element?:HTMLElement){

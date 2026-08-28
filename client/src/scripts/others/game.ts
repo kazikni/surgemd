@@ -48,9 +48,11 @@ import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, Fi
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
-import { PlayArgs } from "./constants.ts";
+import { GameState, PlayArgs } from "./constants.ts";
 import { Scene2D } from "./scene.ts";
 export class Game extends ClientGame<GameObject>{
+    state:GameState=GameState.Idle
+
     declare scene_2d: Scene2D
     client?:Client
     input:InputPacket=new InputPacket()
@@ -58,14 +60,11 @@ export class Game extends ClientGame<GameObject>{
     showing_menu:boolean=false
 
     offline:boolean=false
-    happening:boolean=false
     can_act:boolean=true
     get play_sounds():boolean{
         return this.menu.content.gameover_text_screen.style.opacity=="0"
     }
-    game_over:boolean=false
     match_started:boolean=false
-    starting_game:boolean=false
 
     local_server:LocalGameServer
     start_with_intro:boolean=false
@@ -107,8 +106,6 @@ export class Game extends ClientGame<GameObject>{
         scale: Vec2
     }
     fs?:FileManager
-    watcher?:ReplayWatcher
-    editor?: EditorManager
     cam_type:number=0
 
     free_cam_pos=v2(0,0)
@@ -162,7 +159,7 @@ export class Game extends ClientGame<GameObject>{
         this.ui=new UiManager(this)
         this.menu=menu
 
-        this.inventory=new GInventory()
+        this.inventory=new GInventory(this.definitions)
         this.dead_zone=new DeadZoneManager(this)
         this.ambient=new AmbientManager(this)
         this.device=new GameDeviceManager(this)
@@ -181,12 +178,6 @@ export class Game extends ClientGame<GameObject>{
             offset:v2(0.1,0.1),
             scale:v2(1,1)
         }
-
-        this.inventory.initialize(this.definitions,{
-            0:MeleeItem as (new(item:GameItem)=>LItem),
-            1:GunItem as (new(item:GameItem)=>LItem),
-            2:GunItem as (new(item:GameItem)=>LItem)
-        })
 
         this.hitboxes_gfx.initialize(this.scene_2d.camera.ctx)
         this.ui_gfx.initialize(this.scene_2d.camera.ctx)
@@ -230,7 +221,7 @@ export class Game extends ClientGame<GameObject>{
             }
         })
         this.input_manager.listener.on(InputEventType.ActionDown,(a:InputActionEvent)=>{
-            if(!this.can_act||this.editor)return
+            if(!this.can_act||this.state!==GameState.Playing)return
             switch(a.action){
                 case "fire":
                     if(a.element!==this.renderer.canvas)break
@@ -244,7 +235,7 @@ export class Game extends ClientGame<GameObject>{
                     this.ui.begin_emote_wheel(this.input_manager.mouse_position)
                     break
                 case "message":
-                    if(this.happening&&!this.showing_menu&&!this.game_over){
+                    if(!this.showing_menu){
                         this.showing_menu=true
                         this.can_act=false
                         this.input.movement={dir:0,scale:0}
@@ -283,12 +274,6 @@ export class Game extends ClientGame<GameObject>{
                     break
                 case "weapon3":
                     this.input.actions.push({type:InputActionType.set_hand,hand:2})
-                    break
-                case "toggle_full_device":
-                    this.device.toggle_full()
-                    break
-                case "toggle_hide_device":
-                    this.device.toggle_visibility()
                     break
                 case "use_item1":
                     this.input.actions.push({type:InputActionType.use_item,slot:0})
@@ -343,7 +328,7 @@ export class Game extends ClientGame<GameObject>{
                     break
                 }
                 case "escape":
-                    if(this.happening&&!this.showing_menu&&!this.game_over){
+                    if(!this.showing_menu){
                         this.showing_menu=true
                         this.menu.game_popup(yes_no_popup("Exit?")).then((v)=>{
                             if(v){
@@ -407,7 +392,7 @@ export class Game extends ClientGame<GameObject>{
         if(!this.active_entity)return
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        if(!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")&&!this.game_over){
+        if(!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")){
             this.active_entity.enable_auto_rot=false
             this.active_entity.physical_data.rotation=this.input.angle
         }else{
@@ -421,13 +406,6 @@ export class Game extends ClientGame<GameObject>{
         if(this.active_entity&&this.ui.current_interaction){
             this.ui.current_interaction.on_interact(this.active_entity)
         }
-    }
-    set_scope(scope:ScopeDef){
-        if(this.inventory.scope&&this.inventory.scope===scope){
-            return
-        }
-        this.inventory.scope=scope
-        this.ui_manager.signal("current_scope_dirty",scope)
     }
     async load_resources(agro:string[]=[],assets:Record<string,string>,languages_path:string=""){
         if(!this.resources)return
@@ -466,18 +444,6 @@ export class Game extends ClientGame<GameObject>{
         this.loaded=true
     }
     async start_editor(){
-        this.close_game()
-        this.editor = new EditorManager(this)
-        this.cam_type=1
-        this.happening=true
-
-        this.free_cam_pos=v2.zero()
-        this.free_cam_zoom=1
-        this.menu.game_start()
-        this.ui.start()
-        this.hitboxes_gfx.ctx.clear()
-        this.editor.start()
-        //await this.editor.load(path)
     }
     async start(settings:StartSettings){
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
@@ -504,7 +470,6 @@ export class Game extends ClientGame<GameObject>{
         }
         this.ui.start()
         this.join()
-        this.watcher?.play?.()
 
         this.scope_zoom=1
         this.hitboxes_gfx.ctx.clear()
@@ -523,9 +488,7 @@ export class Game extends ClientGame<GameObject>{
             this.local_server.stop()
             this.menu.hide_loading_screen()
         }
-        if(this.editor)this.editor.close()
-        this.editor=undefined
-        this.happening=false
+        this.state=GameState.Idle
         this.match_started=false
         this.menu.game_end()
         this.ambient.on_game_close()
@@ -538,11 +501,9 @@ export class Game extends ClientGame<GameObject>{
     soft_close_game(){
         this.scene_2d.clear()
         this.ui.clear()
-        this.game_over=false
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
-        this.set_scope(this.definitions.scopes.getFromNumber(1))
         this.scene_2d.camera.zoom=6
         this.zoom_speed=4
     }
@@ -567,12 +528,11 @@ export class Game extends ClientGame<GameObject>{
         }else{
             this.global_interpolation=1
         }
-        if(this.happening){
+        if(this.state===GameState.Playing){
             this.ambient.update(dt)
             this.dead_zone.tick(dt)
+            this.ui.update(dt)
         }
-        this.ui.update(dt)
-        if(this.editor)this.editor.tick(dt)
 
         if (this.cam_type === 1) {
             const move = this.input.movement
@@ -637,6 +597,7 @@ export class Game extends ClientGame<GameObject>{
     process_self_state(state:SelfStateUpdate){
         this.scope_zoom=state.scope_zoom
         this.ui.update_self_state(state)
+        this.inventory.update_self_state(state)
     }
     process_private(priv:PrivateUpdate){
         this.ui.proccess_private(priv)
@@ -689,8 +650,8 @@ export class Game extends ClientGame<GameObject>{
         }
     }
     async play_game(play:PlayArgs){
-        if(this.happening||this.starting_game)return
-        this.starting_game=true
+        if(this.state!==GameState.Idle)return
+        this.state=GameState.Joining
         this.menu.show_loading_screen()
         switch(play.type){
             case "online":{
@@ -704,7 +665,6 @@ export class Game extends ClientGame<GameObject>{
                             ...args,
                             type:"play"
                         }))
-                        this.starting_game=false
                         return
                     }else{
                         const ghost:FindGameResult=await(await fetch(API_BASE+"/find-game",{
@@ -713,7 +673,6 @@ export class Game extends ClientGame<GameObject>{
                         })).json()
                         if(ghost.success){
                             this.set_socket(new WebSocket(ghost.address))
-                            this.starting_game=false
                             return
                         }
                     }
@@ -725,16 +684,14 @@ export class Game extends ClientGame<GameObject>{
             case "campaign":{
                 this.start_with_intro=play.start_with_intro
                 this.local_server.begin_level("/"+play.path)
-                this.starting_game=false
                 return
             }
             case "editor":{
                 await this.start_editor()
-                this.starting_game=false
                 return
             }
         }
-        this.starting_game=false
+        this.state=GameState.Idle
         this.menu.hide_loading_screen()
     }
     set_socket(socket:BasicSocket|WebSocket){
@@ -767,17 +724,15 @@ export class Game extends ClientGame<GameObject>{
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.ui.proccess_joinned_packet(jp)
             this.ntps=jp.ntps
+            this.state=GameState.Playing
             this.menu.hide_loading_screen()
         })
         client.on("gameover",async(p:GameOverPacket)=>{
-            this.game_over = true
-            if(p.status.win){
-                await this.show_final_screen(p.status)
-            }
+            this.state=GameState.Gameover
             this.ui.show_game_over(p)
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
-            if(!this.game_over)this.close_game()
+            if(this.state===GameState.Playing)this.close_game()
         })
         client.on("message",async(msg:OnlineMessage)=>{
             switch(msg.type){

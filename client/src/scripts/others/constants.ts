@@ -20,3 +20,10 @@ export type PlayArgs={
 }|{
     type: "editor"
 }
+
+export enum GameState{
+    Idle=0,
+    Playing,
+    Joining,
+    Gameover
+}

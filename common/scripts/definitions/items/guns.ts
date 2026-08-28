@@ -742,15 +742,15 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.assault("m4a1","c45",{
             name:"M4A1",
             fire_delay:0.1,
-            spread:6.5,
+            spread:3,
             fire_sequence:{
-                decay:0.39,
-                increse:0.052,
-                spread:{begin:0.5},
+                decay:0.5,
+                increse:0.06,
+                spread:{begin:0.75},
             },
 
             ammo_spawn:{
-                amount:60
+                amount:80
             },
 
             bullet:{

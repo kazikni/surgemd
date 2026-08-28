@@ -129,7 +129,7 @@ export class MinimapModule extends UIModule<Game>{
             this.canvas.style.width=`${(45*Math.max(max.x/max.y,0))}vw`
             this.canvas.style.height="45vw"
         }else{
-            const player=this.game.active_entity?.position
+            const player=this.game.scene_2d.camera.position
             if(!player)return
             const playerPos=this.worldToMap(player.x,player.y)
             scale=this.zoom
@@ -204,7 +204,7 @@ export class MinimapModule extends UIModule<Game>{
         this.render_safe_line()
     }
     render_safe_line() {
-        const player = this.game.active_entity?.position
+        const player=this.game.scene_2d.camera.position
         const dz = this.game.dead_zone
         if (!player||!dz) return
 

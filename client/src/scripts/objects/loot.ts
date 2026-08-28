@@ -72,14 +72,14 @@ export class Loot extends GameObject{
     override on_interact(h:Human): void {
         switch(this.item.item_type!){
             case GameItemType.gun:
-                if(!(this.game.ui.gun_free()||(h.current_weapon&&h.current_weapon.item_type===GameItemType.gun)))return
+                if(!(this.game.inventory.gun_free()||(h.current_weapon&&h.current_weapon.item_type===GameItemType.gun)))return
                 break
             case GameItemType.ammo:
                 if(this.game.inventory.aitems[this.item.idString]>=this.game.inventory.item_limit(this.item))return
                 break
             case GameItemType.consumible:
             case GameItemType.grenade:
-                if(!this.game.ui.free_slot(this.item.idString,this.game.inventory.item_limit(this.item)))return
+                if(!this.game.inventory.free_slot(this.item.idString,this.game.inventory.item_limit(this.item)))return
                 break
             case GameItemType.helmet:
                 if(h.helmet&&h.helmet.level>=(this.item as HelmetDef).level&&!(h.helmet===this.item&&h.helmet_skin!==this.skin))return
@@ -92,7 +92,7 @@ export class Loot extends GameObject{
                 break
 
             case GameItemType.melee:
-                if(!((this.game.ui.melee_free())||(h.current_weapon&&h.current_weapon.item_type===GameItemType.melee)))return
+                if(!((this.game.inventory.melee_free())||(h.current_weapon&&h.current_weapon.item_type===GameItemType.melee)))return
                 break
             case GameItemType.scope:
                 if(h.game.inventory.iitems.includes(this.item))return
@@ -107,9 +107,9 @@ export class Loot extends GameObject{
     override auto_interact(h: Human): boolean {
         switch(this.item.item_type!){
             case GameItemType.melee:
-                return this.game.ui.melee_free()
+                return this.game.inventory.melee_free()
             case GameItemType.gun:
-                return this.game.ui.gun_free()
+                return this.game.inventory.gun_free()
             case GameItemType.ammo:
                 return (this.game.inventory.aitems[this.item.idString]??0)<(h.backpack?.max[this.item.idString]??9999)
             case GameItemType.consumible:{

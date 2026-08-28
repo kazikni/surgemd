@@ -59,21 +59,29 @@ export class InventoryModule extends UIModule<Game> {
     }
     override on_signal(signal: string, state: any): void {
         switch(signal){
-            case "self_state":
+            case "self_state":{
                 if(state.dirty.inventory.items)this.render_items(state.inventory.items)
                 if(state.dirty.inventory.aitems)this.render_aitems(this.game.inventory.aitems)
                 if(state.dirty.inventory.iitems)this.render_iitems(this.game.inventory.iitems)
                 if(state.dirty.inventory.weapons)this.render_weapons()
                 if(state.dirty.inventory.hand)this.update_current_weapon()
+
+                if(this.game.inventory.scope&&this.current_scope!==this.game.inventory.scope.idString){
+                    if(this.current_scope){
+                        const old = this.iitems_elements[this.current_scope]
+                        old?.classList.remove("scope-slot-selected")
+                    }
+                    this.current_scope = this.game.inventory.scope.idString
+                    const el = this.iitems_container.querySelector(`#scope-${this.current_scope}`)
+                    el?.classList.add("scope-slot-selected")
+                }
                 break
+            }
             case "backpack_dirty":
                 this.render_aitems(this.game.inventory.aitems)
                 break
             case "active_player_update":
                 this.render_equipments(state.player)
-                break
-            case "current_scope_dirty":
-                this.update_scope()
                 break
         }
     }
@@ -356,16 +364,6 @@ export class InventoryModule extends UIModule<Game> {
                 this.iitems_container.appendChild(el)
             }
         }
-    }
-    private update_scope() {
-        if (this.current_scope) {
-            const old = this.iitems_elements[this.current_scope]
-            old?.classList.remove("scope-slot-selected")
-        }
-        this.current_scope = this.game.inventory.scope.idString
-
-        const el = this.iitems_container.querySelector(`#scope-${this.current_scope}`)
-        el?.classList.add("scope-slot-selected")
     }
     private render_equipments(player: Human) {
         const hasAny=player.helmet||player.vest||player.backpack

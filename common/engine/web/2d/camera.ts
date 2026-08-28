@@ -107,16 +107,23 @@ export class Camera2D{
     }
 
     resize(): void {
-        const canvas = this.renderer.canvas
-        const size = v2(canvas.width, canvas.height)
+        const canvas=this.renderer.canvas
+        const size=v2(canvas.width, canvas.height)
+        const screenAspect=size.x/size.y
 
         if(this.aspect_lock){
+            const referenceAspect=this.reference_width/this.reference_height
             const referenceWidth=this.reference_width/this.meter_size
-            const screenAspect=size.x/size.y
-            this.aspect=this.reference_width /(this.width || referenceWidth)
-            this.width=referenceWidth / this._zoom
-            this.height=this.width / screenAspect
-            this.size = v2(this.width, this.height)
+            const referenceHeight=this.reference_height / this.meter_size
+            if (screenAspect>=referenceAspect) {
+                this.height=referenceHeight/this._zoom
+                this.width=this.height*screenAspect
+            } else {
+                this.width=referenceWidth/this._zoom
+                this.height=this.width/screenAspect
+            }
+            this.aspect=referenceAspect
+            this.size=v2(this.width,this.height)
         }else{
             this.aspect=this.meter_size*this._zoom
             this.size=v2.dscale(size, this.aspect)
@@ -129,25 +136,8 @@ export class Camera2D{
 
         if (this.center_pos) {
             const center = v2(this.size.x / 2,this.size.y / 2)
-
-            this.viewport_matrix =
-                matrix4.mul(
-                    this.viewport_matrix,
-                    matrix4.translation_2d(center)
-                )
-
-            this.screen_matrix =
-                matrix4.mul(
-                    this.screen_matrix,
-                    matrix4.translation_2d(
-                        this.aspect_lock
-                            ? center
-                            : v2(
-                                size.x / this.meter_size / 2,
-                                size.y / this.meter_size / 2
-                            )
-                    )
-                )
+            this.viewport_matrix=matrix4.mul(this.viewport_matrix,matrix4.translation_2d(center))
+            this.screen_matrix=matrix4.mul(this.screen_matrix,matrix4.translation_2d(this.aspect_lock?center:v2(size.x / this.meter_size / 2,size.y / this.meter_size / 2)))
         }
     }
     stop_shake(){

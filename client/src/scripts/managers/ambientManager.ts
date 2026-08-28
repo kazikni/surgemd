@@ -3,6 +3,7 @@ import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { type Game } from "../others/game.ts";
 import { AmbientData } from "common/scripts/packets/general_update.ts";
 import { CircleHitbox2D, ColorM, ease, KDate, matrix4, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
+import { GameState } from "../others/constants.ts";
 
 export class AmbientManager{
     game:Game
@@ -172,7 +173,7 @@ export class AmbientManager{
 
             const video = document.getElementById("intro-video") as HTMLVideoElement
             const menu_music=this.game.resources.get_sound(`menu_music`)
-            if(!this.game.happening)this.music.set(menu_music)
+            if(this.game.state===GameState.Idle)this.music.set(menu_music)
             if(this.game.menu.intro_fineshed){
                 this.music.set(menu_music,{
                     loop:true
@@ -307,7 +308,7 @@ export class AmbientManager{
                 }
             }
 
-            if(!this.game.game_over&&!this.game.game_over&&!this.finalization&&!this.music.running&&this.musics.length>0){
+            if(this.game.state===GameState.Playing&&!this.finalization&&!this.music.running&&this.musics.length>0){
                 if(Math.random()<=0.009){
                     if(this.finding_music&&this.game.save.get_variable("sv_sounds_gameplay_music")){
                         const music=random.choose(this.musics)
@@ -378,7 +379,7 @@ export class AmbientManager{
                 src:"/assets/sounds/musics/finalization_music_1.mp3",
                 volume:1
             }).then((v)=>{
-                if(this.game.game_over){
+                if(this.game.state===GameState.Gameover){
                     this.game.resources.unload_sound("gameplay_music")
                     return
                 }

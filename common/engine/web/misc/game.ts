@@ -40,7 +40,6 @@ export class ClientGameScene2D<DefaultGameObject extends ClientGameObject2D=Clie
     override begin(): void {
         super.begin()
         this.particles=new ParticlesManager2D(this.game as unknown as AbstractGame)
-        console.log(this.particles)
         this.camera=new Camera2D(this.game.renderer)
         this.game.input_manager.camera=this.camera
     }

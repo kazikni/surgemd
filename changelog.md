@@ -6,6 +6,7 @@ __                                                                              
 __                                                                                                                 __
 ### Menu
 * New Loading Screen
+* Tundra Map Dialogs
 __                                                                                                                 __
 ### Items
 * Guns Fire Sequence Spread

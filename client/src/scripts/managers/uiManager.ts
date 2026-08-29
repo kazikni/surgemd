@@ -777,9 +777,9 @@ export class UiManager{
             this.content.normal_gameOver.style.opacity="1"
         }else{
             this.game.ambient.clear()
-                this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
-                    bus:"ui"
-                })
+            this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
+                bus:"ui"
+            })
             if(!this.players_name[g.status.eliminator])return
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`

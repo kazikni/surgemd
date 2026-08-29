@@ -14,8 +14,8 @@ export const GameConstants={
     },
     loot:{
         radius:{
-            ammo:0.44,
-            weapon:0.65,
+            ammo:0.46,
+            weapon:0.6,
             accessory:0.65,
             consumible:0.44,
             equipament:0.44,
@@ -111,7 +111,7 @@ export enum zIndexes{
     Creatures,
     Players,
     Particles,
-    GrenadeAir,
+    GrenadeAir1,
     Obstacles3,
     BuildingsWalls1,
     Explosions,
@@ -120,6 +120,7 @@ export enum zIndexes{
     Obstacles4,
     Obstacles5,
     ParachutePlayers,
+    GrenadeAir2,
     Rain1,
     Parachute,
     Airbodys,

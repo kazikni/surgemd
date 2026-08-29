@@ -664,7 +664,7 @@ export class Game extends ClientGame<GameObject>{
             }
             case "campaign":{
                 this.start_with_intro=play.start_with_intro
-                this.local_server.begin_level("/"+play.path)
+                this.local_server.begin_level(play.path)
                 return
             }
             case "editor":{

@@ -2,7 +2,6 @@ import { AKeyFrame } from "../../core/definition/definitions.ts";
 import { audios, AudioSheet } from "../../core/lang/audiosheet.ts";
 import { FrameData, kspr, KSPR } from "../../core/lang/kspr.ts"
 import { Rect } from "../../core/math/geometry.ts";
-import { Path } from "../../core/math/utils.ts";
 import { v2, Vec2 } from "../../core/math/vec2.ts"
 import { StaticStream } from "../../core/net/stream.ts";
 import { type Renderer, type Texture } from "../rendering/renderer.ts"

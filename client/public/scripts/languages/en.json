@@ -166,6 +166,10 @@
             "campfire":"Campfire"
         },
         "characters": {
+            "mark":"Mark",
+            "maria":"Maria",
+            "mom":"Mom",
+            "dad":"Dad",
             "nick": "Nick",
             "justin": "Justin",
             "shelly": "Shelly",

@@ -1,4 +1,5 @@
 import { Definition, FrameDef, FrameTransform, MinMax1, TD, tdm, TDType, v2, Vec2 } from "../../../engine/core.ts";
+import { zIndexes } from "../../others/constants.ts";
 import { DefaultFistRig, FistRig, ItemRank, WeaponAssets } from "../../others/item.ts"
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type Airstrike={
@@ -95,6 +96,7 @@ export type GrenadeDef={
     throw_position?:Vec2
     throw_max_speed?:number
 
+    z_index_air?:number
     frames:{
         world:FrameDef
     }
@@ -444,6 +446,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             explosion:"nuke_explosion",
             push_force_resistence:0,
             zindex_set_resistence:true,
+            z_index_air:zIndexes.GrenadeAir2,
             frames:{
                 world:{
                     image:"proj_nuke"
@@ -469,6 +472,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             },
             explosion:"mini_nuke_explosion",
             zindex_set_resistence:true,
+            z_index_air:zIndexes.GrenadeAir2,
             frames:{
                 world:{
                     image:"proj_mini_nuke"

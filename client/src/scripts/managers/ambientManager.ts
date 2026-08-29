@@ -1,7 +1,7 @@
 import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, SoundController, Tween } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
-import { CircleHitbox2D, ColorM, ease, KDate, matrix4, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
+import { ColorM, ease, KDate, matrix4, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
 import { GameState } from "../others/constants.ts";
 import { GComponent } from "../others/component.ts";
 

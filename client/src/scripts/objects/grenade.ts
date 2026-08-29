@@ -40,7 +40,7 @@ export class Grenade extends MovingBody{
         this.sprite.rotation=this.physical_data.rotation
         this.sprite.scale=v2(s,s)
         if(this.physical_data.zpos===0){
-            if(this.sprite.zIndex===zIndexes.GrenadeAir){
+            if(this.sprite.zIndex===(this.def.z_index_air??zIndexes.GrenadeAir1)){
                 const floor=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void) as FloorType
                 const floor_def=Floors[floor]
                 if(floor_def.footstep_sounds)this.game.sounds.play(this.game.resources.get_sound(random.choose(floor_def.footstep_sounds)),{
@@ -72,7 +72,7 @@ export class Grenade extends MovingBody{
             this.sprite.zIndex=zIndexes.GrenadeGround
             this.sprite.matrix=undefined
         }else{
-            this.sprite.zIndex=zIndexes.GrenadeAir
+            this.sprite.zIndex=(this.def.z_index_air??zIndexes.GrenadeAir1)
             if(this.def.parralax!==undefined){
                 this.sprite.matrix=matrix4.parallax_2d(this.game.scene_2d.camera.position,1+(this.def.parralax*this.physical_data.zpos))
             }
@@ -83,7 +83,7 @@ export class Grenade extends MovingBody{
         this.def=def
         this.base_hitbox=new CircleHitbox2D(v2(0,0),this.def.radius)
         this.sprite.hotspot=v2.half_one
-        this.sprite.zIndex=zIndexes.GrenadeAir
+        this.sprite.zIndex=(this.def.z_index_air??zIndexes.GrenadeAir1)
         this.sprite.set_frame(this.def.frames.world,this.game.resources)
         if(def.particles){
             this.particles_spawner=this.game.scene_2d.particles.add_emiter({

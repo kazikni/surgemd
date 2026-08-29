@@ -2,7 +2,7 @@ import { TranslationManager } from "../../core/definition/definitions.ts";
 import { CutsceneCommand, CutsceneCommandType, CutsceneTextStyle, CutsceneTheme, FontStyle } from "../../core/definition/utils.ts";
 import { random } from "../../core/math/random.ts";
 import { ResourcesManager } from "../resources/resources.ts";
-import { AudioEngine, SoundController } from "../resources/sounds.ts";
+import { AudioEngine } from "../resources/sounds.ts";
 import { BackgroundManager } from "./background.ts";
 import { InputManager } from "./keys.ts";
 import { ApplyFontStyle, HideElement, ImageBuffer, ShowElement, typewriter } from "./utils.ts";
@@ -28,8 +28,6 @@ export class CutsceneManager {
 
     commands: CutsceneCommand[] = []
     text_styles:Record<string,CutsceneTextStyle>={}
-
-    controllers:Record<string,SoundController>={}
     custom_commands:Record<string|number,CustomCutsceneCommand>={}
 
     timeScale = 1
@@ -208,7 +206,7 @@ export class CutsceneManager {
             }
             case CutsceneCommandType.SetSoundController:{
                 const sound=command.path?await this.resources.load_sound(command.source,{src:command.path},this.set_loading_current):this.resources.get_sound(command.source)
-                this.controllers[command.controller].set(sound,{
+                this.sounds.controllers[command.controller]?.set?.(sound,{
                     loop:command.loop!==undefined?command.loop:true,
                     offset:command.start_at
                 })

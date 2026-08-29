@@ -233,7 +233,7 @@ export function make_menu_campaign(campaign:Record<string,any>){
                 const start_btn = level_div.querySelector(`.btn-green`) as HTMLButtonElement
                 start_btn.onclick = async() => {
                     const si=await manager.game_popup(yes_no_popup("Start With Intro?"))
-                    if(manager.play_callback)manager.play_callback({type:"campaign",path:level.path,start_with_intro:si})
+                    if(manager.play_callback)manager.play_callback({type:"campaign",path:"/"+level.path,start_with_intro:si})
                 }
             }
         }

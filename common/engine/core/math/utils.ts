@@ -1,5 +1,4 @@
 import { Language } from "../definition/definitions.ts";
-import { type Scene2D } from "../game/game.ts";
 import { random } from "./random.ts";
 import { v2, Vec2 } from "./vec2.ts";
 
@@ -55,29 +54,24 @@ export const Path={
         return ret
     },
     join(...parts: string[]): string {
+        if (parts.length === 0) return ""
+        const absolute=parts[0].startsWith("/")||parts[0].startsWith("\\")
         const stack: string[] = []
-
-        const joined = parts
-            .join("/")
-            .replace(/\\/g, "/")
-            .split("/")
-
+        const joined = parts.join("/").replace(/\\/g, "/").split("/")
         for (const part of joined) {
             if (part === "" || part === ".") {
                 continue
             }
-
             if (part === "..") {
                 if (stack.length > 0) {
                     stack.pop()
                 }
                 continue
             }
-
             stack.push(part)
         }
-
-        return "/" + stack.join("/")
+        const result=stack.join("/")
+        return absolute?"/"+result:result
     },
     extname(path:string):string{
         const content=path.split(".")

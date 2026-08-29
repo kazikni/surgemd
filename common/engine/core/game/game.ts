@@ -10,15 +10,16 @@ export abstract class BaseGameObject2D extends BaseObject2D{
         super()
     }
 }
-export abstract class GameComponent<Game>{
-    game:Game
-    constructor(game:Game){
-        this.game=game
+export abstract class GameComponent<Game=any>{
+    game!:Game
+    binded:boolean=false
+
+    constructor(){
     }
 
-    on_event(event:string,...args:any[]){}
     on_bind(){}
-    on_update(dt:number):void{}
+    on_unbind(){}
+    on_tick(dt:number):void{}
     on_render(dt:number):void{}
     on_run():void{}
     on_stop():void{}
@@ -33,6 +34,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.cells=this.objects.cells
         this.objects.add_object=this.add_object.bind(this)
         this.objects.make_object_net=this.make_object_net.bind(this)
+        this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
     }
 
     add_object(obj: DefaultGameObject, layer: number, id?: number, args?: Record<string, any>, sv?: Record<string, any>){
@@ -41,6 +43,10 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     }
     make_object_net(id:number,layer:number,t:number){
         if(!this.game.objects.getFromNumberSafe(t))return undefined
+        return new (this.game.objects.getFromNumber(t))()
+    }
+    make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
+        if(!this.game.objects.getFromNumber(t))return undefined
         return new (this.game.objects.getFromNumber(t))()
     }
 
@@ -60,10 +66,6 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         }
     }
 
-    make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
-        if(!this.game.objects.getFromNumber(t))return undefined
-        return new (this.game.objects.getFromNumber(t))()
-    }
     make_checkpoint(stream:Stream,settings?:CheckpointSettings){
         this.objects.encode_checkpoint(stream,settings)
     }
@@ -72,7 +74,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
     }
 }
 
-export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=BaseGameObject2D>{
+export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=any>{
     readonly tps:number
 
     readonly clock:Clock
@@ -97,13 +99,27 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
             this.objects.set(o,oi.string_type,oi.number_type)
         }
     }
+
+    call_event(event:string,...args:any[]){
+        for(const c of this.components){
+            if((c as any)["on_"+event])(c as any)["on_"+event](...args)
+        }
+        this.signals.emit(event,...args)
+    }
     set_scene2d(scene:Scene2DInstance<DefaultGameObject2D>){
         this.scene_2d=scene
         scene.game=this
         scene.begin()
     }
-    add_component(component:GameComponent<this>){
+    add_component(component:any):GameComponent{
+        if(component.binded)return component
+        component.game=this
         this.components.push(component)
+        if(this.running){
+            component.on_bind()
+            component.binded=true
+        }
+        return component
     }
     draw(dt:number):void{
         for(const c of this.components){
@@ -116,16 +132,13 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         this.delta_time=dt
 
         this.scene_2d.update(dt,net_update,destroy_queue)
-        this.signals.emit("update")
         this.on_update(dt)
-        for(const c of this.components){
-            c.on_update(dt)
-        }
+        this.call_event("tick",dt)
 
         if(!this.running){
             this.clock.stop()
             this.on_stop()
-            this.signals.emit("stop",{game:this})
+            this.call_event("stop")
         }
         this.clock.profiler.end(1)
     }
@@ -139,7 +152,13 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         // Start
         this.running=true
         this.on_run()
-        this.signals.emit("start")
+        for(const c of this.components){
+            if(!c.binded){
+                c.on_bind()
+                c.binded=true
+            }
+        }
+        this.call_event("run")
         if(auto_mainloop){
             if(rqf){
                 this.clock.startRAF()
@@ -152,6 +171,6 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         if(!this.running)return
         this.running=false
         this.clock.stop()
-        this.signals.emit("stop",{game:this})
+        this.call_event("stop")
     }
 }

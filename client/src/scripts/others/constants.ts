@@ -24,6 +24,7 @@ export type PlayArgs={
 export enum GameState{
     Idle=0,
     Playing,
+    Cutscene,
     Joining,
     Gameover
 }

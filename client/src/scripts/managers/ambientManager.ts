@@ -13,7 +13,6 @@ export class AmbientManager{
 
     music:SoundController
     ambience:SoundController
-    deadzone_ambience:SoundController
 
     fog_color:number=0
     fog_saturate:number=1
@@ -54,7 +53,6 @@ export class AmbientManager{
 
     thunders:number=0
     rain_value:number=0
-    deadzone_ambience_sound?:Sound
 
     constructor(game:Game){
         this.game=game
@@ -164,7 +162,6 @@ export class AmbientManager{
 
         this.music=this.game.sounds.create_controller("music")
         this.ambience=this.game.sounds.create_controller("ambience")
-        this.deadzone_ambience=this.game.sounds.create_controller("ambience")
 
         this.music.volume=0.4
 
@@ -281,7 +278,6 @@ export class AmbientManager{
         this.ambient_particles_emitter.enabled=true
 
         this.set_rain_state(0,0)
-        this.deadzone_ambience_sound=this.game.resources.get_sound("deadzone_ambience")
     }
     end_game=false
     update_camera(){

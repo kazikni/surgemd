@@ -758,7 +758,7 @@ export class UiManager{
                     this.game.zoom_speed*=0.05
                     await this.game.input_manager.wait_for_action("reload")
                 }
-                    this.game.finish_game_over(g.status.win)
+                this.game.finish_game_over(g.status.win)
                 break
             case GameOverScreenType.Light:
                 break

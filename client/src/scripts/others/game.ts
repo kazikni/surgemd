@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, Grid2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WallShape2D, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -7,16 +7,15 @@ import { MenuManager } from "../managers/menuManager.ts";
 import { DeadZoneManager } from "../managers/deadZoneManager.ts";
 import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
-import { DamageSplash, PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Layers, zIndexes } from "common/scripts/others/constants.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 import { API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { Explosion } from "../objects/explosion.ts";
-import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
 import { Grenade } from "../objects/grenade.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
@@ -25,14 +24,14 @@ import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { GameDefinition, GameItem } from "common/scripts/definitions/game_defs.ts";
-import { GameOverPacket, GameOverStatus } from "common/scripts/packets/gameOver.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
 import { Creature } from "../objects/creature.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle } from "../objects/synced_particle.ts";
-import { GInventory, GunItem, LItem, MeleeItem } from "./inventory.ts";
+import { GInventory } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
@@ -43,8 +42,7 @@ import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/message
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
-import { EditorManager } from "../managers/editorManager.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, ReplayWatcher, sleep, StaticStream, Stream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
@@ -160,7 +158,7 @@ export class Game extends ClientGame<GameObject>{
         this.menu=menu
 
         this.inventory=new GInventory(this.definitions)
-        this.dead_zone=new DeadZoneManager(this)
+        this.dead_zone=this.add_component(new DeadZoneManager()) as DeadZoneManager
         this.ambient=new AmbientManager(this)
         this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
@@ -181,7 +179,6 @@ export class Game extends ClientGame<GameObject>{
 
         this.hitboxes_gfx.initialize(this.scene_2d.camera.ctx)
         this.ui_gfx.initialize(this.scene_2d.camera.ctx)
-        this.dead_zone.append()
         this.terrain.append()
     }
     get_theme_color(name:string):string{
@@ -206,6 +203,7 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right","left")
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
+            if(!this.can_act||this.state!==GameState.Playing)return
             if(a.action==="movement"){
                 if(!this.can_act){
                     this.input.movement={dir:0,scale:0}
@@ -342,6 +340,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui_manager.signal("actiondown",a)
         })
         this.input_manager.listener.on(InputEventType.ActionUp,(a:InputActionEvent)=>{
+            if(!this.can_act||this.state!==GameState.Playing)return
             switch(a.action){
                 case "fire":
                     this.input.use_weapon=false
@@ -441,9 +440,8 @@ export class Game extends ClientGame<GameObject>{
                 console.log(e)
             }
         }
+        this.call_event("load",agro)
         this.loaded=true
-    }
-    async start_editor(){
     }
     async start(settings:StartSettings){
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
@@ -474,13 +472,6 @@ export class Game extends ClientGame<GameObject>{
         this.scope_zoom=1
         this.hitboxes_gfx.ctx.clear()
         this.menu.hide_loading_screen()
-    }
-    async show_final_screen(game_over:GameOverStatus){
-        /*this.final_screen.set_final_screen(island_final)
-        await this.final_screen.show_final_screen()
-        await this.final_screen.show_status(game_over.status[0] as PlayerStatus)
-        if(game_over.leaderboards)await this.final_screen.show_leaderboards(game_over.leaderboards)
-        await this.final_screen.hide_final_screen()*/
     }
     close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
@@ -516,6 +507,7 @@ export class Game extends ClientGame<GameObject>{
             }else{
                 this.soft_close_game()
                 this.local_server.reset_level()
+                this.state=GameState.Playing
             }
         }else{
             this.close_game()
@@ -530,7 +522,6 @@ export class Game extends ClientGame<GameObject>{
         }
         if(this.state===GameState.Playing){
             this.ambient.update(dt)
-            this.dead_zone.tick(dt)
             this.ui.update(dt)
         }
 
@@ -582,7 +573,7 @@ export class Game extends ClientGame<GameObject>{
         this.ambient.reload()
     }
     process_general_update(up:GeneralUpdate){
-        if(up.deadzone)this.dead_zone.update_from_data(up.deadzone)
+        this.call_event("general_update",up)
         if(up.ambient){
             this.ambient.update_from_data(up.ambient)
             if(!this.match_started)this.ambient.date=up.ambient.date
@@ -596,8 +587,8 @@ export class Game extends ClientGame<GameObject>{
     }
     process_self_state(state:SelfStateUpdate){
         this.scope_zoom=state.scope_zoom
-        this.ui.update_self_state(state)
         this.inventory.update_self_state(state)
+        this.ui.update_self_state(state)
     }
     process_private(priv:PrivateUpdate){
         this.ui.proccess_private(priv)
@@ -687,7 +678,7 @@ export class Game extends ClientGame<GameObject>{
                 return
             }
             case "editor":{
-                await this.start_editor()
+                //await this.start_editor()
                 return
             }
         }

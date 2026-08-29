@@ -269,10 +269,8 @@ return (class extends LevelPlayerScript{
     on_spawn_player(player){
         player.set_preset(this.preset)
     }
-    async on_load(){
-        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
-    }
     async on_begin(){
+        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
         this.preset=await this.level.load_character({"path": "../../characters/nick.jsonc"})
     }
     async on_before(start_with_intro){

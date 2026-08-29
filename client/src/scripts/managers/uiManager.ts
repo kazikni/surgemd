@@ -10,12 +10,11 @@ import { GameObject } from "../others/gameObject.ts";
 import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
-import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { FeedMessage, FeedMessageLeader, FeedMessageType, GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, FeedMessageLeader, FeedMessageType, GeneralFullMainState, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";
@@ -129,11 +128,14 @@ export class UiManager{
         this.game.ui_manager.add(new AdditionalInfoModule())
         this.game.ui_manager.add(new GroupMembersModule())
     }
-    clear(){
+    clear_top_right(){
         this.content.feed.innerHTML=""
         this.content.leader_span.innerText=""
         this.leader=undefined
         this.content.help_gui.innerText=""
+    }
+    clear(){
+        this.clear_top_right()
 
         this.players_name={}
         this.group_members={}
@@ -387,16 +389,17 @@ export class UiManager{
         ShowElement(this.content.game_gui)
     }
     players_name:Record<number,{name:string,badge:string,full:string}>={}
-    proccess_joinned_packet(jp:JoinnedPacket){
-        for(const p of jp.players){
+    proccess_general_main_state(state:GeneralFullMainState){
+        this.clear_top_right()
+        for(const p of state.players){
             const badge_frame=this.game.resources.get_frame(p.badge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(p.badge).idString:"")
             const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
-        if(jp.leader){
+        if(state.leader){
             this.assign_leader({
                 type:FeedMessageType.leader_assigned,
-                player:jp.leader
+                player:state.leader
             })
         }
     }

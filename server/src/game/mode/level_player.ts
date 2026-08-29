@@ -110,6 +110,9 @@ export class LevelPlayer {
         return await this.script.on_load_character(base)
     }
     async begin(path:string){
+        this.game.players.connect_add_player=false
+        this.game.can_start=false
+        this.game.can_finish=false
         this.path=path
 
         this.def = parseJSONC(await this.fs.read_file("level.jsonc"))
@@ -119,10 +122,6 @@ export class LevelPlayer {
         Object.assign(this.game.start_settings.assets,this.def.assets?.assets??{})
         this.game.start_settings.languages_path=path+"/languages"
 
-        this.game.players.connect_add_player=false
-        this.game.can_start=false
-        this.game.can_finish=false
-
         await this.script.initialize_mode()
         await this.script.on_begin()
     
@@ -130,20 +129,11 @@ export class LevelPlayer {
 
         if(!this.game.running)this.game.mainloop()
     }
+
     async init(start_with_intro:boolean=true){
         this.game.clock.timeScale=0
-
-        /*this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:true})
-        await this.game.clients.wait("_end")*/
-
-        await this.script.on_load()
-
-        /*this.game.clients.send({type:OnlineMessageType.SetLoad,enabled:false})
-        await this.game.clients.wait("_end")*/
-
         await this.script.on_before(start_with_intro)
         this.game.clock.timeScale=1
-
         this.start()
     }
     save_checkpoint(){

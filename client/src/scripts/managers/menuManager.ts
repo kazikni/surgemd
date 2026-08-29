@@ -80,12 +80,16 @@ export class MenuManager{
     menu_time_timer:number=0
     menu_time_delay:number=30
 
-    loading_game = {
+    loading={
         enabled:false,
-        clicks:0,
-        score:0,
-        target_x:0,
-        target_y:0,
+        screens:[] as [string,string,Blob][],
+        game:{
+            enabled:false,
+            clicks:0,
+            score:0,
+            target_x:0,
+            target_y:0,
+        }
     }
 
     constructor(definitions:GameDefinition){
@@ -96,9 +100,6 @@ export class MenuManager{
 
         this.submenu_param=!!this.params
 
-        this.content.loading_screen.style.backgroundImage=`url("/assets/img/menu/background/${
-            random.choose(["normal_background","tundra_background_1"])
-        }.png")`
         this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
 
@@ -125,8 +126,8 @@ export class MenuManager{
             this.enable_loading_game()
         }
         this.content.loading_target.onclick=()=>{
-            this.loading_game.score++
-            this.content.loading_score.innerText = this.loading_game.score.toString()
+            this.loading.game.score++
+            this.content.loading_score.innerText = this.loading.game.score.toString()
             this.spawn_target()
         }
 
@@ -444,13 +445,19 @@ export class MenuManager{
     
     // Loading Screen
     show_loading_screen(){
-        this.loading_game.enabled=false
+        if(this.loading.enabled)return
+        this.loading.enabled=true
+        this.loading.game.enabled=false
+        this.loading.screens
         HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen,true)
         ShowElement(this.content.loading_screen_logo)
+        this.change_loading_screen()
     }
     hide_loading_screen(){
-        this.loading_game.enabled=false
+        if(!this.loading.enabled)return
+        this.loading.enabled=false
+        this.loading.game.enabled=false
         HideElement(this.content.loading_screen,true)
         HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen_logo)
@@ -458,8 +465,34 @@ export class MenuManager{
     set_loading_current(text="",unloading:boolean=false){
         this.content.loading_screen_current.innerHTML=`<p class="span-medium">${this.translation.get("menu.loading-screen."+(unloading?"unload":"load"),{text:text})}</p>`
     }
+
+    change_loading_screen(){
+        if(this.loading.screens.length === 0)return
+        const v=random.choose(this.loading.screens)
+        this.content.loading_screen.style.backgroundImage=`url(${v[0]})`
+    }
+    async preload_loading_screens(paths: string[]) {
+        for(const l of this.loading.screens){
+            URL.revokeObjectURL(l[0])
+        }
+        this.loading.screens.length=0
+        for(const path of paths){
+            try {
+                const response = await fetch(path)
+                if (!response.ok) {
+                    throw new Error(`${response.status} ${response.statusText}`)
+                }
+                const b=await response.blob()
+                const url=URL.createObjectURL(b)
+                this.loading.screens.push([url,path,b])
+            } catch (e) {
+                console.warn("Failed to preload loading screen:", path, e)
+                return undefined
+            }
+        }
+    }
     enable_loading_game(){
-        this.loading_game.enabled=true
+        this.loading.game.enabled=true
         ShowElement(document.querySelector("#loading-minigame") as HTMLDivElement,true)
         this.spawn_target()
     }

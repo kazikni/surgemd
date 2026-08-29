@@ -222,12 +222,14 @@ return (class extends LevelPlayerScript{
             if(!bot) continue
         }
     }
-    async on_before(){
+    async on_begin(){
+        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
+    }
+    async on_before(start_with_intro){
         const cutscene=[]
-        //if(start_with_intro)cutscene.push(...this.cutscene)
+        if(start_with_intro)cutscene.push(...this.cutscene)
         cutscene.push(...this.make_level_intro())
         await this.show_cutscene(cutscene)
-
         const characters=[
             await this.level.load_character({"path": "../../characters/mark.jsonc"}),
             await this.level.load_character({"path": "../../characters/maria.jsonc"})

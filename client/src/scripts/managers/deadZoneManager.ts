@@ -37,7 +37,7 @@ export class DeadZoneManager extends GComponent{
         this.ambience_sound=this.game.resources.get_sound("deadzone_ambience")
     }
     override on_tick(dt:number){
-        if(this.game.state===GameState.Playing&&this.hitbox.point_inside(this.game.scene_2d.camera.position)){
+        if(this.game.state!==GameState.Playing||this.hitbox.point_inside(this.game.scene_2d.camera.position)){
             if(this.ambience_controller.running){
                 this.deadzone_sound_offset=this.ambience_controller.offset
             }

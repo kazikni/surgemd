@@ -17,8 +17,7 @@ import { Obstacle } from "../objects/obstacle.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { Explosion } from "../objects/explosion.ts";
 import { Grenade } from "../objects/grenade.ts";
-import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
-import { GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { GeneralFullMainState, GeneralUpdate, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { GameOverScreenType } from "common/scripts/config/level_definition.ts";
 import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
@@ -48,6 +47,7 @@ import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
 import { Scene2D } from "./scene.ts";
+import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -203,7 +203,7 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right","left")
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
-            if(!this.can_act||this.state!==GameState.Playing)return
+            if(!this.can_act)return
             if(a.action==="movement"){
                 if(!this.can_act){
                     this.input.movement={dir:0,scale:0}
@@ -219,7 +219,7 @@ export class Game extends ClientGame<GameObject>{
             }
         })
         this.input_manager.listener.on(InputEventType.ActionDown,(a:InputActionEvent)=>{
-            if(!this.can_act||this.state!==GameState.Playing)return
+            if(!this.can_act||!(this.state===GameState.Playing))return
             switch(a.action){
                 case "fire":
                     if(a.element!==this.renderer.canvas)break
@@ -340,7 +340,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui_manager.signal("actiondown",a)
         })
         this.input_manager.listener.on(InputEventType.ActionUp,(a:InputActionEvent)=>{
-            if(!this.can_act||this.state!==GameState.Playing)return
+            if(!this.can_act)return
             switch(a.action){
                 case "fire":
                     this.input.use_weapon=false
@@ -472,6 +472,11 @@ export class Game extends ClientGame<GameObject>{
         this.scope_zoom=1
         this.hitboxes_gfx.ctx.clear()
         this.menu.hide_loading_screen()
+
+        if(this.offline){
+            this.ui.game_over_screen={type:GameOverScreenType.Restart}
+            this.local_server.init(this.start_with_intro)
+        }
     }
     close_game(hard:boolean=true){
         if(this.client&&this.client.opened)this.client.disconnect()
@@ -590,6 +595,10 @@ export class Game extends ClientGame<GameObject>{
         this.inventory.update_self_state(state)
         this.ui.update_self_state(state)
     }
+    proccess_general_main_state(state:GeneralFullMainState){
+        this.ntps=state.ntps
+        this.ui.proccess_general_main_state(state)
+    }
     process_private(priv:PrivateUpdate){
         this.ui.proccess_private(priv)
         if(priv.active_entity.dirty){
@@ -627,11 +636,6 @@ export class Game extends ClientGame<GameObject>{
         packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.get_variable("sv_loadout_wrapping_weapons"))?.idNumber??0
         packet.badge=this.definitions.badges.getFromStringSafe(this.save.get_variable("sv_loadout_badge"))?.idNumber??0
         this.client.emit_packet(packet)
-
-        if(this.offline){
-            this.ui.game_over_screen={type:GameOverScreenType.Restart}
-            this.local_server.init(this.start_with_intro)
-        }
     }
 
     play_game_hard(result:FindGameResult){
@@ -713,10 +717,8 @@ export class Game extends ClientGame<GameObject>{
             await this.start(s.settings)
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
-            this.ui.proccess_joinned_packet(jp)
-            this.ntps=jp.ntps
+            this.proccess_general_main_state(jp.main_state)
             this.state=GameState.Playing
-            this.menu.hide_loading_screen()
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.state=GameState.Gameover
@@ -726,6 +728,8 @@ export class Game extends ClientGame<GameObject>{
             if(this.state===GameState.Playing)this.close_game()
         })
         client.on("message",async(msg:OnlineMessage)=>{
+            const old_state=this.state
+            this.state=GameState.Cutscene
             switch(msg.type){
                 case OnlineMessageType.Cutscene:{
                     await this.menu.cutscene.play(msg.cutscene)
@@ -746,16 +750,8 @@ export class Game extends ClientGame<GameObject>{
                     client.emit("_end")
                     break
                 }
-                case OnlineMessageType.SetLoad:{
-                    if(msg.enabled){
-                        this.menu.show_loading_screen()
-                    }else{
-                        this.menu.hide_loading_screen()
-                    }
-                    client.emit("_end")
-                    break
-                }
             }
+            this.state=old_state
         })
     }
 }

@@ -1,6 +1,6 @@
 import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream, v2m } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
-import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { FeedMessageType, GeneralFullMainState, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { DamageSplash, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
@@ -8,11 +8,11 @@ import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
-import { JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { StartPacket} from "common/scripts/packets/start_packet.ts";
 import { HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { Human } from "../objects/human.ts";
+import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
@@ -50,9 +50,9 @@ export class PlayerClient extends PlayerConnManager{
         this.view_objects.length=0
     }
     override add_player(): Player | undefined {
-        const ret=super.add_player()
+        const p=super.add_player()
         this.view_objects.length=0
-        return ret
+        return p
     }
     get_update_packet():UpdatePacket{
         const up=new UpdatePacket()
@@ -118,6 +118,11 @@ export class PlayerClient extends PlayerConnManager{
         this.first_tick=false
         return up
     }
+    send_joinned(){
+        const jp=new JoinnedPacket()
+        jp.main_state=this.game.players.get_general_main_state()
+        this.client.emit_packet(jp)
+    }
     send_game_over(status:PlayerStatus[]=[],win:boolean=false,eliminated_by:number=0){
         if(!this.human||!(this.human instanceof Player))return
 
@@ -171,6 +176,7 @@ export class PlayersManager{
     constructor(game:Game){
         this.game=game
     }
+
     apply_score(type:ScoreApplyerType,amount:number){
         for(const p of this.living_players){
             p.apply_score(type,amount)
@@ -266,6 +272,29 @@ export class PlayersManager{
         up.objects=this.game.scene_2d.objects.encode_all_net(full,undefined,this.global_buffer_1)
         return up
     }
+    get_general_main_state(){
+        const ret:GeneralFullMainState={
+            date:this.game.ambient.date,
+            ntps:this.game.ntps,
+            leader:undefined,
+            players:[]
+        }
+        for(const lp of this.game.players.living_players){
+            ret.players.push({
+                id:lp.id,
+                name:lp.name,
+                badge:lp.visual.badge?.idNumber
+            })
+        }
+        const leader=this.game.modeManager.get_leader()
+        if(leader){
+            ret.leader={
+                id:leader.id,
+                kills:leader.status.kills,
+            }
+        }
+        return ret
+    }
     encode_frame(full:boolean){
         if(!this.global_buffer_2)this.global_buffer_2=new DynamicStream()
         this.global_buffer_2.clear()
@@ -329,30 +358,11 @@ export class PlayersManager{
             this.connected_players[client.ID].join_packet=packet
             this.game.modeManager.on_player_connect(this.connected_players[client.ID])
             this.game.signals.emit("player_connect",{client:client})
-            const p=this.connect_add_player?this.connected_players[client.ID].add_player():undefined
-            if(p!==undefined||!this.connect_add_player){
-                const jp=new JoinnedPacket()
-                jp.ntps=this.game.ntps
-                for(const lp of this.living_players){
-                    if(p&&lp.id===p.id)continue
-                    jp.players.push({
-                        id:lp.id,
-                        name:lp.name,
-                        badge:lp.visual.badge?.idNumber
-                    })
-                }
-                jp.date=this.game.ambient.date
-                const leader=this.game.modeManager.get_leader()
-                if(leader){
-                    jp.leader={
-                        id:leader.id,
-                        kills:leader.status.kills,
-                    }
-                }
-                this.game.modeManager.manage_joinned_packet(jp)
-                client.emit_packet(jp)
+            if(this.connect_add_player){
+                const p=this.connected_players[client.ID].add_player()
                 if(p)console.log(`${p.name} Join`)
             }
+            this.connected_players[client.ID].send_joinned()
         })
         client.on("input",(p:InputPacket)=>{
             if(!this.connected_players[client.ID])return

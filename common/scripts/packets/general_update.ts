@@ -1,6 +1,12 @@
 import { KDate, Stream, Packet, Vec2 } from "../../engine/core.ts";
 import { DamageReason, PacketType } from "../definitions/utils.ts";
 
+export interface GeneralFullMainState{
+    players:{id:number,name:string,badge?:number}[]
+    leader?:{id:number,kills:number}
+    ntps:number
+    date:KDate
+}
 export enum DeadZoneState{
     Deenabled,
     Advancing,
@@ -36,6 +42,7 @@ export interface GeneralUpdate{
     feed:FeedMessage[]
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
+    main_state?:GeneralFullMainState
     map_zones:MapZone[]
 }
 export interface MakeDeadZoneSettings{
@@ -164,6 +171,43 @@ function decode_feed_message(stream:Stream):FeedMessage{
     }
     return msg as unknown as FeedMessage
 }
+
+export function encode_general_main_state(stream:Stream,s:GeneralFullMainState){
+    stream.write_boolean_group(s.leader!==undefined)
+    stream.write_uint8(s.ntps)
+    if(s.leader){
+        stream.write_id(s.leader.id)
+        stream.write_uint8(s.leader.kills)
+    }
+    stream.write_array(s.players,(e)=>{
+        stream.write_uint16((e.badge??-1)+1)
+        stream.write_string_sized(e.name,28)
+        stream.write_id(e.id)
+    },1)
+    stream.write_kdate(s.date)
+}
+export function decode_general_main_state(stream:Stream):GeneralFullMainState{
+    const s={
+    } as GeneralFullMainState
+    const [leader]=stream.read_boolean_group()
+    s.ntps=stream.read_uint8()
+    if(leader){
+        s.leader={
+            id:stream.read_id(),
+            kills:stream.read_uint8()
+        }
+    }
+    s.players=stream.read_array((_e)=>{
+        const b=stream.read_uint16()
+        return {
+            name:stream.read_string_sized(28),
+            id:stream.read_id(),
+            badge:b===0?undefined:b-1
+        }
+    },1)
+    s.date=stream.read_kdate()
+    return s
+}
 function encode_general_update(stream:Stream,up:GeneralUpdate){
     stream.write_boolean_group(
         up.started,
@@ -171,6 +215,7 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
         up.leader_enabled,
         up.deadzone!==undefined,
         up.ambient!==undefined,
+        up.main_state!==undefined
     )
 
     stream.write_array(up.feed,(msg)=>encode_feed_message(msg,stream))
@@ -198,6 +243,7 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
         .write_float32(i.radius)
         if(i.id!==undefined)stream.write_id(i.id)
     },1)
+    if(up.main_state)encode_general_main_state(stream,up.main_state)
 }
 function decode_general_update(stream:Stream,up:GeneralUpdate){
     const [
@@ -205,7 +251,8 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
         feed_enabled,
         leader_enabled,
         deadzone,
-        ambient
+        ambient,
+        main_state
     ]=stream.read_boolean_group()
     up.started=started
     up.feed_enabled=feed_enabled
@@ -248,6 +295,8 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
         if(id)ret.id=stream.read_id()
         return ret
     },1)
+    up.main_state=undefined
+    if(main_state)up.main_state=decode_general_main_state(stream)
 }
 
 export class GeneralUpdatePacket extends Packet{

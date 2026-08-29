@@ -2,7 +2,6 @@ import { type Game } from "../others/game.ts";
 import { Client, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
-import { type JoinnedPacket } from "common/scripts/packets/joinned_packet.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
@@ -274,8 +273,6 @@ export abstract class ModeManager{
         return v2.zero()
     }
 
-    manage_joinned_packet(jp:JoinnedPacket){
-    }
     manage_general_packet(g:GeneralUpdatePacket){
         g.content.feed_enabled=this.rules.feed.enabled
         g.content.leader_enabled=this.rules.leader.enabled

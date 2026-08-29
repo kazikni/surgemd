@@ -25,6 +25,7 @@ export enum GameState{
     Idle=0,
     Playing,
     Cutscene,
+    Loading,
     Joining,
     Gameover
 }

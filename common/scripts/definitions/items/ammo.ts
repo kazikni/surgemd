@@ -98,9 +98,9 @@ export function Ammos_Default_Init():AmmoDef[]{
 
         //Exotic
         {
-            idString:"p99",
-            name:"P-99",
-            ammoType:"p99",
+            idString:"p61",
+            name:"P-61",
+            ammoType:"p61",
             description:true,
             defaultTrail:0x555555,
             strongTrail:[0x654747,0x653339],
@@ -108,9 +108,9 @@ export function Ammos_Default_Init():AmmoDef[]{
             rank:ItemRank.B
         },
         {
-            idString:"p51",
-            name:"P-51",
-            ammoType:"p51",
+            idString:"p85",
+            name:"P-85",
+            ammoType:"p85",
             description:true,
             defaultTrail:0x222835,
             strongTrail:[0x0c1420,0x050d1a],

@@ -1,18 +1,17 @@
-import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, Sound, SoundController, Tween } from "common/engine/web.ts";
+import { ABParticle2D, ClientParticle2D, Lights2D, RainParticle2D, SoundController, Tween } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { type Game } from "../others/game.ts";
-import { AmbientData } from "common/scripts/packets/general_update.ts";
+import { GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { CircleHitbox2D, ColorM, ease, KDate, matrix4, ParticlesEmitter2D, random, v2 } from "common/engine/core.ts";
 import { GameState } from "../others/constants.ts";
+import { GComponent } from "../others/component.ts";
 
-export class AmbientManager{
-    game:Game
-    rain_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
-    ambient_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
-    snow_particles_emitter:ParticlesEmitter2D<ClientParticle2D>
+export class AmbientManager extends GComponent{
+    rain_particles_emitter!:ParticlesEmitter2D<ClientParticle2D>
+    ambient_particles_emitter!:ParticlesEmitter2D<ClientParticle2D>
+    snow_particles_emitter!:ParticlesEmitter2D<ClientParticle2D>
 
-    music:SoundController
-    ambience:SoundController
+    music!:SoundController
+    ambience!:SoundController
 
     fog_color:number=0
     fog_saturate:number=1
@@ -45,7 +44,6 @@ export class AmbientManager{
         year:0
     }
 
-    bullet_whiz_hitbox?:CircleHitbox2D
     last_music_pos:number=0
 
     finding_music:boolean=true
@@ -54,48 +52,67 @@ export class AmbientManager{
     thunders:number=0
     rain_value:number=0
 
-    constructor(game:Game){
-        this.game=game
+    override on_bind(): void {
+        this.music=this.game.sounds.create_controller("music")
+        this.ambience=this.game.sounds.create_controller("ambience")
+
+        this.game.sounds.signals.on("unlock",async()=>{
+            await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1})
+
+            const video = document.getElementById("intro-video") as HTMLVideoElement
+            const menu_music=this.game.resources.get_sound(`menu_music`)
+            if(this.game.state===GameState.Idle)this.music.set(menu_music)
+            if(this.game.menu.intro_fineshed){
+                this.music.set(menu_music,{
+                    loop:true
+                })
+            }else{
+                video.addEventListener("ended",()=>{
+                    this.music.set(menu_music)
+                })
+            }
+        })
+        
         this.rain_particles_emitter=this.game.scene_2d.particles.add_emiter({
-                delay:0,
-                limit:100,
-                particle:()=>{
-                    const speed=random.float(25,30)
-                    const radius = Math.max(this.game.scene_2d.camera.width, this.game.scene_2d.camera.height) * random.float(0.9,1.1)
-                    const ang = random.rad()
+            delay:0,
+            limit:100,
+            particle:()=>{
+                const speed=random.float(25,30)
+                const radius = Math.max(this.game.scene_2d.camera.width, this.game.scene_2d.camera.height) * random.float(0.9,1.1)
+                const ang = random.rad()
 
-                    const spawn = v2.add(this.game.scene_2d.camera.position, v2.from_RadAngle(ang,radius))
+                const spawn = v2.add(this.game.scene_2d.camera.position, v2.from_RadAngle(ang,radius))
 
-                    const dirVec = v2.sub(this.game.scene_2d.camera.position, spawn)
-                    const dir = Math.atan2(dirVec.y, dirVec.x)
+                const dirVec = v2.sub(this.game.scene_2d.camera.position, spawn)
+                const dir = Math.atan2(dirVec.y, dirVec.x)
 
-                    const dist = v2.len(dirVec)*random.float(0.13,0.95)
-                    const lifetime = dist / speed
+                const dist = v2.len(dirVec)*random.float(0.13,0.95)
+                const lifetime = dist / speed
 
-                    return new RainParticle2D({
-                        frame:{
-                            main:{ image:"raindrop_1",layer:this.game.scene_2d.camera.layer,scale:random.float(0.4,0.7), },
-                            wave:{ image:"raindrop_2" },
-                        },
-                        zindex:{
-                            main:zIndexes.Rain1,
-                            wave:zIndexes.Rain2,
-                        },
-                        position: spawn,
-                        rotation: dir,
-                        speed,
-                        lifetime:lifetime,
-                        decay_time:10,
-                        on_tick:(o:RainParticle2D,dt:number)=>{
-                            if(o.stage===0){
-                                if(!o.sprite.matrix)o.sprite.matrix=matrix4.identity()
-                                this.game.scene_2d.camera.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
-                            }else{
-                                o.sprite.matrix=undefined
-                            }
+                return new RainParticle2D({
+                    frame:{
+                        main:{ image:"raindrop_1",layer:this.game.scene_2d.camera.layer,scale:random.float(0.4,0.7), },
+                        wave:{ image:"raindrop_2" },
+                    },
+                    zindex:{
+                        main:zIndexes.Rain1,
+                        wave:zIndexes.Rain2,
+                    },
+                    position: spawn,
+                    rotation: dir,
+                    speed,
+                    lifetime:lifetime,
+                    decay_time:10,
+                    on_tick:(o:RainParticle2D,dt:number)=>{
+                        if(o.stage===0){
+                            if(!o.sprite.matrix)o.sprite.matrix=matrix4.identity()
+                            this.game.scene_2d.camera.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
+                        }else{
+                            o.sprite.matrix=undefined
                         }
-                    })
-                },
+                    }
+                })
+            },
             enabled:false
         })
         this.ambient_particles_emitter=this.game.scene_2d.particles.add_emiter({
@@ -158,35 +175,53 @@ export class AmbientManager{
             },
             enabled:false
         })
-        //this.game.sounds.init_html_sound_bindings("ui",this.game.resources)
-
-        this.music=this.game.sounds.create_controller("music")
-        this.ambience=this.game.sounds.create_controller("ambience")
 
         this.music.volume=0.4
+    }
 
-        this.game.sounds.signals.on("unlock",async()=>{
-            await this.game.resources.load_sound("menu_music",{src:`/assets/sounds/musics/menu_music.mp3`,volume:1})
+    override on_tick(dt: number): void {
+        if(this.game.state!==GameState.Playing)return
 
-            const video = document.getElementById("intro-video") as HTMLVideoElement
-            const menu_music=this.game.resources.get_sound(`menu_music`)
-            if(this.game.state===GameState.Idle)this.music.set(menu_music)
-            if(this.game.menu.intro_fineshed){
-                this.music.set(menu_music,{
-                    loop:true
-                })
-            }else{
-                video.addEventListener("ended",()=>{
-                    this.music.set(menu_music)
-                })
+        if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.scene_2d.camera.zoom
+        else this.rain_particles_emitter.limit=0
+
+        if(this.game.match_started)this.date.second+=dt
+        if(this.date.second>=1){
+            this.date.second=0
+            this.date.minute++
+            if(this.date.minute>=60){
+                this.date.minute=0
+                this.date.hour+=1
             }
-        })
+            if(this.thunders>0&&this.rain_value){
+                if(Math.random()<=this.thunders*0.5){
+                    this.bolt()
+                }
+            }
+            if(!this.finalization&&!this.music.running&&this.musics.length>0){
+                if(Math.random()<=0.009){
+                    if(this.finding_music&&this.game.save.get_variable("sv_sounds_gameplay_music")){
+                        const music=random.choose(this.musics)
+                        this.game.resources.unload_sound("gameplay_music")
+                        this.game.resources.load_sound("gameplay_music",{
+                            src:music,
+                            volume:1
+                        }).then((v)=>{
+                            if(this.finalization){
+                                this.game.resources.unload_sound("gameplay_music")
+                                return
+                            }
+                            this.music.set(v)
+                            this.finding_music=true
+                        })
+                        this.finding_music=false
+                    }
+                }
+            }
 
-        /*this.light_map.zIndex=zIndexes.Lights
-        this.light_map.layer=1000
-        this.light_map.ambient = 0
-        this.light_map.quality=2
-        this.game.scene_2d.camera.add_object(this.light_map)*/
+            this.game.device.update_header(this.date)
+            this.update_day_light()
+        }
     }
     on_game_close(){
         this.music.set(this.game.resources.get_sound("menu_music"),{
@@ -205,6 +240,15 @@ export class AmbientManager{
         this.ambience.set(undefined)
         this.reload()
     }
+    override on_general_update(data:GeneralUpdate){
+        if(data.ambient){
+            if(data.ambient.rain!==this.rain_value||data.ambient.thunder_storm!==this.thunders){
+                this.set_rain_state(data.ambient.rain,data.ambient.thunder_storm)
+            }
+            if(!this.game.match_started)this.date=data.ambient.date
+        }
+    }
+
     clear(){
         this.music.set(undefined)
         this.ambience.set(undefined)
@@ -280,64 +324,6 @@ export class AmbientManager{
         this.set_rain_state(0,0)
     }
     end_game=false
-    update_camera(){
-        if(!this.game.active_entity)return
-        this.bullet_whiz_hitbox=new CircleHitbox2D(this.game.active_entity!.position,(this.game.active_entity!.base_hitbox as CircleHitbox2D).radius*7)
-        if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.scene_2d.camera.zoom
-        else this.rain_particles_emitter.limit=0
-    }
-    render(){
-    }
-    update(dt:number){
-        if(this.game.match_started)this.date.second+=dt
-        if(this.date.second>=1){
-            this.date.second=0
-            this.date.minute++
-            if(this.date.minute>=60){
-                this.date.minute=0
-                this.date.hour+=1
-            }
-            
-            if(this.thunders>0&&this.rain_value){
-                if(Math.random()<=this.thunders*0.5){
-                    this.bolt()
-                }
-            }
-
-            if(this.game.state===GameState.Playing&&!this.finalization&&!this.music.running&&this.musics.length>0){
-                if(Math.random()<=0.009){
-                    if(this.finding_music&&this.game.save.get_variable("sv_sounds_gameplay_music")){
-                        const music=random.choose(this.musics)
-                        this.game.resources.unload_sound("gameplay_music")
-                        this.game.resources.load_sound("gameplay_music",{
-                            src:music,
-                            volume:1
-                        }).then((v)=>{
-                            if(this.finalization){
-                                this.game.resources.unload_sound("gameplay_music")
-                                return
-                            }
-                            this.music.set(v)
-                            this.finding_music=true
-                        })
-                        this.finding_music=false
-                    }
-                }
-            }
-
-            this.game.device.update_header(this.date)
-            this.update_day_light()
-        }
-
-        /*if(this.game.living_count&&this.game.living_count[0]<=2){
-            this.grand_finale()
-        }*/
-    }
-    update_from_data(data:AmbientData){
-        if(data.rain!==this.rain_value||data.thunder_storm!==this.thunders){
-            this.set_rain_state(data.rain,data.thunder_storm)
-        }
-    }
     bolt_tween?:Tween<Lights2D>
     bolt(){
         if(this.bolt_tween){

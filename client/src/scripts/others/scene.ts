@@ -11,6 +11,7 @@ export class Scene2D extends ClientGameScene2D<GameObject>{
     }
     override update(dt:number, net_update?: boolean, destroy_queue?: boolean){
         super.update(dt,net_update,destroy_queue)
+
         if(this.objects_process_queue.length){
             for(const s of this.objects_process_queue){
                 this.objects.proccess_net(s,true)

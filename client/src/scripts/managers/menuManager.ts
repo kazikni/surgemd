@@ -81,7 +81,7 @@ export class MenuManager{
     menu_time_delay:number=30
 
     loading={
-        enabled:false,
+        enabled:true,
         screens:[] as [string,string,Blob][],
         game:{
             enabled:false,
@@ -100,7 +100,6 @@ export class MenuManager{
 
         this.submenu_param=!!this.params
 
-        this.content.loading_screen.style.opacity="0"
         this.set_loading_current=this.set_loading_current.bind(this)
 
         this.content.main_social.innerHTML=`
@@ -448,7 +447,6 @@ export class MenuManager{
         if(this.loading.enabled)return
         this.loading.enabled=true
         this.loading.game.enabled=false
-        this.loading.screens
         HideElement(this.content.loading_minigame)
         ShowElement(this.content.loading_screen,true)
         ShowElement(this.content.loading_screen_logo)

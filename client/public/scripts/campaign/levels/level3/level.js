@@ -52,7 +52,7 @@ return (class extends LevelPlayerScript{
                     "l19":400,
                     "l15":400,
                     "c22":320,
-                    "p51":40
+                    "p85":40
                 },
                 "iitems": [
                     "scope_2",

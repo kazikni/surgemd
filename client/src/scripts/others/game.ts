@@ -159,7 +159,7 @@ export class Game extends ClientGame<GameObject>{
 
         this.inventory=new GInventory(this.definitions)
         this.dead_zone=this.add_component(new DeadZoneManager()) as DeadZoneManager
-        this.ambient=new AmbientManager(this)
+        this.ambient=this.add_component(new AmbientManager()) as AmbientManager
         this.device=new GameDeviceManager(this)
         this.minimap=new MinimapManager(this)
 
@@ -461,7 +461,7 @@ export class Game extends ClientGame<GameObject>{
             this.minimap.init(map)
         }
 
-        this.ambient.on_game_start()
+        this.call_event("game_start",settings)
 
         this.ui.game_over_screen={
             type:GameOverScreenType.Normal
@@ -487,7 +487,7 @@ export class Game extends ClientGame<GameObject>{
         this.state=GameState.Idle
         this.match_started=false
         this.menu.game_end()
-        this.ambient.on_game_close()
+        this.call_event("game_close")
         this.client=undefined
         this.cam_type=0
         this.language.clear("ingame")
@@ -526,7 +526,6 @@ export class Game extends ClientGame<GameObject>{
             this.global_interpolation=1
         }
         if(this.state===GameState.Playing){
-            this.ambient.update(dt)
             this.ui.update(dt)
         }
 
@@ -555,7 +554,6 @@ export class Game extends ClientGame<GameObject>{
         }
         this.scene_2d.set_camera_position(this.scene_2d.camera.position)
         this.terrain.tick()
-        this.ambient.update_camera()
         if(this.client&&this.client.opened){
             this.input.auto_fire=this.ui.mobile_enabled
             this.client.emit_packet(this.input)
@@ -569,20 +567,8 @@ export class Game extends ClientGame<GameObject>{
         this.input.swamp_guns=false
         this.input.actions.length=0
     }
-    override on_render(_dt: number): void {
-        this.ambient.render()
-    }
-    async game_over_messages(text:string[],music:Sound,time_per_message?:number,opacity_anim?:number):Promise<void>{
-        this.ambient.ambience.set(undefined)
-        await this.menu.game_over_messages(text,music,this.ambient.music,time_per_message,opacity_anim)
-        this.ambient.reload()
-    }
     process_general_update(up:GeneralUpdate){
         this.call_event("general_update",up)
-        if(up.ambient){
-            this.ambient.update_from_data(up.ambient)
-            if(!this.match_started)this.ambient.date=up.ambient.date
-        }
         if(up.started&&!this.match_started){
             this.match_started=true
         }else if(!up.started){

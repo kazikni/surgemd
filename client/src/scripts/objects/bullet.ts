@@ -103,7 +103,8 @@ export class Bullet extends GameObject{
 
             // Bullet Whiz Sound
             if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&!this.hit_owner)){
-                if(this.game.ambient.bullet_whiz_hitbox&&this.game.ambient.bullet_whiz_hitbox.colliding_with(this.hitbox)){
+                const dist=v2.distance(this.position,this.game.scene_2d.camera.position)
+                if(dist<7){
                     this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
                         max_distance: 7,

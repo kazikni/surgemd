@@ -104,7 +104,7 @@ export class CounterMD extends ModeManager {
                 {id:"c51",count:30,cost:50},
                 {id:"c45",count:30,cost:50},
                 {id:"p76",count:10,cost:70},
-                {id:"p51",count:5,cost:250},
+                {id:"p85",count:5,cost:250},
 
                 {id:"m9",cost:60},
                 {id:"pfeifer_zeliska",cost:3000},

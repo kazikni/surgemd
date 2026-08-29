@@ -59,13 +59,16 @@ import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, rand
                 if(p.Name==="update")(p as UpdatePacket).definition=this.definitions
             }
             const menu_manager=new MenuManager(this.definitions)
-            menu_manager.show_loading_screen()
             this.menu_manager=menu_manager
 
             this.game=new Game(this.definitions,menu_manager,canvas,new TranslationManager())
         }
         async init(){
-            await this.menu_manager.preload_loading_screens(["/assets/img/menu/background/normal_background.png","/assets/img/menu/background/tundra_background.png"])
+            await this.menu_manager.preload_loading_screens([
+                "/assets/img/menu/loading_screens/normal.png",
+                "/assets/img/menu/loading_screens/tundra.png",
+                "/assets/img/menu/loading_screens/guns.svg",
+            ])
             this.menu_manager.change_loading_screen()
             this.menu_manager.play_callback=this.game.play_game.bind(this.game)
             this.menu_manager.play_callback_hard=this.game.play_game_hard.bind(this.game)

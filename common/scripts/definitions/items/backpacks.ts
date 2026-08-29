@@ -40,8 +40,8 @@ export function Backpacks_Default_Init():BackpackDef[]{
                 "c22":80,
                 "l15":150,
 
-                "p99":40,
-                "p51":15,
+                "p61":40,
+                "p85":15,
                 "explosive_ammo":5,
                 "gasoline":5,
 
@@ -90,8 +90,8 @@ export function Backpacks_Default_Init():BackpackDef[]{
                 "c22":160,
                 "l15":300,
 
-                "p99":80,
-                "p51":30,
+                "p61":80,
+                "p85":30,
                 "explosive_ammo":10,
                 "gasoline":10,
             },
@@ -109,8 +109,8 @@ export function Backpacks_Default_Init():BackpackDef[]{
                 "c22":240,
                 "l15":450,
 
-                "p51":45,
-                "p99":120,
+                "p85":45,
+                "p61":120,
                 "explosive_ammo":15,
                 "gasoline":15,
             },
@@ -129,8 +129,8 @@ export function Backpacks_Default_Init():BackpackDef[]{
                 "c22":320,
                 "l15":600,
 
-                "p51":60,
-                "p99":160,
+                "p85":60,
+                "p61":160,
                 "explosive_ammo":20,
                 "gasoline":20,
             },

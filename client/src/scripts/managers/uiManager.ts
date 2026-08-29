@@ -46,7 +46,7 @@ export class UiManager{
 
         normal_gameOver:document.querySelector("#normal-gameover-container") as HTMLDivElement,
         restart_gameOver:document.querySelector("#restart-gameover-container") as HTMLDivElement,
-        
+
         gameover_status_container:document.querySelector("#gameover-status-container") as HTMLDivElement,
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
@@ -776,8 +776,7 @@ export class UiManager{
             ShowElement(this.content.normal_gameOver)
             this.content.normal_gameOver.style.opacity="1"
         }else{
-            this.game.ambient.last_music_pos=this.game.ambient.music.offset
-            this.game.ambient.music.set(null)
+            this.game.ambient.clear()
                 this.game.sounds.play(this.game.resources.get_sound("ui_death"),{
                     bus:"ui"
                 })

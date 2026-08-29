@@ -599,7 +599,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0xb7c1c3
             }
         }),
-        guns_factory.pistol("desert_eagle","p99",{
+        guns_factory.pistol("desert_eagle","p61",{
             name:"Desert-Eagle",
             fire_delay:0.3,
             fire_mode:FireMode.Single,
@@ -647,7 +647,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0xd8b818
             }
         }),
-        guns_factory.pistol("pfeifer_zeliska","p51",{
+        guns_factory.pistol("pfeifer_zeliska","p85",{
             name:"Pfeifer-Zeliska",
             rank:ItemRank.S,
 
@@ -723,7 +723,7 @@ export function Guns_Default_Init():GunDef[]{
             fire_sequence:{
                 decay:0.56,
                 increse:0.06,
-                spread:{begin:0.2}
+                spread:{begin:0.3}
             },
 
             bullet:{
@@ -1032,7 +1032,7 @@ export function Guns_Default_Init():GunDef[]{
                 world_tint:0x040c29
             }
         }),
-        guns_factory.sniper("awm","p51",{
+        guns_factory.sniper("awm","p85",{
             name:"AWM",
             rank:ItemRank.S,
 
@@ -1233,7 +1233,12 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.dmr("vss","l19",{
             name:"VSS Vintorez",
             fire_delay:0.15,
-            spread:3,
+            spread:6,
+            fire_sequence:{
+                spread:{begin:0.25},
+                increse:0.07,
+                decay:0.6
+            },
 
             ammo_spawn:{
                 amount:80
@@ -1266,7 +1271,12 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.dmr("rifle_cbc","l15",{
             name:"Rifle-CBC",
             fire_delay:0.14,
-            spread:4.5,
+            spread:3,
+            fire_sequence:{
+                spread:{begin:0.5},
+                increse:0.14,
+                decay:0.6
+            },
 
             ammo_spawn:{
                 amount:60

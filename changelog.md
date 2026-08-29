@@ -5,7 +5,7 @@ __                                                                              
 
 __                                                                                                                 __
 ### Menu
-
+* New Loading Screen
 __                                                                                                                 __
 ### Items
 * Guns Fire Sequence Spread

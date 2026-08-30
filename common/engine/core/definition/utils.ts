@@ -1,5 +1,10 @@
 import { Random1 } from "../math/random.ts";
 
+export interface CutsceneAnimation{
+    duration:number
+    frames:any[]
+    ease?:string
+}
 export interface FontStyleFull{
     font:string
     color:string
@@ -8,6 +13,9 @@ export interface FontStyleFull{
 
     css:string
     class_name:string
+
+    appear_animation?:CutsceneAnimation
+    disappear_animation?:CutsceneAnimation
 }
 export const null_font_style_full={
     font:"",
@@ -19,6 +27,15 @@ export type FontStyle=Partial<FontStyleFull>
 export enum BackgroundELayerType{
     Tile,
     Static,
+}
+export enum BackgroundTransitionType {
+    None,
+    Fade,
+    CrossFade,
+}
+export type BackgroundTransition={
+    type:BackgroundTransitionType
+    duration?:number
 }
 export type BackgroundELayer={
     css?:string
@@ -44,6 +61,7 @@ export interface BackgroundETheme{
 }
 export interface BackgroundEDef{
     theme:BackgroundETheme
+    inner_html?:string
     layers:BackgroundELayer[]
 }
 
@@ -82,6 +100,7 @@ export type CutsceneCommand={
     type:CutsceneCommandType.SetBackground
     background?:BackgroundEDef
     timescale?:number
+    transition?: BackgroundTransition
 }|{
     type:CutsceneCommandType.SetSoundController
     controller:string

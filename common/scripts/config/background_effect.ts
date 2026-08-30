@@ -210,7 +210,119 @@ backdrop-filter: blur(7px) brightness(.75) saturate(80%);`,childs:[
             css:"opacity:0.5;filter: brightness(0.2) contrast(1.2) sepia(1) hue-rotate(180deg) saturate(6);"
         },
         layers:[]
-    }
+    },
+    smoke: {
+        theme: {
+            css: `
+                background: #050008;
+
+                overflow: hidden;
+
+                --smoke-color-1: #ff174f99;
+                --smoke-color-2: #7700ff99;
+                --smoke-color-3: #006cff99;
+                --smoke-color-4: #00ffff99;
+                --smoke-color-5: #48ff0099;
+                --smoke-color-6: #a6ff0099;
+                --smoke-color-7: #ffd90099;
+                --smoke-color-8: #ff7b0099;
+
+                --current-smoke-a: var(--smoke-color-1);
+                --current-smoke-b: var(--smoke-color-2);
+
+                animation: smoke-color-a 30s linear infinite alternate, smoke-color-b 30s linear infinite alternate;
+            `
+        },
+        inner_html: `
+            <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+                <filter id="distort" x="-20%" y="-20%" width="140%" height="140%">
+                    <feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="3" seed="7" result="noise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="130" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </svg>
+        `,
+        layers: [
+            {
+
+                type: BackgroundELayerType.Static,
+                css: `
+                    position: absolute;
+                    inset: -15%;
+                    width: 130%;
+                    height: 130%;
+                    filter: url(#distort);
+                    transform-origin: center;
+                    animation: smoke-distort 20s ease-in-out infinite alternate;
+                `,
+
+                childs: [
+                    {
+
+                        type: BackgroundELayerType.Static,
+                        css: `
+                            position: absolute;
+                            width: 170vw;
+                            height: 170vh;
+                            left: -35vw;
+                            top: -35vh;
+                            border-radius: 50%;
+
+                            background: radial-gradient(ellipse 42% 55% at 20% 30%, var(--current-smoke-a) 0%,var(--current-smoke-a) 18%, transparent 70%), radial-gradient(ellipse 50% 48% at 78% 72%,var(--current-smoke-a) 0%,transparent 72%);
+
+                            mix-blend-mode: screen;
+
+                            filter: blur(55px) saturate(1.25);
+                            transform-origin: center;
+
+                            animation:smoke-move-1 20s ease-in-out infinite alternate;
+                        `
+                    },
+                    {
+
+                        type: BackgroundELayerType.Static,
+                        css: `
+                            position: absolute;
+                            width: 185vw;
+                            height: 185vh;
+                            left: -42vw;
+                            top: -42vh;
+                            border-radius: 50%;
+
+                            background:radial-gradient( ellipse 50% 55% at 76% 20%, var(--current-smoke-b) 0%, var(--current-smoke-b) 18%, transparent 69%), radial-gradient(ellipse 45% 55%at 25% 82%,var(--current-smoke-b) 0%,transparent 72%);
+
+                            mix-blend-mode: screen;
+
+                            filter: blur(55px) saturate(1.25);
+                            transform-origin: center;
+                            animation:smoke-move-2 25s ease-in-out infinite alternate;
+                        `
+                    },
+                    {
+                        type: BackgroundELayerType.Static,
+                        css: `
+                            position: absolute;
+                            width: 210vw;
+                            height: 210vh;
+                            left: -55vw;
+                            top: -55vh;
+                            border-radius: 50%;
+
+                            background:radial-gradient(ellipse 42% 50%at 50% 50%,var(--current-smoke-a) 0%,transparent 70%);
+                            opacity: 0.5;
+
+                            mix-blend-mode: screen;
+
+                            filter: blur(110px) saturate(1.2);
+
+                            animation: smoke-soft 60s ease-in-out infinite alternate;
+                        `
+                    }
+                ]
+            }
+
+        ]
+
+    },
 } satisfies Record<string,BackgroundEDef>
 export const default_cutscene_theme: CutsceneTheme = {
     text:{
@@ -243,7 +355,36 @@ export const default_cutscene_theme: CutsceneTheme = {
             font:"Russo-One",
             size:"3vw",
             css:"letter-spacing: 1px;"
-        }
+        },
+
+        credits_role: {
+            font: "Russo-One",
+            color: "#2d17a2",
+            size: "4vh",
+            typewriter:{delay:{min:40,max:200}},
+            css:`
+                text-align: center;
+                text-shadow: 1.5px 1.5px 0 #5a2ce6, 3px 3px 0 #5419d0;
+
+                filter: drop-shadow(0 0 12px rgba(84, 25, 208, 0.65)) drop-shadow(0 0 35px rgba(84, 25, 208, 0.35));
+
+                //animation: TitleAnimation 30s infinite ease-in-out alternate;
+            `
+        },
+        credits: {
+            font: "Russo-One",
+            color: "#cfd6eb",
+            size: "8vh",
+            weight: "bold",
+            typewriter:{delay:{min:40,max:200}},
+            css: `
+                text-align: center;
+                line-height: 1.05;
+                text-shadow: 3px 3px 0 #aac0f2, 6px 6px 0 #7691eb;
+
+                filter: drop-shadow(0 0 10px rgba(118, 145, 235, 0.7)) drop-shadow(0 0 30px rgba(118, 145, 235, 0.4));
+            `
+        },
     },
     dialog:{
         background:"linear-gradient(135deg,rgba(7, 170, 238, 0.08),rgba(7, 170, 238, 0.18))",

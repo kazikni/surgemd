@@ -335,10 +335,6 @@ export class MenuManager{
         this.cutscene=new CutsceneManager(resources,sounds,input,transition)
         this.cutscene.initialize(this.content.history_overlay)
         this.cutscene.default_theme=default_cutscene_theme
-        this.cutscene.controllers={
-            music:music!,
-            ambience:ambient!
-        }
     }
     async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
         await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)
@@ -677,19 +673,6 @@ export class MenuManager{
 
     interval?:any
     update(){
-        /*this.menu_time_timer-=1
-        if(this.menu_time_timer<=0){
-            this.menu_time_timer+=this.menu_time_delay
-            if(this.menu_time_state===0){
-                this.content.menu_background_day.style.opacity="0"
-                this.content.menu_background_night.style.opacity="1"
-                this.menu_time_state=0
-            }else{
-                this.content.menu_background_day.style.opacity="1"
-                this.content.menu_background_night.style.opacity="0"
-                this.menu_time_state=0
-            }
-        }*/
     }
     game_start(){
         ShowElement(this.content.gameD)

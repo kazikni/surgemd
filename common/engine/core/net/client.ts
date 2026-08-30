@@ -109,7 +109,7 @@ export class Client{
     }
     private stream_cache:Stream=new DynamicStream(200)
 
-    emit(signal:string,msg?:any,bytes1:number=1,bytes2:number=2){
+    emit(signal:string,msg?:any,bytes1:number=4,bytes2:number=4){
         const p=new SignalMessagePacket()
         p.signal=signal
         p.msg=msg
@@ -175,7 +175,7 @@ export class Client{
         //this._send(stream.data.slice())
         this._send(stream.data.slice(0, stream.length))
     }
-    send(msg:any,bytes1:number=1,bytes2:number=2){
+    send(msg:any,bytes1:number=4,bytes2:number=4){
         const p=new MessagePacket()
         p.msg=msg
         p.bytes1=bytes1

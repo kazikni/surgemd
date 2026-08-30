@@ -1,7 +1,7 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { isMobile } from "common/engine/web.ts";
+import { formatToHtml, isMobile } from "common/engine/web.ts";
 import { PlayArgs } from "./constants.ts";
 import { API_BASE, sandbox_version } from "./config.ts";
 import { GoFileManager, is_binary } from "../defs/go_files.ts";
@@ -10,7 +10,10 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
-import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
+import { BackgroundTransitionType, BasicSocket, CutsceneCommandType, FetchFileManager, FileManager, OfflineClientsManager, random, ReplayWatcher, TranslationManager } from "common/engine/core.ts";
+import { backgrounds } from "common/scripts/config/background_effect.ts";
+import { make_credits_cutscene, make_credits_markdown } from "common/scripts/others/functions.ts";
+import { FinalCredits } from "../defs/menu.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -87,6 +90,7 @@ import { BasicSocket, FetchFileManager, FileManager, OfflineClientsManager, rand
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
 
             this.game.menu.hide_loading_screen()
+            //this.game.menu.cutscene.play(make_credits_cutscene(FinalCredits, backgrounds.smoke))
             this.game.mainloop(true)
         }
     }

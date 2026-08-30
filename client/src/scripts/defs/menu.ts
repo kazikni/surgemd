@@ -13,6 +13,120 @@ import { build_setting_input, SettingDef, SettingOption } from "./settings.ts";
 import { GamePlayOption } from "common/scripts/config/config.ts";
 import { PlayArgs } from "../others/constants.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
+import { make_credits_markdown } from "common/scripts/others/functions.ts";
+
+export const FinalCredits=[
+    {
+        role: "Created By",
+        users: "Kazikni / Hugo Mendonça Santana"
+    },
+    {
+        role: "Programmed By",
+        users: "@kazikni"
+    },
+    {
+        role: "Game Designs / Graphics",
+        users: [
+            "@kazikni",
+            "@cheerfulbull_29688",
+            "@endermanking",
+            "@littlethief69",
+            "Suroi.io",
+            "Surviv.io",
+            "Survev.io"
+        ]
+    },
+
+    {
+        role: "Menu Design",
+        users: [
+            "@kazikni",
+            "@namerio"
+        ]
+    },
+
+    {
+        role: "Sound Design",
+        users: [
+            "@kazikni",
+            "@teardwop",
+            "Surviv.io",
+            "Suroi.io",
+            "Free Sounds On Net",
+            "Half-Life",
+            "Postal 2",
+            "Fortnite"
+        ]
+    },
+
+    {
+        role: "Music",
+        users: [
+            "@showusmusic",
+            "@rivals2444",
+            "Wreckfest",
+            "I Wanna Be The Guy",
+            "Various YouTube Music",
+            "NoCopyrightSounds",
+            "Hotline Miami 2",
+            "Five Nights at Freddy's"
+        ]
+    },
+
+    {
+        role: "Lore",
+        users: "@kazikni"
+    },
+
+    {
+        role: "Additional Art",
+        users: [
+            "@sentido_ss",
+            "@bien.star",
+            "@paoagiota4740"
+        ]
+    },
+
+    {
+        role: "Videos / Trailers",
+        users: [
+            "@kazikni",
+            "@rapxtor_yt"
+        ]
+    },
+
+    {
+        role: "Discord Server",
+        users: [
+            "@kazikni",
+            "@Zahirralt2"
+        ]
+    },
+    {
+        role: "Inspirations",
+        users: [
+            "Surviv.io",
+            "Hotline Miami 1 & 2",
+            "Suroi.io",
+            "Roblox Doors",
+            "Pixel Gun 3D",
+            "Fortnite"
+        ]
+    },
+    {
+        role: "Special Thanks",
+        users: [
+            "Surviv.io creators",
+            "@hasanger",
+            "@1092384",
+            "@mamoun0",
+            "@leia_is_gay",
+            "@guiz3rabrr2466._24385",
+            "@jgpow",
+            "Everyone Who Played",
+        ]
+    }
+]
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -1430,80 +1544,7 @@ copyright theft, scan, harassment, doxing
                     generate:(parent:HTMLDivElement,_m:MenuManager)=>{
                         parent.innerHTML=`
 <span>
-${formatToHtml(`
-<h1 class="span-text-base">${translation.get("menu.about.credits")}</h1>
-# Surgemd.io
-___
-## Created By
-* Kazikni
-___
-## Programmers
-* @kazikni
-___
-## Designers
-* @kazikni
-* @cheerfulbull_29688
-* @endermanking
-* @yourhumbledrastic
-* @littlethief69
-* Suroi.io
-* Surviv.io
-* Survev.io
-___
-## Menu Designers
-* @kazikni
-* @namerio
-___
-## Sound Designers
-* Kazikni
-* Surviv.io
-* Suroi.io
-* @teardwop
-* Free Sounds On Net
-* Half Life
-* Postal 2
-* Fortnite
-___
-## Musics
-* @showusmusic
-* @rivals2444
-* Wreckfest
-* I Wanna Be The Guy
-* Some Youtube Musics
-* NoCopyrightSound
-* Hotline Miami 2
-* Five Nights At Freddys
-___
-## Lore
-@kazikni 
-___
-## Additional Art
-* @sentido_ss
-* @bien.star
-* @paoagiota4740
-___
-## Videos And Trailers
-* @kazikni
-* @rapxtor_yt
-___
-## Inspirations
-* Hotline Miami 1 and 2
-* Surviv.io
-* Suroi.io
-* Roblox Doors
-* Pixel Gun 3D
-* Fortnite
-___
-## Special Thanks To
-* surviv.io creators
-* @hasanger
-* @1092384
-* @mamoun0
-* @namerio
-* @guiz3rabrr2466._24385
-* @jgpow
-* Everyone Who Played
-`)}
+${formatToHtml(make_credits_markdown(FinalCredits))}
 </span>
 `
                     }

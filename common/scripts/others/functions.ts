@@ -1,4 +1,4 @@
-import { Hitbox2D, Numeric, random, Stream } from "../../engine/core.ts";
+import { BackgroundEDef, BackgroundTransitionType, CutsceneCommand, CutsceneCommandType, Hitbox2D, Numeric, random, Stream } from "../../engine/core.ts";
 import { ObstacleBehaviorDoor } from "../definitions/objects/obstacles.ts";
 import { DeadZoneStage, DeadZoneState, MakeDeadZoneSettings } from "../packets/general_update.ts";
 
@@ -124,4 +124,55 @@ export function decode_loot_data(definitions:GameDefinition,stream:Stream):LootD
         //aditional:has_aditional?stream.read_array(()=>decode_loot_data(definitions,stream),1):undefined,
         skin:has_skin?stream.read_uint8():undefined
     }
+}
+
+export function make_credits_cutscene(credits:{role:string,users:string|string[]}[],background:BackgroundEDef,transition_duration:number=3):CutsceneCommand[]{
+    const cred:CutsceneCommand[]=[]
+    
+    for(const c of credits){
+        cred.push({
+            type: CutsceneCommandType.SetContentText,
+            content: [
+                {
+                    value: c.role,
+                    style: "credits_role"
+                },
+                ...(
+                    typeof c.users==="string"?
+                    [{value: c.users,style: "credits"}]:
+                    c.users.map((v)=>({value: v,style: "credits"}))
+                )
+            ]
+        },{
+            type: CutsceneCommandType.Wait,
+            time: 4
+        })
+    }
+    return [
+        {type:CutsceneCommandType.SetBackground, background:background,transition:{type:BackgroundTransitionType.Fade,duration:transition_duration}},
+        
+        ...cred,
+        {
+            type: CutsceneCommandType.SetContentText,
+            content:[]
+        },
+
+        {type:CutsceneCommandType.SetBackground, background:undefined,transition:{type:BackgroundTransitionType.Fade,duration:transition_duration}},
+        {type:CutsceneCommandType.Wait, time:2},
+    ]
+}
+export function make_credits_markdown(credits: { role: string, users: string | string[] }[]): string {
+    const lines: string[] = []
+
+    for(const credit of credits){
+        lines.push(`## ${credit.role}`)
+        const users=typeof credit.users==="string"?[credit.users]:credit.users
+
+        for(const user of users){
+            lines.push(`* ${user}`)
+        }
+        lines.push("___")
+    }
+
+    return lines.join("\n").trim()
 }

@@ -1,3 +1,4 @@
+import { CutsceneAnimation } from "../../core.ts";
 import { TranslationManager } from "../../core/definition/definitions.ts";
 import { CutsceneCommand, CutsceneCommandType, CutsceneTextStyle, CutsceneTheme, FontStyle } from "../../core/definition/utils.ts";
 import { random } from "../../core/math/random.ts";
@@ -29,6 +30,8 @@ export class CutsceneManager {
     commands: CutsceneCommand[] = []
     text_styles:Record<string,CutsceneTextStyle>={}
     custom_commands:Record<string|number,CustomCutsceneCommand>={}
+
+    current_text_fonts?:[FontStyle,HTMLElement][]
 
     timeScale = 1
     playing = false
@@ -105,7 +108,7 @@ export class CutsceneManager {
 
             if(s.color!==undefined)ret.color=s.color
             if(s.size!==undefined)ret.size=s.size
-            if(s.weight!==undefined)ret.size=s.weight
+            if(s.weight!==undefined)ret.weight=s.weight
             if(s.font!==undefined)ret.font=s.font
             if(s.class_name!==undefined)ret.class_name+=s.class_name
             if(s.css!==undefined)ret.css+=s.css
@@ -180,7 +183,7 @@ export class CutsceneManager {
                 break
             }
             case CutsceneCommandType.SetDialog:{
-                this.clear_content()
+                await this.fade_content()
                 const text=this.translation.get(command.text_ln??"",{},command.text)
                 if(!text)break
                 this.dialog.style.opacity="1"
@@ -195,7 +198,7 @@ export class CutsceneManager {
                 break
             }
             case CutsceneCommandType.SetContentText: {
-                this.clear_content()
+                await this.fade_content()
                 this.content.style.opacity="1"
                 this.content.className="cutscene-content cutscene-content-centered"
                 for(const v of command.content ?? []) {
@@ -217,31 +220,68 @@ export class CutsceneManager {
                 this.sounds.play(sound,command.options ?? {})
                 break
             }
-            case CutsceneCommandType.SetBackground:{
-                if(command.background){
-                    this.background.set_def(command.background,(command.timescale??1)*(command.background?.theme.timescale??1)*this.timeScale)
-                    await this.background.show()
+            case CutsceneCommandType.SetBackground: {
+                const timescale=(command.timescale ?? 1)*this.timeScale
+
+                if(command.transition){
+                    await this.background.transition(command.background,command.transition.type,command.transition.duration,timescale)
+                }else if(command.background){
+                    this.background.set_def(command.background,timescale)
                 }else{
-                    await this.background.hide()
+                    this.background.hide()
                 }
+
+                if(command.background){
+                    this.background.show()
+                }
+
                 break
+
             }
         }
     }
-    async show_text(parent:HTMLDivElement,text:string,style:CutsceneTextStyle):Promise<HTMLDivElement|undefined>{
-        const elem=document.createElement("div")
-        ApplyFontStyle(elem,style)
+    async show_text(parent: HTMLDivElement,text: string,style: CutsceneTextStyle): Promise<HTMLDivElement | undefined> {
+        const elem = document.createElement("div")
+        ApplyFontStyle(elem, style)
         parent.appendChild(elem)
         if(style.typewriter){
             await typewriter(elem,text,style.typewriter.delay,()=>{
-                if(style.typewriter?.sound)this.sounds.play(this.resources.get_sound(random.choose(style.typewriter.sound)),style.typewriter.sound_options??{})
-            })
+                    if(style.typewriter?.sound){
+                        this.sounds.play(
+                            this.resources.get_sound(
+                                random.choose(style.typewriter.sound)
+                            ),
+                            style.typewriter.sound_options ?? {}
+                        )
+                    }
+                }
+            )
         }else{
-            elem.innerHTML=text
+            elem.innerHTML = text
         }
+        if(!this.current_text_fonts)this.current_text_fonts=[]
+        this.current_text_fonts.push([style,elem])
+        if(style.appear_animation)await this._animate(elem,style.appear_animation)
+
         return elem
     }
+    async fade_content(): Promise<void> {
+        const fonts = this.current_text_fonts
+        if(!fonts){
+            this.clear_content()
+            return
+        }
+        const promises: Promise<void>[] = []
+        for(const [style, element] of fonts){
+            if(style.disappear_animation){
+                promises.push(this._animate(element,style.disappear_animation))
+            }
+        }
+        await Promise.all(promises)
+        this.clear_content()
+    }
     clear_content(){
+        this.current_text_fonts=undefined
         this.dialog.innerHTML=""
         this.content.innerHTML=""
         this.frame.src=""
@@ -259,6 +299,21 @@ export class CutsceneManager {
         return new Promise<void>(resolve=>setTimeout(()=>{
             resolve()
         },seconds*1000))
+    }
+
+    private _animate(element: HTMLElement,anim:CutsceneAnimation): Promise<void> {
+        return new Promise(resolve => {
+            const animation = element.animate(
+                anim.frames,
+                {duration: anim.duration*this.timeScale*1000,easing:anim.ease??"ease",fill: "forwards"}
+            )
+            animation.onfinish = () => {
+                resolve()
+            }
+            animation.oncancel = () => {
+                resolve()
+            }
+        })
     }
 
     private apply_font_style(variables: Record<string, string>,prefix: string,style?: FontStyle){

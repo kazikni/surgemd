@@ -1,7 +1,6 @@
 import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
 import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
-import { MeleeDef } from "../items/melees.ts";
 import { GameObjectDefinitionType, GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, PerspetiveSizes } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
 export const ObstacleTD:TD={

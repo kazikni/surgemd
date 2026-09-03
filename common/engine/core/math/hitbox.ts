@@ -686,6 +686,21 @@ export class HitboxGroup2D extends BaseHitbox2D{
         super();
         this.hitboxes = hitboxes;
     }
+    static walls(walls:Vec2[][],width:number):RectHitbox2D[]{
+        const ret:RectHitbox2D[]=[]
+        const half=width*0.5
+        for(const path of walls){
+            for(let i=0;i<path.length-1;i++){
+                const a=path[i],b=path[i+1],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)
+                if(len<.000001)continue
+                const nx=-dy/len*half,ny=dx/len*half
+                const min=v2(Math.min(a.x+nx,a.x-nx,b.x+nx,b.x-nx),Math.min(a.y+ny,a.y-ny,b.y+ny,b.y-ny))
+                const max=v2(Math.max(a.x+nx,a.x-nx,b.x+nx,b.x-nx),Math.max(a.y+ny,a.y-ny,b.y+ny,b.y-ny))
+                ret.push(new RectHitbox2D(min,max))
+            }
+        }
+        return ret
+    }
     override readonly type = HitboxType2D.group
     override colliding_with(that: Hitbox2D): boolean {
         return this.hitboxes.some(hitbox => hitbox.colliding_with(that));

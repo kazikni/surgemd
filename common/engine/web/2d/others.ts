@@ -113,9 +113,12 @@ export class WallShape2D extends Container2DObject {
         this.fill_models.length=0
         for (const path of position) {
             if (path.length < 2)continue
-            //const model=model2d.rect(v2(0,0),v2(30,30))
-            const model = model2d.wall(path,width)
-            this.fill_models.push(model)
+            if(stroke_width){
+                this.fill_models.push(model2d.wall(path,width-stroke_width,undefined,stroke_width/2))
+                this.stroke_models.push(model2d.wall(path,width))
+            }else{
+                this.fill_models.push(model2d.wall(path,width))
+            }
         }
     }
     override update_real(): void {
@@ -128,8 +131,14 @@ export class WallShape2D extends Container2DObject {
     override draw(cam: CamA): void {
         this.draw_super()
         const matrix = matrix4.mul(cam.matrix[this.matrix_index],this._temp_matrix)
+
+        cam.ctx.fill_color=this.stroke_color
+        for(const m of this.stroke_models){
+            cam.ctx.fill_model(m,matrix)
+        }
+
+        cam.ctx.fill_color=this.fill_color
         for(const m of this.fill_models){
-            cam.ctx.fill_color=this.fill_color
             cam.ctx.fill_model(m,matrix)
         }
     }

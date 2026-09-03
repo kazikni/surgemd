@@ -36,6 +36,7 @@ export enum GameObjectType{
     Loot,
     Obstacle,
     Building,
+    Walls,
     Bullet,
     Decal,
     Explosion,

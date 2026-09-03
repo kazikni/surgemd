@@ -146,6 +146,8 @@ export class Bullet extends GameObject{
                         }
                         break
                     }
+                    case GameObjectType.StaticBody:
+                    case GameObjectType.Walls:
                     case GameObjectType.Building:
                     case GameObjectType.Obstacle:
                         if(!this.collided_with.has(obj)&&!(obj as StaticBody).physical_data.no_bullets_collision){

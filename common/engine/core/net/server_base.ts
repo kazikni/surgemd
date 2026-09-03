@@ -17,8 +17,8 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
     public id:ID=1
     ticks:number=0
     ntps:number=30
-    constructor(tps:number,clients:OfflineClientsManager,objects:Array<new()=>DefaultGameObject2D>,scene_2d?:Scene2DInstance<DefaultGameObject2D>){
-        super(tps,objects,scene_2d)
+    constructor(tps:number,clients:OfflineClientsManager,objects:Array<new()=>DefaultGameObject2D>){
+        super(tps,objects)
         this.allowJoin=true
         this.clients=clients
     }

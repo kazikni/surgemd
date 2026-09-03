@@ -181,6 +181,10 @@
             "boy": "Boy",
             "girl": "Girl"
         },
+        "infobox":{
+            "kill":"You Killed ${victim}<br><p id='infobox-kills'>${kills} Kills</p>",
+            "knock":"You Knockout ${victim}"
+        },
         "feed": {
             "join": "${player} Joined",
             "kill": {

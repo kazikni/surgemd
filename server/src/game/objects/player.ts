@@ -16,6 +16,7 @@ export abstract class PlayerConnManager{
     game:Game
     human?:Human|Player
     real_human?:Human|Player
+    id=-1
     spectating:boolean=false
     connected:boolean=true
     join_packet?:JoinPacket
@@ -162,7 +163,7 @@ export class Player extends Human{
                     kills:params.owner.status.kills,
                 }:undefined,
                 victimId:this.id,
-                used:this.game.definitions.game_objects.keysString[params.source!.idString],
+                used:params.source?this.game.definitions.game_objects.keysString[params.source.idString]:undefined,
                 damage_reason:params.reason,
                 type:FeedMessageType.down,
             })
@@ -191,7 +192,6 @@ export class Player extends Human{
                 type:FeedMessageType.kill,
                 damage_reason:params.reason,
             })
-
             if(this.game.statistics){
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
@@ -203,12 +203,6 @@ export class Player extends Human{
                 damage_reason:params.reason,
             })
         }
-
-        this.game.players.living_players.splice(this.game.players.living_players.indexOf(this),1);
-
-        this.game.modeManager.on_player_die(this)
-        this.game.signals.emit("player_die",{player:this,killer:this.killed_by})
-        this.game.update_data()
 
         if(this.team_data.group)this.team_data.group.dirty=true
     }
@@ -231,7 +225,7 @@ export class Player extends Human{
     }
     override self_state(full: boolean): SelfStateUpdate {
         const ret=super.self_state(full)
-        ret.money=0
+        ret.kills=this.status.kills
         if(this.team_data.group){
             if(this.team_data.group.dirty||full){
                 ret.dirty.group=true

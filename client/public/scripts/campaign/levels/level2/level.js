@@ -235,7 +235,7 @@ return (class extends LevelPlayerScript{
             await this.level.load_character({"path": "../../characters/maria.jsonc"})
         ]
         const idx=await (this.character_selection(characters))
-        this.preset=core.mergeDeep(this.level.player_preset??{},characters[idx])
+        this.preset=mergeDeep(this.level.player_preset??{},characters[idx])
         characters.splice(idx,1)
         this.allies=characters
     }

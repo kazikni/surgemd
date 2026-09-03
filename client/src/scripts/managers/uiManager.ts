@@ -95,9 +95,9 @@ export class UiManager{
 
     leader_enabled:boolean=true
     old_leader_enabled:boolean=true
-    leader?:{
-        id:number
-        kills:number
+    leader={
+        id:-1,
+        kills:0
     }
     money:number=0
 
@@ -131,7 +131,10 @@ export class UiManager{
     clear_top_right(){
         this.content.feed.innerHTML=""
         this.content.leader_span.innerText=""
-        this.leader=undefined
+        this.leader={
+            id:-1,
+            kills:0
+        }
         this.content.help_gui.innerText=""
     }
     clear(){
@@ -396,21 +399,29 @@ export class UiManager{
             const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
-        if(state.leader){
-            this.assign_leader({
-                type:FeedMessageType.leader_assigned,
-                player:state.leader
-            })
-        }
     }
     proccess_general_update(up:GeneralUpdate){
+        const leader_enabled=up.leader_enabled&&up.leader!==undefined
         this.feed_enabled=up.feed_enabled
-        this.leader_enabled=up.leader_enabled
+        this.leader_enabled=leader_enabled
         if(this.leader_enabled!==this.old_leader_enabled){
             this.old_leader_enabled=this.leader_enabled
             if(this.leader_enabled)ShowElement(this.content.leader_container)
             else HideElement(this.content.leader_container)
         }
+
+        if(leader_enabled){
+            if(this.leader.id!==up.leader!.id||this.leader.kills!==up.leader!.kills){
+                this.leader.id=up.leader!.id
+                this.leader.kills=up.leader!.kills
+                if(up.leader!.id===0){
+                    this.content.leader_span.innerText=this.game.language.get("leader-wait")
+                }else{
+                    this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[up.leader!.id]?.name}`
+                }
+            }
+        }
+
         for(const msg of up.feed){
             this.add_feed_message(msg)
         }
@@ -441,13 +452,6 @@ export class UiManager{
             HideElement(this.mobile_content.btn_reload)
             HideElement(this.mobile_content.btn_interact)
         }
-    }
-    assign_leader(msg:FeedMessageLeader){
-        this.leader={
-            id:msg.player.id,
-            kills:msg.player.kills
-        }
-        this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.player.id].name}`
     }
     feed_queue: HTMLDivElement[] = []
     max_feed_messages = 13
@@ -482,10 +486,6 @@ export class UiManager{
                             player2:this.players_name[msg.victimId].full,
                             source:this.game.language.get(dsd.tname??(dsd.def_type===GameObjectDefinitionType.item?"items."+dsd.idString:"objects."+dsd.idString),undefined,dsd.name),
                         })
-                        if(this.leader&&msg.killer.id===this.leader.id){
-                            this.leader.kills=msg.killer.kills
-                            this.content.leader_span.innerText=`${this.leader.kills} - ${this.players_name[msg.killer.id].name}`
-                        }
                         break
                     }
                     case DamageReason.VehicleCollision:{
@@ -531,7 +531,6 @@ export class UiManager{
                     elem.classList.add("feed-message-negative")
                 }else if(msg.killer&&msg.killer.id===this.game.active_entity?.id){
                     elem.classList.add("feed-message-good")
-                    this.game.ui_manager.signal("info-kill",{player_id:msg.victimId,msg:`You Killed ${this.game.ui.players_name[msg.victimId].name}<br><p id="infobox-kills">${msg.killer.kills} Kills<p>`,kills:msg.killer.kills})
                 }
                 break
             }
@@ -596,9 +595,8 @@ export class UiManager{
                 break
             }
             case FeedMessageType.leader_assigned:{
-                if(!this.players_name[msg.player.id])break
-                elem.innerHTML=this.game.language.get("feed.leader.assigned",{"player":this.players_name[msg.player.id].full})
-                this.assign_leader(msg)
+                if(!this.players_name[msg.player])break
+                elem.innerHTML=this.game.language.get("feed.leader.assigned",{"player":this.players_name[msg.player].full})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_assigned"),{
                     volume:0.4,
                     bus:"ui"
@@ -606,7 +604,6 @@ export class UiManager{
                 break
             }
             case FeedMessageType.leader_dead:{
-                this.leader=undefined
                 elem.innerHTML=this.game.language.get("feed.leader.dead",{})
                 this.content.leader_span.innerText=this.game.language.get("leader-wait",{})
                 this.game.sounds.play(this.game.resources.get_sound("kill_leader_dead"),{
@@ -616,6 +613,8 @@ export class UiManager{
                 break
             }
         }
+        this.game.ui_manager.signal("feed_message",{obj:msg,text:elem.innerHTML})
+        this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
         if(!block_message){
             this.content.feed.appendChild(elem)
             this.feed_queue.push(elem)
@@ -628,7 +627,6 @@ export class UiManager{
             this.game.clock.add_timeout(()=>{
                 elem.remove()
             },4)
-            this.game.signals.emit("feed_message",{obj:msg,text:elem.innerHTML})
         }
     }
     crosshair=false
@@ -665,7 +663,6 @@ export class UiManager{
             this.update_theme()
         }
 
-        this.money=state.money
         this.game.ui_manager.signal("self_state",state)
     }
     handle_slot_click(e:MouseEvent){

@@ -1,4 +1,5 @@
 import { AbstractServerGame, Client, FileManager, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import {globals} from "common/scripts/scripts.ts"
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -25,11 +26,8 @@ import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
-import * as Core from "common/engine/core.ts";
 import { HumanScript } from "../human/ai/script.ts";
 import { LevelPlayerScript } from "../mode/level_player.ts";
-import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { OnlineMessageType } from "common/scripts/packets/messages.ts";
 import { Drone } from "../objects/drone.ts";
 import { ServerGameScene2D } from "./scene.ts";
 export interface GameData {
@@ -79,7 +77,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     statistics?:GameStatistic
 
-    players:PlayersManager=new PlayersManager(this)
+    players:PlayersManager=new PlayersManager()
     humans:HumansManager=new HumansManager(this)
 
     modeManager!:ModeManager
@@ -140,11 +138,9 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
 
     globals:Record<string,any>={
-        core:Core,
+        ...globals,
         HumanScript,
         LevelPlayerScript,
-        JoinPacket,
-        OnlineMessageType,
     }
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
@@ -177,6 +173,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         //Gamemode
         this.map=new GameMap(this)
 
+        this.add_component(this.players)
         this.deadzone=new DeadZoneManager(this)
     }
     async init(mode:ModeManager){
@@ -198,7 +195,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.players.encode_start_packet()
         this.initialized=true
-        this.signals.emit("game_initialized",this)
+        this.add_component(this.modeManager)
+        this.call_event("game_initialized",this)
     }
     async auto_init(game_config:GameConfig){
         this.game_config=game_config
@@ -229,16 +227,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         }
     }
     override net_update(full:boolean){
-        this.players.net_update()
-        this.modeManager.on_net_update()
+        this.call_event("net_update",{full})
         this.scene_2d.net_update()
         super.net_update(full)
     }
     override on_update(dt:number): void {
         super.on_update(dt)
-        this.players.update(dt)
         this.deadzone.tick(dt)
-        this.modeManager.tick(dt)
     }
     update_data(){
         const data:GameData={
@@ -262,8 +257,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     reset(){
         this.scene_2d.clear()
-        this.modeManager.reset()
         this.deadzone.reset()
+        this.call_event("game_reset")
         this.clock.clear()
         this.started=false
         this.closed=false
@@ -296,13 +291,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         if(this.started)return
         if(!force&&(!this.can_start||!this.modeManager.can_start()))return
         this.started=true
-        this.modeManager.on_start()
+        this.call_event("game_start")
         this.started_time=performance.now()
         this.scene_2d.on_start()
         if(!this.replay){
             this.replay=new ReplayRecorder(this,(r,full)=>{
                 return this.players.encode_frame(full)
-            },this.ntps);
+            },this.ntps)
             /*(new DenoFileManager().open("database/replays/1.repl","rw")).then((v)=>{
                 this.replay!.startRecording(v,this.map.map_stream)
             })*/
@@ -323,17 +318,17 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         console.log(`Game ${this.id} Fineshed`)
         this.fineshed=true
         this.clock.add_timeout(()=>{
-            this.modeManager.on_finish(winners)
-            this.signals.emit("finish",{winners})
             this.clock.timeScale=0
-            if(!this.can_finish){
-                return
-            }
-            if(this.replay)this.replay.stopRecording()
-            this.update_data()
-            setTimeout(()=>{
-                this.running=false
-            },1000)
+            this.call_event_async("game_finish",{winners}).then(()=>{
+                if(!this.can_finish){
+                    return
+                }
+                if(this.replay)this.replay.stopRecording()
+                this.update_data()
+                setTimeout(()=>{
+                    this.running=false
+                },1000)
+            })
         },finish_time)
     }
 

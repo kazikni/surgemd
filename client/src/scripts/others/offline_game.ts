@@ -16,19 +16,19 @@ export class LocalGameServer{
             this.worker=undefined
         }
     }
-    run(ping_emulation:number=0,config?:GameServerConfig){
+    run(config?:GameServerConfig){
         if(this.running||this.worker)this.stop()
         this.running=true
         this.worker=new Worker(new URL("./worker_server.ts", import.meta.url), {
             type: "module",
         })
         this.worker.onmessage=(ev)=>this.handle_messages(ev.data)
-        this.worker.postMessage({
+        this.worker!.postMessage({
             type: "begin",
             config:config??ZeroGameServerConfig(),
-            ping:ping_emulation,
         })
     }
+
     start(){
         this.worker!.postMessage({type:"start"})
     }
@@ -46,14 +46,12 @@ export class LocalGameServer{
             type: "reset_level",
         });
     }
-    begin_level(path:string){
+    load_level(path:string){
         this.run()
-        this.game.menu.show_loading_screen()
         this.worker!.postMessage({type:"load_level",path})
     }
     next_level(name:string,start_with_intro?:boolean){
-        if(!this.worker)return
-        this.worker.postMessage({type:"next_level",name,start_with_intro})
+        this.worker!.postMessage({type:"next_level",name,start_with_intro})
     }
 
     handle_messages(msg:any){
@@ -67,7 +65,12 @@ export class LocalGameServer{
             case "stop":{
                 this.stop()
                 this.game.close_game(true)
-                this.game.menu.hide_loading_screen()
+                break
+            }
+            case "online_message":{
+                this.game.online_message(msg.message).then((ret)=>{
+                    if(this.worker)this.worker.postMessage({type:"online_message_resolve",ret})
+                })
             }
         }
     }

@@ -32,7 +32,6 @@ import { DumbBotAI } from "../human/ai/dumb_bot_ai.ts";
 import { ADVHumanAILegacy } from "../human/ai/adv_human_ai_legacy.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
-import { type Bullet } from "./bullet.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
 import { Humanoid, HumanoidAnimationData, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
@@ -1052,7 +1051,7 @@ export class Human extends Humanoid{
             max_boost:this.boost.max,
             boost_def:this.boost.def.idNumber!,
 
-            money:0,
+            kills:0,
 
             inventory:{
                 items:[],
@@ -1272,7 +1271,7 @@ export class Human extends Humanoid{
         this.health.value=this.health.max
         this.clear_boost()
 
-        this.health.invensibility=0.75
+        this.health.invensibility=0.5
 
         this.inventory.set_weapon_index(0)
 
@@ -1312,7 +1311,6 @@ export class Human extends Humanoid{
             this.input.emote=this.visual.emotes.death
         }
 
-        this.inventory.drop_all()
         if(this.seat)this.seat.clear_human()
         this.killed_by=params.owner
         if(!this.downed_by||(params.owner&&this.downed_by===params.owner&&!this.game.modeManager.is_ally(this.downed_by!,params.owner))){
@@ -1321,18 +1319,7 @@ export class Human extends Humanoid{
             this.killed_by=this.downed_by
         }
 
-        if(this.killed_by){
-            if(this.killed_by.id!==this.id&&!this.game.modeManager.is_ally(this,this.killed_by)){
-                this.killed_by.on_kill_enemy(this,params)
-            }
-        }
-
-        this.game.modeManager.on_human_die(this)
-        this.game.signals.emit("human_die",{human:this})
-        if(this.game.modeManager.is_leader(this)){
-            this.game.modeManager.leader_die(this)
-            if(this.game.modeManager.rules.leader.search)this.game.modeManager.search_leader()
-        }
+        this.game.call_event("human_die",{human:this,params:params})
         if(this.team_data.team)this.team_data.team.clear_downeds()
         if(this.team_data.group)this.team_data.group.clear_downeds()
         if(this.spawn_body)this.game.scene_2d.add_human_body(this.position,this.name,params.direction,this.visual.badge,this.layer)
@@ -1371,25 +1358,6 @@ export class Human extends Humanoid{
         this.game.humans._add_human(this)
         this.clear(inventory,status)
         this.game.modeManager.on_human_revive(this)
-    }
-    on_kill_enemy(victim:Human,params:DamageParams){
-        const rules=this.game.modeManager.rules
-        this.status.kills++
-
-        let kill_reward=rules.score.kill_reward
-        if(this.game.modeManager.is_leader(victim)){
-            kill_reward*=rules.score.leader_kill
-        }
-        if(params.object&&params.object.number_type===GameObjectType.Bullet){
-            if((params.object as Bullet).reflection_count>0)kill_reward+=rules.score.bounce_kill
-        }
-        this.apply_score(ScoreApplyerType.Kill,kill_reward)
-
-        this.game.modeManager.assign_leader(this)
-        this.inventory.accessorys.call_event("kill",{
-            ...params,
-            owner:this
-        })
     }
     
     visible_humans:MapHumanData[]=[]

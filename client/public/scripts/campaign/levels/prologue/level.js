@@ -25,27 +25,27 @@ return (class extends LevelPlayerScript{
         gigi.set_script(async(s)=>{
             const speed=0.5
 
-            await s.set_pathfinding(core.v2(13.2,56),speed)
+            await s.set_pathfinding(v2(13.2,56),speed)
             s.human.input.message="training time!"
             await s.sleep(1)
             s.human.input.interaction=true
             await s.sleep(2)
 
-            await s.set_pathfinding(core.v2(13.2,49),speed)
+            await s.set_pathfinding(v2(13.2,49),speed)
             s.human.input.message="training time!"
             await s.sleep(1)
             s.human.input.interaction=true
             await s.sleep(1)
 
-            await s.set_pathfinding(core.v2(13.2,42),speed)
+            await s.set_pathfinding(v2(13.2,42),speed)
             s.human.input.message="training time!"
             await s.sleep(1)
             s.human.input.interaction=true
             await s.sleep(1)
 
-            await s.set_pathfinding(core.v2(15,50),speed)
+            await s.set_pathfinding(v2(15,50),speed)
             s.human.input.message="follow me"
-            await s.set_pathfinding(core.v2(50.2,50),0.5)
+            await s.set_pathfinding(v2(50.2,50),0.5)
             await s.sleep(3)
             s.set_random_walk(0.5)
         })
@@ -64,14 +64,19 @@ return (class extends LevelPlayerScript{
 
         this.game.modeManager.add_enemies([
             {
-                "def":{ai: {kind:"dumb"},"position":core.v2(10,49)}
+                "def": {
+                    "ai": {
+                        "kind": "dumb"
+                    },
+                    position:{"x":10,"y":51},
+                },
             }
         ])
 
         /*npc=this.game.players.add_bot(new JoinPacket())
-        npc.position=core.v2(10,46)
+        npc.position=v2(10,46)
         npc=this.game.players.add_bot(new JoinPacket())
-        npc.position=core.v2(12,46)*/
+        npc.position=v2(12,46)*/
     }
     async on_load(){
         this.cutscene=await this.load_json("cutscenes/begin.jsonc")
@@ -143,7 +148,7 @@ return (class extends LevelPlayerScript{
     }
     async on_before(start_with_intro){
         const cutscene=[]
-        if(start_with_intro)cutscene.push(...this.cutscene)
+        //if(start_with_intro)cutscene.push(...this.cutscene)
         cutscene.push(...this.make_level_intro())
         await this.show_cutscene(cutscene)
     }

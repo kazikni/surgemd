@@ -1,5 +1,6 @@
 import { HideElement, ShowElement, UIModule } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
+import { FeedMessage, FeedMessageKill, FeedMessageType } from "common/scripts/packets/general_update.ts";
 
 export class InformationBoxModule extends UIModule<Game> {
     container!: HTMLDivElement
@@ -43,8 +44,13 @@ export class InformationBoxModule extends UIModule<Game> {
                 this.interaction.innerHTML = state
                 ShowElement(this.interaction)
             }
-        }else if(signal==="info-kill"||signal==="info-down"){
-            this.push(state.msg,state.player_id)
+        }else if(signal==="feed_message"){
+            const msg=(state.obj as FeedMessage)
+            if(msg.type===FeedMessageType.kill&&msg.killer?.id===this.game.active_entity_id){
+                this.push(this.game.language.get("infobox.kill",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId)
+            }else if(msg.type===FeedMessageType.down&&msg.killer?.id===this.game.active_entity_id){
+                this.push(this.game.language.get("infobox.knock",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId)
+            }
         }
     }
 

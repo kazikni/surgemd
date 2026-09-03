@@ -15,14 +15,19 @@ export class AdditionalInfoModule extends UIModule<Game> {
 
     living_count:number[]=[]
     old_deadzone_update?:DeadZoneUpdate
+
+    kills:number=0
     override on_init(): void {
     }
 
     override on_signal(signal: string, val:any): void {
         if(signal==="general_update"){
             this.proccess_general_update(val as GeneralUpdate)
-        }else if(signal==="info-kill"){
-            this.content.kills_count.innerText=val.kills
+        }else if(signal==="self_state"){
+            if(this.kills!==val.kills){
+                this.kills=val.kills
+                this.content.kills_count.innerText=this.kills.toString()
+            }
         }
     }
 
@@ -60,7 +65,7 @@ export class AdditionalInfoModule extends UIModule<Game> {
     override on_destroy(): void {
     }
     override on_clear(): void {
-        this.content.kills_count.innerText=""
+        this.kills=-1
         this.old_deadzone_update=undefined
     }
 }

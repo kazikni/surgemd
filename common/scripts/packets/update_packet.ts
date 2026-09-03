@@ -65,7 +65,7 @@ export interface SelfStateUpdate{
     max_boost:number
     boost_def:number
 
-    money:number
+    kills:number
 
     inventory:{
         items:InventoryItemData[]
@@ -94,7 +94,7 @@ function encode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
     .write_uint8(state.max_boost)
     .write_uint8(state.boost_def)
 
-    .write_uint16(state.money)
+    .write_uint16(state.kills)
 
     .write_boolean_group2(
         state.dirty.inventory.items,
@@ -176,7 +176,7 @@ function decode_self_state(state:SelfStateUpdate,stream:Stream,definitions:GameD
     state.boost=stream.read_uint8()
     state.max_boost=stream.read_uint8()
     state.boost_def=stream.read_uint8()
-    state.money=stream.read_uint16()
+    state.kills=stream.read_uint16()
     const [
         dirtyItems,
         dirtyAItems,
@@ -372,7 +372,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
                 boost:0,
                 boost_def:0,
 
-                money:0,
+                kills:0,
 
                 dirty:{
                     inventory:{

@@ -259,7 +259,7 @@ export class OfflineClientsManager{
         }
     }
     send(msg:any,bytes1?:number,bytes2?:number){
-        for (const client of this.clients.values()) {
+        for(const client of this.clients.values()) {
             client.send(msg,bytes1,bytes2)
         }
     }

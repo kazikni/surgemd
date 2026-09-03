@@ -3,11 +3,13 @@ return (class extends LevelPlayerScript{
         const pos=this.game.modeManager.get_human_spawn_position(player)
         if(pos)player.position=pos
         player.set_preset(this.preset)
-        player.status.kills=5
+        player.status.kills=6
         player.status.damage=865
-        player.status.damage_taken=312
+        player.status.damage_taken=453
+        this.game.modeManager.leader=player
     }
     async on_begin(){
+        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_fall_music_1.mp3"}})
         await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_fall_music_1.mp3"}})
         this.background=await this.load_json("../../backgrounds/city_river_bloodmoon.json")
         this.preset=await this.level.load_character({
@@ -72,11 +74,11 @@ return (class extends LevelPlayerScript{
     async on_before(){
         const cutscene=[]
         cutscene.push({
-            type:core.CutsceneCommandType.SetSoundController,
+            type:CutsceneCommandType.SetSoundController,
             controller:"music",
             source:"gameplay_music",
         },{
-            type:core.CutsceneCommandType.SetBackground,
+            type:CutsceneCommandType.SetBackground,
             background:this.background,
             timescale:70
         })
@@ -423,6 +425,12 @@ return (class extends LevelPlayerScript{
                 },
                 "count": 1
             }
+        ])
+    }
+    async on_game_finish(e){
+        if(e.win)await this.show_cutscene([
+            
+            ...make_credits_cutscene(FinalCredits,backgrounds.smoke)
         ])
     }
 })

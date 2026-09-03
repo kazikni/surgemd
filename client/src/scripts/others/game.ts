@@ -203,9 +203,8 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.add_axis("movement","move_up","move_down","move_left","move_right","left")
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
-            if(!this.can_act)return
             if(a.action==="movement"){
-                if(!this.can_act){
+                if(!this.can_act||this.state!==GameState.Playing){
                     this.input.movement={dir:0,scale:0}
                     return
                 }
@@ -500,6 +499,8 @@ export class Game extends ClientGame<GameObject>{
         this.active_entity=undefined
         this.active_entity_id=undefined
         this.ui.hide_game_over()
+
+        this.scene_2d.set_camera_position(v2(-10000,-10000))
         this.scene_2d.camera.zoom=6
         this.zoom_speed=4
     }
@@ -507,8 +508,6 @@ export class Game extends ClientGame<GameObject>{
         if(this.offline){
             if(win){
                 this.close_game(false)
-                this.start_with_intro=true
-                this.local_server.next_level("complete")
             }else{
                 this.soft_close_game()
                 this.local_server.reset_level()
@@ -664,7 +663,7 @@ export class Game extends ClientGame<GameObject>{
             }
             case "campaign":{
                 this.start_with_intro=play.start_with_intro
-                this.local_server.begin_level(play.path)
+                this.local_server.load_level(play.path)
                 return
             }
             case "editor":{
@@ -679,6 +678,32 @@ export class Game extends ClientGame<GameObject>{
         if(this.client)return
         const client=new Client(socket as unknown as BasicSocket,PacketManager)
         client.onopen=this.set_client.bind(this,client)
+    }
+
+    async online_message(msg:OnlineMessage){
+        const old_state=this.state
+        let ret:any=undefined
+        this.state=GameState.Cutscene
+        switch(msg.type){
+            case OnlineMessageType.Cutscene:{
+                await this.menu.cutscene.play(msg.cutscene)
+                break
+            }
+            case OnlineMessageType.CharacterSelector:{
+                ret=await this.menu.select_character_screen(msg.characters)
+                break
+            }
+            case OnlineMessageType.Load:{
+                if(msg.assets){
+                    for(const a in msg.assets){
+                        await this.resources.load_source(a,msg.assets[a],undefined,this.menu.set_loading_current)
+                    }
+                }
+                break
+            }
+        }
+        this.state=old_state
+        return ret
     }
     set_client(client:Client){
         if(!client.opened)return
@@ -713,31 +738,8 @@ export class Game extends ClientGame<GameObject>{
         client.on("disconnect",(_p:DisconnectPacket)=>{
             if(this.state===GameState.Playing)this.close_game()
         })
-        client.on("message",async(msg:OnlineMessage)=>{
-            const old_state=this.state
-            this.state=GameState.Cutscene
-            switch(msg.type){
-                case OnlineMessageType.Cutscene:{
-                    await this.menu.cutscene.play(msg.cutscene)
-                    client.emit("_end")
-                    break
-                }
-                case OnlineMessageType.CharacterSelector:{
-                    const r=await this.menu.select_character_screen(msg.characters)
-                    client.emit("_end",r)
-                    break
-                }
-                case OnlineMessageType.Load:{
-                    if(msg.assets){
-                        for(const a in msg.assets){
-                            await this.resources.load_source(a,msg.assets[a],undefined,this.menu.set_loading_current)
-                        }
-                    }
-                    client.emit("_end")
-                    break
-                }
-            }
-            this.state=old_state
+        client.on("message",async(msg:any)=>{
+            client.emit("_end",await this.online_message(msg))
         })
     }
 }

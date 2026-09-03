@@ -1,4 +1,4 @@
-import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream, v2m } from "common/engine/core.ts";
+import { Client, DefaultSignals, Stream, RectHitbox2D, v2, ValidString, DynamicStream, v2m, GameComponent } from "common/engine/core.ts";
 import { Game } from "../others/game.ts";
 import { FeedMessageType, GeneralFullMainState, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -13,6 +13,7 @@ import { StartPacket} from "common/scripts/packets/start_packet.ts";
 import { HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
+import { human_die_event } from "../others/utils.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
@@ -43,6 +44,7 @@ export class PlayerClient extends PlayerConnManager{
     constructor(game:Game,client:Client){
         super(game)
         this.client=client
+        this.id=client.ID
         this.connected=false
     }
     override set_spectator(p: Player): void {
@@ -153,8 +155,8 @@ export class PlayerClient extends PlayerConnManager{
         }
     }
 }
-export class PlayersManager{
-    game:Game
+export class PlayersManager extends GameComponent{
+    declare game:Game
 
     splashes:DamageSplash[]=[]
     general_update:GeneralUpdatePacket=new GeneralUpdatePacket()
@@ -173,8 +175,8 @@ export class PlayersManager{
 
     start_packet_stream:Stream=new DynamicStream()
 
-    constructor(game:Game){
-        this.game=game
+    constructor(){
+        super()
     }
 
     apply_score(type:ScoreApplyerType,amount:number){
@@ -276,7 +278,6 @@ export class PlayersManager{
         const ret:GeneralFullMainState={
             date:this.game.ambient.date,
             ntps:this.game.ntps,
-            leader:undefined,
             players:[]
         }
         for(const lp of this.game.players.living_players){
@@ -285,13 +286,6 @@ export class PlayersManager{
                 name:lp.name,
                 badge:lp.visual.badge?.idNumber
             })
-        }
-        const leader=this.game.modeManager.get_leader()
-        if(leader){
-            ret.leader={
-                id:leader.id,
-                kills:leader.status.kills,
-            }
         }
         return ret
     }
@@ -312,17 +306,29 @@ export class PlayersManager{
         this.game.clients.packets_manager.encode(packet,this.start_packet_stream)
         ;(this.start_packet_stream as DynamicStream).lock()
     }
-    update(dt:number){
+    override on_tick(dt:number){
         for(const p of Object.values(this.connected_bots)){
             if(p.ai)p.ai.AI(dt)
         }
     }
-    net_update(){
+
+    on_human_die(h:human_die_event){
+        if(h.human instanceof Player){
+            const idx=this.living_players.indexOf(h.human)
+            if(idx!==-1){
+                this.living_players.splice(idx,1)
+                this.game.update_data()
+            }
+        }
+    }
+
+    on_net_update(){
         const s=this.buffer
         s.clear()
 
         this.general_update.content.started=this.game.started
         this.general_update.content.leader_enabled=false
+        this.general_update.content.leader=undefined
         this.general_update.content.feed=this.game.scene_2d.feed_messages
         this.general_update.content.deadzone=this.game.deadzone.state
         this.general_update.content.ambient=this.game.ambient

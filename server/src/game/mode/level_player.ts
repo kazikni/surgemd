@@ -1,9 +1,8 @@
 import { type Game } from "../others/game.ts";
 import { LevelCharacter, LevelDefinition } from "common/scripts/config/level_definition.ts";
-import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType, sleep } from "common/engine/core.ts";
+import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType, sleep, GameComponent, Path } from "common/engine/core.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { type Player } from "../objects/player.ts";
-import { type Human } from "../objects/human.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
@@ -26,10 +25,19 @@ export class LevelPlayerScript{
     }
     on_start(){}
     on_stop(){}
-    on_finish(winners:Human[]){}
+    on_game_finish(e:any){
+        if(e.win){
+            if(!((this.level.def.next_level as Record<string,string>)["complete"]))return
+            this.level.msg({
+                type:"start_level",
+                path:Path.join(this.level.path,(this.level.def.next_level as Record<string,string>)["complete"]),
+                start_with_intro:true
+            })
+        }
+    }
 
     async character_selection(characters:LevelCharacter[]):Promise<number>{
-        this.game.clients.send({
+        const ret=await this.send_message_event({
             type:OnlineMessageType.CharacterSelector,
             characters:characters.map((v)=>{
                 return {
@@ -39,21 +47,26 @@ export class LevelPlayerScript{
                 }
             })
         } satisfies OnlineMessage)
-        return Object.values(await this.game.clients.wait("_end"))[0]
+        return ret
     }
     async load_json(path:string):Promise<any>{
         return parseJSONC(await this.level.fs.read_file(path))
     }
-    async show_cutscene(cutscene:CutsceneCommand[]):Promise<void>{
-        this.game.clients.send({
+    show_cutscene(cutscene:CutsceneCommand[]):Promise<void>{
+        return this.send_message_event({
             type:OnlineMessageType.Cutscene,
             cutscene
         })
-        await this.game.clients.wait("_end")
     }
-    async send_message_event(msg:OnlineMessage){
-        this.game.clients.send(msg)
-        await this.game.clients.wait("_end")
+    send_message_event(msg:OnlineMessage):Promise<any>{
+        if(this.level.online_messsage_resolve)this.level.online_messsage_resolve()
+        return new Promise<void>((resolve)=>{
+            this.level.online_messsage_resolve=resolve
+            this.level.msg({
+                type:"online_message",
+                message:msg
+            })
+        })
     }
     make_level_intro(title_color="blue"):CutsceneCommand[]{
         return [{
@@ -67,8 +80,8 @@ export class LevelPlayerScript{
         },{type:CutsceneCommandType.Wait,time:3}]
     }
 }
-export class LevelPlayer {
-    game: Game
+export class LevelPlayer extends GameComponent {
+    declare game: Game
     def!: LevelDefinition
     path!:string
     started:boolean=false
@@ -80,11 +93,27 @@ export class LevelPlayer {
 
     script!:LevelPlayerScript
 
-    constructor(game: Game,fs:FileManager){
-        this.game = game
+    msg:(args:any)=>any
+
+    online_messsage_resolve?:(v?:any)=>void
+
+    constructor(msg:(args:any)=>any,fs:FileManager){
+        super()
+        this.msg=msg
         this.checkpoint=new DynamicStream()
         this.fs=fs
-        this.set_script_class(new LevelPlayerScript())
+    }
+    override on_bind(): void {
+        if(!this.script)this.set_script_class(new LevelPlayerScript())
+    }
+    async on_game_finish(e:{winners:Player[]}){
+        let win=false
+        for(const p of e.winners){
+            if(p.is_player&&this.game.players.connected_players[p.conn?.id??0])win=true
+        }
+        await this.script.on_game_finish({...e,win})
+    }
+    override on_tick(dt:number){
     }
 
     set_script_class(script:LevelPlayerScript){
@@ -109,7 +138,8 @@ export class LevelPlayer {
         }
         return await this.script.on_load_character(base)
     }
-    async begin(path:string){
+    async begin(game:Game,path:string){
+        this.game=game
         this.game.players.connect_add_player=false
         this.game.can_start=false
         this.game.can_finish=false
@@ -124,9 +154,9 @@ export class LevelPlayer {
 
         await this.script.initialize_mode()
         await this.script.on_begin()
-    
-        this.save_checkpoint()
 
+        game.add_component(this)
+        this.save_checkpoint()
         if(!this.game.running)this.game.mainloop()
     }
 

@@ -1,12 +1,12 @@
 import { type Game } from "../others/game.ts";
-import { Client, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Client, GameComponent, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { LootSetting } from "common/scripts/others/constants.ts";
+import { GameObjectType, LootSetting, ScoreApplyerType } from "common/scripts/others/constants.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
 import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
@@ -14,6 +14,8 @@ import { WarMap } from "common/scripts/definitions/maps/war.ts";
 import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.ts";
 import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
+import { human_die_event } from "../others/utils.ts";
+import { Bullet } from "../objects/bullet.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -91,8 +93,8 @@ export const Maps:Record<string,MapDef>={
     debug:DebugMap,
     single_building:SingleBuildMap,
 }
-export abstract class ModeManager{
-    game!:Game
+export abstract class ModeManager extends GameComponent{
+    declare game:Game
     rules:GameRules={
         humans:{
             boosts:{
@@ -158,18 +160,12 @@ export abstract class ModeManager{
         loot_settings:{}
     }
 
-    constructor(){}
+    constructor(){
+        super()
+    }
 
     init(game:Game){
         this.game=game
-        this.on_init()
-    }
-    tick(dt:number){
-        if(this.game.started){
-            this.update_day_and_night(dt)
-            this.update_rain(dt)
-        }
-        this.on_tick(dt)
     }
     update_day_and_night(dt:number){
         if(this.rules.ambient.day_night_cycle){
@@ -232,11 +228,13 @@ export abstract class ModeManager{
         }
     }
 
-    on_init(){}
-    on_tick(dt:number){}
-    on_net_update(){}
-    on_start():void{}
-    on_finish(winners:Human[]):void{}
+    override on_tick(dt:number){
+        if(this.game.started){
+            this.update_day_and_night(dt)
+            this.update_rain(dt)
+        }
+        this.on_tick(dt)
+    }
 
     abstract can_join():boolean
     abstract can_start():boolean
@@ -245,19 +243,13 @@ export abstract class ModeManager{
 
     abstract is_leader(p:Human):boolean
     abstract get_leader():Human|undefined
-    abstract can_be_leader(p:Human):boolean
-    abstract search_leader():Human|undefined
-    abstract assign_leader(p:Human):boolean
-    abstract leader_die(p:Human):void
 
     on_player_connect(p:PlayerConnManager):void{}
     on_player_join(p:Player):void{}
-    on_player_die(p:Player):void{}
     proccess_group_token(client:Client,token:string):void{}
-    reset():void{}
 
     on_human_create(human:Human):void{}
-    on_human_die(human:Human):void{}
+    on_human_die(e:human_die_event):void{}
     on_human_revive(human:Human):void{}
 
     get_group(group:number):Group|undefined{return undefined}

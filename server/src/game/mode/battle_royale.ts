@@ -1,4 +1,4 @@
-import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+import { GameObjectType, PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
@@ -7,9 +7,11 @@ import { v2, Vec2 } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
-import { FeedMessageType } from "common/scripts/packets/general_update.ts";
+import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { LocationDrone } from "../objects/drone.ts";
+import { human_die_event } from "../others/utils.ts";
+import { type Bullet } from "../objects/bullet.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -112,7 +114,7 @@ export class BattleRoyale extends ModeManager{
         if(!this.teams_manager)return
         return this.teams_manager.add_team(team)
     }
-    override on_start(){
+    on_game_start(){
         this.game.deadzone.start()
         for(const p of this.settings.airdrops.spawn){
             this.game.clock.add_timeout(()=>{
@@ -132,11 +134,11 @@ export class BattleRoyale extends ModeManager{
         if(this.groups_manager)this.groups_manager.tick(dt)
         if(this.teams_manager)this.teams_manager.tick(dt)
     }
-    override on_net_update(){
+    on_net_update(){
         if(this.groups_manager)this.groups_manager.net_update()
         if(this.teams_manager)this.teams_manager.net_update()
     }
-    override reset(): void {
+    on_game_reset(): void {
         if(this.groups_manager)this.groups_manager.reset()
         if(this.teams_manager)this.teams_manager.reset()
     }
@@ -185,10 +187,7 @@ export class BattleRoyale extends ModeManager{
             this.leader=p as Player
             this.game.scene_2d.feed_messages.push({
                 type:FeedMessageType.leader_assigned,
-                player:{
-                    id:p.id,
-                    kills:p.status.kills
-                }
+                player:p.id
             })
             return true
         }
@@ -198,13 +197,10 @@ export class BattleRoyale extends ModeManager{
         this.leader=undefined
         this.game.scene_2d.feed_messages.push({
             type:FeedMessageType.leader_dead,
-            player:{
-                id:p.id,
-                kills:p.status.kills
-            }
+            player:p.id
         })
     }
-    override search_leader(): Human | undefined {
+    search_leader(): Human | undefined {
         let selected:Player|undefined
         let selected_kills:number=0
         for(const p of this.game.players.living_players){
@@ -228,37 +224,75 @@ export class BattleRoyale extends ModeManager{
             this.game.close()
         }
     }
-    override on_player_die(p:Player){
-        if(this.game.fineshed){
-            return
-        }
-        this.game.scene_2d.leaderboards.push({
-            id:p.id,
-            kills:p.status.kills,
-            score:p.status.score,
-            rank:this.game.players.living_players.length+1,
-        })
-        if(p.conn){
-            const status=p.team_data.group?.get_status() ?? [p.status]
-            p.conn?.send_game_over(status as PlayerStatus[],false,p.killed_by?.id)
-        }
-        if(this.game.started){
-            this.give_rank_score()
+    override on_human_die(e:human_die_event){
+        e.human.inventory.drop_all()
+        if(e.human.killed_by){
+            if(e.human.killed_by.id!==e.human.id&&!this.is_ally(e.human,e.human.killed_by)){
+                const killer=e.human.killed_by
 
-            let stopped:boolean=false
-            let winners:Player[]=[]
-            if(this.game.players.living_players.length<=1||(this.groups_manager&&this.groups_manager.get_living_groups().length<=1)){
-                winners=[...this.game.players.living_players]
-                stopped=true
-            }
-            if(stopped){
-                for(const w of winners){
-                    if(w.visual.emotes.victory){
-                        w.input.emote=w.visual.emotes.victory
-                    }
+                const rules=this.rules
+                killer.status.kills++
+
+                let kill_reward=rules.score.kill_reward
+                if(this.is_leader(e.human)){
+                    kill_reward*=rules.score.leader_kill
                 }
-                this.game.finish(winners,2)
+                if(e.params.object&&e.params.object.number_type===GameObjectType.Bullet){
+                    if((e.params.object as Bullet).reflection_count>0)kill_reward+=rules.score.bounce_kill
+                }
+                killer.apply_score(ScoreApplyerType.Kill,kill_reward)
+                this.assign_leader(killer)
+                killer.inventory.accessorys.call_event("kill",{
+                    ...e.params,
+                    owner:killer
+                })
             }
+        }
+        if(this.is_leader(e.human)){
+            this.leader_die(e.human)
+            if(this.rules.leader.search)this.search_leader()
+        }
+        if(e.human.is_player){
+            this.game.scene_2d.leaderboards.push({
+                id:e.human.id,
+                kills:e.human.status.kills,
+                score:e.human.status.score,
+                rank:this.game.players.living_players.length+1,
+            })
+            if((e.human as Player).conn){
+                const status=e.human.team_data.group?.get_status()??[(e.human as Player).status]
+                ;(e.human as Player).conn?.send_game_over(status as PlayerStatus[],false,e.human.killed_by?.id)
+            }
+            if(this.game.started){
+                this.give_rank_score()
+
+                let stopped:boolean=false
+                let winners:Player[]=[]
+                if(this.game.players.living_players.length<=1||(this.groups_manager&&this.groups_manager.get_living_groups().length<=1)){
+                    winners=[...this.game.players.living_players]
+                    stopped=true
+                }
+                if(stopped){
+                    for(const w of winners){
+                        if(w.visual.emotes.victory){
+                            w.input.emote=w.visual.emotes.victory
+                        }
+                    }
+                    this.game.finish(winners,2)
+                }
+            }
+        }
+    }
+    override manage_general_packet(g: GeneralUpdatePacket): void {
+        super.manage_general_packet(g)
+
+        const leader=this.game.modeManager.get_leader()
+        g.content.leader=leader?{
+            id:leader.id,
+            kills:leader.status.kills
+        }:{
+            id:0,
+            kills:0
         }
     }
     override on_human_revive(human: Human): void {
@@ -266,7 +300,7 @@ export class BattleRoyale extends ModeManager{
         const pos=this.get_human_spawn_position(human)
         if(pos)human.position=pos
     }
-    override on_finish(winners:Player[]): void {
+    on_game_finish(e:{winners:Player[]}): void {
         for(const p of this.game.players.living_players){
             this.give_rank_score()
             this.game.scene_2d.leaderboards.push({
@@ -277,7 +311,7 @@ export class BattleRoyale extends ModeManager{
             })
         }
         this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
-        for(const p of winners){
+        for(const p of e.winners){
             p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
         }
     }
@@ -312,7 +346,7 @@ export class BattleRoyaleDebug extends BattleRoyale{
         }
         super(s,group_size)
     }
-    override on_start(){
+    override on_game_start(){
     }
     override async generate_map(): Promise<void> {
         this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)

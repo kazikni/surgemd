@@ -178,6 +178,7 @@ export class MessagePacket extends Packet {
     }
 
     encode(stream: Stream): void {
+        console.log(this.msg,"encode")
         let header = 0
         header |= (this.bytes1 - 1)       // bits 0-1
         header |= (this.bytes2 - 1) << 2  // bits 2-3
@@ -189,6 +190,7 @@ export class MessagePacket extends Packet {
         this.bytes1 = ((header & 0b11) + 1)
         this.bytes2 = (((header >> 2) & 0b11) + 1)
         this.msg=stream.read_any(this.bytes1 as 1|2|3|4,this.bytes2 as 1|2|3|4)
+        console.log(this.msg,"decode")
     }
 }
 export class SignalMessagePacket extends Packet {

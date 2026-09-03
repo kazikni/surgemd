@@ -106,6 +106,12 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         }
         this.signals.emit(event,...args)
     }
+    async call_event_async(event:string,...args:any[]):Promise<void>{
+        for(const c of this.components){
+            if((c as any)["on_"+event])await (c as any)["on_"+event](...args)
+        }
+        this.signals.emit(event,...args)
+    }
     set_scene2d(scene:Scene2DInstance<DefaultGameObject2D>){
         this.scene_2d=scene
         scene.game=this

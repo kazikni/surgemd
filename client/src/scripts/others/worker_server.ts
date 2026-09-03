@@ -1,6 +1,6 @@
 import { BattleRoyale, LevelPlayer, OfflineGameServer } from "./offline.ts";
 import { GameServerConfig } from "common/scripts/config/config.ts";
-import { FetchFileManager, OfflineClientsManager, Path, WorkerSocket } from "common/engine/core.ts";
+import { FetchFileManager, OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 let server:OfflineGameServer
 let level:LevelPlayer
@@ -22,16 +22,16 @@ self.onunhandledrejection = (ev) => {
 
 async function load_level(path:string){
     fs.base=path
-    level=new LevelPlayer(server,fs)
-    await level.begin(path)
+    level=new LevelPlayer((e)=>self.postMessage(e),fs)
+    await level.begin(server,path)
     self.postMessage({
         type:"server_created"
     })
 }
-self.onmessage = async(ev) => {
-    const msg = ev.data
+async function manage_message(msg:any):Promise<void>{
     switch(msg.type){
         case "begin":{
+            if(server)server.stop()
             server=new OfflineGameServer(
                 msg.config as GameServerConfig,
                 new OfflineClientsManager(PacketManager),
@@ -79,20 +79,12 @@ self.onmessage = async(ev) => {
             server.clients.fake_connect_other_s(ws)
             break
         }
-        case "next_level":{
-            if(!level)break
-            if(!(level.def.next_level as Record<string,string>)?.[msg.name]){
-                self.postMessage({
-                    type:"stop",
-                })
-                return
-            }
-            self.postMessage({
-                type:"start_level",
-                path:Path.join(level.path,(level.def.next_level as Record<string,string>)[msg.name]),
-                start_with_intro:msg.start_with_intro
-            })
-            break
+        case "online_message_resolve":{
+            if(level)level.online_messsage_resolve?.(msg?.ret)
         }
     }
+}
+self.onmessage = async(ev) => {
+    const msg = ev.data
+    manage_message(msg)
 };

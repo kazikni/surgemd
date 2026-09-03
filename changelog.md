@@ -1,37 +1,38 @@
 # Surgemd Beta-1.0
 ## News
-__                                                                                                                 __
+___
 ### Mains
 
-__                                                                                                                 __
+___
 ### Menu
 * New Loading Screen
 * Tundra Map Dialogs
-__                                                                                                                 __
+* Final Credits
+___
 ### Items
 * Guns Fire Sequence Spread
-__                                                                                                                 __
+___
 ### Loadout
 * Different Shoes
 * Grey Jeans Pants
 * Green Gray Jeans Pants
 * Hair Paints
-__                                                                                                                 __
+___
 ### Others
 
-__                                                                                                                 __
+___
 ## Changes
-__                                                                                                                 __
+___
 ### Items
 * Some Balance Changes
 * Some Loot Table Changes
 * Some Sprites Changes
-__                                                                                                                 __
+___
 ### Menu
 
-__                                                                                                                 __
+___
 
-__                                                                                                                 __
+___
 # Play The Game
 [Web Version](https://surgemd.io)
 If You Found A Bug, Glitch Or Issue Report To Me Or in #❌issues

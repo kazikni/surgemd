@@ -3,7 +3,6 @@ import { DamageReason, PacketType } from "../definitions/utils.ts";
 
 export interface GeneralFullMainState{
     players:{id:number,name:string,badge?:number}[]
-    leader?:{id:number,kills:number}
     ntps:number
     date:KDate
 }
@@ -37,7 +36,13 @@ export interface MapZone{
 export interface GeneralUpdate{
     started:boolean
     feed_enabled:boolean
+
     leader_enabled:boolean
+    leader?:{
+        id:number
+        kills:number
+    }
+
     living_count:number[]
     feed:FeedMessage[]
     deadzone?:DeadZoneUpdate
@@ -94,10 +99,7 @@ export interface FeedMessageKill{
 }
 export interface FeedMessageLeader{
     type:FeedMessageType.leader_assigned|FeedMessageType.leader_dead,
-    player:{
-        kills:number
-        id:number
-    }
+    player:number
 }
 export interface FeedMessageSP{
     type:FeedMessageType.join|FeedMessageType.set_name
@@ -129,8 +131,7 @@ function encode_feed_message(msg:FeedMessage,stream:Stream){
             break
         case FeedMessageType.leader_dead:
         case FeedMessageType.leader_assigned:
-            stream.write_id(msg.player.id)
-            stream.write_uint8(msg.player.kills)
+            stream.write_id(msg.player)
             break
     }
 }
@@ -163,22 +164,14 @@ function decode_feed_message(stream:Stream):FeedMessage{
         }
         case FeedMessageType.leader_dead:
         case FeedMessageType.leader_assigned:
-            msg["player"]={
-                id:stream.read_id(),
-                kills:stream.read_uint8()
-            }
+            msg["player"]=stream.read_id()
             break
     }
     return msg as unknown as FeedMessage
 }
 
 export function encode_general_main_state(stream:Stream,s:GeneralFullMainState){
-    stream.write_boolean_group(s.leader!==undefined)
     stream.write_uint8(s.ntps)
-    if(s.leader){
-        stream.write_id(s.leader.id)
-        stream.write_uint8(s.leader.kills)
-    }
     stream.write_array(s.players,(e)=>{
         stream.write_uint16((e.badge??-1)+1)
         stream.write_string_sized(e.name,28)
@@ -189,14 +182,7 @@ export function encode_general_main_state(stream:Stream,s:GeneralFullMainState){
 export function decode_general_main_state(stream:Stream):GeneralFullMainState{
     const s={
     } as GeneralFullMainState
-    const [leader]=stream.read_boolean_group()
     s.ntps=stream.read_uint8()
-    if(leader){
-        s.leader={
-            id:stream.read_id(),
-            kills:stream.read_uint8()
-        }
-    }
     s.players=stream.read_array((_e)=>{
         const b=stream.read_uint16()
         return {
@@ -213,6 +199,7 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
         up.started,
         up.feed_enabled,
         up.leader_enabled,
+        up.leader!==undefined,
         up.deadzone!==undefined,
         up.ambient!==undefined,
         up.main_state!==undefined
@@ -232,6 +219,10 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
         .write_float(up.ambient.rain,0,1,1)
         .write_float(up.ambient.thunder_storm,0,1,1)
     }
+    if(up.leader){
+        stream.write_id(up.leader.id??0)
+        stream.write_uint16(up.leader.kills??0)
+    }
     stream.write_array(up.living_count,(i,_s)=>{
         stream.write_uint8(i)
     },1)
@@ -250,6 +241,7 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
         started,
         feed_enabled,
         leader_enabled,
+        leader,
         deadzone,
         ambient,
         main_state
@@ -258,6 +250,7 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
     up.feed_enabled=feed_enabled
     up.leader_enabled=leader_enabled
     up.ambient=undefined
+    up.leader=undefined
 
     up.feed=stream.read_array(()=>decode_feed_message(stream))
     if(deadzone){
@@ -280,6 +273,12 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
         }
         up.ambient.rain=stream.read_float(0,1,1)
         up.ambient.thunder_storm=stream.read_float(0,1,1)
+    }
+    if(leader){
+        up.leader={
+            id:stream.read_id(),
+            kills:stream.read_uint16()
+        }
     }
     up.living_count=stream.read_array((_s)=>{
         return stream.read_uint8()

@@ -60,7 +60,7 @@ return (class extends LevelPlayerScript{
                             ],
                         },
                         biome:NormalBiome,
-                        size:v2(330,330),
+                        size:v2(300,300),
                         generation:{
                             base:FloorType.Water,
                             spawn:[
@@ -72,11 +72,11 @@ return (class extends LevelPlayerScript{
                                 {def:"bush",count:120},
                                 {def:"barrel",count:50},
 
-                                {def:"normal_loot",count:80},
+                                {def:"normal_loot",count:50},
                             ],
                             islands:[{
                                 terrain:{
-                                    radius:140,
+                                    radius:135,
                                     passes:3,
                                     points:6,
                                     variation:40,
@@ -312,7 +312,7 @@ return (class extends LevelPlayerScript{
                         ]
                     }
                 },
-                "count": 15
+                "count": 12
             },
             {
                 "def": {
@@ -320,7 +320,7 @@ return (class extends LevelPlayerScript{
                         "kind": "dumb"
                     }
                 },
-                "count": 39
+                "count": 37
             }
         ])
     }

@@ -36,6 +36,10 @@ export abstract class StaticBody extends ServerGameObject{
         super()
     }
 
+    override update_hitbox(): void {
+        super.update_hitbox()
+        this.cell_rect=this.hitbox.to_rect()
+    }
     damage(_params:DamageParams){}
     side_effect(_sf:SideEffect,_owner?:Human){}
 }

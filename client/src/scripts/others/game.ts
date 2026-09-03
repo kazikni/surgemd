@@ -696,7 +696,7 @@ export class Game extends ClientGame<GameObject>{
             case OnlineMessageType.Load:{
                 if(msg.assets){
                     for(const a in msg.assets){
-                        await this.resources.load_source(a,msg.assets[a],undefined,this.menu.set_loading_current)
+                        await this.resources.load_source(a,msg.assets[a],undefined,this.menu.set_loading_current,true)
                     }
                 }
                 break

@@ -559,9 +559,9 @@ export class Human extends Humanoid{
                 },
                 speed:random.float(1,2),
                 angle:this.physical_data.rotation,
-                scale:1.5,
+                scale:2,
                 to:{
-                    angle:this.physical_data.rotation+random.float(10,15),
+                    angle:this.physical_data.rotation+random.float(1,10),
                     scale:0.5
                 }
             })

@@ -118,11 +118,11 @@ export class ResourcesManager {
         image.src=canvas.toDataURL()
     }
 
-    async load_source(id:string,src:string,volume:number=1,callback?:(msg:string)=>void):Promise<Source|undefined>{
+    async load_source(id:string,src:string,volume:number=1,callback?:(msg:string)=>void,overwrite:boolean=false):Promise<Source|undefined>{
         if(src.endsWith(".svg")||src.endsWith(".png")){
             //return await this.load_frame(id,src,group,callback)
         }else if(src.endsWith(".mp3")||src.endsWith(".wav")){
-            return await this.load_sound(id,{src:src,volume:volume},callback)
+            return await this.load_sound(id,{src:src,volume:volume},callback,overwrite)
         }else if(src.endsWith(".kanim")){
             return await this.load_animation(id,src,callback)
         }else if(src.endsWith(".kspr")){
@@ -241,10 +241,11 @@ export class ResourcesManager {
             if(this.imported[imported])this.imported[imported].sounds.push(sd.name)
         }
     }
-    async load_sound(id:string,def:SoundDef,callback?:(msg:string)=>void){
+    async load_sound(id:string,def:SoundDef,callback?:(msg:string)=>void,overwrite:boolean=false){
         if(callback)callback(def.src)
         if(this.sounds[id]){
-            return this.sounds[id]
+            if(overwrite)this.unload_sound(id)
+            else return this.sounds[id]
         }
 
         const response=await fetch(def.src)

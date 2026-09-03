@@ -13,6 +13,7 @@ export abstract class BaseObject2D{
     // Physical
     public hitbox:Hitbox2D
     public _base_hitbox:Hitbox2D
+    public cell_rect?:Rect
     get base_hitbox():Hitbox2D{
         return this._base_hitbox
     }
@@ -73,6 +74,7 @@ export abstract class BaseObject2D{
     update_hitbox():void{
         this.hitbox=this.base_hitbox.transform(this._position)
         if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
+        
     }
     to_rect():Rect{
         return this.hitbox.to_rect()
@@ -165,7 +167,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     update_object(obj: GameObject) {
         this.remove_object_from_cells(obj)
 
-        const rect = obj.to_rect()
+        const rect=obj.cell_rect??obj.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 

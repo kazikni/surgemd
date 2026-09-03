@@ -137,11 +137,11 @@ export const bullets_factory={
     },
     buckshot(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:6.8 * power,
+            damage:6.7 * power,
             speed:26 * (1 + (power - 1) * 0.4),
             range:30 * (1 + (power - 1) * 0.4),
 
-            falloff:0.4,
+            falloff:0.6,
             critical_mult:1.25,
             tracer:tracer
         }

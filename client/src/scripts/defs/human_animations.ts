@@ -121,7 +121,7 @@ export const DefaultHumanModes={
             )
         ),{
             position:h.position,
-            max_distance:10,
+            max_distance:15,
             bus:"humans"
         })
     },

@@ -5,6 +5,10 @@ import * as c_book from "./config/book.ts"
 import * as c_config from "./config/config.ts"
 import * as c_level_definition from "./config/level_definition.ts"
 
+import * as d_m_base from "./definitions/maps/base.ts"
+import * as d_m_normal from "./definitions/maps/normal.ts"
+import * as d_tables from "./definitions/loot_tables.ts"
+
 import * as o_accessorys from "./others/accessorys.ts"
 import * as o_constants from "./others/constants.ts"
 import * as o_functions from "./others/functions.ts"
@@ -24,6 +28,10 @@ export const globals:Record<string,any>={
     ...c_book,
     ...c_config,
     ...c_level_definition,
+
+    ...d_m_base,
+    ...d_tables,
+    ...d_m_normal,
 
     ...o_accessorys,
     ...o_constants,

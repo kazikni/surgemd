@@ -3,7 +3,7 @@ import {globals} from "common/scripts/scripts.ts"
 import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
-import { DeadZoneManager } from "./deadzone.ts";
+import { DeadZoneManager, DeadZoneMode } from "./deadzone.ts";
 import { GameObjectType, LayersL, LootAditional, LootData, LootSetting, LootTable } from "common/scripts/others/constants.ts";
 import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
@@ -141,6 +141,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         ...globals,
         HumanScript,
         LevelPlayerScript,
+        DeadZoneMode
     }
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[

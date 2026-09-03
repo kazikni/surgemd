@@ -43,7 +43,7 @@ export const LootTables={
     ],
     //Guns Spawn
     guns:[
-        {table:"common_guns",weight:150},
+        {table:"common_guns",weight:160},
         {table:"mythic_guns",weight:5},
         {table:"legendary_guns",weight:0.2}
     ],

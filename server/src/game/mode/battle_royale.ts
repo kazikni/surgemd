@@ -141,6 +141,7 @@ export class BattleRoyale extends ModeManager{
     on_game_reset(): void {
         if(this.groups_manager)this.groups_manager.reset()
         if(this.teams_manager)this.teams_manager.reset()
+        this.leader=undefined
     }
     override can_down(human: Human): boolean {
         if(this.teams_manager&&(human.team_data.team&&human.team_data.team.can_down(human))!){

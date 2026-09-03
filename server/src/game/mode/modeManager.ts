@@ -6,7 +6,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameObjectType, LootSetting, ScoreApplyerType } from "common/scripts/others/constants.ts";
+import { LootSetting } from "common/scripts/others/constants.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
 import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
@@ -15,7 +15,6 @@ import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.
 import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { human_die_event } from "../others/utils.ts";
-import { Bullet } from "../objects/bullet.ts";
 export interface GameRules{
     humans:{
         boosts:{

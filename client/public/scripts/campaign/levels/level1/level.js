@@ -1,4 +1,154 @@
 return (class extends LevelPlayerScript{
+    async initialize_mode(){
+        await this.game.auto_init({
+            mode:"normal",
+            settings:{
+                map:{
+                    def:{
+                        loot_tables:{
+                            ...LootTables,
+                            common_guns:[
+                                {item:"m9",weight:100},
+                                {item:"mp5",weight:90},
+                                {item:"micro_uzi",weight:80},
+                                {item:"ak47",weight:40},
+                                {item:"m870",weight:39},
+                                {item:"sr25",weight:5},
+                                {item:"kar98k",weight:5},
+                            ],
+                            guns:[
+                                {table:"common_guns",weight:1},
+                            ],
+                            melees:[
+                                {item:"survival_knife",weight:15},
+                                {item:"shovel",weight:15},
+                                {item:"axe",weight:10},
+                                {item:"pan",weight:2},
+                            ],
+                            scopes:[
+                                {item:"scope_2",count:1,weight:28},
+                                {item:"scope_3",count:1,weight:11},
+                            ],
+                            consumibles:[
+                                {table:"health_consumibles",count:1,weight:10},
+                                {table:"adrenaline_consumibles",count:1,weight:6},
+                            ],
+                            ammos:[
+                                {item:"p76",count:10,weight:5},
+                                {item:"l19",count:60,weight:5},
+                                {item:"c51",count:40,weight:5},
+                            ],
+
+                            wood_crate:[
+                                {weight:1,count:1,table:"normal_loot"},
+                            ],
+                            civil_loot:[
+                                {weight:1,table:"ammos"},
+                                {weight:1,table:"consumibles"},
+                                {weight:0.7,table:"equipments"},
+                                {weight:0.7,table:"scopes"},
+                                {weight:0.1,table:"guns"},
+                                {weight:0.003,table:"melees"},
+                            ],
+                            normal_loot:[
+                                {weight:1,table:"ammos"},
+                                {weight:1,table:"consumibles"},
+                                {weight:0.8,table:"guns"},
+                                {weight:0.7,table:"equipments"},
+                                {weight:0.6,table:"scopes"},
+                                {weight:0.01,table:"melees"},
+                            ],
+                        },
+                        biome:NormalBiome,
+                        size:v2(330,330),
+                        generation:{
+                            base:FloorType.Water,
+                            spawn:[
+                                {def:"sillo",count:3},
+                                {def:"wood_crate",count:200},
+                                {def:map_spawns.trees,count:250},
+                                {def:"river_rock",count:20},
+                                {def:"rock",count:200},
+                                {def:"bush",count:120},
+                                {def:"barrel",count:50},
+
+                                {def:"normal_loot",count:80},
+                            ],
+                            islands:[{
+                                terrain:{
+                                    radius:140,
+                                    passes:3,
+                                    points:6,
+                                    variation:40,
+                                    rivers:{
+                                        divisions:50,
+                                        spawn_floor:1,
+                                        expansion:32,
+                                        defs:[
+                                            {
+                                                rivers:[
+                                                    {width:10,width_variation:2},
+                                                    {width:10,width_variation:2},
+                                                ],
+                                                weight:1
+                                            },
+                                        ]
+                                    },
+                                    floors:[
+                                        {
+                                            padding:0,
+                                            type:FloorType.Sand,
+                                            spacing:3,
+                                            variation:3,
+                                        },
+                                        {
+                                            padding:10,
+                                            type:FloorType.Grass,
+                                            spacing:3,
+                                            variation:3,
+                                        },
+                                    ]
+                                }
+                            }]
+                        },
+                    }
+                },
+                deadzone:{
+                    mode:DeadZoneMode.staged,
+                    stages:MakeDeadZoneStages({
+                        count:7,
+                        radius:{
+                            decay:0.61,
+                            initial:30
+                        },
+                        damage:{
+                            advancing_scale:2,
+                            waiting_scale:1,
+                            limit:10,
+                            initial:2
+                        },
+                        wait_time:{
+                            initial:40,
+                            decay:0.97,
+                            min:30,
+                        },
+                        advancing_time:{
+                            initial:30,
+                            decay:0.95,
+                            min:20,
+                        },
+                    }),
+                },
+                airdrops:{
+                    obstacle:"airdrop",
+                    spawn:[]
+                },
+                drones:{
+                    spawn:[]
+                }
+            }
+        })
+    }
     on_start(){
         this.game.modeManager.add_enemies([
             {
@@ -9,7 +159,6 @@ return (class extends LevelPlayerScript{
                     "boosts": [
                         {"weight": 7,"def": "adrenaline","value": 0},
                         {"weight": 1,"def": "adrenaline","value": 1},
-                        {"weight": 1,"def": "shield","value": 1}
                     ],
                     "inventory": {
                         "infinity_ammo": true,
@@ -59,7 +208,7 @@ return (class extends LevelPlayerScript{
                         "melee": [
                             {
                                 "item": "fist",
-                                "weight": 30
+                                "weight": 40
                             },
                             {
                                 "item": "survival_knife",
@@ -73,154 +222,69 @@ return (class extends LevelPlayerScript{
                                 "item": "axe",
                                 "weight": 5
                             },
-                            {
-                                "item": "crowbar",
-                                "weight": 4
-                            },
-                            {
-                                "item": "katana",
-                                "weight": 1
-                            },
-                            {
-                                "item": "sledgehammer",
-                                "weight": 0.75
-                            },
-                            {
-                                "item": "bonesaw",
-                                "weight": 0.75
-                            },
-                            {
-                                "item": "pan",
-                                "weight": 0.75
-                            }
                         ],
                         "gun1": [
                             {
-                                "item": "hp18",
-                                "weight": 1
-                            },
-                            {
-                                "item": "m870",
-                                "weight": 6
-                            },
-                            {
-                                "item": "spas12",
-                                "weight": 1
-                            },
-                            {
-                                "item": "model94",
-                                "weight": 1
-                            },
-                            {
-                                "item": "kar98k",
-                                "weight": 1
-                            },
-                            {
-                                "item": "awp",
-                                "weight": 0.15
-                            },
-                            {
-                                "item": "awm",
-                                "weight": 0.1
-                            }
-                        ],
-                        "gun2": [
-                            {
-                                "item": "colt1873",
-                                "weight": 7
-                            },
-                            {
-                                "item": "colt1873_dual",
-                                "weight": 7
-                            },
-                            {
                                 "item": "m9",
-                                "weight": 7
+                                "weight": 8
                             },
                             {
                                 "item": "m9_dual",
-                                "weight": 7
-                            },
-                            {
-                                "item": "taurustx",
-                                "weight": 7
-                            },
-                            {
-                                "item": "taurustx_dual",
-                                "weight": 7
+                                "weight": 8
                             },
                             {
                                 "item": "mp5",
+                                "weight": 8
+                            },
+                            {
+                                "item": "micro_uzi",
+                                "weight": 7
+                            },
+                            {
+                                "item": "m870",
                                 "weight": 7
                             },
                             {
                                 "item": "ak47",
                                 "weight": 7
                             },
+                            {item:"sr25",weight:0.3},
                             {
-                                "item": "ar15",
+                                "item": "kar98k",
+                                "weight": 0.2
+                            },
+                        ],
+                        "gun2": [
+                            {
+                                "item": "m9",
+                                "weight": 8
+                            },
+                            {
+                                "item": "m9_dual",
+                                "weight": 8
+                            },
+                            {
+                                "item": "mp5",
+                                "weight": 8
+                            },
+                            {
+                                "item": "micro_uzi",
                                 "weight": 7
                             },
                             {
-                                "item": "famas",
-                                "weight": 5
+                                "item": "ak47",
+                                "weight": 7
                             },
-                            {
-                                "item": "m1921",
-                                "weight": 5
-                            },
-                            {
-                                "item": "m4a1",
-                                "weight": 4
-                            },
-                            {
-                                "item": "vector",
-                                "weight": 4
-                            },
-                            {
-                                "item": "p90",
-                                "weight": 4
-                            },
-                            {
-                                "item": "model94",
-                                "weight": 2
-                            },
-                            {
-                                "item": "sr25",
-                                "weight": 2
-                            },
-                            {
-                                "item": "vss",
-                                "weight": 2
-                            },
-                            {
-                                "item": "rifle_cbc",
-                                "weight": 2
-                            },
+                            {item:"sr25",weight:0.6},
                             {
                                 "item": "kar98k",
-                                "weight": 1
-                            },
-                            {
-                                "item": "awp",
                                 "weight": 0.2
                             },
-                            {
-                                "item": "pkp",
-                                "weight": 0.1
-                            },
-                            {
-                                "item": "awm",
-                                "weight": 0.1
-                            }
                         ],
                         "aitems": {
                             "p76":20,
-                            "c45": 140,
                             "c51": 140,
-                            "c22": 140,
                             "l19": 20,
-                            "l15": 200
                         },
                         "items": [
                             [
@@ -240,21 +304,15 @@ return (class extends LevelPlayerScript{
                                 {
                                     "item": "yellow_soda",
                                     "weight": 1
-                                },
-                                {
-                                    "item": "blue_soda",
-                                    "count": 2,
-                                    "weight": 1
                                 }
                             ]
                         ],
                         "iitems": [
                             "scope_2"
                         ]
-                    },
-                    "wrapping":["aqua","shiny","aqua_blue","gradient"]
+                    }
                 },
-                "count": 40
+                "count": 15
             },
             {
                 "def": {
@@ -262,7 +320,7 @@ return (class extends LevelPlayerScript{
                         "kind": "dumb"
                     }
                 },
-                "count": 59
+                "count": 39
             }
         ])
     }

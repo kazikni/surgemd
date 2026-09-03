@@ -267,50 +267,6 @@ export const NormalLobby:MapDef={
     },
     biome:NormalBiome,
 }
-export const NormalCounterMD:CounterMapDef={
-    spawn:[
-        RectHitbox2D.centered(v2(15,45),v2(1,6)),
-        RectHitbox2D.centered(v2(75,45),v2(1,6))
-    ],
-    seed:1000,
-    size:v2(90,90),
-    loot_tables:NormalMap.loot_tables,
-    generation:{
-        base:FloorType.Water,
-        spawn:[
-            {def:"sillo",count:2},
-
-            {def:"oak_tree",count:80},
-            {def:"stone",count:60},
-            {def:"bush",count:40},
-
-            {def:"barrel",count:10},
-        ],
-        islands:[{
-            terrain:{
-                radius:50,
-                passes:1,
-                points:5,
-                variation:1,
-                floors:[
-                    {
-                        padding:0,
-                        type:FloorType.Sand,
-                        spacing:1,
-                        variation:1,
-                    },
-                    {
-                        padding:10,
-                        type:FloorType.Grass,
-                        spacing:1,
-                        variation:1,
-                    }
-                ]
-            }
-        }]
-    },
-    biome:NormalBiome,
-}
 export const river_layers={
     ice:[
         {

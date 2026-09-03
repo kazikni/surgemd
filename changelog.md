@@ -31,7 +31,8 @@ ___
 ### Menu
 
 ___
-
+### Others
+* Battle Royale Level now have a smaller map
 ___
 # Play The Game
 [Web Version](https://surgemd.io)

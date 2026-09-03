@@ -16,7 +16,7 @@ export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
         advancing_scale:2,
         waiting_scale:1,
         limit:10,
-        initial:2
+        initial:1
     },
     wait_time:{
         initial:80,

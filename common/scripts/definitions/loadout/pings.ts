@@ -17,13 +17,10 @@ export function Pings_Default_Init():PingDef[]{
             idString:"airdrop",
             lifetime:13
         },
-        {
-            idString:"alert",
-            world_version:true,
-        },
-        {
-            idString:"here",
-            world_version:true,
-        },
+
+        {idString:"alert",world_version:true},
+        {idString:"here",world_version:true},
+        {idString:"heal",world_version:true},
+        {idString:"gift",world_version:true},
     ]
 }

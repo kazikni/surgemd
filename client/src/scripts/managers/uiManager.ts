@@ -247,32 +247,37 @@ export class UiManager{
     }
     emote_wheel={
         positon:v2(0,0),
+        world_position:undefined as Vec2|undefined,
         active:false,
         up_enable:true,
         current_side:-1,
         emotes:[] as (EmoteDef|PingDef|undefined)[],
     }
-    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef|undefined)[]){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef|undefined)[],world_position?:Vec2,comunication_mode?:boolean){
+        if(this.emote_wheel.active)return
         ShowElement(this.content.emote_wheel.main)
         HideElement(this.mobile_content.btn_emotes)
         this.content.emote_wheel.main.style.left=`${position.x}px`
         this.content.emote_wheel.main.style.top=`${position.y}px`
+        this.emote_wheel.world_position=world_position  
         this.emote_wheel.positon=position
         this.emote_wheel.active=true
         this.emote_wheel.up_enable=up_enable
 
         if(!emotes){
-            if(this.game.comunication_mode){
+            if(this.game.comunication_mode||comunication_mode){
                 emotes=[
-                    this.game.definitions.pings.getFromString("ping_alert"), //Right
-                    this.game.definitions.pings.getFromString("ping_here"), //Bottom
+                    this.game.definitions.pings.getFromString("ping_alert"), // Right
+                    this.game.definitions.pings.getFromString("ping_here"),  // Bottom
+                    this.game.definitions.pings.getFromString("ping_heal"),  // Left
+                    this.game.definitions.pings.getFromString("ping_gift"),  // Top
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_right")), //Right
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_bottom")), //Bottom
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_left")), //Left
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_top")), //Top
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_right")),  // Right
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_bottom")), // Bottom
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_left")),   // Left
+                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_top")),    // Top
                 ]
             }
             
@@ -280,6 +285,7 @@ export class UiManager{
         this.emote_wheel_set_emotes(emotes)
     }
     end_emote_wheel(force:boolean=false){
+        if(!this.emote_wheel.active)return
         if(!this.emote_wheel.up_enable&&!force)return
         HideElement(this.content.emote_wheel.main)
         ShowElement(this.mobile_content.btn_emotes)
@@ -290,8 +296,11 @@ export class UiManager{
         }
         if(selected_emote){
             if(this.game.definitions.pings.exist(selected_emote.idString)){
-                const pos=this.game.scene_2d.camera.to_world(this.emote_wheel.positon)
-                v2m.add(pos,pos,this.game.scene_2d.camera.position)
+                let pos:Vec2|undefined=this.emote_wheel.world_position
+                if(!pos){
+                    pos=this.game.scene_2d.camera.to_world(this.emote_wheel.positon)
+                    v2m.add(pos,pos,this.game.scene_2d.camera.position)
+                }
                 this.game.input.actions.push({
                     type:InputActionType.ping,
                     ping:selected_emote.idNumber!,

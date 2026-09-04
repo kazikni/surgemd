@@ -2,7 +2,7 @@
 ## News
 ___
 ### Mains
-
+* Fineshed Map Pings
 ___
 ### Menu
 * New Loading Screen
@@ -19,6 +19,9 @@ ___
 * Grey Jeans Pants
 * Green Gray Jeans Pants
 * Hair Paints
+* Here Ping
+* Heal Ping
+* Gift Ping
 ___
 ### Others
 * Parachute Perspective
@@ -35,6 +38,7 @@ ___
 ___
 ### Others
 * Battle Royale Level now have a smaller map
+* Improve Ping
 ___
 # Play The Game
 [Web Version](https://surgemd.io)

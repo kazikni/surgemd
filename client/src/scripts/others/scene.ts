@@ -1,9 +1,12 @@
 import { ClientGameScene2D } from "common/engine/web.ts";
 import { type GameObject } from "./gameObject.ts";
 import { Stream } from "common/engine/core.ts";
+import { PingWorld } from "../objects/ping_world.ts";
 
 export class Scene2D extends ClientGameScene2D<GameObject>{
     objects_process_queue:Stream[]=[]
+
+    pings:Record<number,PingWorld>={}
     override clear(): void {
         super.clear()
         this.objects_process_queue.length=0

@@ -183,7 +183,7 @@ export function SyncedParticles_Default_Init():SyncedParticleDef[]{
             side_effect:[
                 {
                     type:SideEffectType.AddEffect,
-                    duration:5,
+                    duration:10,
                     effect:"fire"
                 },
                 {
@@ -235,7 +235,7 @@ export function SyncedParticles_Default_Init():SyncedParticleDef[]{
             side_effect:[
                 {
                     type:SideEffectType.AddEffect,
-                    duration:5,
+                    duration:10,
                     effect:"fire"
                 },
                 {

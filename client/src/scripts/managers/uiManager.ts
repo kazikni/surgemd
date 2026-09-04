@@ -265,6 +265,7 @@ export class UiManager{
             if(this.game.comunication_mode){
                 emotes=[
                     this.game.definitions.pings.getFromString("ping_alert"), //Right
+                    this.game.definitions.pings.getFromString("ping_here"), //Bottom
                 ]
             }else{
                 emotes=[
@@ -289,7 +290,7 @@ export class UiManager{
         }
         if(selected_emote){
             if(this.game.definitions.pings.exist(selected_emote.idString)){
-                const pos=v2.dscale(this.emote_wheel.positon,this.game.scene_2d.camera.meter_size*this.game.scene_2d.camera.zoom)
+                const pos=this.game.scene_2d.camera.to_world(this.emote_wheel.positon)
                 v2m.add(pos,pos,this.game.scene_2d.camera.position)
                 this.game.input.actions.push({
                     type:InputActionType.ping,

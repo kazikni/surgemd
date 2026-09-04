@@ -70,6 +70,7 @@ export class MinimapModule extends UIModule<Game>{
 
         await this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
         await this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")
+        await this.load_map_icon("ping_here","/assets/img/menu/gui/map/ping_here.svg")
     }
 
     async load_map_icon(id:string,path:string){

@@ -127,6 +127,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
             events:{
                 "gun_shoot":(e)=>{
                     e.bullet.damage*=0.95
+                    e.bullet.speed*=0.95
                     if(!e.bullet.effects)e.bullet.effects=[]
                     e.bullet.effects.push({
                         type:SideEffectType.AddEffect,

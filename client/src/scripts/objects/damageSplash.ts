@@ -17,14 +17,6 @@ export class DamageSplashOBJ extends GameObject{
     sprite:Sprite2D
 
     ////////////////////////////
-    // Assets                 //
-    ////////////////////////////
-    sounds?:{
-        break?:Sound
-        hit?:Sound[]
-    }
-
-    ////////////////////////////
     // State                 //
     ////////////////////////////
     dying:boolean=false

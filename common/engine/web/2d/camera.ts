@@ -158,6 +158,18 @@ export class Camera2D{
             }
         }
     }
+    to_world(position:Vec2):Vec2{
+        const canvas=this.renderer.canvas
+        const x=position.x/canvas.width*this.size.x
+        const y=position.y/canvas.height*this.size.y
+        if(this.center_pos)return v2(x-this.size.x*.5,y-this.size.y*.5)
+        return v2(x,y)
+    }
+
+    to_world_camera(position:Vec2):Vec2{
+        const ret=this.to_world(position)
+        return v2.add(ret,this.position)
+    }
 
     update(dt:number,resources:ResourcesManager): void {
         let cameraPos=v2.clone(this.position)

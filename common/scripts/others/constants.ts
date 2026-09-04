@@ -128,6 +128,7 @@ export enum zIndexes{
     DeadZone,
     Lights,
     DamageSplashs,
+    PingWorld,
     UI,
 }
 export enum ActionsType{

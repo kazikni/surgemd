@@ -49,6 +49,7 @@ import { GameState, PlayArgs } from "./constants.ts";
 import { Scene2D } from "./scene.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { Wall } from "../objects/walls.ts";
+import { PingWorld } from "../objects/ping_world.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -602,6 +603,12 @@ export class Game extends ClientGame<GameObject>{
             }
         }
         if(priv.self_state)this.process_self_state(priv.self_state)
+        if(priv.pings){
+            for(const p of priv.pings){
+                const def=this.definitions.pings.getFromNumberSafe(p.def)
+                if(def?.world_version)this.scene_2d.add_object(new PingWorld(),this.scene_2d.camera.layer,undefined,p)
+            }
+        }
         this.device.update_private(priv)
         this.ui_manager.signal("private",priv)
     }

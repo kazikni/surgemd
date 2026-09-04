@@ -8,6 +8,8 @@ export interface PingDef extends Definition{
         duration?:number
         scale?:number
     }
+
+    world_version?:boolean
 }
 export function Pings_Default_Init():PingDef[]{
     return [
@@ -17,6 +19,11 @@ export function Pings_Default_Init():PingDef[]{
         },
         {
             idString:"alert",
+            world_version:true,
+        },
+        {
+            idString:"here",
+            world_version:true,
         },
     ]
 }

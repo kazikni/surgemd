@@ -173,6 +173,7 @@ export const LootTables={
         {weight:5,item:"sprite_ammo"},
         {weight:5,item:"biggest_magazine"},
         {weight:5,item:"self_revive"},
+        {weight:4.5,item:"incendiary_bullets"},
         {weight:4,item:"nature_leaf"},
         {weight:4,item:"rip_ammo"},
         {weight:4,item:"first_last_great"},

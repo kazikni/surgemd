@@ -1,5 +1,4 @@
-import { Definition, Definitions } from "../../../engine/core.ts";
-import { type HumanModifiers } from "../../others/constants.ts";
+import { Definition } from "../../../engine/core.ts";
 import { DamageReason } from "../utils.ts";
 import { SideEffect, SideEffectType } from "./effects.ts";
 
@@ -13,7 +12,7 @@ export interface BoostDef extends Definition{
         break_invensibility:number
     }
     se?:{
-        update_modifiers?:(human:any)=>Partial<HumanModifiers>
+        update_modifiers?:(human:any)=>Record<string,number>
         tick?:(dt:number,human:any)=>number
         can_apply?:(e:SideEffect,human:any)=>boolean
     }
@@ -84,7 +83,7 @@ export function Boosts_Default_Init():BoostDef[]{
             color:"#1f3",
             particle:"boost_green_bless_particle",
             se:{
-                update_modifiers(h):Partial<HumanModifiers>{
+                update_modifiers(h):Record<string,number>{
                     return {
                         damage_reduction:0.8
                     }
@@ -122,7 +121,7 @@ export function Boosts_Default_Init():BoostDef[]{
                     }
                     return 1.25
                 },
-                update_modifiers(h):Partial<HumanModifiers>{
+                update_modifiers(h):Record<string,number>{
                     return {
                         damage_reduction:0.25,
                         speed:1+(h.boost.value/h.boost.max)*0.5,

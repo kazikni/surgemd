@@ -12,6 +12,7 @@ ___
 ### Items
 * Tec22 - L15 C Rank Pistol
 * Guns Fire Sequence Spread
+* Incendiary Bullets Accessory
 ___
 ### Loadout
 * Different Shoes

@@ -1,5 +1,4 @@
 import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1 } from "../../engine/core.ts"
-import { type HumanModifiers } from "../others/constants.ts"
 import { FireMode, ItemRank } from "../others/item.ts"
 export enum PacketType{
     Feed=1,
@@ -210,7 +209,7 @@ export type HumanDefinition={
     group_color?:number
     ai?:HumanAIDef
     script?:string
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
 }
 export type CharacterDefinition=HumanDefinition&{
     description?:string

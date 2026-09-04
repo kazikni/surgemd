@@ -164,8 +164,8 @@ export class GunItem extends GunItemBase implements LItem{
                 )
                 const b=user.game.scene_2d.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(def.ammo_type),this.def,user.layer,is_idle?0.25:undefined)
                 b.set_definition(def.bullet.def)
-                b.speed*=user.modifiers.bullet_speed
-                b.tracer_height*=user.modifiers.bullet_size
+                b.speed*=user.get_modifier("bullet_speed")
+                b.tracer_height*=user.get_modifier("bullet_size")
                 user.inventory.accessorys.call_event("gun_shoot",{user:user,item:this,bullet:b,angle:ang,spread,position:pos})
                 b.set_direction(ang)
             }

@@ -1,6 +1,5 @@
 import { Definition, Numeric, tdm } from "../../../engine/core.ts";
 import { TD, TDType } from "../../../engine/core/lang/td.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 import { ItemRank } from "../../others/item.ts";
 import { SideEffectType } from "../player/effects.ts";
 import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
@@ -21,7 +20,7 @@ export interface AccessoryDef extends Definition{
     rank:ItemRank
 
     property?:string[]
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
     events?:Record<string,(e:any)=>void>
 }
 
@@ -119,6 +118,21 @@ export function Accessorys_Default_Init():AccessoryDef[]{
                     e.bullet.speed*=0.7
                     e.bullet.damage*=0.7
                     e.bullet.tracer_alpha*=0.5
+                }
+            }
+        },
+        {
+            idString:"incendiary_bullets",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.damage*=0.95
+                    if(!e.bullet.effects)e.bullet.effects=[]
+                    e.bullet.effects.push({
+                        type:SideEffectType.AddEffect,
+                        duration:10,
+                        effect:"fire"
+                    })
                 }
             }
         },

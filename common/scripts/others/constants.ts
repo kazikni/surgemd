@@ -136,20 +136,6 @@ export enum ActionsType{
     Helpup,
     BeingHelpup
 }
-
-export type HumanModifiers={
-    size:number
-    damage:number
-    speed:number
-    health:number
-    boost:number
-    bullet_speed:number
-    bullet_size:number
-    critical_mult:number
-    luck:number
-    mana_consume:number
-    damage_reduction:number
-}
 export enum  SpawnModeType{
     any,
     fixed,

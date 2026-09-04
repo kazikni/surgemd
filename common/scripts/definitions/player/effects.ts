@@ -1,5 +1,4 @@
 import { Definition, Definitions, FrameDef } from "../../../engine/core.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 
 export enum EffectType{
     Buff,
@@ -34,7 +33,7 @@ export type SideEffect=({
     merge?:boolean
 }|{
     type:SideEffectType.Modify,
-    modify:Partial<HumanModifiers>
+    modify:Record<string,number>
 }|{
     type:SideEffectType.Damage
     amount:number
@@ -72,7 +71,7 @@ Effects.insert(
         side_effects:[
             {
                 type:SideEffectType.Damage,
-                amount:8,
+                amount:1,
                 piercing:true,
             },
         ],

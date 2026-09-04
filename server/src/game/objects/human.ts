@@ -2,7 +2,6 @@ import { InputAction, InputActionType} from "common/scripts/packets/input_packet
 import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanVisualData } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset, ScopeChange } from "common/scripts/definitions/utils.ts"
-import { type HumanModifiers } from "common/scripts/others/constants.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
 import { FloorDef, Floors} from "common/scripts/others/terrain.ts"
@@ -241,24 +240,13 @@ export class Human extends Humanoid{
 
     being_helpup_by?:Human
 
-    modifiers:HumanModifiers={
-        size:1,
-        boost:1,
-        health:1,
-        damage_reduction:1,
-
-        damage:1,
-        bullet_size:1,
-        bullet_speed:1,
-        critical_mult:1,
-
-        speed:1,
-
-        luck:1,
-        mana_consume:1,
+    modifiers:Record<string,number>={
     }
-
-    temp_modifiers:Partial<HumanModifiers>={}
+    temp_modifiers:Record<string,number>={}
+    get_modifier(val:string):number{
+        if(this.modifiers[val]===undefined)return 1
+        return this.modifiers[val]
+    }
 
     effects:Map<number,EffectInstance&{owner?:Human}>=new Map()
     effects_dirty:boolean=true
@@ -486,18 +474,14 @@ export class Human extends Humanoid{
         }
         return ai
     }
-    apply_modifiers(mods:Partial<HumanModifiers>){
-        this.modifiers.size*=mods.size??1
-        this.modifiers.boost*=mods.boost??1
-        this.modifiers.bullet_size*=mods.bullet_size??1
-        this.modifiers.bullet_speed*=mods.bullet_speed??1
-        this.modifiers.damage*=mods.damage??1
-        this.modifiers.health*=mods.health??1
-        this.modifiers.speed*=mods.speed??1
-        this.modifiers.damage_reduction*=mods.damage_reduction??1
+    apply_modifiers(mods:Record<string,number>){
+        for(const m in mods){
+            if(this.modifiers[m]===undefined)this.modifiers[m]=mods[m]
+            else this.modifiers[m]*=mods[m]
+        }
     }
     update_modifiers(){
-        this.modifiers.size=this.modifiers.damage=this.modifiers.speed=this.modifiers.mana_consume=this.modifiers.health=this.modifiers.boost=this.modifiers.bullet_speed=this.modifiers.bullet_size=this.modifiers.critical_mult=this.modifiers.damage_reduction=1
+        this.modifiers={}
         this.apply_modifiers(this.temp_modifiers)
         if(this.equipment_data.helmet?.modifiers)this.apply_modifiers(this.equipment_data.helmet.modifiers)
         if(this.equipment_data.vest?.modifiers)this.apply_modifiers(this.equipment_data.vest.modifiers)
@@ -510,12 +494,12 @@ export class Human extends Humanoid{
                 }
             }
         }
-        this.health.max=100*this.modifiers.health
-        this.boost.max=100*this.modifiers.boost
+        this.health.max=100*this.get_modifier("health")
+        this.boost.max=100*this.get_modifier("boost")
         this.health.value=Math.min(this.health.value,this.health.max)
-        if(this.physical_data.scale!==this.modifiers.size){
+        if(this.physical_data.scale!==this.get_modifier("size")){
             this.physical_data.dirty=true
-            this.physical_data.scale=this.modifiers.size
+            this.physical_data.scale=this.get_modifier("size")
             this.update_body()
         }
     }
@@ -911,7 +895,7 @@ export class Human extends Humanoid{
         let speed=5.3*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
-            * this.modifiers.speed
+            * this.get_modifier("speed")
             * (this.downed?0.25:1)
             * (this.parachute?1:(current_floor.speed_mult))
             * (this.grenade_holding?0.7:1)
@@ -928,7 +912,7 @@ export class Human extends Humanoid{
                 for(const sf of e.effect.side_effects){
                     this.side_effect(sf,e.owner)
                 }
-                e.tick_time=2
+                e.tick_time=1
             }
             if(e.time<0){
                 this.effects.delete(e.effect.idNumber!)
@@ -1142,7 +1126,7 @@ export class Human extends Humanoid{
         if(params.owner instanceof Human){
             const is_ally=this.game.modeManager.is_ally(this,params.owner)
             if(params.owner.id!==this.id&&is_ally&&!(this.human_data.friendly_fire&&params.owner.human_data.friendly_fire))return
-            mod*=params.owner.modifiers.damage
+            mod*=params.owner.get_modifier("damage")
         }
         if(this.equipment_data.vest){
             mod-=this.equipment_data.vest.reduction*penetration
@@ -1153,9 +1137,9 @@ export class Human extends Humanoid{
             damage-=this.equipment_data.helmet.defence*penetration
         }
         if(params.critical){
-            mod+=this.modifiers.critical_mult-1
+            mod+=this.get_modifier("critical_mult")-1
         }
-        damage*=this.modifiers.damage_reduction
+        damage*=this.get_modifier("damage_reduction")
         damage*=mod
         params.amount=damage
         this.piercing_damage(params)

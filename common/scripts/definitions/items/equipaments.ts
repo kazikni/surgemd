@@ -2,7 +2,6 @@ import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from 
 import { ItemRank } from "../../others/item.ts";
 import { DeepPartial, Definition, mergeDeep, TD, tdm, TDType, v2, Vec2, Vec2TD } from "../../../engine/core.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { HumanModifiers } from "../../others/constants.ts";
 export const equipment_factorys={
     vest_1(id:string,e:DeepPartial<VestDef>={}):VestDef{
         return mergeDeep({
@@ -122,7 +121,7 @@ export interface VestDef extends Definition{
 
     property?:string[]
     events?:Record<string,(e:any)=>void>
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
 }
 export const HelmetTD:TD={
     type:TDType.object,
@@ -203,7 +202,7 @@ export interface HelmetDef extends Definition{
 
     property?:string[]
     events?:Record<string,(e:any)=>void>
-    modifiers?:Partial<HumanModifiers>
+    modifiers?:Record<string,number>
 }
 export function Helmets_Default_Init():HelmetDef[]{
     return [

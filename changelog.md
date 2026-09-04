@@ -10,6 +10,7 @@ ___
 * Final Credits
 ___
 ### Items
+* Tec22 - L15 C Rank Pistol
 * Guns Fire Sequence Spread
 ___
 ### Loadout

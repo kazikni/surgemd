@@ -12,6 +12,7 @@ export const LootTables={
         {item:"ak47",weight:40},
         {item:"ar15",weight:40},
         {item:"m870",weight:39},
+        {item:"tec22",weight:37},
         {item:"m1921",weight:10},
         {item:"famas",weight:8},
         {item:"rifle_cbc",weight:7},

@@ -188,6 +188,7 @@ export const TundraMap:MapDef={
             {item:"ak47",weight:55},
             {item:"ar15",weight:55},
             {item:"m1921",weight:55},
+            {item:"tec22",weight:50},
 
             {item:"kar98k",weight:46},
 

@@ -554,6 +554,48 @@ export function Guns_Default_Init():GunDef[]{
                 }
             },
         }),
+        guns_factory.pistol("tec22","l15",{
+            name:"Tec22",
+            fire_delay:0.06,
+            rank:ItemRank.C,
+            fire_mode:FireMode.Auto,
+            spread:7,
+            jitter_radius:0.25,
+            idle_spread:0.75,
+            fire_sequence:{
+                increse:0.038,
+                decay:0.6,
+                spread:{begin:0.75}
+            },
+
+            ammo_spawn:{
+                amount:87,
+            },
+
+            bullet:{
+                def:bullets_factory.smg(1)
+            },
+            recoil:{
+                duration:0.1,
+                speed:0.85
+            },
+            reload:{
+                delay:2,
+                capacity:29,
+                extended_capacity:35,
+            },
+            dual:{
+                dual_offset:0.2,
+
+                fire_delay:0.03,
+                spread:10,
+                reload:{
+                    capacity:58,
+                    extended_capacity:70,
+                    delay:3.1
+                }
+            },
+        }),
         guns_factory.pistol("colt1873","c22",{
             name:"Colt-1873",
             fire_delay:0.3,

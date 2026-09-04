@@ -152,13 +152,16 @@ export class GunItem extends GunItemBase implements LItem{
 
         if(def.bullet){
             const bullets_count=def.bullet.count??1
-            const patternPoint = getPatterningShape(bullets_count, def.jitter_radius??1)
+            const patternPoint:Vec2[]=[]
+            if(def.jitter_radius&&bullets_count>1)patternPoint.push(...getPatterningShape(bullets_count, def.jitter_radius??0))
             for(let i=0;i<bullets_count;i++){
                 let ang=user.physical_data.rotation
                 if(spread){
                     ang+=Angle.deg2rad(random.float(-spread,spread))
                 }
-                const pos=def.jitter_radius?v2.add(position,patternPoint[i]):position
+                const pos=patternPoint[i]?v2.add(position,patternPoint[i]):(
+                    def.jitter_radius?v2.add(position,random.random_in_circle(def.jitter_radius)):position
+                )
                 const b=user.game.scene_2d.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(def.ammo_type),this.def,user.layer,is_idle?0.25:undefined)
                 b.set_definition(def.bullet.def)
                 b.speed*=user.modifiers.bullet_speed

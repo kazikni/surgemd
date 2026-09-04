@@ -140,7 +140,9 @@ export class Obstacle extends StaticBody{
     }
     update_frame(){
         this.sprite.transform_frame({
+            visible:true,
             tint:0xffffff,
+            alpha:255,
             scale:2,
             hotspot:v2.half_one
         })
@@ -179,13 +181,15 @@ export class Obstacle extends StaticBody{
                 }
             }
         }
-
-        this.container.visible=true
-
         const tid=this.def.assets?.frame?.tint_variations
         if(tid){
-            this.sprite.tint=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+            const a=this.sprite.tint.a
+            const color=ColorM.number(tid[Numeric.clamp(this.variation-1,0,tid.length)])
+            if(this.assets_data.particles)this.assets_data.particles.tint=color
+            this.sprite.tint=color
+            this.sprite.tint.a=a
         }
+        this.container.visible=true
     }
     update_shadow(){
         if(this.shadow){

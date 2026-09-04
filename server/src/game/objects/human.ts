@@ -981,6 +981,7 @@ export class Human extends Humanoid{
                 })
             }
         }
+        if(this.knocked)this.scope_zoom=this.equipment_data.default_scope.scope_view
 
         this.inventory.update(dt)
         this.tick_input(dt)

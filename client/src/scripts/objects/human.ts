@@ -473,7 +473,8 @@ export class Human extends Humanoid{
                 if(!hb.colliding_with(c.hitbox))continue
                 switch(c.number_type){
                     case GameObjectType.Obstacle:
-                    case GameObjectType.Building:{
+                    case GameObjectType.Building:
+                    case GameObjectType.Walls:{
                         if((c as StaticBody).physical_data.no_bullets_collision)continue
                         (c as StaticBody).on_hitted(hb.position,true)
                         break

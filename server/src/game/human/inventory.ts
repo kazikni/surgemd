@@ -285,7 +285,7 @@ export class GunItem extends GunItemBase implements LItem{
             //console.log(this.fire_sequence)
         }
         if(user.inventory.hand_item===this&&!user.actions.current_action){
-            if((this.ammo<=0||this.reloading)&&this.def.reload){
+            if(((this.ammo<=0&&this.use_delay<=0)||this.reloading)&&this.def.reload){
                 this.reloading=true
                 this.reload(user)
             }

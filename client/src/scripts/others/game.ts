@@ -49,6 +49,7 @@ import { GameState, PlayArgs } from "./constants.ts";
 import { Scene2D } from "./scene.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
+import { Wall } from "../objects/walls.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 

@@ -91,7 +91,7 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 50 * power,
+            damage: 45 * power,
             range: 200 * (1 + (power - 1) * 0.5),
             speed: 57 * (1 + (power - 1) * 0.6),
 
@@ -588,11 +588,11 @@ export function Guns_Default_Init():GunDef[]{
                 dual_offset:0.2,
 
                 fire_delay:0.03,
-                spread:10,
+                spread:12,
                 reload:{
                     capacity:58,
                     extended_capacity:70,
-                    delay:3.1
+                    delay:3.7
                 }
             },
         }),
@@ -1064,7 +1064,7 @@ export function Guns_Default_Init():GunDef[]{
             reload:{
                 delay:2.7,
                 capacity:8,
-                extended_capacity:12,
+                extended_capacity:13,
             },
             recoil:{
                 duration:1.7,
@@ -1150,6 +1150,41 @@ export function Guns_Default_Init():GunDef[]{
                 duration:0.9,
                 speed:0.75
             },
+        }),
+        guns_factory.sniper("rifle_cbc","l15",{
+            name:"Rifle-CBC",
+            fire_delay:0.9,
+            spread:2,
+            idle_spread:0.75,
+            fire_sequence:{
+                spread:{begin:0.5},
+                increse:0.2,
+                decay:0.2
+            },
+
+            ammo_spawn:{
+                amount:60
+            },
+
+            bullet:{
+                def:{
+                    ...bullets_factory.sniper(0.67,tracers.medium),
+                    pass_through_humans:true,
+                }
+            },
+            reload:{
+                delay:0.8,
+                capacity:10,
+                extended_capacity:20,
+                reload_count:1
+            },
+            recoil:{
+                duration:1,
+                speed:0.85
+            },
+            assets:{
+                cycle_sound:true,
+            }
         }),
         /////////////////////////////////////////////
         //                SHOTGUNS                 //
@@ -1309,47 +1344,6 @@ export function Guns_Default_Init():GunDef[]{
                 duration:0.4,
                 speed:0.8
             },
-        }),
-        guns_factory.dmr("rifle_cbc","l15",{
-            name:"Rifle-CBC",
-            fire_delay:0.14,
-            spread:3,
-            fire_sequence:{
-                spread:{begin:0.5},
-                increse:0.14,
-                decay:0.6
-            },
-
-            ammo_spawn:{
-                amount:60
-            },
-
-            bullet:{
-                def:{
-                    damage:14,
-                    falloff:0.5,
-                    range:165,
-                    speed:40,
-                    pass_through_humans:true,
-                    tracer:{
-                        ...tracers.small,
-                        alpha:0.75
-                    }
-                }
-            },
-            reload:{
-                delay:0.8,
-                capacity:10,
-                extended_capacity:20,
-                reload_count:2
-            },
-            recoil:{
-                duration:0.4,
-                speed:0.85
-            },
-            assets:{
-                cycle_sound:true,
-            }
         }),
         guns_factory.dmr("m1_garand","c51",{
             name:"M1-Garand",

@@ -502,13 +502,16 @@ export const obstacles_factory={
                     },
                     frame:{
                         base:frame,
+                        dead_transform:{
+                            visible:false
+                        },
                         transform:{
                             tint:typeof tint==="number"?tint:undefined
                         },
                         tint_variations:typeof tint==="number"?undefined:tint,
                         variations:typeof tint==="number"?undefined:tint.length,
                         sprite_variations:false
-                    }
+                    },
                 },
                 rotation_mode:RotationMode.limited,
                 spawnMode:Spawn.grass,

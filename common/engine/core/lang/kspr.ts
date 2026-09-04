@@ -1,6 +1,6 @@
 import { type FileManager } from "../definition/file.ts";
 import { RectPacker } from "../math/geometry.ts";
-import { cloneDeep, Path } from "../math/utils.ts";
+import { Path } from "../math/utils.ts";
 import { DynamicStream, Stream } from "../net/stream.ts";
 import { audios, AudioSheet,AudioDecoder,AudioEncoder } from "./audiosheet.ts";
 export enum KSPRImageFormat {

@@ -177,8 +177,8 @@ export const TundraMap:MapDef={
     
             // Uncommon Guns
             {item:"sr25",weight:83},
-            {item:"rifle_cbc",weight:83},
             {item:"vss",weight:83},
+            {item:"rifle_cbc",weight:80},
             {item:"model94",weight:80},
             {item:"blr81",weight:75},
 
@@ -498,7 +498,7 @@ export const TundraMap:MapDef={
             {def:[
                 {def:"shed_t",weight:1},
                 {def:"hunt_house_1",weight:3}
-            ],count:30},
+            ],count:3000},
             {def:"sillo",count:3},
 
             {def:"golden_stone",count:1},

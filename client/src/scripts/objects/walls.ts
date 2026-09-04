@@ -2,6 +2,7 @@ import { Sound, WallShape2D } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { HitboxGroup2D, NullHitbox2D, Stream, v2, Vec2} from "common/engine/core.ts";
+import { hit_sounds } from "common/scripts/definitions/utils.ts";
 export class Wall extends StaticBody{
     ////////////////////////////
     // Definition             //
@@ -44,6 +45,12 @@ export class Wall extends StaticBody{
 
     set_wall(position:Vec2[][],width=0.3,stroke_width=0.1){
         this.wall.set_wall(position,width,stroke_width)
+        this.set_hit_sounds_def(hit_sounds.wood)
+        this.set_hit_particles_def("wall",0,{
+            tint:0x555555,
+            particle:"plank_particle",
+        })
+
         this.physical_data.hitbox=new HitboxGroup2D(...HitboxGroup2D.walls(position,width))
         this.base_hitbox=this.physical_data.hitbox
         this.physical_data.no_bullets_collision=false

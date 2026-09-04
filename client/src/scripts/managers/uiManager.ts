@@ -14,7 +14,7 @@ import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
 import { BuildingCeiling, type Building } from "../objects/building.ts";
 import { InformationBoxModule } from "../uim/information-box.ts";
 import { MinimapModule } from "../uim/minimap.ts";
-import { FeedMessage, FeedMessageLeader, FeedMessageType, GeneralFullMainState, GeneralUpdate } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, FeedMessageType, GeneralFullMainState, GeneralUpdate } from "common/scripts/packets/general_update.ts";
 import { AdditionalInfoModule } from "../uim/additional_info.ts";
 import { type Obstacle } from "../objects/obstacle.ts";
 import { GameOverScreen, GameOverScreenType } from "common/scripts/config/level_definition.ts";

@@ -87,15 +87,22 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
         if(itemD.ammo_spawn&&!(aditional.without_ammo||settings.without_ammo)){
             const ammo_def=(game.definitions as GameDefinition).game_items.valueString[(itemD as unknown as GunDef).ammo_spawn?.type??(itemD as unknown as GunDef).ammo_type]
             
-            const data={
+            const data:LootData={
                 item:ammo_def,
                 count:(itemD as GunDef).ammo_spawn!.amount
             }
             if(itemD.dual_from!==undefined)data.count*=2
-            if(settings.include_ammo||aditional.include_ammo){
-                ret[0].aditional=[data]
-            }else{
-                ret.push(data)
+            if(settings.hold_ammo){
+                ret[0].ammo=itemD.reload?.capacity??0
+                data.count-=ret[0].ammo
+            }
+
+            if(data.count>0){
+                if(settings.include_ammo||aditional.include_ammo){
+                    ret[0].aditional=[data]
+                }else{
+                    ret.push(data)
+                }
             }
         }
         return ret

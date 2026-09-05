@@ -245,12 +245,14 @@ export interface PlayerStatus extends HumanStatus{
 export interface LootData{
     count:number
     item:GameItem
+    ammo?:number|boolean
     skin?:number
     aditional?:LootData[]
 }
 export interface LootSetting{
     without_ammo?:boolean
     include_ammo?:boolean
+    hold_ammo?:boolean
     all_skins?:boolean
 }
 export interface LootAditional extends LootSetting{

@@ -36,6 +36,7 @@ export interface GameRules{
         group_colors:number[]
         no_quickswitch:boolean
         reload_while_shoot:boolean
+        hold_ammo:boolean
     }
     ambient:{
         day_night_cycle:number
@@ -119,7 +120,8 @@ export abstract class ModeManager extends GameComponent{
                 0xd61cab,
                 0x146aba,
                 0xffcc00,
-            ]
+            ],
+            hold_ammo:true
         },
         ambient:{
             day_night_cycle:1,
@@ -156,7 +158,9 @@ export abstract class ModeManager extends GameComponent{
         feed:{
             enabled:true
         },
-        loot_settings:{}
+        loot_settings:{
+            hold_ammo:true
+        },
     }
 
     constructor(){

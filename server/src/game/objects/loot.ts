@@ -37,7 +37,7 @@ export class Loot extends ServerGameObject{
         return user.hitbox.colliding_with(this.hitbox)&&!this.destroyed&&this.loot_data.count>0
     }
     override on_interact(user: Human): void {
-        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,undefined,this.loot_data.skin)
+        const c=user.inventory.give_item(this.loot_data.item,this.loot_data.count,false,this.loot_data.ammo,this.loot_data.skin)
         for(const l of this.loot_data.aditional??[]){
             user.inventory.give_loot(l,undefined,undefined,this.position,this.layer)
         }
@@ -53,6 +53,7 @@ export class Loot extends ServerGameObject{
             item:loot.item,
             count:loot.count,
             aditional:loot.aditional,
+            ammo:loot.ammo,
             skin:loot.skin
         }
         switch(loot.item.item_type){

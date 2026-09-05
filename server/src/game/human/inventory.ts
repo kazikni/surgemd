@@ -310,15 +310,16 @@ export class GunItem extends GunItemBase implements LItem{
         if(this.def.unload_delay!==undefined)this.use_delay=this.def.unload_delay
     }
     drop(): Loot[] {
-        if(this.ammo>0&&!this.infinity_ammo()){
+        const hold_ammo=this.inventory.owner.game.modeManager.rules.humans.hold_ammo
+        if(!hold_ammo&&this.ammo>0&&!this.infinity_ammo()){
             this.inventory.give_item(this.inventory.owner.game.definitions.ammos.getFromString((this.def as GunDef).ammo_type),this.ammo)
         }
         if(this.def.dual_from){
             const ret:Loot[]=[]
-            for(let i=0;i<2;i++)ret.push(this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.inventory.owner.game.definitions.guns.getFromString(this.def.dual_from),count:1},this.inventory.owner.layer))
+            for(let i=0;i<2;i++)ret.push(this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.inventory.owner.game.definitions.guns.getFromString(this.def.dual_from),count:1,ammo:hold_ammo?(i===0?Math.ceil(this.ammo/2):Math.floor(this.ammo/2)):undefined},this.inventory.owner.layer))
             return ret
         }else{
-            return [this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.def,count:1},this.inventory.owner.layer)]
+            return [this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.def,count:1,ammo:hold_ammo?this.ammo:undefined},this.inventory.owner.layer)]
         }
     }
 }
@@ -599,15 +600,18 @@ export class GInventory extends GInventoryBase<LItem>{
         this.net_sync.melee_world=true
         return true
     }
-    add_gun(dd:GunDef,full_ammo:boolean,skin?:number):boolean{
+    add_gun(dd:GunDef,ammo?:boolean|number,skin?:number):boolean{
         const id=dd.idString
         if(dd.dual&&!dd.dual_from){
             for(const w of Object.keys(this.weapons)){
                 if(this.weapons[w as unknown as number]?.def.idString==dd.idString){
                     const dd=this.owner.game.definitions.guns.getFromString(id+"_dual")
+                    const old_ammo=(this.weapons[w as unknown as number] as GunItem).ammo
                     this.set_weapon(w as unknown as number,dd,skin,false)
-                    if(full_ammo){
+                    if(ammo===true){
                         (this.weapons[w as unknown as number] as GunItem).ammo=dd.reload?.capacity??0
+                    }else if(typeof ammo==="number"){
+                        ;(this.weapons[w as unknown as number] as GunItem).ammo=old_ammo+ammo
                     }
                     return true
                 }
@@ -616,16 +620,20 @@ export class GInventory extends GInventoryBase<LItem>{
         for(const w of Object.keys(this.weapons)){
             if(this.weapon_is_free(w as unknown as number)&&this.weapons_kind[w as unknown as number]==GunItem){
                 this.set_weapon(w as unknown as number,dd,skin)
-                if(full_ammo){
+                if(ammo===true){
                     (this.weapons[w as unknown as number] as GunItem).ammo=dd.reload?.capacity??0
+                }else if(typeof ammo==="number"){
+                    (this.weapons[w as unknown as number] as GunItem).ammo=ammo
                 }
                 return true
             }
         }
         if(this.weapons_kind[this.weapon_idx]==GunItem){
             const set=this.set_weapon(this.weapon_idx,dd,skin)
-            if(full_ammo){
+            if(ammo===true){
                 (this.weapons[this.weapon_idx] as GunItem).ammo=dd.reload?.capacity??0
+            }else if(typeof ammo==="number"){
+                (this.weapons[this.weapon_idx] as GunItem).ammo=ammo
             }
             return set
         }
@@ -732,7 +740,7 @@ export class GInventory extends GInventoryBase<LItem>{
         this.owner.equipment_data.vest.events?.[name]?.({user:this})
         return ret
     }
-    give_item(def:GameItem,count:number,drop_overflow:boolean=true,full_ammo:boolean=false,skin?:number,position?:Vec2,layer?:number):number{
+    give_item(def:GameItem,count:number,drop_overflow:boolean=true,ammo?:boolean|number,skin?:number,position?:Vec2,layer?:number):number{
         if(!position)position=this.owner.position
         if(layer===undefined)layer=this.owner.layer
         switch(def.item_type){
@@ -837,7 +845,7 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             case GameItemType.gun:{
                 const d=def as unknown as GunDef
-                const g=this.add_gun(d,full_ammo,skin)
+                const g=this.add_gun(d,ammo,skin)
                 this.net_sync.weapons=true
                 count=g?count-1:count
                 if(drop_overflow&&count>0){

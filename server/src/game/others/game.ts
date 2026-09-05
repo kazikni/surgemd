@@ -30,6 +30,7 @@ import { HumanScript } from "../human/ai/script.ts";
 import { LevelPlayerScript } from "../mode/level_player.ts";
 import { Drone } from "../objects/drone.ts";
 import { ServerGameScene2D } from "./scene.ts";
+import { SequenceMode } from "../mode/sequence.ts";
 export interface GameData {
     living_count: number[]
 
@@ -86,6 +87,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     started_time:number=0
     can_start:boolean=true
     can_finish:boolean=true
+    can_win:boolean=true
     
     loot_tables:LootTablesManager<LootData,LootAditional,LootSetting>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootSetting>)
 
@@ -220,6 +222,9 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                     break
                 case "counter_md":
                     //this.init(new CounterMD(game_config.mode_settings))
+                    break
+                case "sequence":
+                    await this.init(new SequenceMode(game_config.settings))
                     break
                 case "debug":
                     await this.init(new BattleRoyaleDebug(game_config.settings,game_config.group_size??1))

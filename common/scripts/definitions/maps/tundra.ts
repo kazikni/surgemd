@@ -498,7 +498,7 @@ export const TundraMap:MapDef={
             {def:[
                 {def:"shed_t",weight:1},
                 {def:"hunt_house_1",weight:3}
-            ],count:3000},
+            ],count:30},
             {def:"sillo",count:3},
 
             {def:"golden_stone",count:1},

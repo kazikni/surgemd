@@ -109,9 +109,11 @@ export class LevelPlayer extends GameComponent {
     async on_game_finish(e:{winners:Player[]}){
         let win=false
         for(const p of e.winners){
-            if(p.is_player&&this.game.players.connected_players[p.conn?.id??0])win=true
+            if(p.is_player&&this.game.players.connected_players[p.conn?.id??0]&&!p.dead)win=true
         }
-        await this.script.on_game_finish({...e,win})
+        const ev={...e,win}
+        await this.script.on_game_finish(ev)
+        this.game.can_win=ev.win
     }
     override on_tick(dt:number){
     }

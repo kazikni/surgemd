@@ -587,7 +587,7 @@ export class GInventory extends GInventoryBase<LItem>{
         this.net_sync.melee_world=true
     }
     override set_weapon(slot: number, wep?: GameItem,skin?:number,drop:boolean=true): boolean {
-        if(wep?.idString===this.weapons[slot]?.def.idString)return false
+        //if(wep?.idString===this.weapons[slot]?.def.idString)return false
         if(drop){
             if(this.weapons[slot]&&this.weapons[slot].def!=this.weapons_defaults[slot]){
                 this.weapons[slot].drop()

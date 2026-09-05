@@ -131,6 +131,7 @@ export class BattleRoyale extends ModeManager{
         },this.settings.join_time)
     }
     override on_tick(dt: number): void {
+        super.on_tick(dt)
         if(this.groups_manager)this.groups_manager.tick(dt)
         if(this.teams_manager)this.teams_manager.tick(dt)
     }
@@ -177,10 +178,10 @@ export class BattleRoyale extends ModeManager{
     can_be_leader(p:Human):boolean{
         return p instanceof Player&&(this.leader===undefined?p.status.kills>=this.rules.leader.kills_min:this.leader.status.kills<p.status.kills)
     }
-    is_leader(p:Human):boolean{
+    override is_leader(p:Human):boolean{
         return this.leader?.id===p.id
     }
-    get_leader(): Human|undefined {
+    override get_leader(): Human|undefined {
         return this.leader
     }
     assign_leader(p:Human):boolean{
@@ -230,23 +231,13 @@ export class BattleRoyale extends ModeManager{
         if(e.human.killed_by){
             if(e.human.killed_by.id!==e.human.id&&!this.is_ally(e.human,e.human.killed_by)){
                 const killer=e.human.killed_by
-
                 const rules=this.rules
-                killer.status.kills++
-
                 let kill_reward=rules.score.kill_reward
                 if(this.is_leader(e.human)){
                     kill_reward*=rules.score.leader_kill
                 }
-                if(e.params.object&&e.params.object.number_type===GameObjectType.Bullet){
-                    if((e.params.object as Bullet).reflection_count>0)kill_reward+=rules.score.bounce_kill
-                }
-                killer.apply_score(ScoreApplyerType.Kill,kill_reward)
                 this.assign_leader(killer)
-                killer.inventory.accessorys.call_event("kill",{
-                    ...e.params,
-                    owner:killer
-                })
+                killer.on_kill(kill_reward,e.params)
             }
         }
         if(this.is_leader(e.human)){
@@ -275,9 +266,7 @@ export class BattleRoyale extends ModeManager{
                 }
                 if(stopped){
                     for(const w of winners){
-                        if(w.visual.emotes.victory){
-                            w.input.emote=w.visual.emotes.victory
-                        }
+                        w.on_win()
                     }
                     this.game.finish(winners,2)
                 }
@@ -301,7 +290,7 @@ export class BattleRoyale extends ModeManager{
         const pos=this.get_human_spawn_position(human)
         if(pos)human.position=pos
     }
-    on_game_finish(e:{winners:Player[]}): void {
+    override on_game_finish(e:{winners:Player[]}): void {
         for(const p of this.game.players.living_players){
             this.give_rank_score()
             this.game.scene_2d.leaderboards.push({
@@ -312,9 +301,7 @@ export class BattleRoyale extends ModeManager{
             })
         }
         this.game.players.apply_score(ScoreApplyerType.Win,this.rules.score.win_reward)
-        for(const p of e.winners){
-            p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],true)
-        }
+        super.on_game_finish(e)
     }
     override set_group_for_human(p: Human){
         if(!this.groups_manager) return

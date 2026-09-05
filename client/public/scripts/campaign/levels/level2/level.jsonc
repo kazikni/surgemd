@@ -1,18 +1,17 @@
 {
     "meta": {
-        "name": "Just Two Of Us",
-        "location": "MD Island",
-        "description": "We can make it if we try.",
-        "date": "05/10/2003 12:25",
-        "size": "medium",
+        "name": "RQPU Cowboys",
+        "location": "Rio De Janeiro",
+        "description": "Test Of Levels",
+        "size": "small",
+        "date": "02/12/2000 00:25",
         "dificulty": "easy"
     },
-    "mode": {
-        "group_size": 2,
-        "mode":"normal",
-        "settings":{
-            "map": {
-                "def": "tundra"
+    "assets": {
+        "background_music": "/assets/sounds/musics/single-player/music_1.mp3",
+        "load": {
+            "sounds": {
+                "history_music_1": "/assets/sounds/musics/history_music_1.mp3"
             }
         }
     },

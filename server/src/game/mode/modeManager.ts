@@ -6,7 +6,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { LootSetting } from "common/scripts/others/constants.ts";
+import { GameObjectType, LootSetting, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
 import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
@@ -37,6 +37,7 @@ export interface GameRules{
         no_quickswitch:boolean
         reload_while_shoot:boolean
         hold_ammo:boolean
+        modifiers:Record<string,number>
     }
     ambient:{
         day_night_cycle:number
@@ -121,7 +122,8 @@ export abstract class ModeManager extends GameComponent{
                 0x146aba,
                 0xffcc00,
             ],
-            hold_ammo:true
+            hold_ammo:true,
+            modifiers:{}
         },
         ambient:{
             day_night_cycle:1,
@@ -236,7 +238,11 @@ export abstract class ModeManager extends GameComponent{
             this.update_day_and_night(dt)
             this.update_rain(dt)
         }
-        this.on_tick(dt)
+    }
+    on_game_finish(e:{winners:Player[]}): void {
+        for(const p of e.winners){
+            p.conn?.send_game_over((p.team_data.group?.get_status()??[p.status]) as PlayerStatus[],this.game.can_win)
+        }
     }
 
     abstract can_join():boolean
@@ -244,15 +250,29 @@ export abstract class ModeManager extends GameComponent{
     abstract can_down(human:Human):boolean
     abstract is_ally(a:Human,b:Human):boolean
 
-    abstract is_leader(p:Human):boolean
-    abstract get_leader():Human|undefined
+    is_leader(p:Human):boolean{return false}
+    get_leader():Human|undefined{return undefined}
 
     on_player_connect(p:PlayerConnManager):void{}
     on_player_join(p:Player):void{}
     proccess_group_token(client:Client,token:string):void{}
 
     on_human_create(human:Human):void{}
-    on_human_die(e:human_die_event):void{}
+    on_human_die(e:human_die_event):void{
+        e.human.inventory.drop_all()
+        if(e.human.is_player)(e.human as Player).conn?.send_game_over?.([(e.human as Player).status],false)   
+        if(e.human.killed_by){
+            if(e.human.killed_by.id!==e.human.id&&!this.is_ally(e.human,e.human.killed_by)){
+                const killer=e.human.killed_by
+                const rules=this.rules
+                let kill_reward=rules.score.kill_reward
+                if(this.is_leader(e.human)){
+                    kill_reward*=rules.score.leader_kill
+                }
+                killer.on_kill(kill_reward,e.params)
+            }
+        }
+    }
     on_human_revive(human:Human):void{}
 
     get_group(group:number):Group|undefined{return undefined}
@@ -275,13 +295,15 @@ export abstract class ModeManager extends GameComponent{
 
     human_buy_item(human:Human,item:GameItem){}
     
-    add_enemies(enemies?:LevelEnemys){
-        if(!enemies) return
+    add_enemies(enemies?:LevelEnemys):Human[]{
+        if(!enemies) return []
+        const ret:Human[]=[]
         for(const e of enemies){
             const count = e.count ?? 1
             for(let i = 0; i < count; i++){
                 const bot = this.game.players.add_enemy(e.def,new JoinPacket())
                 if(!bot) continue
+                ret.push(bot)
                 if(e.position){
                     v2m.set(bot.position, e.position.x, e.position.y)
                 }else{
@@ -290,6 +312,7 @@ export abstract class ModeManager extends GameComponent{
                 }
             }
         }
+        return ret
     }
     abstract generate_map():Promise<void>
     async load_map(map:string|MapDef):Promise<MapDef|undefined>{

@@ -1,0 +1,35 @@
+{
+    "meta": {
+        "name": "No Hope",
+        "location": "South America - Southeast - MD Island",
+        "description": "The 50vs50 Last Man",
+        "size": "small",
+        "date": "02/12/2000 00:25",
+        "dificulty": "normal"
+    },
+    "assets": {
+        "background_music": "/assets/sounds/musics/single-player/music_1.mp3",
+        "load": {
+            "sounds": {
+                "history_music_1": "/assets/sounds/musics/history_music_1.mp3"
+            }
+        }
+    },
+    "mode": {
+        "mode":"normal",
+        "settings":{
+            "teams":2,
+            "players":{
+                "group_spawn":false
+            },
+            "map": {
+                "def": "war"
+            },
+            "spawn_mode":{
+                "type":3,
+                "position_generator":"deadzone",
+                "list":[1,2]
+            }
+        }
+    }
+}

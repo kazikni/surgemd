@@ -33,6 +33,7 @@ import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
 import { Humanoid, HumanoidAnimationData, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
+import { type Bullet } from "./bullet.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
@@ -244,8 +245,10 @@ export class Human extends Humanoid{
     }
     temp_modifiers:Record<string,number>={}
     get_modifier(val:string):number{
-        if(this.modifiers[val]===undefined)return 1
-        return this.modifiers[val]
+        let ret=1
+        if(this.modifiers[val]!==undefined)ret*=this.modifiers[val]
+        if(this.game.modeManager.rules.humans.modifiers[val]!==undefined)ret*=this.game.modeManager.rules.humans.modifiers[val]
+        return ret
     }
 
     effects:Map<number,EffectInstance&{owner?:Human}>=new Map()
@@ -1343,6 +1346,23 @@ export class Human extends Humanoid{
         this.game.humans._add_human(this)
         this.clear(inventory,status)
         this.game.modeManager.on_human_revive(this)
+    }
+
+    on_kill(reward:number,params:DamageParams){
+        this.status.kills++
+        if(params.object&&params.object.number_type===GameObjectType.Bullet){
+            if((params.object as Bullet).reflection_count>0)reward+=this.game.modeManager.rules.score.bounce_kill
+        }
+        if(reward>0)this.apply_score(ScoreApplyerType.Kill,reward)
+        this.inventory.accessorys.call_event("kill",{
+            ...params,
+            owner:this
+        })
+    }
+    on_win(){
+        if(this.visual.emotes.victory){
+            this.input.emote=this.visual.emotes.victory
+        }
     }
     
     visible_humans:MapHumanData[]=[]

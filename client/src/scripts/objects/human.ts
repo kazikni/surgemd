@@ -176,11 +176,11 @@ export class Human extends Humanoid{
 
         this.container.zIndex=zIndexes.Players
 
-        this.game.scene_2d.camera.add_object(this.container)
+        this.scene.camera.add_object(this.container)
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
         this.sprites.vest._frame=this.game.resources.get_frame("human_vest")
         this.sprites.vest.sync_rotation=false
-        this.consumible_particles=this.game.scene_2d.particles.add_emiter({
+        this.consumible_particles=this.scene.particles.add_emiter({
             delay:0.2,
             particle:()=>new ABParticle2D({
                 direction:-3.141592/2,
@@ -207,7 +207,7 @@ export class Human extends Humanoid{
         this.sprites.emote_bg.hotspot=v2.half_one
         this.sprites.emote_container.add_child(this.sprites.emote_bg)
         this.sprites.emote_container.add_child(this.sprites.emote_sprite)
-        this.game.scene_2d.camera.add_object(this.sprites.emote_container)
+        this.scene.camera.add_object(this.sprites.emote_container)
         this.sprites.emote_container.visible=false
 
         this.set_skin(this.game.definitions.loadout.getFromString("body_1") as LoadoutBodyDef,
@@ -340,7 +340,7 @@ export class Human extends Humanoid{
         if(this.dead)return
         if(this.sprites.name){
             this.sprites.name.position.x=this.position.x
-            this.sprites.name.position.y=this.position.y+(1*this.physical_data.scale)
+            this.sprites.name.position.y=this.position.y+(1*this.scale)
             this.sprites.name.layer=this.layer
         }
         this.tick_footsteps(!this.seat)
@@ -351,7 +351,7 @@ export class Human extends Humanoid{
                 if(f.lifetime>=f.def.particles.delay){
                     f.lifetime=0
                     const angle=random.rad()
-                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
+                    this.scene.particles.add_particle(new ABParticle2D({
                         frame:f.def.particles.frame,
 
                         zIndex:zIndexes.Particles,
@@ -467,7 +467,7 @@ export class Human extends Humanoid{
                     bus:"humans"
                 })
             }
-            const hb=new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,def.offset,this.physical_data.rotation),def.radius)
+            const hb=new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,def.offset,this.rotation),def.radius)
             const collidibles:GameObject[]=this.manager.cells.get_objects(hb,this.layer)
             for(const c of collidibles){
                 if(!hb.colliding_with(c.hitbox))continue
@@ -517,14 +517,14 @@ export class Human extends Humanoid{
             }
         }
         const barrel_position=v2(def.barrel_length,barrel_offset)
-        v2m.rotate_RadAngle(barrel_position,this.physical_data.rotation)
+        v2m.rotate_RadAngle(barrel_position,this.rotation)
         v2m.add(barrel_position,this.position,barrel_position)
 
         if(def.gas_particles){
             for(let i=0;i<def.gas_particles.count;i++){
                 const p=new ABParticle2D({
                     position:barrel_position,
-                    direction:this.physical_data.rotation+random.float(-def.gas_particles.direction_variation,def.gas_particles.direction_variation),
+                    direction:this.rotation+random.float(-def.gas_particles.direction_variation,def.gas_particles.direction_variation),
                     life_time:def.gas_particles.life_time,
                     frame:{
                         image:"gas_smoke_particle",
@@ -540,16 +540,16 @@ export class Human extends Humanoid{
                         scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)
                     }
                 })
-                this.game.scene_2d.particles.add_particle(p)
+                this.scene.particles.add_particle(p)
             }
         }
         if(def.case_particle&&!def.case_particle.at_begin){
             const case_position=v2(this.animation.recoil_state!==-1?-this.animation.recoil_walk*this.animation.recoil_time:0,barrel_offset)
             v2m.add(case_position,case_position,def.case_particle.position)
-            v2m.rotate_RadAngle(case_position,this.physical_data.rotation)
+            v2m.rotate_RadAngle(case_position,this.rotation)
             v2m.add(case_position,case_position,this.position)
             const p=new ABParticle2D({
-                direction:this.physical_data.rotation+(3.141592/2)+random.float(0,1),
+                direction:this.rotation+(3.141592/2)+random.float(0,1),
                 life_time:1,
                 position:case_position,
                 frame:{
@@ -559,10 +559,10 @@ export class Human extends Humanoid{
                     zIndex:zIndexes.Particles
                 },
                 speed:random.float(1,2),
-                angle:this.physical_data.rotation,
+                angle:this.rotation,
                 scale:2,
                 to:{
-                    angle:this.physical_data.rotation+random.float(1,10),
+                    angle:this.rotation+random.float(1,10),
                     scale:0.5
                 }
             })
@@ -574,7 +574,7 @@ export class Human extends Humanoid{
                     bus:"humans"
                 })
             },0.75)
-            this.game.scene_2d.particles.add_particle(p)
+            this.scene.particles.add_particle(p)
         }
 
         let sound:Sound|undefined
@@ -944,7 +944,7 @@ export class Human extends Humanoid{
             this.sprites.name=new Sprite2D()
             this.sprites.name.zIndex=zIndexes.UI
             this.sprites.name.hotspot=v2.half_one()
-            this.game.scene_2d.camera.add_object(this.sprites.name)
+            this.scene.camera.add_object(this.sprites.name)
         }
         const color=this.game.get_theme_color("primary")
         this.game.resources.render_text(name,60,color,"Russo-One").then((frame)=>{
@@ -984,7 +984,7 @@ export class Human extends Humanoid{
         if(!this.melee?.reflective)return undefined
         const reflect=this.current_weapon===this.melee?this.melee.reflective!.equipped:this.melee.reflective!.unequipped
         if(!reflect)return undefined
-        return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
+        return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.rotation),reflect.radius)
     }
     override on_decode_net(stream:Stream,full:boolean): void {
         const [
@@ -1027,7 +1027,7 @@ export class Human extends Humanoid{
 
         this.decode_physical_data(stream,full)
         if(full||physical_dirty){
-            this.physical_data.scale=stream.read_float32()
+            this.scale=stream.read_float32()
             this.update_body()
         }
 

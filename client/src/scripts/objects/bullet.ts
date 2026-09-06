@@ -75,7 +75,7 @@ export class Bullet extends GameObject{
     override on_create(_args: Record<string, void>) {
         this.sprite_trail.frame=this.game.resources.get_frame("base_trail")
         this.sprite_trail.size=v2(200,17) // Metter Size * 2
-        this.game.scene_2d.camera.add_object(this.sprite_trail)
+        this.scene.camera.add_object(this.sprite_trail)
         this.base_hitbox=new CircleHitbox2D(v2(0,0),0.2)
     }
     override on_destroy(): void {
@@ -103,7 +103,7 @@ export class Bullet extends GameObject{
 
             // Bullet Whiz Sound
             if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&!this.hit_owner)){
-                const dist=v2.distance(this.position,this.game.scene_2d.camera.position)
+                const dist=v2.distance(this.position,this.scene.camera.position)
                 if(dist<7){
                     this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
                         position: this.position,
@@ -182,7 +182,7 @@ export class Bullet extends GameObject{
                             scale:1
                         }
                     })
-                    this.game.scene_2d.particles.add_particle(p)
+                    this.scene.particles.add_particle(p)
                     this.par_time=0.01
                 }
             }*/

@@ -329,7 +329,7 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){
-            this.decal=this.game.scene_2d.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+            this.decal=this.scene.add_decal(this.position,this.physical_data.rotation,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
         }
 
         if(allow_biome_skin&&this.def.assets?.frame?.biome_skins){
@@ -414,11 +414,11 @@ export class Obstacle extends StaticBody{
         this.reset_scale()
         if(this.def.onDestroyExplosion){
             const ex=this.game.definitions.explosions.getFromString(this.def.onDestroyExplosion)
-            this.game.scene_2d.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
+            this.scene.add_explosion(this.hitbox.center(),ex,params.owner,this.def,this.layer)
         }
         const loots:Loot[]=[]
         for(const l of this.loot){
-            loots.push(this.game.scene_2d.add_loot(this.hitbox.random_point(),l,this.layer))
+            loots.push(this.scene.add_loot(this.hitbox.random_point(),l,this.layer))
         }
 
         this.set_dirty_part()

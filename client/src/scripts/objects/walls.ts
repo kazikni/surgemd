@@ -65,7 +65,7 @@ export class Wall extends StaticBody{
     override on_create(args: any): void {
         super.on_create(args)
         this.wall.zIndex=zIndexes.BuildingsWalls1
-        this.game.scene_2d.camera.add_object(this.wall)
+        this.scene.camera.add_object(this.wall)
     }
     override on_decode_net(stream: Stream, full: boolean): void {
         const [physical_data]=stream.read_boolean_group()

@@ -14,6 +14,7 @@ import { HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { human_die_event } from "../others/utils.ts";
+import { type ServerGameScene2D } from "../others/scene.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
@@ -41,8 +42,8 @@ export class PlayerClient extends PlayerConnManager{
     view_objects:ServerGameObject[]=[]
     first_tick:boolean=false
 
-    constructor(game:Game,client:Client){
-        super(game)
+    constructor(scene:ServerGameScene2D,client:Client){
+        super(scene)
         this.client=client
         this.id=client.ID
         this.connected=false
@@ -62,9 +63,9 @@ export class PlayerClient extends PlayerConnManager{
     }
     get_update_packet():UpdatePacket{
         const up=new UpdatePacket()
-        up.definition=this.game.definitions
-        up.priv.pings=[...this.game.scene_2d.pings]
-        const first_tick=this.first_tick||this.game.players.first_tick
+        up.definition=this.scene.game.definitions
+        up.priv.pings=[...this.scene.game.scene_2d.pings]
+        const first_tick=this.first_tick||this.scene.game.players.first_tick
         if(this.human&&!this.spectating){
             up.priv.active_entity={
                 dirty:true,
@@ -126,7 +127,7 @@ export class PlayerClient extends PlayerConnManager{
     }
     send_joinned(){
         const jp=new JoinnedPacket()
-        jp.main_state=this.game.players.get_general_main_state()
+        jp.main_state=this.scene.game.players.get_general_main_state()
         this.client.emit_packet(jp)
     }
     send_game_over(status:PlayerStatus[]=[],win:boolean=false,eliminated_by:number=0){
@@ -138,8 +139,8 @@ export class PlayerClient extends PlayerConnManager{
         if(!p.status.win){
             p.status.eliminator=eliminated_by
         }
-        if(this.game.scene_2d.leaderboards.length>0){
-            p.status.leaderboards=this.game.scene_2d.leaderboards
+        if(this.scene.game.scene_2d.leaderboards.length>0){
+            p.status.leaderboards=this.scene.game.scene_2d.leaderboards
         }
 
         this.client!.emit_packet(p)
@@ -205,7 +206,7 @@ export class PlayersManager extends GameComponent{
         this.connected_bots.length=0
     }
     add_bot(packet:JoinPacket,player?:Player):BotClient{
-        const client=new BotClient(this.game)
+        const client=new BotClient(this.game.scene_2d)
         this.game.modeManager.on_player_connect(client)
         this.game.signals.emit("player_connect",{client:client})
         const p=this.add_player(player??new Player(),packet,undefined,true) as Player
@@ -371,7 +372,7 @@ export class PlayersManager extends GameComponent{
     }
     async connection(client:Client,username:string){
         if(this.connected_players[client.ID])return
-        this.connected_players[client.ID]=new PlayerClient(this.game,client)
+        this.connected_players[client.ID]=new PlayerClient(this.game.scene_2d,client)
         if(!this.game.initialized)await this.game.signals.wait("game_initialized")
 
         client.send_stream(this.start_packet_stream)

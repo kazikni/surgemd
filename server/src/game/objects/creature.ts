@@ -64,7 +64,7 @@ export class Creature extends MovingBody {
         this.def.on_die?.(false)
 
         for (const l of this.loot) {
-            this.game.scene_2d.add_loot(this.position, {item:l.item, count:l.count})
+            this.scene.add_loot(this.position, {item:l.item, count:l.count})
         }
     }
     damage(params: DamageParams) {

@@ -153,11 +153,11 @@ export class Building extends StaticBody{
                 shadow_sprite.zIndex=sprite.zIndex
                 shadow_sprite.tint=this.game.world_shadow.color
                 v2m.add(shadow_sprite.position,shadow_sprite.position,this.game.world_shadow.offset)
-                this.game.scene_2d.camera.add_object(shadow_sprite)
+                this.scene.camera.add_object(shadow_sprite)
                 this.objects.push(shadow_sprite)
             }
 
-            this.game.scene_2d.camera.add_object(sprite)
+            this.scene.camera.add_object(sprite)
             this.objects.push(sprite)
         }
         for(const c of def.ceiling??[]){
@@ -179,7 +179,7 @@ export class Building extends StaticBody{
                 zIndex:zIndexes.DeadCeilings,
                 tint:c.frame.tint
             },this.game.resources)
-            this.game.scene_2d.camera.add_object(sprite)
+            this.scene.camera.add_object(sprite)
             this.objects.push(sprite)
 
             const ceiling=new BuildingCeiling(this,c,c.hitbox.transform(this.position,undefined,undefined,this.physical_data.side),sprite,sprite)

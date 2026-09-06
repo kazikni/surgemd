@@ -55,7 +55,7 @@ export type GameStatistic={
     }
 }
 export class Game extends AbstractServerGame<ServerGameObject>{
-    declare scene_2d:ServerGameScene2D
+    scene_2d:ServerGameScene2D
 
     main_config:GameServerConfig
     game_config!:GameConfig
@@ -165,7 +165,9 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Plane,
             Drone
         ])
-        this.set_scene2d(new ServerGameScene2D())
+        //Gamemode
+        this.map=new GameMap(this,this.scene_2d)
+        this.scene_2d=new ServerGameScene2D(this)
 
         this.ntps=main_config.ntps
         this.main_config=main_config
@@ -175,9 +177,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             this.scene_2d.objects.add_layer(i)
         }
         this.debug=main_config.debug
-
-        //Gamemode
-        this.map=new GameMap(this)
 
         this.add_component(this.players)
         this.deadzone=new DeadZoneManager()
@@ -238,11 +237,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     override net_update(full:boolean){
         this.call_event("net_update",{full})
+        this.scene_2d.objects.apply_destroy_queue()
         this.scene_2d.net_update()
         super.net_update(full)
     }
     override on_update(dt:number): void {
         super.on_update(dt)
+        this.scene_2d.update(dt,false,false)
     }
     update_data(){
         const data:GameData={

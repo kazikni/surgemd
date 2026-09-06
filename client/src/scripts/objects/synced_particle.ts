@@ -1,11 +1,10 @@
 import { Sprite2D, type Tween } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
+import { MovingBody } from "./moving_body.ts";
 import { CircleHitbox2D, Stream, v2 } from "common/engine/core.ts";
 
 export class SyncedParticle extends MovingBody{
-    override physical_data: MovingBodyPhysicalData;
     ////////////////////////////
     // Definition             //
     ////////////////////////////
@@ -20,13 +19,10 @@ export class SyncedParticle extends MovingBody{
 
     constructor(){
         super()
-        this.physical_data={
-            rotation:0
-        }
     }
     override on_create(_args: Record<string,any>): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero(),3)
-        this.game.scene_2d.camera.add_object(this.sprite)
+        this.scene.camera.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer
@@ -69,7 +65,7 @@ export class SyncedParticle extends MovingBody{
         super.on_tick(dt)
 
         this.sprite.position=this.position
-        this.sprite.rotation=this.physical_data.rotation
+        this.sprite.rotation=this.rotation
 
         this.time+=dt
     }

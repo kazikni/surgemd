@@ -1,7 +1,7 @@
 import { VehicleDef, WheelDef } from "common/scripts/definitions/objects/vehicles.ts"
 import { Container2D, Sprite2D } from "common/engine/web.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts"
+import { MovingBody } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
 import { ColorM, Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
@@ -20,14 +20,11 @@ export class Vehicle extends MovingBody {
     distance_since_last_mark:number=0
     tire_stress:number=0
 
-    physical_data:MovingBodyPhysicalData&{direction:number,speed:number} = {
-        rotation: 0,
-        direction: 0,
-        speed: 0,
-    }
+    direction:number=0
+    speed:number=0
 
     override on_create() {
-        this.game.scene_2d.camera.add_object(this.container)
+        this.scene.camera.add_object(this.container)
         this.container.add_child(this.main_sprite)
     }
     override on_layer_set(): void {
@@ -70,11 +67,11 @@ export class Vehicle extends MovingBody {
 
     override on_tick(dt: number) {
         super.on_tick(dt)
-        const moving = Math.abs(this.physical_data.speed) > 0.1
+        const moving = Math.abs(this.speed) > 0.1
 
         const maxSteer = 35 * (Math.PI / 180)
 
-        let steer = this.physical_data.direction
+        let steer = this.direction
         if (steer > Math.PI) steer -= Math.PI * 2
 
         steer = Numeric.clamp(steer, -maxSteer, maxSteer)
@@ -114,13 +111,13 @@ export class Vehicle extends MovingBody {
                         scale2:wheel.def.scale2
                     },this.game.resources)
                     d.sprite.transform_frame(wheel.def.marks.frame_transform??{})
-                    this.game.scene_2d.objects.add_object(d,this.layer)
+                    this.scene.objects.add_object(d,this.layer)
                 }
             }
         }
 
         this.container.position = this.position
-        this.container.rotation = this.physical_data.rotation
+        this.container.rotation = this.rotation
     }
     override on_destroy() {
         this.container.destroy()
@@ -129,8 +126,8 @@ export class Vehicle extends MovingBody {
         const [physical_data_dirty,dead]=stream.read_boolean_group()
         if(physical_data_dirty||full)this.decode_physical_data(stream, full)
 
-        this.physical_data.speed=stream.read_float32()
-        this.physical_data.direction=stream.read_rad()
+        this.speed=stream.read_float32()
+        this.direction=stream.read_rad()
         this.tire_stress=stream.read_float32()
 
         if (full) {

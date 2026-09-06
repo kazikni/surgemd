@@ -30,9 +30,14 @@ import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_par
 import { Drone } from "../objects/drone.ts";
 import { Plane } from "../objects/plane.ts";
 import { Player } from "../objects/player.ts";
+import { BaseDeadzone, BaseScene } from "common/scripts/objects/scene.ts";
+import { type GameMap } from "./map.ts";
 
-export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
+export class ServerGameScene2D extends Scene2DInstance<ServerGameObject> implements BaseScene{
     declare game:Game
+
+    map:GameMap
+    deadzone:BaseDeadzone
 
     always_visible:Record<number,ServerGameObject>={}
     pings:PingData[]=[]
@@ -42,8 +47,11 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
 
     leaderboards:LeaderboardPlayer[]=[]
 
-    constructor(){
-        super()
+    constructor(game:Game){
+        super(game)
+
+        this.map=game.map
+        this.deadzone=game.deadzone
 
         this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
         this.objects.encode_object_checkpoint=this.encode_object_checkpoint.bind(this)
@@ -60,7 +68,8 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
         this.game.clock.clear()
         this.net_update()
     }
-    net_update(){
+    override net_update(){
+        super.net_update()
         this.pings.length=0
         this.feed_messages.length=0
     }

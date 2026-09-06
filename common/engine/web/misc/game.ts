@@ -28,8 +28,11 @@ export class ClientGameScene2D<DefaultGameObject extends ClientGameObject2D=Clie
     particles!:ParticlesManager2D<ClientParticle2D>
     camera!:Camera2D
     declare game:ClientGame<DefaultGameObject>
-    constructor(){
-        super()
+    constructor(game:ClientGame<any>){
+        super(game)
+        this.particles=new ParticlesManager2D(this.game as unknown as AbstractGame)
+        this.camera=new Camera2D(this.game.renderer)
+        this.game.input_manager.camera=this.camera
     }
 
     set_camera_position(position:Vec2){
@@ -37,12 +40,6 @@ export class ClientGameScene2D<DefaultGameObject extends ClientGameObject2D=Clie
         this.game.sounds.set_listener_position(position)
     }
 
-    override begin(): void {
-        super.begin()
-        this.particles=new ParticlesManager2D(this.game as unknown as AbstractGame)
-        this.camera=new Camera2D(this.game.renderer)
-        this.game.input_manager.camera=this.camera
-    }
     override clear(): void {
         super.clear()
         this.particles.clear()
@@ -65,8 +62,6 @@ export class ClientGameScene2D<DefaultGameObject extends ClientGameObject2D=Clie
     }
 }
 export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGameObject2D> extends AbstractGame<GObject2D>{
-    declare scene_2d:ClientGameScene2D<GObject2D>
-
     language:TranslationManager
 
     renderer:Renderer
@@ -119,29 +114,30 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         return t
     }
 
-    override draw(dt:number){
+    draw(dt:number){
         this.clock.profiler.start(3)
 
         this.renderer.clear()
         this.on_before_render(dt)
-        this.scene_2d.draw(dt)
-        super.draw(dt)
+        for(const c of this.components){
+            c.on_render(dt)
+        }
         this.on_render(dt)
 
         this.clock.profiler.end(3)
     }
-    override update(dt:number,net_update: boolean=false, destroy_queue: boolean=true){
+    override update(dt:number){
         this.clock.profiler.start(2)
-        super.update(dt,net_update,destroy_queue)
         for(const t of this.tweens){
             t.update(dt)
         }
+        this.on_update(dt)
+        this.draw(dt)
         this.sounds.update()
         this.input_manager.tick()
         this.ui_manager.update(dt)
         this.clock.profiler.end(2)
     }
-    on_render(_dt:number){}
     on_before_render(_dt:number){}
     abstract listeners_init():void
 }

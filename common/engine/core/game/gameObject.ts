@@ -6,14 +6,32 @@ import { Hitbox2D, NullHitbox2D } from "../math/hitbox.ts";
 import { hash } from "../math/hash.ts";
 import { Rect } from "../math/geometry.ts";
 export type GameObjectID=ID
-export abstract class BaseObject2D{
-    abstract number_type:number
-    abstract string_type:string
 
+export type ObjectComponent2D<Object>={
+    string_name:string
+    number_name:number
+
+    events:Record<number,Object2DEvent<Object>[]>
+}
+
+export const DefaultObjec2DEvents={
+    none:0,
+    bind:1,
+    create:2,
+    registry:3,
+    layer_set:4,
+    destroy:5,
+    tick:6,
+    render:7,
+    net_encode:8,
+    net_decode:9,
+    last:10,
+} satisfies Record<string,number>
+export type Object2DEvent<Object>=(obj:Object,...ev:any)=>any
+export abstract class BaseObject2D{
     // Physical
     public hitbox:Hitbox2D
     public _base_hitbox:Hitbox2D
-    public cell_rect?:Rect
     get base_hitbox():Hitbox2D{
         return this._base_hitbox
     }
@@ -37,6 +55,47 @@ export abstract class BaseObject2D{
     public id!:GameObjectID
     public layer!:number
 
+    events:Map<number,Object2DEvent<any>[]>=new Map()
+
+    constructor(){
+        this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
+        this._base_hitbox=new NullHitbox2D(v2(0,0))
+        this.hitbox=this.base_hitbox.transform(this._position)
+    }
+
+    update_hitbox():void{
+        this.hitbox=this.base_hitbox.transform(this._position)
+        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
+    }
+    to_rect():Rect{
+        return this.hitbox.to_rect()
+    }
+
+    add_component(c:ObjectComponent2D<any>){
+        for(const key in c.events){
+            const ev=parseFloat(key)
+            if(!this.events.has(ev))this.events.set(ev,[])
+            this.events.get(ev)!.push(...c.events[key])
+        }
+        if(c.events[DefaultObjec2DEvents.bind]){
+            for(const cb of c.events[DefaultObjec2DEvents.bind]){
+                cb(this)
+            }
+        }
+        return c.events
+    }
+    emit(event:number,...args:any[]){
+        const e=this.events.get(event)
+        if(e){
+            for(const cb of e){
+                cb(this,...args)
+            }
+        }
+    }
+
+    abstract number_type:number
+    abstract string_type:string
+
     allow_tick:boolean=false
     allow_physics_update:boolean=false
     allow_render:boolean=false
@@ -59,27 +118,13 @@ export abstract class BaseObject2D{
     public manager!:GameObjectManager2D<any>
     pool?:GameObjectPool2D<any>
 
-    constructor(){
-        this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
-        this._base_hitbox=new NullHitbox2D(v2(0,0))
-        this.hitbox=this.base_hitbox.transform(this._position)
-    }
-
     tick(dt:number){
         if(this.destroyed)return
+        this.emit(DefaultObjec2DEvents.tick,dt)
         this.on_tick(dt)
         if(this.manager.cells.dirty_objects.has(this)){
             this.manager.cells.update_object(this)
         }
-    }
-
-    update_hitbox():void{
-        this.hitbox=this.base_hitbox.transform(this._position)
-        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
-        
-    }
-    to_rect():Rect{
-        return this.hitbox.to_rect()
     }
 
     on_encode_net(stream:Stream,full:boolean,options?:any):void{}
@@ -169,7 +214,7 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     update_object(obj: GameObject) {
         this.remove_object_from_cells(obj)
 
-        const rect=obj.cell_rect??obj.to_rect()
+        const rect=obj.to_rect()
         this.cell_pos(rect.min)
         this.cell_pos(rect.max)
 
@@ -462,6 +507,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.layer=new_layer
         this.registry_object(obj)
         obj.on_layer_set()
+        obj.emit(DefaultObjec2DEvents.layer_set)
     }
     generate_object_id():number{
         let ret=0
@@ -486,7 +532,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         this.registry_object(obj)
         obj.on_create(args)
+        obj.emit(DefaultObjec2DEvents.create,args)
         obj.on_layer_set()
+        obj.emit(DefaultObjec2DEvents.layer_set)
         this.cells.update_object(obj)
         return obj
     }
@@ -499,6 +547,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         if(obj.registred)return
         obj.registred=true
+        obj.on_registry()
+        obj.emit(DefaultObjec2DEvents.registry)
         obj.set_dirty_full()
 
         this.objects[obj.id]=obj
@@ -518,7 +568,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             this.layers[obj.layer].net_update.push(obj.id)
         }
         this.cells.update_object(obj)
-        obj.on_registry()
     }
     unregister_object(obj:GameObject){
         if(!obj.registred)return
@@ -553,6 +602,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.unregister_object(obj)
         obj.on_net_update()
         obj.on_destroy()
+        obj.emit(DefaultObjec2DEvents.destroy)
     }
     get_object(id:number):GameObject|undefined{
         return this.objects[id]
@@ -605,13 +655,15 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 this.set_layer(obj, layer)
             }
             if(b[0]||b[1]) {
+                obj.emit(DefaultObjec2DEvents.net_decode,stream,b[1])
                 obj.on_decode_net(stream, b[1])
             }
             if(b[2]) {
-                if (obj.net_sync_deletion) {
+                if (obj.net_sync_deletion){
                     obj.destroy()
                 } else {
                     obj.on_destroy()
+                    obj.emit(DefaultObjec2DEvents.destroy)
                 }
             }
             return obj
@@ -649,7 +701,10 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             if(process_deletion&&this.objects[id]){
                 const obj=this.objects[id]
                 if(obj.net_sync_deletion)obj.destroy()
-                else obj.on_destroy()
+                else {
+                    obj.on_destroy()
+                    obj.emit(DefaultObjec2DEvents.destroy)
+                }
             }
         }
         return ret

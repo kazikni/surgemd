@@ -1,6 +1,6 @@
 import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
-import { GameObject } from "./gameObject.ts";
+import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
 import { TerrainM } from "../managers/terrainManager.ts";
 import { MenuManager } from "../managers/menuManager.ts";
@@ -9,7 +9,7 @@ import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
 import { PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Layers, zIndexes } from "common/scripts/others/constants.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 import { API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -46,14 +46,12 @@ import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
-import { Scene2D } from "./scene.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
-import { Wall } from "../objects/walls.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
-    declare scene_2d: Scene2D
+    scene_2d: ClientScene2D
     client?:Client
     input:InputPacket=new InputPacket()
     comunication_mode:boolean=false
@@ -135,7 +133,7 @@ export class Game extends ClientGame<GameObject>{
             translation,
             [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
-        this.set_scene2d(new Scene2D())
+        this.scene_2d=new ClientScene2D(this)
         this.scene_2d.camera.visible_callback=(o)=>o.layer<=this.scene_2d.camera.layer
         this.scene_2d.camera.aspect_lock=true
 
@@ -394,7 +392,7 @@ export class Game extends ClientGame<GameObject>{
         this.input.distance_to_aim=dist
         if(!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")){
             this.active_entity.enable_auto_rot=false
-            this.active_entity.physical_data.rotation=this.input.angle
+            this.active_entity.rotation=this.input.angle
         }else{
             this.active_entity.enable_auto_rot=true
         }
@@ -521,6 +519,7 @@ export class Game extends ClientGame<GameObject>{
     }
     override on_update(dt:number){
         super.on_update(dt)
+        this.scene_2d.update(dt,false,true)
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
@@ -560,6 +559,9 @@ export class Game extends ClientGame<GameObject>{
             this.client.emit_packet(this.input)
             this.reset_input()
         }
+    }
+    override on_render(dt: number): void {
+        this.scene_2d.draw(dt)
     }
     reset_input(){
         this.input.reload=false

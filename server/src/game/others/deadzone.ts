@@ -5,6 +5,7 @@ import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/c
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MakeDeadZoneStages } from "common/scripts/others/functions.ts";
 import { type GameMap } from "./map.ts";
+import { BaseDeadzone } from "common/scripts/objects/scene.ts";
 
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     count:9,
@@ -50,7 +51,7 @@ export const DefaultDeadzone:DeadZoneConfig={
     timeSpeed: 1,
     damage: 1
 }
-export class DeadZoneManager extends GameComponent{
+export class DeadZoneManager extends BaseDeadzone{
     declare game: Game
     readonly hitbox: CircleHitbox2D
 

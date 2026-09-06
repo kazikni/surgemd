@@ -26,8 +26,8 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
         super.on_stop()
     }
     private net_tick_delay:number=0
-    override update(dt: number, new_list: boolean=false, destroy_queue: boolean=false): void {
-        super.update(dt,new_list,destroy_queue)
+    override update(dt: number): void {
+        super.update(dt)
         this.ticks++
 
         this.net_tick_delay+=dt
@@ -40,8 +40,6 @@ export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObj
 
     }
     net_update(full:boolean){
-        this.scene_2d.objects.apply_destroy_queue()
-        this.scene_2d.objects.update_to_net()
     }
     override stop(): void {
         super.stop()

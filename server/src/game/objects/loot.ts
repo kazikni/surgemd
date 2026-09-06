@@ -1,36 +1,33 @@
 import { GameConstants, GameObjectType, LootData } from "common/scripts/others/constants.ts";
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
-import { Floors, FloorType } from "common/scripts/others/terrain.ts";
+import { FloorType } from "common/scripts/others/terrain.ts";
 import { CircleHitbox2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
-import { StaticBody } from "./static_body.ts";
 import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
+import { loot_physics, LootBasePhysics } from "common/scripts/objects/moving_body.ts";
 
-export class Loot extends ServerGameObject{
+export class Loot extends ServerGameObject implements LootBasePhysics{
     string_type:string="loot"
     number_type: number=GameObjectType.Loot
-
-    current_floor:FloorType=FloorType.Water
 
     real_radius:number=0
     loot_data!:LootData
 
-    old_position:Vec2=v2(-1,-1)
-    velocity:Vec2
+    old_position!:Vec2
+    velocity!:Vec2
+    current_floor!:FloorType
 
     constructor(){
         super()
 
-        this.velocity=v2.zero()
-        this.old_position=v2.clone(this.position)
-        this.allow_tick=true
+        this.add_component(loot_physics)
     }
     reduce_count(count:number){
         this.loot_data.count-=count
         this.destroy()
         if(this.loot_data.count>0){
-            this.game.scene_2d.add_loot(this.position,this.loot_data,this.layer)
+            this.scene.add_loot(this.position,this.loot_data,this.layer)
         }
     }
     override can_interact(user: Human): boolean {
@@ -91,61 +88,6 @@ export class Loot extends ServerGameObject{
         if(args)this.set_loot(args.position,args.loot)
     }
     override on_tick(dt:number): void {
-        const cf=Floors[this.current_floor]
-        const speed=1*(cf.speed_mult??1)
-        if(this.current_floor === FloorType.Water){
-            for(const river of this.game.map.rivers){
-                const col=river.get_point_inside(this.position)
-                if(!col?.push){
-                    continue
-                }
-                const point=river.get_closest_point(this.position)
-                if(point){
-                    v2m.add(this.velocity,this.velocity,v2.scale(point.direction,point.push_force*dt))
-                }
-                break
-            }
-        }
-        const others:ServerGameObject[]=this.manager.cells.get_objects(this.hitbox,this.layer)
-        for(const other of others){
-            switch(other.number_type){
-                case GameObjectType.Loot:{
-                    if(other.id===this.id)continue
-                    const col=this.hitbox.overlap_collision(other.hitbox)
-                    if(col){
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.4*dt))
-                    }
-                    break
-                }
-                // deno-lint-ignore no-fallthrough
-                case GameObjectType.Obstacle:
-                case GameObjectType.StaticBody:
-                case GameObjectType.Building:{
-                    if((other as StaticBody).physical_data.stairs.length>0){
-                        for(const s of (other as StaticBody).physical_data.stairs){
-                            if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,other.layer+s.dest_layer)
-                        }
-                    }
-                    if((other as StaticBody).physical_data.no_collision)break
-                    const collisions=this.hitbox.overlap_collisions(other.hitbox)
-                    for(const col of collisions){
-                        this.position=v2.sub(this.position,v2.scale(col.dir,col.pen))
-                        this.velocity=v2.sub(this.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
-                    }
-                    break
-                }
-            }
-        }
-        if(this.velocity.x!=0||this.velocity.y!=0){
-            v2m.scale(this.velocity,this.velocity,1/(1+dt*3.5))
-            const pos=v2.add(this.position,v2.scale(this.velocity,speed*dt))
-            this.position=this.game.map.clamp_hitbox(pos,this.base_hitbox)
-        }
-        if(!v2.is(this.position,this.old_position)||this.velocity.x!=0||this.velocity.y!=0){
-            this.old_position=v2.clone(this.position)
-            this.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
-            this.set_dirty_part()
-        }
     }
     push(speed:number,angle:number){
         const a=v2.from_RadAngle(angle)

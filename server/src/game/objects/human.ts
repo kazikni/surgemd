@@ -418,7 +418,7 @@ export class Human extends Humanoid{
         if(preset.name){
             this.name = preset.name
             if(this.is_player){
-                this.game.scene_2d.feed_messages.push({
+                this.scene.feed_messages.push({
                     type:FeedMessageType.set_name,
                     playerId:this.id,
                     playerName:this.name,
@@ -607,7 +607,7 @@ export class Human extends Humanoid{
         const position=v2.scale(this.grenade_holding.def.throw_position??v2(0.3,0.4),this.physical_data.scale)
         v2m.rotate_RadAngle(position,this.physical_data.rotation)
         v2m.add(position,position,this.position)
-        const proj=this.game.scene_2d.add_grenade(position,this.grenade_holding!.def,this,this.layer)
+        const proj=this.scene.add_grenade(position,this.grenade_holding!.def,this,this.layer)
         proj.physical_data.zpos=0.01
         proj.physical_data.zpos_speed=1.8
         const limit=(this.grenade_holding.def.throw_max_speed??0)
@@ -816,7 +816,7 @@ export class Human extends Humanoid{
                                 count:((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count
                             })
                         }
-                        this.game.scene_2d.add_loot(this.position,{item:l,count:a.count,aditional},this.layer)
+                        this.scene.add_loot(this.position,{item:l,count:a.count,aditional},this.layer)
                     }
                     break
             }
@@ -1311,7 +1311,7 @@ export class Human extends Humanoid{
         this.game.call_event("human_die",{human:this,params:params})
         if(this.team_data.team)this.team_data.team.clear_downeds()
         if(this.team_data.group)this.team_data.group.clear_downeds()
-        if(this.spawn_body)this.game.scene_2d.add_human_body(this.position,this.name,params.direction,this.visual.badge,this.layer)
+        if(this.spawn_body)this.scene.add_human_body(this.position,this.name,params.direction,this.visual.badge,this.layer)
         this.destroy()
     }
     clear(inventory:boolean=false,status:boolean=false){

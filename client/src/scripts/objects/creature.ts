@@ -1,5 +1,5 @@
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
+import { MovingBody } from "./moving_body.ts";
 import { CreatureDef } from "common/scripts/definitions/objects/creatures.ts";
 import { Container2D } from "common/engine/web.ts";
 import { Stream } from "common/engine/core.ts";
@@ -8,10 +8,6 @@ export class Creature extends MovingBody {
     number_type: number = GameObjectType.Creature
 
     def!: CreatureDef
-
-    physical_data:MovingBodyPhysicalData={
-        rotation:0
-    }
 
     container: Container2D = new Container2D()
     dead: boolean = true
@@ -22,7 +18,7 @@ export class Creature extends MovingBody {
         this.allow_tick=true
     }
     override on_create(_args: any): void {
-        this.game.scene_2d.camera.add_object(this.container)
+        this.scene.camera.add_object(this.container)
     }
     override on_layer_set(): void {
         this.container.layer=this.layer
@@ -38,7 +34,7 @@ export class Creature extends MovingBody {
         this.def.update?.(this, dt, true)
 
         this.container.position = this.position
-        this.container.rotation = this.physical_data.rotation
+        this.container.rotation = this.rotation
     }
 
     kill(){

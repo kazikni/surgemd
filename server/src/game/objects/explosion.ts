@@ -35,7 +35,7 @@ export class Explosion extends ServerGameObject{
         const floor_def=Floors[floor]
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){
-                const b=this.game.scene_2d.add_bullet(this.position,this.owner,undefined,this.source,this.layer)
+                const b=this.scene.add_bullet(this.position,this.owner,undefined,this.source,this.layer)
                 b.set_definition(this.def.bullet.def)
                 b.hit_owner=true
                 b.set_direction(random.rad())
@@ -45,17 +45,17 @@ export class Explosion extends ServerGameObject{
             const def=this.game.definitions.synced_particles.getFromString(this.def.synced_particles.def)
             
             if(this.def.synced_particles.creator){
-                this.game.scene_2d.add_synced_particles_creator(this.position,def,this.owner,this.def.synced_particles.count,this.def.synced_particles.creator_time,this.layer)
+                this.scene.add_synced_particles_creator(this.position,def,this.owner,this.def.synced_particles.count,this.def.synced_particles.creator_time,this.layer)
             }else{
                 for(let i=0;i<this.def.synced_particles.count;i++){
-                    this.game.scene_2d.add_synced_particle(this.position,def,this.owner,this.layer)
+                    this.scene.add_synced_particle(this.position,def,this.owner,this.layer)
                 }
             }
         }
         if(floor_def.floor_kind!==FloorKind.Liquid){
-            if(this.def.decal)this.game.scene_2d.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
+            if(this.def.decal)this.scene.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.decal.def),this.def.decal.tint,this.def.decal.scale,this.layer)
         }else{
-            if(this.def.liquid_decal)this.game.scene_2d.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.liquid_decal.def),this.def.liquid_decal.tint,this.def.liquid_decal.scale,this.layer)}
+            if(this.def.liquid_decal)this.scene.add_decal(this.position,0,this.game.definitions.decals.getFromString(this.def.liquid_decal.def),this.def.liquid_decal.tint,this.def.liquid_decal.scale,this.layer)}
         }
     explode_damage(){
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer).filter((v)=>this.hitbox.colliding_with(v.hitbox))
@@ -136,7 +136,7 @@ export class Explosion extends ServerGameObject{
         }
         if(this.def.projectiles){
             for(let i=0;i<this.def.projectiles.count;i++){
-                const p=this.game.scene_2d.add_grenade(this.position,this.game.definitions.grenades.getFromString(this.def.projectiles.def),this.owner,this.layer)
+                const p=this.scene.add_grenade(this.position,this.game.definitions.grenades.getFromString(this.def.projectiles.def),this.owner,this.layer)
                 p.physical_data.zpos=0.5
                 p.physical_data.zpos_speed=1.5
                 p.physical_data.velocity=v2.random(-this.def.projectiles.speed,this.def.projectiles.speed)

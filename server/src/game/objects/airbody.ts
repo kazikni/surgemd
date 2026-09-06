@@ -40,10 +40,10 @@ export abstract class AirBody extends ServerGameObject {
     
     override on_create(_args: any): void {
         super.on_create(_args)
-        this.game.scene_2d.always_visible[this.id]=this
+        this.scene.always_visible[this.id]=this
     }
     override on_destroy(): void {
-        delete this.game.scene_2d.always_visible[this.id]
+        delete this.scene.always_visible[this.id]
     }
     override on_tick(dt: number): void {
         v2m.add(this.position,this.position,v2.scale(this.physical_data.velocity, dt))

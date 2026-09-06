@@ -136,7 +136,7 @@ export class Grenade extends Projectile{
 
         if(this.def.call_airdrop){
             this.game.clock.add_timeout(()=>{
-                this.game.scene_2d.add_airdrop(this.position)
+                this.scene.add_airdrop(this.position)
             },this.def.call_airdrop.delay)
         }
         if(this.def.call_airstrike){
@@ -147,7 +147,7 @@ export class Grenade extends Projectile{
                 const gap=this.def.call_airstrike?.delay_gap??1
                 for(let c=0;c<count;c++){
                     this.game.clock.add_timeout(()=>{
-                        this.game.scene_2d.add_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
+                        this.scene.add_airstrike(pos,def,this.def.call_airstrike?.bomb.count??1,this.def.call_airstrike?.bomb.radius??0,this.owner)
                     },c*gap)
                 }
             },this.def.call_airstrike.delay)

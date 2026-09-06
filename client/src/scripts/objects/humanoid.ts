@@ -1,14 +1,11 @@
 import { CircleHitbox2D, ColorM, ease, KeyFrameSpriteDef, model2d, Numeric, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
+import { MovingBody } from "./moving_body.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData, zIndexes } from "common/scripts/others/constants.ts";
 import { ABParticle2D, AnimatedContainer2D, AnimatedSprite2D, AudioInstance, ClientGame, Container2D, Frame, Shape2D, Sprite2D } from "common/engine/web.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
 import { DefaultDownedWalkFistRig, DefaultFistRig } from "common/scripts/others/item.ts";
-export type HumanoidPhysicalData=MovingBodyPhysicalData&{
-    scale:number
-}
 export type HumanoidSprites={
     hair:Sprite2D
     body:Sprite2D
@@ -58,7 +55,8 @@ export class Humanoid extends MovingBody{
     override number_type: number=GameObjectType.Humanoid
     override string_type: string="humanoid"
 
-    override physical_data: HumanoidPhysicalData
+    scale:number=1
+
     container!:AnimatedContainer2D
     sprites!:HumanoidSprites
 
@@ -88,11 +86,6 @@ export class Humanoid extends MovingBody{
 
     constructor(){
         super()
-        
-        this.physical_data={
-            rotation:0,
-            scale:1
-        }
     }
     override on_create(_args: void): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius)
@@ -185,13 +178,13 @@ export class Humanoid extends MovingBody{
             this.sprites.shadow.color=this.game.world_shadow.color
             this.sprites.shadow.matrix=this.game.world_shadow.matrix
             this.sprites.shadow.zIndex=this.container.zIndex-0.5
-            this.game.scene_2d.camera.add_object(this.sprites.shadow)
+            this.scene.camera.add_object(this.sprites.shadow)
         }
     }
 
     override on_tick(dt: number): void {
         super.on_tick(dt)
-        this.container.rotation=this.physical_data.rotation
+        this.container.rotation=this.rotation
         this.container._position.set(this.position.x,this.position.y)
         if(this.sprites.shadow)this.sprites.shadow.position=this.position
     }
@@ -207,7 +200,7 @@ export class Humanoid extends MovingBody{
             this.distance_since_last_footstep+=this.distance_walked
             // Play Footstep Sound And Do Water Riple
             if(this.distance_since_last_footstep>=footstep_distance){
-                const walk_dir:number=old_pos?v2.lookTo(this.position,old_pos):this.physical_data.rotation
+                const walk_dir:number=old_pos?v2.lookTo(this.position,old_pos):this.rotation
                 this.distance_since_last_footstep=0
                 if(this.assets.footstep_sounds){
                     if(this.animation.footsteps)this.animation.footsteps.stop()
@@ -227,15 +220,15 @@ export class Humanoid extends MovingBody{
                     d.sprite.rotation=walk_dir
                     d.lifetime=30
 
-                    const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.physical_data.scale)
-                    v2m.rotate_RadAngle(pos,this.physical_data.rotation)
+                    const pos=v2(0,(this.footstep_alternate?0.3:-0.3)*this.scale)
+                    v2m.rotate_RadAngle(pos,this.rotation)
                     d.sprite.position=v2.add(this.position,pos)
-                    this.game.scene_2d.objects.add_object(d,this.layer)
+                    this.scene.objects.add_object(d,this.layer)
 
                     this.footstep_alternate=!this.footstep_alternate
                 }
                 if(Floors[f as FloorType].floor_kind===FloorKind.Liquid){
-                    this.game.scene_2d.particles.add_particle(new ABParticle2D({
+                    this.scene.particles.add_particle(new ABParticle2D({
                         direction:0,
                         frame:{
                             image:"riple",
@@ -384,9 +377,9 @@ export class Humanoid extends MovingBody{
         }
     }
     update_body(){
-        this.container.scale.x=this.physical_data.scale
-        this.container.scale.y=this.physical_data.scale
-        this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius*this.physical_data.scale)
+        this.container.scale.x=this.scale
+        this.container.scale.y=this.scale
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius*this.scale)
         if(this.sprites.shadow)this.sprites.shadow.model=model2d.hitbox(this.base_hitbox)
     }
 

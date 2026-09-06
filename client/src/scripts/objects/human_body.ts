@@ -37,7 +37,7 @@ export class HumanBody extends GameObject{
     }
     override on_create(_args: any) {
         this.base_hitbox=new NullHitbox2D(v2(0,0))
-        this.game.scene_2d.camera.add_object(this.container)
+        this.scene.camera.add_object(this.container)
         this.sprite.frame=this.game.resources.get_frame("human_body")
     }
     override on_layer_set(): void {
@@ -54,7 +54,7 @@ export class HumanBody extends GameObject{
         if(badge){
             this.sprite_badge.visible=true
             this.sprite_badge.frame=this.game.resources.get_frame(`badge_${this.game.definitions.badges.getFromNumber(badge-1).idString}`)
-            this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.game.scene_2d.camera.meter_size*4))-0.05
+            this.sprite_badge.position.x=(-this.sprite_text.frame.frame_size!.x!/(this.scene.camera.meter_size*4))-0.05
         }else{
             this.sprite_badge.visible=false
         }

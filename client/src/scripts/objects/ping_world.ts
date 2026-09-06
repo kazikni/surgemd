@@ -21,8 +21,8 @@ export class PingWorld extends GameObject{
     override on_create(args:PingData): void {
         if(args.id){
             this.ping_id=args.id
-            for(const p in this.game.scene_2d.pings){
-                if(this.game.scene_2d.pings[p].ping_id===this.ping_id)this.game.scene_2d.pings[p].destroy()
+            for(const p in this.scene.pings){
+                if(this.scene.pings[p].ping_id===this.ping_id)this.scene.pings[p].destroy()
             }
         }
         const def=this.game.definitions.pings.getFromNumber(args.def)
@@ -32,21 +32,21 @@ export class PingWorld extends GameObject{
             scale:1.6,
             position:args.position,
         },this.game.resources)
-        this.game.scene_2d.camera.add_object(this.sprite)
-        this.game.scene_2d.pings[this.id]=this
+        this.scene.camera.add_object(this.sprite)
+        this.scene.pings[this.id]=this
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer
     }
     override on_destroy(): void {
         this.sprite.destroy()
-        if(this.game.scene_2d.pings[this.id]){
-            delete this.game.scene_2d.pings[this.id]
+        if(this.scene.pings[this.id]){
+            delete this.scene.pings[this.id]
         }
     }
     override on_tick(dt:number): void {
-        /*if(this.layer!==this.game.scene_2d.camera.layer){
-            this.manager.set_layer(this,this.game.scene_2d.camera.layer)
+        /*if(this.layer!==this.scene.camera.layer){
+            this.manager.set_layer(this,this.scene.camera.layer)
         }*/
     }
 }

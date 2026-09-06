@@ -4,7 +4,6 @@ import { DamageParams } from "../others/utils.ts";
 import { DamageReason, HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
-import { type Game } from "../others/game.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Stream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
@@ -12,8 +11,9 @@ import { SideEffect } from "common/scripts/definitions/player/effects.ts";
 import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
+import { type ServerGameScene2D } from "../others/scene.ts";
 export abstract class PlayerConnManager{
-    game:Game
+    scene:ServerGameScene2D
     human?:Human|Player
     real_human?:Human|Player
     id=-1
@@ -21,8 +21,8 @@ export abstract class PlayerConnManager{
     connected:boolean=true
     join_packet?:JoinPacket
 
-    constructor(game:Game){
-        this.game=game
+    constructor(scene:ServerGameScene2D){
+        this.scene=scene
     }
     abstract send_game_over(status:PlayerStatus[],win?:boolean,eliminated_by?:number):void;
     set_spectator(p:Player) {
@@ -36,7 +36,7 @@ export abstract class PlayerConnManager{
         p.conn=this
     }
     add_player():Player|undefined{
-        if(this.join_packet&&!this.game.fineshed&&!(this.human&&!this.human.dead)&&this.connected){
+        if(this.join_packet&&!this.scene.game.fineshed&&!(this.human&&!this.human.dead)&&this.connected){
             let p=new Player()
             if(this.human){
                 p.status=(this.human as Player).status
@@ -49,7 +49,7 @@ export abstract class PlayerConnManager{
                     p.team_data.group.replace(this.human,p)
                 }
             }
-            p=this.game.players.add_player(p,this.join_packet)
+            p=this.scene.game.players.add_player(p,this.join_packet)
             this.set_active_player(p)
             return p
         }
@@ -64,8 +64,8 @@ export abstract class PlayerConnManager{
     }
     get_update_packet_objects(camera_hb:RectHitbox2D,layer:number):ServerGameObject[]{
         const layers=[layer-2,layer-1,layer,layer+1,layer+2]
-        const objs=this.game.scene_2d.cells.get_objects_layers(camera_hb,layers)
-        return [...objs,...Object.values(this.game.scene_2d.always_visible)]
+        const objs=this.scene.cells.get_objects_layers(camera_hb,layers)
+        return [...objs,...Object.values(this.scene.always_visible)]
     }
     abstract net_update(general_update:Stream):void
 }
@@ -157,7 +157,7 @@ export class Player extends Human{
     override down(params: DamageParams): void {
         super.down(params)
         if(params.owner&&params.owner instanceof Player){
-            this.game.scene_2d.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:(params.reason===DamageReason.Explosion||params.reason===DamageReason.Human)?{
                     id:params.owner.id,
                     kills:params.owner.status.kills,
@@ -168,7 +168,7 @@ export class Player extends Human{
                 type:FeedMessageType.down,
             })
         }else{
-            this.game.scene_2d.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 damage_reason:params.reason,
@@ -182,7 +182,7 @@ export class Player extends Human{
         super.die(params)
 
         if(this.killed_by&&this.killed_by instanceof Player){
-            this.game.scene_2d.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:{
                     id:this.killed_by.id,
                     kills:this.killed_by.status.kills,
@@ -196,7 +196,7 @@ export class Player extends Human{
                 this.game.statistics.items.kills[params.source!.idString]=(this.game.statistics.items.kills[params.source!.idString]??0)+1
             }
         }else{
-            this.game.scene_2d.feed_messages.push({
+            this.scene.feed_messages.push({
                 killer:undefined,
                 victimId:this.id,
                 type:FeedMessageType.kill,
@@ -213,7 +213,7 @@ export class Player extends Human{
         if(this.conn&&this.conn.real_human===this){
             this.conn.on_revive(this)
         }
-        this.game.scene_2d.feed_messages.push({
+        this.scene.feed_messages.push({
             type:FeedMessageType.set_name,
             playerId:this.id,
             playerName:this.name

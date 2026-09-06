@@ -47,11 +47,11 @@ export class Plane extends AirBody {
         if(!this.called&&v2.distance(this.position, this.target_pos) <= 4) {
             switch (this.type) {
                 case 0:
-                    this.game.scene_2d.add_parachute(this.target_pos,this.obstacle!,)
+                    this.scene.add_parachute(this.target_pos,this.obstacle!,)
                     break
                 case 1: {
                     for(let c=0;c<this.count;c++){
-                        const g = this.game.scene_2d.add_grenade(
+                        const g = this.scene.add_grenade(
                             this.radius===0?this.target_pos:circle.random_point_inside(this.target_pos,this.radius),
                             this.grenade_def!,
                             this.owner,

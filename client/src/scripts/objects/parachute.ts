@@ -32,7 +32,7 @@ export class Parachute extends GameObject{
             hotspot:v2.half_one,
             zIndex:zIndexes.Parachute
         },this.game.resources)
-        this.game.scene_2d.camera.add_object(this.sprite)
+        this.scene.camera.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer
@@ -48,7 +48,7 @@ export class Parachute extends GameObject{
             for(let i=0;i<7;i++){
                 const pos=random.random_in_circle(2)
                 v2m.add(pos,pos,this.position)
-                this.game.scene_2d.particles.add_particle(new ABParticle2D({
+                this.scene.particles.add_particle(new ABParticle2D({
                     frame:{
                         image:"riple",
                         hotspot:v2.half_one,
@@ -87,7 +87,7 @@ export class Parachute extends GameObject{
         this.sprite.position=this.position
 
         this.sprite.zIndex=zIndexes.Airbodys+time
-        this.sprite.matrix=matrix4.parallax_2d(this.game.scene_2d.camera.position,1.1+(1*time))
+        this.sprite.matrix=matrix4.parallax_2d(this.scene.camera.position,1.1+(1*time))
     }
     override on_decode_net(stream:Stream,full:boolean):void{
         this.time=stream.read_float(0,30,2)

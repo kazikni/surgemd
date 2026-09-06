@@ -55,7 +55,7 @@ export class DamageSplashOBJ extends GameObject{
         this.sprite.rotation=-0.1
         this.sprite.layer=this.layer
 
-        const s=((random.float(1.5,2)/this.game.scene_2d.camera.zoom)*(args.critical?1.5:1))
+        const s=((random.float(1.5,2)/this.scene.camera.zoom)*(args.critical?1.5:1))
         this.game.add_tween({
             duration: 1,
             target: this.sprite.scale,
@@ -66,7 +66,7 @@ export class DamageSplashOBJ extends GameObject{
         this.game.add_tween({
             duration: 0.4,
             target: this.sprite.position,
-            to: v2.add(this.sprite.position, v2.scale(v2.random2(v2(-0.2,-0.5),v2(0.2,-0.7)),(args.critical?1.2:1)/this.game.scene_2d.camera.zoom)),
+            to: v2.add(this.sprite.position, v2.scale(v2.random2(v2(-0.2,-0.5),v2(0.2,-0.7)),(args.critical?1.2:1)/this.scene.camera.zoom)),
         })
         this.game.add_tween({
             duration: args.critical?0.1:0.3,
@@ -77,7 +77,7 @@ export class DamageSplashOBJ extends GameObject{
             infinite:true
         })
         
-        this.game.scene_2d.camera.add_object(this.sprite)
+        this.scene.camera.add_object(this.sprite)
     }
     override on_layer_set(): void {
         this.sprite.layer=this.layer

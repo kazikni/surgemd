@@ -344,7 +344,7 @@ export class Building extends StaticBody {
         for(const p of this.def.generate.puzzles??[]){
             const puzzle=new BuildingPuzzle(this,p)
             this.puzzles[puzzle.id]=puzzle
-            if(p.global)this.game.scene_2d.puzzles[puzzle.id]=puzzle
+            if(p.global)this.scene.puzzles[puzzle.id]=puzzle
         }
     }
     after_generate(){
@@ -381,7 +381,7 @@ export class Building extends StaticBody {
             const items = this.game.get_loot_table(l.table)
             const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
-                this.game.scene_2d.add_loot(p, {item:li.item, count:li.count}, this.layer)
+                this.scene.add_loot(p, {item:li.item, count:li.count}, this.layer)
             }
         }
         for (const d of this.def.generate.decals ?? []) {
@@ -389,7 +389,7 @@ export class Building extends StaticBody {
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, d.position, side)
             const rotation=(d.rotation??0)+Angle.side_rad(this.physical_data.side)
-            this.game.scene_2d.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
+            this.scene.add_decal(p,rotation,def,d.tint,d.scale,d.layer)
         }
         for(const o of this.def.generate.obstacles ?? []) {
             const def_name=typeof o.def==="string"?o.def:random.weight2(o.def)!.def

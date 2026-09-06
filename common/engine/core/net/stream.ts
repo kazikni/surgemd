@@ -138,7 +138,7 @@ export abstract class Stream{
         return min + (max - min) * val / range;
     }
 
-    write_boolean_group(b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean): this {
+    write_boolean_group(b0?: boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean): this {
         return this.write_uint8(
             (b0 ? 1 : 0)
             + (b1 ? 2 : 0)
@@ -164,7 +164,7 @@ export abstract class Stream{
         ]
     }
 
-    write_boolean_group2(b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean): this {
+    write_boolean_group2(b0?:boolean, b1?: boolean, b2?: boolean, b3?: boolean,b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean): this {
         return this.write_uint16(
             (b0 ? 1 : 0)
             + (b1 ? 2 : 0)
@@ -206,7 +206,7 @@ export abstract class Stream{
         ]
     }
     write_boolean_group3(
-        b0 : boolean, b1?: boolean, b2?: boolean, b3?: boolean,
+        b0?: boolean, b1?: boolean, b2?: boolean, b3?: boolean,
         b4?: boolean, b5?: boolean, b6?: boolean, b7?: boolean,
         b8?: boolean, b9?: boolean, bA?: boolean, bB?: boolean,
         bC?: boolean, bD?: boolean, bE?: boolean, bF?: boolean,

@@ -96,7 +96,7 @@ export class Explosion extends ServerGameObject{
                         })
                         break
                     case GameObjectType.Human: {
-                        (obj as Human | StaticBody).damage({
+                        (obj as Human).damage({
                             amount: damage,
                             reason: DamageReason.Explosion,
                             source: this.source,

@@ -1,4 +1,4 @@
-import { LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
+import { DefaultObjec2DEvents, LootTable as LootTableBase, Vec2 } from "../../engine/core.ts";
 import { type GameItem } from "../definitions/game_defs.ts";
 import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "../definitions/loadout/skins.ts";
 import { WrappingDef } from "../definitions/loadout/wrapping.ts"
@@ -27,6 +27,10 @@ export const GameConstants={
         threads:2,
         chunckSize:2
     }
+}
+export const ObjectsComponentEvent={
+    damage:DefaultObjec2DEvents.last+1,
+    interact:DefaultObjec2DEvents.last+2,
 }
 export enum GameObjectType{
     StaticBody,

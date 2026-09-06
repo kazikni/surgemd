@@ -91,13 +91,13 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 53 * power,
+            damage: 51 * power,
             range: 200 * (1 + (power - 1) * 0.5),
-            speed: 57 * (1 + (power - 1) * 0.6),
+            speed: 55 * (1 + (power - 1) * 0.6),
 
             critical_mult: 1.1,
             obstacle_mult: 1.25,
-            falloff: 0.7,
+            falloff: 0.95,
             tracer: tracer,
         }
     },
@@ -358,7 +358,7 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_on_release:true,
             fire_delay:0.2,
-            switch_delay:0.2,
+            switch_delay:0.15,
             unload_delay:1,
 
             gas_particles:GasParticles.sniper,
@@ -398,7 +398,7 @@ export const guns_factory={
 
             fire_mode:FireMode.Single,
             fire_delay:0.2,
-            switch_delay:0.2,
+            switch_delay:0.15,
             unload_delay:1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
@@ -1077,7 +1077,7 @@ export function Guns_Default_Init():GunDef[]{
             },
 
             bullet:{
-                def:bullets_factory.sniper(1.13,tracers.xl)
+                def:bullets_factory.sniper(1.1,tracers.xl)
             },
             reload:{
                 delay:2.7,

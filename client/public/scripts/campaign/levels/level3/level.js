@@ -224,7 +224,7 @@ return (class extends LevelPlayerScript{
     }
     
     on_game_finish(e){
-        if(e.winners.length<2)e.win=false
+        //if(e.winners.length<2)e.win=false
         super.on_game_finish(e)
     }
     async on_begin(){

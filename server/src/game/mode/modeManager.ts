@@ -336,14 +336,14 @@ export abstract class ModeManager extends GameComponent{
             return map
         }
     }
-    write_checkpoint(stream:Stream){
+    on_encode_checkpoint(stream:Stream){
         stream.write_kdate(this.game.ambient.date)
         .write_float32(this.game.ambient.rain)
         .write_float32(this.game.ambient.target_rain)
         .write_uint8(this.game.ambient.rain_state)
         .write_float32(this.game.ambient.rain_timer)
     }
-    decode_checkpoint(stream:Stream){
+    on_decode_checkpoint(stream:Stream){
         this.game.ambient.date=stream.read_kdate()
         this.game.ambient.rain=stream.read_float32()
         this.game.ambient.target_rain=stream.read_float32()

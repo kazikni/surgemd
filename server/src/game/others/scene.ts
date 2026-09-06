@@ -1,4 +1,4 @@
-import { Scene2DInstance, v2, Vec2 } from "common/engine/core.ts";
+import { Scene2DInstance, v2, Vec2,Stream } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
@@ -8,7 +8,7 @@ import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 import { Human } from "../objects/human.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { AmmoDef } from "common/scripts/definitions/items/ammo.ts";
-import { Layers, LootData } from "common/scripts/others/constants.ts";
+import { GameObjectType, Layers, LootData } from "common/scripts/others/constants.ts";
 import { Bullet } from "../objects/bullet.ts";
 import { ExplosionDef } from "common/scripts/definitions/objects/explosions.ts";
 import { Explosion } from "../objects/explosion.ts";
@@ -29,6 +29,7 @@ import { SyncedParticle, SyncedParticlesCreator } from "../objects/synced_partic
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
 import { Drone } from "../objects/drone.ts";
 import { Plane } from "../objects/plane.ts";
+import { Player } from "../objects/player.ts";
 
 export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     declare game:Game
@@ -40,6 +41,14 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     puzzles:Record<string,BuildingPuzzle>={}
 
     leaderboards:LeaderboardPlayer[]=[]
+
+    constructor(){
+        super()
+
+        this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
+        this.objects.encode_object_checkpoint=this.encode_object_checkpoint.bind(this)
+        this.objects.valid_encode_object_checkpoint=this.valid_encode_object_checkpoint.bind(this)
+    }
 
     override clear(){
         super.clear()
@@ -58,6 +67,31 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
 
     on_start(){
         this.leaderboards.length=0
+    }
+
+    override make_object_checkpoint(stream: Stream, id: number | undefined, layer: number, t: number):ServerGameObject|undefined{
+        if(t===GameObjectType.Human){
+            const tp=stream.read_uint8()
+            console.log("Human Type",tp)
+            switch(tp){
+                case 1:
+                    return new Player()
+            }
+            return undefined
+        }
+        return super.make_object_checkpoint(stream,id,layer,t)
+    }
+    encode_object_checkpoint(stream: Stream, obj:ServerGameObject):void{
+        if(obj.number_type===GameObjectType.Human){
+            if(obj instanceof Player)stream.write_uint8(1)
+            stream.write_uint8(0)
+        }
+    }
+    valid_encode_object_checkpoint(obj:ServerGameObject):boolean{
+        if(obj.number_type===GameObjectType.Human){
+            if(!(obj instanceof Player))return false
+        }
+        return true
     }
 
     

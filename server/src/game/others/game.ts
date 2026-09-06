@@ -27,10 +27,11 @@ import { Decal } from "../objects/decals.ts";
 import { StartSettings } from "common/scripts/packets/start_packet.ts";
 import { loot_table_get_item } from "common/scripts/others/functions.ts";
 import { HumanScript } from "../human/ai/script.ts";
-import { LevelPlayerScript } from "../mode/level_player.ts";
+import { type LevelPlayer, LevelPlayerScript } from "../mode/level_player.ts";
 import { Drone } from "../objects/drone.ts";
 import { ServerGameScene2D } from "./scene.ts";
 import { SequenceMode } from "../mode/sequence.ts";
+import { HumanBody } from "../objects/human_body.ts";
 export interface GameData {
     living_count: number[]
 
@@ -83,6 +84,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
     modeManager!:ModeManager
     deadzone:DeadZoneManager
+    level?:LevelPlayer
 
     started_time:number=0
     can_start:boolean=true
@@ -148,6 +150,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
             Human,
+            HumanBody,
             Loot,
             Grenade,
             Obstacle,
@@ -177,7 +180,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.map=new GameMap(this)
 
         this.add_component(this.players)
-        this.deadzone=new DeadZoneManager(this)
+        this.deadzone=new DeadZoneManager()
+        this.add_component(this.deadzone)
     }
     async init(mode:ModeManager){
         this.initialized=false
@@ -239,7 +243,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     override on_update(dt:number): void {
         super.on_update(dt)
-        this.deadzone.tick(dt)
     }
     update_data(){
         const data:GameData={
@@ -277,8 +280,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
-        this.modeManager.write_checkpoint(stream)
-        this.deadzone.write_checkpoint(stream)
+        this.call_event("encode_checkpoint",stream)
         this.scene_2d.make_checkpoint(stream,{
             save_id:true,
             orden:[
@@ -289,8 +291,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         })
     }
     load_checkpoint(stream:Stream){
-        this.modeManager.decode_checkpoint(stream)
-        this.deadzone.decode_checkpoint(stream)
+        this.call_event("decode_checkpoint",stream)
         this.scene_2d.load_checkpoint(stream)
     }
     start(force:boolean=false){

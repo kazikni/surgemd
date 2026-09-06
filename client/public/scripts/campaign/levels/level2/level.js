@@ -16,13 +16,15 @@ return (class extends LevelPlayerScript{
         })
         this.game.modeManager.rules.humans.modifiers.health=0.5
     }
-    on_spawn_player(player){
-        player.set_preset({
-
+    on_spawn_player(player,first){
+        if(first)player.set_preset({
             inventory: {
                 hand:1,
                 gun1: [
                     {item:"colt1873",weight: 1},
+                ],
+                items:[
+                    [{"item": "frag_grenade", "count": 10, "weight": 1}],
                 ],
                 iitems: [
                     "scope_2",
@@ -36,23 +38,25 @@ return (class extends LevelPlayerScript{
     }
     async on_before(){
     }
-    on_start(){
-        this.game.modeManager.add_enemies([
+    on_start(first){
+        if(first)this.game.modeManager.add_enemies([
             {
                 "def": {
-                    ai: {
+                    /*ai: {
                         kind: "dumb"
-                    },
+                    },*/
                     inventory:{
                         gun1: [
                             {item:"colt1873",weight: 1},
                             {item:"m9",weight: 1},
                             {item:"m870",weight: 1},
                             {item:"ak47",weight: 1},
+                            {item:"spas12",weight: 0.5},
+                            {item:"spas12",weight: 0.5},
                         ],
                     }
                 },
-                "count": 10
+                "count": 30
             },
         ])
     }

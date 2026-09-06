@@ -8,6 +8,7 @@ ___
 * New Loading Screen
 * Tundra Map Dialogs
 * Final Credits
+* Hide Boost Bar When you dont have boost
 ___
 ### Items
 * Tec22 - L15 C Rank Pistol

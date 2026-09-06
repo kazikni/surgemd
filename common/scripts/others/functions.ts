@@ -118,16 +118,23 @@ export function loot_table_get_item(item:string,count:number,aditional:LootAditi
 }
 
 export function encode_loot_data(definitions:GameDefinition,data:LootData,stream:Stream):void{
-    stream.write_boolean_group(data.aditional!==undefined,data.skin!==undefined)
-    .write_uint16(definitions.game_items.keysString[data.item.idString])
+    stream.write_boolean_group(data.aditional!==undefined,data.skin!==undefined,data.ammo!==undefined,typeof data.ammo==="number",data.ammo===true)
+    if(data.ammo!==undefined) if(typeof data.ammo==="number")stream.write_uint16(data.ammo)
+    stream.write_uint16(definitions.game_items.keysString[data.item.idString])
     .write_float32(data.count)
     if(data.skin!==undefined)stream.write_uint8(data.skin)
 }
 export function decode_loot_data(definitions:GameDefinition,stream:Stream):LootData{
-    const [has_aditional,has_skin]=stream.read_boolean_group()
+    const [has_aditional,has_skin,has_ammo,has_ammo_n,ammo_true]=stream.read_boolean_group()
+    let ammo:number|boolean|undefined
+    if(has_ammo){
+        ammo=ammo_true
+        if(has_ammo_n)ammo=stream.read_uint16()
+    }
     return {
         item:definitions.game_items.valueNumber[stream.read_uint16()],
         count:stream.read_float32(),
+        ammo,
         //aditional:has_aditional?stream.read_array(()=>decode_loot_data(definitions,stream),1):undefined,
         skin:has_skin?stream.read_uint8():undefined
     }

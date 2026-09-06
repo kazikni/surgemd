@@ -34,6 +34,7 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         this.cells=this.objects.cells
         this.objects.add_object=this.add_object.bind(this)
         this.objects.make_object_net=this.make_object_net.bind(this)
+
         this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
     }
 
@@ -45,8 +46,9 @@ export class Scene2DInstance<DefaultGameObject extends BaseGameObject2D=BaseGame
         if(!this.game.objects.getFromNumberSafe(t))return undefined
         return new (this.game.objects.getFromNumber(t))()
     }
+
     make_object_checkpoint(_stream:Stream,_id:number|undefined,_layer:number,t:number){
-        if(!this.game.objects.getFromNumber(t))return undefined
+        if(!this.game.objects.getFromNumberSafe(t))return undefined
         return new (this.game.objects.getFromNumber(t))()
     }
 

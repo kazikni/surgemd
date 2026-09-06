@@ -26,6 +26,7 @@ export class Explosion extends ServerGameObject{
         this.net_sync_deletion=false
 
         this.allow_tick=true
+        this.allow_checkpoint=false
     }
     explode_base(){
         if(this.exploded_base)return

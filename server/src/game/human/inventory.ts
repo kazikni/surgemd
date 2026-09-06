@@ -10,7 +10,7 @@ import { type ServerGameObject } from "../others/gameObject.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { GameObjectType, HumanAnimationType, LootData } from "common/scripts/others/constants.ts";
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { Angle, CircleHitbox2D, getPatterningShape, Numeric, random, Slot, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, CircleHitbox2D, getPatterningShape, Numeric, random, Slot, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { type Loot } from "../objects/loot.ts";
 import { StaticBody } from "../objects/static_body.ts";
@@ -25,6 +25,13 @@ export abstract class LItem extends MDItem{
     abstract on_fire_alt(user:Human):void
     abstract update(user:Human,dt:number):void
     abstract drop():Loot[]
+
+    encode_checkpoint(stream:Stream):void{
+
+    }
+    decode_checkpoint(stream:Stream):void{
+        
+    }
 }
 export class GunItem extends GunItemBase implements LItem{
     declare inventory:GInventory
@@ -322,6 +329,17 @@ export class GunItem extends GunItemBase implements LItem{
             return [this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.def,count:1,ammo:hold_ammo?this.ammo:undefined},this.inventory.owner.layer)]
         }
     }
+
+    encode_checkpoint(stream:Stream):void{
+        stream.write_uint16(this.ammo)
+        stream.write_float32(this.use_delay)
+        stream.write_float(this.fire_sequence,0,1,1)
+    }
+    decode_checkpoint(stream:Stream):void{
+        this.ammo=stream.read_uint16()
+        this.use_delay=stream.read_float32()
+        this.fire_sequence=stream.read_float(0,1,1)
+    }
 }
 export class AmmoItem extends AmmoItemBase implements LItem{
     declare inventory:GInventory
@@ -340,6 +358,9 @@ export class AmmoItem extends AmmoItemBase implements LItem{
     drop(): Loot[] {
         return []
     }
+
+    encode_checkpoint(stream:Stream):void{}
+    decode_checkpoint(stream:Stream):void{}
 }
 export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     declare inventory:GInventory
@@ -430,6 +451,9 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     drop(): Loot[] {
         return []
     }
+
+    encode_checkpoint(stream:Stream):void{}
+    decode_checkpoint(stream:Stream):void{}
 }
 export class GrenadeItem extends GrenadeItemBase implements LItem{
     declare inventory:GInventory
@@ -465,6 +489,9 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
     drop(): Loot[] {
         return []
     }
+
+    encode_checkpoint(stream:Stream):void{}
+    decode_checkpoint(stream:Stream):void{}
 }
 export class MeleeItem extends MeleeItemBase implements LItem{
     declare inventory:GInventory
@@ -472,7 +499,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     use_delay:number=0
     firing:boolean=false
     switching:boolean=false
-    constructor(def:MeleeDef){
+    constructor(def?:MeleeDef){
         super(def)
     }
     on_use(_user: Human, _slot?: Slot<LItem>): void {
@@ -545,6 +572,13 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     }
     drop(): Loot[] {
         return [this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.def,count:1,skin:this.skin},this.inventory.owner.layer)]
+    }
+
+    encode_checkpoint(stream:Stream):void{
+        stream.write_float32(this.use_delay)
+    }
+    decode_checkpoint(stream:Stream):void{
+        this.use_delay=stream.read_float32()
     }
 }
 export class GInventory extends GInventoryBase<LItem>{
@@ -1081,5 +1115,48 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.hand_item&&this.hand_item.item_type!==GameItemType.gun&&this.hand_item.item_type!==GameItemType.melee){
             this.hand_item.update(this.owner,dt)
         }
+    }
+
+    encode_checkpoint(stream:Stream){
+        stream.write_array(this.iitems,(v)=>stream.write_uint16(v.idNumber!))
+
+        stream.write_array(Object.keys(this.weapons),(v)=>{
+            stream.write_uint8(v as unknown as number)
+            if(this.weapons[v as unknown as number] instanceof GunItem){
+                stream.write_uint8(1)
+                stream.write_uint16(this.weapons[v as unknown as number]!.def.idNumber!)
+            }else if(this.weapons[v as unknown as number] instanceof MeleeItem){
+                stream.write_uint8(2)
+                stream.write_uint16(this.weapons[v as unknown as number]!.def.idNumber!)
+            }else{
+                stream.write_uint8(0)
+                return
+            }
+            this.weapons[v as unknown as number]?.encode_checkpoint?.(stream)
+        },1)
+    }
+    decode_checkpoint(stream:Stream){
+        this.iitems=stream.read_array(()=>this.owner.game.definitions.scopes.getFromNumber(stream.read_uint16()))
+        stream.read_array(()=>{
+            const id=stream.read_uint8()
+            const tp=stream.read_uint8()
+            switch(tp){
+                case 0:
+                    this.weapons[id]=undefined
+                    return
+                case 1:
+                    this.set_weapon(id,this.owner.game.definitions.guns.getFromNumberSafe(stream.read_uint16()))
+                    break
+                case 2:
+                    this.set_weapon(id,this.owner.game.definitions.melees.getFromNumberSafe(stream.read_uint16()))
+                    break
+            }
+            this.weapons[id]?.decode_checkpoint?.(stream)
+        })
+
+        this.net_sync.weapons=true
+        this.net_sync.items=true
+        this.net_sync.aitems=true
+        this.net_sync.iitems=true
     }
 }

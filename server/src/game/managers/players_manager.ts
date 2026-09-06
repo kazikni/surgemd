@@ -54,6 +54,10 @@ export class PlayerClient extends PlayerConnManager{
     override add_player(): Player | undefined {
         const p=super.add_player()
         this.view_objects.length=0
+        if(p){
+            p.checkpoint_clear_resistance=true
+            p.allow_checkpoint=false
+        }
         return p
     }
     get_update_packet():UpdatePacket{
@@ -347,6 +351,23 @@ export class PlayersManager extends GameComponent{
 
         if(this.game.replay)this.game.replay.update()
         this.first_tick=false
+    }
+    on_encode_checkpoint(stream:Stream){
+        stream.write_array(Object.values(this.connected_players),(i)=>{
+            stream.write_float32(i.id)
+            stream.write_boolean_group(i.real_human!==undefined)
+            i.real_human?.on_encode_checkpoint?.(stream,{coid:{},idco:{}})
+        },1)
+    }
+    on_decode_checkpoint(stream:Stream){
+        stream.read_array(()=>{
+            const id=stream.read_float32()
+            const bg=stream.read_boolean_group()
+            if(bg[0]){
+                const client=this.connected_players[id]
+                client.real_human?.on_decode_checkpoint?.(stream,{coid:{},idco:{}})
+            }
+        },1)
     }
     async connection(client:Client,username:string){
         if(this.connected_players[client.ID])return

@@ -1,6 +1,6 @@
 import { FloorType } from "common/scripts/others/terrain.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
-import { BaseObject2D, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BaseObject2D, CheckpointContext, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData } from "common/scripts/others/constants.ts";
 import { LoadoutBodyDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { type StaticBody } from "./static_body.ts";
@@ -62,6 +62,8 @@ export class Humanoid extends MovingBody {
             value:100,
             old:-1,
         }
+
+        this.allow_checkpoint=false
     }
     update_body(){
         this.base_hitbox = new CircleHitbox2D(v2(0,0),GameConstants.humanoid.radius*this.physical_data.scale)
@@ -134,5 +136,14 @@ export class Humanoid extends MovingBody {
             stream.write_uint16(v.idNumber!)
         },1)
         return stream
+    }
+
+    override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        stream.write_pos2(this.position)
+        stream.write_float32(this.health.value)
+    }
+    override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        this.position=stream.read_pos2()
+        this.health.value=stream.read_float32()
     }
 }

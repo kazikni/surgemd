@@ -15,7 +15,7 @@ export class LevelPlayerScript{
     }
 
     on_load_character(character:LevelCharacter){return character}
-    on_spawn_player(player:Player){}
+    on_spawn_player(player:Player,first:boolean){}
     on_save_checkpoint(stream:Stream){}
 
     on_tick(dt:number){}
@@ -23,7 +23,7 @@ export class LevelPlayerScript{
     on_before(start_with_intro:boolean){}
     async on_load(){
     }
-    on_start(){}
+    on_start(first:boolean){}
     on_stop(){}
     on_game_finish(e:any){
         if(e.win){
@@ -88,6 +88,7 @@ export class LevelPlayer extends GameComponent {
     fs:FileManager
 
     checkpoint:Stream
+    checkpoint_count:number=-1
 
     npcs:LevelCharacter[]=[]
 
@@ -105,6 +106,7 @@ export class LevelPlayer extends GameComponent {
     }
     override on_bind(): void {
         if(!this.script)this.set_script_class(new LevelPlayerScript())
+        this.game.level=this
     }
     async on_game_finish(e:{winners:Player[]}){
         let win=false
@@ -115,6 +117,7 @@ export class LevelPlayer extends GameComponent {
         await this.script.on_game_finish(ev)
         this.game.can_win=ev.win
     }
+
     override on_tick(dt:number){
     }
 
@@ -173,13 +176,15 @@ export class LevelPlayer extends GameComponent {
         this.game.save_checkpoint(this.checkpoint)
         this.script.on_save_checkpoint(this.checkpoint)
         this.checkpoint.lock()
+        this.checkpoint_count++
     }
     start(){
+        const first=this.checkpoint_count<=0
         this.game.start(true)
-        this.script.on_start()
-        this.spawn_players()
+        this.script.on_start(first)
+        this.spawn_players(first)
     }
-    spawn_players(){
+    spawn_players(first:boolean=false){
         for(const conn of Object.values(this.game.players.connected_players)){
             conn.view_objects.length=0
             let p=conn.real_human as Player
@@ -191,8 +196,8 @@ export class LevelPlayer extends GameComponent {
             if(!p)continue
             p!.reset_status()
             if(p&&p.is_player&&!p.is_bot){
-                p.clear(true,true)
-                this.script.on_spawn_player(p)
+                p.clear(false,true)
+                this.script.on_spawn_player(p,first)
             }
         }
     }

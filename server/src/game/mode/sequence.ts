@@ -6,7 +6,6 @@ import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { Spawn } from "common/scripts/others/constants.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
-import { type Player } from "../objects/player.ts";
 
 export interface SequenceModeSettings{
     map?:MapDef|string
@@ -42,6 +41,11 @@ export class SequenceMode extends ModeManager{
     }
     remove_enemy(human:Human){
         if(this.enemies[human.id])delete this.enemies[human.id]
+        if(this.game.started){
+            if(Object.keys(this.enemies).length<=0){
+                this.game.finish(this.game.players.living_players,1)
+            }
+        }
     }
 
     override add_enemies(enemies?: LevelEnemys): Human[] {
@@ -55,12 +59,6 @@ export class SequenceMode extends ModeManager{
         super.on_human_die(e)
         if(this.is_enemy(e.human)){
             this.remove_enemy(e.human)
-        }
-
-        if(this.game.started){
-            if(Object.keys(this.enemies).length<=0){
-                this.game.finish(this.game.players.living_players,1)
-            }
         }
     }
 

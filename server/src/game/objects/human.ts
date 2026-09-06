@@ -34,6 +34,7 @@ import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
 import { Humanoid, HumanoidAnimationData, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
 import { type Bullet } from "./bullet.ts";
+import { CheckpointContext } from "../../../../common/engine/core/game/gameObject.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
@@ -1323,6 +1324,7 @@ export class Human extends Humanoid{
         }
         this.dead=false
         this.downed=false
+        this.knocked=false
         this.killed_by=undefined
         this.downed_by=undefined
         this.last_damage_by=undefined
@@ -1364,7 +1366,7 @@ export class Human extends Humanoid{
             this.input.emote=this.visual.emotes.victory
         }
     }
-    
+
     visible_humans:MapHumanData[]=[]
     map_humans():MapHumanData[]{
         return [...this.team_data.team?.humans??this.team_data.group?.humans??[this],...this.visible_humans]
@@ -1471,5 +1473,13 @@ export class Human extends Humanoid{
         if(full&&this.human_data.show_name){
             stream.write_string(this.name,1)
         }
+    }
+    override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        super.on_encode_checkpoint(stream,ctx)
+        this.inventory.encode_checkpoint(stream)
+    }
+    override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
+        super.on_decode_checkpoint(stream,ctx)
+        this.inventory.decode_checkpoint(stream)
     }
 }

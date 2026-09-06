@@ -44,6 +44,8 @@ export abstract class BaseObject2D{
     allow_dirty:boolean=true
     allow_checkpoint:boolean=true
 
+    checkpoint_clear_resistance:boolean=false
+
     net_sync_can_unsee:boolean=true
     net_sync_deletion:boolean=true
     net_sync_dirty:boolean=true
@@ -379,7 +381,10 @@ export class GameObjectPool2D<GameObject extends BaseObject2D> {
 }
 
 export type MakeObjectCallback<GameObject extends BaseObject2D>=(id:number,layer:number,type:number)=>GameObject|undefined
+
 export type MakeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,id:number|undefined,layer:number,type:number)=>GameObject|undefined
+export type EncodeObjectCheckpointCallback<GameObject extends BaseObject2D>=(stream:Stream,obj:GameObject)=>void
+export type ValidEncodeObjectCheckpointCallback<GameObject extends BaseObject2D>=(obj:GameObject)=>boolean
 export class GameObjectManager2D<GameObject extends BaseObject2D>{
     modules?:WebAssembly.Module
     cells:CellsManager2D<GameObject>
@@ -401,20 +406,27 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     destroy_queue:GameObject[]=[]
 
     make_object_net:MakeObjectCallback<GameObject>
-    make_object_checkpoint:MakeObjectCheckpointCallback<GameObject>
+
+    make_object_checkpoint?:MakeObjectCheckpointCallback<GameObject>
+    encode_object_checkpoint?:EncodeObjectCheckpointCallback<GameObject>
+    valid_encode_object_checkpoint?:ValidEncodeObjectCheckpointCallback<GameObject>
 
     stream_cache?:Stream
-    constructor(cell_size?:number,make_object_net:MakeObjectCallback<GameObject>=(_a,_b,_c)=>{return undefined},make_object_checkpoint:MakeObjectCheckpointCallback<GameObject>=(_a,_b,_c,_d)=>{return undefined}){
+    constructor(cell_size?:number,make_object_net:MakeObjectCallback<GameObject>=(_a,_b,_c)=>{return undefined}){
         this.cells=new CellsManager2D(cell_size)
         this.make_object_net=make_object_net
-        this.make_object_checkpoint=make_object_checkpoint
     }
-    clear(){
+    clear(checkpoint_clear:boolean=false){
+        const resistance:GameObject[]=[]
         for(const obj in this.objects){
-            this.objects[obj].on_destroy()
-            if(this.objects[obj].pool)this.objects[obj].pool.release(obj)
             this.objects[obj].registred=false
-            this.objects[obj].destroyed=true
+            if(checkpoint_clear&&this.objects[obj].checkpoint_clear_resistance){
+                resistance.push(this.objects[obj])
+            }else{
+                this.objects[obj].on_destroy()
+                if(this.objects[obj].pool)this.objects[obj].pool.release(obj)
+                this.objects[obj].destroyed=true
+            }
         }
 
         this.layers={}
@@ -428,6 +440,12 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         this.layers_orden.length=0
 
         this.cells.clear()
+
+        if(resistance){
+            for(const o of resistance){
+                this.registry_object(o)
+            }
+        }
     }
     update_layers_orden(){
         for(const l of this.layers_orden){
@@ -795,8 +813,11 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             stream.write_uint8(l)
             for(const o of this.layers[l].orden){
                 if(this.objects[o]?.allow_checkpoint){
+                    if(this.valid_encode_object_checkpoint&&!this.valid_encode_object_checkpoint(this.objects[o]))continue
                     if(!blacklist.has(this.objects[o].number_type)&&!blacklist.has(this.objects[o].string_type))objects.push(this.objects[o])
                 }
+                ctx.coid[idx]=this.objects[o].id
+                ctx.idco[this.objects[o].id]=idx
             }
             objects.sort((a, b) => {
                 const pa=orderMap.get(a.number_type)??orderMap.get(a.string_type)??Number.MAX_SAFE_INTEGER
@@ -809,8 +830,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 stream.write_id(idx)
                 stream.write_uint8(obj.number_type)
                 //.write_boolean_group(obj.is_new)
-                ctx.coid[idx]=obj.id
-                ctx.idco[obj.id]=idx
+                this.encode_object_checkpoint?.(stream,obj)
                 idx++
             }
             layers.push(objects)
@@ -823,7 +843,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
     }
     proccess_checkpoint(stream:Stream):GameObject[][]{
-        this.clear()
+        this.clear(true)
         const layers:GameObject[][]=[]
         const boolgroup=stream.read_boolean_group()
         const layers_count=stream.read_uint8()
@@ -843,7 +863,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 const co=stream.read_id()
                 const tp=stream.read_uint8()
                 //const bg=stream.read_boolean_group()
-                const obb=this.pools[tp]?this.pools[tp].allocate():this.make_object_checkpoint(stream,id,layer,tp)
+                const obb=this.make_object_checkpoint?.(stream,id,layer,tp)
                 if(!obb)continue
                 const obj=this.add_object(obb,layer,id)
                 obj.is_new=false

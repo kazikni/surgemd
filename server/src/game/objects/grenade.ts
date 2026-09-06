@@ -172,7 +172,6 @@ export class Grenade extends Projectile{
         .write_float32(this.physical_data.zpos)
         .write_float32(this.physical_data.zpos_speed)
         .write_float32(this.fuse_delay)
-        .write_uint8(this.physical_data.current_floor)
         .write_boolean_group(this.owner !== undefined)
         if (this.owner) {
             stream.write_id(ctx.idco[this.owner.id])
@@ -188,13 +187,10 @@ export class Grenade extends Projectile{
         this.physical_data.zpos = stream.read_float32()
         this.physical_data.zpos_speed = stream.read_float32()
         this.fuse_delay = stream.read_float32()
-        this.physical_data.current_floor = stream.read_uint8() as FloorType
         const bg=stream.read_boolean_group()
         if(bg[0]){
             const id = stream.read_id()
             this.owner = this.manager.objects[ctx.coid[id]] as Human
         }
-
-        this.update_hitbox()
     }
 }

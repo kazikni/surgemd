@@ -228,6 +228,7 @@ export class BattleRoyale extends ModeManager{
     }
     override on_human_die(e:human_die_event){
         e.human.inventory.drop_all()
+        e.human.inventory.clear()
         if(e.human.killed_by){
             if(e.human.killed_by.id!==e.human.id&&!this.is_ally(e.human,e.human.killed_by)){
                 const killer=e.human.killed_by

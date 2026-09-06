@@ -64,6 +64,7 @@ export class Bullet extends ServerGameObject{
         this.net_sync_can_unsee=false
 
         this.allow_tick=true
+        this.allow_checkpoint=false
     }
     on_hit(){
         if(this.on_hit_explosion){

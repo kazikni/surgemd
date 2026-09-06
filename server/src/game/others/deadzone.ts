@@ -1,4 +1,4 @@
-import { CircleHitbox2D, cloneDeep, Hitbox2D, Numeric, random, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, cloneDeep, GameComponent, Hitbox2D, Numeric, random, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Game } from "./game.ts";
 import { DeadZoneStage, DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
@@ -50,8 +50,8 @@ export const DefaultDeadzone:DeadZoneConfig={
     timeSpeed: 1,
     damage: 1
 }
-export class DeadZoneManager {
-    readonly game: Game
+export class DeadZoneManager extends GameComponent{
+    declare game: Game
     readonly hitbox: CircleHitbox2D
 
     config!:DeadZoneConfig
@@ -80,8 +80,8 @@ export class DeadZoneManager {
 
     running = false
 
-    constructor(game:Game){
-        this.game = game
+    constructor(){
+        super()
         this.hitbox = new CircleHitbox2D(v2(0,0),1)
     }
 
@@ -170,7 +170,7 @@ export class DeadZoneManager {
             this.hitbox.position = this.state.position
         }
     }
-    tick(dt:number){
+    override on_tick(dt:number){
         if(!this.running||this.state.state===DeadZoneState.Deenabled){
             this.running=false
             return
@@ -291,7 +291,7 @@ export class DeadZoneManager {
 
         return pos
     }
-    write_checkpoint(stream:Stream){
+    on_encode_checkpoint(stream:Stream){
         stream.write_uint8(this.state.state)
 
         .write_pos2(this.state.position)
@@ -306,7 +306,7 @@ export class DeadZoneManager {
         .write_float32(this.timer)
         .write_float32(this.duration)
     }
-    decode_checkpoint(stream:Stream){
+    on_decode_checkpoint(stream:Stream){
         this.state.state=stream.read_uint8()
 
         this.state.position=stream.read_pos2()

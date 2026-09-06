@@ -139,9 +139,14 @@ export class BottomLeftModule extends UIModule<Game>{
     }
     render_boost(){
         const p=this.boost/this.max_boost
-        this.boost_bar_interior.style.width =`${p*100}%`
-        this.boost_bar_amount.innerText=`${this.boost}/${this.max_boost}`
-        this.boost_bar_interior.style.backgroundColor=this.boost_def.color
+        if(p===0){
+            HideElement(this.boost_bar_container)
+        }else{
+            ShowElement(this.boost_bar_container)
+            this.boost_bar_interior.style.width =`${p*100}%`
+            this.boost_bar_amount.innerText=`${this.boost}/${this.max_boost}`
+            this.boost_bar_interior.style.backgroundColor=this.boost_def.color
+        }
     }
     override on_clear(): void {
         this.hand_info_count.innerText = ""

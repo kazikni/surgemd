@@ -36,6 +36,18 @@ export class GunItemBase extends MDItem{
         return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
     }
 }
+export class MeleeItemBase extends MDItem{
+    def:MeleeDef
+    item_type: GameItemType.melee=GameItemType.melee
+    constructor(def?:MeleeDef){
+      super()
+      this.limit_per_slot=1
+      this.def=def!
+    }
+    is(other: MDItem): boolean {
+      return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+    }
+}
 export class AmmoItemBase extends MDItem{
     def:AmmoDef
     item_type: GameItemType.ammo=GameItemType.ammo
@@ -68,18 +80,6 @@ export class GrenadeItemBase extends MDItem{
     }
     is(other: MDItem): boolean {
         return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
-    }
-}
-export class MeleeItemBase extends MDItem{
-    def:MeleeDef
-    item_type: GameItemType.melee=GameItemType.melee
-    constructor(def:MeleeDef){
-      super()
-      this.limit_per_slot=1
-      this.def=def
-    }
-    is(other: MDItem): boolean {
-      return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
     }
 }
 export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{

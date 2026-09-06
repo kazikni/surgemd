@@ -11,7 +11,7 @@ import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { Debug } from "../others/config.ts";
 import { decode_loot_data } from "common/scripts/others/functions.ts";
-import { Angle, CircleHitbox2D, ColorM, DefaultObjec2DEvents, ease,ObjectComponent2D,Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, CircleHitbox2D, ColorM, DefaultObjectEvents, ease,ObjectComponent,Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { LootBase } from "common/scripts/objects/moving_body.ts";
 export interface LootBaseNC extends LootBase{
     dest_pos?:Vec2
@@ -25,28 +25,28 @@ export const loot_nc={
     number_name:1,
     string_name:"loot_nc", // Loot Network Client
     events:{
-        [DefaultObjec2DEvents.bind]:[
+        [DefaultObjectEvents.bind]:[
             (obj)=>{
                 obj.allow_tick=true
             }
         ],
-        [DefaultObjec2DEvents.create]:[
+        [DefaultObjectEvents.create]:[
             (obj,args)=>{
                 obj.dest_pos=undefined
             }
         ],
-        [DefaultObjec2DEvents.tick]:[
+        [DefaultObjectEvents.tick]:[
             (obj,_dt:number)=>{
                 if(obj.dest_pos)v2m.lerp(obj.position,obj.dest_pos,obj.game.global_interpolation)
             }
         ],
     }
-} as ObjectComponent2D<LootBaseNC&GameObject>
-export const loot_visual:ObjectComponent2D<LootVisual&GameObject>={
+} as ObjectComponent<LootBaseNC&GameObject>
+export const loot_visual:ObjectComponent<LootVisual&GameObject>={
     number_name:1,
     string_name:"loot_visual",
     events:{
-        [DefaultObjec2DEvents.bind]:[
+        [DefaultObjectEvents.bind]:[
             (obj)=>{
                 obj.allow_tick=true
 
@@ -68,27 +68,27 @@ export const loot_visual:ObjectComponent2D<LootVisual&GameObject>={
                 obj.container.add_child(obj.sprite_main)
             }
         ],
-        [DefaultObjec2DEvents.create]:[
+        [DefaultObjectEvents.create]:[
             (obj,args)=>{
                 obj.game.scene_2d.camera.add_object(obj.container)
             }
         ],
-        [DefaultObjec2DEvents.destroy]:[
+        [DefaultObjectEvents.destroy]:[
             (obj,args)=>{
                 obj.container.destroy()
             }
         ],
-        [DefaultObjec2DEvents.layer_set]:[
+        [DefaultObjectEvents.layer_set]:[
             (obj,_dt:number)=>{
                 obj.container.layer=obj.layer
             }
         ],
-        [DefaultObjec2DEvents.tick]:[
+        [DefaultObjectEvents.tick]:[
             (obj,_dt:number)=>{
                 obj.container.position=obj.position
             }
         ],
-        [DefaultObjec2DEvents.net_encode]:[
+        [DefaultObjectEvents.net_encode]:[
             (obj,stream:Stream,full:boolean)=>{
             }
         ]

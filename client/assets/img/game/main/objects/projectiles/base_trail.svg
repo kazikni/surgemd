@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="1001.282"
-   height="20.402"
-   viewBox="0 0 264.923 5.398"
+   width="800"
+   height="799.99994"
+   viewBox="0 0 211.66705 211.6655"
    version="1.1"
    id="svg12"
    sodipodi:docname="base_trail.svg"
@@ -22,9 +22,9 @@
      inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#000000"
      showgrid="false"
-     inkscape:zoom="1.293342"
-     inkscape:cx="76.932477"
-     inkscape:cy="10.051479"
+     inkscape:zoom="0.646671"
+     inkscape:cx="574.48069"
+     inkscape:cy="351.02858"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
      inkscape:window-x="0"
@@ -33,6 +33,38 @@
      inkscape:current-layer="svg12" />
   <defs
      id="defs8">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect2766"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,21,0,1 @ F,0,0,1,0,21,0,1 @ F,0,0,1,0,21,0,1 @ F,0,0,1,0,21,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="21"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+    <linearGradient
+       id="linearGradient2738">
+      <stop
+         offset="0"
+         style="stop-color:#ffffff;stop-opacity:0;"
+         id="stop2736" />
+      <stop
+         offset="0.93062711"
+         style="stop-color:#fff;stop-opacity:1"
+         id="stop2734" />
+      <stop
+         offset="1"
+         style="stop-color:#ffffff;stop-opacity:0.5;"
+         id="stop4237" />
+    </linearGradient>
     <linearGradient
        id="a">
       <stop
@@ -47,15 +79,28 @@
     <linearGradient
        xlink:href="#a"
        id="b"
-       x1="2.608"
-       x2="10.598"
-       y1="33.073"
-       y2="33.073"
-       gradientTransform="matrix(-25.00025 0 0 -.08 264.923 5.292)"
+       x1="2.2815802"
+       x2="10.621711"
+       y1="-1379.5334"
+       y2="-1437.7205"
+       gradientTransform="matrix(-25.00025,0,0,-0.08,264.923,5.2919805)"
        gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient2738"
+       id="linearGradient2732"
+       x1="0"
+       y1="105.8335"
+       x2="211.66705"
+       y2="105.8335"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(0,-7.4744148e-4)" />
   </defs>
   <path
-     d="M264.923 5.398H0V0h264.923z"
-     style="fill:url(#b);stroke-width:0;stroke-linejoin:round"
-     id="path10" />
+     d="M 190.66705,211.66626 H 21 a 21,21 45 0 1 -21,-21 V 20.999233 A 21,21 135 0 1 21,-7.6692554e-4 h 169.66705 a 21,21 45 0 1 21,20.99999992554 V 190.66626 a 21,21 135 0 1 -21,21 z"
+     style="fill:url(#linearGradient2732);fill-opacity:1;stroke-width:0;stroke-linejoin:round"
+     id="path10"
+     sodipodi:nodetypes="ccccc"
+     inkscape:path-effect="#path-effect2766"
+     inkscape:original-d="M 211.66705,211.66626 H 0 V -7.6692554e-4 h 211.66705 z" />
 </svg>

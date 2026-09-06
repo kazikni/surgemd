@@ -7,13 +7,13 @@ import { hash } from "../math/hash.ts";
 import { Rect } from "../math/geometry.ts";
 export type GameObjectID=ID
 
-export type ObjectComponent2D<Object>={
+export type ObjectComponent<Object>={
     string_name:string
     number_name:number
 
     events?:Record<number,ObjectEvent<Object>[]>
     event_validate?:Record<number,ObjectEventValidate<Object>>
-    methods?:Record<string,ObjectEvent<Object>>
+    methods?:Record<string,ObjectMethod<Object>>
 }
 
 /*
@@ -57,7 +57,7 @@ export const object_data={
     }
 }*/
 
-export const DefaultObjec2DEvents={
+export const DefaultObjectEvents={
     none:0,
     bind:1,
     create:2,
@@ -69,9 +69,12 @@ export const DefaultObjec2DEvents={
     net_encode:8,
     net_decode:9,
     net_update:10,
+    checkpoint_encode:11,
+    checkpoint_decode:12,
     last:11,
 } satisfies Record<string,number>
 export type ObjectEvent<Object>=(obj:Object,...ev:any)=>any
+export type ObjectMethod<Object>=(ctx:{object:Object,super?:(...args:any)=>any},...ev:any)=>any
 export type ObjectEventValidate<Object>=(obj:Object,...ev:any)=>boolean
 export abstract class BaseObject2D{
     // Physical
@@ -102,7 +105,6 @@ export abstract class BaseObject2D{
 
     event_validate:Map<number,ObjectEventValidate<Object>>=new Map()
     events:Map<number,ObjectEvent<any>[]>=new Map()
-    methods:Record<string,ObjectEvent<any>>={}
 
     constructor(){
         this._position=new Vec2M(0,0,this.update_hitbox.bind(this))
@@ -118,7 +120,7 @@ export abstract class BaseObject2D{
         return this.hitbox.to_rect()
     }
 
-    add_component(c:ObjectComponent2D<any>){
+    add_component(c:ObjectComponent<any>){
         const events=c.events??{}
         for(const key in events){
             const ev=parseFloat(key)
@@ -130,10 +132,14 @@ export abstract class BaseObject2D{
             this.event_validate.set(parseFloat(key),c.event_validate[key])
         }
         if(c.methods)for(const key in c.methods){
-            this.methods[key]=c.methods[key]
+            const ctx={
+                super:(this as any)[key] as undefined|ObjectMethod<any>,
+                object:this
+            }
+            ;(this as any)[key]=c.methods[key].bind(ctx)
         }
-        if(events[DefaultObjec2DEvents.bind]){
-            for(const cb of events[DefaultObjec2DEvents.bind]){
+        if(events[DefaultObjectEvents.bind]){
+            for(const cb of events[DefaultObjectEvents.bind]){
                 cb(this)
             }
         }
@@ -150,9 +156,6 @@ export abstract class BaseObject2D{
                 cb(this,...args)
             }
         }
-    }
-    call_method(method:string,...args:any[]){
-        return this.methods?.[method]?.(this,...args)
     }
 
     abstract number_type:number
@@ -182,7 +185,7 @@ export abstract class BaseObject2D{
 
     tick(dt:number){
         if(this.destroyed)return
-        this.emit_event(DefaultObjec2DEvents.tick,dt)
+        this.emit_event(DefaultObjectEvents.tick,dt)
         this.on_tick(dt)
         if(this.manager.cells.dirty_objects.has(this)){
             this.manager.cells.update_object(this)
@@ -531,7 +534,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 resistance.push(this.objects[obj])
             }else{
                 this.objects[obj].on_destroy()
-                this.objects[obj].emit_event(DefaultObjec2DEvents.destroy)
+                this.objects[obj].emit_event(DefaultObjectEvents.destroy)
                 if(this.objects[obj].pool)this.objects[obj].pool.release(obj)
                 this.objects[obj].destroyed=true
             }
@@ -570,7 +573,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.layer=new_layer
         this.registry_object(obj)
         obj.on_layer_set()
-        obj.emit_event(DefaultObjec2DEvents.layer_set)
+        obj.emit_event(DefaultObjectEvents.layer_set)
     }
     generate_object_id():number{
         let ret=0
@@ -595,9 +598,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         }
         this.registry_object(obj)
         obj.on_create(args)
-        obj.emit_event(DefaultObjec2DEvents.create,args)
+        obj.emit_event(DefaultObjectEvents.create,args)
         obj.on_layer_set()
-        obj.emit_event(DefaultObjec2DEvents.layer_set)
+        obj.emit_event(DefaultObjectEvents.layer_set)
         this.cells.update_object(obj)
         return obj
     }
@@ -611,7 +614,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         if(obj.registred)return
         obj.registred=true
         obj.on_registry()
-        obj.emit_event(DefaultObjec2DEvents.registry)
+        obj.emit_event(DefaultObjectEvents.registry)
         obj.set_dirty_full()
 
         this.objects[obj.id]=obj
@@ -664,9 +667,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         obj.deleted=true
         this.unregister_object(obj)
         obj.on_net_update()
-        obj.emit_event(DefaultObjec2DEvents.net_update)
+        obj.emit_event(DefaultObjectEvents.net_update)
         obj.on_destroy()
-        obj.emit_event(DefaultObjec2DEvents.destroy)
+        obj.emit_event(DefaultObjectEvents.destroy)
     }
     get_object(id:number):GameObject|undefined{
         return this.objects[id]
@@ -719,7 +722,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 this.set_layer(obj, layer)
             }
             if(b[0]||b[1]) {
-                obj.emit_event(DefaultObjec2DEvents.net_decode,stream,b[1])
+                obj.emit_event(DefaultObjectEvents.net_decode,stream,b[1])
                 obj.on_decode_net(stream, b[1])
             }
             if(b[2]) {
@@ -727,7 +730,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                     obj.destroy()
                 } else {
                     obj.on_destroy()
-                    obj.emit_event(DefaultObjec2DEvents.destroy)
+                    obj.emit_event(DefaultObjectEvents.destroy)
                 }
             }
             return obj
@@ -767,7 +770,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 if(obj.net_sync_deletion)obj.destroy()
                 else {
                     obj.on_destroy()
-                    obj.emit_event(DefaultObjec2DEvents.destroy)
+                    obj.emit_event(DefaultObjectEvents.destroy)
                 }
             }
         }
@@ -958,6 +961,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(const layer of layers){
             for(const obj of layer){
                 obj.on_encode_checkpoint(stream,ctx)
+                obj.emit_event(DefaultObjectEvents.checkpoint_encode,stream,ctx)
             }
         }
     }
@@ -996,6 +1000,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(let j=0;j<layers.length;j++){
             for(const obj of layers[j]){
                 obj.on_decode_checkpoint(stream,ctx)
+                obj.emit_event(DefaultObjectEvents.checkpoint_decode,stream,ctx)
             }
         }
         this.update_layers_orden()
@@ -1042,7 +1047,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         for(const l of this.layers_orden){
             for(const o of this.layers[l].net_update){
                 this.objects[o].on_net_update()
-                this.objects[o].emit_event(DefaultObjec2DEvents.net_update)
+                this.objects[o].emit_event(DefaultObjectEvents.net_update)
             }
         }
     }

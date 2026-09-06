@@ -103,11 +103,11 @@ export const bullets_factory={
     },
     heavy_sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage:99*power,
+            damage:100*power,
             range:220*(1+(power-1)*0.01),
-            speed:40*(1+(power-1)*-0.5),
+            speed:40*(1+(power-1)*-1),
 
-            falloff:0.7,
+            falloff:0.75,
             critical_mult:1.1,
             obstacle_mult:2,
             tracer:tracer
@@ -126,16 +126,16 @@ export const bullets_factory={
     },
     ac_smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:6.61*power,
-            range:50*(1 + (power - 1) * 0.5),
-            speed:25*(1 + (power - 1) * 0.5),
+            damage:6.6*power,
+            range:54*(1 + (power - 1) * 0.5),
+            speed:28*(1 + (power - 1) * 0.5),
 
             falloff:0.6,
             critical_mult:1.25,
             tracer:tracer
         }
     },
-    buckshot(power:number,tracer=tracers.small):BulletDef{
+    buckshot(power:number,tracer=tracers.medium):BulletDef{
         return {
             damage:8.04 * power,
             speed:26 * (1 + (power - 1) * 0.4),
@@ -148,7 +148,7 @@ export const bullets_factory={
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:3.24*power,
+            damage:3.55*power,
             speed:24*(1+(power-1)*0.4),
             range:32*(1+(power-1)*0.4),
 
@@ -159,9 +159,9 @@ export const bullets_factory={
     },
     flechette(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:6*power,
+            damage:6.5*power,
             speed:30*(1 + (power - 1) * 0.4),
-            range:55*(1 + (power - 1) * 0.2),
+            range:54.5*(1 + (power - 1) * 0.2),
 
             falloff:0.85,
             critical_mult:1.2,
@@ -479,8 +479,13 @@ export function Guns_Default_Init():GunDef[]{
             name:"M9",
             fire_delay:0.2,
             fire_mode:FireMode.Single,
-            spread:4,
-            idle_spread:0.3,
+            spread:6,
+            idle_spread:0.75,
+            fire_sequence:{
+                decay:0.7,
+                increse:0.15,
+                spread:{begin:0.3},
+            },
 
             ammo_spawn:{
                 amount:45,
@@ -627,7 +632,7 @@ export function Guns_Default_Init():GunDef[]{
                     range:130,
                     falloff:0.8,
                     speed:43,
-                    tracer:tracers.large
+                    tracer:tracers.medium
                 }
             },
             recoil:{
@@ -672,7 +677,7 @@ export function Guns_Default_Init():GunDef[]{
                     falloff:0.8,
                     speed:45,
                     tracer:{
-                        ...tracers.large,
+                        ...tracers.medium,
                         color:0xd8b818
                     }
                 }
@@ -707,16 +712,23 @@ export function Guns_Default_Init():GunDef[]{
 
             fire_delay:1.6,
             switch_delay:0.1,
-            spread:0.8,
+            spread:4,
             idle_spread:0.5,
             fire_mode:FireMode.Single,
+            fire_sequence:{
+                decay:0.65,
+                increse:0.25,
+                spread:{
+                    begin:0.19
+                }
+            },
 
             ammo_spawn:{
                 amount:30
             },
 
             bullet:{
-                def:bullets_factory.heavy_sniper(0.42)
+                def:bullets_factory.heavy_sniper(0.55)
             },
             reload:{
                 delay:3.2,
@@ -724,12 +736,13 @@ export function Guns_Default_Init():GunDef[]{
                 extended_capacity:7,
             },
             recoil:{
-                duration:1.5,
-                speed:0.3
+                duration:2.1,
+                speed:0.2
             },
             dual:{
                 dual_offset:0.2,
                 fire_delay:0.8,
+                spread:6,
                 reload:{
                     capacity:10,
                     extended_capacity:14,
@@ -1219,7 +1232,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:bullets_factory.buckshot(1),
-                count:10
+                count:9
             },
             reload:{
                 delay:0.8,
@@ -1241,15 +1254,16 @@ export function Guns_Default_Init():GunDef[]{
 
             fire_delay:1,
             spread:2.5,
-            jitter_radius:0.1,
-    
+            idle_spread:0.85,
+            jitter_radius:0.15,
+
             ammo_spawn:{
                 amount:16
             },
 
             bullet:{
                 def:bullets_factory.flechette(1),
-                count:10
+                count:9
             },
             reload:{
                 delay:0.6,

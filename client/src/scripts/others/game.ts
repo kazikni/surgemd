@@ -48,7 +48,6 @@ import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
-import { loot_physics } from "common/scripts/objects/moving_body.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -520,7 +519,6 @@ export class Game extends ClientGame<GameObject>{
     }
     override on_update(dt:number){
         super.on_update(dt)
-        this.scene_2d.update(dt,false,true)
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
@@ -530,6 +528,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui.update(dt)
         }
 
+        this.scene_2d.update(dt,false,true)
         if (this.cam_type === 1) {
             const move = this.input.movement
             this.free_cam_speed=5/this.free_cam_zoom

@@ -2,7 +2,7 @@ import { GameConstants, GameObjectType, LootData } from "common/scripts/others/c
 import { ServerGameObject } from "../others/gameObject.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { CircleHitbox2D, DefaultObjec2DEvents, ObjectComponent2D, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, DefaultObjectEvents, ObjectComponent, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "./human.ts";
 import { decode_loot_data, encode_loot_data } from "common/scripts/others/functions.ts";
 import { LootBase } from "common/scripts/objects/moving_body.ts";
@@ -12,11 +12,11 @@ export interface LootBasePhysics extends LootBase{
     velocity:Vec2
     current_floor:FloorType
 }
-export const loot_physics:ObjectComponent2D<Loot>={
+export const loot_physics:ObjectComponent<Loot>={
     number_name:1,
     string_name:"loot_physics", // Loot Network Client
     events:{
-        [DefaultObjec2DEvents.bind]:[
+        [DefaultObjectEvents.bind]:[
             (obj)=>{
                 obj.allow_tick=true
 
@@ -25,11 +25,11 @@ export const loot_physics:ObjectComponent2D<Loot>={
                 obj.current_floor=FloorType.Water
             }
         ],
-        [DefaultObjec2DEvents.create]:[
+        [DefaultObjectEvents.create]:[
             (obj,args)=>{
             }
         ],
-        [DefaultObjec2DEvents.tick]:[
+        [DefaultObjectEvents.tick]:[
             (obj,dt:number)=>{
                 const cf=Floors[obj.current_floor]
                 const speed=1*(cf.speed_mult??1)
@@ -170,8 +170,6 @@ export class Loot extends ServerGameObject implements LootBasePhysics{
     override on_create(args?: {position:Vec2,loot:LootData,pre_proccess?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2(0,0),1)
         if(args)this.set_loot(args.position,args.loot)
-    }
-    override on_tick(dt:number): void {
     }
     push(speed:number,angle:number){
         const a=v2.from_RadAngle(angle)

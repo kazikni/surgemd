@@ -1,5 +1,5 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
-import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanVisualData } from "common/scripts/others/constants.ts"
+import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanVisualData, ObjectsComponentEvent } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
 import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset, ScopeChange } from "common/scripts/definitions/utils.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
@@ -8,7 +8,7 @@ import { FloorDef, Floors} from "common/scripts/others/terrain.ts"
 import { EffectInstance, Effects, SideEffect, SideEffectType } from "common/scripts/definitions/player/effects.ts"
 import { GunDef } from "common/scripts/definitions/items/guns.ts"
 import { ScopeDef } from "common/scripts/definitions/items/scopes.ts";
-import { ActionsManager, CircleHitbox2D, Hitbox2D, Stream, Numeric, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script } from "common/engine/core.ts";
+import { ActionsManager, CircleHitbox2D, Hitbox2D, Stream, Numeric, random, Slot, v2, v2m, Vec2, ColorM, cloneDeep, create_script, ObjectComponent, DefaultObjectEvents } from "common/engine/core.ts";
 import { type VehicleSeat } from "./vehicle.ts";
 import { DamageParams } from "../others/utils.ts";
 import { type HumansManager } from "../managers/humans_manager.ts";
@@ -34,13 +34,150 @@ import { BoostDef } from "common/scripts/definitions/player/boosts.ts";
 import { HumanFunctionScript, HumanScript } from "../human/ai/script.ts";
 import { Humanoid, HumanoidAnimationData, HumanoidInput, HumanoidPhysicalData } from "./humanoid.ts";
 import { type Bullet } from "./bullet.ts";
-import { CheckpointContext } from "../../../../common/engine/core/game/gameObject.ts";
+import { CheckpointContext } from "common/engine/core/game/gameObject.ts";
+import { apply_modifiers } from "common/scripts/others/functions.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
     secondary_velocity_swimming:boolean
     secondary_velocity:Vec2
     secondary_acceleration:number
+}
+
+export const humanoid:ObjectComponent<Human>={
+    string_name:"humanoid",
+    number_name:0,
+
+    event_validate:{
+        [DefaultObjectEvents.tick]:(obj)=>{
+            return !obj.dead
+        }
+    }
+}
+export const human_inventory:ObjectComponent<Human>={
+    string_name:"human_inventory",
+    number_name:0,
+
+    events:{
+        [DefaultObjectEvents.bind]:[
+            (obj)=>{
+                obj.inventory=new GInventory(obj)
+            }
+        ],
+        [DefaultObjectEvents.create]:[
+            (obj)=>{
+                obj.inventory.initialize(obj.game.definitions,{
+                    0:MeleeItem as (new(item:GameItem)=>LItem),
+                    1:GunItem as (new(item:GameItem)=>LItem),
+                    2:GunItem as (new(item:GameItem)=>LItem),
+                })
+            }
+        ],
+        [DefaultObjectEvents.tick]:[
+            (obj,dt)=>{
+                obj.inventory.accessorys.call_event("tick",dt)
+                obj.inventory.update(dt)
+            }
+        ],
+        [ObjectsComponentEvent.human_load_preset]:[
+            (obj,preset:HumanDefinition)=>{
+                if(preset.inventory)obj.inventory.load_preset(preset.inventory)
+            }
+        ],
+        [ObjectsComponentEvent.human_apply_modifiers]:[
+            (obj,base)=>{
+                obj.inventory.accessorys.apply_modifiers(obj,base)
+            }
+        ],
+        [ObjectsComponentEvent.human_tick_input]:[
+            (obj,dt,executed:InputActionType[])=>{
+                if(obj.input.reload&&obj.inventory.hand_item&&obj.inventory.hand_item.item_type===GameItemType.gun){
+                    (obj.inventory.hand_item as GunItem).reloading=true
+                }
+                if(obj.input.swamp_guns){
+                    obj.inventory.swamp_guns()
+                }
+
+                for(let i=0;i<obj.input.actions.length;i++){
+                    const a=obj.input.actions[i]
+                    if(executed.includes(a.type))continue
+                    switch(a.type){
+                        case InputActionType.drop:
+                            if(a.drop>=0){
+                                const drop=a.drop
+                                switch(a.drop_kind){
+                                    case 1:
+                                        obj.inventory.drop_weapon(Numeric.clamp(drop,0,2))
+                                        break
+                                    case 2:
+                                        obj.inventory.drop_aitem(drop)
+                                        break
+                                    case 3:
+                                        obj.inventory.drop_slot(drop)
+                                        obj.actions.cancel()
+                                        break
+                                    case 4:
+                                        obj.inventory.drop_item(drop)
+                                        obj.actions.cancel()
+                                        break
+                                    case 5:
+                                        obj.inventory.drop_iitem(drop)
+                                        break
+                                    case 6:
+                                        if(a.drop===0){
+                                            obj.inventory.drop_helmet()
+                                        }else if(a.drop===1){
+                                            obj.inventory.drop_vest()
+                                        }
+                                        break
+                                }
+                            }
+                            break
+                        case InputActionType.use_item:{
+                            if(obj.downed||obj.parachute||(obj.physical_data.secondary_velocity_take_control&&obj.physical_data.secondary_velocity_enabled))break
+                            const item=obj.inventory.slots[a.slot]?.item
+                            if(item){
+                                item.on_use(obj,obj.inventory.slots[a.slot])
+                            }
+                            break
+                        }
+                        case InputActionType.set_hand:{
+                            if(!obj.inventory.weapons[a.hand]||obj.downed||obj.parachute)break
+                            obj.inventory.set_weapon_index(a.hand)
+                            break
+                        }
+                        case InputActionType.set_scope:
+                            if(obj.inventory.iitems.some((i)=>i.idNumber===a.scope_id)){
+                                obj.equipment_data.scope=obj.game.definitions.scopes.getFromNumber(a.scope_id)
+                            }
+                            break
+                        case InputActionType.debug_give:
+                            if(obj.game.debug.debug_menu){
+                                const l=obj.game.definitions.game_items.valueString[a.item]
+                                if(!l)break
+                                obj.inventory.give_item(l,a.count,true)
+                            }
+                            break
+                        default:
+                            continue
+                    }
+                    executed.push(obj.input.actions[i].type)
+                    obj.input.actions.splice(i,1)
+                    i--
+                }
+            }
+        ],
+        [DefaultObjectEvents.checkpoint_encode]:[
+            (obj,stream:Stream,_ctx:CheckpointContext)=>{
+                obj.inventory.encode_checkpoint(stream)
+            }
+        ],
+        [DefaultObjectEvents.checkpoint_decode]:[
+            (obj,stream:Stream,_ctx:CheckpointContext)=>{
+                obj.inventory.decode_checkpoint(stream)
+            }
+        ]
+    }
 }
 export class Human extends Humanoid{
     // Definition
@@ -143,7 +280,7 @@ export class Human extends Humanoid{
         alt_animations:[],
     }
 
-    inventory:GInventory
+    inventory!:GInventory
     actions:ActionsManager<this,Action>
 
     parachute?:{
@@ -261,7 +398,6 @@ export class Human extends Humanoid{
 
     constructor(){
         super()
-        this.inventory=new GInventory(this)
         this.actions=new ActionsManager(this)
 
         this.status={
@@ -272,6 +408,9 @@ export class Human extends Humanoid{
         }
         this.allow_net_update=true
         this.allow_checkpoint=false
+
+        this.add_component(humanoid)
+        this.add_component(human_inventory)
     }
 
     scope_change(change:ScopeChange={}){
@@ -332,11 +471,6 @@ export class Human extends Humanoid{
             scope:default_scope,
             default_scope,
         }
-        this.inventory.initialize(this.game.definitions,{
-            0:MeleeItem as (new(item:GameItem)=>LItem),
-            1:GunItem as (new(item:GameItem)=>LItem),
-            2:GunItem as (new(item:GameItem)=>LItem),
-        })
 
         this.clear_boost()
         this.update_modifiers()
@@ -427,7 +561,7 @@ export class Human extends Humanoid{
             }
         }
         if(preset.modifiers)this.temp_modifiers=preset.modifiers
-        if(preset.inventory)this.inventory.load_preset(preset.inventory)
+        this.emit_event(ObjectsComponentEvent.human_load_preset,preset)
         if(preset.position)this.position=preset.position
         if(preset.layer!==undefined)this.manager.set_layer(this,preset.layer)
         if(preset.group_color)this.team_data.color=preset.group_color
@@ -478,26 +612,21 @@ export class Human extends Humanoid{
         }
         return ai
     }
-    apply_modifiers(mods:Record<string,number>){
-        for(const m in mods){
-            if(this.modifiers[m]===undefined)this.modifiers[m]=mods[m]
-            else this.modifiers[m]*=mods[m]
-        }
-    }
     update_modifiers(){
         this.modifiers={}
-        this.apply_modifiers(this.temp_modifiers)
-        if(this.equipment_data.helmet?.modifiers)this.apply_modifiers(this.equipment_data.helmet.modifiers)
-        if(this.equipment_data.vest?.modifiers)this.apply_modifiers(this.equipment_data.vest.modifiers)
-        if(this.boost.def.se?.update_modifiers)this.apply_modifiers(this.boost.def.se.update_modifiers(this))
-        this.inventory.accessorys.apply_modifiers(this)
+        apply_modifiers(this.modifiers,this.temp_modifiers)
+        if(this.equipment_data.helmet?.modifiers)apply_modifiers(this.modifiers,this.equipment_data.helmet.modifiers)
+        if(this.equipment_data.vest?.modifiers)apply_modifiers(this.modifiers,this.equipment_data.vest.modifiers)
+        if(this.boost.def.se?.update_modifiers)apply_modifiers(this.modifiers,this.boost.def.se.update_modifiers(this))
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
                 if(sf.type===SideEffectType.Modify){
-                    this.apply_modifiers(sf.modify)
+                    apply_modifiers(this.modifiers,sf.modify)
                 }
             }
         }
+        this.emit_event(ObjectsComponentEvent.human_apply_modifiers,this.modifiers)
+
         this.health.max=100*this.get_modifier("health")
         this.boost.max=100*this.get_modifier("boost")
         this.health.value=Math.min(this.health.value,this.health.max)
@@ -683,12 +812,6 @@ export class Human extends Humanoid{
     }
 
     tick_input(dt:number){
-        if(this.input.reload&&this.inventory.hand_item&&this.inventory.hand_item.item_type===GameItemType.gun){
-            (this.inventory.hand_item as GunItem).reloading=true
-        }
-        if(this.input.swamp_guns){
-            this.inventory.swamp_guns()
-        }
         if(this.input.interaction){
             if(this.downed){
                 if(this.human_data.self_revive)this.on_interact(this)
@@ -703,59 +826,11 @@ export class Human extends Humanoid{
             this.input.cancel=false
         }
         const executed:InputActionType[]=[]
+        this.emit_event(ObjectsComponentEvent.human_tick_input,dt,executed)
         for(const a of this.input.actions){
             if(executed.includes(a.type))continue
             executed.push(a.type)
             switch(a.type){
-                case InputActionType.drop:
-                    if(a.drop>=0){
-                        const drop=a.drop
-                        switch(a.drop_kind){
-                            case 1:
-                                this.inventory.drop_weapon(Numeric.clamp(drop,0,2))
-                                break
-                            case 2:
-                                this.inventory.drop_aitem(drop)
-                                break
-                            case 3:
-                                this.inventory.drop_slot(drop)
-                                this.actions.cancel()
-                                break
-                            case 4:
-                                this.inventory.drop_item(drop)
-                                this.actions.cancel()
-                                break
-                            case 5:
-                                this.inventory.drop_iitem(drop)
-                                break
-                            case 6:
-                                if(a.drop===0){
-                                    this.inventory.drop_helmet()
-                                }else if(a.drop===1){
-                                    this.inventory.drop_vest()
-                                }
-                                break
-                        }
-                    }
-                    break
-                case InputActionType.use_item:{
-                    if(this.downed||this.parachute||(this.physical_data.secondary_velocity_take_control&&this.physical_data.secondary_velocity_enabled))break
-                    const item=this.inventory.slots[a.slot]?.item
-                    if(item){
-                        item.on_use(this,this.inventory.slots[a.slot])
-                    }
-                    break
-                }
-                case InputActionType.set_hand:{
-                    if(!this.inventory.weapons[a.hand]||this.downed||this.parachute)break
-                    this.inventory.set_weapon_index(a.hand)
-                    break
-                }
-                case InputActionType.set_scope:
-                    if(this.inventory.iitems.some((i)=>i.idNumber===a.scope_id)){
-                        this.equipment_data.scope=this.game.definitions.scopes.getFromNumber(a.scope_id)
-                    }
-                    break
                 case InputActionType.emote_emote:{
                     if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
                     const def=this.game.definitions.emotes.getFromNumber(a.emote)
@@ -797,13 +872,6 @@ export class Human extends Humanoid{
                 case InputActionType.buy_on_shop:
                     if(this.downed||this.parachute)break
                     this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
-                    break
-                case InputActionType.debug_give:
-                    if(this.game.debug.debug_menu){
-                        const l=this.game.definitions.game_items.valueString[a.item]
-                        if(!l)break
-                        this.inventory.give_item(l,a.count,true)
-                    }
                     break
                 case InputActionType.debug_spawn:
                     if(this.game.debug.debug_menu){
@@ -891,7 +959,6 @@ export class Human extends Humanoid{
                 })
             }
         }7
-        this.inventory.accessorys.call_event("tick",dt)
         this.scope_zoom=this.equipment_data.scope.scope_view
         this.update_modifiers()
         //Movement
@@ -987,7 +1054,6 @@ export class Human extends Humanoid{
         }
         if(this.knocked)this.scope_zoom=this.equipment_data.default_scope.scope_view
 
-        this.inventory.update(dt)
         this.tick_input(dt)
         this.actions.update(dt)
 

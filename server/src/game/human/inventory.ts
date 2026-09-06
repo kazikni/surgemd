@@ -37,6 +37,8 @@ export class GunItem extends GunItemBase implements LItem{
     declare inventory:GInventory
     constructor(def?:GunDef){
         super(def)
+        this.use_delay=def?.fire_delay??0
+        if(def?.fire_sequence)this.fire_sequence=1
     }
     use_delay:number=0
     fire_sequence:number=0
@@ -159,16 +161,23 @@ export class GunItem extends GunItemBase implements LItem{
 
         if(def.bullet){
             const bullets_count=def.bullet.count??1
-            const patternPoint:Vec2[]=[]
-            if(def.jitter_radius&&bullets_count>1)patternPoint.push(...getPatterningShape(bullets_count, def.jitter_radius??0))
+            //const patternPoint:Vec2[]=[]
+            //if(def.jitter_radius&&bullets_count>1)patternPoint.push(...getPatterningShape(bullets_count, def.jitter_radius??0))
             for(let i=0;i<bullets_count;i++){
                 let ang=user.physical_data.rotation
                 if(spread){
                     ang+=Angle.deg2rad(random.float(-spread,spread))
                 }
-                const pos=patternPoint[i]?v2.add(position,patternPoint[i]):(
+                const pos=v2.clone(position)
+                if(def.jitter_radius){
+                    pos.x+=def.jitter_radius
+                    const angle=random.rad()
+                    v2m.add(pos,pos,v2(Math.cos(angle)*def.jitter_radius*0.5,Math.sin(angle)*def.jitter_radius))
+                    //v2m.add(pos,pos,random.random_in_circle(def.jitter_radius))
+                }
+                /*const pos=patternPoint[i]?v2.add(position,patternPoint[i]):(
                     def.jitter_radius?v2.add(position,random.random_in_circle(def.jitter_radius)):position
-                )
+                )*/
                 const b=user.game.scene_2d.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(def.ammo_type),this.def,user.layer,is_idle?0.25:undefined)
                 b.set_definition(def.bullet.def)
                 b.speed*=user.get_modifier("bullet_speed")
@@ -289,7 +298,7 @@ export class GunItem extends GunItemBase implements LItem{
         if(this.use_delay>0)this.use_delay-=dt
         else if(this.fire_sequence>0){
             if(this.def.fire_sequence?.decay)this.fire_sequence=Math.max(this.fire_sequence-this.def.fire_sequence.decay*dt,0)
-            //console.log(this.fire_sequence)
+            //console.log(this.fire_sequence,(this.def.fire_sequence?.decay??0)*dt)
         }
         if(user.inventory.hand_item===this&&!user.actions.current_action){
             if(((this.ammo<=0&&this.use_delay<=0)||this.reloading)&&this.def.reload){

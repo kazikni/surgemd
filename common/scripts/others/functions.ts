@@ -190,3 +190,9 @@ export function make_credits_markdown(credits: { role: string, users: string | s
 
     return lines.join("\n").trim()
 }
+export function apply_modifiers(base:Record<string,number>,mods:Record<string,number>){
+    for(const m in mods){
+        if(base[m]===undefined)base[m]=mods[m]
+        else base[m]*=mods[m]
+    }
+}

@@ -87,7 +87,7 @@ export class AmbientManager extends GComponent{
                 const dir = Math.atan2(dirVec.y, dirVec.x)
 
                 const dist = v2.len(dirVec)*random.float(0.13,0.95)
-                const lifetime = dist / speed
+                const lifetime = dist/speed
 
                 return new RainParticle2D({
                     frame:{
@@ -106,7 +106,8 @@ export class AmbientManager extends GComponent{
                     on_tick:(o:RainParticle2D,dt:number)=>{
                         if(o.stage===0){
                             if(!o.sprite.matrix)o.sprite.matrix=matrix4.identity()
-                            this.game.scene_2d.camera.get_topdown_perspective_2d(o.sprite.matrix,o.position,2-(1*(o.ticks/o.lifetime)),0)
+                            //o.sprite.rotation=v2.lookTo(o.sprite.position,this.game.scene_2d.camera.position)
+                            this.game.scene_2d.camera.get_topdown_perspective_2d(o.sprite.matrix,o.position,4-(3*(o.ticks/o.lifetime)),0)
                         }else{
                             o.sprite.matrix=undefined
                         }

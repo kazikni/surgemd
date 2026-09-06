@@ -1,16 +1,16 @@
-import { DefaultObjec2DEvents, Numeric, ObjectComponent2D, v2, v2m, Vec2, type Stream } from "common/engine/core.ts";
+import { DefaultObjectEvents, Numeric, ObjectComponent, v2, v2m, Vec2, type Stream } from "common/engine/core.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { MovingBodyBase } from "common/scripts/objects/moving_body.ts"
-export const MovingBodyNetwork:ObjectComponent2D<MovingBody>={
+export const MovingBodyNetwork:ObjectComponent<MovingBody>={
     number_name:1,
     string_name:"moving_body_network",
     events:{
-        [DefaultObjec2DEvents.bind]:[
+        [DefaultObjectEvents.bind]:[
             (obj)=>{
                 obj.allow_tick=true
             }
         ],
-        [DefaultObjec2DEvents.create]:[
+        [DefaultObjectEvents.create]:[
             (obj,args)=>{
                 obj.dest_pos=v2.zero()
                 obj.dest_rot=0
@@ -18,7 +18,7 @@ export const MovingBodyNetwork:ObjectComponent2D<MovingBody>={
                 obj.enable_auto_rot=true
             }
         ],
-        [DefaultObjec2DEvents.tick]:[
+        [DefaultObjectEvents.tick]:[
             (obj,_dt:number)=>{
                 obj.distance_walked=0
                 if(!obj.old_pos){
@@ -31,7 +31,7 @@ export const MovingBodyNetwork:ObjectComponent2D<MovingBody>={
                 if(obj.enable_auto_rot)obj.rotation=Numeric.lerp_rad(obj.rotation,obj.dest_rot!,obj.game.global_interpolation)
             }
         ],
-        [DefaultObjec2DEvents.net_encode]:[
+        [DefaultObjectEvents.net_encode]:[
             (obj,stream:Stream,full:boolean)=>{
             }
         ]

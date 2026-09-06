@@ -101,7 +101,8 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
     ////////////////////////////
     string_type:string="loot"
     number_type: number=GameObjectType.Loot
-    name:string=""
+
+    loot_nc:boolean=false
     ////////////////////////////
     // Visual                 //
     ////////////////////////////
@@ -117,7 +118,6 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
     constructor(){
         super()
 
-        this.add_component(loot_nc)
         this.add_component(loot_visual)
     }
     override can_interact(h:Human): boolean {
@@ -187,129 +187,139 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
             count: this.loot_data.count > 1 ? `(${this.loot_data.count})` : ""
         })
     }
+
+    set_loot_data(data:LootData){
+        this.loot_data=data
+        let radius=0.3
+        switch(data.item.item_type!){
+            case GameItemType.gun:
+                this.sprite_main.frame=this.game.resources.get_frame((data.item as GunDef).assets?.item??data.item.idString)
+                this.sprite_main.rotation=Angle.deg2rad(-30)
+                this.sprite_main.visible=true
+                this.sprite_main.scale=v2(2,2)
+                if(this.game.save.get_variable("sv_game_ammo_outline")){
+                    this.sprite_outline.frame=this.game.resources.get_frame(`${(data.item as unknown as GunDef).ammo_type}_outline`)
+                }else{
+                    this.sprite_outline.frame=this.game.resources.get_frame("rarity_outline")
+                    this.sprite_outline.transform_frame({
+                        tint:ItemQualitySettings[data.item.rank].tint
+                    })
+                }
+                this.sprite_outline.visible=true;
+                this.sprite_outline.scale=v2(2,2);
+                this.pickup_sound=this.game.resources.get_sound("gun_pickup")
+                radius=GameConstants.loot.radius.weapon
+
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.ammo:
+                this.sprite_main.frame=this.game.resources.get_frame(data.item.idString)
+                this.sprite_main.visible=true;
+                this.sprite_main.scale=v2(1.2,1.2)
+                this.sprite_outline.visible=false;
+                this.pickup_sound=this.game.resources.get_sound("ammo_pickup")
+                radius=GameConstants.loot.radius.ammo
+                break
+            case GameItemType.consumible:
+                this.sprite_main.frame=this.game.resources.get_frame(data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true;
+                this.sprite_main.scale=v2(1.5,1.5)
+                this.sprite_outline.scale=v2(1.4,1.4);
+                this.pickup_sound=this.game.resources.get_sound((data.item as ConsumibleDef).assets?.pickup_sound??`${data.item.idString}_pickup`)
+                radius=GameConstants.loot.radius.consumible
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.helmet:
+                this.sprite_main.frame=this.game.resources.get_frame(data.skin!==undefined&&(data.item as HelmetDef).skins?.[data.skin]?(data.item as HelmetDef).skins![data.skin]:data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true
+                this.sprite_main.scale=v2(0.8,0.8)
+                this.sprite_outline.scale=v2(1.4,1.4)
+                radius=GameConstants.loot.radius.equipament
+                this.pickup_sound=this.game.resources.get_sound(`helmet_pickup`)
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.vest:
+                this.sprite_main.frame=this.game.resources.get_frame(data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true;
+                this.sprite_main.scale=v2(1,1);
+                this.sprite_outline.scale=v2(1.4,1.4);
+                this.pickup_sound=this.game.resources.get_sound(`vest_pickup`)
+                radius=GameConstants.loot.radius.equipament
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.backpack:
+                this.sprite_main.frame=this.game.resources.get_frame(data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true;
+                this.sprite_main.scale=v2(1,1);
+                this.sprite_outline.scale=v2(1.4,1.4);
+                this.pickup_sound=this.game.resources.get_sound(`backpack_pickup`)
+                radius=GameConstants.loot.radius.equipament
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.scope:
+                this.sprite_main.frame=this.game.resources.get_frame(data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true;
+                this.sprite_main.scale=v2(2,2);
+                this.sprite_outline.scale=v2(1.4,1.4);
+                radius=GameConstants.loot.radius.scopes
+                this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.grenade:
+                this.sprite_main.frame=this.game.resources.get_frame(data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_main.scale=v2(2,2)
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true
+                this.sprite_outline.scale=v2(1.4,1.4);
+                this.sprite_main.rotation=Angle.deg2rad(-30)
+                radius=GameConstants.loot.radius.grenade
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.melee:
+                this.sprite_main.frame=this.game.resources.get_frame(((data.item as MeleeDef).assets?.item??this.loot_data.item.idString))
+                this.sprite_main.rotation=Angle.deg2rad(-30)
+                this.sprite_main.visible=true
+                this.sprite_main.scale=v2(2,2)
+                this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
+                this.sprite_outline.visible=true;
+                this.sprite_outline.scale=v2(1.9,1.9);
+                radius=GameConstants.loot.radius.weapon
+                this.container.add_child(this.sprite_outline)
+                break
+            case GameItemType.accessory:
+                this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
+                this.sprite_main.visible=true
+                this.sprite_main.scale=v2(2,2)
+                this.sprite_outline.frame=this.game.resources.get_frame(`accessory_outline`)
+                this.sprite_outline.visible=true
+                this.sprite_outline.scale=v2(2,2)
+                this.pickup_sound=this.game.resources.get_sound("accessory_pickup")
+                radius=GameConstants.loot.radius.accessory
+                this.container.add_child(this.sprite_outline)
+                break
+        }
+        this.base_hitbox=new CircleHitbox2D(v2(0,0),radius)
+        this.container.visible=true
+    }
     override on_decode_net(stream: Stream, full: boolean): void {
+        if(!this.loot_nc){
+            this.loot_nc=true
+            this.add_component(loot_nc)
+        }
         const position=stream.read_pos2()
         if(full){
-            this.loot_data=decode_loot_data(this.game.definitions,stream)
-            let radius=0.3
-            switch(this.loot_data.item.item_type!){
-                case GameItemType.gun:
-                    this.sprite_main.frame=this.game.resources.get_frame((this.loot_data.item as GunDef).assets?.item??this.loot_data.item.idString)
-                    this.sprite_main.rotation=Angle.deg2rad(-30)
-                    this.sprite_main.visible=true
-                    this.sprite_main.scale=v2(2,2)
-                    if(this.game.save.get_variable("sv_game_ammo_outline")){
-                        this.sprite_outline.frame=this.game.resources.get_frame(`${(this.loot_data.item as unknown as GunDef).ammo_type}_outline`)
-                    }else{
-                        this.sprite_outline.frame=this.game.resources.get_frame("rarity_outline")
-                        this.sprite_outline.transform_frame({
-                            tint:ItemQualitySettings[this.loot_data.item.rank].tint
-                        })
-                    }
-                    this.sprite_outline.visible=true;
-                    this.sprite_outline.scale=v2(2,2);
-                    this.pickup_sound=this.game.resources.get_sound("gun_pickup")
-                    radius=GameConstants.loot.radius.weapon
-
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.ammo:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true;
-                    this.sprite_main.scale=v2(1.2,1.2)
-                    this.sprite_outline.visible=false;
-                    this.pickup_sound=this.game.resources.get_sound("ammo_pickup")
-                    radius=GameConstants.loot.radius.ammo
-                    break
-                case GameItemType.consumible:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(1.5,1.5)
-                    this.sprite_outline.scale=v2(1.4,1.4);
-                    this.pickup_sound=this.game.resources.get_sound((this.loot_data.item as ConsumibleDef).assets?.pickup_sound??`${this.loot_data.item.idString}_pickup`)
-                    radius=GameConstants.loot.radius.consumible
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.helmet:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.skin!==undefined&&(this.loot_data.item as HelmetDef).skins?.[this.loot_data.skin]?(this.loot_data.item as HelmetDef).skins![this.loot_data.skin]:this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true
-                    this.sprite_main.scale=v2(0.8,0.8)
-                    this.sprite_outline.scale=v2(1.4,1.4)
-                    radius=GameConstants.loot.radius.equipament
-                    this.pickup_sound=this.game.resources.get_sound(`helmet_pickup`)
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.vest:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(1,1);
-                    this.sprite_outline.scale=v2(1.4,1.4);
-                    this.pickup_sound=this.game.resources.get_sound(`vest_pickup`)
-                    radius=GameConstants.loot.radius.equipament
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.backpack:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(1,1);
-                    this.sprite_outline.scale=v2(1.4,1.4);
-                    this.pickup_sound=this.game.resources.get_sound(`backpack_pickup`)
-                    radius=GameConstants.loot.radius.equipament
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.scope:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true;
-                    this.sprite_main.scale=v2(2,2);
-                    this.sprite_outline.scale=v2(1.4,1.4);
-                    radius=GameConstants.loot.radius.scopes
-                    this.pickup_sound=this.game.resources.get_sound(`scope_pickup`)
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.grenade:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true
-                    this.sprite_outline.scale=v2(1.4,1.4);
-                    this.sprite_main.rotation=Angle.deg2rad(-30)
-                    radius=GameConstants.loot.radius.grenade
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.melee:
-                    this.sprite_main.frame=this.game.resources.get_frame(((this.loot_data.item as MeleeDef).assets?.item??this.loot_data.item.idString))
-                    this.sprite_main.rotation=Angle.deg2rad(-30)
-                    this.sprite_main.visible=true
-                    this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.frame=this.game.resources.get_frame(`null_outline`)
-                    this.sprite_outline.visible=true;
-                    this.sprite_outline.scale=v2(1.9,1.9);
-                    radius=GameConstants.loot.radius.weapon
-                    this.container.add_child(this.sprite_outline)
-                    break
-                case GameItemType.accessory:
-                    this.sprite_main.frame=this.game.resources.get_frame(this.loot_data.item.idString)
-                    this.sprite_main.visible=true
-                    this.sprite_main.scale=v2(2,2)
-                    this.sprite_outline.frame=this.game.resources.get_frame(`accessory_outline`)
-                    this.sprite_outline.visible=true
-                    this.sprite_outline.scale=v2(2,2)
-                    this.pickup_sound=this.game.resources.get_sound("accessory_pickup")
-                    radius=GameConstants.loot.radius.accessory
-                    this.container.add_child(this.sprite_outline)
-                    break
-            }
+            this.set_loot_data(decode_loot_data(this.game.definitions,stream))
             if(this.is_new){
                 v2m.single(this.container.scale,0.02)
                 this.game.add_tween({
@@ -322,8 +332,6 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
                     },
                 })
             }
-            this.base_hitbox=new CircleHitbox2D(v2(0,0),radius)
-            this.container.visible=true
             this.position=position
             if(Debug.hitbox){
                 this.game.hitboxes_gfx.ctx.begin_path()

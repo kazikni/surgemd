@@ -375,7 +375,7 @@ export class Building extends StaticBody {
         /*for(const f of this.def.floors??[]){
             const hb=f.hitbox.transform(this.position)
             const l=this.layer+(f.layer??0)
-            this.game.map.terrain.add_floor(f.type,hb,l)
+            this.scene.map.terrain.add_floor(f.type,hb,l)
         }*/
         for (const l of this.def.generate.loots ?? []) {
             const items = this.game.get_loot_table(l.table)
@@ -406,7 +406,7 @@ export class Building extends StaticBody {
                     break
             }
             const p = v2.add_with_orientation(this.position, o.position, side)
-            const obj=this.game.map.add_obstacle(def,this.layer+(o.layer??0))
+            const obj=this.scene.map.add_obstacle(def,this.layer+(o.layer??0))
             obj.parent=this
             if(o.id)this.objects_ids[o.id]=obj
             obj.initialize(rotation,o.variation,o.skin)
@@ -439,7 +439,7 @@ export class Building extends StaticBody {
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, b.position, side)
 
-            const obj=this.game.map.add_building(def,this.layer+(b.layer??0))
+            const obj=this.scene.map.add_building(def,this.layer+(b.layer??0))
             obj.init(Angle.add_orientation(side,b.rotation??0))
             obj.generate(p)
         }

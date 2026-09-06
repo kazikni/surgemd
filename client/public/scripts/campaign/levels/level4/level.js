@@ -86,7 +86,7 @@ return (class extends LevelPlayerScript{
         await this.show_cutscene(cutscene)
     }
     on_start(){
-        this.game.deadzone.jump_stages(5)
+        this.scene.deadzone.jump_stages(5)
         this.game.modeManager.add_enemies([
             {
                 "def": {

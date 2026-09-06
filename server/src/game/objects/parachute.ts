@@ -44,7 +44,7 @@ export class Parachute extends ServerGameObject{
         this.time+=dt
         if(this.time>=this.parachute_data.lifetime){
             this.time=this.parachute_data.lifetime
-            const obs=this.game.map.add_obstacle(this.parachute_data.spawn_obstacle,this.layer)
+            const obs=this.scene.map.add_obstacle(this.parachute_data.spawn_obstacle,this.layer)
             obs.initialize()
             obs.set_position(this.position)
             const objects:ServerGameObject[]=this.manager.cells.get_objects(obs.hitbox,obs.layer)

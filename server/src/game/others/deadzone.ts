@@ -6,6 +6,7 @@ import { FloorType } from "common/scripts/others/terrain.ts";
 import { MakeDeadZoneStages } from "common/scripts/others/functions.ts";
 import { type GameMap } from "./map.ts";
 import { BaseDeadzone } from "common/scripts/objects/scene.ts";
+import { ServerGameScene2D } from "./scene.ts";
 
 export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
     count:9,
@@ -52,7 +53,7 @@ export const DefaultDeadzone:DeadZoneConfig={
     damage: 1
 }
 export class DeadZoneManager extends BaseDeadzone{
-    declare game: Game
+    scene:ServerGameScene2D
     readonly hitbox: CircleHitbox2D
 
     config!:DeadZoneConfig
@@ -81,8 +82,9 @@ export class DeadZoneManager extends BaseDeadzone{
 
     running = false
 
-    constructor(){
+    constructor(scene:ServerGameScene2D){
         super()
+        this.scene=scene
         this.hitbox = new CircleHitbox2D(v2(0,0),1)
     }
 
@@ -99,12 +101,12 @@ export class DeadZoneManager extends BaseDeadzone{
     }
 
     reset(){
-        this.radius_size=Math.min(this.game.map.size.x,this.game.map.size.y)/100
+        this.radius_size=Math.min(this.scene.map.size.x,this.scene.map.size.y)/100
 
-        this.state.position=v2.scale(this.game.map.size, 0.5)
-        this.state.new_position=v2.scale(this.game.map.size, 0.5)
+        this.state.position=v2.scale(this.scene.map.size, 0.5)
+        this.state.new_position=v2.scale(this.scene.map.size, 0.5)
 
-        this.state.radius=this.radius_size*80*(this.game.map.size.x/this.game.map.size.y)
+        this.state.radius=this.radius_size*80*(this.scene.map.size.x/this.scene.map.size.y)
         this.state.new_radius=this.state.radius
         this.state.old_radius=this.state.radius
 
@@ -135,7 +137,7 @@ export class DeadZoneManager extends BaseDeadzone{
         this.state.new_radius = stage.radius * this.radius_size
 
         if(this.stageIndex === 0){
-            const center = v2.scale(this.game.map.size, 0.5)
+            const center = v2.scale(this.scene.map.size, 0.5)
             this.state.old_position = center
             this.state.position = center
             this.state.new_position = this.next_position()
@@ -221,7 +223,7 @@ export class DeadZoneManager extends BaseDeadzone{
                 pos=v2.from_RadAngle(angle, len)
                 v2m.add(pos,pos,this.state.position)
             }
-            const floor=this.game.map.terrain.get_floor_type(pos,Layers.Normal,FloorType.Void)
+            const floor=this.scene.map.terrain.get_floor_type(pos,Layers.Normal,FloorType.Void)
             let valid = true
             switch(mode.type){
                 case SpawnModeType.any:
@@ -247,7 +249,7 @@ export class DeadZoneManager extends BaseDeadzone{
         return pos
     }
     random_point_in_map(radius:number):Vec2{
-        return v2(random.float(radius, this.game.map.size.x - radius),random.float(radius, this.game.map.size.y - radius))
+        return v2(random.float(radius, this.scene.map.size.x - radius),random.float(radius, this.scene.map.size.y - radius))
     }
     random_point_inside(radius:number):Vec2{
         const angle = random.rad()
@@ -282,7 +284,7 @@ export class DeadZoneManager extends BaseDeadzone{
         return this.damage*(this.config.damage??1)
     }
 
-    random_point_inside_cb(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
+    override random_point_inside_cb(hitbox:Hitbox2D,map:GameMap,random:SeededRandom):Vec2{
         if(this.stageIndex===0)return this.random_point_in_map(this.state.new_radius)
         const angle = random.rad()
         const maxLen = Math.max(this.state.radius, 0)

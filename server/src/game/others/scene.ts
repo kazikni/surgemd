@@ -30,14 +30,14 @@ import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_par
 import { Drone } from "../objects/drone.ts";
 import { Plane } from "../objects/plane.ts";
 import { Player } from "../objects/player.ts";
-import { BaseDeadzone, BaseScene } from "common/scripts/objects/scene.ts";
-import { type GameMap } from "./map.ts";
+import { GameMap } from "./map.ts";
+import { DeadZoneManager } from "./deadzone.ts";
 
-export class ServerGameScene2D extends Scene2DInstance<ServerGameObject> implements BaseScene{
+export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     declare game:Game
 
     map:GameMap
-    deadzone:BaseDeadzone
+    deadzone:DeadZoneManager
 
     always_visible:Record<number,ServerGameObject>={}
     pings:PingData[]=[]
@@ -50,8 +50,9 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject> impleme
     constructor(game:Game){
         super(game)
 
-        this.map=game.map
-        this.deadzone=game.deadzone
+        this.map=new GameMap(this)
+        this.deadzone=new DeadZoneManager(this)
+        game.add_component(this.deadzone)
 
         this.objects.make_object_checkpoint=this.make_object_checkpoint.bind(this)
         this.objects.encode_object_checkpoint=this.encode_object_checkpoint.bind(this)
@@ -66,6 +67,7 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject> impleme
         this.always_visible={}
         this.map_zones.length=0
         this.game.clock.clear()
+        this.deadzone.reset()
         this.net_update()
     }
     override net_update(){
@@ -175,7 +177,7 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject> impleme
         )
     }
     add_airdrop(position?:Vec2,obstacle?:ObstacleDef){
-        if(!position)position=this.game.deadzone.next_position()
+        if(!position)position=this.deadzone.next_position()
         if(!position)position=v2(3,3)
         if(!obstacle)obstacle=this.game.definitions.obstacles.getFromString("airdrop_locked")
 

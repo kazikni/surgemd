@@ -40,7 +40,7 @@ export abstract class MovingBody extends ServerGameObject{
     }
     override on_tick(dt: number): void {
         const pos = v2.add(this.position, v2.scale(this.physical_data.velocity, dt))
-        this.position = this.game.map.clamp_hitbox(pos, this.hitbox)
+        this.position = this.scene.map.clamp_hitbox(pos, this.hitbox)
         const objs = this.manager.cells.get_objects(this.hitbox, this.layer)
         for (const obj of objs) {
             if (obj.id === this.id) continue

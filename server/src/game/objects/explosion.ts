@@ -31,7 +31,7 @@ export class Explosion extends ServerGameObject{
     explode_base(){
         if(this.exploded_base)return
         this.exploded_base=true
-        const floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor) as FloorType
+        const floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor) as FloorType
         const floor_def=Floors[floor]
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){

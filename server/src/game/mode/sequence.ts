@@ -85,9 +85,9 @@ export class SequenceMode extends ModeManager{
     }
 
     override get_human_spawn_position(human:Human):Vec2|undefined{
-        return this.game.map.getRandomPosition(human.base_hitbox,human.id,human.layer,Spawn.ground,this.game.map.random)
+        return this.scene.map.getRandomPosition(human.base_hitbox,human.id,human.layer,Spawn.ground,this.scene.map.random)
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map??"normal")??NormalMap,undefined,false)
+        this.scene.map.generate(await this.load_map(this.settings.map??"normal")??NormalMap,undefined,false)
     }
 }

@@ -969,7 +969,7 @@ export class Human extends Humanoid{
         this.set_dirty_part()
         if(!v2.is(this.position,this.old_position)){
             this.old_position=v2.clone(this.position)
-            this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
+            this.physical_data.current_floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor)
         }
         if(this.downed&&!this.being_helpup_by){
             this.downed_time+=dt
@@ -993,9 +993,9 @@ export class Human extends Humanoid{
 
         if(this.health.invensibility>0)this.health.invensibility-=dt
 
-        if(this.game.deadzone.do_damage&&this.game.deadzone.damage>0&&this.game.deadzone.is_on_deadzone(this.position)){
+        if(this.scene.deadzone.do_damage&&this.scene.deadzone.damage>0&&this.scene.deadzone.is_on_deadzone(this.position)){
             this.piercing_damage({
-                amount:this.game.deadzone.damageAt(this.position),
+                amount:this.scene.deadzone.damageAt(this.position),
                 critical:false,
                 position:this.position,
                 owner:undefined,

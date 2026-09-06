@@ -74,7 +74,7 @@ export class DumbBotAI extends BotAi {
     }
     get_deadzone_urgency(){
         const self = this.human
-        const dz = self.game.deadzone
+        const dz = self.scene.deadzone
         const dist = v2.distance(self.position, dz.state.position)
         const radius = dz.state.radius
         const edgeDist = dist - radius
@@ -88,7 +88,7 @@ export class DumbBotAI extends BotAi {
     }
     do_deadzone(dt:number){
         const self = this.human
-        const dz = self.game.deadzone
+        const dz = self.scene.deadzone
         this.update_stuck(dt)
         const center = dz.state.position
         if(!this._dz_target || Math.random() < 0.01){
@@ -163,7 +163,7 @@ export class DumbBotAI extends BotAi {
     }
     do_wander(dt:number){
         const self = this.human
-        const dz = self.game.deadzone
+        const dz = self.scene.deadzone
         if(this._move_timer > 0){
             this._move_timer -= dt
 

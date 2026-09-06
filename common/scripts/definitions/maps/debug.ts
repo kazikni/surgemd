@@ -36,8 +36,8 @@ export const DebugMap:MapDef={
             let x=map.size.x/2
             let y=map.size.y/2
             let i=0
-            for(const item of Object.values(map.game.definitions.game_items.valueNumber)){
-                map.game.scene_2d.add_loot(v2(x,y),{item,count:Infinity})
+            for(const item of Object.values(map.scene.game.definitions.game_items.valueNumber)){
+                map.scene.add_loot(v2(x,y),{item,count:Infinity})
                 i++
                 if(i>=10){
                     i=0
@@ -48,7 +48,7 @@ export const DebugMap:MapDef={
                 }
                 if((item as any).skins){
                     for(let skin=0;skin<((item as any).skins as string[]).length;skin++){
-                        map.game.scene_2d.add_loot(v2(x,y),{item,count:Infinity,skin})
+                        map.scene.add_loot(v2(x,y),{item,count:Infinity,skin})
                         i++
                         if(i>=10){
                             i=0
@@ -63,8 +63,8 @@ export const DebugMap:MapDef={
             x=map.size.x/2
             y=map.size.y/2-10
             i=0
-            for(const def of Object.values(map.game.definitions.obstacles.valueNumber)){
-                const o=map.game.map.add_obstacle(def,Layers.Normal)
+            for(const def of Object.values(map.scene.game.definitions.obstacles.valueNumber)){
+                const o=map.add_obstacle(def,Layers.Normal)
                 o.initialize(0)
                 o.set_position(v2(x,y))
                 i++
@@ -76,8 +76,8 @@ export const DebugMap:MapDef={
                     x+=5
                 }
             }
-            for(const def of Object.values(map.game.definitions.vehicles.valueNumber)){
-                const v=map.game.scene_2d.add_vehicle(v2(x,y),def,Layers.Normal)
+            for(const def of Object.values(map.scene.game.definitions.vehicles.valueNumber)){
+                const v=map.scene.add_vehicle(v2(x,y),def,Layers.Normal)
                 i++
                 if(i>=25){
                     i=0
@@ -132,15 +132,15 @@ export const SingleBuildMap:MapDef={
             },
         }],
         callback(map) {
-            //const def=map.game.definitions.buildings.getFromString("shed")
-            const def=map.game.definitions.buildings.getFromString("puzzle_test")
-            //const def=map.game.definitions.buildings.getFromString("storehouse_1")
-            //const def=map.game.definitions.buildings.getFromString("bunker_1")
-            //const def=map.game.definitions.buildings.getFromString("small_house_1")
-            //const def=map.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,2)}`)
-            //const def=map.game.definitions.buildings.getFromString("black_container")
+            //const def=map.scene.game.definitions.buildings.getFromString("shed")
+            const def=map.scene.game.definitions.buildings.getFromString("puzzle_test")
+            //const def=map.scene.game.definitions.buildings.getFromString("storehouse_1")
+            //const def=map.scene.game.definitions.buildings.getFromString("bunker_1")
+            //const def=map.scene.game.definitions.buildings.getFromString("small_house_1")
+            //const def=map.scene.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,2)}`)
+            //const def=map.scene.game.definitions.buildings.getFromString("black_container")
 
-            const b=map.game.map.add_building(def)
+            const b=map.add_building(def)
             b.init(0)
             b.generate(v2.dscale(map.size,2))
 

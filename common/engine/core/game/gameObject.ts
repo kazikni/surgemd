@@ -469,6 +469,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 resistance.push(this.objects[obj])
             }else{
                 this.objects[obj].on_destroy()
+                this.objects[obj].emit(DefaultObjec2DEvents.destroy)
                 if(this.objects[obj].pool)this.objects[obj].pool.release(obj)
                 this.objects[obj].destroyed=true
             }

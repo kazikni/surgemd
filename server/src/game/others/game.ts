@@ -62,7 +62,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     string_id=""
 
     fs:FileManager
-    map:GameMap
 
     alt_db?:Record<string,{
         skins:number[],
@@ -83,14 +82,13 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     humans:HumansManager=new HumansManager(this)
 
     modeManager!:ModeManager
-    deadzone:DeadZoneManager
     level?:LevelPlayer
 
     started_time:number=0
     can_start:boolean=true
     can_finish:boolean=true
     can_win:boolean=true
-    
+
     loot_tables:LootTablesManager<LootData,LootAditional,LootSetting>=new LootTablesManager(loot_table_get_item as LootTableGetItemCallback<LootData,LootAditional,LootSetting>)
 
     mods?:ModsManager<any,any,any,ModResult,MDModModule<Game,any,ModResult>>
@@ -166,7 +164,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Drone
         ])
         //Gamemode
-        this.map=new GameMap(this,this.scene_2d)
         this.scene_2d=new ServerGameScene2D(this)
 
         this.ntps=main_config.ntps
@@ -179,8 +176,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.debug=main_config.debug
 
         this.add_component(this.players)
-        this.deadzone=new DeadZoneManager()
-        this.add_component(this.deadzone)
     }
     async init(mode:ModeManager){
         this.initialized=false
@@ -196,12 +191,12 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         }
 
         this.modeManager=mode
-        mode.init(this)
+        mode.init(this.scene_2d)
         await mode.generate_map()
+        this.scene_2d.deadzone.reset()
 
         this.players.encode_start_packet()
         this.initialized=true
-        this.add_component(this.modeManager)
         this.call_event("game_initialized",this)
     }
     async auto_init(game_config:GameConfig){
@@ -267,7 +262,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
     }
     reset(){
         this.scene_2d.clear()
-        this.deadzone.reset()
         this.call_event("game_reset")
         this.clock.clear()
         this.started=false

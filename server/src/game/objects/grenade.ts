@@ -112,7 +112,7 @@ export class Grenade extends Projectile{
 
         if(!this.old_pos||!v2.is(this.position,this.old_pos)){
             this.old_pos=this.position
-            this.physical_data.current_floor=this.game.map.terrain.get_floor_type(this.position,this.layer,this.game.map.default_floor)
+            this.physical_data.current_floor=this.scene.map.terrain.get_floor_type(this.position,this.layer,this.scene.map.default_floor)
 
             // Fall
             /*if(this.physical_data.current_floor===FloorType.Void){

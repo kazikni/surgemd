@@ -182,7 +182,7 @@ export class Obstacle extends StaticBody{
                         this.game.clock.add_timeout(()=>{
                             this.destroy()
 
-                            const obs=this.game.map.add_obstacle(def,this.layer)
+                            const obs=this.scene.map.add_obstacle(def,this.layer)
                             obs.initialize()
                             obs.set_position(this.position)
                         },this.def.expanded_behavior.delay)
@@ -333,14 +333,14 @@ export class Obstacle extends StaticBody{
         }
 
         if(allow_biome_skin&&this.def.assets?.frame?.biome_skins){
-            const biome=this.game.map.get_biome(this.position)
+            const biome=this.scene.map.get_biome(this.position)
             if(biome.skin_chance===undefined||biome.skin_chance<=Math.random()){
-                const skin_replace=this.game.map.biome.skins_replace?.[this.def.idString]
+                const skin_replace=this.scene.map.biome.skins_replace?.[this.def.idString]
                 let skin=""
                 if(skin_replace){
                     skin=(typeof skin_replace==="string")?skin_replace:random.choose(skin_replace)
-                }else if(this.game.map.biome.skin){
-                    skin=this.game.map.biome.skin
+                }else if(this.scene.map.biome.skin){
+                    skin=this.scene.map.biome.skin
                 }
                 this.visual_data.skin=this.def.assets.frame.biome_skins.indexOf(skin)+1
             }
@@ -474,8 +474,8 @@ export class Obstacle extends StaticBody{
         }
     }
     override on_destroy(): void {
-        const idx=this.game.map.objects.indexOf(this)
-        if(idx!==-1)this.game.map.objects.splice(idx,1)
+        const idx=this.scene.map.objects.indexOf(this)
+        if(idx!==-1)this.scene.map.objects.splice(idx,1)
     }
     override on_encode_net(stream: Stream, full: boolean): void {
         const door_dirty=this.door_data&&(full||this.door_data.dirty)

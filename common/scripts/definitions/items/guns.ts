@@ -79,7 +79,7 @@ export const GunsConstructors={
 export const bullets_factory={
     assault(power:number):BulletDef{
         return {
-            damage:10*power,
+            damage:12*power,
             range: 170*(1+(power-1) * 0.5),
             speed: 37*(1+(power-1) * 0.5),
 
@@ -91,7 +91,7 @@ export const bullets_factory={
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
         return {
-            damage: 45 * power,
+            damage: 53 * power,
             range: 200 * (1 + (power - 1) * 0.5),
             speed: 57 * (1 + (power - 1) * 0.6),
 
@@ -115,7 +115,7 @@ export const bullets_factory={
     },
     smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:7*power,
+            damage:8.4*power,
             range:40*(1 + (power - 1) * 0.5),
             speed:28*(1 + (power - 1) * 0.5),
 
@@ -126,7 +126,7 @@ export const bullets_factory={
     },
     ac_smg(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5.9*power,
+            damage:6.61*power,
             range:50*(1 + (power - 1) * 0.5),
             speed:25*(1 + (power - 1) * 0.5),
 
@@ -137,7 +137,7 @@ export const bullets_factory={
     },
     buckshot(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:6.7 * power,
+            damage:8.04 * power,
             speed:26 * (1 + (power - 1) * 0.4),
             range:30 * (1 + (power - 1) * 0.4),
 
@@ -148,7 +148,7 @@ export const bullets_factory={
     },
     birdshot(power:number,tracer=tracers.tiny):BulletDef{
         return {
-            damage:2.7*power,
+            damage:3.24*power,
             speed:24*(1+(power-1)*0.4),
             range:32*(1+(power-1)*0.4),
 
@@ -159,15 +159,27 @@ export const bullets_factory={
     },
     flechette(power:number,tracer=tracers.small):BulletDef{
         return {
-            damage:5 * power,
-            speed:30 * (1 + (power - 1) * 0.4),
-            range:55 * (1 + (power - 1) * 0.2),
+            damage:6*power,
+            speed:30*(1 + (power - 1) * 0.4),
+            range:55*(1 + (power - 1) * 0.2),
 
             falloff:0.85,
             critical_mult:1.2,
             tracer:tracer
         }
     },
+
+    dmr(power:number,tracer=tracers.large):BulletDef{
+        return {
+            damage:6*power,
+            speed:30*(1 + (power - 1) * 0.4),
+            range:55*(1 + (power - 1) * 0.2),
+
+            falloff:0.85,
+            critical_mult:1.2,
+            tracer:tracer
+        }
+    }
 }
 export const guns_factory={
     simple(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -467,7 +479,7 @@ export function Guns_Default_Init():GunDef[]{
             name:"M9",
             fire_delay:0.2,
             fire_mode:FireMode.Single,
-            spread:3,
+            spread:4,
             idle_spread:0.3,
 
             ammo_spawn:{
@@ -476,7 +488,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:11,
+                    damage:13.2,
                     range:110,
                     falloff:0.8,
                     speed:38,
@@ -497,7 +509,7 @@ export function Guns_Default_Init():GunDef[]{
                 dual_offset:0.2,
 
                 fire_delay:0.1,
-                spread:2,
+                spread:7,
                 reload:{
                     capacity:30,
                     extended_capacity:50,
@@ -521,7 +533,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:8,
+                    damage:9.6,
                     range:70,
                     falloff:0.8,
                     speed:20,
@@ -611,7 +623,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:18,
+                    damage:21.6,
                     range:130,
                     falloff:0.8,
                     speed:43,
@@ -655,7 +667,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:21,
+                    damage:25.2,
                     range:170,
                     falloff:0.8,
                     speed:45,
@@ -855,7 +867,13 @@ export function Guns_Default_Init():GunDef[]{
             rank:ItemRank.D,
 
             fire_delay:0.08,
-            spread:3,
+            spread:3.5,
+            idle_spread:0.8,
+            fire_sequence:{
+                spread:{begin:0.75},
+                decay:0.6,
+                increse:0.1
+            },
 
             ammo_spawn:{
                 amount:96
@@ -1290,7 +1308,7 @@ export function Guns_Default_Init():GunDef[]{
             },
             bullet:{
                 def:{
-                    damage:23,
+                    damage:26,
                     falloff:0.75,
                     range:165,
                     speed:50,
@@ -1323,7 +1341,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:14,
+                    damage:16.8,
                     falloff:0.7,
                     range:165,
                     speed:45,

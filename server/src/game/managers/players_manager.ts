@@ -307,7 +307,7 @@ export class PlayersManager extends GameComponent{
         this.start_packet_stream.clear()
         const packet=new StartPacket()
         packet.settings=this.game.start_settings
-        packet.settings.map=this.game.map.map_stream
+        packet.settings.map=this.game.scene_2d.map.map_stream
         this.game.clients.packets_manager.encode(packet,this.start_packet_stream)
         ;(this.start_packet_stream as DynamicStream).lock()
     }
@@ -335,7 +335,7 @@ export class PlayersManager extends GameComponent{
         this.general_update.content.leader_enabled=false
         this.general_update.content.leader=undefined
         this.general_update.content.feed=this.game.scene_2d.feed_messages
-        this.general_update.content.deadzone=this.game.deadzone.state
+        this.general_update.content.deadzone=this.game.scene_2d.deadzone.state
         this.general_update.content.ambient=this.game.ambient
         this.general_update.content.map_zones=this.game.scene_2d.map_zones
         this.general_update.content.living_count=this.game.modeManager.get_living_count()
@@ -376,7 +376,7 @@ export class PlayersManager extends GameComponent{
         if(!this.game.initialized)await this.game.signals.wait("game_initialized")
 
         client.send_stream(this.start_packet_stream)
-        client.send_stream(this.game.map.map_stream)
+        client.send_stream(this.game.scene_2d.map.map_stream)
         this.connected_players[client.ID].connected=true
         client.on("join",(packet:JoinPacket)=>{
             if(this.game.closed)return

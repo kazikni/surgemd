@@ -15,6 +15,7 @@ import { DebugMap, SingleBuildMap } from "common/scripts/definitions/maps/debug.
 import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { human_die_event } from "../others/utils.ts";
+import { ServerGameScene2D } from "../others/scene.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -95,7 +96,7 @@ export const Maps:Record<string,MapDef>={
     single_building:SingleBuildMap,
 }
 export abstract class ModeManager extends GameComponent{
-    declare game:Game
+    scene!:ServerGameScene2D
     rules:GameRules={
         humans:{
             boosts:{
@@ -169,8 +170,9 @@ export abstract class ModeManager extends GameComponent{
         super()
     }
 
-    init(game:Game){
-        this.game=game
+    init(scene:ServerGameScene2D){
+        this.scene=scene
+        this.scene.game.add_component(this)
     }
     update_day_and_night(dt:number){
         if(this.rules.ambient.day_night_cycle){

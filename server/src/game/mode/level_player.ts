@@ -3,9 +3,11 @@ import { LevelCharacter, LevelDefinition } from "common/scripts/config/level_def
 import { FileManager, mergeDeep, DynamicStream, Stream, parseJSONC, create_script, v2, CutsceneCommand, CutsceneCommandType, sleep, GameComponent, Path } from "common/engine/core.ts";
 import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/messages.ts"
 import { type Player } from "../objects/player.ts";
+import { ServerGameScene2D } from "../others/scene.ts";
 export class LevelPlayerScript{
     level!:LevelPlayer
     game!:Game
+    scene!:ServerGameScene2D
     constructor(){
 
     }
@@ -125,6 +127,7 @@ export class LevelPlayer extends GameComponent {
         this.script=script
         script.level=this
         script.game=this.game
+        script.scene=this.game.scene_2d
     }
     async load_character(base:LevelCharacter):Promise<LevelCharacter>{
         if(base.script_path){

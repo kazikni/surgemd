@@ -277,10 +277,10 @@ export class Vehicle extends MovingBody {
     override on_tick(dt: number) {
         if (this.dead) return
 
-        this.current_floor = this.game.map.terrain.get_floor_type(
+        this.current_floor = this.scene.map.terrain.get_floor_type(
             this.position,
             this.layer,
-            this.game.map.default_floor
+            this.scene.map.default_floor
         )
 
         this.update_surface()

@@ -539,13 +539,13 @@ class RandomWalkNode implements BTNode<BotExecutionContext> {
         if(!ctx.ai.controller.movement.path || this.timer <= 0){
             this.timer = random.float(10,30)
 
-            const pos = ctx.human.game.map.getRandomPosition(ctx.human.base_hitbox,ctx.human.id,ctx.human.layer,Spawn.grass,ctx.human.game.map.random,(h,m,r)=>{
+            const pos = ctx.human.scene.map.getRandomPosition(ctx.human.base_hitbox,ctx.human.id,ctx.human.layer,Spawn.grass,ctx.human.scene.map.random,(h,m,r)=>{
                 const ret=r.random_in_circle(30)
                 v2m.add(ret,ret,ctx.human.position)
                 m.clamp(ret)
                 return ret
             },(hb,id,layer,mode,map)=>{
-                return !map.game.deadzone.is_on_deadzone(hb.center())&&map.point_is_valid(hb,id,layer,mode,map)
+                return !map.scene.deadzone.is_on_deadzone(hb.center())&&map.point_is_valid(hb,id,layer,mode,map)
             })
             if(pos)ctx.ai.controller.movement.setPathTarget(pos)
         }

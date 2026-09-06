@@ -1,8 +1,8 @@
 import { GameObjectType, type LootData } from "../others/constants.ts";
 import { DefaultObjec2DEvents, ObjectComponent2D } from "../../engine/core/game/gameObject.ts"
-import { BaseGameObject2D, v2, v2m, Vec2 } from "../../engine/core.ts";
+import { v2, v2m, Vec2 } from "../../engine/core.ts";
 import { Floors, FloorType } from "../others/terrain.ts";
-
+import { SimulatedGameObject2D } from "./scene.ts";
 
 export interface MovingBodyBase{
     rotation:number
@@ -16,7 +16,7 @@ export interface LootBasePhysics extends LootBase{
     current_floor:FloorType
 }
 
-export const loot_physics:ObjectComponent2D<LootBasePhysics&BaseGameObject2D>={
+export const loot_physics:ObjectComponent2D<LootBasePhysics&SimulatedGameObject2D>={
     number_name:1,
     string_name:"loot_physics", // Loot Network Client
     events:{
@@ -65,12 +65,12 @@ export const loot_physics:ObjectComponent2D<LootBasePhysics&BaseGameObject2D>={
                         case GameObjectType.Obstacle:
                         case GameObjectType.StaticBody:
                         case GameObjectType.Building:{
-                            if((other as StaticBody).physical_data.stairs.length>0){
-                                for(const s of (other as StaticBody).physical_data.stairs){
+                            if(other.physical_data.stairs.length>0){
+                                for(const s of other.physical_data.stairs){
                                     if(s.hitbox.colliding_with(obj.hitbox))obj.manager.set_layer(this,other.layer+s.dest_layer)
                                 }
                             }
-                            if((other as StaticBody).physical_data.no_collision)break
+                            if(other.physical_data.no_collision)break
                             const collisions=obj.hitbox.overlap_collisions(other.hitbox)
                             for(const col of collisions){
                                 obj.position=v2.sub(obj.position,v2.scale(col.dir,col.pen))

@@ -1,4 +1,4 @@
-import { GameObjectType, PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
@@ -11,7 +11,6 @@ import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/gen
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { LocationDrone } from "../objects/drone.ts";
 import { human_die_event } from "../others/utils.ts";
-import { type Bullet } from "../objects/bullet.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string
@@ -115,7 +114,7 @@ export class BattleRoyale extends ModeManager{
         return this.teams_manager.add_team(team)
     }
     on_game_start(){
-        this.game.deadzone.start()
+        this.scene.deadzone.start()
         for(const p of this.settings.airdrops.spawn){
             this.game.clock.add_timeout(()=>{
                 this.game.scene_2d.add_airdrop()
@@ -315,16 +314,16 @@ export class BattleRoyale extends ModeManager{
         }
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed,!this.settings.map.disable_minimap)
-        this.game.deadzone.set_config(this.settings.deadzone)
-        //this.game.deadzone.start()
+        this.scene.map.generate(await this.load_map(this.settings.map.def??"normal")??NormalMap,this.settings.map.seed,!this.settings.map.disable_minimap)
+        this.scene.deadzone.set_config(this.settings.deadzone)
+        //this.scene.deadzone.start()
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         if(h.team_data.group&&this.settings.players.group_spawn){
             const c=h.team_data.group.choose_human(h)
             if(c?.position)return c.position
         }
-        return this.game.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.game.map.random)
+        return this.scene.map.getRandomPosition(h.base_hitbox,h.id,h.layer,this.settings.spawn_mode,this.scene.map.random)
     }
 }
 export class BattleRoyaleDebug extends BattleRoyale{
@@ -338,9 +337,9 @@ export class BattleRoyaleDebug extends BattleRoyale{
     override on_game_start(){
     }
     override async generate_map(): Promise<void> {
-        this.game.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
+        this.scene.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
-        return v2.dscale(this.game.map.size,2)
+        return v2.dscale(this.scene.map.size,2)
     }
 }

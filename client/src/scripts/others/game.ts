@@ -9,7 +9,7 @@ import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
 import { PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { zIndexes } from "common/scripts/others/constants.ts";
+import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";
@@ -48,6 +48,7 @@ import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
+import { loot_physics } from "common/scripts/objects/moving_body.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -736,6 +737,15 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("start",async(s:StartPacket)=>{
             await this.start(s.settings)
+
+            /*const loot=new Loot()
+            loot.add_component(loot_physics)
+            this.scene_2d.add_object(loot,Layers.Normal)
+            loot.position=v2(60,60)
+            loot.set_loot_data({
+                count:100,
+                item:this.definitions.game_items.valueString["ak47"]
+            })*/
             /*const wa=new Wall()
             this.scene_2d.add_object(wa,Layers.Normal)
             wa.set_wall([[v2.zero(),v2(10,0),v2(10,10),v2(20,10)]])*/

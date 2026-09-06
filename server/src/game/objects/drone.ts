@@ -89,7 +89,7 @@ export class Drone extends AirBody {
         this.set_dirty_part()
     }
     choose_next_dest():Vec2{
-        return this.game.deadzone.next_position()
+        return this.scene.deadzone.next_position()
     }
     override on_encode_net(stream: Stream,full: boolean): void {
         stream.write_float32(this.z)

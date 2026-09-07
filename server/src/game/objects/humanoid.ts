@@ -2,7 +2,7 @@ import { FloorType } from "common/scripts/others/terrain.ts";
 import { MovingBody, MovingBodyPhysicalData } from "./moving_body.ts";
 import { BaseObject2D, CheckpointContext, CircleHitbox2D, GameObjectManager2D, Hitbox2D, PolarMovement, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { GameConstants, GameObjectType, HumanoidVisualData } from "common/scripts/others/constants.ts";
-import { LoadoutBodyDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutBodyDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { type StaticBody } from "./static_body.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
@@ -117,7 +117,8 @@ export class Humanoid extends MovingBody {
         this.animation_data.dirty=false
         this.animation_data.alt_animations.length=0
     }
-    encode_net_visual(stream:Stream){
+
+    encode_visual(stream:Stream){
         stream.write_uint16(this.visual.body.def.idNumber!)
         .write_uint16(this.visual.hair?.def.idNumber??0)
         .write_uint16(this.visual.eyes?.idNumber??0)
@@ -137,13 +138,33 @@ export class Humanoid extends MovingBody {
         },1)
         return stream
     }
+    decode_visual(stream:Stream){
+        this.visual.body.def=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutBodyDef
+        const hair_def=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutHairDef|undefined
+        this.visual.eyes=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutEyesDef|undefined
+        this.visual.shirt=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutShirtDef
+        this.visual.legs=this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutLegDef
+        this.visual.foot=this.game.definitions.loadout.getFromNumberSafe(stream.read_uint16()) as LoadoutFootDef|undefined
+        if(hair_def){
+            this.visual.hair={
+                def:hair_def,
+                tint:stream.read_uint32()
+            }
+            const hair_paint_id=stream.read_uint8()
+            if(hair_paint_id)this.visual.hair.paint={id:hair_paint_id,tint:stream.read_uint32()}
+        }
+        this.visual.body.tint=stream.read_uint32()
+        this.visual.accessorys=stream.read_array(()=>this.game.definitions.loadout.getFromNumber(stream.read_uint16()) as LoadoutAccessoryDef,1)
+    }
 
     override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         stream.write_pos2(this.position)
         stream.write_float32(this.health.value)
+        this.encode_visual(stream)
     }
     override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         this.position=stream.read_pos2()
         this.health.value=stream.read_float32()
+        this.decode_visual(stream)
     }
 }

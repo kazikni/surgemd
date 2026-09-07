@@ -260,16 +260,6 @@ export class PlayersManager extends GameComponent{
             this.match_players_count=this.living_players.length
         }
     }
-    add_enemy(def: HumanDefinition | string, packet: JoinPacket,player?:Player): Player | undefined {
-        if(typeof def === "string"){
-            def = this.game.humans.enemies[def]
-        }
-        if(!def) return
-        const client=this.add_bot(packet,player)
-        if(!client.human)return
-        client.human.set_preset(def)
-        return client.human as Player
-    }
     get_global_update_packet(full:boolean):UpdatePacket{
         if(!this.global_buffer_1)this.global_buffer_1=new DynamicStream()
         this.global_buffer_1.clear()
@@ -354,19 +344,21 @@ export class PlayersManager extends GameComponent{
         this.first_tick=false
     }
     on_encode_checkpoint(stream:Stream){
+        const ctx={coid:{},idco:{}}
         stream.write_array(Object.values(this.connected_players),(i)=>{
             stream.write_float32(i.id)
             stream.write_boolean_group(i.real_human!==undefined)
-            i.real_human?.on_encode_checkpoint?.(stream,{coid:{},idco:{}})
+            if(i.real_human)this.game.humans.encode_human(i.real_human,stream,ctx)
         },1)
     }
     on_decode_checkpoint(stream:Stream){
+        const ctx={coid:{},idco:{}}
         stream.read_array(()=>{
             const id=stream.read_float32()
             const bg=stream.read_boolean_group()
             if(bg[0]){
                 const client=this.connected_players[id]
-                client.real_human?.on_decode_checkpoint?.(stream,{coid:{},idco:{}})
+                if(client.real_human)this.game.humans.decode_human(client.real_human,stream,ctx)
             }
         },1)
     }

@@ -13,11 +13,9 @@ export abstract class MDItem extends Item{
     abstract def:GameItem
     droppable:boolean=true
     inventory!:GInventoryBase
-    constructor(){
+    constructor(inventory:GInventoryBase){
         super()
-        // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
-        this.inventory=null
+        this.inventory=inventory
     }
     unload(def?:GameItem){}
     load(def?:GameItem){}
@@ -26,8 +24,8 @@ export class GunItemBase extends MDItem{
     def:GunDef
     liquid:boolean=false
     item_type=GameItemType.gun
-    constructor(def?:GunDef){
-        super()
+    constructor(inventory:GInventoryBase,def?:GunDef){
+        super(inventory)
         this.def=def!
         this.tags.push("gun")
         this.liquid=false
@@ -39,8 +37,8 @@ export class GunItemBase extends MDItem{
 export class MeleeItemBase extends MDItem{
     def:MeleeDef
     item_type: GameItemType.melee=GameItemType.melee
-    constructor(def?:MeleeDef){
-      super()
+    constructor(inventory:GInventoryBase,def?:MeleeDef){
+      super(inventory)
       this.limit_per_slot=1
       this.def=def!
     }
@@ -49,33 +47,42 @@ export class MeleeItemBase extends MDItem{
     }
 }
 export class AmmoItemBase extends MDItem{
-    def:AmmoDef
+    def!:AmmoDef
     item_type: GameItemType.ammo=GameItemType.ammo
-    constructor(def:AmmoDef){
-        super()
-        this.def=def
+    constructor(inventory:GInventoryBase,def?:AmmoDef){
+        super(inventory)
         this.tags.push("ammo",`ammo_${this.def.ammoType}`)
+        if(def)this.set_definition(def)
+    }
+    set_definition(def:AmmoDef){
+        this.def=def
     }
     is(other: MDItem): boolean {
         return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
     }
 }
 export class ConsumibleItemBase extends MDItem{
-  def:ConsumibleDef
-  item_type: GameItemType.consumible=GameItemType.consumible
-  constructor(def:ConsumibleDef){
-      super()
-      this.def=def
-  }
-  is(other: MDItem): boolean {
-      return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
-  }
+    def!:ConsumibleDef
+    item_type: GameItemType.consumible=GameItemType.consumible
+    constructor(inventory:GInventoryBase,def?:ConsumibleDef){
+        super(inventory)
+        if(def)this.set_definition(def)
+    }
+    set_definition(def:ConsumibleDef){
+        this.def=def
+    }
+    is(other: MDItem): boolean {
+        return (other.item_type===this.item_type)&&other.def.idNumber==this.def.idNumber
+    }
 }
 export class GrenadeItemBase extends MDItem{
-    def:GrenadeDef
+    def!:GrenadeDef
     item_type: GameItemType.grenade=GameItemType.grenade
-    constructor(def:GrenadeDef){
-        super()
+    constructor(inventory:GInventoryBase,def?:GrenadeDef){
+        super(inventory)
+        if(def)this.set_definition(def)
+    }
+    set_definition(def:GrenadeDef){
         this.def=def
     }
     is(other: MDItem): boolean {
@@ -84,7 +91,7 @@ export class GrenadeItemBase extends MDItem{
 }
 export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     weapons:Record<number,IT|undefined>={}
-    weapons_kind:Record<number,(new(def:GameItem)=>IT)>={}
+    weapons_kind:Record<number,(new(inventory:GInventoryBase,def:GameItem)=>IT)>={}
     weapons_defaults:Record<number,GameItem>={}
 
     weapon_idx:number=-1
@@ -118,7 +125,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     constructor(){
         super(1)
     }
-    initialize(definitions:GameDefinition,weapons_kind:Record<number,(new(def:GameItem)=>IT)>,weapons_defaults?:Record<number,GameItem>){
+    initialize(definitions:GameDefinition,weapons_kind:Record<number,(new(inventory:GInventoryBase,def:GameItem)=>IT)>,weapons_defaults?:Record<number,GameItem>){
         this.default_backpack=definitions.backpacks.getFromString("null_pack")
         this.set_backpack()
         this.weapons_kind=weapons_kind
@@ -169,7 +176,7 @@ export class GInventoryBase<IT extends MDItem=MDItem> extends Inventory<IT>{
     set_weapon(slot:number,wep?:GameItem){
         const oid=this.weapons[slot]?.def.idString
         if(wep||this.weapons_defaults[slot]){
-            const item=new(this.weapons_kind[slot])(wep??this.weapons_defaults[slot])
+            const item=new(this.weapons_kind[slot])(this,wep??this.weapons_defaults[slot])
             item.inventory=this
             this.weapons[slot]=item
         }else{

@@ -4,12 +4,25 @@ import { human_die_event } from "../others/utils.ts"
 import { Vec2 } from "common/engine/core.ts"
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { Spawn } from "common/scripts/others/constants.ts";
-import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
+import { Stream } from "common/engine/core/net/stream.ts";
+import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 
+export type SequenceCommand={
+    type:"spawn_enemies"
+    enemies:LevelEnemys[]
+}|{
+    type:"enemys_count"
+    count?:number
+}|{
+    type:"finish"
+}|{
+    type:"save_checkpoint"
+}
 export interface SequenceModeSettings{
     map?:MapDef|string
     minimap?:boolean
+    commands?:SequenceCommand[]
 }
 
 export class SequenceMode extends ModeManager{
@@ -17,7 +30,8 @@ export class SequenceMode extends ModeManager{
         map?:MapDef|string
         minimap:boolean
     }
-    enemies:Record<string,Human>={}
+    enemies:Record<number,Human>={}
+    commands:SequenceCommand[]=[]
     started_sequence=false
     finished=false
 
@@ -27,6 +41,7 @@ export class SequenceMode extends ModeManager{
             map:settings.map,
             minimap:settings.minimap===undefined?false:settings.minimap
         }
+        this.commands=[...(settings.commands??[])]
 
         this.rules.deadzone.enabled=false
         this.rules.leader.enabled=false
@@ -41,24 +56,67 @@ export class SequenceMode extends ModeManager{
     }
     remove_enemy(human:Human){
         if(this.enemies[human.id])delete this.enemies[human.id]
-        if(this.game.started){
-            if(Object.keys(this.enemies).length<=0){
-                this.game.finish(this.game.players.living_players,1)
-            }
-        }
     }
 
-    override add_enemies(enemies?: LevelEnemys): Human[] {
-        const l=super.add_enemies(enemies)
-        for(const e of l){
-            this.add_enemy(e)
-        }
-        return l
+    override make_enemy(): Human | undefined {
+        const e=super.make_enemy()
+        if(e)this.add_enemy(e)
+        return e
     }
     override on_human_die(e:human_die_event){
         super.on_human_die(e)
         if(this.is_enemy(e.human)){
             this.remove_enemy(e.human)
+        }
+    }
+
+    override on_encode_checkpoint(stream: Stream): void {
+        const ctx={idco:{},coid:{}}
+        stream.write_any(this.commands,2,2)
+        stream.write_number_dict(this.enemies,(i)=>{
+            this.scene.game.humans.encode_human(i,stream,ctx)
+        })
+    }
+    override on_decode_checkpoint(stream: Stream): void {
+        const ctx={idco:{},coid:{}}
+        this.commands=stream.read_any(2,2)
+        stream.read_number_dict(()=>{
+            const e=this.make_enemy()
+            if(e){
+                this.scene.game.humans.decode_human(e,stream,ctx)
+            }
+        })
+    }
+
+    execute_command(cmd:SequenceCommand):boolean{
+        switch(cmd.type){
+            case "spawn_enemies":{
+                this.add_enemies(cmd.enemies)
+                break
+            }
+            case "enemys_count":{
+                return Object.keys(this.enemies).length===(cmd.count??0)
+            }
+            case "finish":{
+                this.game.finish(this.game.players.living_players,1)
+                break
+            }
+            case "save_checkpoint":{
+                this.game.level?.save_checkpoint?.()
+                break
+            }
+        }
+        return true
+    }
+
+    override on_tick(dt:number){
+        super.on_tick(dt)
+        if(this.game.started){
+            let last=true
+            while(this.commands.length>0&&last){
+                last=this.execute_command(this.commands[0])
+                if(last)this.commands.shift()
+            }
         }
     }
 

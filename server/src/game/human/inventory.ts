@@ -35,8 +35,8 @@ export abstract class LItem extends MDItem{
 }
 export class GunItem extends GunItemBase implements LItem{
     declare inventory:GInventory
-    constructor(def?:GunDef){
-        super(def)
+    constructor(inventory:GInventoryBase,def?:GunDef){
+        super(inventory,def)
         this.use_delay=def?.fire_delay??0
         if(def?.fire_sequence)this.fire_sequence=1
     }
@@ -352,8 +352,8 @@ export class GunItem extends GunItemBase implements LItem{
 }
 export class AmmoItem extends AmmoItemBase implements LItem{
     declare inventory:GInventory
-    constructor(def:AmmoDef){
-        super(def)
+    constructor(inventory:GInventoryBase,def:AmmoDef){
+        super(inventory,def)
         this.def=def
     }
     on_use(_user: Human,_slot?: Slot<LItem>): void {
@@ -375,9 +375,11 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
     declare inventory:GInventory
     slot?:Slot<LItem>
     use_delay:number=0
-    constructor(def:ConsumibleDef){
-        super(def)
+
+    override set_definition(def:ConsumibleDef){
+        this.def=def
         if(this.def.allow_merge!==undefined)this.allow_merge=this.def.allow_merge
+        this.limit_per_slot=this.inventory.item_limit(this.def)
     }
     on_use(user: Human,slot?:Slot<LItem>): void {
         if(user.actions.current_action)return
@@ -461,14 +463,19 @@ export class ConsumibleItem extends ConsumibleItemBase implements LItem{
         return []
     }
 
-    encode_checkpoint(stream:Stream):void{}
-    decode_checkpoint(stream:Stream):void{}
+    encode_checkpoint(stream:Stream):void{
+        stream.write_uint16(this.def.idNumber!)
+    }
+    decode_checkpoint(stream:Stream):void{
+        this.set_definition(this.inventory.owner.game.definitions.consumibles.getFromNumber(stream.read_uint16()))
+    }
 }
 export class GrenadeItem extends GrenadeItemBase implements LItem{
     declare inventory:GInventory
     slot?:Slot<LItem>
-    constructor(def:GrenadeDef){
-        super(def)
+    override set_definition(def: GrenadeDef): void {
+        this.def=def
+        this.limit_per_slot=this.inventory.item_limit(this.def)
     }
     on_use(user: Human,slot?: Slot<LItem>): void {
         user.inventory.set_hand_item(this)
@@ -499,8 +506,12 @@ export class GrenadeItem extends GrenadeItemBase implements LItem{
         return []
     }
 
-    encode_checkpoint(stream:Stream):void{}
-    decode_checkpoint(stream:Stream):void{}
+    encode_checkpoint(stream:Stream):void{
+        stream.write_uint16(this.def.idNumber!)
+    }
+    decode_checkpoint(stream:Stream):void{
+        this.set_definition(this.inventory.owner.game.definitions.grenades.getFromNumber(stream.read_uint16()))
+    }
 }
 export class MeleeItem extends MeleeItemBase implements LItem{
     declare inventory:GInventory
@@ -508,9 +519,6 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     use_delay:number=0
     firing:boolean=false
     switching:boolean=false
-    constructor(def?:MeleeDef){
-        super(def)
-    }
     on_use(_user: Human, _slot?: Slot<LItem>): void {
       
     }
@@ -808,9 +816,7 @@ export class GInventory extends GInventoryBase<LItem>{
             case GameItemType.consumible:{
                 this.net_sync.items=true
 
-                const item=new ConsumibleItem(def as unknown as ConsumibleDef)
-                item.inventory=this
-                item.limit_per_slot=this.item_limit(item.def)
+                const item=new ConsumibleItem(this,def as unknown as ConsumibleDef)
 
                 let ov=count
                 //TODO: PUT A BETTER THING THAN INFINIY
@@ -829,9 +835,7 @@ export class GInventory extends GInventoryBase<LItem>{
             case GameItemType.grenade:{
                 this.net_sync.items=true
 
-                const item=new GrenadeItem(def as unknown as GrenadeDef)
-                item.inventory=this
-                item.limit_per_slot=this.item_limit(def)
+                const item=new GrenadeItem(this,def as unknown as GrenadeDef)
 
                 let ov=count
                 //TODO: PUT A BETTER THING THAN INFINIY
@@ -1127,8 +1131,8 @@ export class GInventory extends GInventoryBase<LItem>{
     }
 
     encode_checkpoint(stream:Stream){
+        stream.write_uint16(this.backpack.idNumber!)
         stream.write_array(this.iitems,(v)=>stream.write_uint16(v.idNumber!))
-
         stream.write_array(Object.keys(this.weapons),(v)=>{
             stream.write_uint8(v as unknown as number)
             if(this.weapons[v as unknown as number] instanceof GunItem){
@@ -1143,9 +1147,22 @@ export class GInventory extends GInventoryBase<LItem>{
             }
             this.weapons[v as unknown as number]?.encode_checkpoint?.(stream)
         },1)
+        stream.write_array(Object.keys(this.aitems),(k)=>{
+            stream.write_uint16(this.owner.game.definitions.game_items.keysString[k])
+            stream.write_float32(this.aitems[k])
+        })
+        stream.write_array(this.slots,(i)=>{
+            stream.write_float32(i.quantity)
+            stream.write_uint8(i.item?.item_type??0)
+            if(i.item)i.item.encode_checkpoint(stream)
+        })
+        stream.write_int8(this.weapon_idx)
     }
     decode_checkpoint(stream:Stream){
-        this.iitems=stream.read_array(()=>this.owner.game.definitions.scopes.getFromNumber(stream.read_uint16()))
+        this.clear()
+        const defs=this.owner.game.definitions
+        this.set_backpack(defs.backpacks.getFromNumberSafe(stream.read_uint16()))
+        this.iitems=stream.read_array(()=>defs.scopes.getFromNumber(stream.read_uint16()))
         stream.read_array(()=>{
             const id=stream.read_uint8()
             const tp=stream.read_uint8()
@@ -1154,15 +1171,31 @@ export class GInventory extends GInventoryBase<LItem>{
                     this.weapons[id]=undefined
                     return
                 case 1:
-                    this.set_weapon(id,this.owner.game.definitions.guns.getFromNumberSafe(stream.read_uint16()))
+                    this.set_weapon(id,defs.guns.getFromNumberSafe(stream.read_uint16()))
                     break
                 case 2:
-                    this.set_weapon(id,this.owner.game.definitions.melees.getFromNumberSafe(stream.read_uint16()))
+                    this.set_weapon(id,defs.melees.getFromNumberSafe(stream.read_uint16()))
                     break
             }
             this.weapons[id]?.decode_checkpoint?.(stream)
         })
-
+        stream.read_array(()=>{
+            const def=defs.game_items.valueNumber[stream.read_uint16()]
+            this.aitems[def.idString]=stream.read_float32()
+        })
+        stream.read_array((idx)=>{
+            this.slots[idx].quantity=stream.read_float32()
+            const type=stream.read_uint8()
+            if(type){
+                switch(type){
+                    case GameItemType.consumible: this.slots[idx].item=new ConsumibleItem(this);break;
+                    case GameItemType.grenade: this.slots[idx].item=new GrenadeItem(this);break;
+                }
+                if(this.slots[idx].item)this.slots[idx].item.decode_checkpoint(stream)
+            }
+        })
+        const idx=stream.read_int8()
+        if(idx!==-1)this.set_weapon_index(idx,true)
         this.net_sync.weapons=true
         this.net_sync.items=true
         this.net_sync.aitems=true

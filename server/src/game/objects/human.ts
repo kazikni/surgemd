@@ -36,6 +36,7 @@ import { Humanoid, HumanoidAnimationData, HumanoidInput, HumanoidPhysicalData } 
 import { type Bullet } from "./bullet.ts";
 import { CheckpointContext } from "common/engine/core/game/gameObject.ts";
 import { apply_modifiers } from "common/scripts/others/functions.ts";
+import { GInventoryBase } from "common/scripts/others/inventory.ts";
 export type HumanPhysicalData=HumanoidPhysicalData&{
     secondary_velocity_enabled:boolean
     secondary_velocity_take_control:boolean
@@ -54,6 +55,60 @@ export const humanoid:ObjectComponent<Human>={
         }
     }
 }
+export const human_equipments:ObjectComponent<Human>={
+    string_name:"human_equipments",
+    number_name:0,
+
+    events:{
+        [DefaultObjectEvents.create]:[
+            (obj,args)=>{
+                const default_scope=obj.game.definitions.scopes.getFromNumber(1)
+                obj.equipment_data={
+                    dirty:true,
+                    dirty_part:true,
+                    scope:default_scope,
+                    default_scope,
+                }
+            }
+        ],
+        [DefaultObjectEvents.tick]:[
+            (obj)=>{
+                obj.scope_zoom=obj.equipment_data.scope.scope_view
+                if(obj.knocked)obj.scope_zoom=obj.equipment_data.default_scope.scope_view
+            }
+        ],
+        [DefaultObjectEvents.net_update]:[
+            (o)=>{
+                o.equipment_data.dirty=false
+            }
+        ],
+        [DefaultObjectEvents.checkpoint_encode]:[
+            (o,stream:Stream)=>{
+                stream.write_uint16(o.equipment_data.scope.idNumber!)
+                stream.write_uint16(o.equipment_data.helmet?.idNumber??0)
+                stream.write_uint16(o.equipment_data.vest?.idNumber??0)
+            }
+        ],
+        [DefaultObjectEvents.checkpoint_decode]:[
+            (o,stream:Stream)=>{
+                o.equipment_data.scope=o.game.definitions.scopes.getFromNumber(stream.read_uint16())
+                o.equipment_data.helmet=o.game.definitions.helmets.getFromNumberSafe(stream.read_uint16())
+                o.equipment_data.vest=o.game.definitions.vests.getFromNumberSafe(stream.read_uint16())
+            }
+        ],
+        [ObjectsComponentEvent.human_clear]:[
+            (obj,inventory)=>{
+                if(inventory)obj.equipment_data.scope=obj.equipment_data.default_scope
+            }
+        ],
+        [ObjectsComponentEvent.human_apply_modifiers]:[
+            (obj,base)=>{
+                if(obj.equipment_data.helmet?.modifiers)apply_modifiers(base,obj.equipment_data.helmet.modifiers)
+                if(obj.equipment_data.vest?.modifiers)apply_modifiers(base,obj.equipment_data.vest.modifiers)
+            }
+        ],        
+    }
+}
 export const human_inventory:ObjectComponent<Human>={
     string_name:"human_inventory",
     number_name:0,
@@ -67,9 +122,9 @@ export const human_inventory:ObjectComponent<Human>={
         [DefaultObjectEvents.create]:[
             (obj)=>{
                 obj.inventory.initialize(obj.game.definitions,{
-                    0:MeleeItem as (new(item:GameItem)=>LItem),
-                    1:GunItem as (new(item:GameItem)=>LItem),
-                    2:GunItem as (new(item:GameItem)=>LItem),
+                    0:MeleeItem as (new(inventory:GInventoryBase,item:GameItem)=>LItem),
+                    1:GunItem as (new(inventory:GInventoryBase,item:GameItem)=>LItem),
+                    2:GunItem as (new(inventory:GInventoryBase,item:GameItem)=>LItem),
                 })
             }
         ],
@@ -77,6 +132,24 @@ export const human_inventory:ObjectComponent<Human>={
             (obj,dt)=>{
                 obj.inventory.accessorys.call_event("tick",dt)
                 obj.inventory.update(dt)
+            }
+        ],
+        [DefaultObjectEvents.net_update]:[
+            (obj)=>{
+                obj.inventory.net_update()
+            }
+        ],
+        [ObjectsComponentEvent.human_clear]:[
+            (obj,inventory)=>{
+                if(inventory){
+                    obj.inventory.clear()
+                }
+                obj.inventory.net_sync.aitems=true
+                obj.inventory.net_sync.hand=true
+                obj.inventory.net_sync.iitems=true
+                obj.inventory.net_sync.items=true
+                obj.inventory.net_sync.melee_world=true
+                obj.inventory.net_sync.weapons=true
             }
         ],
         [ObjectsComponentEvent.human_load_preset]:[
@@ -379,8 +452,7 @@ export class Human extends Humanoid{
 
     being_helpup_by?:Human
 
-    modifiers:Record<string,number>={
-    }
+    modifiers:Record<string,number>={}
     temp_modifiers:Record<string,number>={}
     get_modifier(val:string):number{
         let ret=1
@@ -410,6 +482,7 @@ export class Human extends Humanoid{
         this.allow_checkpoint=false
 
         this.add_component(humanoid)
+        this.add_component(human_equipments)
         this.add_component(human_inventory)
     }
 
@@ -436,7 +509,7 @@ export class Human extends Humanoid{
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
     override on_create(args: any): void {
-    super.on_create(args)
+        super.on_create(args)
         const female=Math.random()<0.5
         this.visual={
             dirty:true,
@@ -463,13 +536,6 @@ export class Human extends Humanoid{
                 this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef
             ]:[],
             colors:{},
-        }
-        const default_scope=this.game.definitions.scopes.getFromNumber(1)
-        this.equipment_data={
-            dirty:true,
-            dirty_part:true,
-            scope:default_scope,
-            default_scope,
         }
 
         this.clear_boost()
@@ -615,8 +681,6 @@ export class Human extends Humanoid{
     update_modifiers(){
         this.modifiers={}
         apply_modifiers(this.modifiers,this.temp_modifiers)
-        if(this.equipment_data.helmet?.modifiers)apply_modifiers(this.modifiers,this.equipment_data.helmet.modifiers)
-        if(this.equipment_data.vest?.modifiers)apply_modifiers(this.modifiers,this.equipment_data.vest.modifiers)
         if(this.boost.def.se?.update_modifiers)apply_modifiers(this.modifiers,this.boost.def.se.update_modifiers(this))
         for(const e of this.effects.values()){
             for(const sf of e.effect.side_effects){
@@ -958,8 +1022,7 @@ export class Human extends Humanoid{
                     }
                 })
             }
-        }7
-        this.scope_zoom=this.equipment_data.scope.scope_view
+        }
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
@@ -1052,7 +1115,6 @@ export class Human extends Humanoid{
                 })
             }
         }
-        if(this.knocked)this.scope_zoom=this.equipment_data.default_scope.scope_view
 
         this.tick_input(dt)
         this.actions.update(dt)
@@ -1091,11 +1153,7 @@ export class Human extends Humanoid{
         this.input.message=undefined
         this.input.ping=undefined
 
-        this.equipment_data.dirty=false
-
         this.effects_dirty=false
-
-        this.inventory.net_update()
     }
     self_state(full:boolean):SelfStateUpdate{
         const ret:SelfStateUpdate={
@@ -1326,7 +1384,7 @@ export class Human extends Humanoid{
         this.health.value=this.health.max
         this.clear_boost()
 
-        this.health.invensibility=0.5
+        this.health.invensibility=0.4
 
         this.inventory.set_weapon_index(0)
 
@@ -1381,9 +1439,6 @@ export class Human extends Humanoid{
         this.destroy()
     }
     clear(inventory:boolean=false,status:boolean=false){
-        if(inventory){
-            this.inventory.clear()
-        }
         if(status){
             this.health.value=this.health.max
             this.clear_boost()
@@ -1397,16 +1452,10 @@ export class Human extends Humanoid{
         this.human_data.pulse_movement=undefined
         this.physical_data.secondary_velocity=v2.zero()
 
-        this.equipment_data.scope=this.equipment_data.default_scope
-        this.inventory.net_sync.aitems=true
-        this.inventory.net_sync.hand=true
-        this.inventory.net_sync.iitems=true
-        this.inventory.net_sync.items=true
-        this.inventory.net_sync.melee_world=true
-        this.inventory.net_sync.weapons=true
         this.set_dirty_full()
         if(this.seat)this.seat.clear_human()
         this.effects.clear()
+        this.emit_event(ObjectsComponentEvent.human_clear,inventory,status)
     }
     revive(inventory?:boolean,status?:boolean){
         if(!this.dead)return
@@ -1492,10 +1541,10 @@ export class Human extends Humanoid{
                 .write_uint8(this.equipment_data.vest?this.equipment_data.vest.idNumber!+1:0)
                 .write_uint8(this.inventory.backpack.idNumber!)
             }
-        }
+        } 
         // Loadout  
         if(full||this.visual.dirty){
-            this.encode_net_visual(stream)
+            this.encode_visual(stream)
             stream.write_uint16(this.visual.wrapping?.idNumber??0)
         }
         if(this.input.emote){
@@ -1542,10 +1591,8 @@ export class Human extends Humanoid{
     }
     override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         super.on_encode_checkpoint(stream,ctx)
-        this.inventory.encode_checkpoint(stream)
     }
     override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         super.on_decode_checkpoint(stream,ctx)
-        this.inventory.decode_checkpoint(stream)
     }
 }

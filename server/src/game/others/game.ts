@@ -275,7 +275,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         super.mainloop(rqf,auto_mainloop)
     }
     save_checkpoint(stream:Stream){
-        this.call_event("encode_checkpoint",stream)
         this.scene_2d.make_checkpoint(stream,{
             save_id:true,
             orden:[
@@ -284,10 +283,11 @@ export class Game extends AbstractServerGame<ServerGameObject>{
                 GameObjectType.Building,
             ]
         })
+        this.call_event("encode_checkpoint",stream)
     }
     load_checkpoint(stream:Stream){
-        this.call_event("decode_checkpoint",stream)
         this.scene_2d.load_checkpoint(stream)
+        this.call_event("decode_checkpoint",stream)
     }
     start(force:boolean=false){
         if(this.started)return

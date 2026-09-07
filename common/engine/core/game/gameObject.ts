@@ -597,8 +597,8 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             obj[key] = sv[key]
         }
         this.registry_object(obj)
-        obj.on_create(args)
         obj.emit_event(DefaultObjectEvents.create,args)
+        obj.on_create(args)
         obj.on_layer_set()
         obj.emit_event(DefaultObjectEvents.layer_set)
         this.cells.update_object(obj)

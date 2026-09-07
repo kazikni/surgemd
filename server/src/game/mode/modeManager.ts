@@ -1,4 +1,3 @@
-import { type Game } from "../others/game.ts";
 import { Client, GameComponent, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -6,7 +5,7 @@ import { GameItem } from "common/scripts/definitions/game_defs.ts";
 import { type Group, type Team } from "./teams.ts";
 import { LevelEnemys } from "common/scripts/config/level_definition.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { GameObjectType, LootSetting, PlayerStatus, ScoreApplyerType } from "common/scripts/others/constants.ts";
+import { LootSetting, PlayerStatus } from "common/scripts/others/constants.ts";
 import { MapDef } from "common/scripts/definitions/maps/base.ts";
 import { FallBiome, NormalLobby, NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { TundraMap } from "common/scripts/definitions/maps/tundra.ts";
@@ -16,6 +15,7 @@ import { TutorialMap } from "common/scripts/definitions/maps/tutorial.ts";
 import { GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { human_die_event } from "../others/utils.ts";
 import { ServerGameScene2D } from "../others/scene.ts";
+import { type Game } from "../others/game.ts";
 export interface GameRules{
     humans:{
         boosts:{
@@ -96,6 +96,7 @@ export const Maps:Record<string,MapDef>={
     single_building:SingleBuildMap,
 }
 export abstract class ModeManager extends GameComponent{
+    declare game:Game
     scene!:ServerGameScene2D
     rules:GameRules={
         humans:{
@@ -296,22 +297,25 @@ export abstract class ModeManager extends GameComponent{
     }
 
     human_buy_item(human:Human,item:GameItem){}
-    
-    add_enemies(enemies?:LevelEnemys):Human[]{
+
+    make_enemy():Human|undefined{
+        const client=this.scene.game.players.add_bot(new JoinPacket())
+        return client.human
+    }
+    add_enemies(enemies?:LevelEnemys[]):Human[]{
         if(!enemies) return []
         const ret:Human[]=[]
         for(const e of enemies){
             const count = e.count ?? 1
             for(let i = 0; i < count; i++){
-                const bot = this.game.players.add_enemy(e.def,new JoinPacket())
+                const bot=this.make_enemy()
                 if(!bot) continue
-                ret.push(bot)
-                if(e.position){
-                    v2m.set(bot.position, e.position.x, e.position.y)
-                }else{
-                    const pos = this.get_human_spawn_position(bot)
-                    if(pos) bot.position = pos
+                bot.set_preset(e.def)
+                if(!e.def.position){
+                    const pos=this.get_human_spawn_position(bot)
+                    if(pos)bot.position=pos
                 }
+                ret.push(bot)
             }
         }
         return ret

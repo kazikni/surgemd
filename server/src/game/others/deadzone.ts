@@ -153,6 +153,11 @@ export class DeadZoneManager extends BaseDeadzone{
         this.hitbox.position = this.state.position
 
         this.stageIndex++
+
+        this.scene.global_messages.push(
+            {lvalue:"global_message.deadzone.adv_state."+this.state.state},
+            {value:Math.round(this.duration)+"s"}
+        )
     }
     jump_stages(targetStage: number){
         if(targetStage <= 0) return

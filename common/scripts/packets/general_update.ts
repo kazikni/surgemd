@@ -6,6 +6,11 @@ export interface GeneralFullMainState{
     ntps:number
     date:KDate
 }
+export interface GlobalMessage{
+    value?:string
+    lvalue?:string
+    lifetime?:number
+}
 export enum DeadZoneState{
     Deenabled,
     Advancing,
@@ -45,6 +50,7 @@ export interface GeneralUpdate{
 
     living_count:number[]
     feed:FeedMessage[]
+    global_message:GlobalMessage[]
     deadzone?:DeadZoneUpdate
     ambient?:AmbientData
     main_state?:GeneralFullMainState
@@ -206,6 +212,12 @@ function encode_general_update(stream:Stream,up:GeneralUpdate){
     )
 
     stream.write_array(up.feed,(msg)=>encode_feed_message(msg,stream))
+    stream.write_array(up.global_message,(msg)=>{
+        stream.write_boolean_group(msg.value!=undefined,msg.lvalue!==undefined,msg.lifetime!==undefined)
+        if(msg.value!==undefined)stream.write_string(msg.value,2)
+        if(msg.lvalue!==undefined)stream.write_string(msg.lvalue,1)
+        if(msg.lifetime!==undefined)stream.write_float32(msg.lifetime)
+    })
     if(up.deadzone){
         stream.write_uint8(up.deadzone.state)
         .write_float(up.deadzone.radius,0,3000,3)
@@ -253,6 +265,14 @@ function decode_general_update(stream:Stream,up:GeneralUpdate){
     up.leader=undefined
 
     up.feed=stream.read_array(()=>decode_feed_message(stream))
+    up.global_message=stream.read_array(()=>{
+        const [has_value,has_lvalue,has_lifetime]=stream.read_boolean_group()
+        const msg:GlobalMessage={}
+        if(has_value)msg.value=stream.read_string(2)
+        if(has_lvalue)msg.lvalue=stream.read_string(1)
+        if(has_lifetime)msg.lifetime=stream.read_float32()
+        return msg
+    })
     if(deadzone){
         up.deadzone={
             state:stream.read_uint8(),
@@ -307,8 +327,9 @@ export class GeneralUpdatePacket extends Packet{
         leader_enabled:false,
         living_count:[],
         feed:[],
+        global_message:[],
         deadzone:undefined,
-        map_zones:[]
+        map_zones:[],
     }
     decode(stream: Stream): void {
         decode_general_update(stream,this.content)

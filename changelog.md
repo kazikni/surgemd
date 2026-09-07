@@ -28,6 +28,7 @@ ___
 ___
 ### Others
 * Parachute Perspective
+* New Global Messages
 ___
 ## Changes
 ___

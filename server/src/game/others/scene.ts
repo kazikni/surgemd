@@ -2,7 +2,7 @@ import { Scene2DInstance, v2, Vec2,Stream } from "common/engine/core.ts";
 import { type Game } from "./game.ts";
 import { ServerGameObject } from "./gameObject.ts";
 import { PingData } from "common/scripts/packets/update_packet.ts";
-import { FeedMessage, MapZone } from "common/scripts/packets/general_update.ts";
+import { FeedMessage, GlobalMessage, MapZone } from "common/scripts/packets/general_update.ts";
 import { BuildingPuzzle } from "../objects/building.ts";
 import { LeaderboardPlayer } from "common/scripts/packets/gameOver.ts";
 import { Human } from "../objects/human.ts";
@@ -43,6 +43,7 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     pings:PingData[]=[]
     map_zones:MapZone[]=[]
     feed_messages:FeedMessage[]=[]
+    global_messages:GlobalMessage[]=[]
     puzzles:Record<string,BuildingPuzzle>={}
 
     leaderboards:LeaderboardPlayer[]=[]
@@ -74,6 +75,7 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
         super.net_update()
         this.pings.length=0
         this.feed_messages.length=0
+        this.global_messages.length=0
     }
 
     on_start(){

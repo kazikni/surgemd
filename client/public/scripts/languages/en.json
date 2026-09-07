@@ -213,6 +213,16 @@
                 "dead": "The Leader Are Dead"
             }
         },
+        "global_message":{
+            "deadzone":{
+                "adv_state":{
+                    "0":"Deadzone disabled",
+                    "1":"Deadzone Advancing In",
+                    "2":"Deadzone Waiting For",
+                    "3":"Deadzone Fineshed"
+                }
+            }
+        },
         "leader-wait": "Waiting For A Leader",
         "interact": {
             "loot": "Take ${source}${count}",

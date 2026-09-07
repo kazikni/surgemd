@@ -171,6 +171,22 @@
 
     pointer-events: none;
 }
+#information-global-messages{
+    display: flex;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+
+    transform: translateX(-50%);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25vw;
+
+    font-family: "Russo-One";
+    font-size: 1vw;
+
+}
+
 #information-killbox,
 #information-interaction{
     pointer-events: none;

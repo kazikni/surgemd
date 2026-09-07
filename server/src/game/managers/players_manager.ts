@@ -325,6 +325,7 @@ export class PlayersManager extends GameComponent{
         this.general_update.content.leader_enabled=false
         this.general_update.content.leader=undefined
         this.general_update.content.feed=this.game.scene_2d.feed_messages
+        this.general_update.content.global_message=this.game.scene_2d.global_messages
         this.general_update.content.deadzone=this.game.scene_2d.deadzone.state
         this.general_update.content.ambient=this.game.ambient
         this.general_update.content.map_zones=this.game.scene_2d.map_zones

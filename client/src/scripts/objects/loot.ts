@@ -121,7 +121,7 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
         this.add_component(loot_visual)
     }
     override can_interact(h:Human): boolean {
-        return this.loot_data.item&&h.hitbox.colliding_with(this.hitbox)
+        return this.loot_data?.item&&h.hitbox.colliding_with(this.hitbox)
     }
 
     override on_interact(h:Human): void {

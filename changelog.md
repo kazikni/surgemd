@@ -12,6 +12,7 @@ ___
 ___
 ### Items
 * Tec22 - L15 C Rank Pistol
+* AIPC-39 - P76 C Rank Double Barrel Shotgun
 * Guns Fire Sequence Spread
 * Incendiary Bullets Accessory
 * Guns Loot Now Hold Ammo

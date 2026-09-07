@@ -430,6 +430,21 @@ export const guns_factory={
             speed_mod:0.95,
         },extend??{})
     },
+
+    shotgun_buckshot(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
+        return this.shotgun(id,ammo,{
+            spread:4.5,
+            jitter_radius:0.35,
+            recoil:{
+                duration:1.1,
+                speed:0.65
+            },
+            bullet:{
+                def:bullets_factory.buckshot(1),
+                count:9
+            },
+        ...extend})
+    },
     lmg(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
         return mergeDeep({
             idString:id,
@@ -1220,31 +1235,38 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                SHOTGUNS                 //
         /////////////////////////////////////////////
-        guns_factory.shotgun("m870","p76",{
+        guns_factory.shotgun_buckshot("m870","p76",{
             name:"M870",
             fire_delay:1,
-            spread:4.5,
-            jitter_radius:0.35,
 
             ammo_spawn:{
                 amount:10
             },
 
-            bullet:{
-                def:bullets_factory.buckshot(1),
-                count:9
-            },
             reload:{
                 delay:0.8,
                 capacity:5,
                 extended_capacity:10,
                 reload_count:1,
             },
-            recoil:{
-                duration:1.1,
-                speed:0.6
+            assets:{
+                world_tint:0x573c05
+            }
+        }),
+        guns_factory.shotgun_buckshot("aipc39","p76",{
+            name:"AIPC-39",
+            fire_delay:0.2,
+
+            ammo_spawn:{
+                amount:10
+            },
+
+            reload:{
+                delay:2.5,
+                capacity:2,
             },
             assets:{
+                world:"weapon_small_world",
                 world_tint:0x573c05
             }
         }),

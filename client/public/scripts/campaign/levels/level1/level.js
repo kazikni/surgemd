@@ -13,6 +13,7 @@ return (class extends LevelPlayerScript{
                                 {item:"micro_uzi",weight:80},
                                 {item:"ak47",weight:40},
                                 {item:"m870",weight:39},
+                                {item:"aipc39",weight:35},
                                 {item:"sr25",weight:5},
                                 {item:"kar98k",weight:5},
                             ],

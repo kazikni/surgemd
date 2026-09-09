@@ -30,8 +30,7 @@ export function Scopes_Default_Init():ScopeDef[]{
             scope_view:scope_view,
             droppable:false,
             rank:ItemRank.E
-        }
-        /*
+        },
         {
             idString:"scope_0d1", // 1x
             scope_view:scope_view*1.25,
@@ -48,7 +47,7 @@ export function Scopes_Default_Init():ScopeDef[]{
             rank:ItemRank.E,
             droppable:true
         }
-        */
+        
     ]
     for(let i=2;i<=7;i++){
         scope_view*=0.743

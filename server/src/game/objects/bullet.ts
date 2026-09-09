@@ -31,7 +31,8 @@ export class Bullet extends ServerGameObject{
     penetration:number=1
     obstacle_mult:number=1
     critical_mult:number=1.25
-    falloff:number=1
+    falloff?:number
+    effective_range?:number
     on_hit_explosion?:ExplosionDef
     effects?:SideEffect[]
 
@@ -117,8 +118,14 @@ export class Bullet extends ServerGameObject{
                             }
                             break
                         }
-                        const dmg:number=this.damage*(this.falloff===1?1:Numeric.lerp(1,this.falloff,disT))*(this.critical?this.critical_mult:1)
-
+                        let dmg=this.damage
+                        if(this.falloff!==undefined){
+                            const range=this.effective_range??0
+                            const falloffT=Math.max(0,Math.min(1,(disT-range)/(1-range)))
+                            dmg*=Numeric.lerp(1,this.falloff,falloffT)
+                            console.log(dmg)
+                        }
+                        dmg*=this.critical?this.critical_mult:1
                         ;(obj as Human).damage({
                             amount:dmg,
                             owner:this.owner,
@@ -200,6 +207,7 @@ export class Bullet extends ServerGameObject{
         if(def.obstacle_mult!==undefined)this.obstacle_mult=def.obstacle_mult
         if(def.critical_mult!==undefined)this.critical_mult=def.critical_mult
         if(def.falloff!==undefined)this.falloff=def.falloff
+        if(def.effective_range!==undefined)this.effective_range=def.effective_range
         if(def.on_hit_explosion)this.on_hit_explosion=this.game.definitions.explosions.getFromStringSafe(def.on_hit_explosion)
 
         this.pass_through_humans=def.pass_through_humans??false
@@ -263,7 +271,8 @@ export class Bullet extends ServerGameObject{
         b.penetration=this.penetration
         b.obstacle_mult=this.obstacle_mult
         b.critical_mult=this.critical_mult
-        b.falloff=this.falloff
+        if(this.falloff)b.falloff=this.falloff
+        if(this.effective_range)b.effective_range=this.effective_range
         b.on_hit_explosion=this.on_hit_explosion
         b.effects=this.effects
 

@@ -20,6 +20,7 @@ export enum BulletReflection{
 export interface BulletDef{
     damage:number
     falloff?:number
+    effective_range?:number
     range:number
     speed:number
     effect?:{id:string,time:number}[]

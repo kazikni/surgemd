@@ -16,6 +16,7 @@ ___
 * Guns Fire Sequence Spread
 * Incendiary Bullets Accessory
 * Guns Loot Now Hold Ammo
+* Effective Bullet Range
 ___
 ### Loadout
 * Different Shoes

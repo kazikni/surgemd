@@ -48,6 +48,7 @@ import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
+import { Walls } from "../objects/walls.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -131,7 +132,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
+            [...objects,Human,Loot,Building,Obstacle,Walls,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
         this.scene_2d=new ClientScene2D(this)
         this.scene_2d.camera.visible_callback=(o)=>o.layer<=this.scene_2d.camera.layer
@@ -736,18 +737,6 @@ export class Game extends ClientGame<GameObject>{
         })
         client.on("start",async(s:StartPacket)=>{
             await this.start(s.settings)
-
-            /*const loot=new Loot()
-            loot.add_component(loot_physics)
-            this.scene_2d.add_object(loot,Layers.Normal)
-            loot.position=v2(60,60)
-            loot.set_loot_data({
-                count:100,
-                item:this.definitions.game_items.valueString["ak47"]
-            })*/
-            /*const wa=new Wall()
-            this.scene_2d.add_object(wa,Layers.Normal)
-            wa.set_wall([[v2.zero(),v2(10,0),v2(10,10),v2(20,10)]])*/
         })
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.proccess_general_main_state(jp.main_state)

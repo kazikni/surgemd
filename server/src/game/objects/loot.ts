@@ -60,7 +60,8 @@ export const loot_physics:ObjectComponent<Loot>={
                         // deno-lint-ignore no-fallthrough
                         case GameObjectType.Obstacle:
                         case GameObjectType.StaticBody:
-                        case GameObjectType.Building:{
+                        case GameObjectType.Building:
+                        case GameObjectType.Walls:{
                             if(other.physical_data.stairs.length>0){
                                 for(const s of other.physical_data.stairs){
                                     if(s.hitbox.colliding_with(obj.hitbox))obj.manager.set_layer(this,other.layer+s.dest_layer)

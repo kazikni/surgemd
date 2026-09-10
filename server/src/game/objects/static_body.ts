@@ -11,10 +11,6 @@ export interface StairData{
     dest_layer:number
 }
 export type StaticBodyPhysicalData={
-    spawn_hitbox:Hitbox2D
-    hitbox:Hitbox2D
-    interaction_hitbox:Hitbox2D
-
     reflect_bullets:boolean
     no_collision:boolean
     no_pathfinding_collision:boolean
@@ -36,9 +32,6 @@ export abstract class StaticBody extends ServerGameObject{
         super()
     }
 
-    override update_hitbox(): void {
-        super.update_hitbox()
-    }
     damage(_params:DamageParams){}
     side_effect(_sf:SideEffect,_owner?:Human){}
 }

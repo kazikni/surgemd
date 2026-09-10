@@ -85,7 +85,6 @@ export const bullets_factory={
 
             critical_mult: 1.25,
             obstacle_mult: 1,
-            effective_range: 0.2,
             falloff:0.8,
             tracer:tracers.medium
         }

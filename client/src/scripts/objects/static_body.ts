@@ -64,7 +64,7 @@ export abstract class StaticBody extends GameObject{
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal)this._add_own_particle(position,undefined,true)
         if(this.assets_data.sounds&&this.assets_data.sounds.hit&&this.assets_data.sounds.hit.length>0){
             this.game.sounds.play(random.choose(this.assets_data.sounds.hit),{
-                position:this.position,
+                position:position,
                 max_distance:12,
                 bus:"obstacles"
             })

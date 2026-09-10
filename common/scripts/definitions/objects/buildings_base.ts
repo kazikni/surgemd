@@ -3,6 +3,7 @@ import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, ScopeChange } from "../utils.ts";
 import { DecalTint } from "./decals.ts";
+import { WallsDef, WallsTD } from "./walls.ts";
 //20mm = 0.17619
 //2mm  = 0.017619
 export const BuildingClientTD: TDObject = {
@@ -153,6 +154,10 @@ export const BuildingTD: TDObject={
                                 }
                             }
                         }
+                    },
+                    {
+                        name:"walls",
+                        content:{type:TDType.array,content:WallsTD,len_bytes:2},
                     },
                     // Decals
                     {
@@ -387,6 +392,7 @@ export interface BuildingDef extends Definition{
 
     generate:{
         obstacles?:BuildingObstacles[]
+        walls?:WallsDef[]
         decals?:BuildingDecal[]
         sub_building?:BuildingSubBuilding[]
         loots?:BuildingLoot[]
@@ -643,6 +649,12 @@ export const buildings_factory={
                     obstacles:[
                         ...settings.content??[]
                     ],
+                    /*walls:[
+                        {
+                            tint:0x4a4c4d,
+                            positions:[[v2(-2.8,-0.85),v2(-2.8,-2.8),v2(2.8,-2.8),v2(2.8,2.8),v2(-2.8,2.8),v2(-2.8,0.85)]],
+                        }
+                    ]*/
                 },
                 assets:{
                     particles:{
@@ -1209,6 +1221,21 @@ export function Buildings_Default_Init():BuildingDef[]{
                     {def:"metal_door",position:v2(1,-0.6),rotation:1,variation:7,id:10,door_data:{
                         locked:true,
                     }},
+                ],
+                walls:[
+                    {
+                        positions:[[v2(-3,-3),v2(3,-3),v2(3,3)]],
+                        tint:0x333344,
+                        stroke_width:0.1,
+                        reflect_bullets:true,
+                        assets:{
+                            sounds:hit_sounds.heavy_metal,
+                            particles:{
+                                particle:"metal_particle",
+                                tint:0x404143
+                            },
+                        }
+                    }
                 ],
                 puzzles:[{
                     code:{

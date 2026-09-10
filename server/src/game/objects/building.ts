@@ -4,6 +4,7 @@ import { StaticBody, StaticBodyPhysicalData } from "./static_body.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { type Obstacle } from "./obstacle.ts";
 import { ScopeChange } from "common/scripts/definitions/utils.ts";
+import { Walls } from "./walls.ts";
 export type BuildingObstacleChild={type:0,obj:Obstacle,def:BuildingObstacles}
 export class BuildingCeiling{
     def:BuildingCeilingDef
@@ -268,6 +269,7 @@ export class Building extends StaticBody {
 
         hitbox:Hitbox2D
         spawn_hitbox:Hitbox2D
+        interaction_hitbox:Hitbox2D
     }&StaticBodyPhysicalData={
         dirty:false,
 
@@ -383,6 +385,13 @@ export class Building extends StaticBody {
             for (const li of items) {
                 this.scene.add_loot(p, {item:li.item, count:li.count}, this.layer)
             }
+        }
+        for(const wall of this.def.generate.walls??[]) {
+            const p = v2.add_with_orientation(this.position, wall.position??v2.zero, this.physical_data.side)
+            const obj=new Walls()
+            this.scene.add_object(obj,this.layer)
+            obj.set_walls(wall,false)
+            obj.set_position(p,Angle.add_orientation(this.physical_data.side,(wall.side??0) as Orientation))
         }
         for (const d of this.def.generate.decals ?? []) {
             const def=this.game.definitions.decals.getFromString(d.def)

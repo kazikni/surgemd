@@ -46,6 +46,10 @@ export class Obstacle extends StaticBody{
         dirty:boolean
         dirty_part:boolean
 
+        spawn_hitbox:Hitbox2D
+        hitbox:Hitbox2D
+        interaction_hitbox:Hitbox2D
+
         scale:number
         side:Orientation
         rotation:number
@@ -179,13 +183,25 @@ export class Obstacle extends StaticBody{
                             def:this.def.expanded_behavior.obstacles.indexOf(choose)
                         }
                         const def=this.game.definitions.obstacles.getFromString(choose.id)
-                        this.game.clock.add_timeout(()=>{
+                        if(this.def.expanded_behavior.give_item){
+                            const loot=this.game.get_loot_table(this.def.expanded_behavior.give_item)
+                            for(let i=0;i<loot.length;i++){
+                                user.inventory.give_item(loot[i].item,loot[i].count,true)
+                            }
+                        }
+                        if(this.def.expanded_behavior.delay){
+                            this.game.clock.add_timeout(()=>{
+                                this.destroy()
+                                const obs=this.scene.map.add_obstacle(def,this.layer)
+                                obs.initialize(this.physical_data.rotation)
+                                obs.set_position(this.position)
+                            },this.def.expanded_behavior.delay)
+                        }else{
                             this.destroy()
-
                             const obs=this.scene.map.add_obstacle(def,this.layer)
-                            obs.initialize()
+                                obs.initialize(this.physical_data.rotation)
                             obs.set_position(this.position)
-                        },this.def.expanded_behavior.delay)
+                        }
                     }
                     break
                 }

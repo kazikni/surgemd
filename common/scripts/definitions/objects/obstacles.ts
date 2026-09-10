@@ -1,5 +1,5 @@
-import { CircleHitbox2D, DeepPartial, Definition, Definitions, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
-import { LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
+import { CircleHitbox2D, DeepPartial, Definition, FrameDef, FrameTransform, Hitbox2D, mergeDeep, type Model2D, RectHitbox2D, RotationMode, v2, Vec2, WeightDefinition, Matrix, TDType, tdm, FrameTransformTD, FrameTD, TD } from "../../../engine/core.ts";
+import { LootData, LootTable, Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { type GunDef } from "../items/guns.ts";
 import { GameObjectDefinitionType, GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, PerspetiveSizes } from "../utils.ts";
 import { DecalInstanceDef } from "./decals.ts";
@@ -149,6 +149,7 @@ export interface ObstacleBehaviorScalable{
 export interface ObstacleBehaviorTransformInto{
     type:3,
     obstacles:(WeightDefinition&{id:string})[]
+    give_item?:LootTable
     sprites?:Record<number,FrameDef>
     first_particles?:{
         frame:FrameDef
@@ -160,7 +161,7 @@ export interface ObstacleBehaviorTransformInto{
         delay:number
         count:number
     }[]
-    delay:number
+    delay?:number
     sound?:string
 }
 export interface ObstacleBehaviorPress{
@@ -244,11 +245,14 @@ export interface ObstacleDef extends Definition{
     }[]
 }
 export const obstacles_factory={
-    gun_mount(weapon:GunDef,settings:{
+    gun_mount(weapon?:GunDef,settings:{
         o?:DeepPartial<ObstacleDef>
         id?:string
-    }){
-        return mergeDeep({idString:settings.id??(weapon.idString+"_mount")},{
+        tint?:number
+        empty?:string
+    }={}){
+        const tint=settings.tint===undefined?0x583b08:settings.tint
+        return mergeDeep({idString:settings.id??((weapon?.idString??"")+"_mount")},{
             health:65,
             height:1,
             hitbox:new RectHitbox2D(v2(-0.6,-0.15),v2(0.6,0.15)),
@@ -259,9 +263,24 @@ export const obstacles_factory={
                 frame:{
                     base:"gun_mount",
                     transform:{
-                        tint:0x583b08
-                    }
+                        tint,
+                    },
+                    dead:"wood_residue_2x1",
+                    dead_transform:{
+                        rotation:Math.PI,
+                        scale:1
+                    },
                 },
+                particles:{
+                    particle:"plank_particle",
+                    tint
+                },
+                sounds:hit_sounds.wood,
+            },
+            rotation_mode:RotationMode.limited,
+
+        },weapon===undefined?{}:{
+            assets:{
                 aditional_sprites:[{
                     ...weapon.rig_image,
                     image:weapon.assets?.world??weapon.idString+"_world",
@@ -271,9 +290,15 @@ export const obstacles_factory={
                     zIndex:1,
                     position:v2.zero()
                 }],
-                sounds:hit_sounds.wood
             },
-            rotation_mode:RotationMode.limited,
+            /*expanded_behavior:{
+                type:3,
+                obstacles:[{id:settings.empty??"",weight:1}],
+                give_item:[{
+                    weight:1,
+                    item:weapon.idString
+                }],
+            },*/
             loot_table:[{
                 weight:1,
                 item:weapon.idString
@@ -1331,5 +1356,9 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             height:1,
             parallax:PerspetiveSizes.medium,
         },
+
+        obstacles_factory.gun_mount(undefined,{
+            id:"empty_wood_gun_mount",
+        }),
     ]
 }

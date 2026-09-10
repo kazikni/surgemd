@@ -38,7 +38,8 @@ export class Grenade extends Projectile{
     override on_collided(obj:ServerGameObject,dt:number){
         switch(obj.number_type){
             case GameObjectType.Obstacle:
-            case GameObjectType.Building:{
+            case GameObjectType.Building:
+            case GameObjectType.Walls:{
                 if((obj as StaticBody).physical_data.stairs.length>0){
                     for(const s of (obj as StaticBody).physical_data.stairs){
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)

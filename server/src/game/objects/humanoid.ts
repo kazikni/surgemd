@@ -91,7 +91,8 @@ export class Humanoid extends MovingBody {
     override on_collided(obj: ServerGameObject,_dt:number): void {
         switch(obj.number_type){
             case GameObjectType.Building:
-            case GameObjectType.Obstacle:{
+            case GameObjectType.Obstacle:
+            case GameObjectType.Walls:{
                 if((obj as Obstacle|Building).physical_data.stairs.length>0){
                     for(const s of (obj as Obstacle|Building).physical_data.stairs){
                         if(s.hitbox.colliding_with(this.hitbox))this.manager.set_layer(this,obj.layer+s.dest_layer)

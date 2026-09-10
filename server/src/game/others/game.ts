@@ -1,9 +1,8 @@
 import { AbstractServerGame, Client, FileManager, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import {globals} from "common/scripts/scripts.ts"
-import { GameMap } from "./map.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
-import { DeadZoneManager, DeadZoneMode } from "./deadzone.ts";
+import { DeadZoneMode } from "./deadzone.ts";
 import { GameObjectType, LayersL, LootAditional, LootData, LootSetting, LootTable } from "common/scripts/others/constants.ts";
 import { GameConfig, GameDebugOptions, GameServerConfig } from "common/scripts/config/config.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
@@ -32,6 +31,7 @@ import { Drone } from "../objects/drone.ts";
 import { ServerGameScene2D } from "./scene.ts";
 import { SequenceMode } from "../mode/sequence.ts";
 import { HumanBody } from "../objects/human_body.ts";
+import { Walls } from "../objects/walls.ts";
 export interface GameData {
     living_count: number[]
 
@@ -153,6 +153,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Grenade,
             Obstacle,
             Building,
+            Walls,
             Vehicle,
             Bullet,
             Decal,

@@ -123,7 +123,6 @@ export class Bullet extends ServerGameObject{
                             const range=this.effective_range??0
                             const falloffT=Math.max(0,Math.min(1,(disT-range)/(1-range)))
                             dmg*=Numeric.lerp(1,this.falloff,falloffT)
-                            console.log(dmg)
                         }
                         dmg*=this.critical?this.critical_mult:1
                         ;(obj as Human).damage({
@@ -153,7 +152,8 @@ export class Bullet extends ServerGameObject{
                     break
                 }
                 case GameObjectType.Obstacle:
-                case GameObjectType.Building:{
+                case GameObjectType.Building:
+                case GameObjectType.Walls:{
                     if((obj as StaticBody).physical_data.no_bullets_collision||this.collided_with.has(obj))break
                     const col1=obj.hitbox.overlap_line(this.old_position,this.position)
                     if(!col1)continue

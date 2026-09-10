@@ -346,29 +346,31 @@ export class Obstacle extends StaticBody{
         if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites&&(this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def]){
             this.sprite.set_frame((this.def.expanded_behavior as ObstacleBehaviorTransformInto).sprites![def],this.game.resources)
         }
-        this.game.clock.add_timeout(()=>{
-            for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
-                this.game.clock.add_timeout(()=>{
-                    for(let c=0;c<p.count;c++){
-                        this.scene.particles.add_particle(new ABParticle2D({
-                            frame:{layer:this.layer,...p.frame},
-                            position:this.hitbox.random_point(),
-                            speed:random.float(1,4),
-                            angle:this.physical_data.rotation,
-                            direction:random.rad(),
-                            life_time:3,
-                            zIndex:zIndexes.Particles,
-                            tint:ColorM.default.white,
-                            to:{
-                                speed:random.float(0.1,1),
-                                angle:this.physical_data.rotation+random.rad(),
-                                tint:ColorM.default.transparent
-                            }
-                        }))
-                    }
-                },p.delay)
-            }
-        },(this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay)
+        if((this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay){
+            this.game.clock.add_timeout(()=>{
+                for(const p of (this.def.expanded_behavior as ObstacleBehaviorTransformInto).transform_particles??[]){
+                    this.game.clock.add_timeout(()=>{
+                        for(let c=0;c<p.count;c++){
+                            this.scene.particles.add_particle(new ABParticle2D({
+                                frame:{layer:this.layer,...p.frame},
+                                position:this.hitbox.random_point(),
+                                speed:random.float(1,4),
+                                angle:this.physical_data.rotation,
+                                direction:random.rad(),
+                                life_time:3,
+                                zIndex:zIndexes.Particles,
+                                tint:ColorM.default.white,
+                                to:{
+                                    speed:random.float(0.1,1),
+                                    angle:this.physical_data.rotation+random.rad(),
+                                    tint:ColorM.default.transparent
+                                }
+                            }))
+                        }
+                    },p.delay)
+                }
+            },(this.def.expanded_behavior as ObstacleBehaviorTransformInto).delay!)
+        }
     }
     update_door(ne:number,force:boolean=false){
         const old=this.door_data!.open

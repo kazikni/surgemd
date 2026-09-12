@@ -654,6 +654,7 @@ export abstract class Stream{
     abstract write_bytes(bytes:Uint8Array):void
     abstract read_bytes(count:number,slice?:boolean):Uint8Array
     abstract lock():void
+    abstract clone():Stream
 }
 export class StaticStream extends Stream{
     _view: DataView;
@@ -935,6 +936,12 @@ export class StaticStream extends Stream{
         const out=slice?this._u8Array.slice(this.index, this.index + size):this._u8Array.subarray(this.index, this.index + size)
         this.index += size
         return out
+    }
+    override clone(): Stream {
+        const stream=new StaticStream(this._u8Array.slice().buffer)
+        stream.length=this.length
+        stream.index=this.index
+        return stream
     }
 }
 export class DynamicStream extends Stream{
@@ -1248,5 +1255,12 @@ export class DynamicStream extends Stream{
         const out=slice?this._u8Array.slice(this.index, this.index + size):this._u8Array.subarray(this.index, this.index + size)
         this.index += size
         return out
+    }
+    override clone(): Stream {
+        const stream=new DynamicStream(this._u8Array.length)
+        stream.write_bytes(this._u8Array.slice())
+        stream.length=this.length
+        stream.index=this.index
+        return stream
     }
 }

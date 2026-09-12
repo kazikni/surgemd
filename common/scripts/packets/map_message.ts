@@ -1,7 +1,7 @@
 import { Stream, v2, Vec2 } from "../../engine/core.ts";
 import { GameADefinitions, GameDefinition } from "../definitions/game_defs.ts";
 import { MapBiomeDef, MapBiomeTD } from "../definitions/maps/base.ts";
-import { Floor } from "../others/terrain.ts";
+import { Floor, MapTerrain } from "../others/terrain.ts";
 export interface MapRegion{
     name:string
     position:Vec2
@@ -22,14 +22,14 @@ export type MapConfig={
     objects:MapObjectEncode[]
     regions:MapRegion[]
     biome:MapBiomeDef
-    terrain:Floor[]
+    terrain:MapTerrain
     definitions?:GameADefinitions
     size:Vec2
 }
 
 export function encode_map_config(map:MapConfig,stream:Stream){
     stream.write_boolean_group(map.minimap_enabled)
-    stream.write_array(map.terrain,(t)=>{
+    stream.write_array(map.terrain.floors,(t)=>{
         stream.write_boolean_group(t.smooth,t.visible,t.tint!==undefined)
         .write_hitbox(t.hb)
         .write_uint8(t.type)
@@ -38,6 +38,15 @@ export function encode_map_config(map:MapConfig,stream:Stream){
             stream.write_uint32(t.tint)
         }
     },2)
+    /*stream.write_array(map.terrain.colors,(t)=>{
+        stream.write_boolean_group(t.smooth,t.visible,t.tint!==undefined)
+        .write_hitbox(t.hb)
+        .write_uint8(t.type)
+        .write_int8(t.layer)
+        if(t.tint!==undefined){
+            stream.write_uint32(t.tint)
+        }
+    },2)*/
     if(map.minimap_enabled){
         stream.write_array(map.objects,(i)=>{
             stream.write_uint8(i.type)
@@ -80,11 +89,14 @@ export function decode_map_config(stream:Stream):MapConfig{
         regions:[],
         seed:0,
         size:v2.zero(),
-        terrain:[]
+        terrain:{
+            floors:[],
+            colors:[]
+        }
     }
     const [minimap]=stream.read_boolean_group()
     map.minimap_enabled=minimap
-    map.terrain=stream.read_array(()=>{
+    map.terrain.floors=stream.read_array(()=>{
         const bg=stream.read_boolean_group()
         const hb=stream.read_hitbox()
         const floor:Floor={

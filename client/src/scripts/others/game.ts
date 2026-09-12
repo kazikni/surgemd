@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Sound, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -23,7 +23,7 @@ import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { GameADefinitions, GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
@@ -41,14 +41,15 @@ import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/message
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, StaticStream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
-import { decode_map_config } from "common/scripts/packets/map_message.ts";
+import { decode_map_config, MapConfig } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
 import { Walls } from "../objects/walls.ts";
+import { TilemapVisual } from "../objects/tilemapvisual.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -132,7 +133,7 @@ export class Game extends ClientGame<GameObject>{
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,Human,Loot,Building,Obstacle,Walls,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
+            [...objects,TilemapVisual,Human,Loot,Building,Obstacle,Walls,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
         this.scene_2d=new ClientScene2D(this)
         this.scene_2d.camera.visible_callback=(o)=>o.layer<=this.scene_2d.camera.layer
@@ -406,7 +407,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui.current_interaction.on_interact(this.active_entity)
         }
     }
-    async load_resources(agro:string[]=[],assets:Record<string,string>,languages_path:string=""){
+    async load_resources(agro:string[]=[],assets:Record<string,string>,languages_path:string="",definitions:string[]=[]){
         if(!this.resources)return
         this.loaded=false
         this.menu.set_loading_current("Somethings",true)
@@ -440,10 +441,15 @@ export class Game extends ClientGame<GameObject>{
                 console.log(e)
             }
         }
+        for(const d of definitions){
+            const stream=new StaticStream((await (await fetch(d)).bytes()).buffer)
+            this.definitions.add_definitions(stream.read_td(GameDefinition.add_td))
+        }
         this.call_event("load",agro)
         this.loaded=true
     }
     async start(settings:StartSettings){
+        this.definitions.reset()
         await this.load_resources(settings.textures,settings.assets,settings.languages_path)
         this.menu.game_start()
 
@@ -453,10 +459,7 @@ export class Game extends ClientGame<GameObject>{
 
         if(settings.map){
             const map=decode_map_config(settings.map)
-            if(map.definitions){
-                this.definitions.reset()
-                this.definitions.add_definitions(map.definitions)
-            }
+            if(map.definitions)this.definitions.add_definitions(map.definitions)
             await this.terrain.process_map(map)
             this.minimap.init(map)
         }
@@ -468,6 +471,7 @@ export class Game extends ClientGame<GameObject>{
         }
         this.ui.start()
         this.join()
+
 
         this.scope_zoom=1
         this.hitboxes_gfx.ctx.clear()
@@ -741,6 +745,10 @@ export class Game extends ClientGame<GameObject>{
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.proccess_general_main_state(jp.main_state)
             this.state=GameState.Playing
+
+            /*const obj=new TilemapVisual()
+            this.scene_2d.add_object(obj,Layers.Normal)
+            obj.gfx.set_sprites([{matrix:matrix4.translation_2d(v2(1,1)),tile:0}],SpritesGroupGraphic2D.make_tileset({0:{frame:"small_house_1_floor"}},this.scene_2d.camera.meter_size,this.resources))*/
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.state=GameState.Gameover

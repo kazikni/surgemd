@@ -136,6 +136,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         textures:[],
         musics:[],
         assets:{},
+        definitions:[],
         languages_path:"",
     }
 

@@ -335,6 +335,14 @@ export abstract class Context2D{
     fill_model(model:Model2D,matrix:Matrix=matrix4.default.identity):void{
         if(this.state.current_material)this.draw_model(model,this.apply_color(this.state.fill_color as Color),matrix,this.state.current_material,this.state.on_vertex)
     }
+    /*fill_texture(texture:Texture,tint:Color=ColorM.default.white,on_vertex?:VertexAddCallback){
+        if(!this.state.current_material||!texture?.material)return
+        for(const p of this.path){
+            const model=model2d.triangulateConvex(p)
+            const color=this.apply_color(tint)
+            this.draw_texture(texture)
+        }
+    }*/
     stroke(matrix:Matrix=matrix4.default.identity,on_vertex?:VertexAddCallback){
         if(!this.state.current_material)return
         const color=this.apply_color(this.state.stroke_color as Color)
@@ -351,12 +359,15 @@ export abstract class Context2D{
     }
 
     abstract draw_model(model:Model2D,color:Color,matrix:Matrix,material:Material,on_vertex?:VertexAddCallback):void
-    abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color,matrix?:Matrix):void
+    abstract draw_frame2d(frame:Frame|undefined,model:Float32Array,tint?: Color,matrix?:Matrix, on_vertex?:VertexAddCallback):void
+    //abstract draw_texture(texture:Texture,model:Model2D,tint?: Color,matrix?:Matrix, on_vertex?:VertexAddCallback):void
     abstract draw_batcher(batcher:Batcher,matrix?:Matrix):void
 
     abstract sub_context():Context2D
     abstract render(renderer:Renderer):void
     abstract clear():void
+    abstract save_batcher():Batcher
+    abstract lock():void
 
     abstract bind_texture(texture:Texture):void
     abstract finish_texture(matrix?:Matrix):void
@@ -387,7 +398,7 @@ export class BatcherContext2D extends Context2D{
         }
     }
     draw_frame2d(frame:Frame|undefined,model:Float32Array,tint: Color=ColorM.default.white,matrix:Matrix=matrix4.default.identity, on_vertex?:VertexAddCallback) {
-        if(!frame||!frame.texture?.material||tint.a<=0)return
+        if(!frame?.texture?.material||tint.a<=0)return
         const vertexCount = model.length / 2
         if (vertexCount < 2) return
         const cmd = this.batcher.ensure(frame.texture.material)
@@ -406,9 +417,35 @@ export class BatcherContext2D extends Context2D{
         }
         return cmd
     }
+    /*draw_texture(texture:Texture|undefined,model:Model2D,tint: Color=ColorM.default.white,matrix:Matrix=matrix4.default.identity, on_vertex?:VertexAddCallback) {
+        if(!texture?.material||tint.a<=0)return
+        const vertexCount = model.vertices.length / 2
+        if (vertexCount < 2) return
+        const cmd = this.batcher.ensure(texture.material)
+        for(let i=0;i<vertexCount;i++){
+            const x=model.vertices[i*2]
+            const y=model.vertices[i*2+1]
+            cmd.stream.write_float32(matrix[0]*x+matrix[4]*y+matrix[12])
+            cmd.stream.write_float32(matrix[1]*x+matrix[5]*y+matrix[13])
+            Stream.write_uv(cmd.stream,frame.texcoords[i*2],frame.texcoords[i*2+1])
+            cmd.stream.write_uint8(tint.r)
+            cmd.stream.write_uint8(tint.g)
+            cmd.stream.write_uint8(tint.b)
+            cmd.stream.write_uint8(tint.a)
+            on_vertex?.(cmd,i)
+            cmd.vertex_count++
+        }
+        return cmd
+    }*/
 
     override draw_batcher(batcher: Batcher,matrix?:Matrix): void {
         this.batcher.draw_batcher(batcher,matrix)
+    }
+    save_batcher():Batcher{
+        return this.batcher.clone()
+    }
+    override lock(): void {
+        this.batcher.lock()
     }
 
     render(_renderer:Renderer){

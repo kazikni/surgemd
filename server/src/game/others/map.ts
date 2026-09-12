@@ -15,7 +15,6 @@ import { ServerGameObject } from "./gameObject.ts";
 import { GameADefinitions } from "common/scripts/definitions/game_defs.ts";
 import { BaseGameMap, map_gen_position, map_gen_valid } from "common/scripts/objects/scene.ts";
 import { ServerGameScene2D } from "./scene.ts";
-import { Walls } from "../objects/walls.ts";
 export type map_gen_algorithm=(map:GameMap,random:SeededRandom)=>void
 export interface MapStructure{
     def:MapStructureDef
@@ -322,7 +321,7 @@ export class GameMap extends BaseGameMap{
         }
         const map:MapConfig={
             minimap_enabled:this.minimap_enabled,
-            terrain:this.terrain.floors,
+            terrain:this.terrain,
             size:this.size,
             seed:this.seed,
             objects,

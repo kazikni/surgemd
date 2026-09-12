@@ -18,12 +18,13 @@ export type BatcherCommand=BatcherMaterialCommand|BatcherSubbatcherCommand
 export class Batcher {
     commands: BatcherCommand[] = []
     current?: BatcherCommand
+    locked:boolean=false
 
     constructor(){
     }
     ensure(material: Material):BatcherMaterialCommand{
         if(!this.current||!(this.current.type===0&&this.current.material===material)){
-            this.current = {
+            this.current={
                 type:0,
                 material,
                 params: {},
@@ -32,6 +33,7 @@ export class Batcher {
             }
             this.commands.push(this.current)
         }
+        this.locked=false
         return this.current
     }
     draw_batcher(batcher:Batcher,matrix?:Matrix){
@@ -41,6 +43,7 @@ export class Batcher {
             matrix
         }
         this.commands.push(this.current)
+        this.locked=false
     }
     render(renderer:Renderer,matrix?: Matrix) {
         if(!matrix)matrix=matrix4.default.identity
@@ -55,6 +58,35 @@ export class Batcher {
                 cmd.batcher.render(renderer,m)
             }
         }
+    }
+    clone(){
+        const batcher=new Batcher()
+        batcher.commands.push(...this.commands)
+        if(this.current){
+            if(this.current.type===0){
+                batcher.current={
+                    type:0,
+                    material:this.current.material,
+                    params:this.current.params,
+                    stream:this.current.stream.clone(),
+                    vertex_count:this.current.vertex_count
+                }
+            }else{
+                batcher.current={...this.current}
+            }
+        }
+        return batcher
+    }
+    lock(){
+        for(const c of this.commands){
+            if(c.type===0)c.stream.lock()
+        }
+        this.locked=true
+        /*let i=0
+        for(const c of this.commands){
+            if(c.type===0)i+=c.stream.data.byteLength
+        }
+        console.log(i)*/
     }
     clear() {
         this.commands.length = 0

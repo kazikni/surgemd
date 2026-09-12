@@ -61,7 +61,8 @@ export class TerrainM extends TerrainManager{
             this.clear()
             this.game.minimap.biome=mp.biome
             this.map=mp
-            for(const f of mp.terrain){
+            this.colors=mp.terrain.colors
+            for(const f of mp.terrain.floors){
                 this.add_floor(f)
             }
             resolve()
@@ -77,7 +78,7 @@ export class TerrainM extends TerrainManager{
             graphic.layer=layer
             graphic.ctx.clear()
             for(const f of this.floors){
-                if(layer<f.layer)continue
+                if(layer<f.layer||!f.visible)continue
                 const flb=this.game.minimap.biome.floors[f.type as FloorType]
                 graphic.ctx.begin_path()
                 graphic.ctx.hitbox(f.hb)
@@ -85,6 +86,7 @@ export class TerrainM extends TerrainManager{
                 graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
                 graphic.ctx.fill()
             }
+            graphic.ctx.lock()
             /*if(Debug.hitbox){
                 for(const f of this.floors){
                     graphic.fill_color(ColorM.hex("#ff0"))

@@ -1,4 +1,4 @@
-import { Collision, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts"
+import { Collision, Hitbox2D, polygon2, Polygon2D, PolygonHitbox2D, SeededRandom, v2, v2m, Vec2 } from "../../engine/core.ts"
 import { BasicTerrainManager, FloorBase } from "../../engine/core/game/terrain.ts"
 import { TerrainLayerDef, TerrainShapeDef } from "../definitions/maps/base.ts"
 
@@ -138,10 +138,18 @@ export const Floors: Record<FloorType, FloorDef> = {
 };
 export interface Floor extends FloorBase {
     smooth: boolean
-    visible:boolean
-    tint?:number
+    visible: boolean
+    tint?: number
 }
-
+export interface TerrainColor{
+    hitbox: Hitbox2D
+    tint: number
+    zindex: number
+}
+export type MapTerrain={
+    floors:Floor[]
+    colors:TerrainColor[]
+}
 export interface RiversDef { weight: number; rivers: RiverDef[] }[]
 export type RiverPoint = {
     position: Vec2
@@ -173,7 +181,13 @@ export interface TerrainShapeResult{
     }[]
 }
 export class TerrainManager extends BasicTerrainManager<Floor>{
-    
+    colors:TerrainColor[]=[]
+    get_terrain():MapTerrain{
+        return {
+            floors:this.floors,
+            colors:this.colors
+        }
+    }
 }
 export function generate_terrain_shape(shape:TerrainShapeDef,terrain:TerrainManager,random:SeededRandom,layer:number=0,position:Vec2=v2(0,0)):Polygon2D{
     const center=shape.position??position

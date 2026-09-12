@@ -47,6 +47,7 @@ export enum GameObjectType{
     Walls,
     Bullet,
     Decal,
+    TilemapVisual,
     Explosion,
     Grenade,
     Vehicle,

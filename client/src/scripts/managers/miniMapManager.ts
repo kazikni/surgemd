@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts"
-import { Floor, Floors,FloorType } from "common/scripts/others/terrain.ts"
+import { Floor, Floors,FloorType, MapTerrain } from "common/scripts/others/terrain.ts"
 import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_message.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";
@@ -50,13 +50,13 @@ export class MinimapManager {
         this.game.ui_manager.signal("minimap",{})
     }
 
-    render(terrain:Floor[],objects:MapObjectObstacle[],regions:MapRegion[],cam_pos:Vec2=v2.zero()){
+    render(terrain:MapTerrain,objects:MapObjectObstacle[],regions:MapRegion[],cam_pos:Vec2=v2.zero()){
         this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height)
 
         this.ctx.fillStyle=ColorM.number2hex(Floors[FloorType.Void].default_color)
         this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
 
-        for(const floor of terrain){
+        for(const floor of terrain.floors){
             const color=ColorM.number2hex(floor.tint??this.biome?.floors[floor.type as FloorType]??Floors[floor.type as FloorType].default_color)
             this.draw_hitbox(color,floor.hb,cam_pos)
         }

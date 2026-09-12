@@ -6,6 +6,7 @@ export interface StartSettings{
     textures:string[]
     musics:string[]
     assets:Record<string,string>
+    definitions:string[]
     languages_path:string
     background_music?:string
     map?:Stream
@@ -26,6 +27,7 @@ export class StartPacket extends Packet{
             stream.write_string(i)
         },1)
         .write_string(this.settings.background_music??"",1)
+        .write_array(this.settings.languages_path,(i)=>stream.write_string(i),1)
         .write_string(this.settings.languages_path)
         stream.write_stream_dynamic(this.settings.map)
     }
@@ -41,6 +43,7 @@ export class StartPacket extends Packet{
                 return stream.read_string()
             },1),
             background_music:stream.read_string(1),
+            definitions:stream.read_array(()=>stream.read_string(),1),
             languages_path:stream.read_string(1),
         }
         if(this.settings.background_music==="")this.settings.background_music=undefined

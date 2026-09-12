@@ -374,10 +374,11 @@ export class Building extends StaticBody {
     generate(position: Vec2){
         this.begin_generate(position)
 
-        /*for(const f of this.def.floors??[]){
-            const hb=f.hitbox.transform(this.position)
+        /*
+        for(const f of this.def.generate.floors??[]){
+            const hb=f.hitbox.transform()
             const l=this.layer+(f.layer??0)
-            this.scene.map.terrain.add_floor(f.type,hb,l)
+            this.scene.map.terrain.add_floor(f.type,hb)
         }*/
         for (const l of this.def.generate.loots ?? []) {
             const items = this.game.get_loot_table(l.table)

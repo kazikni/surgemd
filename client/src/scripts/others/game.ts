@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Tileset, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -23,7 +23,7 @@ import { Building } from "../objects/building.ts";
 import { DamageSplashOBJ } from "../objects/damageSplash.ts";
 import { Vehicle } from "../objects/vehicle.ts";
 import { MinimapManager } from "../managers/miniMapManager.ts";
-import { GameADefinitions, GameDefinition } from "common/scripts/definitions/game_defs.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { LocalGameServer } from "./offline_game.ts";
 import { is_binary } from "../defs/go_files.ts";
@@ -43,13 +43,14 @@ import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
 import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, StaticStream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
-import { decode_map_config, MapConfig } from "common/scripts/packets/map_message.ts";
+import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
 import { GameState, PlayArgs } from "./constants.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { PingWorld } from "../objects/ping_world.ts";
 import { Walls } from "../objects/walls.ts";
 import { TilemapVisual } from "../objects/tilemapvisual.ts";
+import { Tilesets } from "common/scripts/definitions/objects/tilemap.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -127,13 +128,15 @@ export class Game extends ClientGame<GameObject>{
     }
 
     theme_colors:Record<string,string>={}
+    tilesets_instance:Record<number,Tileset>={}
+
     ntps:number=30
 
     constructor(definitions:GameDefinition,menu:MenuManager,canvas:HTMLCanvasElement,translation:TranslationManager,objects:Array<new ()=>GameObject>=[]){
         super(
             new WebglRenderer(canvas),
             translation,
-            [...objects,TilemapVisual,Human,Loot,Building,Obstacle,Walls,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
+            [...objects,TilemapVisual,Human,Loot,Building,Obstacle,Walls,TilemapVisual,Bullet,Decal,Explosion,Grenade,Vehicle,Creature,Parachute,SyncedParticle,Plane,HumanBody,Drone],
         )
         this.scene_2d=new ClientScene2D(this)
         this.scene_2d.camera.visible_callback=(o)=>o.layer<=this.scene_2d.camera.layer
@@ -447,6 +450,10 @@ export class Game extends ClientGame<GameObject>{
         }
         this.call_event("load",agro)
         this.loaded=true
+
+        this.tilesets_instance={
+            1:Graphics2D.make_tileset(Tilesets[0],this.scene_2d.camera.meter_size,this.resources)
+        }
     }
     async start(settings:StartSettings){
         this.definitions.reset()
@@ -650,6 +657,7 @@ export class Game extends ClientGame<GameObject>{
         this.menu.show_loading_screen()
         switch(play.type){
             case "online":{
+                if(this.offline)this.local_server.stop()
                 const args={
                     ...play,
                     region:this.save.get_variable("sv_game_region"),
@@ -745,10 +753,6 @@ export class Game extends ClientGame<GameObject>{
         client.on("joinned",(jp:JoinnedPacket)=>{
             this.proccess_general_main_state(jp.main_state)
             this.state=GameState.Playing
-
-            /*const obj=new TilemapVisual()
-            this.scene_2d.add_object(obj,Layers.Normal)
-            obj.gfx.set_sprites([{matrix:matrix4.translation_2d(v2(1,1)),tile:0}],SpritesGroupGraphic2D.make_tileset({0:{frame:"small_house_1_floor"}},this.scene_2d.camera.meter_size,this.resources))*/
         })
         client.on("gameover",async(p:GameOverPacket)=>{
             this.state=GameState.Gameover

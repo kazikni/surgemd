@@ -32,6 +32,7 @@ import { ServerGameScene2D } from "./scene.ts";
 import { SequenceMode } from "../mode/sequence.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { Walls } from "../objects/walls.ts";
+import { TilemapVisual } from "../objects/tilemap.ts";
 export interface GameData {
     living_count: number[]
 
@@ -155,6 +156,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
             Obstacle,
             Building,
             Walls,
+            TilemapVisual,
             Vehicle,
             Bullet,
             Decal,

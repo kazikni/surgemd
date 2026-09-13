@@ -22,6 +22,7 @@ import { DecalDef } from "./objects/decals.ts";
 import { ExplosionDef} from "./objects/explosions.ts";
 import { ObstacleDef, ObstacleTD } from "./objects/obstacles.ts";
 import { SyncedParticleDef } from "./objects/synced_particles.ts";
+import { TilemapVDef } from "./objects/tilemap.ts";
 import { VehicleDef} from "./objects/vehicles.ts";
 import { BoostDef } from "./player/boosts.ts";
 import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
@@ -37,8 +38,8 @@ export type DefinitionItemCategoryType="ammos"|"backpacks"|"helmets"|"vests"|"ac
 export const DefinitionLoadoutCategoryList:DefinitionLoadoutCategoryType[]=["loadout","badges","emotes","wrapping","pings"]
 export type DefinitionLoadoutCategoryType="loadout"|"badges"|"emotes"|"wrapping"|"pings"
 
-export const DefinitionObjectsCategoryList:DefinitionObjectsCategoryType[]=["buildings","creatures","decals","explosions","obstacles","vehicles","synced_particles"]
-export type DefinitionObjectsCategoryType="buildings"|"creatures"|"decals"|"explosions"|"obstacles"|"vehicles"|"synced_particles"
+export const DefinitionObjectsCategoryList:DefinitionObjectsCategoryType[]=["buildings","tilemapv","creatures","decals","explosions","obstacles","vehicles","synced_particles"]
+export type DefinitionObjectsCategoryType="buildings"|"tilemapv"|"creatures"|"decals"|"explosions"|"obstacles"|"vehicles"|"synced_particles"
 
 export const DefinitionOthersCategoryList:DefinitionOthersCategoryType[]=["boosts"]
 export type DefinitionOthersCategoryType="boosts"
@@ -65,6 +66,7 @@ export interface GameADefinitions{
     }
     objects?:{
         buildings?:BuildingDef[]
+        tilemapv?:TilemapVDef[]
         creatures?:CreatureDef[]
         decals?:DecalDef[]
         explosions?:ExplosionDef[]
@@ -169,6 +171,7 @@ export class GameDefinition{
 
     // Objects
     buildings=new Definitions<BuildingDef,{}>()
+    tilemapv=new Definitions<TilemapVDef,{}>()
     creatures=new Definitions<CreatureDef,{}>()
     decals=new Definitions<DecalDef,{}>()
     explosions=new Definitions<ExplosionDef,{}>()

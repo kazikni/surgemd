@@ -2,6 +2,7 @@ import { KDate } from "../definition/definitions.ts"
 import { TDType, type TD } from "../lang/td.ts";
 import { PolarMovement } from "../math/geometry.ts"
 import { BaseHitbox2D, CircleHitbox2D, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, PolygonHitbox2D, RectHitbox2D } from "../math/hitbox.ts"
+import { Matrix } from "../math/matrix.ts";
 import { ID } from "../math/utils.ts"
 import { Vec2} from "../math/vec2.ts"
 export abstract class Stream{
@@ -644,6 +645,75 @@ export abstract class Stream{
 
             year:   this.read_uint16()
         };
+    }
+    write_matrix2(matrix:Matrix){
+        this.write_float32(matrix[0])
+        this.write_float32(matrix[1])
+        this.write_float32(matrix[4])
+        this.write_float32(matrix[5])
+        this.write_float32(matrix[8])
+        this.write_float32(matrix[9])
+        this.write_float32(matrix[12])
+        this.write_float32(matrix[13])
+    }
+    read_matrix2():Matrix{
+        return new Float32Array([
+            this.read_float32(),
+            this.read_float32(),
+            0,0,
+            this.read_float32(),
+            this.read_float32(),
+            0,0,
+            this.read_float32(),
+            this.read_float32(),
+            0,0,
+            0,0,
+            0,0
+        ])
+    }
+    write_matrix4(matrix:Matrix){
+        this.write_float32(matrix[0])
+        this.write_float32(matrix[1])
+        this.write_float32(matrix[2])
+        this.write_float32(matrix[3])
+
+        this.write_float32(matrix[4])
+        this.write_float32(matrix[5])
+        this.write_float32(matrix[6])
+        this.write_float32(matrix[7])
+
+        this.write_float32(matrix[8])
+        this.write_float32(matrix[9])
+        this.write_float32(matrix[10])
+        this.write_float32(matrix[11])
+
+        this.write_float32(matrix[12])
+        this.write_float32(matrix[13])
+        this.write_float32(matrix[14])
+        this.write_float32(matrix[15])
+    }
+    read_matrix4():Matrix{
+        return new Float32Array([
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+            this.read_uint8(),
+        ])
     }
 
     static write_uv(stream:Stream,x:number,y:number){

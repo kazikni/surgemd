@@ -1,9 +1,9 @@
-import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+import { Layers, PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
 import { MapDef} from "common/scripts/definitions/maps/base.ts";
-import { v2, Vec2 } from "common/engine/core.ts";
+import { tilemap_layer, v2, Vec2 } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
@@ -11,6 +11,7 @@ import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/gen
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { LocationDrone } from "../objects/drone.ts";
 import { human_die_event } from "../others/utils.ts";
+import { TilemapVisual } from "../objects/tilemap.ts";
 export interface AirdropConfig{
     spawn:number[]
     obstacle:string

@@ -1,4 +1,4 @@
-import { Client, GameComponent, Numeric, random, StaticStream, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Client, GameComponent, Numeric, random, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
 import { GameItem } from "common/scripts/definitions/game_defs.ts";

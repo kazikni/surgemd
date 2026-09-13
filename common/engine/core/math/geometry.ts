@@ -1,3 +1,4 @@
+import { tdm, TDObject, TDType, Vec2TD } from "../lang/td.ts";
 import { random, SeededRandom } from "./random.ts"
 import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
@@ -309,6 +310,13 @@ export const Collision=Object.freeze({
 export interface Rect{
     min:Vec2
     max:Vec2
+}
+export const RectTD:TDObject={
+    type:TDType.object,
+    content:[
+        {name:"min",content:Vec2TD},
+        {name:"max",content:Vec2TD},
+    ]
 }
 function rect_new(min:Vec2,max:Vec2):Rect{
     return {min,max}

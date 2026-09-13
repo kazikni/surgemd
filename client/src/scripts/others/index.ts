@@ -9,6 +9,8 @@ import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FetchFileManager, FileManager, TranslationManager } from "common/engine/core.ts";
+import { make_credits_cutscene } from "common/scripts/others/functions.ts";
+import { backgrounds, FinalCredits } from "common/scripts/config/background_effect.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -85,7 +87,6 @@ import { FetchFileManager, FileManager, TranslationManager } from "common/engine
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
 
             this.game.menu.hide_loading_screen()
-            //this.game.menu.cutscene.play(make_credits_cutscene(FinalCredits, backgrounds.smoke))
             this.game.mainloop(true)
         }
     }

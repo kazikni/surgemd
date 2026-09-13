@@ -1,6 +1,7 @@
 import { FrameTD, FrameTransformTD, tdm, TDObject, TDType } from "../lang/td.ts";
+import { matrix4, type Matrix } from "../math/matrix.ts";
 import { EaseFunction, mergeDeep, Path } from "../math/utils.ts"
-import { type Vec2 } from "../math/vec2.ts"
+import { v2, v2m, type Vec2 } from "../math/vec2.ts"
 import { type Stream } from "../net/stream.ts";
 
 export const DefinitionTD:TDObject={
@@ -435,4 +436,39 @@ export interface KDate{
     day:number
     month:number
     year:number
+}
+export type TilemapLayer={tile:number,matrix:Matrix}[]
+
+export type TilemapGenSettings={
+    size:Vec2
+    tilesize:Vec2
+    content:number[]
+    tiles:number[]
+    start?:Vec2
+}
+export type TilemapGenSimpleSettings={tile:number,position?:Vec2}[]
+export const tilemap_layer={
+    generate(gen:TilemapGenSettings):TilemapLayer{
+        const layer:TilemapLayer=[]
+        const valid_tiles=new Set<number>(gen.tiles)
+        for(let y=0;y<gen.size.y;y++){
+            for(let x=0;x<gen.size.x;x++){
+                const tile=gen.content[(y*gen.size.x)+x]
+                if(valid_tiles.has(tile))continue
+                const pos=v2(x*gen.size.x,y*gen.size.y)
+                if(gen.start)v2m.add(pos,pos,gen.start)
+                layer.push({tile:tile,matrix:matrix4.translation_2d(pos)})
+            }
+        }
+        return layer
+    },
+    generate_simple(gen:TilemapGenSimpleSettings){
+        const layer:TilemapLayer=[]
+        for(const tile of gen){
+            const matrix=matrix4.identity()
+            if(tile.position)matrix4.m.translate_2d(matrix,matrix,tile.position)
+            layer.push({tile:tile.tile,matrix:matrix})
+        }
+        return layer
+    }
 }

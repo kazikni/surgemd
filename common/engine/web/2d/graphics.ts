@@ -6,6 +6,7 @@ import { BatcherContext2D, Context2D } from "../rendering/context.ts";
 import { type Frame, type ResourcesManager } from "../resources/resources.ts";
 import { Color } from "../../core/math/color.ts";
 import { ImageModel2D } from "../../core/definition/models.ts";
+import { TilemapLayer } from "../../core/definition/definitions.ts";
 export type Tileset=Record<number,{
     frame:Frame
     model:Float32Array
@@ -33,7 +34,7 @@ export class Graphics2D extends Container2DObject {
     }
 
     
-    set_sprites(map:{tile:number,matrix:Matrix}[],tileset:Tileset){
+    set_sprites(map:TilemapLayer,tileset:Tileset){
         this.ctx.clear()
         for(const t of map){
             const tile=tileset[t.tile]

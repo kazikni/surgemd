@@ -218,8 +218,9 @@ return (class extends LevelPlayerScript{
     on_spawn_player(player){
         player.set_preset(this.preset)
         for(const a of this.allies??[]){
-            const bot = this.game.players.add_enemy(a,new JoinPacket())
+            const bot = this.game.modeManager.make_enemy()
             if(!bot) continue
+            bot.set_preset(a)
         }
     }
     
@@ -231,7 +232,9 @@ return (class extends LevelPlayerScript{
         this.cutscene=await this.load_json("cutscenes/begin.jsonc")
     }
     async on_before(start_with_intro){
-        const cutscene=[]
+        const cutscene=[
+            {type:CutsceneCommandType.SetBackground, background:backgrounds.smoke_1,transition:{type:BackgroundTransitionType.Fade,duration:1}},
+        ]
         if(start_with_intro)cutscene.push(...this.cutscene)
         cutscene.push(...this.make_level_intro())
         await this.show_cutscene(cutscene)

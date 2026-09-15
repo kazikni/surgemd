@@ -54,6 +54,7 @@
             "survival_knife": "Survival Knife",
             "axe": "Axe",
             "crowbar": "Crowbar",
+            "baseball_bat": "Baseball Bat",
             "shovel": "Shovel",
             "sledgehammer": "Sledgehammer",
             "katana": "Katana",
@@ -106,6 +107,7 @@
                 "mana_mm": "Mana-MM I'm tired of creating descriptions. It's already 18:50.",
 
                 "crowbar": "Rise and shine...",
+                "baseball_bat": "Almost No One Plays Baseball Here. But Still Is A Good Weapon",
 
                 "bandage": "A classic bandage.<br>Restores 20 health points.<br>Can only heal up to 75% health.",
                 "medikit": "This small box contains several medical supplies.<br>Restores 100 health points with no healing cap.",

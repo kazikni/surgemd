@@ -429,8 +429,8 @@ return (class extends LevelPlayerScript{
     }
     async on_game_finish(e){
         if(e.win)await this.show_cutscene([
-            
-            ...make_credits_cutscene(FinalCredits,backgrounds.smoke)
+            {type:CutsceneCommandType.SetSoundController,controller:"music",source:"credits_music",path:"/assets/sounds/musics/credits_music_1.ogg"},
+            ...make_credits_cutscene(FinalCredits,backgrounds.smoke_2)
         ])
     }
 })

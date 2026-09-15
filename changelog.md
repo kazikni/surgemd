@@ -11,6 +11,7 @@ ___
 * Hide Boost Bar When you dont have boost
 ___
 ### Items
+* Baseball Bat
 * Tec22 - L15 C Rank Pistol
 * AIPC-39 - P76 C Rank Double Barrel Shotgun
 * Guns Fire Sequence Spread

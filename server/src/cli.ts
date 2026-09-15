@@ -49,7 +49,7 @@ export async function extract_kspr(input:string,output:string){
             const atlasName = `atlas_${atlasIndex}`
             const imagePath = `${resDir}/${atlasName}.png`
             const jsonPath = `${resDir}/${atlasName}.json`
-            await saveAtlasPNG(atlas.image,atlas.width,atlas.height,atlas.format,imagePath,canvas,ctx)
+            if(atlas.image)await saveAtlasPNG(atlas.image.data,atlas.image.width,atlas.image.height,atlas.image.format,imagePath,canvas,ctx)
             await Deno.writeTextFile(
                 jsonPath,
                 JSON.stringify({
@@ -208,6 +208,6 @@ if (import.meta.main) {
     await main(Deno.args)
 }
 
-//deno run -A ./server/src/cli.ts kspr extract client/dist/assets/kspr/main.kspr
+//deno run -A ./server/src/cli.ts kspr extract client/dist/assets/kspr/main/sheets/sheet_low.kspr
 //deno run -A ./server/src/cli.ts game map compile common/scripts/definitions/maps/tundra.ts
 //deno run -A ./server/src/cli.ts audio compile client/public/assets/sounds/game/main

@@ -8,7 +8,7 @@ import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
-import { FetchFileManager, FileManager, TranslationManager } from "common/engine/core.ts";
+import { CutsceneCommandType, FetchFileManager, FileManager, TranslationManager } from "common/engine/core.ts";
 import { make_credits_cutscene } from "common/scripts/others/functions.ts";
 import { backgrounds, FinalCredits } from "common/scripts/config/background_effect.ts";
 (async() => {

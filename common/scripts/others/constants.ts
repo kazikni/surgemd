@@ -29,12 +29,13 @@ export const GameConstants={
     }
 }
 export const ObjectsComponentEvent={
-    damage:DefaultObjectEvents.last+1,
-    interact:DefaultObjectEvents.last+2,
-    human_clear:DefaultObjectEvents.last+3,
-    human_load_preset:DefaultObjectEvents.last+4,
-    human_apply_modifiers:DefaultObjectEvents.last+5,
-    human_tick_input:DefaultObjectEvents.last+6
+    damage:                DefaultObjectEvents.last+1,
+    collided:              DefaultObjectEvents.last+2,
+    interact:              DefaultObjectEvents.last+3,
+    human_clear:           DefaultObjectEvents.last+4,
+    human_load_preset:     DefaultObjectEvents.last+5,
+    human_apply_modifiers: DefaultObjectEvents.last+6,
+    human_tick_input:      DefaultObjectEvents.last+7
 }
 export enum GameObjectType{
     StaticBody,

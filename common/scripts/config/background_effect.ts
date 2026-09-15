@@ -1,5 +1,110 @@
 import { BackgroundEDef, BackgroundELayerType, CutsceneTheme } from "../../engine/core/definition/utils.ts";
 
+export function SmokeBackgroundFactory(style:string):BackgroundEDef{
+    return {
+        theme: {
+            css: `
+                background: #050008;
+
+                overflow: hidden;
+                ${style}
+
+                --current-smoke-a: var(--smoke-color-1);
+                --current-smoke-b: var(--smoke-color-2);
+
+                animation: smoke-color-a 30s linear infinite alternate, smoke-color-b 30s linear infinite alternate;
+            `
+        },
+        inner_html: `
+            <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+                <filter id="distort" x="-20%" y="-20%" width="140%" height="140%">
+                    <feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="3" seed="7" result="noise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="130" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </svg>
+        `,
+        layers: [
+            {
+
+                type: BackgroundELayerType.Static,
+                css: `
+                    position: absolute;
+                    inset: -15%;
+                    width: 130%;
+                    height: 130%;
+                    filter: url(#distort);
+                    transform-origin: center;
+                    animation: smoke-distort 20s ease-in-out infinite alternate;
+                `,
+
+                childs: [
+                    {
+
+                        type: BackgroundELayerType.Static,
+                        css: `
+                            position: absolute;
+                            width: 170vw;
+                            height: 170vh;
+                            left: -35vw;
+                            top: -35vh;
+                            border-radius: 50%;
+
+                            background: radial-gradient(ellipse 42% 55% at 20% 30%, var(--current-smoke-a) 0%,var(--current-smoke-a) 18%, transparent 70%), radial-gradient(ellipse 50% 48% at 78% 72%,var(--current-smoke-a) 0%,transparent 72%);
+
+                            mix-blend-mode: screen;
+
+                            filter: blur(55px) saturate(1.25);
+                            transform-origin: center;
+
+                            animation:smoke-move-1 15s ease-in-out infinite alternate;
+                        `
+                    },
+                    {
+
+                        type: BackgroundELayerType.Static,
+                        css: `
+                            position: absolute;
+                            width: 185vw;
+                            height: 185vh;
+                            left: -42vw;
+                            top: -42vh;
+                            border-radius: 50%;
+
+                            background:radial-gradient( ellipse 50% 55% at 76% 20%, var(--current-smoke-b) 0%, var(--current-smoke-b) 18%, transparent 69%), radial-gradient(ellipse 45% 55%at 25% 82%,var(--current-smoke-b) 0%,transparent 72%);
+
+                            mix-blend-mode: screen;
+
+                            filter: blur(55px) saturate(1.25);
+                            transform-origin: center;
+                            animation:smoke-move-2 25s ease-in-out infinite alternate;
+                        `
+                    },
+                    {
+                        type: BackgroundELayerType.Static,
+                        css: `
+                            position: absolute;
+                            width: 210vw;
+                            height: 210vh;
+                            left: -55vw;
+                            top: -55vh;
+                            border-radius: 50%;
+
+                            background:radial-gradient(ellipse 42% 50%at 50% 50%,var(--current-smoke-a) 0%,transparent 70%);
+                            opacity: 0.5;
+
+                            mix-blend-mode: screen;
+
+                            filter: blur(110px) saturate(1.2);
+
+                            animation: smoke-soft 50s ease-in-out infinite alternate;
+                        `
+                    }
+                ]
+            }
+        ]
+    }
+}
+
 export const backgrounds={
     city:{
         theme:{
@@ -211,118 +316,26 @@ backdrop-filter: blur(7px) brightness(.75) saturate(80%);`,childs:[
         },
         layers:[]
     },
-    smoke: {
-        theme: {
-            css: `
-                background: #050008;
-
-                overflow: hidden;
-
-                --smoke-color-1: #ff174f99;
-                --smoke-color-2: #7700ff99;
-                --smoke-color-3: #006cff99;
-                --smoke-color-4: #00ffff99;
-                --smoke-color-5: #48ff0099;
-                --smoke-color-6: #a6ff0099;
-                --smoke-color-7: #ffd90099;
-                --smoke-color-8: #ff7b0099;
-
-                --current-smoke-a: var(--smoke-color-1);
-                --current-smoke-b: var(--smoke-color-2);
-
-                animation: smoke-color-a 30s linear infinite alternate, smoke-color-b 30s linear infinite alternate;
-            `
-        },
-        inner_html: `
-            <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-                <filter id="distort" x="-20%" y="-20%" width="140%" height="140%">
-                    <feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="3" seed="7" result="noise"/>
-                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="130" xChannelSelector="R" yChannelSelector="G"/>
-                </filter>
-            </svg>
-        `,
-        layers: [
-            {
-
-                type: BackgroundELayerType.Static,
-                css: `
-                    position: absolute;
-                    inset: -15%;
-                    width: 130%;
-                    height: 130%;
-                    filter: url(#distort);
-                    transform-origin: center;
-                    animation: smoke-distort 20s ease-in-out infinite alternate;
-                `,
-
-                childs: [
-                    {
-
-                        type: BackgroundELayerType.Static,
-                        css: `
-                            position: absolute;
-                            width: 170vw;
-                            height: 170vh;
-                            left: -35vw;
-                            top: -35vh;
-                            border-radius: 50%;
-
-                            background: radial-gradient(ellipse 42% 55% at 20% 30%, var(--current-smoke-a) 0%,var(--current-smoke-a) 18%, transparent 70%), radial-gradient(ellipse 50% 48% at 78% 72%,var(--current-smoke-a) 0%,transparent 72%);
-
-                            mix-blend-mode: screen;
-
-                            filter: blur(55px) saturate(1.25);
-                            transform-origin: center;
-
-                            animation:smoke-move-1 20s ease-in-out infinite alternate;
-                        `
-                    },
-                    {
-
-                        type: BackgroundELayerType.Static,
-                        css: `
-                            position: absolute;
-                            width: 185vw;
-                            height: 185vh;
-                            left: -42vw;
-                            top: -42vh;
-                            border-radius: 50%;
-
-                            background:radial-gradient( ellipse 50% 55% at 76% 20%, var(--current-smoke-b) 0%, var(--current-smoke-b) 18%, transparent 69%), radial-gradient(ellipse 45% 55%at 25% 82%,var(--current-smoke-b) 0%,transparent 72%);
-
-                            mix-blend-mode: screen;
-
-                            filter: blur(55px) saturate(1.25);
-                            transform-origin: center;
-                            animation:smoke-move-2 25s ease-in-out infinite alternate;
-                        `
-                    },
-                    {
-                        type: BackgroundELayerType.Static,
-                        css: `
-                            position: absolute;
-                            width: 210vw;
-                            height: 210vh;
-                            left: -55vw;
-                            top: -55vh;
-                            border-radius: 50%;
-
-                            background:radial-gradient(ellipse 42% 50%at 50% 50%,var(--current-smoke-a) 0%,transparent 70%);
-                            opacity: 0.5;
-
-                            mix-blend-mode: screen;
-
-                            filter: blur(110px) saturate(1.2);
-
-                            animation: smoke-soft 60s ease-in-out infinite alternate;
-                        `
-                    }
-                ]
-            }
-
-        ]
-
-    },
+    smoke_1: SmokeBackgroundFactory(`
+        --smoke-color-1: #ff174f88;
+        --smoke-color-2: #7700ff88;
+        --smoke-color-3: #006cff88;
+        --smoke-color-4: #00ffff88;
+        --smoke-color-5: #ff174f88;
+        --smoke-color-6: #006cff88;
+        --smoke-color-7: #7700ff88;
+        --smoke-color-8: #00ffff88;
+    `),
+    smoke_2: SmokeBackgroundFactory(`
+        --smoke-color-1: #ff174f99;
+        --smoke-color-2: #7700ff99;
+        --smoke-color-3: #006cff99;
+        --smoke-color-4: #00ffff99;
+        --smoke-color-5: #48ff0099;
+        --smoke-color-6: #a6ff0099;
+        --smoke-color-7: #ffd90099;
+        --smoke-color-8: #ff7b0099;
+    `)
 } satisfies Record<string,BackgroundEDef>
 export const default_cutscene_theme: CutsceneTheme = {
     text:{

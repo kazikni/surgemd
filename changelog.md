@@ -18,6 +18,7 @@ ___
 * Incendiary Bullets Accessory
 * Guns Loot Now Hold Ammo
 * Effective Bullet Range
+* Reload Case Particle
 ___
 ### Loadout
 * Different Shoes

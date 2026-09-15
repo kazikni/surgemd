@@ -1,4 +1,3 @@
-
 import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Sound, Sprite2D, Tween } from "common/engine/web.ts";
 import { GameObjectType, HumanAnimation, HumanAnimationType, HumanVisualData, zIndexes } from "common/scripts/others/constants.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
@@ -483,12 +482,52 @@ export class Human extends Humanoid{
                         if((c as Human).dead||c.id===this.id)continue
                         (c as Human).on_hitted(hb.position,false,def.assets?.hit_sound)
                 }
-            break
+                break
+            }
+        }
+        for(const delay of def.damage_delays??[]){
+            this.game.clock.add_timeout(att,delay)
         }
     }
-    for(const delay of def.damage_delays??[]){
-        this.game.clock.add_timeout(att,delay)
-    }
+    play_casing_particle(def:GunDef,barrel_offset:number=0,position?:Vec2){
+        if(!def.case_particle)return
+        const count=def.case_particle?.count??1
+        for(let i=0;i<count;i++){
+            const case_position=v2(this.animation.recoil_state!==-1?-this.animation.recoil_walk*this.animation.recoil_time:0,barrel_offset)
+            v2m.add(case_position,case_position,def.case_particle.position)
+            if(position)v2m.add(case_position,case_position,position)
+            v2m.rotate_RadAngle(case_position,this.rotation)
+            v2m.add(case_position,case_position,this.position)
+            let direction:number=(3.141592/2)+random.float(0,1)
+            if(def.case_particle.all_direction&&(i%2!==0))direction-=3.85
+            const p=new ABParticle2D({
+                direction:this.rotation+direction,
+                life_time:1,
+                position:case_position,
+                frame:{
+                    image:def.case_particle.frame??"casing_"+def.ammo_type,
+                    hotspot:v2.half_one,
+                    layer:this.layer,
+                    zIndex:zIndexes.Particles
+                },
+                speed:random.float(1,2),
+                angle:this.rotation,
+                scale:2,
+                to:{
+                    angle:this.rotation+random.float(1,10),
+                    scale:0.5
+                }
+            })
+            this.scene.particles.add_particle(p)
+        }
+        const audio=this.game.resources.get_sound(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
+        if(audio)this.game.clock.add_timeout(()=>{
+            this.game.sounds.play(audio,{
+                position:this.position,
+                max_distance:10,
+                bus:"humans"
+            })
+        },0.75)
     }
     play_fire_animation(def:GunDef,alt:boolean,last:boolean,alt_func:boolean){
         let barrel_offset=def.barrel_offset??0
@@ -543,38 +582,8 @@ export class Human extends Humanoid{
                 this.scene.particles.add_particle(p)
             }
         }
-        if(def.case_particle&&!def.case_particle.at_begin){
-            const case_position=v2(this.animation.recoil_state!==-1?-this.animation.recoil_walk*this.animation.recoil_time:0,barrel_offset)
-            v2m.add(case_position,case_position,def.case_particle.position)
-            v2m.rotate_RadAngle(case_position,this.rotation)
-            v2m.add(case_position,case_position,this.position)
-            const p=new ABParticle2D({
-                direction:this.rotation+(3.141592/2)+random.float(0,1),
-                life_time:1,
-                position:case_position,
-                frame:{
-                    image:def.case_particle.frame??"casing_"+def.ammo_type,
-                    hotspot:v2.half_one,
-                    layer:this.layer,
-                    zIndex:zIndexes.Particles
-                },
-                speed:random.float(1,2),
-                angle:this.rotation,
-                scale:2,
-                to:{
-                    angle:this.rotation+random.float(1,10),
-                    scale:0.5
-                }
-            })
-            const audio=this.game.resources.get_sound(def.case_particle!.sound??"casing_sound_"+def.ammo_type)
-            if(audio)this.game.clock.add_timeout(()=>{
-                this.game.sounds.play(audio,{
-                    position:this.position,
-                    max_distance:10,
-                    bus:"humans"
-                })
-            },0.75)
-            this.scene.particles.add_particle(p)
+        if(!def.case_particle?.at_begin){
+            this.play_casing_particle(def)
         }
 
         let sound:Sound|undefined
@@ -631,6 +640,14 @@ export class Human extends Humanoid{
                                 this.animation.sound_animation=undefined
                             }
                         })
+                    }
+                    if(d.case_particle?.at_begin){
+                        if(d.dual_from){
+                            this.play_casing_particle(d,undefined,v2(0,-d.dual_offset))
+                            this.play_casing_particle(d,undefined,v2(0,d.dual_offset))
+                        }else{
+                            this.play_casing_particle(d)
+                        }
                     }
                     break
                 }

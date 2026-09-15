@@ -414,7 +414,9 @@ export interface ItemFireDefinition{
     gas_particles?:GasParticle
     case_particle?:{
         position:Vec2
+        all_direction?:boolean
         at_begin?:boolean
+        count?:number
         frame?:string
         sound?:string
     }

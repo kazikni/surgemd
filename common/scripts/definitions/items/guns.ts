@@ -639,6 +639,12 @@ export function Guns_Default_Init():GunDef[]{
 
             spread:1.25,
             idle_spread:0.4,
+            case_particle:{
+                position:v2.new(0.5,0.1),
+                at_begin:true,
+                all_direction:true,
+                count:6,
+            },
 
             ammo_spawn:{
                 amount:30
@@ -739,6 +745,12 @@ export function Guns_Default_Init():GunDef[]{
                 spread:{
                     begin:0.19
                 }
+            },
+            case_particle:{
+                position:v2.new(0.5,0.1),
+                at_begin:true,
+                all_direction:true,
+                count:5,
             },
 
             ammo_spawn:{
@@ -1263,10 +1275,20 @@ export function Guns_Default_Init():GunDef[]{
             ammo_spawn:{
                 amount:10
             },
+            case_particle:{
+                position:v2.new(0.5,0.1),
+                at_begin:true,
+                all_direction:true,
+                count:2,
+            },
 
             reload:{
                 delay:2.5,
                 capacity:2,
+            },
+            recoil_animation:{
+                time_scale:15,
+                walk:0.07
             },
             assets:{
                 world:"weapon_small_world",

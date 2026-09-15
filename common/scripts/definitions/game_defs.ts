@@ -22,7 +22,7 @@ import { DecalDef } from "./objects/decals.ts";
 import { ExplosionDef} from "./objects/explosions.ts";
 import { ObstacleDef, ObstacleTD } from "./objects/obstacles.ts";
 import { SyncedParticleDef } from "./objects/synced_particles.ts";
-import { TilemapVDef } from "./objects/tilemap.ts";
+import { TilemapVDef, TilemapVTD } from "./objects/tilemap.ts";
 import { VehicleDef} from "./objects/vehicles.ts";
 import { BoostDef } from "./player/boosts.ts";
 import { GameItemType, GameObjectDefinitionType } from "./utils.ts";
@@ -85,6 +85,7 @@ export class GameDefinition{
             {name: "objects",content: {type:TDType.onu,content:{type:TDType.object,content:[
                 {name:"obstacles",content:{type:TDType.array,content:ObstacleTD,len_bytes:2}},
                 {name:"buildings",content:{type:TDType.array,content:BuildingTD,len_bytes:2}},
+                {name:"tilemapv",content:{type:TDType.array,content:TilemapVTD,len_bytes:2}},
             ]}}}
         ]
     }} satisfies TD

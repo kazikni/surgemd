@@ -10,7 +10,6 @@ import { GameConstants, HumanStatus, PlayerStatus, ScoreApplyerType } from "comm
 import { InputPacket } from "common/scripts/packets/input_packet.ts";
 import { BotAi } from "../human/ai/simple_bot_ai.ts";
 import { StartPacket} from "common/scripts/packets/start_packet.ts";
-import { HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { Human } from "../objects/human.ts";
 import { JoinnedPacket } from "common/scripts/packets/joinned.ts";
 import { human_die_event } from "../others/utils.ts";

@@ -1,4 +1,4 @@
-import { DeepPartial, Definition, Definitions, FrameDef, FrameTD, Hitbox2D, HitboxGroup2D, mergeDeep, RectHitbox2D, TD, tdm, TDObject, TDType, v2, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
+import { DeepPartial, Definition, FrameDef, FrameTD, Hitbox2D, HitboxGroup2D, mergeDeep, Rect, RectHitbox2D, TD, tdm, TDObject, TDType, tilemap_layer, TilemapGenSimpleSettings, TilemapLayer, v2, Vec2, Vec2TD, WeightDefinition } from "../../../engine/core.ts";
 import { Spawn, SpawnMode, zIndexes } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { GameObjectDefTD, hit_sounds, HitParticlesDef, HitSoundsDef, ScopeChange } from "../utils.ts";
@@ -181,7 +181,6 @@ export const BuildingTD: TDObject={
                             }
                         }
                     },
-                    // Sub Buildings
                     {
                         name: "sub_building",
                         content: {
@@ -200,6 +199,10 @@ export const BuildingTD: TDObject={
                                 }
                             }
                         }
+                    },
+                    {
+                        name: "tilemapv",
+                        content: tdm.any
                     },
                     // Loots
                     {
@@ -329,6 +332,16 @@ export type BuildingSubBuilding={
     layer?:number
     rotation?:0|1|2|3
 }
+export type BuildingTilemapV={
+    def?:string
+    position?:Vec2
+    rotation?:number
+    content?:{
+        tileset?:number
+        layer:TilemapLayer
+        rect:Rect
+    }
+}
 export type PuzzleCondition=({
     type:"code"
     value?:string
@@ -395,6 +408,7 @@ export interface BuildingDef extends Definition{
         walls?:WallsDef[]
         decals?:BuildingDecal[]
         sub_building?:BuildingSubBuilding[]
+        tilemapv?:BuildingTilemapV[]
         loots?:BuildingLoot[]
         floors?:{hitbox:Hitbox2D,type:FloorType,layer?:number}[]
         stair_data?:{
@@ -1235,6 +1249,20 @@ export function Buildings_Default_Init():BuildingDef[]{
                                 tint:0x404143
                             },
                         }
+                    }
+                ],
+                tilemapv:[
+                    {
+                        content:{
+                            rect:{min:v2(-5,-5),max:v2(5,5)},
+                            layer:tilemap_layer.generate_simple([
+                                {tile:1,position:v2.zero()},
+                                {tile:1,position:v2(0.25,0)},
+                                {tile:1,position:v2(0.5,0)},
+                                {tile:1,position:v2(0.75,0)},
+                                {tile:1,position:v2(1,0)},
+                            ]),
+                        },
                     }
                 ],
                 puzzles:[{

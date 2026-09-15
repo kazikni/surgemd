@@ -452,7 +452,7 @@ export class Game extends ClientGame<GameObject>{
         this.loaded=true
 
         this.tilesets_instance={
-            1:Graphics2D.make_tileset(Tilesets[0],this.scene_2d.camera.meter_size,this.resources)
+            1:Graphics2D.make_tileset(Tilesets[1],this.scene_2d.camera.meter_size,this.resources)
         }
     }
     async start(settings:StartSettings){

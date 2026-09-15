@@ -651,8 +651,6 @@ export abstract class Stream{
         this.write_float32(matrix[1])
         this.write_float32(matrix[4])
         this.write_float32(matrix[5])
-        this.write_float32(matrix[8])
-        this.write_float32(matrix[9])
         this.write_float32(matrix[12])
         this.write_float32(matrix[13])
     }
@@ -664,10 +662,9 @@ export abstract class Stream{
             this.read_float32(),
             this.read_float32(),
             0,0,
+            0,0,0,0,
             this.read_float32(),
             this.read_float32(),
-            0,0,
-            0,0,
             0,0
         ])
     }
@@ -694,25 +691,25 @@ export abstract class Stream{
     }
     read_matrix4():Matrix{
         return new Float32Array([
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
 
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
 
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
 
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
-            this.read_uint8(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
+            this.read_float32(),
         ])
     }
 

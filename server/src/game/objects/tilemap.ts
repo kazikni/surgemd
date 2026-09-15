@@ -85,7 +85,7 @@ export class TilemapVisual extends ServerGameObject{
                 stream.write_uint8(this.content.tileset)
                 stream.write_array(this.content.layer,(v)=>{
                     stream.write_uint16(v.tile)
-                    stream.write_matrix2(v.matrix)
+                    stream.write_matrix4(v.matrix)
                 },2)
             }
         }

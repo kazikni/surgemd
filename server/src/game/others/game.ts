@@ -311,7 +311,6 @@ export class Game extends AbstractServerGame<ServerGameObject>{
 
         this.update_data()
         console.log(`Game ${this.id} Started`)
-
     }
     close(){
         if(this.closed)return

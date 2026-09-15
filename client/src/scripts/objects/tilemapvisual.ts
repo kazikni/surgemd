@@ -36,22 +36,18 @@ export class TilemapVisual extends GameObject{
         this.gfx.position=this.position
         this.gfx.rotation=stream.read_rad()
         if(full){
-            switch(stream.read_uint8()){
-                case 1:{
-                    const tileset:number=stream.read_uint8()
-                    const map:TilemapLayer=stream.read_array(()=>{
-                        const tile=stream.read_uint16()
-                        const matrix=stream.read_matrix2()
-                        return {tile,matrix}
-                    },2)
-                    this.set(tileset,map)
-                    break
-                }
-                case 2:{
-                    const def=this.game.definitions.tilemapv.getFromNumber(stream.read_uint16())
-                    this.set(def.tileset,def.layer)
-                    break
-                }
+            const d=stream.read_uint16()
+            if(d===0){
+                const tileset:number=stream.read_uint8()
+                const map:TilemapLayer=stream.read_array(()=>{
+                    const tile=stream.read_uint16()
+                    const matrix=stream.read_matrix4()
+                    return {tile,matrix}
+                },2)
+                this.set(tileset,map)
+            }else{
+                const def=this.game.definitions.tilemapv.getFromNumber(d)
+                this.set(def.tileset,def.layer)
             }
         }
     }

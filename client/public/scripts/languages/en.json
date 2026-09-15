@@ -243,6 +243,10 @@
         "gameover": {
             "eliminated-by": "<span id='gameover-eliminated'>Eliminated By</span> ${player}",
             "you-win": "<span id='gameover-you-win'>You Win!</span>",
+            "restart":{
+                "press":"Press \"R\" To Restart",
+                "click":"Click Here To Restart"
+            },
             "messages": {
                 "introductions": {
                     "0": "Hi",

@@ -7,7 +7,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, isMobile, ShowElement } from "common/engine/web.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, InputEventType, isMobile, Key, ShowElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
@@ -89,6 +89,7 @@ export class UiManager{
         btn_interact:document.querySelector("#btn-mobile-interact") as HTMLButtonElement,
         btn_reload:document.querySelector("#btn-mobile-reload") as HTMLButtonElement,
         btn_emotes:document.querySelector("#btn-mobile-emotes") as HTMLButtonElement,
+        btn_toggle_map:document.querySelector("#btn-mobile-toggle-map") as HTMLButtonElement,
     }
 
     feed_enabled:boolean=false
@@ -99,7 +100,6 @@ export class UiManager{
         id:-1,
         kills:0
     }
-    money:number=0
 
     hover_objects:Set<GameObject|BuildingCeiling>=new Set()
 
@@ -115,10 +115,6 @@ export class UiManager{
         HideElement(this.content.normal_gameOver)
         HideElement(this.content.emote_wheel.main)
 
-        if(isMobile||Debug.force_mobile){
-            this.mobile_init()
-        }
-
         this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game,false)
 
         this.game.ui_manager.add(new BottomLeftModule())
@@ -127,6 +123,12 @@ export class UiManager{
         this.game.ui_manager.add(new InformationBoxModule())
         this.game.ui_manager.add(new AdditionalInfoModule())
         this.game.ui_manager.add(new GroupMembersModule())
+    }
+    async init(){
+        this.content.restart_gameOver.innerText=this.game.language.get("gameover.restart.press")
+        if(isMobile||Debug.force_mobile){
+            await this.mobile_init()
+        }
     }
     clear_top_right(){
         this.content.feed.innerHTML=""
@@ -192,7 +194,7 @@ export class UiManager{
         loot: this._makeHint(["E - Take Loot"]),
         interact: this._makeHint(["E - Interact"]),
     }
-    mobile_init(){
+    async mobile_init(){
         this.mobile_open()
         let rotating=false
         // deno-lint-ignore ban-ts-comment
@@ -235,15 +237,27 @@ export class UiManager{
             rotating=false
             this.game.aim_line.enabled=false
         })
+        this.mobile_content.btn_interact.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/interaction_button.svg")).text()
         this.mobile_content.btn_interact.addEventListener("click",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"interact"})
         })
+        this.mobile_content.btn_reload.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/reload_button.svg")).text()
         this.mobile_content.btn_reload.addEventListener("click",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"reload"})
         })
         this.mobile_content.btn_emotes.addEventListener("click",(e)=>{
             this.begin_emote_wheel(v2(this.game.renderer.canvas.clientWidth/2,this.game.renderer.canvas.clientHeight/2),false)
         })
+        this.mobile_content.btn_toggle_map.addEventListener("click",(e)=>{
+            this.game.input_manager.emit({type:InputEventType.ActionDown,action:"toggle_full_device"})
+            this.game.input_manager.emit({type:InputEventType.ActionUp,action:"toggle_full_device"})
+        })
+
+        this.content.restart_gameOver.innerText=this.game.language.get("gameover.restart.click")
+        this.content.restart_gameOver.onclick=()=>{
+            this.game.input_manager.emit({type:InputEventType.KeyDown,key:Key.R})
+            this.game.input_manager.emit({type:InputEventType.KeyUp,key:Key.R})
+        }
     }
     emote_wheel={
         positon:v2(0,0),
@@ -766,7 +780,7 @@ export class UiManager{
                     this.content.restart_gameOver.classList.remove("hidden")
                     this.game.scope_zoom*=0.75
                     this.game.zoom_speed*=0.05
-                    await this.game.input_manager.wait_for_action("reload")
+                    await this.game.input_manager.wait_for_key(Key.R)
                 }
                 this.game.finish_game_over(g.status.win)
                 break

@@ -75,6 +75,7 @@ export class MinimapModule extends UIModule<Game>{
             }
         }
         document.addEventListener("mouseup",this._mouseup)
+        this.toggle_fullscreen(false)
     }
     to_world(position:Vec2):Vec2{
         const rect=this.canvas.getBoundingClientRect()
@@ -367,9 +368,14 @@ export class MinimapModule extends UIModule<Game>{
             }
         }
     }
-    toggle_fullscreen(){
-        this.fullscreen=!this.fullscreen
+    toggle_fullscreen(value:boolean=!this.fullscreen){
+        this.fullscreen=value
         this.canvas.classList.toggle("fullscreen",this.fullscreen)
+
+        if(this.game.ui.mobile_enabled){
+            if(this.fullscreen)ShowElement(this.game.ui.mobile_content.btn_toggle_map)
+            else HideElement(this.game.ui.mobile_content.btn_toggle_map)
+        }
     }
 
     zoom_in(){
@@ -449,5 +455,6 @@ export class MinimapModule extends UIModule<Game>{
     override on_clear():void{
         this.pings.length=0
         this.zones.length=0
+        this.toggle_fullscreen(false)
     }
 }

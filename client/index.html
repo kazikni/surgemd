@@ -32,15 +32,6 @@
             <canvas id="game-canvas" class="game-canvas"></canvas>
             <div id="tiltshift-gfx"></div>
             <div id="game-gui" style="display:none;visibility:none;pointer-events:none;">
-                <div id="game-mobile-gui" style="display: none; pointer-events: none;">
-                    <smde-joystick id="left-joystick"></smde-joystick>
-                    <smde-joystick id="right-joystick"></smde-joystick>
-                    <div id="mobile-action-buttons">
-                        <button id="btn-mobile-interact" class="btn-dark-green"></button>
-                        <button id="btn-mobile-reload" style="display:none;pointer-events: none;" class="btn-dark-green"></button>
-                        <button id="btn-mobile-emotes" class="btn-dark-green"></button>
-                    </div>
-                </div>
                 <div id="help-gui"></div>
                 <div id="bottom-left-container">
                     <div id="action-info" class="ui-panel">
@@ -115,10 +106,20 @@
                     <img id="emote-wheel-right" draggable="false" class="emote-wheel-part wheel-part-right"/>
                     <img id="emote-wheel-hover" draggable="false" class="wheel-hover wheel-hover-center"/>
                 </div>
+                <div id="game-mobile-gui" style="display: none; pointer-events: none;">
+                    <smde-joystick id="left-joystick"></smde-joystick>
+                    <smde-joystick id="right-joystick"></smde-joystick>
+                    <div id="mobile-action-buttons">
+                        <button id="btn-mobile-interact"></button>
+                        <button id="btn-mobile-reload"></button>
+                        <button id="btn-mobile-emotes"></button>
+                        <button id="btn-mobile-toggle-map">X</button>
+                    </div>
+                </div>
             </div>
             <div id="normal-gameover-container">
                 <div id="gameover-status-container"></div>
-                <div id="gameover-main-message">Press R To Restart</div>
+                <div id="gameover-main-message"></div>
                 <div id="gameover-buttons">
                     <button id="gameover-menu-btn" class="btn-blue">Return To Menu</button>
                     <!--<button id="gameover-status-btn" class="btn-blue">Status</button>

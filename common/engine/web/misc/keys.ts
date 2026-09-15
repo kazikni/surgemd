@@ -252,7 +252,7 @@ export class InputManager {
         elem.addEventListener("wheel",this.on_wheel(),{passive: false})
         elem.addEventListener("pointermove",this.on_pointer_move.bind(this))
     }
-    private emit(event: InputEvent) {
+    emit(event: InputEvent) {
         this.listener.emit(event.type, event)
     }
     private on_key_down(){
@@ -449,16 +449,23 @@ export class InputManager {
     wait_for_action(action: string): Promise<void> {
         return new Promise((resolve) => {
             const fn = (e: InputActionEvent) => {
-                if(e.type!==InputEventType.ActionDown) {
-                    return
-                }
-                if (e.action !== action) {
+                if(e.type!==InputEventType.ActionDown||e.action !== action){
                     return
                 }
                 this.listener.off(InputEventType.ActionDown,fn)
                 resolve()
             }
             this.listener.on(InputEventType.ActionDown,fn)
+        })
+    }
+    wait_for_key(key:Key): Promise<void> {
+        return new Promise((resolve) => {
+            const fn = (e: InputKeyEvent) => {
+                if(e.type!==InputEventType.KeyDown||e.key!==key)return
+                this.listener.off(InputEventType.KeyDown,fn)
+                resolve()
+            }
+            this.listener.on(InputEventType.KeyDown,fn)
         })
     }
     wait_for_any_key(): Promise<number> {

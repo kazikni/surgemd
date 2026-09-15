@@ -52,6 +52,7 @@ export const LootTables={
     melees:[
         {item:"survival_knife",weight:15},
         {item:"shovel",weight:15},
+        {item:"baseball_bat",weight:15},
         {item:"axe",weight:10},
         {item:"crowbar",weight:7},
         {item:"katana",weight:3},

@@ -23,6 +23,7 @@ export class MenuManager{
     content={
         menuD:document.querySelector("#menu") as HTMLDivElement,
         gameD:document.querySelector("#game") as HTMLDivElement,
+        game_gui:document.querySelector("#game-gui") as HTMLDivElement,
         gameCanvas:document.querySelector("#game-canvas") as HTMLDivElement,
 
         menu_options:document.body.querySelector("#menu-options") as HTMLDivElement,
@@ -598,6 +599,7 @@ export class MenuManager{
     }
     select_character_screen(characters: OnlineMessageCharacter[]): Promise<number> {
         return this.game_popup((ctx) => {
+            HideElement(this.content.game_gui)
             let selected = 0
 
             ctx.parent.innerHTML = `
@@ -659,6 +661,7 @@ export class MenuManager{
 
             button.onclick = () => {
                 ctx.resolve(selected)
+                ShowElement(this.content.game_gui)
             }
 
             update()

@@ -9,6 +9,7 @@ ___
 * Tundra Map Dialogs
 * Final Credits
 * Hide Boost Bar When you dont have boost
+* Improve Mobile GUI
 ___
 ### Items
 * Baseball Bat

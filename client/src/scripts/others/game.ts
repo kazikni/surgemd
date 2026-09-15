@@ -389,6 +389,7 @@ export class Game extends ClientGame<GameObject>{
         this.language.load_language(await(await fetch(`/scripts/languages/${this.save.get_variable("sv_ui_translation")}.json`)).json() as Language,"main")
 
         this.fs=fs
+        await this.ui.init()
     }
 
     set_lookTo_angle(angle:number,dist:number){

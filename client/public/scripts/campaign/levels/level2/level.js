@@ -98,11 +98,11 @@ return (class extends LevelPlayerScript{
                         enemies:[
                             {
                                 "def": gun_enemy,
-                                "count": 10
+                                "count": 5
                             },
                             {
                                 "def": melee_enemy,
-                                "count": 10
+                                "count": 5
                             },
                         ]
                     },
@@ -115,11 +115,11 @@ return (class extends LevelPlayerScript{
                         enemies:[
                             {
                                 "def": gun_enemy,
-                                "count": 10
+                                "count": 5
                             },
                             {
                                 "def": melee_enemy,
-                                "count": 10
+                                "count": 5
                             },
                         ]
                     },
@@ -152,9 +152,15 @@ return (class extends LevelPlayerScript{
         })
     }
     async on_begin(){
-        
+        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/single_player/music_3.mp3"}})
     }
     async on_before(){
+        const cutscene=[{
+            type:CutsceneCommandType.SetSoundController,
+            controller:"music",
+            source:"gameplay_music",
+        }]
+        await this.show_cutscene(cutscene)
     }
     on_start(first){
     }

@@ -133,7 +133,7 @@ export class SequenceMode extends ModeManager{
     }
 
     override can_down(human: Human): boolean {
-        return this.is_enemy(human)
+        return this.is_enemy(human)&&Object.keys(this.enemies).length>1
     }
     override is_ally(a: Human, b: Human): boolean {
         return this.is_enemy(a)===this.is_enemy(b)

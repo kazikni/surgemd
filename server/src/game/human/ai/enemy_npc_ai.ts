@@ -5,7 +5,6 @@ import { StatedBotAi } from "./simple_bot_ai.ts";
 import { Angle, astar_path2d, random, v2, Vec2 } from "common/engine/core.ts";
 import { type Human } from "../../objects/human.ts";
 import { type Obstacle } from "../../objects/obstacle.ts";
-import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Stream } from "common/engine/core/net/stream.ts";
 import { ServerGameObject } from "../../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
@@ -15,6 +14,8 @@ type EnemyState =
     | "detecting"
     | "engaged"
     | "go_last_seen"
+    | "go_revive"
+    | "knocked"
 
 export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     override net_update(general_update: Stream): void {
@@ -30,13 +31,17 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     protected path_urgency:number=0
 
     protected seenHuman?: Human
+    protected seenDownedAlly?:Human
     protected lastSeenPos?: Vec2
+
+    protected allyPathTimer:number=0
+    protected allyTarget?:Human
 
     protected playerCheckTimer = 0
 
     override params = {
         random_speed: 0.5,
-        path_speed: 0.7,
+        path_speed: 1,
         urgent_path_speed: 1,
         engaged_speed:1,
 
@@ -55,10 +60,15 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
 
         advanced_movement:false,
 
-        detection_time: 1.25,
-        shoot_time:0.75
+        detection_time: 0.5,
+        reaction_time: 0.4,
+        shoot_time: 0.5,
+
+        revive_view_distance:6,
+        pathfinding_quality:0.25,
+        
+        guard:0
     }
-    pathfinding_quality:number=0.5
     constructor(human:Human) {
         super(human)
         /*
@@ -72,6 +82,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             detecting: this.state_detecting.bind(this),
             engaged: this.state_engaged.bind(this),
             go_last_seen: this.state_go_last_seen.bind(this),
+            go_revive:this.state_go_revive.bind(this),
+            knocked:this.state_knocked.bind(this),
         }
         this.setState("idle")
     }
@@ -126,27 +138,54 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         }
         return true
     }
-
-    protected updateDetection(self: Human, dt: number) {
-        if(self.downed)return
-        this.playerCheckTimer += dt
-        if (this.playerCheckTimer >= 0.5) {
-            if (!this.seenHuman) {
-                for (const p of self.game.humans.humans) {
-                    if (!p.game.modeManager.is_ally(p,this.human)&&this.isPlayerVisible(self, p)) {
+    valid_knocked(self:Human,other:Human){
+        return other.knocked&&!other.dead&&!other.being_helpup_by&&v2.distance(self.position,other.position)<=this.params.revive_view_distance
+    }
+    protected findRevivePartner(self:Human){
+        let target:Human|undefined
+        let distance=Infinity
+        for(const p of self.game.humans.humans){
+            if(p===self||p.dead||p.downed)continue
+            if(!self.game.modeManager.is_ally(self,p))continue
+            const d=v2.distance(self.position,p.position)
+            if(d<distance){
+                distance=d
+                target=p
+            }
+        }
+        return target
+    }
+    protected updateDetection(self: Human, dt: number):void{
+        this.playerCheckTimer-=dt
+        if(this.playerCheckTimer<=0){
+            if(this.seenHuman){
+                if (this.isPlayerVisible(self, this.seenHuman)) {
+                    this.lastSeenPos=v2.clone(this.seenHuman.position)
+                } else {
+                    this.seenHuman=undefined
+                }
+            }else{
+                for(const p of self.game.players.living_players){
+                    if(!p.game.modeManager.is_ally(p,this.human)&&this.isPlayerVisible(self, p)) {
                         this.seenHuman = p
                         this.lastSeenPos = v2.clone(p.position)
                         break
                     }
                 }
-                return
             }
-            if (this.isPlayerVisible(self, this.seenHuman)) {
-                this.lastSeenPos = v2.clone(this.seenHuman.position)
-            } else {
-                this.seenHuman = undefined
+            if(this.seenDownedAlly){
+                if(this.valid_knocked(self,this.seenDownedAlly)){
+                    this.seenDownedAlly=undefined
+                }
+            }else{
+                for(const p of self.game.humans.humans){
+                    if(p.game.modeManager.is_ally(self,p)&&this.valid_knocked(self,p)){
+                        this.seenDownedAlly=p
+                        break
+                    }
+                }
             }
-            this.playerCheckTimer = 0
+            this.playerCheckTimer=0.5
         }
     }
 
@@ -155,8 +194,12 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     =======================*/
     protected state_idle(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
-        if (this.seenHuman) {
+        if(this.seenHuman!==undefined){
             this.setState("detecting")
+            return
+        }
+        if(this.seenDownedAlly){
+            this.setState("go_revive")
             return
         }
 
@@ -173,10 +216,15 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     }
     protected state_random_walking(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
-        if(this.seenHuman) {
+        if(this.seenHuman!==undefined){
             this.setState("detecting")
             return
         }
+        if(this.seenDownedAlly){
+            this.setState("go_revive")
+            return
+        }
+
         if(begin){
             const rot=random.rad()
             this.rot_target=rot
@@ -189,8 +237,9 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         this.movement = {dir:this.rot_target,scale:1}
         this.move_speed=this.params.random_speed
     }
+
     protected state_detecting(self: Human,begin:boolean, dt: number) {
-        if (!this.seenHuman) {
+        if(!this.seenHuman){
             this.setState("random_walking")
             return
         }
@@ -200,14 +249,14 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         }
     }
     protected state_engaged(self: Human,begin:boolean, dt: number) {
-        this.updateDetection(self, dt);
-        if(self.downed){
-            this.setState("random_walking")
+        this.updateDetection(self, dt)
+        if(!this.seenHuman){
+            this.setState("go_last_seen")
             return
         }
-        if (!this.seenHuman) {
-            this.setState("go_last_seen");
-            return;
+        if(this.stateTime<=this.params.reaction_time){
+            this.movement={dir:0,scale:0}
+            return
         }
 
         const dist = v2.distance(self.position, this.seenHuman.position);
@@ -241,7 +290,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             }
         }else if(hand?.item_type===GameItemType.gun) {
             self.input.reload=((hand as GunItem).reloading ||!(hand as GunItem).has_ammo(self))
-            if(!self.input.reload&&this.stateTime>=this.params.shoot_time&&this.isAimAligned(self, this.seenHuman.position)){
+            if(!self.input.reload&&this.stateTime>=this.params.shoot_time+this.params.reaction_time&&this.isAimAligned(self, this.seenHuman.position)){
                 self.input.using_item = true
                 self.input.using_item_down = true
             }
@@ -264,7 +313,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
                 this.lastSeenPos,
                 this.human.isBlockedForPath.bind(this),
                 {
-                    cellSize:this.pathfinding_quality
+                    cellSize:this.params.pathfinding_quality,
+                    dirs:[[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,-1],[-1,1]]
                 }
             )
             this.pathIndex=0
@@ -272,8 +322,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         }
         const target=this.path[this.pathIndex]
         if(target){
-            const to = v2.sub(target, self.position)
-            if (v2.len(to) < 0.4) {
+            const to=v2.sub(target, self.position)
+            if (v2.len(to)<0.2){
                 this.pathIndex++
                 if(this.pathIndex>=this.path.length){
                     this.enemy_not_founded()
@@ -288,8 +338,124 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             this.enemy_not_founded()
         }
     }
+
+    protected state_go_revive(self: Human,begin:boolean, dt: number) {
+        this.updateDetection(self, dt)
+        if(this.seenHuman){
+            this.setState("detecting")
+            return
+        }
+        if(!this.seenDownedAlly){
+            this.setState("idle")
+            return
+        }
+
+        if(this.stateTime<=this.params.reaction_time){
+            this.movement={dir:0,scale:0}
+            return
+        }
+        const dist=v2.distance(this.seenDownedAlly.position,self.position)
+        if(dist<=self.game.modeManager.rules.humans.help_up.distance){
+            self.input.interaction=!self.actions.current_action
+        }
+
+        if(dist<=0.1){
+            this.path.length=0
+        }else{
+            this.allyPathTimer-=dt
+            if(begin||this.allyPathTimer<=0){
+                this.path = astar_path2d(
+                    self,
+                    self.base_hitbox,
+                    this.seenDownedAlly.position,
+                    this.human.isBlockedForPath.bind(this),
+                    {
+                        cellSize:this.params.pathfinding_quality,
+                        dirs:[[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,-1],[-1,1]]
+                    }
+                )
+                this.pathIndex=0
+                this.rot_speed=7
+                this.allyPathTimer=2
+            }
+        }
+        const target=this.path[this.pathIndex]
+        if(target){
+            const to=v2.sub(target, self.position)
+            if (v2.len(to)<0.2){
+                this.pathIndex++
+                if(this.pathIndex>=this.path.length){
+                    return
+                }
+            }
+            this.movement={dir:Math.atan2(to.y,to.x),scale:1}
+            this.move_speed=this.params.path_speed
+            this.rot_target=Math.atan2(to.y,to.x)
+        }else{
+            this.movement={dir:0,scale:0}
+        }
+    }
+    protected state_knocked(self:Human,begin:boolean,dt:number){
+        if(!self.knocked){
+            this.allyTarget=undefined
+            this.path=[]
+            this.setState("idle")
+            return
+        }
+        this.lastSeenPos=undefined
+        this.seenHuman=undefined
+
+        let target=this.allyTarget
+        this.allyPathTimer-=dt
+        if(begin||!target||this.allyPathTimer<=0||target.dead||target.downed||target.knocked){
+            this.allyPathTimer=4
+            this.allyTarget=this.findRevivePartner(self)
+            if(!this.allyTarget){
+                this.movement={dir:0,scale:0}
+                return
+            }
+            this.path=astar_path2d(
+                self,
+                self.base_hitbox,
+                this.allyTarget.position,
+                this.human.isBlockedForPath.bind(this.human),
+                {cellSize:this.params.pathfinding_quality,dirs:[[1,0],[0,1],[-1,0],[0,-1],[1,1],[1,-1],[-1,-1],[-1,1]]}
+            )
+            this.pathIndex=0
+            this.rot_speed=7
+            target=this.allyTarget
+        }
+
+        const dist=v2.distance(self.position,target.position)
+        if(dist<=2){
+            this.movement={dir:0,scale:0}
+            this.rot_target=v2.lookTo(self.position,target.position)
+            return
+        }
+
+        const point=this.path[this.pathIndex]
+        if(!point){
+            return
+        }
+
+        const to=v2.sub(point,self.position)
+        if(v2.len(to)<1.5){
+            this.pathIndex++
+            return
+        }
+
+        this.movement={dir:Math.atan2(to.y,to.x),scale:1}
+        this.move_speed=this.params.urgent_path_speed
+        this.rot_target=Math.atan2(to.y,to.x)
+    }
     enemy_not_founded(){
         this.setState("idle")
+    }
+    override AI(dt: number): void {
+        super.AI(dt)
+        if(this.human.knocked){
+            this.setState("knocked")
+        }
     }
     /* =======================
        PATH BLOCK

@@ -10,7 +10,6 @@ return (class extends LevelPlayerScript{
     }
     async on_begin(){
         await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_fall_music_1.mp3"}})
-        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_fall_music_1.mp3"}})
         this.background=await this.load_json("../../backgrounds/city_river_bloodmoon.json")
         this.preset=await this.level.load_character({
             "path": "../../characters/vinii.jsonc",

@@ -669,6 +669,9 @@ export class Human extends Humanoid{
             case "dumb":
                 ai = new DumbBotAI(this)
                 break
+            case "npc":
+                ai = new EnemyNPCAI(this)
+                break
             default:
                 ai = new EnemyNPCAI(this)
                 break

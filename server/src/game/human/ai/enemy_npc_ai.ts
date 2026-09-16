@@ -11,7 +11,7 @@ import { ServerGameObject } from "../../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 type EnemyState =
     | "idle"
-    | "walking"
+    | "random_walking"
     | "detecting"
     | "engaged"
     | "go_last_seen"
@@ -35,22 +35,28 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     protected playerCheckTimer = 0
 
     override params = {
-        random_speed: 0.2,
+        random_speed: 0.5,
         path_speed: 0.7,
         urgent_path_speed: 1,
-        engaged_speed:0.25,
+        engaged_speed:1,
 
         shoot_angle_epsilon: 0.4,
 
-        bravery: random.float(0, 1),
         accuracy: random.float(0.8, 1.2),
         greed: random.float(0, 1),
 
-        vision_distance:13,    // 8 = Easy, 13 = Normal, 17 = Hard
-        shoot_distance:25,     // 15 = Easy, 20 = Normal, 25 = Hard
-        explosion_distance:25, // 20 = Easy, 25 = Normal, 30 = Hard
+        vision_distance:13,
+        allow_distance:0.15,
+        melee_distance:0.5,
+        melee_attack_distance:0.85,
+        shoot_distance:3,
+        shoot_sound_distance:25,
+        explosion_sound_distance:25, 
 
-        detection_time: 0.5, // Easy = 1, Normal = 0.5, Hard = 0.25
+        advanced_movement:false,
+
+        detection_time: 1.25,
+        shoot_time:0.75
     }
     pathfinding_quality:number=0.5
     constructor(human:Human) {
@@ -62,7 +68,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         */
         this.stateHandlers = {
             idle: this.state_idle.bind(this),
-            walking: this.state_walking.bind(this),
+            random_walking: this.state_random_walking.bind(this),
             detecting: this.state_detecting.bind(this),
             engaged: this.state_engaged.bind(this),
             go_last_seen: this.state_go_last_seen.bind(this),
@@ -112,6 +118,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
                     break
                 }
                 case GameObjectType.Building:
+                case GameObjectType.StaticBody:
+                case GameObjectType.Walls:
                     if((o as Building).def.no_collisions)break
                     return false
             }
@@ -120,6 +128,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     }
 
     protected updateDetection(self: Human, dt: number) {
+        if(self.downed)return
         this.playerCheckTimer += dt
         if (this.playerCheckTimer >= 0.5) {
             if (!this.seenHuman) {
@@ -159,10 +168,10 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             this.state_duration=random.float(2,3)
             this.path_urgency=0
         }else if(this.stateTime>this.state_duration){
-            this.setState("walking")
+            this.setState("random_walking")
         }
     }
-    protected state_walking(self: Human,begin:boolean, dt: number) {
+    protected state_random_walking(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
         if(this.seenHuman) {
             this.setState("detecting")
@@ -182,16 +191,20 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     }
     protected state_detecting(self: Human,begin:boolean, dt: number) {
         if (!this.seenHuman) {
-            this.setState("walking")
+            this.setState("random_walking")
             return
         }
         this.rot_speed=1
-        if (this.stateTime >= this.params.detection_time) {
+        if (this.stateTime>=this.params.detection_time) {
             this.setState("engaged")
         }
     }
     protected state_engaged(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt);
+        if(self.downed){
+            this.setState("random_walking")
+            return
+        }
         if (!this.seenHuman) {
             this.setState("go_last_seen");
             return;
@@ -200,29 +213,38 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         const dist = v2.distance(self.position, this.seenHuman.position);
         this.rot_target = v2.lookTo(self.position, this.seenHuman.position);
 
-        const idealDist = this.params.bravery > 0.5 ? 4 : 8;
+        const hand=self.inventory.hand_item
+
+        const idealDist=hand?.item_type===GameItemType.melee?this.params.melee_distance:this.params.shoot_distance;
 
         this.move_speed=this.params.engaged_speed
-        if (dist > idealDist + 1) {
-            this.movement={dir:this.rot_target,scale:1}
-        } else if (dist < idealDist - 1) {
-            this.movement={dir:this.rot_target,scale:-1}
-        } else {
-            this.movement={dir:this.rot_target + Math.PI / 2,scale:1}
+        if(this.params.advanced_movement){
+            if(dist>idealDist+this.params.allow_distance){
+                this.movement={dir:this.rot_target,scale:1}
+            }else if(dist<idealDist-this.params.allow_distance) {
+                this.movement={dir:this.rot_target,scale:-1}
+            }else{
+                this.movement={dir:this.rot_target + Math.PI / 2,scale:1}
+            }
+        }else{
+            if(dist>idealDist){
+                this.movement={dir:this.rot_target,scale:1}
+            }else{
+                this.movement={dir:0,scale:0}
+            }
         }
 
-        self.input.reload =
-            self.inventory.hand_item?.item_type === GameItemType.gun &&
-            (
-                (self.inventory.hand_item as GunItem).reloading ||
-                !(self.inventory.hand_item as GunItem).has_ammo(self)
-            )
-        if (
-            !self.input.reload &&
-            this.isAimAligned(self, this.seenHuman.position)
-        ) {
-            self.input.using_item = true
-            self.input.using_item_down = true
+        if(hand?.item_type===GameItemType.melee){
+            if(dist<=this.params.melee_attack_distance){
+                self.input.using_item = true
+                self.input.using_item_down = true
+            }
+        }else if(hand?.item_type===GameItemType.gun) {
+            self.input.reload=((hand as GunItem).reloading ||!(hand as GunItem).has_ammo(self))
+            if(!self.input.reload&&this.stateTime>=this.params.shoot_time&&this.isAimAligned(self, this.seenHuman.position)){
+                self.input.using_item = true
+                self.input.using_item_down = true
+            }
         }
     }
     protected state_go_last_seen(self: Human,begin:boolean, dt: number) {
@@ -267,7 +289,6 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         }
     }
     enemy_not_founded(){
-        this.human.input.actions.push({type:InputActionType.emote_emote,emote:this.human.game.definitions.emotes.getFromString("emote_neutral").idNumber!})
         this.setState("idle")
     }
     /* =======================

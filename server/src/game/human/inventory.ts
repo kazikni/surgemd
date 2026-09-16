@@ -63,7 +63,7 @@ export class GunItem extends GunItemBase implements LItem{
             if(this.use_delay<=0){
                 if(this.def.fire_mode===FireMode.Burst&&this.def.burst&&!this.burst){
                     this.burst={
-                        c:this.def.burst.sequence,
+                        c:this.def.burst.sequence-1,
                         t:this.def.burst.delay
                     }
                     this.use_delay=0
@@ -517,6 +517,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     declare inventory:GInventory
     skin?:number
     use_delay:number=0
+    damage_times:number[]=[]
     firing:boolean=false
     switching:boolean=false
     on_use(_user: Human, _slot?: Slot<LItem>): void {
@@ -532,12 +533,8 @@ export class MeleeItem extends MeleeItemBase implements LItem{
                 type:HumanAnimationType.Melee
             })
 
-            for(const t of this.def.damage_delays){
-                user.game.clock.add_timeout(()=>{
-                    if(this.inventory.hand_item===this)this.attack(user)
-                },t)
-                this.use_delay=this.def.attack_delay
-            }
+            this.damage_times=[...this.def.damage_delays]
+            this.use_delay=this.def.attack_delay
             this.firing=true
             return true
         }
@@ -577,7 +574,16 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             }
         }
     }
-    update(_user: Human,dt:number): void {
+    update(user: Human,dt:number): void {
+        if(this.inventory.hand_item===this&&!user.downed){
+            if(this.damage_times.length>0){
+                this.damage_times[0]-=dt
+                if(this.damage_times[0]<=0){
+                    this.damage_times.shift()
+                    this.attack(user)
+                }
+            }
+        }
         if(this.use_delay>0){
             this.use_delay-=dt
         }else{
@@ -586,6 +592,7 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     }
     override unload(): void {
         this.use_delay=this.def.attack_delay
+        this.damage_times.length=0
     }
     drop(): Loot[] {
         return [this.inventory.owner.game.scene_2d.add_loot(this.inventory.owner.position,{item:this.def,count:1,skin:this.skin},this.inventory.owner.layer)]

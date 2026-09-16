@@ -452,7 +452,7 @@ export class RectHitbox2D extends BaseHitbox2D{
         return (point.x>=this.min.x&&point.x<=this.max.x)&&(point.y>=this.min.y&&point.y<=this.max.y)
     }
     override colliding_with_line(a: Vec2, b: Vec2): boolean {
-        let tmin = 0
+        /*let tmin = 0
         let tmax = Number.MAX_VALUE
 
         const eps = 1e-5
@@ -493,7 +493,8 @@ export class RectHitbox2D extends BaseHitbox2D{
             if (tmax > 0 && tmin < dist) return false
         }
 
-        return tmax >= 0 && tmin <= dist
+        return tmax >= 0 && tmin <= dist*/
+        return this.overlap_line(a,b)!=null
     }
     override overlap_line(a: Vec2, b: Vec2): IntersectionRes | null {
         let tmin = 0

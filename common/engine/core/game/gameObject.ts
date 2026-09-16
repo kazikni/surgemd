@@ -584,7 +584,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
     }
     // deno-lint-ignore no-explicit-any
     add_object(obj: GameObject,layer: number,id?: number,args: any=undefined,sv: Record<string, any> = {}): GameObject {
-        if (!this.layers[layer]) {
+        if(!this.layers[layer]) {
             this.add_layer(layer)
         }
         obj.id=id===undefined?this.generate_object_id():id
@@ -605,6 +605,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         return obj
     }
     registry_object(obj: GameObject){
+        if(!this.layers[obj.layer]) {
+            this.add_layer(obj.layer)
+        }
         obj.destroyed=false
         obj.deleted=false
         const idx=this.destroy_queue.indexOf(obj)

@@ -21,6 +21,7 @@ export interface ABParticle2Config{
     speed:number
     direction:number
     life_time:number
+    velocity?:Vec2
     zIndex?:number
     layer?:number
     angle?:number
@@ -33,6 +34,7 @@ export interface ABParticle2Config{
         angle?:number
         scale?:number
         tint?:Color
+        velocity?:Vec2
     }
     on_tick?:(obj:ABParticle2D,dt:number)=>void
 }
@@ -98,7 +100,13 @@ export class ABParticle2D extends ClientParticle2D{
         if(this.config.to?.tint){
             this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
         }
-        const vel=v2.from_RadAngle(dire,speed*dt)
+        let velocity=this.config.velocity
+        const vel=v2.from_RadAngle(dire,speed)
+        if(velocity){
+            if(this.config.to?.velocity)velocity=v2.lerp(velocity,this.config.to.velocity,tt)
+            v2m.add(vel,vel,velocity)
+        }
+        v2m.scale(vel,vel,dt)
         
         this.sprite._position._x+=vel.x
         this.sprite.position.y+=vel.y

@@ -3,7 +3,6 @@ import { type Game } from "./game.ts";
 import { type Human } from "../objects/human.ts";
 import { Stream } from "common/engine/core.ts";
 import { PingWorld } from "../objects/ping_world.ts";
-import { BaseGameMap } from "common/scripts/objects/scene.ts";
 
 export abstract class GameObject extends ClientGameObject2D{
     declare game:Game

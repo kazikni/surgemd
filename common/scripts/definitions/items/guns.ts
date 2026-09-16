@@ -501,8 +501,8 @@ export function Guns_Default_Init():GunDef[]{
             idle_spread:0.75,
             fire_sequence:{
                 decay:0.7,
-                increse:0.15,
-                spread:{begin:0.3},
+                increse:0.1,
+                spread:{begin:0.1},
             },
 
             ammo_spawn:{
@@ -511,7 +511,7 @@ export function Guns_Default_Init():GunDef[]{
 
             bullet:{
                 def:{
-                    damage:13.2,
+                    damage:13,
                     range:110,
                     falloff:0.8,
                     speed:38,
@@ -688,7 +688,7 @@ export function Guns_Default_Init():GunDef[]{
             fire_mode:FireMode.Single,
             rank:ItemRank.A,
             spread:3,
-            idle_spread:0.33333,
+            idle_spread:0.3,
 
             ammo_spawn:{
                 amount:47,
@@ -788,6 +788,11 @@ export function Guns_Default_Init():GunDef[]{
             name:"AK-47",
             fire_delay:0.1,
             spread:7.5,
+            fire_sequence:{
+                decay:0.55,
+                increse:0.085,
+                spread:{begin:0.15}
+            },
 
             ammo_spawn:{
                 amount:60
@@ -818,7 +823,7 @@ export function Guns_Default_Init():GunDef[]{
                 amount:60
             },
             fire_sequence:{
-                decay:0.56,
+                decay:0.6,
                 increse:0.06,
                 spread:{begin:0.3}
             },
@@ -839,7 +844,8 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.assault("m4a1","c45",{
             name:"M4A1",
             fire_delay:0.1,
-            spread:2,
+            spread:3,
+            idle_spread:0.75,
             fire_sequence:{
                 decay:0.5,
                 increse:0.065,
@@ -910,12 +916,12 @@ export function Guns_Default_Init():GunDef[]{
             rank:ItemRank.D,
 
             fire_delay:0.08,
-            spread:3.5,
+            spread:4,
             idle_spread:0.8,
             fire_sequence:{
                 spread:{begin:0.75},
-                decay:0.6,
-                increse:0.1
+                decay:0.9,
+                increse:0.05
             },
 
             ammo_spawn:{
@@ -972,8 +978,13 @@ export function Guns_Default_Init():GunDef[]{
             rank:ItemRank.B,
 
             fire_delay:0.4,
-            spread:2.5,
-            idle_spread:0.5,
+            spread:3,
+            idle_spread:0.75,
+            fire_sequence:{
+                decay:0.8,
+                increse:0.2,
+                spread:{begin:0.75}
+            },
 
             fire_mode:FireMode.Burst,
             burst:{
@@ -1028,7 +1039,7 @@ export function Guns_Default_Init():GunDef[]{
             name:"Vector",
             rank:ItemRank.A,
             fire_delay:0.037,
-            spread:2,
+            spread:3,
 
             ammo_spawn:{
                 amount:96

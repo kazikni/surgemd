@@ -53,7 +53,7 @@ export const loot_physics:ObjectComponent<Loot>={
                             if(other.id===obj.id)continue
                             const col=obj.hitbox.overlap_collision(other.hitbox)
                             if(col){
-                                obj.velocity=v2.sub(obj.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.4*dt))
+                                obj.velocity=v2.sub(obj.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.5*dt))
                             }
                             break
                         }

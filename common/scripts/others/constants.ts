@@ -17,10 +17,10 @@ export const GameConstants={
             ammo:0.46,
             weapon:0.6,
             accessory:0.65,
-            consumible:0.44,
-            equipament:0.44,
-            grenade:0.44,
-            scopes:0.44,
+            consumible:0.45,
+            equipament:0.45,
+            grenade:0.45,
+            scopes:0.45,
         }
     },
     collision:{
@@ -123,6 +123,7 @@ export enum zIndexes{
     Players,
     Particles,
     GrenadeAir1,
+    DamageSplashs,
     Obstacles3,
     BuildingsWalls1,
     Explosions,
@@ -137,7 +138,6 @@ export enum zIndexes{
     Airbodys,
     DeadZone,
     Lights,
-    DamageSplashs,
     PingWorld,
     UI,
 }

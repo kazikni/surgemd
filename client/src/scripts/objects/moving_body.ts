@@ -16,16 +16,22 @@ export const MovingBodyNetwork:ObjectComponent<MovingBody>={
                 obj.dest_rot=0
                 obj.distance_walked=0
                 obj.enable_auto_rot=true
+                obj._velocity=v2.zero()
             }
         ],
         [DefaultObjectEvents.tick]:[
-            (obj,_dt:number)=>{
+            (obj,dt:number)=>{
                 obj.distance_walked=0
                 if(!obj.old_pos){
                     obj.old_pos=v2.clone(obj.position)
                 }else if(!v2.is(obj.old_pos,obj._position)){
+                    v2m.sub(obj._velocity,obj.position,obj.old_pos)
+                    v2m.scale(obj._velocity,obj._velocity,obj.game.ntps)
                     obj.distance_walked=v2.distance(obj.old_pos, obj.position)
                     obj.old_pos=v2.clone(obj.position)
+                }else{
+                    obj._velocity.x=0
+                    obj._velocity.y=0
                 }
                 v2m.lerp(obj.position,obj.dest_pos,obj.game.global_interpolation)
                 if(obj.enable_auto_rot)obj.rotation=Numeric.lerp_rad(obj.rotation,obj.dest_rot!,obj.game.global_interpolation)
@@ -44,6 +50,7 @@ export abstract class MovingBody extends GameObject implements MovingBodyBase{
     dest_pos!:Vec2
     dest_rot!:number
     distance_walked!:number
+    _velocity!:Vec2
 
     enable_auto_rot!:boolean
     constructor(){

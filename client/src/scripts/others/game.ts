@@ -482,7 +482,6 @@ export class Game extends ClientGame<GameObject>{
 
 
         this.scope_zoom=1
-        this.hitboxes_gfx.ctx.clear()
         this.menu.hide_loading_screen()
 
         if(this.offline){
@@ -531,6 +530,7 @@ export class Game extends ClientGame<GameObject>{
         }
     }
     override on_update(dt:number){
+        this.hitboxes_gfx.ctx.clear()
         super.on_update(dt)
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)

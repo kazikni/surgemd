@@ -1029,7 +1029,7 @@ export class Human extends Humanoid{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let speed=5.3*(this.recoil?this.recoil.speed:1)
+        let speed=5.5*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
             * this.get_modifier("speed")

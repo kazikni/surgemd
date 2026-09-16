@@ -512,6 +512,7 @@ export class Human extends Humanoid{
                 },
                 speed:random.float(1,2),
                 angle:this.rotation,
+                velocity:v2.clone(this._velocity),
                 scale:2,
                 to:{
                     angle:this.rotation+random.float(1,10),
@@ -574,6 +575,7 @@ export class Human extends Humanoid{
                     speed:random.float(def.gas_particles.speed.min,def.gas_particles.speed.max),
                     scale:0.03,
                     tint:ColorM.hex("#fff5"),
+                    velocity:v2.clone(this._velocity),
                     to:{
                         tint:ColorM.hex("#fff0"),
                         scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)

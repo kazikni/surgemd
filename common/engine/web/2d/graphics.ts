@@ -29,6 +29,9 @@ export class Graphics2D extends Container2DObject {
         super()
     }
 
+    override on_destroy(){
+        this.ctx.free()
+    }
     initialize(ctx:Context2D){
         this.ctx=ctx.sub_context() as BatcherContext2D
     }

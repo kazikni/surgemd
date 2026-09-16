@@ -7,6 +7,7 @@ import { GLDynamicBuffer, GLMaterial, GLMaterialFactory, GLMaterialFactoryCall, 
 export type GL2D_SimpleBatchArgs = {
 }
 export type GL2D_SimpleBatchAttr = {
+    buffer:GLDynamicBuffer
     data:Uint8Array
     data_count:number
 }
@@ -35,14 +36,13 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
     const aPosition = gl.gl.getAttribLocation(fac.program, "a_Position")
     const aColor = gl.gl.getAttribLocation(fac.program, "a_Color")!
     const uMat = gl.gl.getUniformLocation(fac.program, "u_Matrix")!
-    
-    const vBuffer  = new GLDynamicBuffer(gl.gl)
 
+    //const buffer=new GLDynamicBuffer(gl.gl)
     const draw = (mat: GLMaterial<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,matrix: Matrix,attr:GL2D_SimpleBatchAttr) => {
         gl.set_program(fac.program)
         gl.gl.uniformMatrix4fv(uMat, false, matrix)
 
-        vBuffer.upload_u8(gl.gl.ARRAY_BUFFER, attr.data)
+        attr.buffer.bind()
 
         gl.gl.enableVertexAttribArray(aPosition)
         gl.gl.enableVertexAttribArray(aColor)
@@ -55,12 +55,13 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
 
     return (arg: GL2D_SimpleBatchArgs) => ({
         ...arg,
+        renderer:gl,
         factory: fac,
         group: "simple_batch",
         draw,
         free:()=>{
-            vBuffer.free
-        }
+            //buffer.free()
+        },
     })
 }
 }
@@ -117,6 +118,7 @@ create(gl:WebglRenderer,fac:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatA
     return (arg:GL2D_SimpleMatArgs)=>{
         return {
             ...arg,
+            renderer:gl,
             group:"",
             factory:fac,
             draw:draw,
@@ -185,6 +187,7 @@ create(gl:WebglRenderer,fac:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatA
     return (arg:GL3D_SimpleMatArgs)=>{
         return {
             ...arg,
+            renderer:gl,
             factory:fac,
             group:"",
             draw:draw,
@@ -276,6 +279,7 @@ create(glr: WebglRenderer, fac: GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAtt
 
     return (arg: GL2D_TexMatArgs) => ({
         ...arg,
+        renderer:glr,
         factory: fac,
         group:"",
         draw,
@@ -290,6 +294,7 @@ export type GL2D_TexBatchArgs = {
     texture: WebGLTexture
 }
 export type GL2D_TexBatchAttr = {
+    buffer:GLDynamicBuffer
     data:Uint8Array
     data_count:number
 }
@@ -336,8 +341,6 @@ void main() {
         const uMat = gl.getUniformLocation(fac.program, "u_Matrix")!
         const uTex  = gl.getUniformLocation(fac.program, "u_Texture")!
 
-        const vBuffer  = new GLDynamicBuffer(gl)
-
         const draw = (
             mat: GLMaterial<GL2D_TexBatchArgs, GL2D_TexBatchAttr>,
             matrix: Matrix,
@@ -349,7 +352,7 @@ void main() {
             glr.set_program(fac.program)
             gl.uniformMatrix4fv(uMat, false, matrix)
 
-            vBuffer.upload_u8(gl.ARRAY_BUFFER, attr.data)
+            attr.buffer.bind()
             gl.enableVertexAttribArray(aPos)
             gl.enableVertexAttribArray(aUV)
             gl.enableVertexAttribArray(aTint)
@@ -366,11 +369,11 @@ void main() {
 
         return (arg: GL2D_TexBatchArgs) => ({
             ...arg,
+            renderer:glr,
             factory: fac,
             group: "texture_batch",
             draw,
             free() {
-                vBuffer.free()
             }
         })
     }

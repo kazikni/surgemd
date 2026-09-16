@@ -302,7 +302,7 @@ export class PlayersManager extends GameComponent{
     }
     override on_tick(dt:number){
         for(const p of Object.values(this.connected_bots)){
-            if(p.ai)p.ai.AI(dt)
+            if(p.ai)p.ai.update(dt)
         }
     }
 

@@ -14,6 +14,7 @@ export abstract class Stream{
     abstract get index():number
     abstract set index(val:number)
     abstract get data():Uint8Array
+    abstract set data(val:Uint8Array)
     abstract get buffer():ArrayBufferLike
 
     abstract clear(hard?:boolean):void
@@ -760,6 +761,10 @@ export class StaticStream extends Stream{
     override get data(): Uint8Array<ArrayBufferLike> {
         return this._u8Array
     }
+    override set data(val:Uint8Array) {
+        this._view = new DataView(val.buffer)
+        this._u8Array=val
+    }
 
     get buffer(): ArrayBufferLike { return this._view.buffer }
 
@@ -1062,6 +1067,10 @@ export class DynamicStream extends Stream{
     }
     override get data(): Uint8Array<ArrayBufferLike> {
         return this._u8Array
+    }
+    override set data(val:Uint8Array) {
+        this._view = new DataView(val.buffer)
+        this._u8Array=val
     }
     get buffer(): ArrayBufferLike { return this._view.buffer }
 

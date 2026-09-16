@@ -122,6 +122,9 @@ export class Container2D extends Container2DObject{
         return s
     }
     clear(){
+        for(const c of this.children){
+            c.on_destroy()
+        }
         this.visible_children.length=0
         this.children.length=0
         this.update_children.length=0

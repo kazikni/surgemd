@@ -4,6 +4,7 @@ import { Color, ColorM } from "../../core/math/color.ts";
 import { Matrix } from "../../core/math/matrix.ts";
 import { Context2D, GLContext2D } from "./context.ts";
 export interface Material{
+    renderer:Renderer
     draw(material:Material,matrix:Matrix,attr:any):void
     free():void
 }
@@ -71,6 +72,7 @@ export abstract class Renderer {
     abstract unbind_texture():void
 
     abstract create_context():Context2D
+    abstract create_buffer():RenderBuffer
 
     abstract set_background_color(color:Color):void
     abstract clear(): void
@@ -79,38 +81,47 @@ export abstract class Renderer {
         fullCanvas(this.canvas,max_ration,roundPixels)
     }
 }
-export class GLDynamicBuffer {
+export abstract class RenderBuffer{
+    abstract bind():void
+    abstract upload_f32(data:Float32Array,usage?:number):void
+    abstract upload_u8(data:Uint8Array,usage?:number):void
+    abstract free():void
+}
+export class GLDynamicBuffer extends RenderBuffer{
     buffer: WebGLBuffer
     size = 0
     draw_calls:number=0
     private disposed = false
     constructor(private gl: WebGLRenderingContext) {
+        super()
         this.buffer = gl.createBuffer()!
     }
-    upload_f32(target: number, data: Float32Array, usage: number = 35048) {
+    bind(){
+        if(this.disposed)return
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.buffer)
+    }
+    upload_f32(data: Float32Array, usage: number = 35048) {
         if (this.disposed) return
 
         const gl = this.gl
-        gl.bindBuffer(target, this.buffer)
+        gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer)
 
         if (data.length > this.size) {
             this.size = data.length
-            gl.bufferData(target, data, usage)
+            gl.bufferData(this.gl.ARRAY_BUFFER, data, usage)
         } else {
-            gl.bufferSubData(target, 0, data)
+            gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
         }
     }
-    upload_u8(target: number, data: Uint8Array, usage: number = 35048) {
+    upload_u8(data: Uint8Array, usage: number = 35048) {
         if (this.disposed) return
-
         const gl = this.gl
-        gl.bindBuffer(target, this.buffer)
-
+        gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer)
         if (data.length > this.size) {
             this.size = data.length
-            gl.bufferData(target, data, usage)
+            gl.bufferData(this.gl.ARRAY_BUFFER, data, usage)
         } else {
-            gl.bufferSubData(target, 0, data)
+            gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, data)
         }
     }
     exists(): boolean {
@@ -129,6 +140,7 @@ export class GLDynamicBuffer {
 }
 // deno-lint-ignore no-explicit-any
 export type GLMaterial<Args=any,Attr=any>={
+    renderer:Renderer
     group:string
     factory:GLMaterialFactory<Args,Attr>
     draw:(mat:GLMaterial<Args,Attr>,matrix:Matrix,attr:Attr)=>void
@@ -277,6 +289,9 @@ export class WebglRenderer extends Renderer {
         gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,smooth?this.gl.LINEAR:this.gl.NEAREST);
 
         return new GLTexture(v2(width,height),tex,this,this.factorys2D.texture_batch.create({texture:tex}))
+    }
+    override create_buffer():RenderBuffer{
+        return new GLDynamicBuffer(this.gl)
     }
     override load_texture(img:HTMLImageElement,smooth:boolean=true):Texture{
         const texture=this.gl.createTexture()!

@@ -125,7 +125,9 @@ export abstract class Container2DObject {
         if(this.parent){
             this.parent.dirty_children=true
         }
+        this.on_destroy()
     }
+    on_destroy(){}
     _bid(){
         this.dirty_reals=true
     }

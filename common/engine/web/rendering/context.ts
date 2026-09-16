@@ -181,8 +181,6 @@ export abstract class Context2D{
     begin_path(){
         this.path.length=0
     }
-    end_path(){
-    }
 
     move_to(x: number, y: number) {
         this.path.push([{x,y}])
@@ -366,6 +364,7 @@ export abstract class Context2D{
     abstract sub_context():Context2D
     abstract render(renderer:Renderer):void
     abstract clear():void
+    abstract free():void
     abstract save_batcher():Batcher
     abstract lock():void
 
@@ -453,6 +452,9 @@ export class BatcherContext2D extends Context2D{
     clear(){
         this.batcher.clear()
     }
+    override free(): void {
+        this.batcher.free()
+    }
     override sub_context(): BatcherContext2D {
         const ctx=new BatcherContext2D()
     
@@ -479,12 +481,14 @@ export class GLContext2D extends BatcherContext2D{
     constructor(renderer:WebglRenderer) {
         super()
         this.renderer=renderer
+        this.batcher.root=true
 
         this.default_material=(renderer as WebglRenderer).factorys2D.simple_batch.create({})
         this.state.current_material=this.default_material
     }
     override render(renderer: WebglRenderer): void {
         super.render(renderer)
+        this.batcher.upload()
         this.batcher.render(renderer,this.base_matrix)
     }
 

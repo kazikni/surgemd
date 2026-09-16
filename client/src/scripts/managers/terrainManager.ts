@@ -82,7 +82,6 @@ export class TerrainM extends TerrainManager{
                 const flb=this.game.minimap.biome.floors[f.type as FloorType]
                 graphic.ctx.begin_path()
                 graphic.ctx.hitbox(f.hb)
-                graphic.ctx.end_path()
                 graphic.ctx.fill_color=ColorM.number(f.tint??((flb!==undefined)?flb:Floors[f.type as FloorType].default_color))
                 graphic.ctx.fill()
             }

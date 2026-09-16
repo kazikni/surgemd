@@ -8,7 +8,7 @@ export class NPC extends Human{
     ai?:BotAi
     override is_npc: boolean=true
     override on_tick(dt: number): void {
-        if(this.ai)this.ai.AI(dt)
+        if(this.ai)this.ai.update(dt)
         super.on_tick(dt)
     }
     override die(params: DamageParams): void {

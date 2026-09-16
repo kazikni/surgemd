@@ -63,7 +63,6 @@ export class Grid2D extends Container2DObject{
         cam.ctx.begin_path()
         cam.ctx.grid(this.begin.x,this.begin.y,this.end.x,this.end.y,this.size,this._position)
         cam.ctx.stroke(cam.matrix[this.matrix_index])
-        cam.ctx.end_path()
     }
     override get_rect():Rect{
         return this._rect

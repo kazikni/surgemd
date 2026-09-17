@@ -183,6 +183,9 @@ export class AmbientManager extends GComponent{
     override on_tick(dt: number): void {
         if(this.game.state!==GameState.Playing)return
 
+        this.ambient_particles_emitter.limit=(10/this.game.scene_2d.camera.zoom)
+        this.ambient_particles_emitter.enabled=this.game.scene_2d.camera.layer>=Layers.Normal
+
         if(this.rain_value>0)this.rain_particles_emitter.limit=20+(this.rain_value*200)/this.game.scene_2d.camera.zoom
         else this.rain_particles_emitter.limit=0
 
@@ -318,8 +321,6 @@ export class AmbientManager extends GComponent{
         }*/
 
         this.global_ilumination=1
-
-        this.ambient_particles_emitter.enabled=true
 
         this.set_rain_state(0,0)
     }

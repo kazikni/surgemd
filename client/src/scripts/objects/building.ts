@@ -113,8 +113,13 @@ export class Building extends StaticBody{
         this.def=def
         const rot=Angle.side_rad(this.physical_data.side as Orientation)
 
-        this.physical_data.no_collision=this.def.no_collisions??false
-        this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+        if(this.def.is_ghost){
+            this.physical_data.no_collision=true
+            this.physical_data.no_bullets_collision=true
+        }else{
+            this.physical_data.no_collision=this.def.no_collisions??false
+            this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+        }
 
         for(const f of def.floor_image??[]){
             const sprite=new Sprite2D()

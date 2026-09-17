@@ -30,8 +30,9 @@ export const ObstacleTD:TD={
 
         { name: "no_collision", content: tdm.boolean },
         { name: "no_pathfinding_collision", content: tdm.boolean },
-        { name: "passable_by_bullets", content: tdm.boolean },
+        { name: "no_spawn_collision", content: tdm.boolean },
         { name: "no_bullets_collision", content: tdm.boolean },
+        { name: "passable_by_bullets", content: tdm.boolean },
 
         { name: "invisible_on_map", content: tdm.boolean },
 
@@ -188,6 +189,7 @@ export interface ObstacleDef extends Definition{
         alpha:number
     }
     no_collision?:boolean
+    no_spawn_collision?:boolean
     no_pathfinding_collision?:boolean
     passable_by_bullets?:boolean
     no_bullets_collision?:boolean

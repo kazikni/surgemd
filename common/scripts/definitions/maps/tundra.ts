@@ -16,8 +16,7 @@ export function create_hunt_house(id:string,settings:{
     const doors_tint=settings.doors_tint??walls_tint
     return mergeDeep({
         idString:id,
-        no_collisions:true,
-        no_bullet_collision:true,
+        is_ghost:true,
         assets:{
             particles:{
                 particle:"plank_particle",

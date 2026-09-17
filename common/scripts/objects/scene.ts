@@ -4,6 +4,7 @@ import { MapRegion } from "common/scripts/packets/map_message.ts"
 import { FloorType, River, TerrainManager } from "common/scripts/others/terrain.ts"
 import { GameObjectType, Layers, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts"
 import { GameDefinition } from "../definitions/game_defs.ts";
+import { type StaticBody } from "../../../server/src/game/objects/static_body.ts";
 
 export type map_gen_position=(hitbox:Hitbox2D,map:BaseGameMap,random:SeededRandom)=>Vec2
 export type map_gen_valid=(hitbox:Hitbox2D,id:number,layer:number,mode:SpawnMode,map:BaseGameMap)=>boolean
@@ -82,7 +83,7 @@ export abstract class BaseGameMap{
         const objs=map.scene.objects.cells.get_objects(hitbox,layer)
         for(const o of objs){
             if(o.id!==id){
-                if((o.number_type===GameObjectType.Obstacle||o.number_type===GameObjectType.Building)&&hitbox.colliding_with(o.spawn_hitbox??o.hitbox)){
+                if((o.number_type===GameObjectType.Obstacle||o.number_type===GameObjectType.Building)&&!(o as StaticBody).physical_data.no_spawn_collision&&hitbox.colliding_with(o.spawn_hitbox??o.hitbox)){
                     return false
                 }
             }

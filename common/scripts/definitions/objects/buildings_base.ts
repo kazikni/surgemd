@@ -122,6 +122,8 @@ export const BuildingTD: TDObject={
         { name: "spawnHitbox", content: tdm.any },
         { name: "spawnMode", content: tdm.any },
         { name: "reflect_bullets", content: tdm.boolean },
+        { name: "no_spawn_collision", content: tdm.boolean },
+        { name: "is_ghost", content: tdm.boolean },
         {
             name: "generate",
             content: {
@@ -399,6 +401,8 @@ export interface BuildingDef extends Definition{
     no_collisions?: boolean
     no_bullet_collision?: boolean
     reflect_bullets?:boolean
+    no_spawn_collision?:boolean
+    is_ghost?:boolean
 
     ceiling?:BuildingCeilingDef[]
     floor_image?:(FrameDef&{create_shadow?:boolean})[]
@@ -443,8 +447,7 @@ export const buildings_factory={
             const rect=new RectHitbox2D(min,max)
             return mergeDeep({
                 idString:id,
-                no_collisions:true,
-                no_bullet_collision:true,
+                is_ghost:true,
                 hitbox:rect,
                 floor_image:[
                     {image:settings.floor??"container_floor",tint:tint,scale:2.97},
@@ -492,8 +495,7 @@ export const buildings_factory={
             return mergeDeep({
                 idString:id,
                 hitbox:rect,
-                no_collisions:true,
-                no_bullet_collision:true,
+                is_ghost:true,
                 floor_image:[
                     {image:settings.floor??"container_floor",tint:tint,scale:2.97},
                 ],
@@ -625,6 +627,9 @@ export const buildings_factory={
         bottom?:DeepPartial<BuildingDef>
         content?:BuildingObstacles[]
     }={}):BuildingDef[]{
+        const min=v2(-2.76,-2.76)
+        const max=v2(2.76,2.76)
+        const rect=new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65))
         return [
             mergeDeep({
                 idString:id,
@@ -643,15 +648,13 @@ export const buildings_factory={
                         }
                     ],
                 },
-                no_bullet_collision:true,
-                no_collisions:true,
+                is_ghost:true,
                 hitbox:RectHitbox2D.centered(v2(0,0),v2(1,1)),
             },settings.top??{}),
             mergeDeep({
                 idString:id+"_bottom",
-                reflect_bullets:true,
                 floor_image:[
-                    {image:"small_bunker_floor_2",scale:4,zIndex:zIndexes.BuildingFloor1},
+                    {image:"small_bunker_floor_2",scale:4.4,zIndex:zIndexes.BuildingFloor1},
                     {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
                 ],
                 ceiling:[
@@ -659,6 +662,7 @@ export const buildings_factory={
                         frame:{
                             image:"small_bunker_ceiling_1",
                             position:v2(0,0),
+                            scale:2.15,
                             rotation:Math.PI
                         },
                         hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
@@ -669,37 +673,32 @@ export const buildings_factory={
                     sub_building:[
                         {
                             def:"small_iron_stairs_up",
-                            position:v2.new(-3.28,0),
+                            position:v2.new(-3.45,0),
                             rotation:2,
                         },
                     ],
                     obstacles:[
                         ...settings.content??[]
                     ],
-                    /*walls:[
+                    walls:[
                         {
                             tint:0x4a4c4d,
-                            positions:[[v2(-2.8,-0.85),v2(-2.8,-2.8),v2(2.8,-2.8),v2(2.8,2.8),v2(-2.8,2.8),v2(-2.8,0.85)]],
+                            positions:[[v2(min.x,-0.84),min,v2(max.x,min.y),max,v2(min.x,max.y),v2(min.x,0.84)]],
+                            reflect_bullets:true,
+                            width:0.3,
+                            stroke_width:0.1,
+                            assets:{
+                                particles:{
+                                    particle:"metal_particle",
+                                    tint:0x404143
+                                },
+                                sounds:hit_sounds,
+                            },
                         }
-                    ]*/
+                    ]
                 },
-                assets:{
-                    particles:{
-                        particle:"metal_particle",
-                        tint:0x404143
-                    },
-                    sounds:hit_sounds,
-                },
-                hitbox:new HitboxGroup2D(
-                    ...RectHitbox2D.wall_enabled_list(v2(-2.65,-2.65),v2(2.65,2.65),{
-                        bottom:true,
-                        top:true,
-                        left:false,
-                        right:true
-                    },0.22),
-                    new RectHitbox2D(v2(-2.65,-2.65),v2(-2.45,-0.85)),
-                    new RectHitbox2D(v2(-2.65,0.85),v2(-2.45,2.65))
-                ),
+                hitbox:rect,
+                is_ghost:true,
             },settings.bottom??{})
         ]
     },
@@ -784,8 +783,7 @@ export const buildings_factory={
             const doors_tint=settings.doors_tint??walls_tint
             return mergeDeep({
                 idString:id,
-                no_collisions:true,
-                no_bullet_collision:true,
+                is_ghost:true,
                 assets:{
                     particles:{
                         particle:"plank_particle",
@@ -1147,7 +1145,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                 {def:"airdrop_locked",position:v2.zero},
 
                 //{def:"barrel",position:v2(1.7,1.7)},
-                {def:"metal_door",position:v2(-2.55,-0.7),rotation:1,variation:7}
+                {def:"metal_door",position:v2(-2.75,-0.7),rotation:1,variation:7}
             ]
         }),
 

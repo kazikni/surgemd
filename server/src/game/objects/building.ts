@@ -282,6 +282,7 @@ export class Building extends StaticBody {
 
         reflect_bullets:false,
         no_collision:true,
+        no_spawn_collision:false,
         no_pathfinding_collision:false,
         no_bullets_collision:true,
         passable_by_bullets:false,
@@ -318,14 +319,21 @@ export class Building extends StaticBody {
         if(def.hitbox)this.physical_data.hitbox=def.hitbox.clone()
 
         if(this.def.spawnHitbox){
-            this.physical_data.spawn_hitbox=this.def.spawnHitbox.clone()
+            this.physical_data.spawn_hitbox=this.def.spawnHitbox
         }else{
             this.physical_data.spawn_hitbox=this.physical_data.hitbox
         }
 
         this.allow_tick=this.def.generate.puzzles!==undefined
-        this.physical_data.no_collision=this.def.no_collisions??false
-        this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+        if(this.def.is_ghost){
+            this.physical_data.no_bullets_collision=true
+            this.physical_data.no_collision=true
+            this.physical_data.no_spawn_collision=false
+        }else{
+            this.physical_data.no_collision=this.def.no_collisions??false
+            this.physical_data.no_spawn_collision=this.def.no_spawn_collision??false
+            this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
+        }
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
 
         this.update_hitbox()

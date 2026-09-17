@@ -21,6 +21,7 @@ export class Walls extends StaticBody {
         no_collision:false,
         no_pathfinding_collision:false,
         no_bullets_collision:false,
+        no_spawn_collision:true,
         passable_by_bullets:false,
         hitbox:new NullHitbox2D(v2.zero),
         stairs:[]

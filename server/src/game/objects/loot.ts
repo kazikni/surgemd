@@ -53,7 +53,7 @@ export const loot_physics:ObjectComponent<Loot>={
                             if(other.id===obj.id)continue
                             const col=obj.hitbox.overlap_collision(other.hitbox)
                             if(col){
-                                obj.velocity=v2.sub(obj.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.5*dt))
+                                obj.velocity=v2.sub(obj.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.4*dt))
                             }
                             break
                         }
@@ -78,7 +78,7 @@ export const loot_physics:ObjectComponent<Loot>={
                     }
                 }
                 if(obj.velocity.x!=0||obj.velocity.y!=0){
-                    v2m.scale(obj.velocity,obj.velocity,1/(1+dt*3.5))
+                    v2m.scale(obj.velocity,obj.velocity,1/(1+dt*3.3))
                     const pos=v2.add(obj.position,v2.scale(obj.velocity,speed*dt))
                     obj.position=obj.scene.map.clamp_hitbox(pos,obj.base_hitbox)
                 }

@@ -38,6 +38,9 @@ export abstract class StaticBody extends GameObject{
 
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         if(!this.assets_data.particles)return
+        const angle=random.rad()
+        let angle_dest=random.float(0.1,4)
+        if(Math.random()<0.5)angle_dest*=-1
         const p=new ABParticle2D({
             frame:{
                 image:random.choose(this.assets_data.particles.images),
@@ -45,15 +48,15 @@ export abstract class StaticBody extends GameObject{
             },
             position,
             speed:random.float(1,2)*force,
-            angle:random.rad(),
+            angle:angle,
             direction:random.rad(),
             life_time:random.float(1,2),
             zIndex:zIndexes.Particles,
             scale:small?random.float(0.2,0.5):random.float(0.5,1),
             tint:this.assets_data.particles.tint,
             to:{
-                speed:random.float(0.1,1),
-                angle:random.rad(),
+                speed:random.float(0.1,0.2),
+                angle:angle+angle_dest,
                 tint:this.assets_data.particles.tint===undefined?ColorM.default.transparent:ColorM.mult_rgba(this.assets_data.particles.tint,1,1,1,0),
                 tint_ease:ease.quarticIn
             }

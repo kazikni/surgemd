@@ -76,6 +76,7 @@ export class Obstacle extends StaticBody{
         no_collision:true,
         no_bullets_collision:true,
         no_pathfinding_collision:true,
+        no_spawn_collision:false,
         passable_by_bullets:false,
 
         stairs:[]
@@ -244,6 +245,7 @@ export class Obstacle extends StaticBody{
         this.physical_data.no_collision=this.def.no_collision??false
         this.physical_data.no_bullets_collision=this.def.no_bullets_collision??false
         this.physical_data.no_pathfinding_collision=this.def.no_pathfinding_collision??false
+        this.physical_data.no_spawn_collision=this.def.no_spawn_collision??false
         this.physical_data.reflect_bullets=this.def.reflect_bullets??false
         this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
 

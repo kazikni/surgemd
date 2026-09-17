@@ -15,6 +15,7 @@ export type StaticBodyPhysicalData={
     no_collision:boolean
     no_pathfinding_collision:boolean
     no_bullets_collision:boolean
+    no_spawn_collision:boolean
     passable_by_bullets:boolean
 
     stairs:StairData[]

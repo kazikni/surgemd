@@ -203,8 +203,8 @@ export class Obstacle extends StaticBody{
     die(){
         if(this.health_data.dead)return
         this.health_data.dead=true
-        const ac=random.int(8,13)
         if(this.game.save.get_variable("sv_graphics_particles")>=GraphicsDConfig.Normal){
+            const ac=random.int(8,10)
             for(let i=0;i<ac;i++){
                 this._add_own_particle(this.hitbox.random_point(),2)
             }

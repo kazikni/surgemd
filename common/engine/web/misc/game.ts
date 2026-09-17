@@ -123,6 +123,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
             c.on_render(dt)
         }
         this.on_render(dt)
+        this.call_event("render",dt)
 
         this.clock.profiler.end(3)
     }
@@ -132,6 +133,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
             t.update(dt)
         }
         this.on_update(dt)
+        this.call_event("tick",dt)
         this.draw(dt)
         this.sounds.update()
         this.input_manager.tick()

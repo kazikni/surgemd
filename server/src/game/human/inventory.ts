@@ -1110,8 +1110,6 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         this.set_weapon_index(0)
 
-        this.owner.equipment_data.scope=this.owner.equipment_data.default_scope
-
         this.net_sync.weapons=true
         this.net_sync.items=true
         this.net_sync.aitems=true

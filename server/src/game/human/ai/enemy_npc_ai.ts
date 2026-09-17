@@ -1,4 +1,3 @@
-import { Building } from "../../objects/building.ts"
 import { GameItemType } from "common/scripts/definitions/utils.ts"
 import { GunItem } from "../inventory.ts"
 import { StatedBotAi } from "./simple_bot_ai.ts";
@@ -8,6 +7,7 @@ import { type Obstacle } from "../../objects/obstacle.ts";
 import { Stream } from "common/engine/core/net/stream.ts";
 import { ServerGameObject } from "../../others/gameObject.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
+import { type StaticBody } from "../../objects/static_body.ts";
 type EnemyState =
     | "idle"
     | "random_walking"
@@ -132,7 +132,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
                 case GameObjectType.Building:
                 case GameObjectType.StaticBody:
                 case GameObjectType.Walls:
-                    if((o as Building).def.no_collisions)break
+                    if((o as StaticBody).physical_data.no_collision)break
                     return false
             }
         }

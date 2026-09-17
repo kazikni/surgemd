@@ -26,18 +26,7 @@ export class Walls extends StaticBody{
     ////////////////////////////
     // Assets                 //
     ////////////////////////////
-    override assets_data: StaticBodyAssetData&{
-        sounds:{
-            break?:Sound
-        }
-    }={
-        particles:{
-            images:[]
-        },
-        sounds:{
-            hit:[],
-        }
-    }
+    override assets_data:StaticBodyAssetData={sounds:{hit:[]}}
 
     constructor(){
         super()
@@ -47,13 +36,10 @@ export class Walls extends StaticBody{
         this.wall.position=this.position
         this.wall.rotation=Angle.side_rad(this.physical_data.side as Orientation)
         this.wall.fill_color=ColorM.number(tint)
-        this.wall.stroke_color=ColorM.mult_hsv(this.wall.fill_color,1.2,undefined,0.55)
+        this.wall.stroke_color=ColorM.mult_hsv(this.wall.fill_color,1.05,undefined,0.55)
         this.wall.set_wall(pos,width,stroke_width)
         if(hit_sounds)this.set_hit_sounds_def(hit_sounds)
-        if(hit_particles)this.set_hit_particles_def("wall",0,{
-            tint:tint,
-            particle:"plank_particle",
-        })
+        if(hit_particles)this.set_hit_particles_def("wall",0,hit_particles)
 
         this.physical_data.hitbox=new HitboxGroup2D(...HitboxGroup2D.walls(pos,width))
         this.base_hitbox=this.physical_data.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)

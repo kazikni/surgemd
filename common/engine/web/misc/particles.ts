@@ -3,7 +3,7 @@ import { Particle2D } from "../../core/game/particles.ts"
 import { v2, v2m, Vec2 } from "../../core/math/vec2.ts"
 import { Color, ColorM } from "../../core/math/color.ts"
 import { Sprite2D } from "../2d/sprite.ts"
-import { Numeric } from "../../core/math/utils.ts"
+import { EaseFunction, Numeric } from "../../core/math/utils.ts"
 import { type ClientGame } from "./game.ts";
 
 export abstract class ClientParticle2D extends Particle2D{
@@ -34,6 +34,7 @@ export interface ABParticle2Config{
         angle?:number
         scale?:number
         tint?:Color
+        tint_ease?:EaseFunction
         velocity?:Vec2
     }
     on_tick?:(obj:ABParticle2D,dt:number)=>void
@@ -98,7 +99,7 @@ export class ABParticle2D extends ClientParticle2D{
             this.sprite._scale._y=this.scale
         }
         if(this.config.to?.tint){
-            this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,tt)
+            this.sprite.tint=ColorM.lerp(this.config.tint??ColorM.default.white,this.config.to.tint,this.config.to.tint_ease===undefined?tt:this.config.to.tint_ease(tt))
         }
         let velocity=this.config.velocity
         const vel=v2.from_RadAngle(dire,speed)

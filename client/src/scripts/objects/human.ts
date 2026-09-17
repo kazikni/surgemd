@@ -361,10 +361,11 @@ export class Human extends Humanoid{
                         layer:this.layer,
     
                         life_time:random.float(1,3),
-                        tint:ColorM.hex("#fff"),
+                        tint:ColorM.default.white,
                         to:{
                             angle:angle+random.neg_value(6),
-                            tint:ColorM.hex("#fff0"),
+                            tint:ColorM.default.transparent,
+                            tint_ease:ease.quarticIn
                         }
                     }))
                 }
@@ -492,14 +493,20 @@ export class Human extends Humanoid{
     play_casing_particle(def:GunDef,barrel_offset:number=0,position?:Vec2){
         if(!def.case_particle)return
         const count=def.case_particle?.count??1
+        const smm=def.case_particle.speed??{min:1,max:2}
+        const dmm=def.case_particle.direction??{min:0,max:1}
         for(let i=0;i<count;i++){
             const case_position=v2(this.animation.recoil_state!==-1?-this.animation.recoil_walk*this.animation.recoil_time:0,barrel_offset)
             v2m.add(case_position,case_position,def.case_particle.position)
             if(position)v2m.add(case_position,case_position,position)
             v2m.rotate_RadAngle(case_position,this.rotation)
             v2m.add(case_position,case_position,this.position)
-            let direction:number=(3.141592/2)+random.float(0,1)
-            if(def.case_particle.all_direction&&(i%2!==0))direction-=3.85
+            let direction:number=(3.141592/2)+random.float(dmm.min,dmm.max)
+            let rotation_dest:number=random.float(1,10)
+            if(def.case_particle.all_direction&&(i%2!==0)){
+                direction*=-1
+                rotation_dest*=-1
+            }
             const p=new ABParticle2D({
                 direction:this.rotation+direction,
                 life_time:1,
@@ -510,13 +517,14 @@ export class Human extends Humanoid{
                     layer:this.layer,
                     zIndex:zIndexes.Particles
                 },
-                speed:random.float(1,2),
+                speed:random.float(smm.min,smm.max),
                 angle:this.rotation,
-                velocity:v2.clone(this._velocity),
                 scale:2,
                 to:{
-                    angle:this.rotation+random.float(1,10),
-                    scale:0.5
+                    angle:this.rotation+rotation_dest,
+                    scale:1,
+                    tint:ColorM.default.transparent,
+                    tint_ease:ease.quarticIn
                 }
             })
             this.scene.particles.add_particle(p)
@@ -575,9 +583,9 @@ export class Human extends Humanoid{
                     speed:random.float(def.gas_particles.speed.min,def.gas_particles.speed.max),
                     scale:0.03,
                     tint:ColorM.hex("#fff5"),
-                    velocity:v2.clone(this._velocity),
                     to:{
-                        tint:ColorM.hex("#fff0"),
+                        tint:ColorM.default.transparent,
+                        tint_ease:ease.quarticIn,
                         scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)
                     }
                 })

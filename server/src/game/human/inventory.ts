@@ -154,7 +154,8 @@ export class GunItem extends GunItemBase implements LItem{
             spread*=def.idle_spread
         }
         if(def.fire_sequence){
-            if(def.fire_sequence.spread)spread*=Numeric.lerp(def.fire_sequence.spread.begin,def.fire_sequence.spread.end??1,this.fire_sequence)
+            const time=def.fire_sequence.ease===undefined?this.fire_sequence:def.fire_sequence.ease(this.fire_sequence)
+            if(def.fire_sequence.spread)spread*=Numeric.lerp(def.fire_sequence.spread.begin,def.fire_sequence.spread.end??1,time)
             this.fire_sequence=Math.min(this.fire_sequence+def.fire_sequence.increse,1)
             //console.log(this.fire_sequence)
         }
@@ -1109,11 +1110,17 @@ export class GInventory extends GInventoryBase<LItem>{
         }
         this.set_weapon_index(0)
 
+        this.owner.equipment_data.scope=this.owner.equipment_data.default_scope
+
         this.net_sync.weapons=true
         this.net_sync.items=true
         this.net_sync.aitems=true
         this.net_sync.iitems=true
         this.owner.equipment_data.dirty=true
+    }
+    override clear(){
+        super.clear()
+        this.owner.equipment_data.scope=this.owner.equipment_data.default_scope
     }
 
     net_update(){

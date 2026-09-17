@@ -451,7 +451,6 @@ export class Game extends ClientGame<GameObject>{
         }
         this.call_event("load",agro)
         this.loaded=true
-
         this.tilesets_instance={
             1:Graphics2D.make_tileset(Tilesets[1],this.scene_2d.camera.meter_size,this.resources)
         }
@@ -479,7 +478,6 @@ export class Game extends ClientGame<GameObject>{
         }
         this.ui.start()
         this.join()
-
 
         this.scope_zoom=1
         this.menu.hide_loading_screen()

@@ -1,4 +1,4 @@
-import { DeepPartial, Definition, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
+import { DeepPartial, Definition, ease, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
 import { GasParticles, ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type GunDef={
@@ -641,6 +641,7 @@ export function Guns_Default_Init():GunDef[]{
             idle_spread:0.4,
             case_particle:{
                 position:v2.new(0.5,0.1),
+                direction:{min:1.75,max:3},
                 at_begin:true,
                 all_direction:true,
                 count:6,
@@ -748,6 +749,7 @@ export function Guns_Default_Init():GunDef[]{
             },
             case_particle:{
                 position:v2.new(0.5,0.1),
+                direction:{min:1.75,max:3},
                 at_begin:true,
                 all_direction:true,
                 count:5,
@@ -790,8 +792,9 @@ export function Guns_Default_Init():GunDef[]{
             spread:7.5,
             fire_sequence:{
                 decay:0.55,
-                increse:0.085,
-                spread:{begin:0.15}
+                increse:0.065,
+                ease:ease.quarticOut,
+                spread:{begin:0.15},
             },
 
             ammo_spawn:{
@@ -1017,6 +1020,7 @@ export function Guns_Default_Init():GunDef[]{
             rank:ItemRank.D,
             fire_delay:0.035,
             spread:10,
+            idle_spread:0.8,
 
             ammo_spawn:{
                 amount:96
@@ -1282,12 +1286,14 @@ export function Guns_Default_Init():GunDef[]{
         guns_factory.shotgun_buckshot("aipc39","p76",{
             name:"AIPC-39",
             fire_delay:0.2,
+            barrel_length:0.9,
 
             ammo_spawn:{
                 amount:10
             },
             case_particle:{
                 position:v2.new(0.5,0.1),
+                direction:{min:1.75,max:3},
                 at_begin:true,
                 all_direction:true,
                 count:2,

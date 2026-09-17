@@ -96,11 +96,6 @@ export const human_equipments:ObjectComponent<Human>={
                 o.equipment_data.vest=o.game.definitions.vests.getFromNumberSafe(stream.read_uint16())
             }
         ],
-        [ObjectsComponentEvent.human_clear]:[
-            (obj,inventory)=>{
-                if(inventory)obj.equipment_data.scope=obj.equipment_data.default_scope
-            }
-        ],
         [ObjectsComponentEvent.human_apply_modifiers]:[
             (obj,base)=>{
                 if(obj.equipment_data.helmet?.modifiers)apply_modifiers(base,obj.equipment_data.helmet.modifiers)

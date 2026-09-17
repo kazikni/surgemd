@@ -61,8 +61,8 @@ return (class extends LevelPlayerScript{
                     generation:{
                         base:FloorType.Grass,
                         spawn:[
-                            {def:"shed",count:1},
-                            {def:map_spawns.containers,count:1},
+                            {def:"shed",count:2},
+                            {def:map_spawns.containers,count:2},
 
                             {def:"sillo",count:1},
                             {def:map_spawns.trees,count:10},

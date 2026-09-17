@@ -1,6 +1,6 @@
 import { ABParticle2D, Sprite2D, type AnimatedContainerModeCallback } from "common/engine/web.ts";
 import { type Human } from "../objects/human.ts";
-import { ColorM, FrameDef, random, v2, Vec2 } from "common/engine/core.ts";
+import { ColorM, ease, FrameDef, random, v2, Vec2 } from "common/engine/core.ts";
 import { GraphicsDConfig } from "../others/config.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { ClientDecal } from "../objects/client_decal.ts";
@@ -28,9 +28,10 @@ export const DefaultHumanModes={
                         image:"shield_part"
                     },
                     angle:a,
-                    tint:ColorM.rgba(255,255,255,255),
+                    tint:ColorM.default.white,
                     to:{
-                    tint:ColorM.rgba(255,255,255,0),
+                        tint:ColorM.default.transparent,
+                        tint_ease:ease.quarticIn,
                         scale:0.3,
                         angle:random.float(-10,10),
                         speed:5,
@@ -97,14 +98,14 @@ export const DefaultHumanModes={
                     zIndex:zIndexes.Particles
                 },
                 direction:random.rad(),
-                life_time:random.float(0.5,1),
+                life_time:random.float(0.75,1),
                 position:position,
                 speed:random.float(0.1,0.4),
                 angle:random.rad(),
                 tint:tint,
                 to:{
                     scale:1.5,
-                    tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0)
+                    tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0),
                 },
                 zIndex:zIndexes.Particles
             }))
@@ -140,8 +141,8 @@ export const DefaultHumanModes={
                 position:h.position,
                 zIndex:zIndexes.Particles,
 
-                life_time:random.float(1,2),
-                speed:random.float(1,2),
+                life_time:random.float(2,4),
+                speed:random.float(0.5,1),
                 tint:ColorM.rgba(170,10,40),
                 to:{
                     scale:random.float(2,5),
@@ -176,7 +177,8 @@ export const DefaultHumanModes={
                 tint:ColorM.default.white,
                 to:{
                     scale:random.float(1.7,3),
-                    tint:ColorM.rgba(255,255,255,0),
+                    tint:ColorM.default.transparent,
+                    tint_ease:ease.quarticIn,
                     angle:angle+random.neg_float(0.5,3)
                 },
             }))

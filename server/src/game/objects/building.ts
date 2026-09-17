@@ -376,17 +376,16 @@ export class Building extends StaticBody {
         this.begin_generate(position)
         const srotation=Angle.side_rad(this.physical_data.side)
 
-        /*
         for(const f of this.def.generate.floors??[]){
-            const hb=f.hitbox.transform()
-            const l=this.layer+(f.layer??0)
-            this.scene.map.terrain.add_floor(f.type,hb)
-        }*/
+            const hb=f.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
+            hb.translate(this.position)
+            this.scene.map.terrain.add_floor({hb:hb,smooth:false,layer:(f.layer??0)+this.layer,type:f.type,visible:f.visible??false})
+        }
         for (const l of this.def.generate.loots ?? []) {
             const items = this.game.get_loot_table(l.table)
             const p = v2.add_with_orientation(this.position, l.position, this.physical_data.side)
             for (const li of items) {
-                this.scene.add_loot(p, {item:li.item, count:li.count}, this.layer)
+                this.scene.add_loot(p, li, this.layer)
             }
         }
         for(const wall of this.def.generate.walls??[]) {
@@ -458,7 +457,7 @@ export class Building extends StaticBody {
 
             this.children.push({obj,def:o,type:0})
         }
-        for (const b of this.def.generate.sub_building ?? []) {
+        for(const b of this.def.generate.sub_building ?? []){
             const def=this.game.definitions.buildings.getFromString(typeof b.def==="string"?b.def:random.weight2(b.def)!.def)
             const side=this.physical_data.side
             const p = v2.add_with_orientation(this.position, b.position, side)

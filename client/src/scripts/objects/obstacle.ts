@@ -87,7 +87,7 @@ export class Obstacle extends StaticBody{
         },
         sounds:{
             hit:[],
-        }
+        },
     }
 
     ////////////////////////////

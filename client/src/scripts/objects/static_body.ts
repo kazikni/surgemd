@@ -3,7 +3,7 @@ import { GameObject } from "../others/gameObject.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { GraphicsDConfig } from "../others/config.ts";
 import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { Color, ColorM, Hitbox2D, random, Vec2 } from "common/engine/core.ts";
+import { Color, ColorM, ease, Hitbox2D, random, Vec2 } from "common/engine/core.ts";
 export type StaticBodyPhysicalData={
     hitbox:Hitbox2D
     side:number
@@ -38,7 +38,6 @@ export abstract class StaticBody extends GameObject{
 
     _add_own_particle(position:Vec2,force:number=1,small:boolean=false){
         if(!this.assets_data.particles)return
-        const tint=this.assets_data.particles.tint
         const p=new ABParticle2D({
             frame:{
                 image:random.choose(this.assets_data.particles.images),
@@ -55,7 +54,8 @@ export abstract class StaticBody extends GameObject{
             to:{
                 speed:random.float(0.1,1),
                 angle:random.rad(),
-                tint:ColorM.mult_rgba(tint??ColorM.default.white,1,1,1,0),
+                tint:this.assets_data.particles.tint===undefined?ColorM.default.transparent:ColorM.mult_rgba(this.assets_data.particles.tint,1,1,1,0),
+                tint_ease:ease.quarticIn
             }
         })
         this.scene.particles.add_particle(p)
@@ -88,7 +88,9 @@ export abstract class StaticBody extends GameObject{
             images:[],
         }
         const particle=particles.particle??id+"_particle"
-        if(particles.tint)this.assets_data.particles.tint=ColorM.number(typeof particles.tint==="number"?particles.tint:particles.tint[variation])
+        if(particles.tint){
+            this.assets_data.particles.tint=ColorM.number(typeof particles.tint==="number"?particles.tint:particles.tint[variation])
+        }
         if(particles.variations){
             for(let i=0;i<particles.variations;i++){
                 this.assets_data.particles.images.push(`${particle}_${i+1}`)

@@ -455,6 +455,6 @@ export class MinimapModule extends UIModule<Game>{
     override on_clear():void{
         this.pings.length=0
         this.zones.length=0
-        this.toggle_fullscreen(false)
+        //this.toggle_fullscreen(false)
     }
 }

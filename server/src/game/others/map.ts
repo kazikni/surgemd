@@ -1,5 +1,4 @@
 import { CircleHitbox2D,Stream, Polygon2D, PolygonHitbox2D, random, RectHitbox2D, SeededRandom, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { type Game } from "./game.ts";
 import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts"
 import { MapDef, MapObjectGeneration, MapStructureDef } from "common/scripts/definitions/maps/base.ts"
 import { encode_map_config, MapConfig, MapObjectEncode } from "common/scripts/packets/map_message.ts"

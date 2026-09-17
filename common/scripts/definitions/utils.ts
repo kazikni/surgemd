@@ -1,4 +1,4 @@
-import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1 } from "../../engine/core.ts"
+import { Definition, Stream, Vec2, WeightDefinition, TDObjectProperty, TDType, tdm, TD, DefinitionTD, Random1, MinMax1, EaseFunction } from "../../engine/core.ts"
 import { FireMode, ItemRank } from "../others/item.ts"
 export enum PacketType{
     Feed=1,
@@ -399,6 +399,7 @@ export interface ItemFireDefinition{
         spread?:{begin:number,end?:number}
         increse:number
         decay:number
+        ease?:EaseFunction
     }
 
     spread?:number
@@ -416,6 +417,8 @@ export interface ItemFireDefinition{
         position:Vec2
         all_direction?:boolean
         at_begin?:boolean
+        speed?:MinMax1
+        direction?:MinMax1
         count?:number
         frame?:string
         sound?:string

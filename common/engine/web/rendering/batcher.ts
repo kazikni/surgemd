@@ -101,11 +101,10 @@ export class Batcher {
     lock(){
         for(const c of this.commands){
             if(c.type===0){
+                c.stream.lock()
                 if(c.buffer){
-                    c.buffer.upload_u8(c.stream.data)
-                    c.stream.data=new Uint8Array()
-                }else{
-                    c.stream.lock()
+                    c.buffer.upload_u8(c.stream.data.subarray(0,c.stream.length))
+                    c.stream.clear()
                 }
             }else if(c.type===1){
                 c.batcher.lock()

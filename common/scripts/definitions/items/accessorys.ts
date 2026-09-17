@@ -27,9 +27,8 @@ export interface AccessoryDef extends Definition{
 export function AccessoryDropLootFromObstacle(table:string){
     return (e:any)=>{
         const loot=e.human.game.get_loot_table(table)
-
         for(const l of loot){
-            e.human.game.scene_2d.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
+            e.human.scene.add_loot(e.obstacle.hitbox.random_point(),{item:l.item,count:l.count},e.obstacle.layer)
         }
     }
 }

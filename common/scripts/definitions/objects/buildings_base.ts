@@ -410,7 +410,7 @@ export interface BuildingDef extends Definition{
         sub_building?:BuildingSubBuilding[]
         tilemapv?:BuildingTilemapV[]
         loots?:BuildingLoot[]
-        floors?:{hitbox:Hitbox2D,type:FloorType,layer?:number}[]
+        floors?:{hitbox:Hitbox2D,type:FloorType,visible?:boolean,layer?:number}[]
         stair_data?:{
             hitbox:Hitbox2D
             dest:number
@@ -438,22 +438,35 @@ export const buildings_factory={
             ceiling?:string,
             b?:DeepPartial<BuildingDef>
         }={}){
-            const min=v2(-2.44,-1.2)
-            const max=v2(2.44,1.2)
+            const min=v2(-2.24,-1)
+            const max=v2(2.44,1)
+            const rect=new RectHitbox2D(min,max)
             return mergeDeep({
                 idString:id,
-                reflect_bullets:true,
-                hitbox:RectHitbox2D.wall_enabled(min,max,{
-                    left:true,
-                    bottom:true,
-                    right:false,
-                    top:true
-                },0.4),
-                spawnHitbox:new RectHitbox2D(min,max),
+                no_collisions:true,
+                no_bullet_collision:true,
+                hitbox:rect,
                 floor_image:[
-                    {image:settings.floor??"container_floor",tint:tint,scale:3},
-                    {image:settings.floor??"container_walls_1",tint:tint,zIndex:zIndexes.BuildingsWalls1}
+                    //{image:settings.floor??"container_floor",tint:tint,scale:2.97},
                 ],
+                
+                generate:{
+                    walls:[{
+                        tint:tint,
+                        stroke_width:0.15,
+                        width:0.4,
+                        reflect_bullets:true,
+                        assets:{
+                            particles:{
+                                particle:"metal_particle",
+                                tint:tint
+                            },
+                            sounds:hit_sounds.heavy_metal,
+                        },
+                        positions:[[v2(max.x,min.y),v2(min.x,min.y),v2(min.x,max.y),v2(max.x,max.y)]]
+                    }],
+                    floors:[{hitbox:rect,type:FloorType.Metal}]
+                },
                 ceiling:[
                     {
                         frame:{
@@ -465,11 +478,6 @@ export const buildings_factory={
                     }
                 ],
                 assets:{
-                    particles:{
-                        particle:"metal_particle",
-                        tint:tint
-                    },
-                    sounds:hit_sounds.heavy_metal,
                 },
             } as BuildingDef,settings.b??{})
         },
@@ -478,29 +486,34 @@ export const buildings_factory={
             ceiling?:string,
             b?:DeepPartial<BuildingDef>
         }={}){
-            const min=v2(-2.44,-1.2)
-            const max=v2(2.44,1.2)
+            const min=v2(-2.43,-1)
+            const max=v2(2.43,1)
+            const rect=new RectHitbox2D(min,max)
             return mergeDeep({
                 idString:id,
-                reflect_bullets:true,
-                hitbox:RectHitbox2D.wall_enabled(min,max,{
-                    left:false,
-                    bottom:true,
-                    right:false,
-                    top:true
-                },0.4),
-                spawnHitbox:new RectHitbox2D(min,max),
-                assets:{
-                    particles:{
-                        particle:"metal_particle",
-                        tint:tint
-                    },
-                    sounds:hit_sounds.heavy_metal,
-                },
+                hitbox:rect,
+                no_collisions:true,
+                no_bullet_collision:true,
                 floor_image:[
-                    {image:settings.floor??"container_floor",tint:tint,scale:3},
-                    {image:settings.floor??"container_walls_2",tint:tint,zIndex:zIndexes.BuildingsWalls1}
+                    {image:settings.floor??"container_floor",tint:tint,scale:2.97},
                 ],
+                generate:{
+                    walls:[{
+                        tint:tint,
+                        stroke_width:0.15,
+                        width:0.4,
+                        reflect_bullets:true,
+                        assets:{
+                            particles:{
+                                particle:"metal_particle",
+                                tint:tint
+                            },
+                            sounds:hit_sounds.heavy_metal,
+                        },
+                        positions:[[v2(min.x,min.y),v2(max.x,min.y)],[v2(min.x,max.y),v2(max.x,max.y)]]
+                    }],
+                    floors:[{hitbox:rect,type:FloorType.Metal}]
+                },
                 ceiling:[
                     {
                         frame:{

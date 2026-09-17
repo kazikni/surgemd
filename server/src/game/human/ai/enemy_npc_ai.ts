@@ -244,6 +244,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             return
         }
         this.rot_speed=1
+        this.state_duration=0
         if (this.stateTime>=this.params.detection_time) {
             this.setState("engaged")
         }
@@ -254,7 +255,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             this.setState("go_last_seen")
             return
         }
-        if(this.stateTime<=this.params.reaction_time){
+        this.state_duration+=dt
+        if(this.state_duration<=this.params.reaction_time){
             this.movement={dir:0,scale:0}
             return
         }
@@ -290,7 +292,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             }
         }else if(hand?.item_type===GameItemType.gun) {
             self.input.reload=((hand as GunItem).reloading ||!(hand as GunItem).has_ammo(self))
-            if(!self.input.reload&&this.stateTime>=this.params.shoot_time+this.params.reaction_time&&this.isAimAligned(self, this.seenHuman.position)){
+            if(!self.input.reload&&this.state_duration>=this.params.shoot_time+this.params.reaction_time&&this.stateTime>=this.params.shoot_time&&this.isAimAligned(self, this.seenHuman.position)){
                 self.input.using_item = true
                 self.input.using_item_down = true
             }

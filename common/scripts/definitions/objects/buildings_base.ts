@@ -447,7 +447,7 @@ export const buildings_factory={
                 no_bullet_collision:true,
                 hitbox:rect,
                 floor_image:[
-                    //{image:settings.floor??"container_floor",tint:tint,scale:2.97},
+                    {image:settings.floor??"container_floor",tint:tint,scale:2.97},
                 ],
                 
                 generate:{

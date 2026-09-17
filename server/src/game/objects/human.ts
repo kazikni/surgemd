@@ -477,8 +477,8 @@ export class Human extends Humanoid{
         this.allow_checkpoint=false
 
         this.add_component(humanoid)
-        this.add_component(human_equipments)
         this.add_component(human_inventory)
+        this.add_component(human_equipments)
     }
 
     scope_change(change:ScopeChange={}){

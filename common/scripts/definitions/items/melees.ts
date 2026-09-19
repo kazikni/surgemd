@@ -639,8 +639,8 @@ export function Melees_Default_Init():MeleeDef[]{
             damage_delays:[0.3],
             rig_arms:{
                 left:{
-                    position:v2(DefaultFistRig.right!.position.x,DefaultFistRig.right!.position.y-0.15),
-                    rotation:DefaultFistRig.left!.rotation+0.5,
+                    position:DefaultFistRig.left!.position,
+                    rotation:DefaultFistRig.left!.rotation,
                     zIndex:2,
                 },
                 right:{
@@ -650,8 +650,8 @@ export function Melees_Default_Init():MeleeDef[]{
                 },
             },
             rig_image:{
-                position:DefaultFistRig.right!.position,
-                rotation:1.6,
+                position:DefaultFistRig.left!.position,
+                rotation:Angle.deg2rad(90),
                 zIndex:1,
                 hotspot:v2(0.15,0.7)
             },

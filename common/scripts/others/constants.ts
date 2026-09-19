@@ -100,6 +100,7 @@ export enum zIndexes{
     //Ground
     Terrain,
     Grid,
+    TilemapV,
     BuildingFloor1,
     BuildingsFloor2,
     BuildingsFloor3,

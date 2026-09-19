@@ -9,7 +9,7 @@ import { AmbientManager } from "../managers/ambientManager.ts";
 import { Human } from "../objects/human.ts";
 import { PrivateUpdate, SelfStateUpdate, UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
-import { Layers, zIndexes } from "common/scripts/others/constants.ts";
+import { zIndexes } from "common/scripts/others/constants.ts";
 import { API_BASE, ConfigCasters, ConfigDefaultActions, ConfigDefaultValues } from "./config.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Loot } from "../objects/loot.ts";

@@ -1069,32 +1069,34 @@ export const buildings_factory={
         ceiling?:string,
         b?:DeepPartial<BuildingDef>
     }={}){
-        const min=v2(-9.47,-4.95)
-        const max=v2(9.47,4.95)
-        const wall_size=0.31
-        const side_wall_size=1.4
+        const rect=new RectHitbox2D(v2(-9.3,-4.8),v2(9.3,4.8))
         return mergeDeep({
             idString:id,
-            reflect_bullets:true,
-            hitbox:new HitboxGroup2D(
-                new RectHitbox2D(min,v2(min.x+wall_size,min.y+side_wall_size)),
-                new RectHitbox2D(v2(min.x,max.y-side_wall_size),v2(min.x+wall_size,max.y)),
-                new RectHitbox2D(v2(max.x-wall_size,min.y),v2(max.x,min.y+side_wall_size)),
-                new RectHitbox2D(v2(max.x-wall_size,max.y-side_wall_size),v2(max.x,max.y)),
-                ...RectHitbox2D.wall_enabled_list(min,max,{
-                    left:false,
-                    bottom:true,
-                    right:false,
-                    top:true
-                },wall_size),
-            ),
-            spawnHitbox:new RectHitbox2D(v2(min.x-1,min.y),v2(max.x+1,max.y)),
+            is_ghost:true,
+            hitbox: rect,
             assets:{
                 particles:{
                     particle:"metal_particle",
                     tint:0x404143
                 },
                 sounds:hit_sounds.heavy_metal,
+            },
+            generate:{
+                walls:[
+                    {
+                        positions:[
+                            [v2(-9.3,-3),v2(-9.3,-4.8),v2(9.3,-4.8),v2(9.3,-3)],
+                            [v2(-9.3,3),v2(-9.3,4.8),v2(9.3,4.8),v2(9.3,3)]
+                        ],
+                        tint:0x4a4c4d,
+                        stroke_width:0.15,
+                        width:0.4,
+                        reflect_bullets:true
+                    },
+                ],
+                tilemapv:[
+                    //{def:"storehouse_floor"}
+                ]
             },
             floor_image:[
                 {image:settings.floor??"storehouse_floor_1",position:v2(5.85,0),rotation:Math.PI,scale:2.5},
@@ -1103,7 +1105,7 @@ export const buildings_factory={
             ceiling:[
                 {
                     frame:{image:settings.ceiling??"storehouse_ceiling_1",scale:2.5},
-                    hitbox:new RectHitbox2D(min,max),
+                    hitbox:rect,
                     scope_change:{}
                 }
             ]
@@ -1174,11 +1176,6 @@ export function Buildings_Default_Init():BuildingDef[]{
             b:{
                 generate:{
                     obstacles:[
-                        /*{def:buildings_spawns.box,position:v2(-0.5,-4)},
-                        {def:buildings_spawns.box,position:v2(0.5,-4)},
-                        {def:buildings_spawns.box,position:v2(-0.5,-3)},
-                        {def:buildings_spawns.box,position:v2(0.5,-3)},*/
-
                         {def:buildings_spawns.box,position:v2(-3,-4)},
                         {def:buildings_spawns.box,position:v2(-2,-4)},
                         {def:buildings_spawns.box,position:v2(-3,-3)},
@@ -1187,11 +1184,6 @@ export function Buildings_Default_Init():BuildingDef[]{
                         {def:buildings_spawns.box,position:v2(2,-4)},
                         {def:buildings_spawns.box,position:v2(3,-3)},
                         {def:buildings_spawns.box,position:v2(2,-3)},
-
-                        /*{def:buildings_spawns.box,position:v2(-0.5,4)},
-                        {def:buildings_spawns.box,position:v2(0.5,4)},
-                        {def:buildings_spawns.box,position:v2(-0.5,3)},
-                        {def:buildings_spawns.box,position:v2(0.5,3)},*/
 
                         {def:buildings_spawns.box,position:v2(-3,4)},
                         {def:buildings_spawns.box,position:v2(-2,4)},

@@ -1,4 +1,4 @@
-import { GameObjectType } from "common/scripts/others/constants.ts";
+import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { Stream, TilemapLayer } from "common/engine/core.ts";
 import { Graphics2D } from "common/engine/web.ts";
@@ -14,6 +14,7 @@ export class TilemapVisual extends GameObject{
 
     constructor(){
         super()
+        this.gfx.zIndex=zIndexes.TilemapV
     }
 
     override on_destroy(): void {
@@ -25,6 +26,7 @@ export class TilemapVisual extends GameObject{
     override on_create(args: any): void {
         super.on_create(args)
         this.gfx.initialize(this.game.scene_2d.camera.ctx)
+        this.gfx.layer=this.layer
         this.scene.camera.add_object(this.gfx)
     }
 

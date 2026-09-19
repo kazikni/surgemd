@@ -2,6 +2,7 @@
 @use "./md.scss";
 @use "./components/text.scss" as text;
 @use "./components/button.scss";
+@use "./editor/window.scss";
 #menu {
     /*background-image: url("/assets/img/menu/background/background.png");
     background-size: cover;

@@ -1,0 +1,10 @@
+#game-editor-objects-window{
+    .smde-window-content{
+        display: flex;
+        flex-direction: column;
+        gap: 1vh;
+    }
+}
+smde-tree{
+    position: absolute;
+}

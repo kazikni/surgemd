@@ -671,9 +671,9 @@ export function Melees_Default_Init():MeleeDef[]{
             damage:32,
             resistence_damage:1,
             fire_mode:FireMode.Single,
-            attack_delay:0.55,
+            attack_delay:0.46,
             switch_delay:0.5,
-            damage_delays:[0.4],
+            damage_delays:[0.3],
             rig_arms:{
                 left:{
                     position:v2(DefaultFistRig.right!.position.x,DefaultFistRig.right!.position.y-0.15),
@@ -692,7 +692,7 @@ export function Melees_Default_Init():MeleeDef[]{
                 zIndex:1,
                 hotspot:v2(0.2,0.7)
             },
-            animation:AnimationBat(0.5),
+            animation:AnimationBat(0.45),
             assets:{
                 use_sound:"heavy_swing",
                 hit_sound:"axe_hit",

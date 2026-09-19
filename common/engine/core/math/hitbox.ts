@@ -1,7 +1,6 @@
 import { Collision,OverlapCollision2D, Rect } from "./geometry.ts"
 import { random } from "./random.ts";
 import { Stream } from "../net/stream.ts";
-import { Numeric } from "./utils.ts";
 import { v2, v2m, Vec2 } from "./vec2.ts";
 
 export enum HitboxType2D{
@@ -93,7 +92,7 @@ export abstract class BaseHitbox2D{
     abstract encode(stream:Stream):void
     abstract to_json():JsonHitbox2D
 
-    abstract generate_code(linebreak?:string,divade?:string):string
+    abstract generate_code():string
 
     constructor(){
     }
@@ -167,8 +166,8 @@ export class NullHitbox2D extends BaseHitbox2D{
     static decode(stream:Stream):NullHitbox2D{
         return new NullHitbox2D(stream.read_pos2())
     }
-    generate_code(linebreak?:string,divade?:string):string{
-        return `new NullHitbox2D(${v2.generate_code(this.position,divade)})`
+    generate_code():string{
+        return `new NullHitbox2D(${v2.generate_code(this.position)})`
     }
 }
 export class CircleHitbox2D extends BaseHitbox2D{
@@ -335,8 +334,8 @@ export class CircleHitbox2D extends BaseHitbox2D{
     static decode(stream:Stream):CircleHitbox2D{
         return new CircleHitbox2D(stream.read_pos2(),stream.read_float(0,500,2))
     }
-    generate_code(linebreak?:string,divade:string=", "):string{
-        return `new CircleHitbox2D(${v2.generate_code(this.position)}${divade}${this.radius})`
+    generate_code():string{
+        return `new CircleHitbox2D(${v2.generate_code(this.position)},${this.radius})`
     }
 }
 
@@ -674,8 +673,8 @@ export class RectHitbox2D extends BaseHitbox2D{
     override is_null(): boolean {
       return false
     }
-    generate_code(linebreak?:string,divade:string=", "):string{
-        return `new RectHitbox2D(${v2.generate_code(this.min)}${divade}${v2.generate_code(this.max)})`
+    generate_code():string{
+        return `new RectHitbox2D(${v2.generate_code(this.min)},${v2.generate_code(this.max)})`
     }
 }
 export class HitboxGroup2D extends BaseHitbox2D{
@@ -828,11 +827,11 @@ export class HitboxGroup2D extends BaseHitbox2D{
             hitboxes:this.hitboxes.map((v)=>v.to_json()),
         }
     }
-    generate_code(linebreak:string="",divade:string=", "):string{
+    generate_code():string{
         let val="new HitboxGroup2D("
         for(let i=0;i<this.hitboxes.length;i++){
-            if(i>0)val+=divade
-            val+=this.hitboxes[i].generate_code(linebreak,divade)+linebreak
+            if(i>0)val+=","
+            val+=this.hitboxes[i].generate_code()
         }
         return val+")"
     }

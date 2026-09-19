@@ -172,3 +172,45 @@ smde-window .smde-window-close-btn{
 smde-window .smde-window-title{
     left: 50%;
 }
+smde-tree{
+    display:flex;
+    flex-direction:column;
+}
+.smde-tree-node{
+    display:flex;
+    flex-direction:column;
+}
+.smde-tree-row{
+    display:flex;
+    align-items:center;
+    min-height:28px;
+}
+
+.smde-tree-arrow{
+    width:18px;
+    text-align:center;
+    cursor:pointer;
+    user-select:none;
+}
+
+.smde-tree-item{
+    flex:1;
+    text-align:left;
+    border:0;
+    background:transparent;
+    color:inherit;
+    cursor:pointer;
+    padding:5px;
+}
+
+.smde-tree-item:hover{
+    background:#ffffff12;
+}
+
+.smde-tree-children{
+    display:flex;
+    flex-direction:column;
+    margin-left:18px;
+    padding-left:8px;
+    border-left:1px solid #ffffff18;
+}

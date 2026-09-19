@@ -51,6 +51,7 @@ import { PingWorld } from "../objects/ping_world.ts";
 import { Walls } from "../objects/walls.ts";
 import { TilemapVisual } from "../objects/tilemapvisual.ts";
 import { Tilesets } from "common/scripts/definitions/objects/tilemap.ts";
+import { EditorManager } from "../managers/editorManager.ts";
 export class Game extends ClientGame<GameObject>{
     state:GameState=GameState.Idle
 
@@ -90,6 +91,8 @@ export class Game extends ClientGame<GameObject>{
     device:GameDeviceManager
     minimap:MinimapManager
 
+    editor?:EditorManager
+
     active_entity?:Human
     active_entity_id?:number
 
@@ -107,8 +110,8 @@ export class Game extends ClientGame<GameObject>{
         scale: Vec2
     }
     fs?:FileManager
-    cam_type:number=0
 
+    cam_type:number=0
     free_cam_pos=v2(0,0)
     free_cam_speed=2
     free_cam_zoom=0.5
@@ -209,7 +212,7 @@ export class Game extends ClientGame<GameObject>{
         this.input_manager.add_axis("aim","aim_up","aim_down","aim_left","aim_right","right")
         this.input_manager.listener.on(InputEventType.Axis,(a:InputAxisEvent)=>{
             if(a.action==="movement"){
-                if(!this.can_act||this.state!==GameState.Playing){
+                if(!this.can_act||!(this.state===GameState.Playing||this.state===GameState.Editor)){
                     this.input.movement={dir:0,scale:0}
                     return
                 }
@@ -528,7 +531,6 @@ export class Game extends ClientGame<GameObject>{
         }
     }
     override on_update(dt:number){
-        this.hitboxes_gfx.ctx.clear()
         super.on_update(dt)
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
@@ -540,7 +542,17 @@ export class Game extends ClientGame<GameObject>{
         }
 
         this.scene_2d.update(dt,false,true)
-        if (this.cam_type === 1) {
+        if(this.cam_type===0){
+            if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
+                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
+            }
+            if(this.active_entity){
+                this.scene_2d.camera.position=this.active_entity.position
+                this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
+                this.scene_2d.camera.layer=this.active_entity.layer
+                if(this.active_entity.dead)this.active_entity=undefined
+            }
+        }else if(this.cam_type === 1){
             const move = this.input.movement
             this.free_cam_speed=5/this.free_cam_zoom
             if (move.scale>0) {
@@ -551,16 +563,6 @@ export class Game extends ClientGame<GameObject>{
             v2m.lerp(this.scene_2d.camera.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
             if(this.input_manager.keyPress(Key.E)){
                 v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
-            }
-        }else{
-            if(this.active_entity&&this.active_entity_id!==this.active_entity.id){
-                this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
-            }
-            if(this.active_entity){
-                this.scene_2d.camera.position=this.active_entity.position
-                this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
-                this.scene_2d.camera.layer=this.active_entity.layer
-                if(this.active_entity.dead)this.active_entity=undefined
             }
         }
         this.scene_2d.set_camera_position(this.scene_2d.camera.position)
@@ -689,7 +691,18 @@ export class Game extends ClientGame<GameObject>{
                 return
             }
             case "editor":{
-                //await this.start_editor()
+                this.editor=new EditorManager()
+
+                this.cam_type=1
+                this.free_cam_pos=v2.zero()
+                this.free_cam_zoom=1
+
+                this.menu.game_start()
+                this.ui.start()
+
+                this.state=GameState.Editor
+                this.add_component(this.editor)
+
                 return
             }
         }

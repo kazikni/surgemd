@@ -29,7 +29,7 @@ export class Batcher {
     }
     ensure(material: Material):BatcherMaterialCommand{
         if(!this.current||!(this.current.type===0&&this.current.material===material)){
-            const id=this.commands.length+1
+            const id=this.commands.length
             if(!this.buffers[id]){
                 this.buffers[id]={
                     stream:new DynamicStream(),

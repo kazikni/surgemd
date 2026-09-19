@@ -118,10 +118,21 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         component.game=this
         this.components.push(component)
         if(this.running){
-            component.on_bind()
             component.binded=true
+            component.on_bind()
         }
         return component
+    }
+    remove_component(component:any):void{
+        if(!component.binded)return
+        for(let c=0;c<this.components.length;c++){
+            if(c===component){
+                this.components.splice(c,1)
+                c--
+            }
+        }
+        component.binded=false
+        component.on_unbind()
     }
     update(dt:number){
         this.clock.profiler.start(1)

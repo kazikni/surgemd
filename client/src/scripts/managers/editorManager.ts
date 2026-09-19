@@ -1,10 +1,10 @@
-import { HideElement, Key, ShowElement } from "common/engine/web.ts";
-import { type Game } from "../others/game.ts";
-import { Layers } from "common/scripts/others/constants.ts";
+import { Graphics2D, HideElement, Key, ShowElement, type SMDEMenu, type SMDEWindow } from "common/engine/web.ts";
+import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2 } from "common/engine/core.ts";
 import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject } from "../defs/editor_objects.ts";
 import { build_setting_input, RectInput, SettingDef, Vec2Input } from "../defs/settings.ts";
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
+import { GComponent } from "../others/component.ts";
 export class EditorObjectsManager{
     objects:EditorObject[]=[]
     selected_object?:EditorObject
@@ -91,10 +91,10 @@ export class EditorObjectsManager{
 
     tick(dt:number){
         if(this.editor.can_act){
-            if(this.editor.game.input_manager.keyPress(Key.F)){
+            if(this.editor.game.input_manager.keyPress(Key.G)){
                 if(this.selected_object)this.selected_object.on_drag(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.scene_2d.camera.meter_size))
             }
-            if(this.editor.game.input_manager.keyUp(Key.F)){
+            if(this.editor.game.input_manager.keyUp(Key.G)){
                 if(this.selected_object)this.selected_object.on_drag_over(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.scene_2d.camera.meter_size))
             }
             if(this.editor.game.input_manager.keyDown(Key.C)){
@@ -136,18 +136,17 @@ export function building_to_string(b:BuildingDef):string{
     value+=sep.repeat(spaces)+"}\n"+"}"
     return value
 }
-export class EditorManager{
-    game:Game
+export class EditorManager extends GComponent{
     ui!:HTMLDivElement
 
-    context_menu:SMDEMenu
+    context_menu!:SMDEMenu
     menu?:SMDEMenu
 
     windows:Record<string,SMDEWindow>={}
 
     settings:Record<string,any>={}
     settings_default:Record<string,any>={
-        "textures":'"assets/kspr/common"',
+        "textures":'"/assets/kspr/common"',
 
         "m.size":v2(100,100),
     }
@@ -155,9 +154,62 @@ export class EditorManager{
     objects:EditorObjectsManager
     can_act:boolean=true
 
-    constructor(game:Game){
-        this.game=game
+    hitbox_gfx:Graphics2D=new Graphics2D()
+
+    constructor(){
+        super()
         this.objects=new EditorObjectsManager(this)
+    }
+
+    override on_bind(): void {
+        HideElement(this.game.ui.content.game_gui)
+        HideElement(this.game.ui.content.post_proccess.tiltshift)
+        HideElement(this.game.ui.content.post_proccess.vignetting)
+
+        this.game.scene_2d.camera.layer=Layers.Normal
+        this.game.scene_2d.camera.position=v2(0,0)
+        this.game.terrain.clear()
+        this.game.terrain.draw(this.game.terrain.terrain_gfx,Layers.Normal)
+
+        this.game.ui_gfx.ctx.clear()
+        this.game.ui_gfx.ctx.fill_color=ColorM.hex("#fff8")
+        this.game.ui_gfx.ctx.circle(v2.zero,0.2)
+        this.game.ui_gfx.ctx.fill()
+
+        this.hitbox_gfx.zIndex=zIndexes.UI
+        this.hitbox_gfx.initialize(this.game.scene_2d.camera.ctx)
+        this.game.scene_2d.camera.add_object(this.hitbox_gfx)
+
+        this.ui=document.createElement("div")
+        this.ui.classList="game-editor-ui"
+        document.body.appendChild(this.ui)
+
+        this.windows["settings"]=this.create_closable_window("game-editor-settings-window")
+        this.create_settings(this.windows["settings"],this.create_settings_defs())
+
+        this.windows["objects"]=this.create_closable_window("game-editor-objects-window")
+
+        this.windows["propertys"]=this.create_closable_window("game-editor-propertys-window")
+        this.windows["propertys"].content.style.display="flex"
+        this.windows["propertys"].content.style.flexDirection="column"
+
+        this.context_menu=this.make_context_menu()
+        this.context_menu.style.display="none"
+        this.context_menu.addEventListener("close",(e:CustomEvent)=>{
+            e.preventDefault()
+            this.context_menu.style.display="none"
+        })
+        this.ui.appendChild(this.context_menu)
+
+        this.update_objects_window()
+        this.reload_sources()
+        this.game.dead_zone.set_current(v2.zero,0,false)
+    }
+    override on_unbind(): void {
+        ShowElement(this.game.ui.content.game_gui)
+        this.ui.remove()
+        this.game.editor=undefined
+        this.hitbox_gfx.destroy()
     }
     to_mouse_position(elem:HTMLElement){
         elem.style.left=this.game.input_manager.real_mouse_position.x+"px"
@@ -176,7 +228,7 @@ export class EditorManager{
     
     create_closable_window(id:string){
         const window=this.create_window()
-        window.id="editor-objects-window"
+        window.id=id
         window.addEventListener("close",(e:CustomEvent)=>{
             e.preventDefault()
             window.style.display="none"
@@ -283,19 +335,18 @@ export class EditorManager{
     async reload_sources(_e?:MouseEvent){
         HideElement(this.ui)
         const textures=split_strings_array(this.settings.textures??this.settings_default.textures)
-        try{
-            await this.game.load_resources(textures,{})
-        }catch(e){
-            console.error(e)
-            this.game.menu.hide_loading_screen()
-        }
+        await this.game.load_resources(textures,{})
         for(const o of this.objects.objects){
             o.on_reload()
         }
         ShowElement(this.ui)
+        self.requestAnimationFrame(()=>{
+            this.game.menu.hide_loading_screen()
+        })
     }
-    tick(dt:number){
-        this.game.hitboxes_gfx.ctx.clear()
+    override on_tick(dt:number){
+        this.hitbox_gfx.layer=this.game.scene_2d.camera.layer
+        this.hitbox_gfx.ctx.clear()
         this.objects.tick(dt)
         if(this.can_act){
             if(this.game.input_manager.keyDown(Key.Mouse_Left)){
@@ -308,48 +359,8 @@ export class EditorManager{
             }
         }
     }
-    start(){
-        HideElement(this.game.ui.content.game_gui)
-        HideElement(this.game.ui.content.post_proccess.tiltshift)
-        HideElement(this.game.ui.content.post_proccess.vignetting)
-
-        this.game.scene_2d.camera.layer=Layers.Normal
-        this.game.scene_2d.camera.position=v2(0,0)
-        this.game.terrain.clear()
-        this.game.terrain.draw(this.game.terrain_gfx,Layers.Normal)
-
-        this.game.ui_gfx.ctx.fill_color=ColorM.hex("#fff8")
-        this.game.ui_gfx.ctx.circle(v2.zero,0.2)
-        this.game.ui_gfx.ctx.fill()
-
-        this.ui=document.createElement("div")
-        this.ui.classList="game-editor-ui"
-        document.body.appendChild(this.ui)
-
-        this.windows["settings"]=this.create_closable_window("game-editor-settings-window")
-        this.create_settings(this.windows["settings"],this.create_settings_defs())
-
-        this.windows["objects"]=this.create_closable_window("game-editor-objects-window")
-
-        this.windows["propertys"]=this.create_closable_window("game-editor-propertys-window")
-        this.windows["propertys"].content.style.display="flex"
-        this.windows["propertys"].content.style.flexDirection="column"
-
-        this.context_menu=this.make_context_menu()
-        this.context_menu.style.display="none"
-        this.context_menu.addEventListener("close",(e:CustomEvent)=>{
-            e.preventDefault()
-            this.context_menu.style.display="none"
-        })
-        this.ui.appendChild(this.context_menu)
-
-        this.update_objects_window()
-        this.reload_sources()
-        this.game.dead_zone.set_current(v2(0,0),1000,1,false)
-    }
-    close(){
-        ShowElement(this.game.ui.content.game_gui)
-        this.ui.remove()
+    on_game_close(){
+        this.game.remove_component(this)
     }
 
     encode(stream:Stream){

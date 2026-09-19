@@ -10,6 +10,11 @@ export abstract class EditorObject{
     editor!:EditorManager
     destroyed:boolean=false
 
+    parent?:EditorObject
+    childs?:{
+        content:EditorObject[]
+    }
+
     constructor(){
 
     }
@@ -62,9 +67,10 @@ export class RectHitboxEditorObject extends EditorObject{
         ]
     }
     override on_tick(dt: number,selected:boolean): void {
-        this.editor.game.hitboxes_gfx.ctx.fill_color=ColorM.hex(selected?"#ff05":"#f00a")
-        this.editor.game.hitboxes_gfx.ctx.rect(this.min,this.max)
-        this.editor.game.hitboxes_gfx.ctx.fill()
+        this.editor.hitbox_gfx.ctx.fill_color=ColorM.hex(selected?"#ff05":"#f00a")
+        this.editor.hitbox_gfx.ctx.begin_path()
+        this.editor.hitbox_gfx.ctx.rect(this.min,this.max)
+        this.editor.hitbox_gfx.ctx.fill()
     }
     override on_drag(delta: Vec2): void {
         v2m.add(this.min,this.min,delta)
@@ -117,9 +123,10 @@ export class CircleHitboxEditorObject extends EditorObject{
     }
 
     override on_tick(dt: number,selected:boolean): void {
-        this.editor.game.hitboxes_gfx.ctx.fill_color=ColorM.hex(selected?"#ff05":"#f00a")
-        this.editor.game.hitboxes_gfx.ctx.circle(this.center,this.radius,100)
-        this.editor.game.hitboxes_gfx.ctx.fill()
+        this.editor.hitbox_gfx.ctx.fill_color=ColorM.hex(selected?"#ff05":"#f00a")
+        this.editor.hitbox_gfx.ctx.begin_path()
+        this.editor.hitbox_gfx.ctx.circle(this.center,this.radius,100)
+        this.editor.hitbox_gfx.ctx.fill()
     }
     override on_drag(delta: Vec2): void {
         v2m.add(this.center,this.center,delta)
@@ -395,9 +402,10 @@ export class ObstacleEditorObject extends EditorObject{
     }
     override on_tick(dt: number, selected: boolean): void {
         if(this.obstacle&&selected){
-            this.editor.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f005")
-            this.editor.game.hitboxes_gfx.ctx.hitbox(this.obstacle.hitbox)
-            this.editor.game.hitboxes_gfx.ctx.fill()
+            this.editor.hitbox_gfx.ctx.fill_color=ColorM.hex("#f005")
+            this.editor.hitbox_gfx.ctx.begin_path()
+            this.editor.hitbox_gfx.ctx.hitbox(this.obstacle.hitbox)
+            this.editor.hitbox_gfx.ctx.fill()
         }
     }
     override clone(): EditorObject {

@@ -1,7 +1,16 @@
-import { FontStyle, FontStyleFull } from "../../core/definition/utils.ts";
+import { FontStyle } from "../../core/definition/utils.ts";
 import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
 import { type ClientGame } from "./game.ts";
+export interface SMDEMenu extends HTMLElement{
+    hover:boolean
+}
+export interface SMDEOptionSubMenu extends HTMLElement{}
+export interface SMDEJoystick extends HTMLElement{}
+export interface SMDEWindow extends HTMLElement{
+    content:HTMLElement 
+}
+export interface TabsContainer extends HTMLElement{}
 export interface TweenOptions<T>{
     target: T
     to: Partial<T>

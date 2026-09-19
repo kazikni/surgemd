@@ -311,8 +311,72 @@ class SMDEWindow extends HTMLElement{
         this.tilte.innerHTML=val
     }
 }
+class SMDETree extends HTMLElement{
+    constructor(){
+        super()
+        this.items=[]
+    }
+
+    add_option(text,elem,onclick){
+        const item={text,elem,onclick,tree:undefined}
+        this.items.push(item)
+        this.appendChild(this.create_item(item))
+        return elem
+    }
+
+    add_subtree(text,tree=new SMDETree(),onclick){
+        const item={text,tree,onclick}
+        this.items.push(item)
+        this.appendChild(this.create_item(item))
+        return tree
+    }
+
+    create_item(item){
+        const container=document.createElement("div")
+        container.className="smde-tree-node"
+
+        const row=document.createElement("div")
+        row.className="smde-tree-row"
+
+        const arrow=document.createElement("span")
+        arrow.className="smde-tree-arrow"
+        arrow.textContent=item.tree?.items.length?"▸":""
+
+        const label=document.createElement("button")
+        label.className="smde-tree-item"
+        label.textContent=item.text
+        label.onclick=e=>item.onclick?.(e)
+
+        const children=document.createElement("div")
+        children.className="smde-tree-children"
+        children.style.display="none"
+
+        if(item.tree)children.appendChild(item.tree)
+
+        arrow.onclick=e=>{
+            e.stopPropagation()
+            if(!item.tree?.items.length)return
+            const open=children.style.display!=="none"
+            children.style.display=open?"none":"flex"
+            arrow.textContent=open?"▸":"▾"
+        }
+
+        row.appendChild(arrow)
+        row.appendChild(label)
+        container.appendChild(row)
+        container.appendChild(children)
+
+        return container
+    }
+
+    clear(){
+        this.items.length=0
+        this.innerHTML=""
+    }
+}
 customElements.define("smde-joystick", SMDEJoystick);
 customElements.define('tabs-container', TabsContainer)
 customElements.define("smde-menu", SMDEMenu)
 customElements.define("smde-option-submenu", SMDEOptionSubMenu)
 customElements.define("smde-window", SMDEWindow)
+customElements.define("smde-tree",SMDETree)

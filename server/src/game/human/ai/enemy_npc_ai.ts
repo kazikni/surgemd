@@ -11,7 +11,6 @@ import { type StaticBody } from "../../objects/static_body.ts";
 type EnemyState =
     | "idle"
     | "random_walking"
-    | "detecting"
     | "engaged"
     | "go_last_seen"
     | "go_revive"
@@ -25,6 +24,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
        INTERNAL STATE
     ======================= */
     state_duration=10
+    detection_timer=0
 
     protected path: Vec2[] = []
     protected pathIndex = 0
@@ -60,9 +60,8 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
 
         advanced_movement:false,
 
-        detection_time: 0.5,
-        reaction_time: 0.4,
-        shoot_time: 0.5,
+        detection_time: 0.9,
+        shoot_time: 0.2,
 
         revive_view_distance:6,
         pathfinding_quality:0.25,
@@ -79,7 +78,6 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         this.stateHandlers = {
             idle: this.state_idle.bind(this),
             random_walking: this.state_random_walking.bind(this),
-            detecting: this.state_detecting.bind(this),
             engaged: this.state_engaged.bind(this),
             go_last_seen: this.state_go_last_seen.bind(this),
             go_revive:this.state_go_revive.bind(this),
@@ -167,8 +165,9 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             }else{
                 for(const p of self.game.players.living_players){
                     if(!p.game.modeManager.is_ally(p,this.human)&&this.isPlayerVisible(self, p)) {
-                        this.seenHuman = p
-                        this.lastSeenPos = v2.clone(p.position)
+                        this.seenHuman=p
+                        this.lastSeenPos=v2.clone(p.position)
+                        this.detection_timer=0
                         break
                     }
                 }
@@ -187,6 +186,9 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             }
             this.playerCheckTimer=0.5
         }
+        if(this.seenHuman){
+            this.detection_timer+=dt
+        }
     }
 
     /*=======================
@@ -195,10 +197,11 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     protected state_idle(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
         if(this.seenHuman!==undefined){
-            this.setState("detecting")
-            return
-        }
-        if(this.seenDownedAlly){
+            if(this.detection_timer>this.params.detection_time){
+                this.setState("engaged")
+                return
+            }
+        }else if(this.seenDownedAlly){
             this.setState("go_revive")
             return
         }
@@ -217,10 +220,11 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
     protected state_random_walking(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
         if(this.seenHuman!==undefined){
-            this.setState("detecting")
-            return
-        }
-        if(this.seenDownedAlly){
+            if(this.detection_timer>this.params.detection_time){
+                this.setState("engaged")
+                return
+            }
+        }else if(this.seenDownedAlly){
             this.setState("go_revive")
             return
         }
@@ -238,26 +242,10 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
         this.move_speed=this.params.random_speed
     }
 
-    protected state_detecting(self: Human,begin:boolean, dt: number) {
-        if(!this.seenHuman){
-            this.setState("random_walking")
-            return
-        }
-        this.rot_speed=1
-        this.state_duration=0
-        if (this.stateTime>=this.params.detection_time) {
-            this.setState("engaged")
-        }
-    }
     protected state_engaged(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
         if(!this.seenHuman){
             this.setState("go_last_seen")
-            return
-        }
-        this.state_duration+=dt
-        if(this.state_duration<=this.params.reaction_time){
-            this.movement={dir:0,scale:0}
             return
         }
 
@@ -292,7 +280,7 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
             }
         }else if(hand?.item_type===GameItemType.gun) {
             self.input.reload=((hand as GunItem).reloading ||!(hand as GunItem).has_ammo(self))
-            if(!self.input.reload&&this.state_duration>=this.params.shoot_time+this.params.reaction_time&&this.stateTime>=this.params.shoot_time&&this.isAimAligned(self, this.seenHuman.position)){
+            if(!self.input.reload&&this.state_duration>=this.params.shoot_time&&this.stateTime>=this.params.shoot_time&&this.isAimAligned(self, this.seenHuman.position)){
                 self.input.using_item = true
                 self.input.using_item_down = true
             }
@@ -343,19 +331,16 @@ export class EnemyNPCAI extends StatedBotAi<EnemyState> {
 
     protected state_go_revive(self: Human,begin:boolean, dt: number) {
         this.updateDetection(self, dt)
-        if(this.seenHuman){
-            this.setState("detecting")
-            return
-        }
-        if(!this.seenDownedAlly){
+        if(this.seenHuman!==undefined){
+            if(this.detection_timer>this.params.detection_time){
+                this.setState("engaged")
+                return
+            }
+        }else if(!this.seenDownedAlly){
             this.setState("idle")
-            return
         }
+        if(!this.seenDownedAlly)return
 
-        if(this.stateTime<=this.params.reaction_time){
-            this.movement={dir:0,scale:0}
-            return
-        }
         const dist=v2.distance(this.seenDownedAlly.position,self.position)
         if(dist<=self.game.modeManager.rules.humans.help_up.distance){
             self.input.interaction=!self.actions.current_action

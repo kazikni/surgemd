@@ -56,6 +56,7 @@ export type GrenadeDef={
 
     description?:string|boolean
 
+    no_collision?:boolean
     explosion?:string
     call_airdrop?:{
         delay:number
@@ -443,6 +444,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 ground:true,
             },
+            no_collision:true,
             explosion:"nuke_explosion",
             push_force_resistence:0,
             zindex_set_resistence:true,
@@ -470,6 +472,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 ground:true,
             },
+            no_collision:true,
             explosion:"mini_nuke_explosion",
             zindex_set_resistence:true,
             z_index_air:zIndexes.GrenadeAir2,

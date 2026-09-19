@@ -29,7 +29,8 @@
                 "type":3,
                 "position_generator":"deadzone",
                 "list":[1,2]
-            }
+            },
+            "events":[]
         }
     }
 }

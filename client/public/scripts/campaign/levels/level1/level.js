@@ -140,13 +140,7 @@ return (class extends LevelPlayerScript{
                         },
                     }),
                 },
-                airdrops:{
-                    obstacle:"airdrop",
-                    spawn:[]
-                },
-                drones:{
-                    spawn:[]
-                }
+                events:[]
             }
         })
     }

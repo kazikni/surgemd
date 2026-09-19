@@ -91,6 +91,7 @@ export class MinimapModule extends UIModule<Game>{
         await this.load_map_icon("downed",base+"map_icon_downed.svg")
         await this.load_map_icon("dead",base+"map_icon_dead.svg")
         await this.load_map_icon("drone",base+"map_icon_drone.svg")
+        await this.load_map_icon("danger",base+"map_icon_danger.svg")
 
         await this.load_map_icon("ping_airdrop","/assets/img/menu/gui/map/ping_airdrop.svg")
         await this.load_map_icon("ping_alert","/assets/img/menu/gui/map/ping_alert.svg")

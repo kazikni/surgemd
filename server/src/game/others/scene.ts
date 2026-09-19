@@ -27,12 +27,25 @@ import { ObstacleDef } from "common/scripts/definitions/objects/obstacles.ts";
 import { Parachute } from "../objects/parachute.ts";
 import { SyncedParticle, SyncedParticlesCreator } from "../objects/synced_particle.ts";
 import { SyncedParticleDef } from "common/scripts/definitions/objects/synced_particles.ts";
-import { Drone } from "../objects/drone.ts";
+import { Drone, LocationDrone } from "../objects/drone.ts";
 import { Plane } from "../objects/plane.ts";
 import { Player } from "../objects/player.ts";
 import { GameMap } from "./map.ts";
 import { DeadZoneManager } from "./deadzone.ts";
-
+import { DangerZone, ToxicZone } from "../events/zones.ts";
+export type GamemodeEventContent={
+    type:"airdrop"
+    obstacle:string
+}|{
+    type:"drone"
+}|{
+    type:"danger_zone"
+    grenade?:string
+    position?:Vec2
+}|{
+    type:"toxic_zone"
+    position?:Vec2
+}
 export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     declare game:Game
 
@@ -198,5 +211,35 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
             owner,
             type: 1
         })
+    }
+
+    add_danger_zone(position?:Vec2,grenade?:GrenadeDef,radius?:number,delay?:number,lifetime?:number,owner?:Human){
+        if(!position)position=this.deadzone.next_position()
+        if(!grenade)grenade=this.game.definitions.grenades.getFromStringSafe("mini_nuke")
+        
+        this.game.scene_2d.add_object(new DangerZone(),Layers.Normal,undefined,{position,grenade,radius,delay,lifetime,owner})
+    }
+    add_toxic_zone(position?:Vec2,radius?:number,delay?:number,lifetime?:number,owner?:Human){
+        if(!position)position=this.deadzone.next_position()
+        this.game.scene_2d.add_object(new ToxicZone(),Layers.Normal,undefined,{position,radius,delay,lifetime,owner})
+    }
+
+    add_gamemode_event(content:GamemodeEventContent){
+        switch(content.type){
+            case "airdrop":
+                this.game.scene_2d.add_airdrop()
+                break
+            case "drone":
+                this.game.scene_2d.add_drone(undefined,undefined,new LocationDrone())
+                break
+            case "danger_zone":{
+                this.game.scene_2d.add_danger_zone()
+                break
+            }
+            case "toxic_zone":{
+                this.game.scene_2d.add_toxic_zone()
+                break
+            }
+        }
     }
 }

@@ -33,6 +33,8 @@ ___
 ### Others
 * Parachute Perspective
 * New Global Messages
+* Danger Zone
+* Toxic Zone
 ___
 ## Changes
 ___

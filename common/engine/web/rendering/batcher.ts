@@ -20,6 +20,7 @@ export class Batcher {
     commands: BatcherCommand[] = []
     current?: BatcherCommand
     locked:boolean=false
+    uploaded:boolean=false
     root:boolean=false
 
     buffers:Record<number,{stream:Stream,buffer:RenderBuffer}>={}
@@ -47,6 +48,7 @@ export class Batcher {
             this.commands.push(this.current)
         }
         this.locked=false
+        this.uploaded=false
         return this.current
     }
     draw_batcher(batcher:Batcher,matrix?:Matrix){
@@ -57,9 +59,11 @@ export class Batcher {
         }
         this.commands.push(this.current)
         this.locked=false
+        this.uploaded=false
     }
     render(renderer:Renderer,matrix?: Matrix) {
         if(!matrix)matrix=matrix4.default.identity
+        if(!this.uploaded)this.upload()
         for(const cmd of this.commands){
             let m=matrix
             if(cmd.type===0){
@@ -97,6 +101,7 @@ export class Batcher {
                 if(c.buffer)c.buffer.upload_u8(c.stream.data.subarray(0,c.stream.length))
             }
         }
+        this.uploaded=true
     }
     lock(){
         for(const c of this.commands){
@@ -111,14 +116,24 @@ export class Batcher {
             }
         }
         this.locked=true
+        this.uploaded=true
     }
     clear() {
         this.commands.length = 0
         this.current = undefined
+        for(const c in this.buffers){
+            this.buffers[c].stream.clear()
+        }
+        this.uploaded=false
+        this.locked=false
     }
     free(){
+        this.current=undefined
+        this.commands.length=0
         for(const c in this.buffers){
             this.buffers[c].buffer.free()
         }
+        this.uploaded=false
+        this.locked=false
     }
 }

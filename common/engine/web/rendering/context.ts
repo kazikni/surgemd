@@ -488,7 +488,6 @@ export class GLContext2D extends BatcherContext2D{
     }
     override render(renderer: WebglRenderer): void {
         super.render(renderer)
-        this.batcher.upload()
         this.batcher.render(renderer,this.base_matrix)
     }
 

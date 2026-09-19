@@ -1,5 +1,4 @@
-import { CircleHitbox2D, cloneDeep, GameComponent, Hitbox2D, Numeric, random, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { Game } from "./game.ts";
+import { CircleHitbox2D, cloneDeep, Hitbox2D, Numeric, random, SeededRandom, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { DeadZoneStage, DeadZoneState, DeadZoneUpdate } from "common/scripts/packets/general_update.ts";
 import { Layers, Spawn, SpawnMode, SpawnModeType } from "common/scripts/others/constants.ts";
 import { FloorType } from "common/scripts/others/terrain.ts";

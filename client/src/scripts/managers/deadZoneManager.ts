@@ -89,6 +89,7 @@ export class DeadZoneManager extends GComponent{
         this.sprite.ctx.clear()
         this.sprite.ctx.fill_color=col
         this.sprite.ctx.fill_model(model)
+        this.sprite.layer=this.game.scene_2d.camera.layer
         if(radius>0){
             const model2=model2d.outlineCircle(radius,0.2,200)
             this.sprite.ctx.fill_color=col

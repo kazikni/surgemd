@@ -49,37 +49,43 @@ export class Grenade extends Projectile{
                 if(obj.number_type===GameObjectType.Obstacle){
                     if((obj as Obstacle).def.height===2||((obj as Obstacle).def.height===1&&this.physical_data.zpos>=0.5))break
                 }
+
                 const collisions=this.hitbox.overlap_collisions(obj.hitbox)
-                for(const col of collisions){
-                    const normal = col.dir
-                    const vel = this.physical_data.velocity
+                if(!this.def.no_collision){
+                    for(const col of collisions){
+                        const normal = col.dir
+                        const vel = this.physical_data.velocity
 
-                    const dot = v2.dot(vel, normal)
-                    const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
+                        const dot = v2.dot(vel, normal)
+                        const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
 
-                    this.physical_data.velocity=v2.scale(reflected, 0.4)
-                    if(this.def.fuse?.impact){
-                        this.kill()
-                        break
+                        this.physical_data.velocity=v2.scale(reflected, 0.4)
                     }
+                }
+                if(collisions.length>0&&this.def.fuse?.impact){
+                    this.kill()
+                    break
                 }
                 break
             }
             case GameObjectType.Human:{
                 if((obj as Human).dead||(this.owner&&obj.id===this.owner.id))break
                 const collisions=this.hitbox.overlap_collisions(obj.hitbox)
-                for(const col of collisions){
-                    const normal = col.dir
-                    const vel = this.physical_data.velocity
+                
+                if(!this.def.no_collision){
+                    for(const col of collisions){
+                        const normal = col.dir
+                        const vel = this.physical_data.velocity
 
-                    const dot = v2.dot(vel, normal)
-                    const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
+                        const dot = v2.dot(vel, normal)
+                        const reflected = v2.sub(vel, v2.scale(normal, 2 * dot))
 
-                    this.physical_data.velocity=v2.scale(reflected, 0.4)
-                    if(this.def.fuse?.impact){
-                        this.kill()
-                        break
+                        this.physical_data.velocity=v2.scale(reflected, 0.4)
                     }
+                }
+                if(collisions.length>0&&this.def.fuse?.impact){
+                    this.kill()
+                    break
                 }
                 break
             }

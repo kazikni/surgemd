@@ -143,7 +143,7 @@ export class LocationDrone extends Drone{
         }
         this.scene.map_zones.push(this.zone)
         this.lifetime=120
-        
+
         this.dest=this.choose_next_dest()
         this.speed=100
     }

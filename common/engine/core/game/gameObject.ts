@@ -224,6 +224,11 @@ export abstract class BaseObject2D{
         if(this.allow_dirty)this.manager.full_dirty_objects[this.id]=this
     }
 }
+/*export abstract class SimpleBaseObject2D{
+    manager!:GameObjectManager2D<any>
+    
+    public destroyed:boolean=false
+}*/
 export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     cell_size: number;
     cells: Map<bigint,GameObject[]> = new Map()

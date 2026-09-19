@@ -3,20 +3,18 @@ import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player } from "../objects/player.ts";
 import { MapDef} from "common/scripts/definitions/maps/base.ts";
-import { tilemap_layer, v2, Vec2 } from "common/engine/core.ts";
+import { random, v2, Vec2, WeightDefinition } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
 import { DeadZoneConfig, DefaultDeadzone } from "../others/deadzone.ts";
 import { DebugMap } from "common/scripts/definitions/maps/debug.ts";
 import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/general_update.ts";
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
-import { LocationDrone } from "../objects/drone.ts";
 import { human_die_event } from "../others/utils.ts";
-import { TilemapVisual } from "../objects/tilemap.ts";
-export interface AirdropConfig{
-    spawn:number[]
-    obstacle:string
-}
-export interface DronesConfig{
+import { GamemodeEventContent } from "../others/scene.ts";
+import { DangerZone, ToxicZone } from "../events/zones.ts";
+
+export type GamemodeEvent={
+    content:GamemodeEventContent|((GamemodeEventContent&WeightDefinition)[])
     spawn:number[]
 }
 export interface BattleRoyaleSettings{
@@ -32,8 +30,7 @@ export interface BattleRoyaleSettings{
     }
     spawn_mode?:SpawnMode
     deadzone?:DeadZoneConfig
-    airdrops?:AirdropConfig
-    drones?:DronesConfig
+    events?:GamemodeEvent[]
     teams?:number
     group_size?:number
 }
@@ -51,9 +48,8 @@ export class BattleRoyale extends ModeManager{
             disable_minimap?:boolean
         }
         spawn_mode:SpawnMode
+        events:GamemodeEvent[]
         deadzone:DeadZoneConfig
-        airdrops:AirdropConfig
-        drones:DronesConfig
     }
     groups_manager?:GroupsManager
     group_size:number
@@ -75,15 +71,17 @@ export class BattleRoyale extends ModeManager{
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone,
-            airdrops:settings.airdrops??{
-                obstacle:"iron_crate",
-                spawn:[
-                    20,150,301
-                ]
-            },
-            drones:settings.drones??{
-                spawn:[20,301]
-            }
+            events:[
+                {
+                    content:[
+                        {type:"drone",weight:1},
+                        {type:"danger_zone",weight:1},
+                        {type:"toxic_zone",weight:1},
+                        {type:"airdrop",obstacle:"iron_crate",weight:1},
+                    ],
+                    spawn:[20,20,150,150,301,350]
+                },
+            ],
         }
         this.group_size=settings.group_size===undefined?group_size:settings.group_size
         if(this.group_size>1){
@@ -116,15 +114,16 @@ export class BattleRoyale extends ModeManager{
     }
     on_game_start(){
         this.scene.deadzone.start()
-        for(const p of this.settings.airdrops.spawn){
-            this.game.clock.add_timeout(()=>{
-                this.game.scene_2d.add_airdrop()
-            },p)
-        }
-        for(const d of this.settings.drones.spawn){
-            this.game.clock.add_timeout(()=>{
-                this.game.scene_2d.add_drone(undefined,undefined,new LocationDrone())
-            },d)
+        for(const event of this.settings.events){
+            for(const s of event.spawn){
+                this.game.clock.add_timeout(()=>{
+                    if(Array.isArray(event.content)){
+                        this.scene.add_gamemode_event(random.weight2(event.content) as GamemodeEventContent)
+                    }else{
+                        this.scene.add_gamemode_event(event.content)
+                    }
+                },s)
+            }
         }
         this.game.clock.add_timeout(()=>{
             this.game.close()
@@ -339,6 +338,7 @@ export class BattleRoyaleDebug extends BattleRoyale{
     }
     override async generate_map(): Promise<void> {
         this.scene.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
+        //const bb=this.game.scene_2d.add_object(new DangerZone(),Layers.Normal,undefined,{grenade:this.game.definitions.grenades.getFromStringSafe("mini_nuke"),position:v2.dscale(this.scene.map.size,2)})
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.scene.map.size,2)

@@ -1,10 +1,18 @@
 @use "common/engine/main.scss";
-@keyframes text-normal-float {
+@keyframes text-normal-float-position {
     0%{
-        transform: translate(-5%,-5%) rotate(-1deg);
+        transform: translateY(-7%);
     }
     100%{
-        transform: translate(5%,5%) rotate(1deg);
+        transform: translateY(7%);
+    }
+}
+@keyframes text-normal-float-rotate {
+    0%{
+        rotate: -1.5deg;
+    }
+    100%{
+        rotate: 1.5deg;
     }
 }
 .span-text-base{

@@ -568,32 +568,10 @@ export class Human extends Humanoid{
         v2m.rotate_RadAngle(barrel_position,this.rotation)
         v2m.add(barrel_position,this.position,barrel_position)
 
-        if(def.gas_particles){
-            for(let i=0;i<def.gas_particles.count;i++){
-                const p=new ABParticle2D({
-                    position:barrel_position,
-                    direction:this.rotation+random.float(-def.gas_particles.direction_variation,def.gas_particles.direction_variation),
-                    life_time:def.gas_particles.life_time,
-                    frame:{
-                        image:"gas_smoke_particle",
-                        hotspot:v2.half_one,
-                        layer:this.layer,
-                        zIndex:zIndexes.Particles
-                    },
-                    speed:random.float(def.gas_particles.speed.min,def.gas_particles.speed.max),
-                    scale:0.03,
-                    tint:ColorM.hex("#fff5"),
-                    to:{
-                        tint:ColorM.default.transparent,
-                        tint_ease:ease.quarticIn,
-                        scale:random.float(def.gas_particles.size.min,def.gas_particles.size.max)
-                    }
-                })
-                this.scene.particles.add_particle(p)
-            }
-        }
         if(!def.case_particle?.at_begin){
-            this.play_casing_particle(def)
+            this.game.clock.add_timeout(()=>{
+                this.play_casing_particle(def)
+            },(def.fire_delay??0)*0.75)
         }
 
         let sound:Sound|undefined

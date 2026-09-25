@@ -125,7 +125,7 @@ export class UiManager{
         this.game.ui_manager.add(new GroupMembersModule())
     }
     async init(){
-        this.content.restart_gameOver.innerText=this.game.language.get("gameover.restart.press")
+        this.content.restart_gameOver.innerHTML=`<div class="go-message">${this.game.language.get("gameover.restart.press")}</div>`
         if(isMobile||Debug.force_mobile){
             await this.mobile_init()
         }
@@ -253,7 +253,7 @@ export class UiManager{
             this.game.input_manager.emit({type:InputEventType.ActionUp,action:"toggle_full_device"})
         })
 
-        this.content.restart_gameOver.innerText=this.game.language.get("gameover.restart.click")
+        this.content.restart_gameOver.innerHTML=`<div class="go-message">${this.game.language.get("gameover.restart.click")}</div>`
         this.content.restart_gameOver.onclick=()=>{
             this.game.input_manager.emit({type:InputEventType.KeyDown,key:Key.R})
             this.game.input_manager.emit({type:InputEventType.KeyUp,key:Key.R})

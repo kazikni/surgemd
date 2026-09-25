@@ -503,8 +503,7 @@ export class Human extends Humanoid{
         if(!reflect)return undefined
         return new CircleHitbox2D(v2.add_rotate_RadAngle(this.position,reflect.offset,this.physical_data.rotation),reflect.radius)
     }
-    override on_create(args: any): void {
-        super.on_create(args)
+    random_skin(){
         const female=Math.random()<0.5
         this.visual={
             dirty:true,
@@ -532,6 +531,10 @@ export class Human extends Humanoid{
             ]:[],
             colors:{},
         }
+    }
+    override on_create(args: any): void {
+        super.on_create(args)
+        this.random_skin()
 
         this.clear_boost()
         this.update_modifiers()
@@ -1024,7 +1027,7 @@ export class Human extends Humanoid{
         this.update_modifiers()
         //Movement
         const current_floor=Floors[this.physical_data.current_floor]
-        let speed=5.75*(this.recoil?this.recoil.speed:1)
+        let speed=5.7*(this.recoil?this.recoil.speed:1)
             * (this.actions.current_action?.action_speed??1)
             * ((this.inventory.hand_def as WeaponDef)?.speed_mod??1)
             * this.get_modifier("speed")
@@ -1465,10 +1468,10 @@ export class Human extends Humanoid{
 
     on_kill(reward:number,params:DamageParams){
         this.status.kills++
-        if(params.object&&params.object.number_type===GameObjectType.Bullet){
-            if((params.object as Bullet).reflection_count>0)reward+=this.game.modeManager.rules.score.bounce_kill
-        }
         if(reward>0)this.apply_score(ScoreApplyerType.Kill,reward)
+        if(params.object&&params.object.number_type===GameObjectType.Bullet){
+            if((params.object as Bullet).reflection_count>0)this.apply_score(ScoreApplyerType.BounceKill,this.game.modeManager.rules.score.bounce_kill)
+        }
         this.inventory.accessorys.call_event("kill",{
             ...params,
             owner:this

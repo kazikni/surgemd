@@ -296,87 +296,6 @@ export interface RecoilDef{
     duration:number
     speed:number
 }
-
-export interface GasParticle{
-    count:number
-    size:{
-        min:number
-        max:number
-    }
-    speed:{
-        min:number
-        max:number
-    }
-    life_time:number
-    direction_variation:number
-}
-export const GasParticles={
-    shotgun:{
-        count:7,
-        size:{
-            min:0.5,
-            max:1.2
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.9,
-        direction_variation:0.4
-    } satisfies GasParticle,
-    sniper:{
-        count:8,
-        size:{
-            min:0.6,
-            max:1.4
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:1.1,
-        direction_variation:0.43
-    } satisfies GasParticle,
-    dmr:{
-        count:3,
-        size:{
-            min:0.6,
-            max:1.4
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:1.1,
-        direction_variation:0.43
-    } satisfies GasParticle,
-    automatic:{
-        count:1, 
-        size:{
-            min:0.8,
-            max:1
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.7,
-        direction_variation:0.2
-    } satisfies GasParticle,
-    pistols:{
-        count:3,
-        size:{
-            min:0.5,
-            max:0.8
-        },
-        speed:{
-            min:1,
-            max:2
-        },
-        life_time:0.5,
-        direction_variation:0.2
-    } satisfies GasParticle
-}
 export interface MuzzleFlash{
     sprite:string
 }
@@ -412,7 +331,6 @@ export interface ItemFireDefinition{
         walk:number
     }
     muzzle_flash?:MuzzleFlash
-    gas_particles?:GasParticle
     case_particle?:{
         position:Vec2
         all_direction?:boolean

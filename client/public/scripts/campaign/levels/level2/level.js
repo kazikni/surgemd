@@ -152,15 +152,16 @@ return (class extends LevelPlayerScript{
         })
     }
     async on_begin(){
-        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/single_player/music_3.mp3"}})
+        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_tundra_music_4.mp3"}})
+        this.background=await this.load_json("../../backgrounds/city_river.json")
+        this.cutscene=[
+            {type:CutsceneCommandType.SetSoundController,controller:"music",source:"gameplay_music"},
+            {type:CutsceneCommandType.SetBackground,background:this.background,timescale:80},
+            ...this.make_level_intro(),
+        ]
     }
     async on_before(){
-        const cutscene=[{
-            type:CutsceneCommandType.SetSoundController,
-            controller:"music",
-            source:"gameplay_music",
-        }]
-        await this.show_cutscene(cutscene)
+        await this.show_cutscene(this.cutscene)
     }
     on_start(first){
     }

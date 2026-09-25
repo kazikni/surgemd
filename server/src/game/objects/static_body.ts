@@ -35,4 +35,9 @@ export abstract class StaticBody extends ServerGameObject{
 
     damage(_params:DamageParams){}
     side_effect(_sf:SideEffect,_owner?:Human){}
+
+    override on_destroy(): void {
+        const idx=this.scene.map.objects.indexOf(this)
+        if(idx!==-1)this.scene.map.objects.splice(idx,1)
+    }
 }

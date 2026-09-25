@@ -33,6 +33,8 @@ import { Player } from "../objects/player.ts";
 import { GameMap } from "./map.ts";
 import { DeadZoneManager } from "./deadzone.ts";
 import { DangerZone, ToxicZone } from "../events/zones.ts";
+import { WallsDef } from "common/scripts/definitions/objects/walls.ts";
+import { Walls } from "../objects/walls.ts";
 export type GamemodeEventContent={
     type:"airdrop"
     obstacle:string
@@ -222,6 +224,11 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     add_toxic_zone(position?:Vec2,radius?:number,delay?:number,lifetime?:number,owner?:Human){
         if(!position)position=this.deadzone.next_position()
         this.game.scene_2d.add_object(new ToxicZone(),Layers.Normal,undefined,{position,radius,delay,lifetime,owner})
+    }
+    add_walls(def:WallsDef,layer:number=Layers.Normal){
+        const obj=new Walls()
+        this.add_object(obj,layer)
+        obj.set_walls(def)
     }
 
     add_gamemode_event(content:GamemodeEventContent){

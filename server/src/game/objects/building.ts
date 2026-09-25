@@ -382,7 +382,7 @@ export class Building extends StaticBody {
     }
     generate(position: Vec2){
         this.begin_generate(position)
-        const srotation=Angle.side_rad(this.physical_data.side)
+        const srotation=Angle.side2rad(this.physical_data.side)
 
         for(const f of this.def.generate.floors??[]){
             const hb=f.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)

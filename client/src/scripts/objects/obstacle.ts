@@ -491,7 +491,7 @@ export class Obstacle extends StaticBody{
                 this.physical_data.rotation=rotation
                 this.physical_data.side=side
             }else if(this.def.rotation_mode===RotationMode.limited){
-                this.physical_data.rotation=Angle.side_rad(rotation as Orientation)
+                this.physical_data.rotation=Angle.side2rad(rotation as Orientation)
                 this.physical_data.side=(side??0 as Orientation)
             }else{
                 this.physical_data.rotation=rotation

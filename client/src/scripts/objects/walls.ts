@@ -3,6 +3,7 @@ import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
 import { Angle, ColorM, HitboxGroup2D, NullHitbox2D, Orientation, Stream, v2, v2m, Vec2} from "common/engine/core.ts";
 import { HitParticlesDef, HitSoundsDef } from "common/scripts/definitions/utils.ts";
+import { WallsDef } from "common/scripts/definitions/objects/walls.ts";
 export class Walls extends StaticBody{
     ////////////////////////////
     // Definition             //
@@ -32,9 +33,13 @@ export class Walls extends StaticBody{
         super()
     }
 
+    set_def(def:WallsDef){
+        this.position=def.position??v2.zero
+        this.set_wall(def.positions,def.tint??0,def.width,def.stroke_width,def.assets?.sounds??{},def.assets?.particles??{})
+    }
     set_wall(pos:Vec2[][],tint:number,width=0.3,stroke_width=0.1,hit_sounds:HitSoundsDef,hit_particles:HitParticlesDef){
         this.wall.position=this.position
-        this.wall.rotation=Angle.side_rad(this.physical_data.side as Orientation)
+        this.wall.rotation=Angle.side2rad(this.physical_data.side as Orientation)
         this.wall.fill_color=ColorM.number(tint)
         this.wall.stroke_color=ColorM.mult_hsv(this.wall.fill_color,1.05,undefined,0.55)
         this.wall.set_wall(pos,width,stroke_width)

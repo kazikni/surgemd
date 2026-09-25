@@ -1,4 +1,4 @@
-import { Container2DObject, Sprite2D, Sound, Tween } from "common/engine/web.ts"
+import { Container2DObject, Sprite2D, Tween } from "common/engine/web.ts"
 import { BuildingCeilingDef, BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts"
 import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./static_body.ts";
@@ -111,7 +111,7 @@ export class Building extends StaticBody{
         if(def.hitbox)this.base_hitbox=def.hitbox.transform(undefined,undefined,undefined,this.physical_data.side)
 
         this.def=def
-        const rot=Angle.side_rad(this.physical_data.side as Orientation)
+        const rot=Angle.side2rad(this.physical_data.side as Orientation)
 
         if(this.def.is_ghost){
             this.physical_data.no_collision=true

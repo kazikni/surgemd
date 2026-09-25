@@ -1,6 +1,6 @@
 import { DeepPartial, Definition, ease, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
-import { GasParticles, ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type GunDef={
     def_type?:GameObjectDefinitionType.item
     item_type?:GameItemType.gun
@@ -206,7 +206,6 @@ export const guns_factory={
             fire_delay:1,
             switch_delay:0.1,
 
-            gas_particles:GasParticles.pistols,
             muzzle_flash:MuzzleFlash.normal,
             case_particle:{
                 position:v2.new(0.5,0.1)
@@ -246,7 +245,6 @@ export const guns_factory={
                 spread:{begin:0.15}
             },
 
-            gas_particles:GasParticles.automatic,
             case_particle:{
                 position:v2.new(0.6,0.1)
             },
@@ -287,7 +285,6 @@ export const guns_factory={
                 spread:{begin:0.5}
             },
 
-            gas_particles:GasParticles.automatic,
             case_particle:{
                 position:v2.new(0.6,0.1)
             },
@@ -324,7 +321,6 @@ export const guns_factory={
             fire_delay:0.1,
             switch_delay:0.1,
 
-            gas_particles:GasParticles.dmr,
             case_particle:{
                 position:v2.new(0.6,0.1)
             },
@@ -364,7 +360,6 @@ export const guns_factory={
             switch_delay:0.15,
             unload_delay:1,
 
-            gas_particles:GasParticles.sniper,
             case_particle:{
                 position:v2.new(0.7,0.1)
             },
@@ -407,7 +402,6 @@ export const guns_factory={
                 [GunClasses.Shotgun]:10
             },
 
-            gas_particles:GasParticles.shotgun,
             case_particle:{
                 position:v2.new(0.5,0.1)
             },
@@ -462,7 +456,6 @@ export const guns_factory={
             fire_delay:0.1,
             switch_delay:0.5,
 
-            gas_particles:GasParticles.automatic,
             case_particle:{
                 position:v2.new(0.7,0.1)
             },
@@ -1593,19 +1586,6 @@ export function Guns_Default_Init():GunDef[]{
             ammo_spawn:{
                 amount:11
             },
-            gas_particles:{
-                count:10,
-                life_time:1.2,
-                speed:{
-                    min:1,
-                    max:2
-                },
-                direction_variation:0.4,
-                size:{
-                    min:0.6,
-                    max:2,
-                }
-            },
             bullet:{
                 def:{
                     damage:5,
@@ -1659,20 +1639,6 @@ export function Guns_Default_Init():GunDef[]{
 
             ammo_spawn:{
                 amount:11
-            },
-
-            gas_particles:{
-                count:10,
-                life_time:1.2,
-                speed:{
-                    min:1,
-                    max:2
-                },
-                direction_variation:0.4,
-                size:{
-                    min:0.6,
-                    max:2,
-                }
             },
 
             projectile:{

@@ -87,8 +87,6 @@ export class GameMap extends BaseGameMap{
 
         const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
         if(!p){
-            const idx=this.objects.indexOf(o)
-            if(idx!==-1)this.objects.splice(idx,1)
             o.destroy()
             return undefined
         }
@@ -181,7 +179,6 @@ export class GameMap extends BaseGameMap{
             })
         }
     }
-    
     generate(definition:MapDef,seed:number=random.int(0,231412),minimap_enabled:boolean=true){
         this.seed=seed
         const random=new SeededRandom(definition.seed??seed)
@@ -297,8 +294,15 @@ export class GameMap extends BaseGameMap{
     add_building(def:BuildingDef,layer:number=Layers.Normal){
         const b=new Building()
         b.set_definition(def)
+        this.objects.push(b)
         this.scene.objects.add_object(b,layer,undefined,{})
         return b
+    }
+    clear(){
+        for(let i=0;i<this.objects.length;i++){
+            this.objects[i].destroy()
+        }
+        this.objects.length=0
     }
 
     encode(stream:Stream){

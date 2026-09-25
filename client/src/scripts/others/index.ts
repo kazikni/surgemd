@@ -8,9 +8,7 @@ import { CModsManager } from "../managers/modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
-import { CutsceneCommandType, FetchFileManager, FileManager, TranslationManager } from "common/engine/core.ts";
-import { make_credits_cutscene } from "common/scripts/others/functions.ts";
-import { backgrounds, FinalCredits } from "common/scripts/config/background_effect.ts";
+import { FetchFileManager, FileManager, TranslationManager } from "common/engine/core.ts";
 (async() => {
     async function requestImmersive() {
         const el = document.documentElement;
@@ -21,7 +19,7 @@ import { backgrounds, FinalCredits } from "common/scripts/config/background_effe
                 await (el as any).webkitRequestFullscreen();
             }
         }
-        if ((window as any).Capacitor?.Plugins?.StatusBar) {
+        if((window as any).Capacitor?.Plugins?.StatusBar){
             try {
                 await (window as any).Capacitor.Plugins.StatusBar.hide();
             } catch {}

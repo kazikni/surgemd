@@ -232,6 +232,8 @@ export interface ObstacleVisualData{
 }
 export enum ScoreApplyerType{
     Kill,
+    BounceKill,
+    LeaderKill,
     Win,
     Rank,
     DamageTaken,

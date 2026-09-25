@@ -97,16 +97,17 @@
     position: absolute;
     top: 0px;
     left: 0px;
-    padding: 20px;
-    font-size: 25px;
+    padding: 1vw;
+    font-size: 2vw;
     color: var(--ui-theme-tertiary);
     background-color: var(--ui-theme-secondary);
     border: 2px solid var(--ui-theme-primary);
     border-left: none;
     border-top: none;
-    transition: transform 1s ease;
-    #go-message{
-        animation: text-normal-float 3s alternate ease-in-out infinite;
+    transition: transform 0.5s ease;
+    .go-message{
+        text-align: center;
+        animation: text-normal-float-position 1s alternate linear infinite, text-normal-float-rotate 0.5s alternate ease-in-out infinite;;
     }
     &.hidden{
         transform: translateY(-100%);

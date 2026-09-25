@@ -4,7 +4,11 @@ import { Sprite2D } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { FrameSettings, SettingDef, Vec2Input } from "./settings.ts";
 import { Obstacle } from "../objects/obstacle.ts";
-
+import { WallsDef } from "common/scripts/definitions/objects/walls.ts";
+import { Walls } from "../objects/walls.ts";
+export interface EditorObjectTransform{
+    position:Vec2
+}
 export abstract class EditorObject{
     type:number=0
     editor!:EditorManager
@@ -30,7 +34,7 @@ export abstract class EditorObject{
     on_destroy():void{}
     can_select(position:Vec2):boolean{return false}
 
-    on_drag(delta:Vec2){}
+    on_drag(delta: Vec2): void {}
     on_drag_over(delta: Vec2): void {
         this.editor.update_propertys_window(this)
     }
@@ -38,6 +42,13 @@ export abstract class EditorObject{
     abstract clone():EditorObject
     encode(stream:Stream){}
     decode(stream:Stream){}
+
+    get_transform():EditorObjectTransform{
+        return {position:v2.zero()}
+    }
+    set_transform(transform:EditorObjectTransform){
+        
+    }
 }
 export class RectHitboxEditorObject extends EditorObject{
     override type=1
@@ -72,7 +83,12 @@ export class RectHitboxEditorObject extends EditorObject{
         this.editor.hitbox_gfx.ctx.rect(this.min,this.max)
         this.editor.hitbox_gfx.ctx.fill()
     }
-    override on_drag(delta: Vec2): void {
+    override get_transform(): EditorObjectTransform {
+        return {
+            position:this.min,
+        }
+    }
+    override on_drag(delta:Vec2): void{
         v2m.add(this.min,this.min,delta)
         v2m.add(this.max,this.max,delta)
     }
@@ -477,5 +493,58 @@ export class ObstacleEditorObject extends EditorObject{
         if(this.skin!==undefined)stream.write_uint8(this.skin)
         if(this.scale!==undefined)stream.write_float32(this.scale)
         if(this.allow_biome_skin!==undefined)stream.write_boolean_group(this.allow_biome_skin)
+    }
+}
+export class WallEditorObject extends EditorObject{
+    override type=5
+    def:WallsDef={
+        positions:[[v2(-5,0),v2(5,0)]],
+    }
+    wall:Walls=new Walls()
+    override childs:{content:EditorObject[]}={content:[]}
+
+    update_wall(){
+        this.wall.set_def(this.def)
+    }
+    override on_create(): void {
+        this.update_wall()
+    }
+    override get_property(name: string) {
+        switch(name){
+            case "position": return this.def[name]
+        }
+    }
+    override set_property(name: string, value: any): void {
+        switch(name){
+            case "position":
+                this.def[name]=value
+                this.update_wall()
+        }
+    }
+
+    override name():string{return "Wall"}
+    override get_propertys(): SettingDef[] {
+        return [
+            {...Vec2Input,name:"Position",var:"position",can_disable:true},
+            
+        ]
+    }
+
+    override on_tick(dt: number,selected:boolean): void {
+    }
+    override on_drag(delta: Vec2): void {
+    }
+    override can_select(position: Vec2): boolean {
+        return false
+    }
+
+    override clone(): EditorObject {
+        const wall=new WallEditorObject()
+        return wall
+    }
+    override encode(stream:Stream){
+
+    }
+    override decode(stream:Stream){
     }
 }

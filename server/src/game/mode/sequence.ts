@@ -18,6 +18,11 @@ export type SequenceCommand={
     type:"finish"
 }|{
     type:"save_checkpoint"
+}|{
+    type:"map_clear"
+}|{
+    type:"execute"
+    func:(mode:SequenceMode,cmd:SequenceCommand&{type:"execute"})=>boolean
 }
 export interface SequenceModeSettings{
     map?:MapDef|string
@@ -104,6 +109,13 @@ export class SequenceMode extends ModeManager{
             case "save_checkpoint":{
                 this.game.level?.save_checkpoint?.()
                 break
+            }
+            case "map_clear":{
+                this.scene.map.clear()
+                break
+            }
+            case "execute":{
+                return cmd.func(this,cmd)
             }
         }
         return true

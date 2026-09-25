@@ -1,5 +1,5 @@
 import { type Game } from "../others/game.ts"
-import { Floor, Floors,FloorType, MapTerrain } from "common/scripts/others/terrain.ts"
+import { Floors,FloorType, MapTerrain } from "common/scripts/others/terrain.ts"
 import { MapConfig, MapObjectObstacle, MapRegion } from "common/scripts/packets/map_message.ts"
 import { GetObstacleBaseFrame } from "../objects/obstacle.ts"
 import { zIndexes } from "common/scripts/others/constants.ts";

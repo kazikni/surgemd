@@ -1,10 +1,125 @@
 import { Graphics2D, HideElement, Key, ShowElement, type SMDEMenu, type SMDEWindow } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
 import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject } from "../defs/editor_objects.ts";
 import { build_setting_input, RectInput, SettingDef, Vec2Input } from "../defs/settings.ts";
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { GComponent } from "../others/component.ts";
+
+export class EditorWindow{
+    elem:SMDEWindow
+    editor:EditorManager
+    constructor(editor:EditorManager,id:string,closable:boolean=true){
+        this.editor=editor
+        if(closable){
+            this.elem=new SMDEWindow()
+            this.elem.addEventListener("close",(e:CustomEvent)=>{
+                e.preventDefault()
+                this.elem.style.display="none"
+            })
+            this.elem.style.display="none"
+            this.editor.ui.appendChild(this.elem)
+        }else{
+            this.elem=new SMDEWindow()
+        }
+        this.elem.id=id
+        this.elem.className="editor-window"
+    }
+    make_context_menu(menu:SMDEMenu){
+
+    }
+    reset(){
+        this.elem.style.left=""
+        this.elem.style.top=""
+        this.elem.style.width=""
+        this.elem.style.height=""
+        this.elem.style.display="none"
+    }
+}
+export class ObjectsEditorWindow extends EditorWindow{
+    create_btn:HTMLButtonElement
+    objects:HTMLDivElement
+    constructor(editor:EditorManager,id:string,closable?:boolean){
+        super(editor,id,closable)
+        this.create_btn=document.createElement("button")
+        this.objects=document.createElement("div")
+
+        this.create_btn.className="btn-green"
+        this.create_btn.textContent="Create"
+        this.create_btn.onclick=()=>{
+            if(this.editor.menu)this.editor.menu.remove()
+            const menu=this.editor.create_menu()
+            menu.add_option("Floor Image",()=>{
+                this.editor.objects.selected_object=this.editor.objects.add_object(new FloorImageEditorObject())
+            })
+            menu.add_option("Rectangle Hitbox",()=>{
+                this.editor.objects.selected_object=this.editor.objects.add_object(new RectHitboxEditorObject())
+            })
+            menu.add_option("Circle Hitbox",()=>{
+                this.editor.objects.selected_object=this.editor.objects.add_object(new CircleHitboxEditorObject())
+            })
+            menu.add_option("Obstacle",()=>{
+                this.editor.objects.selected_object=this.editor.objects.add_object(new ObstacleEditorObject())
+            })
+            this.editor.ui.appendChild(menu)
+            this.editor.to_mouse_position(menu)
+            this.editor.menu=menu
+        }
+
+        this.elem.content.appendChild(this.create_btn)
+        this.elem.content.appendChild(document.createElement("hr"))
+        this.elem.content.appendChild(this.objects)
+    }
+    update_objects(){
+        this.objects.innerHTML=""
+        this.editor.objects.objects.forEach((obj,index)=>{
+            const row=document.createElement("button")
+            row.className="btn-blue editor-object-row"
+            row.addEventListener("click",(e)=>{
+                if(this.editor.menu)this.editor.menu.remove()
+                const menu=this.editor.create_menu()
+                menu.add_option("Select",()=>{
+                    this.editor.objects.selected_object=obj
+                    this.editor.update_propertys_window(obj)
+                })
+                menu.add_option("Clone",()=>{
+                    this.editor.objects.clone_object(obj)
+                })
+                menu.add_option("Move Up",()=>{
+                    if(index===0)return
+                    [this.editor.objects.objects[index-1],this.editor.objects.objects[index]]=[this.editor.objects.objects[index],this.editor.objects.objects[index-1]]
+                    this.update_objects()
+                })
+                menu.add_option("Move Down",()=>{
+                    if(index===this.editor.objects.objects.length-1)return
+                    [this.editor.objects.objects[index], this.editor.objects.objects[index+1]]=[this.editor.objects.objects[index+1],this.editor.objects.objects[index]]
+                    this.update_objects()
+                })
+                menu.add_option("Delete",()=>{
+                    obj.destroyed=true
+                })
+                this.editor.to_mouse_position(menu)
+                this.editor.ui.appendChild(menu)
+                this.editor.menu=menu
+            })
+            if(obj===this.editor.objects.selected_object){
+                row.classList.add("selected")
+            }
+            const title=document.createElement("span")
+            title.style.flex="1"
+            title.innerHTML=obj.name()
+            row.appendChild(title)
+            this.objects.appendChild(row)
+        })
+    }
+    override make_context_menu(menu:any){
+        menu.add_option("Objects",()=>{
+            this.elem.style.display=""
+            this.editor.to_mouse_position(this.elem)
+            this.update_objects()
+        })
+    }
+}
 export class EditorObjectsManager{
     objects:EditorObject[]=[]
     selected_object?:EditorObject
@@ -18,7 +133,7 @@ export class EditorObjectsManager{
             c.on_destroy()
         }
         this.objects.length=0
-        this.editor.update_objects_window()
+        this.editor.objects_window.update_objects()
     }
 
     create_object(type:number):EditorObject{
@@ -54,7 +169,7 @@ export class EditorObjectsManager{
 
     add_object(obj:EditorObject){
         const ret=this._add_object(obj)
-        this.editor.update_objects_window()
+        this.editor.objects_window.update_objects()
         return ret
     }
     _add_object(obj:EditorObject){
@@ -85,7 +200,7 @@ export class EditorObjectsManager{
             this._add_object(obj)
             obj.decode(stream)
         },2)
-        this.editor.update_objects_window()
+        this.editor.objects_window.update_objects()
         this.editor.update_propertys_window()
     }
 
@@ -109,7 +224,7 @@ export class EditorObjectsManager{
                 if(this.objects[o]===this.selected_object)this.selected_object=undefined
                 this.objects[o].on_destroy()
                 this.objects.splice(o,1)
-                this.editor.update_objects_window()
+                this.editor.objects_window.update_objects()
                 o--
                 break
             }
@@ -142,7 +257,7 @@ export class EditorManager extends GComponent{
     context_menu!:SMDEMenu
     menu?:SMDEMenu
 
-    windows:Record<string,SMDEWindow>={}
+    windows:Record<string,EditorWindow>={}
 
     settings:Record<string,any>={}
     settings_default:Record<string,any>={
@@ -155,6 +270,10 @@ export class EditorManager extends GComponent{
     can_act:boolean=true
 
     hitbox_gfx:Graphics2D=new Graphics2D()
+
+    move_scale?:Vec2
+
+    objects_window!:ObjectsEditorWindow
 
     constructor(){
         super()
@@ -172,6 +291,7 @@ export class EditorManager extends GComponent{
         this.game.terrain.draw(this.game.terrain.terrain_gfx,Layers.Normal)
 
         this.game.ui_gfx.ctx.clear()
+        this.game.ui_gfx.ctx.begin_path()
         this.game.ui_gfx.ctx.fill_color=ColorM.hex("#fff8")
         this.game.ui_gfx.ctx.circle(v2.zero,0.2)
         this.game.ui_gfx.ctx.fill()
@@ -184,14 +304,15 @@ export class EditorManager extends GComponent{
         this.ui.classList="game-editor-ui"
         document.body.appendChild(this.ui)
 
-        this.windows["settings"]=this.create_closable_window("game-editor-settings-window")
-        this.create_settings(this.windows["settings"],this.create_settings_defs())
+        this.windows["settings"]=new EditorWindow(this,"game-editor-settings-window")
+        this.create_settings(this.windows["settings"].elem,this.create_settings_defs())
 
-        this.windows["objects"]=this.create_closable_window("game-editor-objects-window")
+        this.objects_window=new ObjectsEditorWindow(this,"game-editor-objects-window")
+        this.windows["objects"]=this.objects_window
 
-        this.windows["propertys"]=this.create_closable_window("game-editor-propertys-window")
-        this.windows["propertys"].content.style.display="flex"
-        this.windows["propertys"].content.style.flexDirection="column"
+        this.windows["propertys"]=new EditorWindow(this,"game-editor-propertys-window")
+        this.windows["propertys"].elem.content.style.display="flex"
+        this.windows["propertys"].elem.content.style.flexDirection="column"
 
         this.context_menu=this.make_context_menu()
         this.context_menu.style.display="none"
@@ -201,7 +322,7 @@ export class EditorManager extends GComponent{
         })
         this.ui.appendChild(this.context_menu)
 
-        this.update_objects_window()
+        this.objects_window.update_objects()
         this.reload_sources()
         this.game.dead_zone.set_current(v2.zero,0,false)
     }
@@ -219,23 +340,6 @@ export class EditorManager extends GComponent{
         const menu=new SMDEMenu()
         menu.className="editor-menu"
         return menu
-    }
-    create_window(){
-        const menu=new SMDEWindow()
-        menu.className="editor-window"
-        return menu
-    }
-    
-    create_closable_window(id:string){
-        const window=this.create_window()
-        window.id=id
-        window.addEventListener("close",(e:CustomEvent)=>{
-            e.preventDefault()
-            window.style.display="none"
-        })
-        window.style.display="none"
-        this.ui.appendChild(window)
-        return window
     }
 
     get_setting(name:string):any{
@@ -311,19 +415,17 @@ export class EditorManager extends GComponent{
         menu.add_submenu("File",fm)
 
         const wm=this.create_menu()
-        wm.add_option("Objects",()=>{
-            this.windows["objects"].style.display=""
-            this.to_mouse_position(this.windows["objects"])
-            this.update_objects_window()
-        })
+        for(const w in this.windows){
+            this.windows[w].make_context_menu(wm)
+        }
         wm.add_option("Propertys",()=>{
-            this.windows["propertys"].style.display=""
-            this.to_mouse_position(this.windows["propertys"])
+            this.windows["propertys"].elem.style.display=""
+            this.to_mouse_position(this.windows["propertys"].elem)
             this.update_propertys_window(this.objects.selected_object)
         })
         wm.add_option("Settings",()=>{
-            this.windows["settings"].style.display=""
-            this.to_mouse_position(this.windows["settings"])
+            this.windows["settings"].elem.style.display=""
+            this.to_mouse_position(this.windows["settings"].elem)
         })
 
         menu.add_submenu("Windows",wm)
@@ -368,8 +470,8 @@ export class EditorManager extends GComponent{
         stream.write_uint32(0)
         stream.write_array(Object.keys(this.windows),(i,s)=>{
             stream.write_string(i)
-            const rect=this.windows[i].getBoundingClientRect()
-            const invisible=this.windows[i].style.display=="none"
+            const rect=this.windows[i].elem.getBoundingClientRect()
+            const invisible=this.windows[i].elem.style.display=="none"
             stream.write_boolean_group(invisible)
             if(!invisible){
                 stream.write_int16(rect.left)
@@ -387,18 +489,18 @@ export class EditorManager extends GComponent{
         stream.read_array(()=>{
             const id=stream.read_string()
             const [invisible]=stream.read_boolean_group()
-            this.windows[id].style.display=invisible?"none":""
+            this.windows[id].elem.style.display=invisible?"none":""
             if(!invisible){
-                this.windows[id].style.left=stream.read_int16()+"px"
-                this.windows[id].style.top=stream.read_int16()+"px"
-                this.windows[id].style.width=stream.read_uint16()+"px"
-                this.windows[id].style.height=stream.read_uint16()+"px"
+                this.windows[id].elem.style.left=stream.read_int16()+"px"
+                this.windows[id].elem.style.top=stream.read_int16()+"px"
+                this.windows[id].elem.style.width=stream.read_uint16()+"px"
+                this.windows[id].elem.style.height=stream.read_uint16()+"px"
             }
         })
         this.objects.decode(stream)
         this.settings=stream.read_any()
         this.reload_sources()
-        this.create_settings(this.windows["settings"],this.create_settings_defs())
+        this.create_settings(this.windows["settings"].elem,this.create_settings_defs())
     }
 
     make_building():BuildingDef{
@@ -462,17 +564,12 @@ export class EditorManager extends GComponent{
         this.objects.clear()
         this.settings={}
         for (const id in this.windows) {
-            const w=this.windows[id]
-            w.style.left=""
-            w.style.top=""
-            w.style.width=""
-            w.style.height=""
-            w.style.display="none"
+            this.windows[id].reset()
         }
     }
 
     update_propertys_window(obj?:EditorObject){
-        const parent=this.windows["propertys"].content
+        const parent=this.windows["propertys"].elem.content
         parent.innerHTML=""
         if(!obj){
             parent.innerHTML="<h2>No object selected</h2>"
@@ -489,74 +586,5 @@ export class EditorManager extends GComponent{
                 on_blur:(val:any)=>this.can_act=true
             }))
         }
-    }
-    update_objects_window(){
-        const parent=this.windows["objects"].content
-        parent.innerHTML=""
-
-        const create=document.createElement("button")
-        create.className="btn-green"
-        create.textContent="Create"
-        create.onclick=()=>{
-            if(this.menu)this.menu.remove()
-            const menu=this.create_menu()
-            menu.add_option("Floor Image",()=>{
-                this.objects.selected_object=this.objects.add_object(new FloorImageEditorObject())
-            })
-            menu.add_option("Rectangle Hitbox",()=>{
-                this.objects.selected_object=this.objects.add_object(new RectHitboxEditorObject())
-            })
-            menu.add_option("Circle Hitbox",()=>{
-                this.objects.selected_object=this.objects.add_object(new CircleHitboxEditorObject())
-            })
-            menu.add_option("Obstacle",()=>{
-                this.objects.selected_object=this.objects.add_object(new ObstacleEditorObject())
-            })
-            this.ui.appendChild(menu)
-            this.to_mouse_position(menu)
-            this.menu=menu
-        }
-        parent.appendChild(create)
-        parent.appendChild(document.createElement("hr"))
-
-        this.objects.objects.forEach((obj,index)=>{
-            const row=document.createElement("button")
-            row.className="btn-blue editor-object-row"
-            row.addEventListener("click",(e)=>{
-                if(this.menu)this.menu.remove()
-                const menu=this.create_menu()
-                menu.add_option("Select",()=>{
-                    this.objects.selected_object=obj
-                    this.update_propertys_window(obj)
-                })
-                menu.add_option("Clone",()=>{
-                    this.objects.clone_object(obj)
-                })
-                menu.add_option("Move Up",()=>{
-                    if(index===0)return
-                    [this.objects.objects[index-1],this.objects.objects[index]]=[this.objects.objects[index],this.objects.objects[index-1]]
-                    this.update_objects_window()
-                })
-                menu.add_option("Move Down",()=>{
-                    if(index===this.objects.objects.length-1)return
-                    [this.objects.objects[index], this.objects.objects[index+1]]=[this.objects.objects[index+1],this.objects.objects[index]]
-                    this.update_objects_window()
-                })
-                menu.add_option("Delete",()=>{
-                    obj.destroyed=true
-                })
-                this.to_mouse_position(menu)
-                this.ui.appendChild(menu)
-                this.menu=menu
-            })
-            if(obj===this.objects.selected_object){
-                row.classList.add("selected")
-            }
-            const title=document.createElement("span")
-            title.style.flex="1"
-            title.innerHTML=obj.name()
-            row.appendChild(title)
-            parent.appendChild(row)
-        })
     }
 }

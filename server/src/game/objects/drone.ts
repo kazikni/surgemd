@@ -60,8 +60,7 @@ export class Drone extends AirBody {
         this.angular_velocity=Numeric.lerp_rad(this.angular_velocity,this.angular_velocity_dest,expo*2)
         if(this.angular_timer<=0){
             this.angular_timer+=random.float(2,6)
-            this.angular_velocity_dest=Math.random()
-            if(Math.random()<0.5)this.angular_velocity_dest*=-1
+            this.angular_velocity_dest=random.neg_float(0,2)
         }
         this.physical_data.rotation+=this.angular_velocity*dt
 

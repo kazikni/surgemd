@@ -10,6 +10,10 @@ export interface EffectDef extends Definition{
     particles?:{
         delay:number
         frame:FrameDef
+        angular_rotation?:boolean
+    }
+    target?:{
+        tint?:number
     }
     assets?:{
         sounds?:{
@@ -71,8 +75,7 @@ Effects.insert(
         side_effects:[
             {
                 type:SideEffectType.Damage,
-                amount:1,
-                piercing:true,
+                amount:4,
             },
         ],
         particles:{
@@ -82,6 +85,20 @@ Effects.insert(
                 image:"fire_particle"
             },
         },
+    },
+    {
+        idString:"poison",
+        effect_type:EffectType.Debuff,
+        target:{
+            tint:0x88ff88,
+        },
+        side_effects:[
+            {
+                type:SideEffectType.Damage,
+                amount:2,
+                piercing:true,
+            },
+        ],
     },
     {
         idString:"kill_haste",
@@ -96,9 +113,10 @@ Effects.insert(
         ],
         particles:{
             delay:0.2,
+            angular_rotation:true,
             frame:{
                 scale:2,
-                image:"boost_addiction_particle"
+                image:"boost_addiction_particle",
             },
         },
         assets:{
@@ -112,6 +130,7 @@ Effects.insert(
         effect_type:EffectType.Buff,
         particles:{
             delay:0.2,
+            angular_rotation:true,
             frame:{
                 scale:2,
                 image:"leaf_01_particle_1"

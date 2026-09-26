@@ -241,6 +241,9 @@ export const DefaultHumanModes={
                 bus:"humans"
             })
         }
+        if(effect.target?.tint){
+            h.container.tint=ColorM.number(effect.target.tint)
+        }
     },
     effect_removed(h:Human,effect:EffectDef){
         if(effect.assets?.sounds?.when_remove){

@@ -338,7 +338,7 @@ export class BattleRoyaleDebug extends BattleRoyale{
     }
     override async generate_map(): Promise<void> {
         this.scene.map.generate(await this.load_map(this.settings.map.def??"debug")??DebugMap,this.settings.map.seed,!this.settings.map.disable_minimap)
-        //const bb=this.game.scene_2d.add_object(new DangerZone(),Layers.Normal,undefined,{grenade:this.game.definitions.grenades.getFromStringSafe("mini_nuke"),position:v2.dscale(this.scene.map.size,2)})
+        //const bb=this.game.scene_2d.add_object(new ToxicZone(),Layers.Normal,undefined,{grenade:this.game.definitions.grenades.getFromStringSafe("mini_nuke"),position:v2.dscale(this.scene.map.size,2)})
     }
     override get_human_spawn_position(h:Human):Vec2|undefined{
         return v2.dscale(this.scene.map.size,2)

@@ -156,7 +156,7 @@ export abstract class Container2DObject {
             if(this.parent._real_matrix&&this._matrix)this._real_matrix=matrix4.mul(this._matrix,this.parent._real_matrix)
             else if(this.parent._real_matrix)this._real_matrix=this.parent._real_matrix
             else this._real_matrix=this._matrix
-            ColorM.mul(this._real_tint,this._tint,this.parent._tint)
+            ColorM.mul(this._real_tint,this._tint,this.parent._real_tint)
         } else {
             v2m.set(this._real_position,this._position._x,this._position._y)
             v2m.set(this._real_scale,this._scale._x,this._scale._y)

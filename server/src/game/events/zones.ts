@@ -5,6 +5,7 @@ import { circle, CircleHitbox2D, random, v2, Vec2 } from "common/engine/core.ts"
 import { type Human } from "../objects/human.ts";
 import { GameObjectType } from "common/scripts/others/constants.ts";
 import { DamageReason } from "common/scripts/definitions/utils.ts";
+import { SideEffectType } from "common/scripts/definitions/player/effects.ts";
 
 export class DangerZone extends ServerGameObject{
     override number_type: number=-1;
@@ -51,7 +52,7 @@ export class DangerZone extends ServerGameObject{
                 const g=this.scene.add_grenade(circle.random_point_inside(this.position,this.zone.radius),this.grenade,this.owner,this.layer)
                 g.physical_data.zpos=1
                 g.physical_data.zpos_speed=0
-                g.physical_data.angular_velocity=Math.random()>=0.5?-1.5:1.5
+                g.physical_data.angular_velocity=random.neg_value(-1.5)
             }
         }
         if(this.lifetime<=0)this.destroy()
@@ -109,7 +110,8 @@ export class ToxicZone extends ServerGameObject{
             for(const o of objects){
                 if(o.number_type===GameObjectType.Human){
                     if(!o.hitbox.colliding_with(this.hitbox))break
-                    (o as Human).piercing_damage({
+                    ;(o as Human).side_effect({type:SideEffectType.AddEffect,duration:160,effect:"poison"},this.owner)
+                    ;(o as Human).piercing_damage({
                         amount:this.damage,
                         critical:false,
                         direction:random.rad(),

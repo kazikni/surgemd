@@ -363,7 +363,7 @@ export class Human extends Humanoid{
                         life_time:random.float(1,3),
                         tint:ColorM.default.white,
                         to:{
-                            angle:angle+random.neg_value(6),
+                            angle:f.def.particles.angular_rotation?angle+random.neg_value(6):undefined,
                             tint:ColorM.default.transparent,
                             tint_ease:ease.quarticIn
                         }
@@ -963,6 +963,8 @@ export class Human extends Humanoid{
         const oldMap = new Map(old.map(e => [e.def.idNumber, e]))
         const newMap = new Map(effects.map(e => [e.idNumber, e]))
         const result: {def: EffectDef, lifetime: number}[] = []
+        let removed=false
+        let tint_changed=false
         for(const [id, newEffect] of newMap){
             const oldEffect = oldMap.get(id)
             if(oldEffect){
@@ -972,6 +974,7 @@ export class Human extends Humanoid{
                 })
             }else{
                 this.container.callmode("effect_added",newEffect)
+                if(newEffect.target?.tint!==undefined)tint_changed=true
                 result.push({
                     def: newEffect,
                     lifetime: 0
@@ -981,7 +984,12 @@ export class Human extends Humanoid{
         for(const [id, oldEffect] of oldMap){
             if(!newMap.has(id)){
                 this.container.callmode("effect_removed",oldEffect)
+                removed=true
+                if(oldEffect.def.target?.tint!==undefined)tint_changed=true
             }
+        }
+        if(tint_changed&&removed){
+            this.container.tint=ColorM.default.white
         }
         this.effects = result
     }

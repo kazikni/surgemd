@@ -452,7 +452,7 @@ export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
 
     // arrays: choose strategy (replace by default, or concat if desired)
     if (Array.isArray(srcVal)) {
-      if (Array.isArray(tgtVal)) {
+      if (Array.isArray(tgtVal)&&!Object.freeze(srcVal)) {
         (target as any)[key] = [...tgtVal, ...srcVal] as any;
       } else {
         (target as any)[key] = [...srcVal] as any;

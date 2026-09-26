@@ -1,4 +1,4 @@
-import { v2, Vec2 } from "../../engine/core.ts";
+import { AKeyFrame, v2, Vec2 } from "../../engine/core.ts";
 
 export enum ItemRank{
     E,
@@ -36,6 +36,7 @@ export interface WeaponAssets{
     switch_sound?:string
     cycle_sound?:string|boolean
     use_sound?:string
+    load_animation?:AKeyFrame[]
 }
 export const DefaultFistRig:FistRig={
     left:{
@@ -89,6 +90,12 @@ export const WeaponsArmRig={
         }
     },
     3:{
+        left:{
+            position:v2(0.37,-0.25),
+            rotation:0,
+            /*position:v2(0.65,0),
+            rotation:0.45,*/
+        },
         right:{
             position:v2(0.55,0),
             rotation:-0.45,

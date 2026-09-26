@@ -52,6 +52,7 @@ export class Human extends Humanoid{
 
         weapon:Sprite2D
         weapon2:Sprite2D
+        item3:Sprite2D
         muzzle_flash:Sprite2D
         parachute:Sprite2D
         emote_container:Container2D
@@ -72,6 +73,8 @@ export class Human extends Humanoid{
         is_emote_mount_animation:boolean,
 
         sound_animation:AudioInstance|undefined,
+
+        weapon_time:number
 
         recoil_time:number
         recoil_state:number
@@ -102,6 +105,8 @@ export class Human extends Humanoid{
         recoil_time_scale:1,
         recoil_walk:0,
         recoil_type:0,
+
+        weapon_time:0,
 
         cycle_sound_time:undefined as (number|undefined),
 
@@ -165,6 +170,7 @@ export class Human extends Humanoid{
             parachute:new Sprite2D(),//this.container.add_sprite("parachute",{zIndex:7,hotspot:v2.half_one,visible:false}),
             weapon:this.container.add_sprite("weapon"),
             weapon2:this.container.add_sprite("weapon2"),
+            item3:this.container.add_sprite("item3"),
             emote_container:new Container2D(),
             emote_bg:new Sprite2D(),
             emote_sprite:new Sprite2D(),
@@ -271,6 +277,7 @@ export class Human extends Humanoid{
     update_weapon(def:WeaponDef|undefined){
         this.sprites.weapon.visible=false
         this.sprites.weapon2.visible=false
+        this.sprites.item3.visible=false
         if(def?.rig_image){
             const replace=this.visual.wrapping?.replace[this.assets.original_hand_frame]
             const tint=def.assets?.world_tint?ColorM.number(def.assets.world_tint):ColorM.default.white
@@ -337,6 +344,7 @@ export class Human extends Humanoid{
             }
         }
         if(this.dead)return
+        if(this.animation.weapon_time>0)this.animation.weapon_time-=dt
         if(this.sprites.name){
             this.sprites.name.position.x=this.position.x
             this.sprites.name.position.y=this.position.y+(1*this.scale)
@@ -541,6 +549,7 @@ export class Human extends Humanoid{
     play_fire_animation(def:GunDef,alt:boolean,last:boolean,alt_func:boolean){
         let barrel_offset=def.barrel_offset??0
 
+        this.animation.weapon_time=2
         if(def.recoil_animation){
             this.animation.recoil_time_scale=def.recoil_animation.time_scale
             this.animation.recoil_walk=def.recoil_animation.walk
@@ -617,7 +626,8 @@ export class Human extends Humanoid{
                 case HumanAnimationType.Reloading:{
                     if((this.current_weapon as unknown as GameItem).item_type!==GameItemType.gun)break
                     const d=this.current_weapon as GunDef
-                    const sound=(d.reload?.reload_alt&&a.alt_reload)?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
+                    const reload_alt:boolean=d.reload?.reload_alt!==undefined&&a.alt_reload
+                    const sound=reload_alt?this.assets.weapon_reload_sound_alt:this.assets.weapon_reload_sound
                     if(sound){
                         if(this.animation.sound_animation)this.animation.sound_animation.stop()
                         this.animation.sound_animation=this.game.sounds.play(sound,{
@@ -629,6 +639,9 @@ export class Human extends Humanoid{
                             }
                         })
                     }
+                    
+                    if(reload_alt&&d.assets?.reload_alt_animation)this.container.play_animation(d.assets.reload_alt_animation)
+                    else if(!reload_alt&&d.assets?.reload_animation)this.container.play_animation(d.assets.reload_animation)
                     if(d.case_particle?.at_begin){
                         if(d.dual_from){
                             this.play_casing_particle(d,undefined,v2(0,-d.dual_offset))

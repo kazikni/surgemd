@@ -268,6 +268,7 @@ export const DefaultHumanModes={
         h.assets.weapon_cycle_sound=undefined
 
         if(weapon){
+            if(weapon.item_type===GameItemType.melee)h.animation.weapon_time=0
             h.set_arms_rig(weapon.rig_arms)
             let original_name=weapon.idString
             let frame:string
@@ -335,6 +336,9 @@ export const DefaultHumanModes={
                     h.animation.sound_animation=undefined
                 }
             })
+        }
+        if(h.animation.recoil_state===-1&&h.animation.weapon_time<=0){
+            if(h.current_weapon?.assets?.load_animation)h.container.play_animation(h.current_weapon.assets.load_animation)
         }
     },
     update_melee(h:Human,def?:MeleeDef){

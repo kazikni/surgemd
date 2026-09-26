@@ -3,6 +3,8 @@
 ___
 ### Mains
 * Fineshed Map Pings
+* Weapons Load Animation
+* Weapons Reload Animation
 ___
 ### Menu
 * New Loading Screen
@@ -36,6 +38,7 @@ ___
 * New Global Messages
 * Danger Zone
 * Toxic Zone
+* Poison Side Effect
 ___
 ## Changes
 ___

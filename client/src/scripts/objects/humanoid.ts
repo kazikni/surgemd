@@ -98,7 +98,6 @@ export class Humanoid extends MovingBody{
 
             mounth:this.container.add_animated_sprite("mounth",{hotspot:v2(0.4,0.5),scale:1.5,zIndex:5}),
 
-
             left_arm:this.container.add_container("left_arm"),
             right_arm:this.container.add_container("right_arm"),
 

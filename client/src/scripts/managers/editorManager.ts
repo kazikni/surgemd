@@ -1,7 +1,7 @@
 import { Graphics2D, HideElement, Key, ShowElement, type SMDEMenu, type SMDEWindow } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
 import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
-import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject } from "../defs/editor_objects.ts";
+import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject, WallEditorObject } from "../defs/editor_objects.ts";
 import { build_setting_input, RectInput, SettingDef, Vec2Input } from "../defs/settings.ts";
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { GComponent } from "../others/component.ts";
@@ -60,6 +60,9 @@ export class ObjectsEditorWindow extends EditorWindow{
             })
             menu.add_option("Obstacle",()=>{
                 this.editor.objects.selected_object=this.editor.objects.add_object(new ObstacleEditorObject())
+            })
+            menu.add_option("Wall",()=>{
+                this.editor.objects.selected_object=this.editor.objects.add_object(new WallEditorObject())
             })
             this.editor.ui.appendChild(menu)
             this.editor.to_mouse_position(menu)

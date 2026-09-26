@@ -252,7 +252,6 @@ export class Obstacle extends StaticBody{
                 })
             }
         }
-        this.physical_data.reflect_bullets=this.def.reflect_bullets??false
         if(this.def.expanded_behavior){
             switch(this.def.expanded_behavior.type){
                 case 3:
@@ -278,7 +277,8 @@ export class Obstacle extends StaticBody{
             this.shadow.layer=this.layer
             this.scene.camera.add_object(this.shadow)
         }
-        this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        if(this.def.passable_by_bullets!==undefined)this.physical_data.passable_by_bullets=this.def.passable_by_bullets??false
+        if(this.def.reflect_bullets!==undefined)this.physical_data.reflect_bullets=this.def.reflect_bullets
         if(this.def.expanded_behavior?.type===4){
             this.press_data={
                 activated:false,

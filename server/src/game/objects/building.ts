@@ -280,12 +280,6 @@ export class Building extends StaticBody {
         spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
         interaction_hitbox:new NullHitbox2D(v2.new(0,0)),
 
-        reflect_bullets:false,
-        no_collision:true,
-        no_spawn_collision:false,
-        no_pathfinding_collision:false,
-        no_bullets_collision:true,
-        passable_by_bullets:false,
         stairs:[]
     }
 
@@ -325,16 +319,15 @@ export class Building extends StaticBody {
         }
 
         this.allow_tick=this.def.generate.puzzles!==undefined
+        if(this.def.no_collisions)this.physical_data.no_collision=this.def.no_collisions
+        if(this.def.no_spawn_collision)this.physical_data.no_spawn_collision=this.def.no_spawn_collision
+        if(this.def.no_bullet_collision)this.physical_data.no_bullets_collision=this.def.no_bullet_collision
         if(this.def.is_ghost){
             this.physical_data.no_bullets_collision=true
             this.physical_data.no_collision=true
             this.physical_data.no_spawn_collision=false
-        }else{
-            this.physical_data.no_collision=this.def.no_collisions??false
-            this.physical_data.no_spawn_collision=this.def.no_spawn_collision??false
-            this.physical_data.no_bullets_collision=this.def.no_bullet_collision??false
         }
-        this.physical_data.reflect_bullets=this.def.reflect_bullets??false
+        this.physical_data.reflect_bullets=this.def.reflect_bullets
 
         this.update_hitbox()
     }

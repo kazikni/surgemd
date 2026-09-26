@@ -8,10 +8,10 @@ export type StaticBodyPhysicalData={
     hitbox:Hitbox2D
     side:number
 
-    reflect_bullets:boolean
-    no_collision:boolean
-    no_bullets_collision:boolean
-    passable_by_bullets:boolean
+    reflect_bullets?:boolean
+    no_collision?:boolean
+    no_bullets_collision?:boolean
+    passable_by_bullets?:boolean
 }
 export interface StaticBodyAssetData{
     particles?:{

@@ -2,7 +2,7 @@ import { cloneDeep, ColorM, FrameDef, Stream, v2, v2m, Vec2 } from "common/engin
 import { type EditorManager } from "../managers/editorManager.ts";
 import { Sprite2D } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { FrameSettings, SettingDef, Vec2Input } from "./settings.ts";
+import { FrameSettings, RGBAInput, SettingDef, Vec2Input } from "./settings.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { WallsDef } from "common/scripts/definitions/objects/walls.ts";
 import { Walls } from "../objects/walls.ts";
@@ -499,6 +499,9 @@ export class WallEditorObject extends EditorObject{
     override type=5
     def:WallsDef={
         positions:[[v2(-5,0),v2(5,0)]],
+        tint:0xffffff,
+        width:0.4,
+        stroke_width:0.15,
     }
     wall:Walls=new Walls()
     override childs:{content:EditorObject[]}={content:[]}
@@ -507,18 +510,35 @@ export class WallEditorObject extends EditorObject{
         this.wall.set_def(this.def)
     }
     override on_create(): void {
+        this.editor.game.scene_2d.add_object(this.wall,Layers.Normal+(this.def.layer??0))
         this.update_wall()
+    }
+    override on_destroy(): void {
+        this.wall.destroy()
     }
     override get_property(name: string) {
         switch(name){
-            case "position": return this.def[name]
+            case "layer":
+            case "position":
+            case "width":
+            case "tint":
+            case "stroke_width": return this.def[name]
         }
     }
     override set_property(name: string, value: any): void {
         switch(name){
-            case "position":
+            case "width":
+            case "stroke_width":
+            case "layer":
+            case "tint":
                 this.def[name]=value
                 this.update_wall()
+                break
+            case "position":
+                this.def[name]=value
+                this.wall.position=value??v2.zero
+                this.wall.wall.position=this.wall.position
+                break
         }
     }
 
@@ -526,7 +546,10 @@ export class WallEditorObject extends EditorObject{
     override get_propertys(): SettingDef[] {
         return [
             {...Vec2Input,name:"Position",var:"position",can_disable:true},
-            
+            {type:"input",name:"Layer",var:"layer",can_disable:true},
+            {type:"input",name:"Width",var:"width",can_disable:true},
+            {type:"input",name:"Stroke Width",var:"stroke_width",can_disable:true},
+            {...RGBAInput,name:"Tint",var:"tint"},
         ]
     }
 

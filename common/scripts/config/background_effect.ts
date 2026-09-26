@@ -431,6 +431,7 @@ export const FinalCredits=[
         users: [
             "@kazikni",
             "@cheerfulbull_29688",
+            "@wowcps_01_37746",
             "@endermanking",
             "@littlethief69",
             "Suroi.io",

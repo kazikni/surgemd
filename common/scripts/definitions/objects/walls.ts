@@ -43,6 +43,7 @@ export interface WallsDef{
     passable_by_bullets?:boolean
 
     position?:Vec2
+    layer?:number
     side?:number
 
     positions:Vec2[][]

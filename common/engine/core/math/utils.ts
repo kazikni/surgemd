@@ -425,7 +425,19 @@ export function cloneDeep<T>(object: T): T {
         }
     })(object)
 }
-
+export function deepFreeze<T>(object:T):T{
+    const seen=new WeakSet<object>()
+    const freeze=(value:any):any=>{
+        if(value===null||typeof value!=="object"||seen.has(value))return value
+        seen.add(value)
+        for(const key of Reflect.ownKeys(value)){
+            const desc=Object.getOwnPropertyDescriptor(value,key)
+            if(desc&&"value" in desc)freeze(desc.value)
+        }
+        return Object.freeze(value)
+    }
+    return freeze(object)
+}
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
 };
@@ -452,7 +464,7 @@ export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
 
     // arrays: choose strategy (replace by default, or concat if desired)
     if (Array.isArray(srcVal)) {
-      if (Array.isArray(tgtVal)&&!Object.freeze(srcVal)) {
+      if (Array.isArray(tgtVal)&&!Object.isFrozen(srcVal)) {
         (target as any)[key] = [...tgtVal, ...srcVal] as any;
       } else {
         (target as any)[key] = [...srcVal] as any;
@@ -461,7 +473,7 @@ export function mergeDeep<T>(target: T, ...sources: Array<DeepPartial<T>>): T {
     }
 
     // objects
-    if (typeof srcVal === "object") {
+    if (typeof srcVal === "object"&&!Object.isFrozen(srcVal)) {
       if (typeof tgtVal === "object" && tgtVal !== null && !Array.isArray(tgtVal)) {
         mergeDeep(tgtVal, srcVal as any);
       } else {

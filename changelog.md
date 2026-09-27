@@ -5,6 +5,7 @@ ___
 * Fineshed Map Pings
 * Weapons Load Animation
 * Weapons Reload Animation
+* Weapons Cycle Animation
 ___
 ### Menu
 * New Loading Screen

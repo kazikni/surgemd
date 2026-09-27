@@ -320,9 +320,6 @@ export const DefaultHumanModes={
             h.set_arms_rig(undefined)
         }
         h.update_weapon(weapon)
-        h.animation.base_left_arm_position=v2.clone(h.sprites.left_arm.position)
-        h.animation.base_right_arm_position=v2.clone(h.sprites.right_arm.position)
-        h.animation.base_weapon_position=v2.clone(h.sprites.weapon.position)
         if(h.melee)h.container.callmode("update_melee",h.melee)
     },
     weapon_switch(h:Human){

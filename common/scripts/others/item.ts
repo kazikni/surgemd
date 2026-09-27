@@ -1,4 +1,4 @@
-import { AKeyFrame, v2, Vec2 } from "../../engine/core.ts";
+import { AKeyFrame, deepFreeze, v2, Vec2 } from "../../engine/core.ts";
 
 export enum ItemRank{
     E,
@@ -58,7 +58,7 @@ export const DefaultDownedWalkFistRig:FistRig={
         rotation:-0.05,
     }
 }
-export const WeaponsArmRig={
+export const WeaponsArmRig=deepFreeze({
     0:{
         left:{
             position:v2(0.7,-0.05),
@@ -71,16 +71,6 @@ export const WeaponsArmRig={
     },
     1:{
         left:{
-            position:v2(0.7,-0.035),
-            rotation:0.35,
-        },
-        right:{
-            position:v2(0.5,0.05),
-            rotation:-0.3,
-        }
-    },
-    2:{
-        left:{
             position:v2(0.85,-0.05),
             rotation:0.2,
         },
@@ -89,9 +79,19 @@ export const WeaponsArmRig={
             rotation:-0.3,
         }
     },
+    2:{
+        left:{
+            position:v2(0.9,-0.05),
+            rotation:0.15,
+        },
+        right:{
+            position:v2(0.53,0.07),
+            rotation:-0.3,
+        }
+    },
     3:{
         left:{
-            position:v2(0.37,-0.25),
+            position:v2(0.3,-0.25),
             rotation:0,
             /*position:v2(0.65,0),
             rotation:0.45,*/
@@ -101,9 +101,13 @@ export const WeaponsArmRig={
             rotation:-0.45,
         }
     },
-}
+}) satisfies Record<number,FistRig>
 export const WeaponsRig={
     0:{
+        position:v2(0.7,0),
+        rotation:0
+    },
+    1:{
         position:v2(0.6,0),
         rotation:0
     },

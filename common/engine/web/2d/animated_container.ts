@@ -85,6 +85,7 @@ export class AnimatedContainer2D extends Container2D{
             a.current_delay = kf.time
             a.tweens.length=0
             for(const action of kf.actions){
+                if(!action)continue
                 switch(action.type){
                     case "sprite":{
                         const spr=this.get_object(action.fuser)

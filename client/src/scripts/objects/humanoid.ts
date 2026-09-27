@@ -37,8 +37,6 @@ export type HumanoidSprites={
 }
 export type HumanoidAnimation={
     mounth:KeyFrameSpriteDef[]
-    base_left_arm_position:Vec2
-    base_right_arm_position:Vec2
     footsteps?:AudioInstance
 
     walk_speed:number
@@ -66,8 +64,6 @@ export class Humanoid extends MovingBody{
     downed:boolean=false
 
     animation:HumanoidAnimation={
-        base_left_arm_position:v2.zero(),
-        base_right_arm_position:v2.zero(),
         mounth:[],
         walk_cycle:0,
         walk_speed:0,

@@ -13,7 +13,7 @@ import { GameObject } from "../others/gameObject.ts";
 import { StaticBody } from "./static_body.ts";
 import { ConsumingAction } from "common/scripts/definitions/items/consumibles.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
-import { CircleHitbox2D, ColorM, ease, Hitbox2D, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { CircleHitbox2D, ColorM, ease, Hitbox2D, matrix4, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { DefaultHumanModes } from "../defs/human_animations.ts";
 import { Humanoid, HumanoidAnimation, HumanoidAssets, HumanoidSprites } from "./humanoid.ts";
 export class Human extends Humanoid{
@@ -85,11 +85,6 @@ export class Human extends Humanoid{
         cycle_sound_time:number|undefined,
 
         muzzle_flash_time:number,
-
-        base_muzzle_flash_position:Vec2
-        base_weapon_position:Vec2
-        base_left_arm_position:Vec2
-        base_right_arm_position:Vec2
     }={
         emote_tween:undefined as Tween<Vec2>|undefined,
         emote_sound:undefined as AudioInstance|undefined,
@@ -111,11 +106,6 @@ export class Human extends Humanoid{
         cycle_sound_time:undefined as (number|undefined),
 
         muzzle_flash_time:-1,
-
-        base_muzzle_flash_position:v2.zero(),
-        base_weapon_position:v2.zero(),
-        base_left_arm_position:v2.zero(),
-        base_right_arm_position:v2.zero(),
 
         walk_speed:1,
         walk_cycle:0,
@@ -289,7 +279,7 @@ export class Human extends Humanoid{
             }
             if((def as GameItem).item_type===GameItemType.gun&&(def as GunDef).dual_from){
                 //const original_def=this.game.definitions.guns.getFromString((def as GunDef).dual_from!)
-                const xpos=def.rig_arms?.right?.position.x??this.animation.base_left_arm_position.x
+                const xpos=def.rig_arms?.right?.position.x??0
                 if(def.rig_image){
                     this.sprites.weapon2.visible=true
                     this.sprites.weapon2.tint=tint
@@ -300,12 +290,12 @@ export class Human extends Humanoid{
                 }
 
                 this.sprites.left_arm.visible=true
-                this.sprites.left_arm.rotation=0
+                this.sprites.left_arm.rotation=0.2
                 this.sprites.left_arm.position.x=xpos
                 this.sprites.left_arm.position.y=-(def as GunDef&DualAdditional).dual_offset!
     
                 this.sprites.right_arm.visible=true
-                this.sprites.right_arm.rotation=0
+                this.sprites.right_arm.rotation=-0.2
                 this.sprites.right_arm.position.x=xpos
                 this.sprites.right_arm.position.y=(def as GunDef&DualAdditional).dual_offset!
             }
@@ -427,21 +417,25 @@ export class Human extends Humanoid{
         }
         if(!this.downed){
             if(this.animation.recoil_state!==-1){
-                const recoil_walk=this.animation.recoil_walk
-                this.sprites.muzzle_flash.position.x=Numeric.lerp(this.animation.base_muzzle_flash_position.x,this.animation.base_muzzle_flash_position.x-recoil_walk,this.animation.recoil_time)
+                const pos=v2(Numeric.lerp(0,-this.animation.recoil_walk,this.animation.recoil_time),0)
+                v2m.rotate_RadAngle(pos,this.container.rotation)
+                const matrix=matrix4.translation_2d(pos)
+
+                this.sprites.muzzle_flash.matrix=matrix
+
                 switch(this.animation.recoil_type){
                     case 0:
-                        this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_left_arm_position.x,this.animation.base_left_arm_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-recoil_walk,this.animation.recoil_time)
+                        this.sprites.weapon.matrix=matrix
+                        this.sprites.left_arm.matrix=matrix
+                        this.sprites.right_arm.matrix=matrix
                         break
                     case 1:
-                        this.sprites.weapon.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.left_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-recoil_walk,this.animation.recoil_time)
-                        break
+                        this.sprites.weapon.matrix=matrix
+                        this.sprites.right_arm.matrix=matrix
+                       break
                     case 2:
-                        this.sprites.weapon2.position.x=Numeric.lerp(this.animation.base_weapon_position.x,this.animation.base_weapon_position.x-recoil_walk,this.animation.recoil_time)
-                        this.sprites.right_arm.position.x=Numeric.lerp(this.animation.base_right_arm_position.x,this.animation.base_right_arm_position.x-recoil_walk,this.animation.recoil_time)
+                        this.sprites.weapon2.matrix=matrix
+                        this.sprites.left_arm.matrix=matrix
                         break
                 }
                 if(this.animation.recoil_state===0){
@@ -455,6 +449,11 @@ export class Human extends Humanoid{
                     if(this.animation.recoil_time<=0){
                         this.animation.recoil_state=-1
                         this.animation.recoil_time=0
+                        this.sprites.left_arm.matrix=undefined
+                        this.sprites.right_arm.matrix=undefined
+                        this.sprites.weapon.matrix=undefined
+                        this.sprites.weapon2.matrix=undefined
+                        this.sprites.muzzle_flash.matrix=undefined
                     }
                 }
             }
@@ -577,10 +576,14 @@ export class Human extends Humanoid{
         v2m.rotate_RadAngle(barrel_position,this.rotation)
         v2m.add(barrel_position,this.position,barrel_position)
 
+        const cicle_time=(def.fire_delay??0)*0.4
         if(!def.case_particle?.at_begin){
             this.game.clock.add_timeout(()=>{
                 this.play_casing_particle(def)
-            },(def.fire_delay??0)*0.75)
+            },cicle_time*1.25)
+        }
+        if(def.assets?.cycle_animation){
+            this.container.play_animation(def.assets.cycle_animation)
         }
 
         let sound:Sound|undefined
@@ -603,13 +606,12 @@ export class Human extends Humanoid{
             })
         }
         if(this.assets.weapon_cycle_sound){
-            this.animation.cycle_sound_time=(def.fire_delay??0)*0.4
+            this.animation.cycle_sound_time=cicle_time
         }
         if(def.muzzle_flash&&!this.sprites.muzzle_flash.visible){
             this.sprites.muzzle_flash.visible=true
             this.sprites.muzzle_flash.frame=this.game.resources.get_frame(def.muzzle_flash.sprite)
             this.sprites.muzzle_flash.position=v2(def.barrel_length,barrel_offset)
-            this.animation.base_muzzle_flash_position=v2(def.barrel_length,barrel_offset)
             this.animation.muzzle_flash_time=Math.min((def.fire_delay??0)*0.9,0.2)
         }
     }

@@ -1,4 +1,5 @@
 import { AKeyFrame, DeepPartial, Definition, ease, FrameTransform, mergeDeep, v2 } from "../../../engine/core.ts";
+import { default_animations, default_animations_factory } from "../../others/animations.ts";
 import { WeaponsArmRig,WeaponsRig, ItemRank, tracers, FistRig, WeaponAssets, FireMode} from "../../others/item.ts";
 import { ItemFireDefinition, MuzzleFlash, type BulletDef, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 export type GunDef={
@@ -46,6 +47,7 @@ export type GunDef={
         reload_sound_alt?:string
         reload_animation?:AKeyFrame[]
         reload_alt_animation?:AKeyFrame[]
+        cycle_animation?:AKeyFrame[]
         use_last?:boolean|string
         use_alt_func?:string
     }
@@ -75,212 +77,6 @@ export type GunAltFunc=({
 export const GunsConstructors={
     extends(gun:GunDef,variant:DeepPartial<GunDef>):GunDef{
         return mergeDeep({}as GunDef,gun,variant)as GunDef
-    },
-}
-export const default_animations={
-    load_assault:Object.freeze([
-        {
-            time:0,
-            actions:[
-                {fuser:"left_arm",position:v2.add(WeaponsArmRig[1].left.position,v2(-0.5,0)),type:"sprite"},
-                {fuser:"right_arm",position:v2.add(WeaponsArmRig[1].right.position,v2(-0.5,0)),rotation:0,type:"sprite"},
-                {fuser:"weapon",position:v2.add(WeaponsRig[0].position,v2(-0.5,0)),rotation:0,type:"sprite"},
-            ]
-        },
-        {
-            time:0.1,
-            actions:[
-                {fuser:"left_arm",to:{position:WeaponsArmRig[1].left.position},type:"tween"},
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[1].right.position,v2(0,0.1))},type:"tween"},
-                {fuser:"weapon",to:{position:WeaponsRig[0].position},type:"tween"},
-            ]
-        },
-        {time:0.1, actions:[]},
-        {
-            time:0.2,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[1].right.position,v2(0.2,0))},type:"tween"},
-            ]
-        },
-        {
-            time:0.07,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[1].right.position,v2(0.2,-0.05))},type:"tween"},
-            ]
-        },
-        {
-            time:0.1,
-            actions:[
-                {fuser:"right_arm",to:{position:WeaponsArmRig[1].right.position,rotation:WeaponsArmRig[1].right.rotation},type:"tween"},
-            ]
-        }
-    ]) as AKeyFrame[],
-    load_sniper:Object.freeze([
-        {
-            time:0,
-            actions:[
-                {fuser:"left_arm",position:v2.add(WeaponsArmRig[2].left.position,v2(-0.5,0)),type:"sprite"},
-                {fuser:"right_arm",position:v2.add(WeaponsArmRig[2].right.position,v2(-0.5,0)),rotation:0,type:"sprite"},
-                {fuser:"weapon",position:v2.add(WeaponsRig[0].position,v2(-0.5,0)),rotation:0,type:"sprite"},
-            ]
-        },
-        {
-            time:0.1,
-            actions:[
-                {fuser:"left_arm",to:{position:WeaponsArmRig[2].left.position},type:"tween"},
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0,0.1))},type:"tween"},
-                {fuser:"weapon",to:{position:WeaponsRig[0].position},type:"tween"},
-            ]
-        },
-        {time:0.1, actions:[]},
-        {
-            time:0.2,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0.2,0))},type:"tween"},
-            ]
-        },
-        {
-            time:0.07,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0.2,-0.05))},type:"tween"},
-            ]
-        },
-        {
-            time:0.1,
-            actions:[
-                {fuser:"right_arm",to:{position:WeaponsArmRig[2].right.position,rotation:WeaponsArmRig[2].right.rotation},type:"tween"},
-            ]
-        }
-    ]) as AKeyFrame[],
-    load_sniper_bolt:Object.freeze([
-        {
-            time:0,
-            actions:[
-                {fuser:"left_arm",position:v2.add(WeaponsArmRig[2].left.position,v2(-0.5,0)),type:"sprite"},
-                {fuser:"right_arm",position:v2.add(WeaponsArmRig[2].right.position,v2(-0.5,0)),rotation:0,type:"sprite"},
-                {fuser:"weapon",position:v2.add(WeaponsRig[0].position,v2(-0.5,0)),rotation:0,type:"sprite"},
-            ]
-        },
-        {
-            time:0.1,
-            actions:[
-                {fuser:"left_arm",to:{position:WeaponsArmRig[2].left.position},type:"tween"},
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0,0.1))},type:"tween"},
-                {fuser:"weapon",to:{position:WeaponsRig[0].position},type:"tween"},
-            ]
-        },
-        {time:0.1,actions:[]},
-        {
-            time:0.18,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0.22,0))},type:"tween"},
-            ]
-        },
-        {
-            time:0.08,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0.22,0.03))},type:"tween"},
-            ]
-        },
-        {
-            time:0.16,
-            actions:[
-                {fuser:"right_arm",to:{position:v2.add(WeaponsArmRig[2].right.position,v2(0.04,0.03))},type:"tween"},
-            ]
-        },
-        {
-            time:0.1,
-            actions:[
-                {fuser:"right_arm",to:{position:WeaponsArmRig[2].right.position,rotation:WeaponsArmRig[2].right.rotation},type:"tween"},
-            ]
-        }
-    ]) as AKeyFrame[],
-}satisfies Record<string,AKeyFrame[]>
-export const default_animations_factory={
-    insert_reload(time: number,repeat_count:number=1,sprite:string="casing_ammo_p76",hover:boolean=false,hotspot=v2(0,0.5),arm=WeaponsArmRig[1].right,arm_fuser:string="right_arm",weapon=WeaponsRig[0],bag_position=v2(0.25,0.2)): AKeyFrame[] {
-        const ret:AKeyFrame[]=[
-            {
-                time: 0,
-                actions: [
-                    {
-                        fuser: "item3",
-                        image: sprite,
-                        visible: false,
-                        scale: 2,
-                        hotspot:hotspot,
-                        zIndex:hover?2.5:1.9,
-                        tint:0xffffff,
-                        type: "sprite"
-                    }
-                ]
-            },
-        ]
-
-        for(let i=0;i<repeat_count;i++){
-            ret.push({
-                time: time * 0.25,
-                actions: [
-                    {fuser:arm_fuser,to:{position: bag_position},type: "tween"}
-                ]
-            },
-            {
-                time: time * 0.05,
-                actions: [
-                    {fuser: "item3",visible: true,position: bag_position,rotation:-0.25,type: "sprite"}
-                ]
-            },
-            {
-                time: time * 0.35,
-                actions: [
-                    {
-                        fuser:arm_fuser,
-                        to: {
-                            position: v2(weapon.position.x + 0.05,weapon.position.y + 0.08)
-                        },
-                        type: "tween"
-                    },
-                    {
-                        fuser: "item3",
-                        to: {
-                            position: v2(weapon.position.x + 0.05,weapon.position.y),
-                            rotation: 0,
-                        },
-                        type: "tween"
-                    }
-
-                ]
-            },
-            {
-                time: time * 0.10,
-                actions: []
-            },
-            {
-                time: time * 0.05,
-                actions: [
-                    {
-                        fuser: "item3",
-                        visible: false,
-                        type: "sprite"
-                    }
-                ]
-            })
-        }
-
-        ret.push({
-            time: time * 0.20,
-            actions: [
-                {
-                    fuser:arm_fuser,
-                    to: {
-                        position: arm.position,
-                        rotation: arm.rotation
-                    },
-                    type: "tween"
-                }
-
-            ]
-        })
-        return Object.freeze(ret) as AKeyFrame[]
     },
 }
 
@@ -409,14 +205,14 @@ export const guns_factory={
             class:GunClasses.Pistol,
             rank:ItemRank.E,
 
-            barrel_length:0.8,
+            barrel_length:0.85,
 
             fire_delay:1,
             switch_delay:0.1,
 
             muzzle_flash:MuzzleFlash.normal,
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.5,0.05)
             },
             recoil_animation:{
                 time_scale:9,
@@ -426,7 +222,7 @@ export const guns_factory={
             ammo_type:ammo,
 
             rig_arms:WeaponsArmRig[3],
-            rig_image:WeaponsRig[0],
+            rig_image:WeaponsRig[1],
             assets:{
                 world:"weapon_small_world",
                 world_tint:0x22222f
@@ -441,7 +237,7 @@ export const guns_factory={
             class:GunClasses.Assault,
             rank:ItemRank.C,
 
-            barrel_length:0.98,
+            barrel_length:1.08,
             idle_spread:0.2,
 
             fire_delay:0.1,
@@ -454,13 +250,13 @@ export const guns_factory={
             },
 
             case_particle:{
-                position:v2.new(0.6,0.1)
+                position:v2.new(0.6,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[1],
+            rig_arms:WeaponsArmRig[0],
             rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
@@ -480,7 +276,7 @@ export const guns_factory={
             class:GunClasses.SMG,
             rank:ItemRank.C,
 
-            barrel_length:0.98,
+            barrel_length:1.08,
             idle_spread:0.4,
 
             fire_delay:0.1,
@@ -493,13 +289,13 @@ export const guns_factory={
             },
 
             case_particle:{
-                position:v2.new(0.6,0.1)
+                position:v2.new(0.6,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
     
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[1],
+            rig_arms:WeaponsArmRig[0],
             rig_image:WeaponsRig[0],
             assets:{
                 world:small?"weapon_small_world":"weapon_medium_world",
@@ -519,7 +315,7 @@ export const guns_factory={
             class:GunClasses.DMR,
             rank:ItemRank.A,
 
-            barrel_length:0.98,
+            barrel_length:1.08,
             idle_spread:0.5,
 
             fire_mode:FireMode.Single,
@@ -527,13 +323,13 @@ export const guns_factory={
             switch_delay:0.1,
 
             case_particle:{
-                position:v2.new(0.6,0.1)
+                position:v2.new(0.6,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[1],
+            rig_arms:WeaponsArmRig[0],
             rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
@@ -554,7 +350,7 @@ export const guns_factory={
             class:GunClasses.Sniper,
             rank:ItemRank.A,
 
-            barrel_length:1.12,
+            barrel_length:1.25,
             idle_spread:0.1,
 
             fire_mode:FireMode.Single,
@@ -564,7 +360,7 @@ export const guns_factory={
             unload_delay:1,
 
             case_particle:{
-                position:v2.new(0.7,0.1)
+                position:v2.new(0.75,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
             recoil_animation:{
@@ -574,13 +370,14 @@ export const guns_factory={
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
+            rig_arms:WeaponsArmRig[1],
             rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_large_world",
                 world_tint:0x22222f,
                 cycle_sound:true,
-                load_animation:default_animations.load_sniper
+                load_animation:default_animations.load_sniper,
+                cycle_animation:default_animations_factory.bolt_action_cycle(0.5),
             },
 
             speed_mod:0.95,
@@ -592,7 +389,7 @@ export const guns_factory={
             class:GunClasses.Shotgun,
             rank:ItemRank.C,
 
-            barrel_length:1.06,
+            barrel_length:1.08,
             idle_spread:0.75,
 
             fire_mode:FireMode.Single,
@@ -604,7 +401,7 @@ export const guns_factory={
             },
 
             case_particle:{
-                position:v2.new(0.5,0.1)
+                position:v2.new(0.65,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
             recoil_animation:{
@@ -615,15 +412,14 @@ export const guns_factory={
             ammo_type:ammo,
 
             rig_arms:WeaponsArmRig[1],
-            rig_image:{
-                position:v2.new(0.7,0.0),
-                rotation:0,
-            },
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_medium_world",
                 world_tint:0x22222f,
                 cycle_sound:true,
                 reload_animation:default_animations_factory.insert_reload(0.8),
+                load_animation:default_animations.load_pump,
+                cycle_animation:default_animations_factory.pump_cycle(0.4)
             },
 
             speed_mod:0.95,
@@ -650,7 +446,7 @@ export const guns_factory={
             class:GunClasses.LMG,
             rank:ItemRank.S,
 
-            barrel_length:1.3,
+            barrel_length:1.25,
             idle_spread:0.25,
 
             fire_mode:FireMode.Auto,
@@ -659,7 +455,7 @@ export const guns_factory={
             switch_delay:0.5,
 
             case_particle:{
-                position:v2.new(0.7,0.1)
+                position:v2.new(0.8,0.05)
             },
             muzzle_flash:MuzzleFlash.normal,
             recoil_animation:{
@@ -669,11 +465,8 @@ export const guns_factory={
 
             ammo_type:ammo,
 
-            rig_arms:WeaponsArmRig[2],
-            rig_image:{
-                position:v2.new(0.75,0.0),
-                rotation:0,
-            },
+            rig_arms:WeaponsArmRig[1],
+            rig_image:WeaponsRig[0],
             assets:{
                 world:"weapon_large_world",
                 world_tint:0x22222f,
@@ -690,7 +483,7 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         guns_factory.pistol("m9","l19",{
             name:"M9",
-            fire_delay:0.2,
+            fire_delay:0.15,
             fire_mode:FireMode.Single,
             spread:6,
             idle_spread:0.75,
@@ -737,7 +530,7 @@ export function Guns_Default_Init():GunDef[]{
         }),
         guns_factory.pistol("taurustx","l15",{
             name:"Taurus-TX 22",
-            fire_delay:0.4,
+            fire_delay:0.3,
             fire_mode:FireMode.Burst,
             burst:{
                 delay:0.05,
@@ -774,7 +567,7 @@ export function Guns_Default_Init():GunDef[]{
                 spread:7,
 
                 burst:{
-                    delay:0.05,
+                    delay:0.04,
                     sequence:8
                 },
                 reload:{
@@ -786,7 +579,7 @@ export function Guns_Default_Init():GunDef[]{
         }),
         guns_factory.pistol("tec22","l15",{
             name:"Tec22",
-            fire_delay:0.06,
+            fire_delay:0.05,
             rank:ItemRank.C,
             fire_mode:FireMode.Auto,
             spread:7,
@@ -876,12 +669,12 @@ export function Guns_Default_Init():GunDef[]{
             },
             assets:{
                 world_tint:0xb7c1c3,
-                reload_animation:default_animations_factory.insert_reload(0.3,6,"casing_ammo_c22",true,v2(0,0.5),WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2)),
+                reload_animation:default_animations_factory.insert_reload(0.3,6,"casing_ammo_c22",false,undefined,WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2),-0.2),
             }
         }),
         guns_factory.pistol("desert_eagle","p61",{
             name:"Desert-Eagle",
-            fire_delay:0.3,
+            fire_delay:0.25,
             fire_mode:FireMode.Single,
             rank:ItemRank.A,
             spread:3,
@@ -969,7 +762,7 @@ export function Guns_Default_Init():GunDef[]{
             },
             dual:{
                 dual_offset:0.2,
-                fire_delay:0.8,
+                fire_delay:1,
                 spread:6,
                 reload:{
                     capacity:10,
@@ -978,7 +771,7 @@ export function Guns_Default_Init():GunDef[]{
                 }
             },
             assets:{
-                reload_animation:default_animations_factory.insert_reload(0.3,5,"casing_ammo_p85",true,v2(0.5,0.5),WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2)),
+                reload_animation:default_animations_factory.insert_reload(0.3,5,"casing_ammo_p85",false,v2.half_one,WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2),-0.2),
             },
             speed_mod:0.95,
         }),
@@ -1322,7 +1115,7 @@ export function Guns_Default_Init():GunDef[]{
                 cycle_sound:true,
                 world_tint:0x573c05,
                 load_animation:default_animations.load_sniper_bolt,
-                reload_animation:default_animations_factory.insert_reload(1,undefined,"casing_ammo_c51",true,v2(0.5,0.5)),
+                reload_animation:default_animations_factory.insert_reload(1,undefined,"casing_ammo_c51",true,v2(0.5,0.5),undefined,undefined,undefined,undefined,0),
             }
         }),
         guns_factory.sniper("awp","c51",{
@@ -1428,7 +1221,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
             assets:{
-                reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_c22"),
+                reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_c22",undefined,undefined,undefined,undefined,undefined,undefined,0),
             }
         }),
         guns_factory.sniper("rifle_cbc","l15",{
@@ -1464,7 +1257,9 @@ export function Guns_Default_Init():GunDef[]{
             },
             assets:{
                 cycle_sound:true,
-                reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_l15"),
+                load_animation:default_animations.load_pump,
+                reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_l15",undefined,undefined,undefined,undefined,undefined,undefined,0),
+                cycle_animation:default_animations_factory.pump_cycle(0.45,0.15)
             }
         }),
         /////////////////////////////////////////////
@@ -1503,6 +1298,7 @@ export function Guns_Default_Init():GunDef[]{
                 all_direction:true,
                 count:2,
             },
+            rig_arms:WeaponsArmRig[0],
 
             reload:{
                 delay:2.5,
@@ -1516,6 +1312,8 @@ export function Guns_Default_Init():GunDef[]{
                 world:"weapon_small_world",
                 world_tint:0x573c05,
                 reload_animation:default_animations_factory.insert_reload(0.8,2),
+                load_animation:[],
+                cycle_animation:[]
             }
         }),
         guns_factory.shotgun("spas12","p76",{
@@ -1546,7 +1344,8 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.6
             },
             assets:{
-                world_tint:0x47527d
+                world_tint:0x47527d,
+                reload_animation:default_animations_factory.insert_reload(0.6),
             }
         }),
         guns_factory.shotgun("hp18","p76",{
@@ -1577,7 +1376,8 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.75
             },
             assets:{
-                cycle_sound:false
+                cycle_sound:false,
+                cycle_animation:default_animations_factory.pump_cycle(0.1,0.1)
             }
         }),
         /////////////////////////////////////////////

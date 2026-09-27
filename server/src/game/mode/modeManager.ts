@@ -113,7 +113,7 @@ export abstract class ModeManager extends GameComponent{
             },
             keep_inventory:false,
             no_quickswitch:false,
-            reload_while_shoot:true,
+            reload_while_shoot:false,
             help_up:{
                 time:7,
                 distance:2

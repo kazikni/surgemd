@@ -338,25 +338,32 @@ export type AKeyFrameAction = AKeyFrameSpriteAction
     | AKeyFrameTransformAction
     | AKeyFrameCallMode
 export interface AKeyFrame{
-    actions:AKeyFrameAction[]
+    actions:(AKeyFrameAction|undefined)[]
     time:number
 }
 export function encode_akeyframe(stream:Stream,keyframe:AKeyFrame){
     stream.write_float32(keyframe.time)
     stream.write_array(keyframe.actions,(i)=>{
+        if(!i){
+            stream.write_uint8(0)
+            return
+        }
         switch(i.type){
-            case "sprite":
+            default:
                 stream.write_uint8(0)
+                break
+            case "sprite":
+                stream.write_uint8(1)
                 .write_td(i,FrameTD)
                 .write_string(i.fuser,1)
                 break
             case "transform":
-                stream.write_uint8(1)
+                stream.write_uint8(2)
                 .write_td(i,FrameTransformTD)
                 .write_string(i.fuser,1)
                 break
             case "tween":
-                stream.write_uint8(2)
+                stream.write_uint8(3)
                 .write_string(i.fuser,1)
                 .write_td(i.to,FrameTransformTD)
                 .write_boolean_group(i.yoyo??false,typeof i.ease==="string")
@@ -365,12 +372,9 @@ export function encode_akeyframe(stream:Stream,keyframe:AKeyFrame){
                 }
                 break
             case "callmode":
-                stream.write_uint8(3)
+                stream.write_uint8(4)
                 stream.write_string(i.mode,1)
                 stream.write_any(i.args,2,2)
-                break
-            default:
-                stream.write_uint8(255)
                 break
         }
     },1)
@@ -380,8 +384,9 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
         time:stream.read_float32(),
         actions:stream.read_array(()=>{
             const type=stream.read_uint8()
+            if(type===0)return
             switch(type){
-                case 0:{
+                case 1:{
                     const val=stream.read_td(FrameTD)
                     return {
                         type:"sprite",
@@ -389,7 +394,7 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
                         ...val,
                     }
                 }
-                case 1:{
+                case 2:{
                     const val=stream.read_td(FrameTransformTD)
                     return {
                         type:"transform",
@@ -397,7 +402,7 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
                         ...val,
                     }
                 }
-                case 2:{
+                case 3:{
                     const fuser=stream.read_string(1)
                     const to=stream.read_td(FrameTransformTD)
                     const [yoyo,hasEase]=stream.read_boolean_group()
@@ -413,15 +418,12 @@ export function decode_akeyframe(stream:Stream):AKeyFrame{
                         ease,
                     }
                 }
-                case 3:{
+                case 4:{
                     return {
                         type:"callmode",
                         mode:stream.read_string(1),
                         args:stream.read_any(2,2),
                     }
-                }
-                case 255:{
-                    return undefined
                 }
                 default:
                     throw new Error(`Unknown AKeyFrame action type: ${type}`)

@@ -63,9 +63,8 @@ export class Game extends ClientGame<GameObject>{
 
     offline:boolean=false
     can_act:boolean=true
-    get play_sounds():boolean{
-        return this.menu.content.gameover_text_screen.style.opacity=="0"
-    }
+    spectating:boolean=false
+    fineshed:boolean=false
     match_started:boolean=false
 
     local_server:LocalGameServer
@@ -399,7 +398,7 @@ export class Game extends ClientGame<GameObject>{
         if(!this.active_entity)return
         this.input.angle=angle
         this.input.distance_to_aim=dist
-        if(!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")){
+        if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")){
             this.active_entity.enable_auto_rot=false
             this.active_entity.rotation=this.input.angle
         }else{
@@ -413,6 +412,12 @@ export class Game extends ClientGame<GameObject>{
         if(this.active_entity&&this.ui.current_interaction){
             this.ui.current_interaction.on_interact(this.active_entity)
         }
+    }
+    spectate(){
+        /*
+        this.input.actions.push({type:InputActionType.spectate,val:0})
+        this.ui.hide_game_over()
+        */
     }
     async load_resources(agro:string[]=[],assets:Record<string,string>,languages_path:string="",definitions:string[]=[]){
         if(!this.resources)return
@@ -479,6 +484,7 @@ export class Game extends ClientGame<GameObject>{
         this.ui.game_over_screen={
             type:GameOverScreenType.Normal
         }
+        this.fineshed=false
         this.ui.start()
         this.join()
 
@@ -754,6 +760,7 @@ export class Game extends ClientGame<GameObject>{
             this.process_general_update(p.content)
         })
         client.on("update",(p:UpdatePacket)=>{
+            this.spectating=p.spectating
             this.process_private(p.priv)
             if(p.objects)this.scene_2d.objects_process_queue.push(p.objects)
         })
@@ -767,11 +774,11 @@ export class Game extends ClientGame<GameObject>{
             this.state=GameState.Playing
         })
         client.on("gameover",async(p:GameOverPacket)=>{
-            this.state=GameState.Gameover
-            this.ui.show_game_over(p)
+            this.fineshed=true
+            await this.ui.apply_game_over(p)
         })
         client.on("disconnect",(_p:DisconnectPacket)=>{
-            if(this.state===GameState.Playing)this.close_game()
+            if(this.state===GameState.Playing&&!this.fineshed)this.close_game()
         })
         client.on("message",async(msg:any)=>{
             client.emit("_end",await this.online_message(msg))

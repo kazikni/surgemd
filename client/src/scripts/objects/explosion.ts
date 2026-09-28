@@ -61,7 +61,7 @@ export class Explosion extends GameObject{
         const floor=this.game.terrain.get_floor_type(this.position,this.layer,FloorType.Void) as FloorType
         const floor_def=Floors[floor]
         
-        if(this.def.assets&&this.game.play_sounds){
+        if(this.def.assets){
             this.game.sounds.play(this.game.resources.get_sound(this.def.assets.liquid_sound&&floor_def.floor_kind===FloorKind.Liquid?this.def.assets.liquid_sound:this.def.assets.sound),{
                 position:this.position,
                 max_distance:150,

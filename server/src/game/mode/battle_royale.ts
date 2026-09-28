@@ -1,7 +1,7 @@
 import { Layers, PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
-import { Player } from "../objects/player.ts";
+import { Player, PlayerConnManager } from "../objects/player.ts";
 import { MapDef} from "common/scripts/definitions/maps/base.ts";
 import { random, v2, Vec2, WeightDefinition } from "common/engine/core.ts";
 import { Group, GroupsManager, Team, TeamsManager} from "./teams.ts";
@@ -214,6 +214,17 @@ export class BattleRoyale extends ModeManager{
     }
     give_rank_score(){
         this.game.players.apply_score(ScoreApplyerType.Rank,this.rules.score.rank_reward/this.game.players.match_players_count)
+    }
+
+    override on_spectate(conn:PlayerConnManager,val:number):void{
+        if(conn.real_human&&conn.real_human.team_data.group){
+            const lv=conn.real_human.team_data.group.get_living_humans()
+            if(lv.length>0&&lv[0] instanceof Player){
+                conn.set_spectator(lv[0])
+                return
+            }
+        }
+        return super.on_spectate(conn,val)
     }
     override on_player_join(p: Player): void {
         if(this.groups_manager){

@@ -11,6 +11,7 @@ export enum InputActionType{
     ping,
     buy_on_shop,
     debug_spawn,
+    spectate,
 }
 export type InputAction=({
     type:InputActionType.drop
@@ -45,6 +46,9 @@ export type InputAction=({
     type:InputActionType.debug_give|InputActionType.debug_spawn
     item:string
     count:number
+}|{
+    type:InputActionType.spectate
+    val:number // 0 = Normal, 1 = Next, 2 = Previor
 })
 export class InputPacket extends Packet{
     ID=PacketType.Input
@@ -101,6 +105,9 @@ export class InputPacket extends Packet{
                     case InputActionType.buy_on_shop:
                         stream.write_uint16(i.item_id)
                         break
+                    case InputActionType.spectate:
+                        stream.write_uint8(i.val)
+                        break
                     case InputActionType.debug_give:
                     case InputActionType.debug_spawn:
                         stream.write_string_sized(i.item,32)
@@ -151,6 +158,9 @@ export class InputPacket extends Packet{
                     break
                 case InputActionType.buy_on_shop:
                     ret["item_id"]=stream.read_uint16()
+                    break
+                case InputActionType.spectate:
+                    ret["val"]=stream.read_uint8()
                     break
                 case InputActionType.debug_give:
                 case InputActionType.debug_spawn:

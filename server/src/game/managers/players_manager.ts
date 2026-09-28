@@ -17,10 +17,6 @@ import { type ServerGameScene2D } from "../others/scene.ts";
 export class BotClient extends PlayerConnManager{
     ai?:BotAi
     override net_update(general_update:Stream): void {
-        if(this.real_human){
-            this.real_human.visible_humans=[]
-            this.real_human.visible_humans.length=0
-        }
         if(this.ai){
             this.ai.net_update(general_update)
         }
@@ -64,8 +60,9 @@ export class PlayerClient extends PlayerConnManager{
         const up=new UpdatePacket()
         up.definition=this.scene.game.definitions
         up.priv.pings=[...this.scene.game.scene_2d.pings]
+        up.spectating=this.spectating
         const first_tick=this.first_tick||this.scene.game.players.first_tick
-        if(this.human&&!this.spectating){
+        if(this.human){
             up.priv.active_entity={
                 dirty:true,
                 id:this.human.id,
@@ -73,47 +70,19 @@ export class PlayerClient extends PlayerConnManager{
             if(this.human.input.ping)up.priv.pings.push(this.human.input.ping)
             if(this.human.team_data.group?.pings)up.priv.pings.push(...this.human.team_data.group.pings)
             up.priv.map_humans=this.human.map_humans()
-            this.human.visible_humans.length=0
 
             up.priv.self_state=this.human.self_state(this.human.is_new)
             if(this.human instanceof Player){
                 if(this.human.splash_delay<=0){
                     this.human.merge_damage_splashes()
                     up.priv.splashes=this.human.splashes
-                    this.human.splashes=[]
-                }else{
-                    this.human.splash_delay--
                 }
             }
             const scope_view:number=this.human.scope_zoom
-            const size=v2(16/scope_view,11/scope_view)
+            const size=v2(12/scope_view,10/scope_view)
             v2m.max1(size,110)
 
             const camera_hb=new RectHitbox2D(v2.sub(this.human.position,size),v2.add(this.human.position,size))
-
-            const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
-            const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
-
-            this.view_objects=o.last
-            up.objects=o.strm
-        }else if(this.spectating&&this.human){
-            up.priv.active_entity={
-                dirty:true,
-                id:this.human.id,
-            }
-            up.priv.self_state=this.human.self_state(this.human.is_new)
-            if(this.human instanceof Player){
-                if(this.human.splash_delay<=0){
-                    up.priv.splashes=this.human.splashes
-                    this.human.splashes=[]
-                }else{
-                    this.human.splash_delay--
-                }
-            }
-
-            const scope_view:number=this.human.scope_zoom
-            const size=v2(13/scope_view,8/scope_view)
-            const camera_hb=new RectHitbox2D(v2.sub(this.human!.position,size),v2.add(this.human!.position,size))
 
             const objs=this.get_update_packet_objects(camera_hb,this.human.layer)
             const o=this.human.game.scene_2d.objects.encode_list_net(objs,this.view_objects,first_tick,first_tick)
@@ -129,12 +98,13 @@ export class PlayerClient extends PlayerConnManager{
         jp.main_state=this.scene.game.players.get_general_main_state()
         this.client.emit_packet(jp)
     }
-    send_game_over(status:PlayerStatus[]=[],win:boolean=false,eliminated_by:number=0){
+    send_game_over(status:PlayerStatus[]=[],win:boolean=false,eliminated_by:number=0,finished:boolean=true){
         if(!this.human||!(this.human instanceof Player))return
 
         const p=new GameOverPacket()
         p.status.status=status
         p.status.win=win
+        p.status.finish=finished
         if(!p.status.win){
             p.status.eliminator=eliminated_by
         }
@@ -143,6 +113,10 @@ export class PlayerClient extends PlayerConnManager{
         }
 
         this.client!.emit_packet(p)
+
+        for(const c of this.spectators){
+            c.send_game_over(status,win,eliminated_by,finished)
+        }
     }
     stream:DynamicStream=new DynamicStream(1000)
     net_update(general_update:Stream){
@@ -338,6 +312,12 @@ export class PlayersManager extends GameComponent{
         }
         for(const p of Object.values(this.connected_bots)){
             p.net_update(s)
+        }
+        for(const p of Object.values(this.connected_players)){
+            p.after_net_update()
+        }
+        for(const p of Object.values(this.connected_bots)){
+            p.after_net_update()
         }
 
         if(this.game.replay)this.game.replay.update()

@@ -28,5 +28,4 @@ export enum GameState{
     Cutscene,
     Loading,
     Joining,
-    Gameover
 }

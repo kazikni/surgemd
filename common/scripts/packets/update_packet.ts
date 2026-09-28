@@ -280,6 +280,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     ID=PacketType.Update
     Name="update"
     definition!:GameDefinition
+    spectating:boolean=false
     constructor(){
         super({
             splashes:[],
@@ -293,6 +294,7 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
     }
     override encode_private(stream: Stream): void {
         stream.write_boolean_group(
+            this.spectating,
             this.priv.active_entity.dirty,
             this.priv.self_state!==undefined
         )
@@ -324,7 +326,8 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
         }
     }
     override decode_private(stream: Stream): void {
-        const bg=stream.read_boolean_group()
+        const [spectating,active_entity_dirty,has_self_state]=stream.read_boolean_group()
+        this.spectating=spectating
         this.priv.splashes=stream.read_array(()=>{
             const bg=stream.read_boolean_group()
             return {
@@ -357,13 +360,13 @@ export class UpdatePacket extends UpdatePacketBase<PrivateUpdate>{
             if(id)ret.id=stream.read_id()
             return ret
         },1)
-        if(bg[0]){
+        if(active_entity_dirty){
             this.priv.active_entity={
                 dirty:true,
                 id:stream.read_id(),
             }
         }
-        if(bg[1]){
+        if(has_self_state){
             this.priv.self_state={
                 health:0,
                 max_health:0,

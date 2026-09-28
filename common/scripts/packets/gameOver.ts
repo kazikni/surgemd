@@ -10,6 +10,7 @@ export interface LeaderboardPlayer{
 export type GameOverStatus={
     status:PlayerStatus[]
     leaderboards?:LeaderboardPlayer[]
+    finish:boolean
 }&({
     win:true
 }|{
@@ -21,6 +22,7 @@ export class GameOverPacket extends Packet{
     Name="gameover"
     status:GameOverStatus={
         status:[],
+        finish:false,
         win:false,
         eliminator:0
     }
@@ -28,7 +30,7 @@ export class GameOverPacket extends Packet{
         super()
     }
     encode(stream: Stream): void {
-        stream.write_boolean_group(this.status.win,this.status.leaderboards!==undefined)
+        stream.write_boolean_group(this.status.finish,this.status.win,this.status.leaderboards!==undefined)
         stream.write_array(this.status.status,(status)=>{
             stream.write_id(status.id)
             .write_int16(Math.ceil(status.score))
@@ -55,7 +57,8 @@ export class GameOverPacket extends Packet{
     }
     decode(stream: Stream): void {
         const bg=stream.read_boolean_group()
-        this.status.win=bg[0]
+        this.status.finish=bg[0]
+        this.status.win=bg[1]
         this.status.status=stream.read_array(()=>{
             return {
                 id:stream.read_id(),
@@ -76,7 +79,7 @@ export class GameOverPacket extends Packet{
         if(!this.status.win){
             this.status.eliminator=stream.read_id()
         }
-        if(bg[1]){
+        if(bg[2]){
             this.status.leaderboards=stream.read_array(()=>{
                 return {
                     id:stream.read_id(),

@@ -7,7 +7,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { disableContextMenuPrevent, enableContextMenuPrevent, Frame, HideElement, InputEventType, isMobile, Key, ShowElement } from "common/engine/web.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, Frame, HideElement, InputEventType, isMobile, Key, ShowElement, ToggleElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
@@ -51,6 +51,8 @@ export class UiManager{
         gameover_status_container:document.querySelector("#gameover-status-container") as HTMLDivElement,
         gameOver_main_message:document.querySelector("#gameover-main-message") as HTMLDivElement,
         gameOver_menu_btn:document.querySelector("#gameover-menu-btn") as HTMLButtonElement,
+        gameOver_spectate_btn:document.querySelector("#gameover-spectate-btn") as HTMLButtonElement,
+        gameOver_show_status_btn:document.querySelector("#gameover-show-status-btn") as HTMLButtonElement,
 
         feed:document.querySelector("#feed-container") as HTMLDivElement,
 
@@ -118,6 +120,10 @@ export class UiManager{
         HideElement(this.content.emote_wheel.main)
 
         this.content.gameOver_menu_btn.onclick=this.game.finish_game_over.bind(this.game,false)
+        this.content.gameOver_spectate_btn.onclick=self.requestAnimationFrame.bind(self,()=>this.game.spectate())
+        this.content.gameOver_show_status_btn.onclick=()=>{
+            ToggleElement(this.content.gameover_status_container)
+        }
 
         this.game.ui_manager.add(new BottomLeftModule())
         this.game.ui_manager.add(new InventoryModule())
@@ -776,7 +782,7 @@ export class UiManager{
         HideElement(this.content.normal_gameOver)
         this.content.restart_gameOver.classList.add("hidden")
     }
-    async show_game_over(g:GameOverPacket){
+    async apply_game_over(g:GameOverPacket){
         switch(this.game_over_screen.type){
             case GameOverScreenType.Normal:{
                 this.normal_game_over(g)
@@ -806,6 +812,7 @@ export class UiManager{
         if(g.status.win){
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.you-win",{})
             ShowElement(this.content.normal_gameOver)
+            HideElement(this.content.gameOver_spectate_btn)
             this.content.normal_gameOver.style.opacity="1"
         }else{
             this.game.ambient.clear()
@@ -816,13 +823,8 @@ export class UiManager{
             this.content.gameOver_main_message.innerHTML=this.game.language.get("gameover.eliminated-by",{
                 player:`<span id="gameover-eliminator">${this.players_name[g.status.eliminator].full}</span>`
             })
-            this.game.scope_zoom*=0.75
-            this.game.zoom_speed*=0.05
-            this.content.normal_gameOver.style.opacity="0"
-            this.game.clock.add_timeout(()=>{
-                ShowElement(this.content.normal_gameOver)
-                self.requestAnimationFrame(()=>this.content.normal_gameOver.style.opacity="1")
-            },3)
+            ShowElement(this.content.normal_gameOver)
+            ShowElement(this.content.gameOver_spectate_btn)
         }
         let content=""
         for(const status of g.status.status){
@@ -836,6 +838,8 @@ export class UiManager{
 </div>
 `
         }
+
+        HideElement(this.content.gameover_status_container)
         this.content.gameover_status_container.innerHTML=content
     }
     ping_time:number=0

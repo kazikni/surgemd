@@ -260,6 +260,14 @@ export abstract class ModeManager extends GameComponent{
 
     on_player_connect(p:PlayerConnManager):void{}
     on_player_join(p:Player):void{}
+    on_spectate(conn:PlayerConnManager,val:number):void{
+        let h:Human|undefined
+        if(val===0){
+            h=conn.real_human?.killed_by
+        }
+        if(!h)h=this.game.players.living_players[0]
+        if(h instanceof Player)conn.set_spectator(h)
+    }
     proccess_group_token(client:Client,token:string):void{}
 
     on_human_create(human:Human):void{}

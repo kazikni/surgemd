@@ -361,7 +361,7 @@ export class AmbientManager extends GComponent{
                 src:"/assets/sounds/musics/finalization_music_1.mp3",
                 volume:1
             },undefined,true).then((v)=>{
-                if(this.game.state===GameState.Gameover){
+                if(this.game.state===GameState.Fineshed){
                     this.game.resources.unload_sound("gameplay_music")
                     return
                 }

@@ -3,7 +3,7 @@ import { Human } from "./human.ts";
 import { DamageParams } from "../others/utils.ts";
 import { DamageReason, HumanDefinition } from "common/scripts/definitions/utils.ts";
 import { PlayersManager } from "../managers/players_manager.ts";
-import { InputPacket } from "common/scripts/packets/input_packet.ts";
+import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Stream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
@@ -23,15 +23,32 @@ export abstract class PlayerConnManager{
     connected:boolean=true
     join_packet?:JoinPacket
 
+    spectating_conn?:PlayerConnManager
+    spectators:PlayerConnManager[]=[]
+
     constructor(scene:ServerGameScene2D){
         this.scene=scene
     }
-    abstract send_game_over(status:PlayerStatus[],win?:boolean,eliminated_by?:number):void;
+    abstract send_game_over(status:PlayerStatus[],win?:boolean,eliminated_by?:number,fineshed?:boolean):void;
     set_spectator(p:Player) {
+        if(this.spectating_conn){
+            const idx=this.spectating_conn.spectators.indexOf(this)
+            if(idx!==-1)this.spectating_conn.spectators.splice(idx,1)
+            this.spectating_conn=undefined
+        }
         this.spectating=true
         this.human=p
+        if(p.conn){
+            this.spectating_conn=p.conn
+            p.conn.spectators.push(this)
+        }
     }
     set_active_player(p:Player) {
+        if(this.spectating_conn){
+            const idx=this.spectating_conn.spectators.indexOf(this)
+            if(idx!==-1)this.spectating_conn.spectators.splice(idx,1)
+            this.spectating_conn=undefined
+        }
         this.spectating=false
         this.human=p
         this.real_human=p
@@ -70,6 +87,14 @@ export abstract class PlayerConnManager{
         return [...objs,...Object.values(this.scene.always_visible)]
     }
     abstract net_update(general_update:Stream):void
+    after_net_update():void{
+        if(this.real_human){
+            this.real_human.visible_humans=[]
+            this.real_human.visible_humans.length=0
+            if(this.real_human.splash_delay<=0)this.real_human.splashes=[]
+            else this.real_human.splash_delay--
+        }
+    }
 }
 export class Player extends Human{
     username:string=""
@@ -256,7 +281,13 @@ export class Player extends Human{
         this.input.swamp_guns=i.swamp_guns||this.input.swamp_guns
         this.input.actions.push(...i.actions)
 
-        this.input.cancel=i.cancel
+        this.input.cancel=i.cancel   
+        
+        for(const a of this.input.actions){
+            if(a.type===InputActionType.spectate){
+                if(this.dead&&this.conn)this.game.modeManager.on_spectate(this.conn,a.val)
+            }
+        }
     }
     proccess_join_packet(jp:JoinPacket){
         this.visual.dirty=true

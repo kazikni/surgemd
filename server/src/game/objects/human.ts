@@ -1587,8 +1587,14 @@ export class Human extends Humanoid{
     }
     override on_encode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         super.on_encode_checkpoint(stream,ctx)
+        stream.write_uint16(this.status.kills)
+        stream.write_float32(this.status.damage)
+        stream.write_float32(this.status.damage_taken)
     }
     override on_decode_checkpoint(stream: Stream, ctx: CheckpointContext): void {
         super.on_decode_checkpoint(stream,ctx)
+        this.status.kills=stream.read_uint16()
+        this.status.damage=stream.read_float32()
+        this.status.damage_taken=stream.read_float32()
     }
 }

@@ -197,9 +197,14 @@ export class LevelPlayer extends GameComponent {
                 p=conn.add_player() as Player
             }
             if(!p)continue
-            p!.reset_status()
+
             if(p&&p.is_player&&!p.is_bot){
-                p.clear(false,true)
+                if(first){
+                    p.clear(false,true)
+                    p.reset_status()
+                }else{
+                    p.clear(false,false)
+                }
                 this.script.on_spawn_player(p,first)
             }
         }

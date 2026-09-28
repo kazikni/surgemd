@@ -113,6 +113,8 @@ export enum GameItemType{
 export enum GameObjectDefinitionType{
     item,
     emote,
+    badge,
+    ping,
     obstacle,
     explosion,
 }

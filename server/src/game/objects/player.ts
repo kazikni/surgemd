@@ -12,6 +12,8 @@ import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } 
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { type ServerGameScene2D } from "../others/scene.ts";
+import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export abstract class PlayerConnManager{
     scene:ServerGameScene2D
     human?:Human|Player
@@ -104,7 +106,6 @@ export class Player extends Human{
             time_alive:0,
             score_applyer:[]
         }
-        this.spawn_body=true
     }
     override reset_status(): void {
         super.reset_status()
@@ -274,7 +275,7 @@ export class Player extends Human{
         }
         this.visual.wrapping=this.game.definitions.wrapping.getFromNumberSafe(jp.wrapping)
         this.visual.badge=this.game.definitions.badges.getFromNumberSafe(jp.badge)
-        this.visual.emotes.victory=this.game.definitions.emotes.getFromNumberSafe(jp.victory_emote)
-        this.visual.emotes.death=this.game.definitions.emotes.getFromNumberSafe(jp.death_emote)
+        this.visual.emotes.victory=this.game.definitions.game_objects.valueNumber[jp.victory_emote] as EmoteDef|BadgeDef
+        this.visual.emotes.death=this.game.definitions.game_objects.valueNumber[jp.death_emote] as EmoteDef|BadgeDef
     }
 }

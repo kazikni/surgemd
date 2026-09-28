@@ -51,6 +51,7 @@ export class SequenceMode extends ModeManager{
         this.rules.deadzone.enabled=false
         this.rules.leader.enabled=false
         this.rules.feed.enabled=false
+        this.rules.humans.body_with_name=false
     }
 
     is_enemy(human:Human){

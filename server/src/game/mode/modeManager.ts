@@ -30,6 +30,7 @@ export interface GameRules{
             }
         },
         keep_inventory:boolean
+        body_with_name:boolean
         help_up:{
             time:number
             distance:number
@@ -112,6 +113,7 @@ export abstract class ModeManager extends GameComponent{
                 },
             },
             keep_inventory:false,
+            body_with_name:true,
             no_quickswitch:false,
             reload_while_shoot:false,
             help_up:{

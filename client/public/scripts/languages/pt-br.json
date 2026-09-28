@@ -22,7 +22,7 @@
             "purple_potion":"Poção Roxa",
             "purple_pills":"Comprimidos Roxo",
             "small_red_crystal":"Pedaço De Cristal Vermelho",
-            "red_soda":"Refrigerante Vermelho",
+            "red_beer":"Cerveja Vermelha",
             "red_crystal":"Cristal Vermelho",
             "red_pills":"Comprimidos Vermelho",
             "green_soda":"Refrigerante Verde",
@@ -84,7 +84,7 @@
                 "blue_potion":"Esta garrafa foi produzida por um método milenar, mas seu conteúdo utiliza tecnologia de ponta.<br>Concede 50 de escudo.",
                 "blue_pills":"Um medicamento usado por soldados como barreira defensiva.<br>Possui tecnologia digital avançada.<br>Concede 100 de escudo.",
 
-                "red_soda":"A receita deste refrigerante é altamente secreta.<br>Especialistas acreditam que ele contém um composto químico extremamente tóxico e viciante.<br>Concede 50 de vício, até um máximo de 50%.",
+                "red_beer":"Uma cerveja deliciosa<br>Concede 50 de vício, até um máximo de 50%.",
                 "small_red_crystal":"Mesmo esta pequena quantidade de RQPU já é capaz de aumentar atributos físicos, mas não é suficiente para saciar o vício.<br>Concede 25 de vício.",
                 "red_crystal":"Esta droga ilegal pode torná-lo extremamente rápido e forte, mas é altamente viciante.<br>Parece que ninguém se importa muito com a legalidade.<br>Concede 50 de vício.",
                 "red_pills":"Esta droga é capaz de destruir a vida de alguém.<br>Felizmente, a polícia está sempre combatendo o tráfico de drogas.<br>Mas para onde vão as drogas apreendidas?<br>Concede 100 de vício.",

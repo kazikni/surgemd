@@ -76,7 +76,7 @@ export class BottomLeftModule extends UIModule<Game>{
         this.hand_info_consume_type.onclick=(e)=>{
             const def=this.game.definitions.game_items.keysString[this.hand_info_consume_type.dataset.item_id as string]
             if(!def)return
-            this.game.input.actions.push({type:InputActionType.emote_item,item:def})
+            this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[this.hand_info_consume_type.dataset.item_id as string]})
         }
 
         this.action_container = document.querySelector("#action-info") as HTMLDivElement

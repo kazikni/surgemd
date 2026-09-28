@@ -639,8 +639,8 @@ export class Game extends ClientGame<GameObject>{
             shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
         }
         packet.group_token=this.group_token
-        packet.victory_emote=this.definitions.emotes.getFromStringSafe(this.save.get_variable("sv_loadout_emote_victory"))?.idNumber??1
-        packet.death_emote=this.definitions.emotes.getFromStringSafe(this.save.get_variable("sv_loadout_emote_death"))?.idNumber??0
+        packet.victory_emote=this.definitions.game_objects.keysString[this.save.get_variable("sv_loadout_emote_victory")]??0
+        packet.death_emote=this.definitions.game_objects.keysString[this.save.get_variable("sv_loadout_emote_death")]??0
         packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.get_variable("sv_loadout_wrapping_weapons"))?.idNumber??0
         packet.badge=this.definitions.badges.getFromStringSafe(this.save.get_variable("sv_loadout_badge"))?.idNumber??0
         this.client.emit_packet(packet)

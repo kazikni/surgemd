@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { BrowserFileManager, formatToHtml, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
+import { BrowserFileManager, formatToHtml, Frame, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { Debug, sandbox_version, socials } from "../others/config.ts";
 import { exec_server, set_full_screen } from "./go_files.ts";
@@ -15,6 +15,7 @@ import { PlayArgs } from "../others/constants.ts";
 import { GameConstants } from "common/scripts/others/constants.ts";
 import { make_credits_markdown } from "common/scripts/others/functions.ts";
 import { FinalCredits } from "common/scripts/config/background_effect.ts";
+import { GameObjectDefinitionType } from "common/scripts/definitions/utils.ts";
 
 export type GamePopupCTX={
     parent:HTMLDivElement
@@ -263,39 +264,62 @@ export function make_menu_play_options(options:GamePlayOption[]){
         }
     }
 }
-export function make_emotes_settings(save: GameSave,resources:ResourcesManager,definitions:GameDefinition,emotes: EmoteDef[],translation: TranslationManager){
+export function make_emotes_settings(save: GameSave,resources:ResourcesManager,definitions:GameDefinition,emotes: (EmoteDef|BadgeDef|string)[],translation: TranslationManager){
     return (parent: HTMLDivElement)=>{
         let selected_elem: HTMLElement|null=null
         let selected_elem_out: HTMLElement|null=null
         const vv:Record<string, HTMLDivElement>={}
 
         parent.innerHTML=`  
-<span class="span-text">Active Emotes</span>
+<h1 class="span-text">Active Emotes</h1>
 <div class="loadout-icons-group active-emotes"></div>
-<span class="span-text">Emotes Inventory</span>
-<div class="loadout-icons-group emotes-inventory"></div>
-        `
+<h1 class="span-text">Emotes Inventory</h1>
+<div class="loadout-icons-group emotes-inventory"></div>`
 
         const emotes_g=parent.querySelector(".emotes-inventory") as HTMLDivElement
         function emote_click(e:MouseEvent){
             if(!selected_elem_out)return
             const t=e.currentTarget as HTMLDivElement
-            const id=t.dataset.idString as string
 
             if(selected_elem)selected_elem.classList.remove("selected")
             selected_elem=t
             selected_elem.classList.add("selected")
 
-            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,id)
-            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=resources.get_frame("emote_"+id).url!
+            const def=definitions.game_objects.valueString[t.dataset.idString as string] as EmoteDef|BadgeDef
+            if(!def)return
+
+            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,def.idString)
+
+            let frame:Frame|undefined
+            if(def.def_type===GameObjectDefinitionType.badge){
+                frame=resources.get_frame(def.idString)
+            }else{
+                frame=resources.get_frame("emote_"+def.idString)
+            }
+            ;(selected_elem_out.querySelector(".icon") as HTMLImageElement).src=frame.url!
         }
         for(const e of emotes){
-            const frame=resources.get_frame("emote_"+e.idString)
+            if(typeof e==="string"){
+                const el=document.createElement("h2")
+                el.className="span-text"
+                el.innerHTML=e
+                emotes_g.appendChild(el)
+                continue
+            }
+            let frame:Frame|undefined
+            let name=""
+            if(e.def_type===GameObjectDefinitionType.badge){
+                frame=resources.get_frame(e.idString)
+                name=translation.get("badges."+e.idString)+" Badge"
+            }else{
+                frame=resources.get_frame("emote_"+e.idString)
+                name=translation.get("emotes."+e.idString)
+            }
             const container=document.createElement("div")
             container.className="litem"
             if(frame){
                 container.innerHTML=`
-<span class="name">${translation.get("emotes."+e.idString)}</span>
+<span class="name">${name}</span>
 <img class="icon" src="${frame.src}"/>
 `
             }else{
@@ -308,7 +332,6 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             emotes_g.appendChild(container)
             vv[e.idString]=container
         }
-
         const active_g=parent.querySelector(".active-emotes") as HTMLDivElement
         const slots=[
             "top",
@@ -318,17 +341,25 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
             "victory",
             "death"
         ]
-
         for(const slot of slots){
-            const cur_emote=definitions.emotes.getFromStringSafe(save.get_variable("sv_loadout_emote_"+slot))
+            const cur_emote=definitions.game_objects.valueString[save.get_variable("sv_loadout_emote_"+slot)] as EmoteDef|BadgeDef|undefined
+            
             const container=document.createElement("div")
             container.className="litem emote-slot-"+slot
             container.dataset.slot=slot
             const name=translation.get("loadout.emotes."+slot)
+            let frame:Frame|undefined
             if(cur_emote){
+                if(cur_emote.def_type===GameObjectDefinitionType.badge){
+                    frame=resources.get_frame(cur_emote.idString)
+                }else{
+                    frame=resources.get_frame("emote_"+cur_emote.idString)
+                }
+            }
+            if(frame){
                 container.innerHTML=`
 <span class="name">${name}</span>
-<img class="icon" src="${resources.get_frame("emote_"+cur_emote.idString).url}"/>
+<img class="icon" src="${frame.url}"/>
 `
             }else{
                 container.innerHTML=`
@@ -387,7 +418,7 @@ export function make_badges_settings(save: GameSave,resources: ResourcesManager,
             const div = document.createElement("div")
             div.className = "litem"
             div.dataset.idString = b.idString
-            const icon=resources.get_frame("badge_"+b.idString)?.url
+            const icon=resources.get_frame(b.idString)?.url
             div.innerHTML = `
 <span class="name">${translation.get("badges."+b.idString)}</span>
 <img class="icon" src="${icon}">`
@@ -1267,7 +1298,12 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     ],translation)
                 },
                 "emotes":{
-                    generate:make_emotes_settings(menu.save,resources,definitions,Object.values(definitions.emotes.value),translation)
+                    generate:make_emotes_settings(menu.save,resources,definitions,[
+                        "Emotes",
+                        ...Object.values(definitions.emotes.value),
+                        "Badges",
+                        ...Object.values(definitions.badges.value)
+                    ],translation)
                 },
                 "wrapping":{
                     generate:(()=>{

@@ -91,7 +91,7 @@ export const LootTables={
         {item:"blue_pills",count:1,weight:0.1},
     ],
     addiction_consumibles:[
-        {item:"red_soda",count:2,weight:5},
+        {item:"red_beer",count:2,weight:5},
         {item:"small_red_crystal",count:4,weight:1},
         {item:"red_crystal",count:2,weight:0.1},
     ],

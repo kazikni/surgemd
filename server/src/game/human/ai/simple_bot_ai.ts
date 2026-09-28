@@ -114,7 +114,7 @@ export class SimpleBotAi extends BotAi{
             }
         }
         if(Math.random()<=0.003){
-            this.human.input.actions.push({type:InputActionType.emote_emote,emote:random.choose(this.emotes).idNumber!})
+            this.human.input.actions.push({type:InputActionType.emote,id:this.human.game.definitions.game_objects.keysString[random.choose(this.emotes).idString]})
         }
     }
 }

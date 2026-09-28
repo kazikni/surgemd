@@ -1,8 +1,10 @@
 import { Definition } from "../../../engine/core.ts";
 import { ItemRank } from "../../others/item.ts";
+import { GameObjectDefinitionType } from "../utils.ts";
 
 export interface BadgeDef extends Definition{
     rank:ItemRank
+    def_type?:GameObjectDefinitionType.badge
 }
 
 export function Badges_Default_Init():BadgeDef[]{

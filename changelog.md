@@ -4,8 +4,8 @@ ___
 ### Mains
 * Fineshed Map Pings
 * Weapons Load Animation
-* Weapons Reload Animation
-* Weapons Cycle Animation
+* Guns Reload Animation
+* Guns Cycle Animation
 ___
 ### Menu
 * New Loading Screen
@@ -13,6 +13,7 @@ ___
 * Final Credits
 * Hide Boost Bar When you dont have boost
 * Improve Mobile GUI
+* Now You can send badges as emotes
 ___
 ### Items
 * Baseball Bat
@@ -47,6 +48,7 @@ ___
 * Some Balance Changes
 * Some Loot Table Changes
 * Some Sprites Changes
+* Send item emote now show the rarity of the item
 ___
 ### Menu
 

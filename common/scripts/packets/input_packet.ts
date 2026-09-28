@@ -6,8 +6,7 @@ export enum InputActionType{
     set_hand,
     debug_give,
     set_scope,
-    emote_emote,
-    emote_item,
+    emote,
     message,
     ping,
     buy_on_shop,
@@ -30,11 +29,8 @@ export type InputAction=({
     type:InputActionType.set_scope
     scope_id:number
 }|{
-    type:InputActionType.emote_emote
-    emote:number
-}|{
-    type:InputActionType.emote_item
-    item:number
+    type:InputActionType.emote
+    id:number
 }|{
     type:InputActionType.message
     value:string
@@ -92,11 +88,8 @@ export class InputPacket extends Packet{
                     case InputActionType.set_scope:
                         stream.write_uint8(i.scope_id)
                         break
-                    case InputActionType.emote_emote:
-                        stream.write_uint16(i.emote)
-                        break
-                    case InputActionType.emote_item:
-                        stream.write_uint16(i.item)
+                    case InputActionType.emote:
+                        stream.write_uint16(i.id)
                         break
                     case InputActionType.message:
                         stream.write_string_sized(i.value,50)
@@ -146,11 +139,8 @@ export class InputPacket extends Packet{
                 case InputActionType.set_scope:
                     ret["scope_id"]=stream.read_uint8()
                     break
-                case InputActionType.emote_emote:
-                    ret["emote"]=stream.read_uint16()
-                    break
-                case InputActionType.emote_item:
-                    ret["item"]=stream.read_uint16()
+                case InputActionType.emote:
+                    ret["id"]=stream.read_uint16()
                     break
                 case InputActionType.message:
                     ret["value"]=stream.read_string_sized(50)

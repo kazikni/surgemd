@@ -1,7 +1,7 @@
 import { InputAction, InputActionType} from "common/scripts/packets/input_packet.ts"
 import { GameObjectType, HumanStatus, HumanAnimation, HumanAnimationType, ScoreApplyerType, LootData, HumanVisualData, ObjectsComponentEvent } from "common/scripts/others/constants.ts"
 import { DamageSplash, MapHumanData, PingData, SelfStateUpdate } from "common/scripts/packets/update_packet.ts"
-import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset, ScopeChange } from "common/scripts/definitions/utils.ts"
+import { DamageReason, HumanAIDef, HumanDefinition, GameItemType, LoadoutPreset, ScopeChange, GameObjectDefinitionType } from "common/scripts/definitions/utils.ts"
 import { ServerGameObject } from "../others/gameObject.ts"
 import { type Group, type Team } from "../mode/teams.ts"
 import { FloorDef, Floors} from "common/scripts/others/terrain.ts"
@@ -260,7 +260,6 @@ export class Human extends Humanoid{
 
     splashes: DamageSplash[] = []
     splash_delay:number=0
-    spawn_body:boolean=false
 
     // Physical
     recoil?:{speed:number,delay:number}
@@ -326,8 +325,8 @@ export class Human extends Humanoid{
         dirty_colors:boolean
 
         emotes:{
-            death?:EmoteDef
-            victory?:EmoteDef
+            death?:EmoteDef|BadgeDef
+            victory?:EmoteDef|BadgeDef
         }
         badge?:BadgeDef
         original:{
@@ -398,7 +397,7 @@ export class Human extends Humanoid{
         using_item_down:boolean
 
         actions:InputAction[]
-        emote?:GameItem|EmoteDef
+        emote?:GameItem|EmoteDef|BadgeDef
         ping?:PingData
         message?:string
 
@@ -896,18 +895,11 @@ export class Human extends Humanoid{
             if(executed.includes(a.type))continue
             executed.push(a.type)
             switch(a.type){
-                case InputActionType.emote_emote:{
+                case InputActionType.emote:{
                     if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
-                    const def=this.game.definitions.emotes.getFromNumber(a.emote)
+                    const def=this.game.definitions.game_objects.valueNumber[a.id] as EmoteDef|GameItem|BadgeDef
+                    if(!(def?.def_type===GameObjectDefinitionType.badge||def?.def_type===GameObjectDefinitionType.emote||def?.def_type===GameObjectDefinitionType.item))break
                     this.input.emote=def
-                    break
-                }
-                case InputActionType.emote_item:{
-                    if(this.emote_time>=0&&!this.human_data.advanced_permitions)break
-                    const def=this.game.definitions.game_items.valueNumber[a.item]
-                    this.input.emote=def
-                    this.input.message=undefined
-                    this.emote_time=1
                     break
                 }
                 case InputActionType.message:{
@@ -1436,8 +1428,11 @@ export class Human extends Humanoid{
         this.game.call_event("human_die",{human:this,params:params})
         if(this.team_data.team)this.team_data.team.clear_downeds()
         if(this.team_data.group)this.team_data.group.clear_downeds()
-        if(this.spawn_body)this.scene.add_human_body(this.position,this.name,params.direction,this.visual.badge,this.layer)
+        this.spawn_body(params,this.game.modeManager.rules.humans.body_with_name)
         this.destroy()
+    }
+    spawn_body(params:DamageParams,with_name:boolean=true){
+        this.scene.add_human_body(this.position,with_name?this.name:"",params.direction,with_name?this.visual.badge:undefined,this.layer)
     }
     clear(inventory:boolean=false,status:boolean=false){
         if(status){

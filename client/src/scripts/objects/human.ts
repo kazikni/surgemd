@@ -1,6 +1,6 @@
 import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Sound, Sprite2D, Tween } from "common/engine/web.ts";
 import { GameObjectType, HumanAnimation, HumanAnimationType, HumanVisualData, zIndexes } from "common/scripts/others/constants.ts"
-import { GameItemType } from "common/scripts/definitions/utils.ts"
+import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts"
 import { DefaultFistRig, FistRig } from "common/scripts/others/item.ts"
@@ -16,6 +16,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { CircleHitbox2D, ColorM, ease, Hitbox2D, matrix4, Numeric, ParticlesEmitter2D, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { DefaultHumanModes } from "../defs/human_animations.ts";
 import { Humanoid, HumanoidAnimation, HumanoidAssets, HumanoidSprites } from "./humanoid.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export class Human extends Humanoid{
     ////////////////////////////
     // Definition             //
@@ -806,7 +807,7 @@ export class Human extends Humanoid{
         }
     }
 
-    add_emote(emote:EmoteDef|GameItem){
+    add_emote(emote:EmoteDef|BadgeDef|GameItem){
         const sound=this.game.sounds.play(this.game.resources.get_sound((emote as EmoteDef).use_sound??"emote_play"),{
             position:this.position,
             max_distance: 50,
@@ -823,27 +824,44 @@ export class Human extends Humanoid{
         this.animation.emote_time=2.5
         this.sprites.emote_container.visible=true
         this.sprites.emote_container.scale=v2(0,0)
-        this.sprites.emote_bg.set_frame({
-            image:"emote_background",
-            scale:2
-        },this.game.resources)
         v2m.single(this.sprites.emote_sprite.scale,1)
         let frame=emote.idString
         this.sprites.emote_sprite.rotation=0
-        if((emote as GameItem).item_type!==undefined){
-            const item=(emote as GameItem)
-            if(item.item_type===GameItemType.ammo){
-                v2m.single(this.sprites.emote_sprite.scale,1)
-            }else{
-                v2m.single(this.sprites.emote_sprite.scale,1.75)
+        this.sprites.emote_bg.set_frame({
+            image:"emote_background",
+            tint:0xffffff,
+            scale:2,
+        },this.game.resources)
+        switch(emote.def_type){
+            default:
+                break
+            case GameObjectDefinitionType.emote:{
+                frame="emote_"+frame
+                v2m.single(this.sprites.emote_sprite.scale,2.6)
+                break
             }
-            if(item.item_type===GameItemType.gun||item.item_type===GameItemType.melee){
-                this.sprites.emote_sprite.rotation=-0.523599
+            case GameObjectDefinitionType.item:{
+                if(emote.item_type===GameItemType.ammo){
+                    v2m.single(this.sprites.emote_sprite.scale,1)
+                }else{
+                    v2m.single(this.sprites.emote_sprite.scale,1.75)
+                }
+                if(emote.item_type===GameItemType.gun||emote.item_type===GameItemType.melee){
+                    this.sprites.emote_sprite.rotation=-0.523599
+                }
+                this.sprites.emote_bg.set_frame({
+                    image:"rarity_outline",
+                    tint:ItemQualitySettings[emote.rank].tint
+                },this.game.resources)
+                break
             }
-        }else{
-            frame="emote_"+frame
-            v2m.single(this.sprites.emote_sprite.scale,2.6)
+            case GameObjectDefinitionType.badge:{
+                this.sprites.emote_bg.frame=this.game.resources.get_frame("emote_badge_background")
+                v2m.single(this.sprites.emote_bg.scale,1)
+                v2m.single(this.sprites.emote_sprite.scale,2)
+            }
         }
+
         this.sprites.emote_sprite.frame=this.game.resources.get_frame(frame)
         if(this.animation.emote_tween)this.animation.emote_tween.kill()
         this.animation.emote_tween=this.game.add_tween({

@@ -28,7 +28,7 @@
             "purple_potion": "Purple Potion",
             "purple_pills": "Purple Pills",
             "small_red_crystal": "Small Red Crystal",
-            "red_soda": "Red Soda",
+            "red_beer": "Red Beer",
             "red_crystal": "Red Crystal",
             "red_pills": "Red Pills",
             "green_soda": "Green Soda",
@@ -117,7 +117,7 @@
                 "blue_soda": "A delicious soda.<br>Contains a compound that creates a glass-like barrier around the user.<br>Grants 25 shield up to a maximum of 50%.",
                 "blue_potion": "This bottle was crafted using an ancient method, but its contents use cutting-edge technology.<br>Grants 50 shield.",
                 "blue_pills": "A medicine used by soldiers as a defensive barrier.<br>Features advanced digital technology.<br>Grants 100 shield.",
-                "red_soda": "The recipe for this soda is highly classified.<br>Experts believe it contains an extremely toxic and addictive chemical compound.<br>Grants 50 addiction up to a maximum of 50%.",
+                "red_beer": "A delicius beer<br>Grants 50 addiction up to a maximum of 50%.",
                 "small_red_crystal": "Even this small amount of RQPU can enhance physical abilities, but it is not enough to satisfy the addiction.<br>Grants 25 addiction.",
                 "red_crystal": "This illegal drug can make you incredibly fast and strong, but it is highly addictive.<br>It seems nobody cares much about the law.<br>Grants 50 addiction.",
                 "red_pills": "This drug is capable of ruining someone's life.<br>Fortunately, the police are always fighting drug trafficking.<br>But where do the confiscated drugs go?<br>Grants 100 addiction.",
@@ -161,12 +161,12 @@
             "aqua_blue":"Aqua Blue"
         },
         "badges":{
-            "stone_1":"Stone-1",
-            "stone_2":"Stone-2",
-            "stone_3":"Stone-3",
+            "stone_1_badge":"Stone-1",
+            "stone_2_badge":"Stone-2",
+            "stone_3_badge":"Stone-3",
 
-            "md":"MD",
-            "campfire":"Campfire"
+            "md_badge":"MD",
+            "campfire_badge":"Campfire"
         },
         "characters": {
             "mark":"Mark",

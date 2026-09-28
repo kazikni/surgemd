@@ -808,6 +808,15 @@
     gap:0.5vw;
     width:100%;
 
+    h1{
+        width: 100%;
+        font-size: 200%;
+    }
+    h2{
+        text-align: left;
+        width: 100%;
+        font-size: 150%;
+    }
     .litem{
         position:relative;
         display:flex;
@@ -854,7 +863,6 @@
         }
     }
 }
-
 @property --current-smoke-a {
     syntax: "<color>";
     inherits: true;

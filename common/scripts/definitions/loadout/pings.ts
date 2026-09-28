@@ -1,5 +1,7 @@
 import { Definition } from "../../../engine/core.ts";
+import { GameObjectDefinitionType } from "../utils.ts";
 export interface PingDef extends Definition{
+    def_type?:GameObjectDefinitionType.ping
     lifetime?:number
 
     pulse?:{

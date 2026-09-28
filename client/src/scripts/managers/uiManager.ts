@@ -7,7 +7,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { disableContextMenuPrevent, enableContextMenuPrevent, HideElement, InputEventType, isMobile, Key, ShowElement } from "common/engine/web.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, Frame, HideElement, InputEventType, isMobile, Key, ShowElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
@@ -24,6 +24,7 @@ import { BottomLeftModule } from "../uim/bottom_left_container.ts";
 import { InventoryModule } from "../uim/inventory.ts";
 import { DamageSourceDef } from "common/scripts/definitions/game_defs.ts";
 import { Angle, ColorM, random, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
 export interface HelpGuiState{
     driving:boolean
     gun:boolean
@@ -93,6 +94,7 @@ export class UiManager{
     }
 
     feed_enabled:boolean=false
+    self_feed_enabled:boolean=false
 
     leader_enabled:boolean=true
     old_leader_enabled:boolean=true
@@ -265,9 +267,9 @@ export class UiManager{
         active:false,
         up_enable:true,
         current_side:-1,
-        emotes:[] as (EmoteDef|PingDef|undefined)[],
+        emotes:[] as (EmoteDef|BadgeDef|PingDef|undefined)[],
     }
-    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|PingDef|undefined)[],world_position?:Vec2,comunication_mode?:boolean){
+    begin_emote_wheel(position:Vec2,up_enable:boolean=true,emotes?:(EmoteDef|BadgeDef|PingDef|undefined)[],world_position?:Vec2,comunication_mode?:boolean){
         if(this.emote_wheel.active)return
         ShowElement(this.content.emote_wheel.main)
         HideElement(this.mobile_content.btn_emotes)
@@ -288,10 +290,10 @@ export class UiManager{
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_right")),  // Right
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_bottom")), // Bottom
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_left")),   // Left
-                    this.game.definitions.emotes.getFromString(this.game.save.get_variable("sv_loadout_emote_top")),    // Top
+                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_right")] as (EmoteDef|BadgeDef|PingDef|undefined),  // Right
+                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_bottom")] as (EmoteDef|BadgeDef|PingDef|undefined), // Bottom
+                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_left")] as (EmoteDef|BadgeDef|PingDef|undefined),   // Left
+                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_top")] as (EmoteDef|BadgeDef|PingDef|undefined),    // Top
                 ]
             }
             
@@ -304,7 +306,7 @@ export class UiManager{
         HideElement(this.content.emote_wheel.main)
         ShowElement(this.mobile_content.btn_emotes)
         this.emote_wheel.active=false
-        let selected_emote:EmoteDef|PingDef|undefined=undefined
+        let selected_emote:EmoteDef|BadgeDef|PingDef|undefined=undefined
         if(this.emote_wheel.current_side!==-1){
             selected_emote=this.emote_wheel.emotes[this.emote_wheel.current_side]
         }
@@ -322,8 +324,8 @@ export class UiManager{
                 })
             }else{
                 this.game.input.actions.push({
-                    type:InputActionType.emote_emote,
-                    emote:selected_emote.idNumber!
+                    type:InputActionType.emote,
+                    id:this.game.definitions.game_objects.keysString[selected_emote.idString]
                 })
             }
         }
@@ -368,15 +370,23 @@ export class UiManager{
             }
         }
     }
-    emote_wheel_set_emotes(emotes:(EmoteDef|PingDef|undefined)[]){
+    emote_wheel_set_emotes(emotes:(EmoteDef|BadgeDef|PingDef|undefined)[]){
         for(const ev in this.content.emote_wheel.emotes){
             const emote=emotes[ev]
             if(emote){
-                const frame=this.game.resources.get_frame("emote_"+emote.idString)
+                let frame:Frame|undefined
+                switch(emote.def_type){
+                    default:
+                        frame=this.game.resources.get_frame("emote_"+emote.idString)
+                        break
+                    case GameObjectDefinitionType.badge:
+                        frame=this.game.resources.get_frame(emote.idString)
+                        break
+                }
                 if(frame){
                     ShowElement(this.content.emote_wheel.emotes[ev])
                     this.content.emote_wheel.emotes[ev].style.setProperty("--ping-color","#eeeeee")
-                    this.content.emote_wheel.emotes[ev].src=this.game.resources.get_frame("emote_"+emote.idString).url!
+                    this.content.emote_wheel.emotes[ev].src=frame.url!
                     this.content.emote_wheel.emotes[ev].draggable=false
                 }
             }else{
@@ -419,7 +429,7 @@ export class UiManager{
     proccess_general_main_state(state:GeneralFullMainState){
         this.clear_top_right()
         for(const p of state.players){
-            const badge_frame=this.game.resources.get_frame(p.badge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(p.badge).idString:"")
+            const badge_frame=this.game.resources.get_frame(p.badge!==undefined?this.game.definitions.badges.getFromNumber(p.badge).idString:"")
             const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
             this.players_name[p.id]={name:p.name,badge:badge_html,full:`${badge_html}${p.name}`}
         }
@@ -427,6 +437,7 @@ export class UiManager{
     proccess_general_update(up:GeneralUpdate){
         const leader_enabled=up.leader_enabled&&up.leader!==undefined
         this.feed_enabled=up.feed_enabled
+        this.self_feed_enabled=this.feed_enabled
         this.leader_enabled=leader_enabled
         if(this.leader_enabled!==this.old_leader_enabled){
             this.old_leader_enabled=this.leader_enabled
@@ -488,7 +499,7 @@ export class UiManager{
             case FeedMessageType.set_name:
                 block_message=true
             case FeedMessageType.join:{
-                const badge_frame=this.game.resources.get_frame(msg.playerBadge!==undefined?"badge_"+this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:"")
+                const badge_frame=this.game.resources.get_frame(msg.playerBadge!==undefined?this.game.definitions.badges.getFromNumber(msg.playerBadge).idString:"")
                 const badge_html=badge_frame?`<img class="badge-icon" src="${badge_frame.src}">`:""
                 this.players_name[msg.playerId]={badge:badge_html,name:msg.playerName,full:`${badge_html}${msg.playerName}`}
                 elem.innerHTML=this.game.language.get("feed.join",{"player":this.players_name[msg.playerId].full})
@@ -709,7 +720,7 @@ export class UiManager{
                 case 1:
                     if(this.game.comunication_mode){
                         const def=this.game.inventory.weapons[item_value]?.def
-                        if(def)this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                        if(def)this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[def.idString]})
                     }else{
                         this.game.input.actions.push({
                             type:InputActionType.set_hand,
@@ -720,12 +731,12 @@ export class UiManager{
                 case 2:
                     if(this.game.comunication_mode){
                         const def=this.game.definitions.ammos.getFromNumber(item_value)
-                        this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                        this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[def.idString]})
                     }
                     break
                 case 3:
                     if(this.game.comunication_mode){
-                        if(this.game.inventory._items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.inventory._items[item_value].id})
+                        if(this.game.inventory._items[item_value].count>0)this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_items.keysString[this.game.definitions.game_items.valueNumber[this.game.inventory._items[item_value].id].idString]})
                     }else{
                         this.game.input.actions.push({type:InputActionType.use_item,slot:item_value})
                     }
@@ -733,7 +744,7 @@ export class UiManager{
                 case 5:
                     if(this.game.comunication_mode){
                         const def=this.game.definitions.scopes.getFromNumber(item_value)
-                        this.game.input.actions.push({type:InputActionType.emote_item,item:this.game.definitions.game_items.keysString[def.idString]})
+                        this.game.input.actions.push({type:InputActionType.emote,id:this.game.definitions.game_objects.keysString[def.idString]})
                     }else{
                         this.game.input.actions.push({type:InputActionType.set_scope,scope_id:item_value})
                     }

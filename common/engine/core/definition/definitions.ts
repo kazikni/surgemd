@@ -60,6 +60,7 @@ export class DefinitionsSimple<Type,Base=null>{
     }
 }
 export class Definitions<Type extends Definition,Base> extends DefinitionsSimple<Type,Base>{
+    parents?:DefinitionsMerge<any>[]
     insert(...val:Type[]):void{
         for(let vv of val){
             if(this.forall)vv=this.forall(vv as (Type&Partial<Base>))
@@ -72,6 +73,9 @@ export class Definitions<Type extends Definition,Base> extends DefinitionsSimple
             }else{
                 this.valueNumber[vv.idNumber]=vv as (Type&Base)
             }
+            for(const p of this.parents??[]){
+                p.insert(vv)
+            }
         }
     }
     insert_defs(...defs:Definitions<Type,Base>[]){
@@ -81,6 +85,7 @@ export class Definitions<Type extends Definition,Base> extends DefinitionsSimple
     }
 }
 export class DefinitionsMerge<TP extends Definition>{
+    name:string=""
     valueString:Record<string,TP>={}
     valueNumber:Record<number,TP>={}
     keysString:Record<string,number>={}
@@ -91,6 +96,9 @@ export class DefinitionsMerge<TP extends Definition>{
     insert(...val:TP[]):void{
         for(const vv of val){
             const idn=Object.keys(this.keysNumber).length+1
+            if(this.valueString[vv.idString]){
+                console.error(`The ${vv.idString} Already exist at ${this.name} definition merge`)
+            }
             this.valueNumber[idn]=vv
             this.valueString[vv.idString]=vv
             this.keysNumber[idn]=vv.idString

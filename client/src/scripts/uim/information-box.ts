@@ -64,6 +64,7 @@ export class InformationBoxModule extends UIModule<Game> {
                 break
             }
             case "feed_message":{
+                if(!this.game.ui.self_feed_enabled)break
                 const msg=(state.obj as FeedMessage)
                 if(msg.type===FeedMessageType.kill&&msg.killer?.id===this.game.active_entity_id){
                     this.push_infobox(this.game.language.get("infobox.kill",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId)

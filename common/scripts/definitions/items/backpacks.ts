@@ -57,7 +57,7 @@ export function Backpacks_Default_Init():BackpackDef[]{
                 "yellow_soda":6,
                 "blue_soda":6,
                 "purple_soda":6,
-                "red_soda":6,
+                "red_beer":6,
                 "green_soda":6,
                 "black_soda":6,
                 "small_red_crystal":6,

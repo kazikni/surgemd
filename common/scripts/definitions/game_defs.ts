@@ -140,7 +140,7 @@ export class GameDefinition{
         if(i.dual&&!i.dual_from){
             const dd=mergeDeep({},i,i.dual,{dual_from:i.idString}) as GunDef
             dd.idString=dd.idString+"_dual"
-            this.insert_item("guns",dd)
+            this.guns.insert(dd)
         }
         return i
     })
@@ -157,16 +157,26 @@ export class GameDefinition{
 
     // Loadout
     loadout=new Definitions<LoadoutItemDef,{}>()
-    badges=new Definitions<BadgeDef,{}>()
+    badges=new Definitions<BadgeDef,{}>((b)=>{
+        b.def_type=GameObjectDefinitionType.badge
+        return {
+            ...b,
+            idString:b.idString+"_badge"
+        }
+    })
     emotes=new Definitions<EmoteDef,{}>((e)=>{
         e.def_type=GameObjectDefinitionType.emote
-        return e
+        return {
+            ...e,
+            idString:e.idString
+        }
     })
     wrapping=new Definitions<WrappingDef,{}>()
     pings=new Definitions<PingDef,{}>((e)=>{
         return {
             ...e,
-            idString:"ping_"+e.idString
+            def_type:GameObjectDefinitionType.ping,
+            idString:"ping_"+e.idString,
         }
     })
 
@@ -191,7 +201,33 @@ export class GameDefinition{
     valueString: any;
 
     constructor(){
-        
+        this.game_objects.name="game_objects"
+        this.game_items.name="game_items"
+
+        this.ammos.parents=[this.game_objects,this.game_items]
+        this.backpacks.parents=[this.game_objects,this.game_items]
+        this.vests.parents=[this.game_objects,this.game_items]
+        this.helmets.parents=[this.game_objects,this.game_items]
+        this.accessorys.parents=[this.game_objects,this.game_items]
+        this.consumibles.parents=[this.game_objects,this.game_items]
+        this.grenades.parents=[this.game_objects,this.game_items]
+        this.guns.parents=[this.game_objects,this.game_items]
+        this.melees.parents=[this.game_objects,this.game_items]
+        this.scopes.parents=[this.game_objects,this.game_items]
+
+        this.badges.parents=[this.game_objects]
+        this.emotes.parents=[this.game_objects]
+        this.wrapping.parents=[this.game_objects]
+        this.pings.parents=[this.game_objects]
+
+        this.buildings.parents=[this.game_objects]
+        this.tilemapv.parents=[this.game_objects]
+        this.creatures.parents=[this.game_objects]
+        this.decals.parents=[this.game_objects]
+        this.explosions.parents=[this.game_objects]
+        this.obstacles.parents=[this.game_objects]
+        this.vehicles.parents=[this.game_objects]
+        this.synced_particles.parents=[this.game_objects]
     }
 
     clear(){
@@ -208,27 +244,20 @@ export class GameDefinition{
         this.clear()
         this.init_default()
     }
-    insert_item(category:DefinitionItemCategoryType,def:GameItem){
-        this[category].insert(def as any)
-        this.game_items.insert(def)
-        this.game_objects.insert(def)
-    }
     add_definitions(mm:GameADefinitions){
         for(const c in mm.items){
             for(const def of mm.items[c as DefinitionItemCategoryType]??[]){
-                this.insert_item(c as DefinitionItemCategoryType,def)
+                this[c as DefinitionLoadoutCategoryType].insert(def as any)
             }
         }
         for(const c in mm.loadout){
             for(const def of mm.loadout[c as DefinitionLoadoutCategoryType]??[]){
                 this[c as DefinitionLoadoutCategoryType].insert(def as any)
-                this.game_objects.insert(def)
             }
         }
         for(const c in mm.objects){
             for(const def of mm.objects[c as DefinitionObjectsCategoryType]??[]){
                 this[c as DefinitionObjectsCategoryType].insert(def as any)
-                this.game_objects.insert(def)
             }
         }
         for(const c in mm.others){

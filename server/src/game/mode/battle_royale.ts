@@ -11,7 +11,6 @@ import { FeedMessageType, GeneralUpdatePacket } from "common/scripts/packets/gen
 import { NormalMap } from "common/scripts/definitions/maps/normal.ts";
 import { human_die_event } from "../others/utils.ts";
 import { GamemodeEventContent } from "../others/scene.ts";
-import { DangerZone, ToxicZone } from "../events/zones.ts";
 
 export type GamemodeEvent={
     content:GamemodeEventContent|((GamemodeEventContent&WeightDefinition)[])

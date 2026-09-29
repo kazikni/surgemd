@@ -1,11 +1,8 @@
 # Surgemd By
-___
 ## Created By
 * Kazikni / Hugo Mendonça Santana
-___
 ## Programmed By
 * @kazikni
-___
 ## Game Designs / Graphics
 * @kazikni
 * @cheerfulbull_29688
@@ -15,11 +12,9 @@ ___
 * Suroi.io
 * Surviv.io
 * Survev.io
-___
 ## Menu Design
 * @kazikni
 * @namerio
-___
 ## Sound Design
 * @kazikni
 * @teardwop
@@ -29,7 +24,6 @@ ___
 * Half-Life
 * Postal 2
 * Fortnite
-___
 ## Music
 * @showusmusic
 * @rivals2444
@@ -39,23 +33,18 @@ ___
 * NoCopyrightSounds
 * Hotline Miami 2
 * Five Nights at Freddy's
-___
 ## Lore
 * @kazikni
-___
 ## Additional Art
 * @sentido_ss
 * @bien.star
 * @paoagiota4740
-___
 ## Videos / Trailers
 * @kazikni
 * @rapxtor_yt
-___
 ## Discord Server
 * @kazikni
 * @Zahirralt2
-___
 ## Inspirations
 * Surviv.io
 * Hotline Miami 1 & 2
@@ -63,7 +52,6 @@ ___
 * Roblox Doors
 * Pixel Gun 3D
 * Fortnite
-___
 ## Special Thanks
 * Surviv.io creators
 * @hasanger

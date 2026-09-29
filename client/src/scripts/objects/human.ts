@@ -170,7 +170,7 @@ export class Human extends Humanoid{
         this.container.animation_parent=this
         this.container.modes=DefaultHumanModes
 
-        this.container.zIndex=zIndexes.Players
+        this.container.zIndex=zIndexes.Humans
 
         this.scene.camera.add_object(this.container)
         this.sprites.parachute.frame=this.game.resources.get_frame("parachute")
@@ -523,7 +523,7 @@ export class Human extends Humanoid{
                     image:def.case_particle.frame??"casing_"+def.ammo_type,
                     hotspot:v2.half_one,
                     layer:this.layer,
-                    zIndex:zIndexes.Particles
+                    zIndex:zIndexes.CaseParticles
                 },
                 speed:random.float(smm.min,smm.max),
                 angle:this.rotation,

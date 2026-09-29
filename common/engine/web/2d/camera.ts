@@ -131,7 +131,7 @@ export class Camera2D{
             this.height=this.size.y
         }
 
-        this.viewport_matrix=matrix4.projection(this.size, 1000)
+        this.viewport_matrix=matrix4.projection(this.size,1000)
         this.screen_matrix=matrix4.projection(this.aspect_lock?this.size:v2.dscale(size, this.meter_size),1000)
 
         if (this.center_pos) {

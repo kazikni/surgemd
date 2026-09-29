@@ -1,7 +1,6 @@
-import { Matrix } from "../../core/math/matrix.ts";
-import { Model2D, Model3D } from "../../core/definition/models.ts";
+import { Matrix, matrix2, matrix4 } from "../../core/math/matrix.ts";
+import { Model3D } from "../../core/definition/models.ts";
 import { Color } from "../../core/math/color.ts";
-import { Vec2 } from "../../core/math/vec2.ts";
 import { Vec3 } from "../../core/math/vec3.ts";
 import { GLDynamicBuffer, GLMaterial, GLMaterialFactory, GLMaterialFactoryCall, type WebglRenderer } from "./renderer.ts";
 export type GL2D_SimpleBatchArgs = {
@@ -21,8 +20,8 @@ uniform mat4 u_Matrix;
 varying vec4 v_Color;
 
 void main() {
-    gl_Position = u_Matrix * vec4(a_Position,0.0,1.0);
-    v_Color = a_Color;
+    gl_Position=u_Matrix*vec4(a_Position,0.0,1.0);
+    v_Color=a_Color;
 }`,
     frag: `
 precision mediump float;
@@ -63,70 +62,6 @@ create(gl: WebglRenderer, fac: GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_Simpl
             //buffer.free()
         },
     })
-}
-}
-export type GL2D_SimpleMatArgs={
-    color:Color
-}
-export type GL2D_SimpleMatAttr={
-    model:Model2D
-    position:Vec2
-    scale:Vec2
-}
-export const GLF_Simple:GLMaterialFactoryCall<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>={
-    vertex:`
-attribute vec2 a_Position;
-uniform mat4 u_ProjectionMatrix;
-uniform vec2 u_Translation;
-uniform vec2 u_Scale;
-void main() {
-    gl_Position = u_ProjectionMatrix * vec4((a_Position*u_Scale)+u_Translation, 0.0, 1.0);
-}`,
-    frag:`
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform vec4 u_Color;
-
-void main() {
-    gl_FragColor = u_Color;
-}`,
-create(gl:WebglRenderer,fac:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>){
-    const aPositionLoc=gl.gl.getAttribLocation(fac.program, "a_Position")
-    const uColorLoc=gl.gl.getUniformLocation(fac.program, "u_Color")!
-    const uTranslationLoc=gl.gl.getUniformLocation(fac.program, "u_Translation")!
-    const uScaleLoc=gl.gl.getUniformLocation(fac.program, "u_Scale")!
-    const uProjectionMatrixLoc=gl.gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
-
-    const vertexBuffer = gl.gl.createBuffer();
-    const draw=(mat:GLMaterial<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>,matrix:Matrix,attr:GL2D_SimpleMatAttr)=>{
-        gl.set_program(fac.program)
-
-        gl.gl.bindBuffer(gl.gl.ARRAY_BUFFER, vertexBuffer)
-        gl.gl.bufferData(gl.gl.ARRAY_BUFFER, attr.model.vertices, gl.gl.STATIC_DRAW)
-
-        gl.gl.enableVertexAttribArray(aPositionLoc)
-        gl.gl.vertexAttribPointer(aPositionLoc, 2, gl.gl.FLOAT, false, 0, 0)
-
-        gl.gl.uniform4f(uColorLoc, mat.color.r, mat.color.g, mat.color.b, mat.color.a)
-        gl.gl.uniform2f(uTranslationLoc, attr.position.x, attr.position.y)
-        gl.gl.uniform2f(uScaleLoc, attr.scale.x, attr.scale.y)
-        gl.gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
-        gl.gl.drawArrays(gl.gl.TRIANGLES, 0, attr.model.vertices.length / 2)
-    }
-    return (arg:GL2D_SimpleMatArgs)=>{
-        return {
-            ...arg,
-            renderer:gl,
-            group:"",
-            factory:fac,
-            draw:draw,
-            free:()=>{
-                gl.gl.deleteBuffer(vertexBuffer)
-            }
-        }
-    }
 }
 }
 export type GL3D_SimpleMatArgs={
@@ -199,97 +134,6 @@ create(gl:WebglRenderer,fac:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatA
     }
 }
 }
-export type GL2D_TexMatArgs={
-    texture:WebGLTexture
-    tint:Color
-}
-export type GL2D_TexMatAttr={
-    model:Model2D
-    position:Vec2
-    scale:Vec2
-}
-export const GLF_Texture:GLMaterialFactoryCall<GL2D_TexMatArgs,GL2D_TexMatAttr>={
-    vertex:`
-attribute vec2 a_Position;
-attribute vec2 a_TexCoord;
-    
-uniform mat4 u_ProjectionMatrix;
-uniform vec2 u_Translation;
-uniform vec2 u_Scale;
-
-varying highp vec2 vTextureCoord;
-
-void main(void) {
-    gl_Position = u_ProjectionMatrix*vec4((a_Position*u_Scale)+u_Translation,0.0,1.0);
-    vTextureCoord = a_TexCoord;
-}`,
-    frag:`
-precision mediump float;
-
-varying highp vec2 vTextureCoord;
-uniform sampler2D u_Texture;
-uniform vec4 u_Tint;
-
-void main(void) {
-    vec2 flippedCoord = vec2(vTextureCoord.x, 1.0 - vTextureCoord.y);
-    gl_FragColor = texture2D(u_Texture, flippedCoord)*u_Tint;
-}`,
-create(glr: WebglRenderer, fac: GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>) {
-    const gl = glr.gl
-    const aPositionLoc = gl.getAttribLocation(fac.program, "a_Position")
-    const aTexCoordLoc = gl.getAttribLocation(fac.program, "a_TexCoord")
-    const uTintLoc = gl.getUniformLocation(fac.program, "u_Tint")!
-    const uTranslationLoc = gl.getUniformLocation(fac.program, "u_Translation")!
-    const uScaleLoc = gl.getUniformLocation(fac.program, "u_Scale")!
-    const uProjectionMatrixLoc = gl.getUniformLocation(fac.program, "u_ProjectionMatrix")!
-    const uTextureLoc = gl.getUniformLocation(fac.program, "u_Texture")!
-
-    const vertexBuffer = gl.createBuffer()!
-    const textureCoordBuffer = gl.createBuffer()!
-
-    const draw = (mat: GLMaterial<GL2D_TexMatArgs,GL2D_TexMatAttr>, matrix: Matrix, attr:GL2D_TexMatAttr) => {
-        glr.set_program(fac.program)
-
-        // Vertex buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, attr.model.vertices, gl.STATIC_DRAW)
-        gl.enableVertexAttribArray(aPositionLoc)
-        gl.vertexAttribPointer(aPositionLoc, 2, gl.FLOAT, false, 0, 0)
-
-        // TexCoord buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, attr.model.tex_coords, gl.STATIC_DRAW)
-        gl.enableVertexAttribArray(aTexCoordLoc)
-        gl.vertexAttribPointer(aTexCoordLoc, 2, gl.FLOAT, false, 0, 0)
-
-        // Texture
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, mat.texture)
-        gl.uniform1i(uTextureLoc, 0)
-
-        // Uniforms
-        gl.uniform4f(uTintLoc, mat.tint.r, mat.tint.g, mat.tint.b, mat.tint.a)
-        gl.uniform2f(uTranslationLoc, attr.position.x, attr.position.y)
-        gl.uniform2f(uScaleLoc, attr.scale.x, attr.scale.y)
-        gl.uniformMatrix4fv(uProjectionMatrixLoc, false, matrix)
-
-        // Draw
-        gl.drawArrays(gl.TRIANGLES, 0, attr.model.vertices.length / 2)
-    }
-
-    return (arg: GL2D_TexMatArgs) => ({
-        ...arg,
-        renderer:glr,
-        factory: fac,
-        group:"",
-        draw,
-        free:()=>{
-            gl.deleteBuffer(vertexBuffer)
-            gl.deleteBuffer(textureCoordBuffer)
-        }
-    })
-}
-}
 export type GL2D_TexBatchArgs = {
     texture: WebGLTexture
 }
@@ -313,7 +157,7 @@ varying highp vec2 v_TexCoord;
 varying lowp vec4 v_Tint;
 
 void main() {
-    gl_Position = u_Matrix * vec4(a_Position, 0.0, 1.0);
+    gl_Position = u_Matrix*vec4(a_Position, 0.0, 1.0);
     v_TexCoord = a_TexCoord;
     v_Tint = a_Tint;
 }`,

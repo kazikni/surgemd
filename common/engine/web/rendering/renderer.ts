@@ -1,5 +1,5 @@
 import { v2, Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_SimpleMatArgs, GL2D_SimpleMatAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL2D_TexMatArgs, GL2D_TexMatAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_Simple, GLF_Simple3, GLF_SimpleBatch, GLF_Texture, GLF_TextureBatch } from "./materials.ts";
+import { GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_Simple3, GLF_SimpleBatch, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { Matrix } from "../../core/math/matrix.ts";
 import { Context2D, GLContext2D } from "./context.ts";
@@ -156,8 +156,6 @@ export class WebglRenderer extends Renderer {
     readonly gl: WebGLRenderingContext
     readonly factorys2D:{
         simple_batch:GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
-        simple:GLMaterialFactory<GL2D_SimpleMatArgs,GL2D_SimpleMatAttr>,
-        texture:GLMaterialFactory<GL2D_TexMatArgs,GL2D_TexMatAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
         //light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
     }
@@ -202,9 +200,7 @@ export class WebglRenderer extends Renderer {
 
         this.factorys2D={
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
-            simple:this.proccess_factory(GLF_Simple),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
-            texture:this.proccess_factory(GLF_Texture),
             //light:this.proccess_factory(GLF_Light),
         }
 

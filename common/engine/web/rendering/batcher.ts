@@ -68,6 +68,10 @@ export class Batcher {
             let m=matrix
             if(cmd.type===0){
                 const params={data:cmd.stream.data.subarray(0,cmd.stream.length),data_count:cmd.vertex_count,buffer:cmd.buffer,...cmd.params}
+                if(!cmd.material.initialized){
+                    cmd.material.initialized=true
+                    cmd.material.initialize?.(cmd.material)
+                }
                 cmd.material.draw(cmd.material,m,params)
                 renderer.draw_calls++
             }else{

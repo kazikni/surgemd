@@ -2,7 +2,7 @@ import { Model2D, model2d } from "../../core/definition/models.ts"
 import { Color, ColorM } from "../../core/math/color.ts"
 import { v2, Vec2 } from "../../core/math/vec2.ts"
 import { Batcher, BatcherCommand, BatcherMaterialCommand } from "./batcher.ts"
-import { type Texture, type Material, type Renderer, type WebglRenderer, type GLTexture } from "./renderer.ts"
+import { type Texture, type Material, type Renderer, type WebglRenderer, type GLTexture, GLMaterial } from "./renderer.ts"
 import { Frame } from "../resources/resources.ts"
 import { Matrix, matrix4 } from "../../core/math/matrix.ts";
 import { Hitbox2D, HitboxType2D } from "../../core/math/hitbox.ts";
@@ -478,6 +478,8 @@ export class GLContext2D extends BatcherContext2D{
     renderer:WebglRenderer
 
     commands:BatcherCommand[]=[]
+
+    _materials:Record<string,GLMaterial>={}
     constructor(renderer:WebglRenderer) {
         super()
         this.renderer=renderer
@@ -486,6 +488,7 @@ export class GLContext2D extends BatcherContext2D{
         this.default_material=(renderer as WebglRenderer).factorys2D.simple_batch.create({})
         this.state.current_material=this.default_material
     }
+
     override render(renderer: WebglRenderer): void {
         super.render(renderer)
         this.batcher.render(renderer,this.base_matrix)

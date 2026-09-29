@@ -1,10 +1,12 @@
 import { v2, Vec2 } from "../../core/math/vec2.ts";
-import { GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_Simple3, GLF_SimpleBatch, GLF_TextureBatch } from "./materials.ts";
+import { GL2D_CosmicBatchArgs, GL2D_CosmicBatchAttr, GL2D_SimpleBatchArgs, GL2D_SimpleBatchAttr, GL2D_TexBatchArgs, GL2D_TexBatchAttr, GL3D_SimpleMatArgs, GL3D_SimpleMatAttr, GLF_CosmicBatch, GLF_Simple3, GLF_SimpleBatch, GLF_TextureBatch } from "./materials.ts";
 import { Color, ColorM } from "../../core/math/color.ts";
 import { Matrix } from "../../core/math/matrix.ts";
 import { Context2D, GLContext2D } from "./context.ts";
 export interface Material{
     renderer:Renderer
+    initialized?:boolean
+    initialize?:(material:Material)=>void
     draw(material:Material,matrix:Matrix,attr:any):void
     free():void
 }
@@ -157,7 +159,7 @@ export class WebglRenderer extends Renderer {
     readonly factorys2D:{
         simple_batch:GLMaterialFactory<GL2D_SimpleBatchArgs,GL2D_SimpleBatchAttr>,
         texture_batch:GLMaterialFactory<GL2D_TexBatchArgs,GL2D_TexBatchAttr>,
-        //light:GLMaterialFactory<GL2D_LightMatArgs,GL2D_LightMatAttr>
+        cosmic_batch:GLMaterialFactory<GL2D_CosmicBatchArgs,GL2D_CosmicBatchAttr>,
     }
     readonly factorys3D:{
         simple:GLMaterialFactory<GL3D_SimpleMatArgs,GL3D_SimpleMatAttr>,
@@ -201,6 +203,7 @@ export class WebglRenderer extends Renderer {
         this.factorys2D={
             simple_batch:this.proccess_factory(GLF_SimpleBatch),
             texture_batch:this.proccess_factory(GLF_TextureBatch),
+            cosmic_batch:this.proccess_factory(GLF_CosmicBatch)
             //light:this.proccess_factory(GLF_Light),
         }
 

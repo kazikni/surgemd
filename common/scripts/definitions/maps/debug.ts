@@ -1,4 +1,4 @@
-import { random, v2 } from "../../../engine/core.ts";
+import { v2 } from "../../../engine/core.ts";
 import { Layers } from "../../others/constants.ts";
 import { FloorType } from "../../others/terrain.ts";
 import { MapDef } from "./base.ts";
@@ -135,8 +135,8 @@ export const SingleBuildMap:MapDef={
             //const def=map.scene.game.definitions.buildings.getFromString("shed")
             //const def=map.scene.game.definitions.buildings.getFromString("puzzle_test")
             //const def=map.scene.game.definitions.buildings.getFromString("storehouse_1")
-            //const def=map.scene.game.definitions.buildings.getFromString("bunker_1")
-            const def=map.scene.game.definitions.buildings.getFromString("small_house_1")
+            const def=map.scene.game.definitions.buildings.getFromString("bunker_1")
+            //const def=map.scene.game.definitions.buildings.getFromString("small_house_1")
 
             //const def=map.scene.game.definitions.buildings.getFromString("blue_container_1")
             //const def=map.scene.game.definitions.buildings.getFromString(`${random.choose(["yellow","blue","red","green"])}_container_${random.int(1,2)}`)

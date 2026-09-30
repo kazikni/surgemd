@@ -172,35 +172,48 @@ smde-window .smde-window-close-btn{
 smde-window .smde-window-title{
     left: 50%;
 }
+
 smde-tree{
     display:flex;
     flex-direction:column;
+    height:auto;
+    box-sizing:border-box;
+    position:static;
 }
+
 .smde-tree-node{
-    display:flex;
-    flex-direction:column;
+    display:block;
+    width:100%;
+    height:auto;
+    box-sizing:border-box;
+    position:static;
 }
+
 .smde-tree-row{
     display:flex;
     align-items:center;
-    min-height:28px;
+    width:100%;
+    box-sizing:border-box;
+    position:relative;
 }
 
 .smde-tree-arrow{
-    width:18px;
+    height:100%;
     text-align:center;
     cursor:pointer;
     user-select:none;
 }
 
 .smde-tree-item{
-    flex:1;
+    display:block;
+    flex:1 1 auto;
+    min-width:0;
+    box-sizing:border-box;
     text-align:left;
     border:0;
     background:transparent;
     color:inherit;
     cursor:pointer;
-    padding:5px;
 }
 
 .smde-tree-item:hover{
@@ -208,9 +221,27 @@ smde-tree{
 }
 
 .smde-tree-children{
-    display:flex;
-    flex-direction:column;
-    margin-left:18px;
-    padding-left:8px;
+    display:none;
+    width:auto;
+    height:auto;
+    margin-left:8px;
+    padding-left:5px;
+    box-sizing:border-box;
     border-left:1px solid #ffffff18;
+    position:static;
+}
+
+.smde-tree-children.open{
+    display:block;
+}
+
+.smde-tree-children > smde-tree{
+    display:flex;
+    width:100%;
+    height:auto;
+    position:static;
+}
+
+.smde-tree-node + .smde-tree-node{
+    margin-top:0;
 }

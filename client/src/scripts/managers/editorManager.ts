@@ -39,6 +39,7 @@ export class EditorWindow{
 export class ObjectsEditorWindow extends EditorWindow{
     create_btn:HTMLButtonElement
     objects:HTMLDivElement
+    tree!:any
     constructor(editor:EditorManager,id:string,closable?:boolean){
         super(editor,id,closable)
         this.create_btn=document.createElement("button")
@@ -72,54 +73,15 @@ export class ObjectsEditorWindow extends EditorWindow{
         this.elem.content.appendChild(this.create_btn)
         this.elem.content.appendChild(document.createElement("hr"))
         this.elem.content.appendChild(this.objects)
-    }
-    update_objects(){
+
         this.objects.innerHTML=""
-        this.editor.objects.objects.forEach((obj,index)=>{
-            const row=document.createElement("button")
-            row.className="btn-blue editor-object-row"
-            row.addEventListener("click",(e)=>{
-                if(this.editor.menu)this.editor.menu.remove()
-                const menu=this.editor.create_menu()
-                menu.add_option("Select",()=>{
-                    this.editor.objects.selected_object=obj
-                    this.editor.update_propertys_window(obj)
-                })
-                menu.add_option("Clone",()=>{
-                    this.editor.objects.clone_object(obj)
-                })
-                menu.add_option("Move Up",()=>{
-                    if(index===0)return
-                    [this.editor.objects.objects[index-1],this.editor.objects.objects[index]]=[this.editor.objects.objects[index],this.editor.objects.objects[index-1]]
-                    this.update_objects()
-                })
-                menu.add_option("Move Down",()=>{
-                    if(index===this.editor.objects.objects.length-1)return
-                    [this.editor.objects.objects[index], this.editor.objects.objects[index+1]]=[this.editor.objects.objects[index+1],this.editor.objects.objects[index]]
-                    this.update_objects()
-                })
-                menu.add_option("Delete",()=>{
-                    obj.destroyed=true
-                })
-                this.editor.to_mouse_position(menu)
-                this.editor.ui.appendChild(menu)
-                this.editor.menu=menu
-            })
-            if(obj===this.editor.objects.selected_object){
-                row.classList.add("selected")
-            }
-            const title=document.createElement("span")
-            title.style.flex="1"
-            title.innerHTML=obj.name()
-            row.appendChild(title)
-            this.objects.appendChild(row)
-        })
+        this.tree=new SMDETree()
+        this.objects.appendChild(this.tree)
     }
     override make_context_menu(menu:any){
         menu.add_option("Objects",()=>{
             this.elem.style.display=""
             this.editor.to_mouse_position(this.elem)
-            this.update_objects()
         })
     }
 }
@@ -133,10 +95,9 @@ export class EditorObjectsManager{
 
     clear(){
         for(const c of this.objects){
-            c.on_destroy()
+            c._destroy()
         }
         this.objects.length=0
-        this.editor.objects_window.update_objects()
     }
 
     create_object(type:number):EditorObject{
@@ -171,18 +132,28 @@ export class EditorObjectsManager{
     }
 
     add_object(obj:EditorObject){
-        const ret=this._add_object(obj)
-        this.editor.objects_window.update_objects()
-        return ret
-    }
-    _add_object(obj:EditorObject){
         obj.editor=this.editor
+
+        if(obj.childs){
+            obj.childs.tree_element=new SMDETree()
+            obj._tree_option_element=this.editor.objects_window.tree.add_subtree(obj.name,obj.childs.tree_element,obj.on_name_clicked.bind(obj))
+        }else{
+            const node=document.createElement("span")
+            node.innerText=obj.name
+            obj._tree_option_element=this.editor.objects_window.tree.add_option(obj.name,node,obj.on_name_clicked.bind(obj))
+        }
+
         this.objects.push(obj)
         obj.on_create()
         return obj
     }
     clone_object(obj:EditorObject){
-        const ret=this.add_object(obj.clone())
+        const ret=obj.clone()
+        if(obj.parent){
+            obj.parent.add_child(ret)
+        }else{
+            this.add_object(ret)
+        }
         this.selected_object=ret
         this.editor.update_propertys_window(ret)
         return ret
@@ -200,21 +171,14 @@ export class EditorObjectsManager{
         stream.read_array(()=>{
             const type=stream.read_uint8()
             const obj:EditorObject=this.create_object(type)
-            this._add_object(obj)
+            this.add_object(obj)
             obj.decode(stream)
         },2)
-        this.editor.objects_window.update_objects()
         this.editor.update_propertys_window()
     }
 
     tick(dt:number){
         if(this.editor.can_act){
-            if(this.editor.game.input_manager.keyPress(Key.G)){
-                if(this.selected_object)this.selected_object.on_drag(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.scene_2d.camera.meter_size))
-            }
-            if(this.editor.game.input_manager.keyUp(Key.G)){
-                if(this.selected_object)this.selected_object.on_drag_over(v2.dscale(this.editor.game.input_manager.mouse_delta,this.editor.game.scene_2d.camera.meter_size))
-            }
             if(this.editor.game.input_manager.keyDown(Key.C)){
                 if(this.selected_object)this.clone_object(this.selected_object)
             }
@@ -225,13 +189,12 @@ export class EditorObjectsManager{
         for(let o=0;o<this.objects.length;o++){
             if(this.objects[o].destroyed){
                 if(this.objects[o]===this.selected_object)this.selected_object=undefined
-                this.objects[o].on_destroy()
+                this.objects[o]._destroy()
                 this.objects.splice(o,1)
-                this.editor.objects_window.update_objects()
                 o--
-                break
+                continue
             }
-            this.objects[o].on_tick(dt,this.selected_object===this.objects[o])
+            this.objects[o].tick(dt,this.selected_object===this.objects[o])
         }
     }
 }
@@ -325,7 +288,6 @@ export class EditorManager extends GComponent{
         })
         this.ui.appendChild(this.context_menu)
 
-        this.objects_window.update_objects()
         this.reload_sources()
         this.game.dead_zone.set_current(v2.zero,0,false)
     }

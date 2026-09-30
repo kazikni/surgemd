@@ -1,3 +1,5 @@
+@use "../components/button.scss";
+@use "../components/background.scss";
 #game-editor-objects-window{
     .smde-window-content{
         display: flex;
@@ -7,4 +9,24 @@
 }
 smde-tree{
     position: absolute;
+    display: flex;
+    padding: 0.5vw;
+    .smde-tree-item{
+        font-family: "Russo-One","Inter", sans-serif;
+        font-size: 1vw;
+    }
+    .smde-tree-row{
+        min-height:1vw;
+    }
+    .smde-tree-arrow{
+        line-height:1vw;
+    }
+    .smde-tree-item{
+        padding: 0.5vw;
+    }
+}
+
+.smde-tree-children{
+    @extend .menu-panel-blue;
+    padding-left:0;
 }

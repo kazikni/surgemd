@@ -315,20 +315,29 @@ class SMDETree extends HTMLElement{
     constructor(){
         super()
         this.items=[]
+        this.parent_arrow=null
     }
 
     add_option(text,elem,onclick){
         const item={text,elem,onclick,tree:undefined}
         this.items.push(item)
-        this.appendChild(this.create_item(item))
-        return elem
+
+        const node=this.create_item(item)
+        this.appendChild(node)
+        this.refresh()
+
+        return node
     }
 
     add_subtree(text,tree=new SMDETree(),onclick){
         const item={text,tree,onclick}
         this.items.push(item)
-        this.appendChild(this.create_item(item))
-        return tree
+
+        const node=this.create_item(item)
+        this.appendChild(node)
+        this.refresh()
+
+        return node
     }
 
     create_item(item){
@@ -340,7 +349,7 @@ class SMDETree extends HTMLElement{
 
         const arrow=document.createElement("span")
         arrow.className="smde-tree-arrow"
-        arrow.textContent=item.tree?.items.length?"▸":""
+        arrow.textContent=item.tree?"▸":""
 
         const label=document.createElement("button")
         label.className="smde-tree-item"
@@ -349,31 +358,43 @@ class SMDETree extends HTMLElement{
 
         const children=document.createElement("div")
         children.className="smde-tree-children"
-        children.style.display="none"
 
-        if(item.tree)children.appendChild(item.tree)
+        if(item.tree){
+            children.appendChild(item.tree)
+            item.tree.parent_arrow=arrow
+        }
 
         arrow.onclick=e=>{
             e.stopPropagation()
+
             if(!item.tree?.items.length)return
-            const open=children.style.display!=="none"
-            children.style.display=open?"none":"flex"
-            arrow.textContent=open?"▸":"▾"
+
+            const open=children.classList.toggle("open")
+            arrow.textContent=open?"▾":"▸"
         }
 
         row.appendChild(arrow)
         row.appendChild(label)
+
         container.appendChild(row)
         container.appendChild(children)
 
         return container
     }
 
+    refresh(){
+        if(this.parent_arrow){
+            this.parent_arrow.textContent=this.items.length?"▸":""
+        }
+    }
+
     clear(){
         this.items.length=0
         this.innerHTML=""
+        this.refresh()
     }
 }
+
 customElements.define("smde-joystick", SMDEJoystick);
 customElements.define('tabs-container', TabsContainer)
 customElements.define("smde-menu", SMDEMenu)

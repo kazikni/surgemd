@@ -136,7 +136,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
         this.call_event("tick",dt)
         this.draw(dt)
         this.sounds.update()
-        this.input_manager.tick()
+        this.input_manager.tick(dt)
         this.ui_manager.update(dt)
         this.clock.profiler.end(2)
     }

@@ -126,19 +126,15 @@ export function ShowElement(elem: HTMLElement, useOpacity = false){
     elem.style.userSelect = ""
     elem.style.visibility = "visible"
 }
-export function ToggleElement(elem: HTMLElement, useOpacity = false) {
+export function ToggleElement(elem: HTMLElement, useOpacity = false,value?:boolean) {
     if (useOpacity) {
-        if (elem.style.opacity === "0" || elem.style.visibility === "hidden") {
-            ShowElement(elem, true)
-        } else {
-            HideElement(elem, true)
-        }
+        if(value===undefined)value=elem.style.opacity==="0"||elem.style.visibility==="hidden"
+        if(value) ShowElement(elem, true)
+        else HideElement(elem, true)
     } else {
-        if (elem.style.display === "none") {
-            ShowElement(elem)
-        } else {
-            HideElement(elem)
-        }
+        if(value===undefined)value=elem.style.display === "none"
+        if(value)ShowElement(elem)
+        else HideElement(elem)
     }
 }
 

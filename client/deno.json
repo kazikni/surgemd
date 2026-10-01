@@ -3,5 +3,9 @@
   "importMap": "../common/deps.json",
   "compilerOptions": {
     "lib": ["dom", "deno.ns"]
+  },
+  "tasks": {
+    "dev":"deno -A npm:vite dev",
+    "build":"deno -A npm:vite build"
   }
 }

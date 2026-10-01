@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputEventType, InputMouseMoveEvent, isMobile, Key, Tileset, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, HideElement, InputActionEvent, InputAxisEvent, InputControllerChanged, InputEventType, InputMouseMoveEvent, isMobile, Key, ShowElement, Tileset, ToggleElement, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -41,7 +41,7 @@ import { OnlineMessage, OnlineMessageType } from "common/scripts/packets/message
 import { StartPacket, StartSettings } from "common/scripts/packets/start_packet.ts";
 import { input_popup, yes_no_popup } from "../defs/menu.ts";
 import { Matrix, matrix4 } from "common/engine/core/math/matrix.ts";
-import { BasicSocket, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, StaticStream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { BasicSocket, CircleHitbox2D, Client, Color, ColorM, ConnectPacket, DisconnectPacket, FileManager, Language, Numeric, Path, StaticStream, TranslationManager, v2, v2m, Vec2 } from "common/engine/core.ts";
 import { Drone } from "../objects/drone.ts";
 import { decode_map_config } from "common/scripts/packets/map_message.ts";
 import { FindGameResult } from "common/scripts/config/config.ts";
@@ -117,17 +117,7 @@ export class Game extends ClientGame<GameObject>{
 
     hitboxes_gfx:Graphics2D=new Graphics2D()
     ui_gfx:Graphics2D=new Graphics2D()
-    aim_line:{
-        enabled:boolean
-        width:number
-        height:number
-        color:Color
-    }={
-        enabled:false,
-        width:1000,
-        height:0.1,
-        color:{r:255,g:255,b:255,a:229}
-    }
+    aim_line:boolean=false
 
     theme_colors:Record<string,string>={}
     tilesets_instance:Record<number,Tileset>={}
@@ -220,15 +210,23 @@ export class Game extends ClientGame<GameObject>{
                 }else{
                     this.input.movement={dir:Math.atan2(a.value.y,a.value.x),scale:1}
                 }
-            }else if(a.action==="aim"){
-                if(a.value.x!==0||a.value.y!==0)this.set_lookTo_angle(Math.atan2(a.value.y,a.value.x),1)
+            }else if(a.action==="aim"&&!this.input_manager.mouse_emulation){
+                const len=v2.len(a.value)
+                if(len>0.2){
+                    this.set_lookTo_angle(Math.atan2(a.value.y,a.value.x),1)
+                    this.aim_line=true
+                }else{
+                    this.aim_line=false
+                }
             }
         })
         this.input_manager.listener.on(InputEventType.ActionDown,(a:InputActionEvent)=>{
             if(!this.can_act||!(this.state===GameState.Playing))return
+            if(a.action==="toggle_cursor")this.input_manager.mouse_emulation=!this.input_manager.mouse_emulation
+            if(this.input_manager.mouse_emulation)return
             switch(a.action){
                 case "fire":
-                    if(a.element!==this.renderer.canvas)break
+                    if(a.element&&a.element!==this.renderer.canvas)break
                     this.input.use_weapon=true
                     break
                 case "alt_fire":
@@ -300,12 +298,22 @@ export class Game extends ClientGame<GameObject>{
                 case "use_item7":
                     this.input.actions.push({type:InputActionType.use_item,slot:6})
                     break
-                case "previous_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:Math.max(this.inventory.weapon_idx-1,0)})
+                case "previous_weapon":{
+                    let walk=Math.max(this.inventory.weapon_idx-1,0)
+                    if(this.inventory.weapons[walk]===undefined){
+                        walk=Math.max(this.inventory.weapon_idx-2,0)
+                    }
+                    this.input.actions.push({type:InputActionType.set_hand,hand:walk})
                     break
-                case "next_weapon":
-                    this.input.actions.push({type:InputActionType.set_hand,hand:Math.max(this.inventory.weapon_idx+1,0)})
+                }
+                case "next_weapon":{
+                    let walk=Math.max(this.inventory.weapon_idx+1,0)
+                    if(this.inventory.weapons[walk]===undefined){
+                        walk=Math.max(this.inventory.weapon_idx+2,0)
+                    }
+                    this.input.actions.push({type:InputActionType.set_hand,hand:walk})
                     break
+                }
                 case "previous_scope":{
                     const oidx=this.inventory.iitems.indexOf(this.inventory.scope!)
                     const it=this.inventory.iitems[oidx-1]
@@ -370,6 +378,13 @@ export class Game extends ClientGame<GameObject>{
                 const angle=v2.lookTo(cam_c,mouse_p)
                 const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
                 this.set_lookTo_angle(angle,dist)
+            }
+        })
+        this.input_manager.listener.on(InputEventType.ControllerChanged,(e:InputControllerChanged)=>{
+            if(e.connected){
+                this.input_manager.mouse_emulation=this.state!==GameState.Playing
+            }else{
+                this.input_manager.mouse_emulation=false
             }
         })
         this.ui_manager.init()
@@ -538,11 +553,19 @@ export class Game extends ClientGame<GameObject>{
     }
     override on_update(dt:number){
         super.on_update(dt)
+        if(this.ui.content.mouse){
+            if(this.input_manager.mouse_emulation_changed)ToggleElement(this.ui.content.mouse,undefined,this.input_manager.mouse_emulation)
+            if(this.input_manager.mouse_emulation){
+                this.ui.content.mouse.style.left=this.input_manager.virtual_mouse.x+"px"
+                this.ui.content.mouse.style.top=this.input_manager.virtual_mouse.y+"px"
+            }
+        }
         if(this.save.get_variable("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
             this.global_interpolation=1
         }
+        this.ui_gfx.ctx.clear()
         if(this.state===GameState.Playing){
             this.ui.update(dt)
         }
@@ -553,6 +576,27 @@ export class Game extends ClientGame<GameObject>{
                 this.active_entity=this.scene_2d.objects.get_object(this.active_entity_id!) as Human
             }
             if(this.active_entity){
+                if(this.aim_line){
+                    this.ui_gfx.ctx.stroke_color=ColorM.mult_hsv(ColorM.hex(this.get_theme_color("primary")),0.95,0.6,0.95)
+                    this.ui_gfx.ctx.stroke_color.a*=0.9
+                    this.ui_gfx.ctx.line_width=0.1
+
+                    const m=matrix4.translation_2d(this.active_entity.position)
+                    matrix4.m.rotate_2d(m,m,this.active_entity.rotation)
+                    
+                    let x=(this.active_entity.base_hitbox as CircleHitbox2D).radius+0.3
+                    const count=11.5/this.scope_zoom
+
+                    this.ui_gfx.ctx.begin_path()
+                    for(let i=0;i<count;i++){
+                        this.ui_gfx.ctx.move_to(x,0)
+                        this.ui_gfx.ctx.line_to(x+0.5,0)
+                        x+=1
+                    }
+
+                    this.ui_gfx.ctx.stroke(m)
+                }
+
                 this.scene_2d.camera.position=this.active_entity.position
                 this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom,this.scope_zoom,Numeric.dt_expo_inter(this.zoom_speed,dt))
                 this.scene_2d.camera.layer=this.active_entity.layer
@@ -567,6 +611,7 @@ export class Game extends ClientGame<GameObject>{
             }
             this.scene_2d.camera.zoom=Numeric.lerp(this.scene_2d.camera.zoom, this.free_cam_zoom, Numeric.dt_expo_inter(5, dt))
             v2m.lerp(this.scene_2d.camera.position,this.free_cam_pos, Numeric.dt_expo_inter(5, dt))
+
             if(this.input_manager.keyPress(Key.E)){
                 v2m.add(this.free_cam_pos,this.free_cam_pos,v2.scale(this.input_manager.mouse_delta,0.01))
             }

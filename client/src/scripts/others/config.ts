@@ -165,7 +165,7 @@ export const ConfigDefaultActions={
         keys:[Key.Mouse_Right]
     },
     "emote_wheel":{
-        buttons:[GamepadButtonID.Y],
+        buttons:[GamepadButtonID.DPAD_Left],
         keys:[Key.V]
     },
     "message":{
@@ -173,7 +173,7 @@ export const ConfigDefaultActions={
         keys:[Key.T]
     },
     "comunication_mode":{
-        buttons:[GamepadButtonID.Y],
+        buttons:[GamepadButtonID.DPAD_Up],
         keys:[Key.C]
     },
     "reload":{
@@ -185,11 +185,11 @@ export const ConfigDefaultActions={
         keys:[Key.E]
     },
     "cancel":{
-        buttons:[GamepadButtonID.A],
+        buttons:[GamepadButtonID.Y],
         keys:[Key.X]
     },
     "swamp_guns":{
-        buttons:[GamepadButtonID.L3],
+        buttons:[GamepadButtonID.R3],
         keys:[Key.F]
     },
     "toggle_full_device":{
@@ -249,11 +249,11 @@ export const ConfigDefaultActions={
         keys:[]
     },
     "previous_scope":{
-        buttons:[GamepadButtonID.DPAD_Down],
+        buttons:[GamepadButtonID.DPAD_Right],
         keys:[Key.Mouse_Wheel_Up]
     },
     "next_scope":{
-        buttons:[GamepadButtonID.DPAD_Up],
+        buttons:[GamepadButtonID.DPAD_Down],
         keys:[Key.Mouse_Wheel_Down]
     },
     "next":{
@@ -267,5 +267,10 @@ export const ConfigDefaultActions={
     "debug_menu":{
         buttons:[GamepadButtonID.R3],
         keys:[Key.Delete,Key.Backspace]
+    },
+
+    "toggle_cursor":{
+        keys:[],
+        buttons:[GamepadButtonID.L3],
     }
 }

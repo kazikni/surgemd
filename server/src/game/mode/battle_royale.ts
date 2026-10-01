@@ -70,7 +70,7 @@ export class BattleRoyale extends ModeManager{
             },
             spawn_mode:settings.spawn_mode??Spawn.grass,
             deadzone:settings.deadzone??DefaultDeadzone,
-            events:[
+            events:settings.events??[
                 {
                     content:[
                         {type:"drone",weight:1},

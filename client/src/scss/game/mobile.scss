@@ -8,6 +8,7 @@
     transform: translate(-50%,-50%);
     background: var(--ui-panel-background);
     box-shadow: var(--ui-panel-box-shadow);
+    border:var(--ui-panel-border);
     .knob{
         width: 30%;
         height: 30%;
@@ -34,15 +35,17 @@
         outline: none;
         font-size: 8vh;
         font-family: "Russo-One";
+        border:0.2vh solid var(--ui-theme-primary);
         svg{
             position: absolute;
             width: 70%;
             opacity: 0.8;
             transform: translate(-50%,-50%);
+            pointer-events: none;
         }
         &:active{
-            transform: translateY(-5%);
-            border:var(--ui-panel-border);
+            border-top:0.5vh solid var(--ui-theme-primary);
+            transform: translateY(0.5vh);
         }
     }
     #btn-mobile-interact{

@@ -256,12 +256,6 @@ export class EditorManager extends GComponent{
         this.game.terrain.clear()
         this.game.terrain.draw(this.game.terrain.terrain_gfx,Layers.Normal)
 
-        this.game.ui_gfx.ctx.clear()
-        this.game.ui_gfx.ctx.begin_path()
-        this.game.ui_gfx.ctx.fill_color=ColorM.hex("#fff8")
-        this.game.ui_gfx.ctx.circle(v2.zero,0.2)
-        this.game.ui_gfx.ctx.fill()
-
         this.hitbox_gfx.zIndex=zIndexes.UI
         this.hitbox_gfx.initialize(this.game.scene_2d.camera.ctx)
         this.game.scene_2d.camera.add_object(this.hitbox_gfx)
@@ -412,6 +406,11 @@ export class EditorManager extends GComponent{
         })
     }
     override on_tick(dt:number){
+        this.game.ui_gfx.ctx.begin_path()
+        this.game.ui_gfx.ctx.fill_color=ColorM.hex("#fff8")
+        this.game.ui_gfx.ctx.circle(v2.zero,0.2)
+        this.game.ui_gfx.ctx.fill()
+
         this.hitbox_gfx.layer=this.game.scene_2d.camera.layer
         this.hitbox_gfx.ctx.clear()
         this.objects.tick(dt)

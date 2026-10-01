@@ -82,6 +82,8 @@ export class UiManager{
         tooltip:document.querySelector("#item-tooltip") as HTMLDivElement,
         tooltip_title:document.querySelector("#item-tooltip-title") as HTMLDivElement,
         tooltip_description:document.querySelector("#item-tooltip-description") as HTMLDivElement,
+
+        mouse:document.querySelector("#mouse-emulated") as HTMLDivElement
     }
     tooltip_element?:HTMLElement
     mobile_content={
@@ -221,21 +223,14 @@ export class UiManager{
         //@ts-ignore
         this.mobile_content.right_joystick.addEventListener("joystickmove",(e:JoystickEvent)=>{
             rotating=true
-            this.game.aim_line.enabled=true
+            this.game.aim_line=true
             const dist=Math.sqrt(e.detail.x*e.detail.x+e.detail.y*e.detail.y)
-            /*if(!this.game.active_entity?.current_weapon||this.game.active_entity.current_weapon.item_type!==GameItemType.gun||!this.game.active_entity.current_weapon.fireOnRelease){
-                
-            }*/
 
             if(this.game.active_entity?.current_weapon){
-                if(this.game.active_entity.current_weapon.item_type===GameItemType.gun){
-                    if(dist>0.9){
-                        this.game.input.use_weapon=true
-                    }else{
-                        this.game.input.use_weapon=false
-                    }
-                }else{
+                if(this.game.active_entity.current_weapon.item_type===GameItemType.grenade){
                     this.game.input.use_weapon=true
+                }else{
+                    this.game.input.use_weapon=dist>0.97
                 }
             }
             this.game.set_lookTo_angle(Math.atan2(e.detail.y,e.detail.x),dist)
@@ -243,7 +238,7 @@ export class UiManager{
         this.mobile_content.right_joystick.addEventListener("joystickend",()=>{
             this.game.input.use_weapon=false
             rotating=false
-            this.game.aim_line.enabled=false
+            this.game.aim_line=false
         })
         this.mobile_content.btn_interact.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/interaction_button.svg")).text()
         this.mobile_content.btn_interact.addEventListener("click",()=>{
@@ -941,6 +936,55 @@ export class UiManager{
         this.game.ui_manager.signal("active_player_update",{dt,player})
     }
 
+    tooltip_press_timer?:number
+    tooltip_press_element?:HTMLElement
+
+    tooltip_start_press(element:HTMLElement,title:string|undefined,description:string){
+        this.tooltip_cancel_press()
+
+        if(!title)return
+
+        this.tooltip_press_element=element
+        this.tooltip_press_timer=setTimeout(()=>{
+            if(this.tooltip_press_element===element){
+                this.tooltip_show(title,description,element)
+            }
+        },500) as unknown as number
+    }
+
+    tooltip_bind(element:HTMLElement){
+        element.onmouseenter=()=>{
+            if(this.mobile_enabled)return
+            this.tooltip_show(element.dataset.item_name,element.dataset.item_description??"",element)
+        }
+        element.onmouseleave=()=>{
+            if(this.mobile_enabled)return
+            this.tooltip_hide()
+        }
+        element.ontouchstart=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_start_press(element,element.dataset.item_name,element.dataset.item_description??"")
+        }
+        element.ontouchend=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_hide()
+        }
+        element.ontouchcancel=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_hide()
+        }
+        element.ontouchmove=()=>{
+            if(!this.mobile_enabled)return
+            this.tooltip_cancel_press()
+        }
+    }
+    tooltip_cancel_press(){
+        if(this.tooltip_press_timer!==undefined){
+            clearTimeout(this.tooltip_press_timer)
+            this.tooltip_press_timer=undefined
+        }
+        this.tooltip_press_element=undefined
+    }
     tooltip_show(title:string|null|undefined,description:string,element?:HTMLElement){
         if(!title)return
         this.content.tooltip_title.innerText=title
@@ -949,6 +993,7 @@ export class UiManager{
         this.content.tooltip.classList.add("tooltip-visible")
     }
     tooltip_hide(){
+        this.tooltip_cancel_press()
         this.content.tooltip.classList.remove("tooltip-visible")
         this.tooltip_element=undefined
     }

@@ -875,23 +875,27 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             name:"menu.play.level-selector",
             subtab:"campaign_level_selector"
         },
-        {
-            type:"label",
-            name:"menu.play.label-files",
-        },
-        {
-            type:"button",
-            id:"editor",
-            name:"menu.play.editor",
-            subtab:"editor"
-        },
-        {
-            type:"button",
-            id:"replays",
-            name:"menu.play.replay",
-            subtab:"replays"
-        },
     )
+    if(!isMobile){
+        play_options.push(
+            {
+                type:"label",
+                name:"menu.play.label-files",
+            },
+            {
+                type:"button",
+                id:"editor",
+                name:"menu.play.editor",
+                subtab:"editor"
+            },
+            {
+                type:"button",
+                id:"replays",
+                name:"menu.play.replay",
+                subtab:"replays"
+            },
+        )
+    }
     const hairs_types:SettingOption[]=[]
     const shirts_types:SettingOption[]=[]
     for(const l in definitions.loadout.value){

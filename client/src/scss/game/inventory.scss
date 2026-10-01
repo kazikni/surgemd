@@ -48,6 +48,11 @@
         font-size: 0.7vw;
         color: var(--ui-theme-primary);
     }
+    &:active{
+        border-top:0.5vh solid var(--ui-theme-primary);
+        border-top-left-radius: 1vh;
+        border-top-right-radius: 1vh;
+    }
 }
 #ui-weapons{
     display: flex;
@@ -99,6 +104,11 @@
         &.weapon-slot-selected{
             border:var(--ui-panel-border);
         }
+        &:active{
+            border-top:0.5vh solid var(--ui-theme-primary);
+            border-top-left-radius: 1vh;
+            border-top-right-radius: 1vh;
+        }
     }
 }
 #ui-iitems{
@@ -120,6 +130,11 @@
             padding: 0.5vh;
             width: 2vw;
             height: 2vw;
+        }
+        &:active{
+            border-top:0.5vh solid var(--ui-theme-primary);
+            border-top-left-radius: 1vh;
+            border-top-right-radius: 1vh;
         }
     }
     .scope-slot-selected{
@@ -188,11 +203,11 @@
     color: var(--ui-theme-tertiary);
     .equipment-fixed {
         display: flex;
-        gap: 10px;
+        gap: 0.4vw;
     }
     .equipment-accessories {
         display: flex;
-        gap: 10px;
+        gap: 0.4vw;
         flex-wrap: wrap;
     }
     .equipment-slot {

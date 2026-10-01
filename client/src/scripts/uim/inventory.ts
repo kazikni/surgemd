@@ -241,19 +241,7 @@ export class InventoryModule extends UIModule<Game> {
         }
 
         this.current_weapon = this.game.inventory.weapon_idx
-        const item=this.game.inventory.weapons[this.game.inventory.weapon_idx]
         this.weapons_elements[this.current_weapon]?.classList.add("weapon-slot-selected")
-
-        if(item&&item.item_type===GameItemType.gun){
-            const def=(item.def as GunDef)
-            this.game.aim_line.width=((def.bullet?.def.range??1000)*0.43)
-            /*const spread=def.spread??0
-            const jr=def.jitter_radius??0
-            this.game.aim_line.height=(spread*0.33)+jr*/
-        }else{
-            this.game.aim_line.width=10
-            this.game.aim_line.height=0.1
-        }
     }
     private sort_html_aitems(keys:string[]){
         for(const key of keys){
@@ -393,31 +381,33 @@ export class InventoryModule extends UIModule<Game> {
         }
     }
     
-    private render_equipment_slot(el: HTMLDivElement, def?:GameItem,frame?:string,span="",description_def:string="items.description.vest",replace?:Record<string,string>) {
-        if (!def||!frame) {
-            el.onmousedown = null
-            el.onmouseenter = null
-            el.onmouseleave = null
-            el.innerHTML = ""
+    private render_equipment_slot(el:HTMLDivElement,def?:GameItem,frame?:string,span="",description_def:string="items.description.vest",replace?:Record<string,string>){
+        if(!def||!frame){
+            el.onmousedown=null
+            el.innerHTML=""
             HideElement(el)
             return
         }
+
+        const title=this.game.language.get(def.tname??("items."+def.idString),undefined,def.name)
         const description=this.game.language.get(description_def,replace)
+
+        el.dataset.item_name=title
+        el.dataset.item_description=description
+
         el.onmousedown=this.game.ui.handle_slot_click.bind(this.game.ui)
-        el.onmouseenter=(e)=>{
-            this.game.ui.tooltip_show(this.game.language.get(def.tname??("items."+def.idString),undefined,def.name),description,el)
-        }
-        el.onmouseleave=()=>{
-            this.game.ui.tooltip_hide()
-        }
-        const sprite = this.game.resources.get_frame(frame)
-        if (!sprite?.url) {
+        this.game.ui.tooltip_bind(el)
+
+        const sprite=this.game.resources.get_frame(frame)
+
+        if(!sprite?.url){
             HideElement(el)
             return
         }
+
         ShowElement(el)
-        el.style.display = ""
-        el.innerHTML = `${span}<img class="slot-image" draggable="false" src="${sprite.url}">`
+        el.style.display=""
+        el.innerHTML=`${span}<img class="slot-image" draggable="false" src="${sprite.url}">`
     }
     override on_update(dt: number): void {}
     override on_destroy(): void {}

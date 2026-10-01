@@ -20,6 +20,15 @@
         pointer-events: none;
     }
 }
+#mouse-emulated{
+    position: absolute;
+    visibility: hidden;
+    border-radius: 50%;
+    z-index: 9999;
+    background-color: #fff;
+    width: 1vw;
+    height: 1vw;
+}
 #both-ui{
     left: 0px;
     right: 0px;

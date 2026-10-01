@@ -28,7 +28,7 @@ export class LevelPlayerScript{
     on_start(first:boolean){}
     on_stop(){}
     on_game_finish(e:any){
-        if(e.win&&e.finish){
+        if(e.win){
             if(!((this.level.def.next_level as Record<string,string>)["complete"]))return
             this.level.msg({
                 type:"start_level",

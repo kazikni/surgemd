@@ -145,7 +145,7 @@ export function CreateSoda(color:string,boost_def:string,max?:number,amount:numb
                 }
             ],
             use_delay:3,
-            animation:ConsumiblesAnimations.drinking(color+"_soda",2.5),
+            animation:ConsumiblesAnimations.drinking(color,2.5),
             drink:true,
             drop:true,
             boost_def:boost_def,

@@ -204,7 +204,9 @@ export enum InputEventType {
 
     Axis = "axis",
 
-    MouseMove = "mousemove"
+    MouseMove = "mousemove",
+
+    ControllerChanged="controller_changed"
 }
 export type InputKeyEvent = {
     type: InputEventType.KeyDown | InputEventType.KeyUp
@@ -226,7 +228,11 @@ export type InputMouseMoveEvent = {
     position: Vec2
     delta: Vec2
 }
-export type InputEvent = InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent
+export type InputControllerChanged = {
+    type: InputEventType.ControllerChanged
+    connected:boolean
+}
+export type InputEvent = InputKeyEvent|InputActionEvent|InputAxisEvent|InputMouseMoveEvent|InputControllerChanged
 export class InputManager {
     listener = new SignalManager()
 
@@ -240,6 +246,8 @@ export class InputManager {
     key_elements:Record<number,HTMLElement>={}
 
     gamepad_pressed = new Set<number>()
+    gamepad_down = new Set<number>()
+    gamepad_up = new Set<number>()
     private wheel_pressed = new Set<number>()
 
     actions: Record<string, InputAction> = {}
@@ -255,10 +263,15 @@ export class InputManager {
     old_mouse_position = v2.zero()
     mouse_delta = v2.zero()
 
+    controller_active:boolean=false
+
     left_stick = v2.zero()
     right_stick = v2.zero()
 
-    dead_zone = v2(0.15, 0.15)
+    mouse_emulation_changed:boolean=true
+    mouse_emulation=false
+    _old_mouse_emulation?:boolean
+    virtual_mouse=v2.zero()
 
     private previous_gamepads = new Map<number,{buttons: boolean[],axes: number[]}>()
 
@@ -366,16 +379,12 @@ export class InputManager {
     camera_pos(camera: Camera2D): Vec2 {
         return v2.add(v2.scale(this.world_mouse_position,camera.zoom),camera.position)
     }
-    private apply_dead_zone(x: number,y: number): Vec2 {
-        return v2(
-            Math.abs(x) < this.dead_zone.x ? 0 : x,
-            Math.abs(y) < this.dead_zone.y ? 0 : y
-        )
-    }
     private update_gamepads() {
         const pads = navigator.getGamepads()
-        for (const pad of pads) {
+        let connected=false
+        for(const pad of pads){
             if (!pad) continue
+            connected=true
             let prev=this.previous_gamepads.get(pad.index)
             if (!prev) {
                 prev = {
@@ -391,15 +400,21 @@ export class InputManager {
                 const old=prev.buttons[i] ?? false
                 if (current && !old) {
                     this.gamepad_pressed.add(i)
+                    this.gamepad_down.add(i)
                 } else if (!current && old) {
                     this.gamepad_pressed.delete(i)
+                    this.gamepad_up.add(i)
                 }
             }
             if (pad.axes.length >= 2) {
-                this.left_stick=this.apply_dead_zone(pad.axes[0],pad.axes[1])
+                this.left_stick=v2(pad.axes[0],pad.axes[1])
+                const len=v2.len(this.left_stick)
+                if(len<=0.15)this.left_stick=v2.zero()
             }
             if (pad.axes.length >= 4) {
-                this.right_stick=this.apply_dead_zone(pad.axes[2],pad.axes[3])
+                this.right_stick=v2(pad.axes[2],pad.axes[3])
+                const len=v2.len(this.right_stick)
+                if(len<=0.15)this.right_stick=v2.zero()
             }
             this.previous_gamepads.set(
                 pad.index,
@@ -410,6 +425,73 @@ export class InputManager {
                     axes: [...pad.axes]
                 }
             )
+        }
+        if(connected!==this.controller_active){
+            this.controller_active=connected
+            this.emit({
+                type:InputEventType.ControllerChanged,
+                connected
+            })
+        }
+    }
+    update_virtual_mouse(dt:number){
+        this.mouse_emulation_changed=false
+
+        if(this._old_mouse_emulation===undefined||this._old_mouse_emulation!==this.mouse_emulation){
+            this._old_mouse_emulation=this.mouse_emulation
+            this.mouse_emulation_changed=true
+        }
+
+        if(!this.mouse_emulation)return
+
+        const canvas=this.camera!.renderer.canvas
+        const rect=canvas.getBoundingClientRect()
+        const speed=2000
+
+        this.virtual_mouse.x+=this.right_stick.x*speed*dt
+        this.virtual_mouse.y+=this.right_stick.y*speed*dt
+
+        this.virtual_mouse.x=Math.max(0,Math.min(canvas.width,this.virtual_mouse.x))
+        this.virtual_mouse.y=Math.max(0,Math.min(canvas.height,this.virtual_mouse.y))
+
+        this.mouse_position=this.virtual_mouse
+
+        const clientX=rect.left+this.virtual_mouse.x*(rect.width/canvas.width)
+        const clientY=rect.top+this.virtual_mouse.y*(rect.height/canvas.height)
+
+        const target=document.elementFromPoint(clientX,clientY)
+
+        if(this.right_stick.x!==0||this.right_stick.y!==0){
+            target?.dispatchEvent(new MouseEvent("mousemove",{
+                bubbles:true,
+                clientX,
+                clientY
+            }))
+        }
+
+        if(this.gamepad_down.has(GamepadButtonID.A)){
+            target?.dispatchEvent(new MouseEvent("mousedown",{
+                bubbles:true,
+                button:0,
+                clientX,
+                clientY
+            }))
+        }
+
+        if(this.gamepad_up.has(GamepadButtonID.A)){
+            target?.dispatchEvent(new MouseEvent("mouseup",{
+                bubbles:true,
+                button:0,
+                clientX,
+                clientY
+            }))
+
+            target?.dispatchEvent(new MouseEvent("click",{
+                bubbles:true,
+                button:0,
+                clientX,
+                clientY
+            }))
         }
     }
     registerAction(name: string,action: InputAction) {
@@ -503,7 +585,9 @@ export class InputManager {
         })
     }
 
-    tick() {
+    tick(dt:number) {
+        this.gamepad_down.clear()
+        this.gamepad_up.clear()
         this.update_gamepads()
         for(const id in this.axis) {
             const axis = this.axis[id]
@@ -545,7 +629,8 @@ export class InputManager {
                     value: mov
                 })
             }
-        }   
+        }
+        this.update_virtual_mouse(dt)
         for(const action in this.actions) {
             const pressed=this.action_pressed(this.actions[action])
             const active=this.active_actions.has(action)

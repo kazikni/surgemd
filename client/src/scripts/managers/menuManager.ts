@@ -682,6 +682,7 @@ export class MenuManager{
         ShowElement(this.content.gameCanvas)
         HideElement(this.content.menuD)
         this.cam2d.visible=true
+        this.input.mouse_emulation=false
         if(this.interval!==undefined){
             clearInterval(this.interval)
             this.interval=undefined
@@ -692,6 +693,7 @@ export class MenuManager{
         HideElement(this.content.gameD)
         HideElement(this.content.gameCanvas)
         this.cam2d.visible=false
+        if(this.input.controller_active)this.input.mouse_emulation=true
         if(this.interval===undefined){
             this.interval=setInterval(this.update.bind(this),1)
         }

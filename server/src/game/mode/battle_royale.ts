@@ -1,4 +1,4 @@
-import { Layers, PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
+import { PlayerStatus, ScoreApplyerType, Spawn, SpawnMode } from "common/scripts/others/constants.ts";
 import { ModeManager } from "./modeManager.ts";
 import { type Human } from "../objects/human.ts";
 import { Player, PlayerConnManager } from "../objects/player.ts";
@@ -76,10 +76,13 @@ export class BattleRoyale extends ModeManager{
                         {type:"drone",weight:1},
                         {type:"danger_zone",weight:1},
                         {type:"toxic_zone",weight:1},
-                        {type:"airdrop",obstacle:"iron_crate",weight:1},
                     ],
-                    spawn:[20,20,150,150,301,350]
+                    spawn:[20,150,350]
                 },
+                {
+                    spawn:[20,150],
+                    content:{type:"airdrop",obstacle:"iron_crate"},
+                }
             ],
         }
         this.group_size=settings.group_size===undefined?group_size:settings.group_size

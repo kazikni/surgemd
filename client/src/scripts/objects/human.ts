@@ -234,6 +234,7 @@ export class Human extends Humanoid{
     on_die(){
         if(this.dead&&this.container.destroyed)return
         this.dead=true
+        if(this.sprites.name)this.sprites.name.destroy()
         if(this.sprites.shadow)this.sprites.shadow.destroy()
         this.container.callmode("die")
         this.game.clock.add_timeout(()=>{

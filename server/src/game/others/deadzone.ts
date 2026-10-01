@@ -20,14 +20,14 @@ export const DeadZoneDefinition: DeadZoneStage[]=MakeDeadZoneStages({
         initial:1
     },
     wait_time:{
-        initial:80,
+        initial:70,
         decay:0.88,
-        min:40,
+        min:30,
     },
     advancing_time:{
-        initial:60,
+        initial:70,
         decay:0.88,
-        min:20,
+        min:30,
     },
 })
 

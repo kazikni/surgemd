@@ -84,6 +84,10 @@ import { FetchFileManager, FileManager, TranslationManager } from "common/engine
             await this.game.load_resources([],{})
             await this.menu_manager.reload(this.game.definitions,this.file,mods)
 
+            this.game.menu.cutscene.root.addEventListener("click",()=>{
+                this.game.input_manager.resolve_input_wait?.()
+            })
+            
             this.game.menu.hide_loading_screen()
             this.game.mainloop(true)
         }

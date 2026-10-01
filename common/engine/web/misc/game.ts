@@ -11,8 +11,8 @@ import { TranslationManager } from "../../core/definition/definitions.ts";
 import { UIRoot } from "./html_manager.ts";
 import { AudioEngine } from "../resources/sounds.ts";
 import { Vec2 } from "../../core/math/vec2.ts";
-export const isTablet=/iPad|Tablet|PlayBook|Silk|Kindle|Nexus 7|Nexus 9|SM-T|Tab/i.test(navigator.userAgent)||(navigator.maxTouchPoints > 1 && window.innerWidth >= 600 &&  window.innerWidth <= 1366)
-export const isMobile=(/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+export const isTablet=/iPad|Tablet|Tab/i.test(navigator.userAgent)||(navigator.maxTouchPoints > 1 && window.innerWidth >= 600 &&  window.innerWidth <= 1366)
+export const isMobile=(/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))||isTablet
 
 export const isTouchDevice = navigator.maxTouchPoints > 0;
 export abstract class ClientGameObject2D extends BaseGameObject2D{

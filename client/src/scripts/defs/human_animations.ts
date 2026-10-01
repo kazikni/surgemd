@@ -187,7 +187,7 @@ export const DefaultHumanModes={
     downed(h:Human){
         if(h.downed)return
         h.downed=true
-        h.container.zIndex=zIndexes.DownedPlayers
+        h.container.zIndex=zIndexes.DownedHumans
         h.sprites.chest.visible=true
         h.sprites.backpack.visible=false
         h.sprites.left_leg.visible=true
@@ -227,7 +227,7 @@ export const DefaultHumanModes={
             h.sprites.left_leg_foot.set_frame(h.visual.foot.frame,h.game.resources)
             h.sprites.right_leg_foot.set_frame(h.visual.foot.frame,h.game.resources)
         }
-        h.container.zIndex=zIndexes.Players
+        h.container.zIndex=zIndexes.Humans
         h.container.callmode("set_current_weapon",h.current_weapon)
         if(h.sprites.shadow)h.sprites.shadow.zIndex=h.container.zIndex-0.5
         if(h.melee)h.container.callmode("update_melee",h.melee)

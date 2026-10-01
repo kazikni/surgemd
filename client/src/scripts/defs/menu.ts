@@ -44,7 +44,7 @@ export interface MenuTabDef{
     name:string
     id:string
 
-    options:SubMenuOption[]
+    options:(SubMenuOption|undefined)[]
     subtabs:Record<string,MenuSubTabDef>
     on_open?:(manager:MenuManager)=>void
     on_close?:(manager:MenuManager)=>void
@@ -946,7 +946,7 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     name:"menu.settings.ui",
                     subtab:"ui"
                 },
-                {
+                (isMobile||Debug.force_mobile)?undefined:{
                     id:"keybinds",
                     type:"button",
                     name:"menu.settings.keybinds",

@@ -228,6 +228,9 @@ export class Human extends Humanoid{
         if(this.sprites.shadow)this.sprites.shadow.layer=this.layer
     }
 
+    override can_interact(human: Human): boolean {
+        return (this.downed&&!human.downed)
+    }
     on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
         this.container.callmode("hitted",position,critical,sound,reflected)
     }

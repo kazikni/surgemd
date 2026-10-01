@@ -363,14 +363,15 @@
 
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:0.5vh;
 
-    width:300px;
+    width:15vw;
+
+    pointer-events: none;
 
     .group-human{
-        padding:8px;
+        padding:0.5vw;
         height: fit-content;
-
 
         background: var(--ui-panel-background);
         border:var(--ui-panel-border);
@@ -382,22 +383,21 @@
     .group-info{
         display:flex;
         align-items:center;
-        gap:6px;
+        gap:0.25vw;
 
         span{
             font-family:"Russo-One";
             color:var(--ui-theme-tertiary);
         }
         .badge-icon {
-            width: 20px;
-            margin-bottom: -3px;
-            margin-left: 3px;
+            width: 1vw;
+            margin-bottom: -0.2vw;
         }
     }
 
     .member-color{
-        width:14px;
-        height:14px;
+        width:1vw;
+        height:1vw;
         border-radius:50%;
         background:#00ff00;
         flex-shrink:0;
@@ -427,14 +427,14 @@
     }
 
     .health-bar-container{
-        height:15px;
-        margin-top: 5px;
+        height:1.5vh;
+        margin-top: 0.5vh;
     }
     .health-bar{
         background: linear-gradient(90deg, #fff,#dfdfdf);
     }
     .boost-bar-container{
-        height:7px;
-        margin-top: 5px;
+        height:0.75vh;
+        margin-top: 0.5vh;
     }
 }

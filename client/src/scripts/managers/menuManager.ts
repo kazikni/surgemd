@@ -148,7 +148,7 @@ export class MenuManager{
                     const playTab = this.tabs["play"]
                     if (playTab) {
                         const groupOption = playTab.def.options.find(
-                            o => o.type === "button" && o.subtab === "group"
+                            o=>o?.type==="button"&&o.subtab==="group"
                         )
                         if (groupOption) {
                             this.opt_click_callback(groupOption, playTab)(new MouseEvent("click"))
@@ -255,6 +255,7 @@ export class MenuManager{
             }
 
             for(const o of t.options){
+                if(!o)continue
                 switch(o.type){
                     case "button":{
                         const btn=document.createElement("button")

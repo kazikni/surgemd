@@ -12,7 +12,7 @@
     .knob{
         width: 30%;
         height: 30%;
-        opacity: 0.8;
+        opacity: 0.9;
         background-color: var(--ui-theme-primary);
     }
 }
@@ -25,8 +25,8 @@
 #mobile-action-buttons{
     button{
         position: absolute;
-        width: 10vh;
-        height: 10vh;
+        width: 12vh;
+        height: 12vh;
         border-radius: 100%;
         color: var(--ui-theme-primary);
         background: var(--ui-panel-background);
@@ -36,6 +36,7 @@
         font-size: 8vh;
         font-family: "Russo-One";
         border:0.2vh solid var(--ui-theme-primary);
+        touch-action: none;
         svg{
             position: absolute;
             width: 70%;
@@ -51,6 +52,8 @@
     #btn-mobile-interact{
         left:60%;
         top:30%;
+        width: 15vh;
+        height: 15vh;
     }
     #btn-mobile-reload{
         left:70vw;
@@ -61,7 +64,58 @@
         bottom: 0.75vh;
     }
     #btn-mobile-toggle-map{
-        left:20vw;
-        top: 10vh;
+        left:4vw;
+        top: 4vh;
+        width: 20vh;
+        height: 20vh;
     }
+}
+body.game-mobile-version{
+    .inventory-item-slot {
+        width: 4.5vw;
+        height: 4.5vw;
+    }
+    #ui-iitems{
+        .scope-slot{
+            .icon{
+                width: 3.5vw;
+                height: 3.5vw;
+            }
+            &.scope-slot-selected{
+                border:var(--ui-panel-border);
+                .icon{
+                    width: 4vw;
+                    height: 4vw;
+                }
+            }
+        }
+    }
+
+    #ui-weapons{
+        width: 40vw;
+
+        .weapon-slot{
+            height: 13vh;
+        }
+    }
+    #menu-options{
+        button{
+            width: 30vw;
+            font-size: 3vw;
+        }
+    }
+    .md-menu-game{
+        .close-btn{
+            padding: 1vh 2vh;
+            font-size: 4vw;
+        }
+    }
+    #restart-gameover-container{
+        padding: 2vw;
+        font-size: 3vw;
+    }
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
 }

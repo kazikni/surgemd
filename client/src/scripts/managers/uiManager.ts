@@ -206,6 +206,7 @@ export class UiManager{
     }
     async mobile_init(){
         this.mobile_open()
+        document.body.classList.toggle("game-mobile-version",true)
         let rotating=false
         // deno-lint-ignore ban-ts-comment
         //@ts-ignore
@@ -241,17 +242,17 @@ export class UiManager{
             this.game.aim_line=false
         })
         this.mobile_content.btn_interact.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/interaction_button.svg")).text()
-        this.mobile_content.btn_interact.addEventListener("click",()=>{
+        this.mobile_content.btn_interact.addEventListener("pointerdown",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"interact"})
         })
         this.mobile_content.btn_reload.innerHTML=await (await fetch("/assets/img/menu/gui/buttons/reload_button.svg")).text()
-        this.mobile_content.btn_reload.addEventListener("click",()=>{
+        this.mobile_content.btn_reload.addEventListener("pointerdown",()=>{
             this.game.input_manager.listener.emit("actiondown",{action:"reload"})
         })
-        this.mobile_content.btn_emotes.addEventListener("click",(e)=>{
+        this.mobile_content.btn_emotes.addEventListener("pointerdown",(e)=>{
             this.begin_emote_wheel(v2(this.game.renderer.canvas.clientWidth/2,this.game.renderer.canvas.clientHeight/2),false)
         })
-        this.mobile_content.btn_toggle_map.addEventListener("click",(e)=>{
+        this.mobile_content.btn_toggle_map.addEventListener("pointerdown",(e)=>{
             this.game.input_manager.emit({type:InputEventType.ActionDown,action:"toggle_full_device"})
             this.game.input_manager.emit({type:InputEventType.ActionUp,action:"toggle_full_device"})
         })
@@ -868,6 +869,7 @@ export class UiManager{
         const old_inter=this.current_interaction
 
         this.current_interaction = undefined
+        if(player.downed)this.current_interaction=player
         this.state.interact = false
         this.state.information_box_message = ""
 

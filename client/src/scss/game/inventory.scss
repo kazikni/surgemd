@@ -136,12 +136,12 @@
             border-top-left-radius: 1vh;
             border-top-right-radius: 1vh;
         }
-    }
-    .scope-slot-selected{
-        border:var(--ui-panel-border);
-        .icon{
-            width: 2.5vw;
-            height: 2.5vw;
+        &.scope-slot-selected{
+            border:var(--ui-panel-border);
+            .icon{
+                width: 2.5vw;
+                height: 2.5vw;
+            }
         }
     }
 }

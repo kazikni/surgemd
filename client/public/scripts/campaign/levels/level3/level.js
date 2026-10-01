@@ -233,7 +233,6 @@ return (class extends LevelPlayerScript{
     }
     async on_before(start_with_intro){
         const cutscene=[
-            {type:CutsceneCommandType.SetBackground, background:backgrounds.smoke_1,transition:{type:BackgroundTransitionType.Fade,duration:1}},
         ]
         if(start_with_intro)cutscene.push(...this.cutscene)
         cutscene.push(...this.make_level_intro())

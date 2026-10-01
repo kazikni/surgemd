@@ -112,7 +112,7 @@ export enum zIndexes{
     PlayersBody,
 
     Loots,
-    DownedPlayers,
+    DownedHumans,
     Obstacles1,
     Obstacles2,
     GrenadeGround,

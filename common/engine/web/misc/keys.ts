@@ -274,6 +274,8 @@ export class InputManager {
     virtual_mouse=v2.zero()
 
     private previous_gamepads = new Map<number,{buttons: boolean[],axes: number[]}>()
+    
+    resolve_input_wait?:()=>void
 
     constructor(camera?:Camera2D) {
         this.camera=camera
@@ -552,35 +554,41 @@ export class InputManager {
     }
     wait_for_action(action: string): Promise<void> {
         return new Promise((resolve) => {
-            const fn = (e: InputActionEvent) => {
-                if(e.type!==InputEventType.ActionDown||e.action !== action){
+            const fn=(e?:InputActionEvent) => {
+                if(e&&(e.type!==InputEventType.ActionDown||e.action !== action)){
                     return
                 }
                 this.listener.off(InputEventType.ActionDown,fn)
+                this.resolve_input_wait=undefined
                 resolve()
             }
+            this.resolve_input_wait=fn
             this.listener.on(InputEventType.ActionDown,fn)
         })
     }
     wait_for_key(key:Key): Promise<void> {
         return new Promise((resolve) => {
-            const fn = (e: InputKeyEvent) => {
-                if(e.type!==InputEventType.KeyDown||e.key!==key)return
+            const fn=(e?: InputKeyEvent) => {
+                if(e&&(e.type!==InputEventType.KeyDown||e.key!==key))return
                 this.listener.off(InputEventType.KeyDown,fn)
+                this.resolve_input_wait=undefined
                 resolve()
             }
+            this.resolve_input_wait=fn
             this.listener.on(InputEventType.KeyDown,fn)
         })
     }
     wait_for_any_key(): Promise<number> {
         return new Promise(resolve => {
-            const fn = (e: InputKeyEvent) => {
-                if (e.type !==InputEventType.KeyDown) {
+            const fn=(e?:InputKeyEvent) => {
+                if(e&&(e.type!==InputEventType.KeyDown)){
                     return
                 }
                 this.listener.off(InputEventType.KeyDown,fn)
-                resolve(e.key)
+                this.resolve_input_wait=undefined
+                resolve(e?.key??Key.A)
             }
+            this.resolve_input_wait=fn
             this.listener.on(InputEventType.KeyDown,fn)
         })
     }

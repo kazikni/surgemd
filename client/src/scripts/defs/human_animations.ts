@@ -1,6 +1,6 @@
 import { ABParticle2D, Sprite2D, type AnimatedContainerModeCallback } from "common/engine/web.ts";
-import { type Human } from "../objects/human.ts";
-import { ColorM, ease, FrameDef, random, v2, Vec2 } from "common/engine/core.ts";
+import { type HumanParticleAnim, type Human } from "../objects/human.ts";
+import { CircleHitbox2D, ColorM, ease, FrameDef, random, v2, Vec2 } from "common/engine/core.ts";
 import { GraphicsDConfig } from "../others/config.ts";
 import { zIndexes } from "common/scripts/others/constants.ts";
 import { ClientDecal } from "../objects/client_decal.ts";
@@ -9,6 +9,27 @@ import { EffectDef } from "common/scripts/definitions/player/effects.ts";
 import { MeleeDef } from "common/scripts/definitions/items/melees.ts";
 import { GameItemType } from "common/scripts/definitions/utils.ts";
 import { WeaponDef } from "common/scripts/definitions/game_defs.ts";
+
+export interface BulletWeightDef{
+    blood_decal_chance:number
+}
+export const bullet_weights:Record<number,BulletWeightDef>={
+    0:{
+        blood_decal_chance:0.05,
+    },
+    1:{
+        blood_decal_chance:0.1,
+    },
+    2:{
+        blood_decal_chance:0.15,
+    },
+    3:{
+        blood_decal_chance:0.75,
+    },
+    4:{
+        blood_decal_chance:1,
+    }
+}
 
 export const DefaultHumanModes={
     broke_shield(h:Human){
@@ -65,8 +86,15 @@ export const DefaultHumanModes={
             max_distance:15,
             bus:"humans"
         })
+        for(const p of h.animation.particles){
+            if((p.sprite instanceof Sprite2D)&&p.sprite.frame?.id==="human_shield"){
+                p.lifetime=0
+                break
+            }
+        }
+        h.shield=false
     },
-    hitted(h:Human,position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
+    hitted(h:Human,position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false,weight:number=0){
         if(reflected){
             h.game.sounds.play(h.game.resources.get_sound(sound??"human_metal_hit"),{
                 position:h.position,
@@ -74,10 +102,33 @@ export const DefaultHumanModes={
                 bus:"humans"
             })
             return
-        }
-        if(h.shield){
-        }else{
-            if(Math.random()<=0.1){
+        }else if(h.shield){
+            let shield:HumanParticleAnim|undefined
+            for(const p of h.animation.particles){
+                if((p.sprite instanceof Sprite2D)&&p.sprite.frame?.id==="human_shield"){
+                    shield=p
+                    break
+                }
+            }
+            if(shield){
+                shield.lifetime=0.5
+            }else{
+                shield={lifetime:0.5,sprite:new Sprite2D()}
+                ;(shield.sprite as Sprite2D).set_frame({image:"human_shield",hotspot:v2.half_one,zIndex:10,scale:2},h.game.resources)
+                h.container.add_child(shield.sprite)
+                h.animation.particles.push(shield)
+            }
+            h.game.sounds.play(h.game.resources.get_sound("human_hit_shield"),{
+                position:h.position,
+                max_distance:15,
+                bus:"humans"
+            })
+        }else {
+            const w=bullet_weights[weight]??bullet_weights[0]
+            const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
+            const lifetime=0.5
+            const angle=v2.lookTo(h.position,position)-h.rotation
+            if(Math.random()<=w.blood_decal_chance){
                 const d=new ClientDecal()
                 d.sprite.set_frame({
                     image:`liquid_decal_${random.int(1,2)}`,
@@ -88,8 +139,46 @@ export const DefaultHumanModes={
                     position:position,
                 },h.game.resources)
                 h.game.scene_2d.objects.add_object(d,h.layer)
+
+                const p={lifetime:20,sprite:new Sprite2D()}
+                ;(p.sprite as Sprite2D).set_frame({
+                    image:`blood_particle`,
+                    hotspot:v2(0.8,0.5),
+                    zIndex:8.5,
+                    rotation:angle,
+                    scale:random.float(0.5,0.6),
+                    tint:0xaa0a28,
+                    position:v2.from_RadAngle(angle,(h.base_hitbox as CircleHitbox2D).radius*random.float(0.4,1))
+                },h.game.resources)
+                h.container.add_child(p.sprite)
+                h.animation.particles.push(p)
             }
-            const tint=random.choose([ColorM.rgba(170,10,40),ColorM.rgba(255,10,40)])
+
+            /*
+            const p={lifetime:lifetime,sprite:new Sprite2D()}
+            p.sprite.tint=tint
+            ;(p.sprite as Sprite2D).set_frame({
+                image:`blood_splash_${random.int(1,3)}`,
+                hotspot:v2.half_one,
+                zIndex:7,
+                rotation:random.rad(),
+                scale:0,
+                position:v2.from_RadAngle(angle,(h.base_hitbox as CircleHitbox2D).radius)
+            },h.game.resources)
+            h.container.add_child(p.sprite)
+            h.game.add_tween({
+                target:(p.sprite as Sprite2D).scale,
+                to:v2.random(0.9,1.1),
+                duration:lifetime*0.75,
+                onComplete(){
+                    h.game.add_tween({
+                        target:(p.sprite as Sprite2D).tint,
+                        to:ColorM.mult_rgba(tint,1,1,1,0),
+                        duration:lifetime*0.25
+                    })
+                }
+            })
+            */
             h.game.scene_2d.particles.add_particle(new ABParticle2D({
                 scale:0.1,
                 frame:{
@@ -98,7 +187,7 @@ export const DefaultHumanModes={
                     zIndex:zIndexes.Particles
                 },
                 direction:random.rad(),
-                life_time:random.float(0.75,1),
+                life_time:random.float(0.7,0.8),
                 position:position,
                 speed:random.float(0.1,0.4),
                 angle:random.rad(),
@@ -106,25 +195,26 @@ export const DefaultHumanModes={
                 to:{
                     scale:1.5,
                     tint:ColorM.mult_hsv(tint,undefined,undefined,undefined,0),
+                    tint_ease:ease.quarticIn
                 },
                 zIndex:zIndexes.Particles
             }))
-        }
-        h.game.sounds.play(h.game.resources.get_sound(sound??(
-            (h.vest&&h.vest.reflect_bullets)?
-                (
-                    "human_metal_hit"
-                ):
-                (critical?
-                    "human_headshot":
-                    `human_hit_${random.int(1,2)}`
+            h.game.sounds.play(h.game.resources.get_sound(sound??(
+                (h.vest&&h.vest.reflect_bullets)?
+                    (
+                        "human_metal_hit"
+                    ):
+                    (critical?
+                        "human_headshot":
+                        `human_hit_${random.int(1,2)}`
+                    )
                 )
-            )
-        ),{
-            position:h.position,
-            max_distance:15,
-            bus:"humans"
-        })
+            ),{
+                position:h.position,
+                max_distance:15,
+                bus:"humans"
+            })
+        }
     },
     die(h:Human){
         for(let i=0;i<5;i++){

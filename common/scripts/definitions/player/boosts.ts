@@ -14,6 +14,7 @@ export interface BoostDef extends Definition{
     se?:{
         update_modifiers?:(human:any)=>Record<string,number>
         tick?:(dt:number,human:any)=>number
+        on_hitted?:(human:any)=>void
         can_apply?:(e:SideEffect,human:any)=>boolean
     }
 }
@@ -27,7 +28,7 @@ export function Boosts_Default_Init():BoostDef[]{
             se:{
                 tick(dt,h){
                     h.health.value=Math.min(h.health.value+(h.boost.value*dt)*0.01,h.health.max)
-                    h.boost.value=Math.max(h.boost.value-0.3*dt,0)
+                    h.boost.value=Math.max(h.boost.value-0.25*dt,0)
                     return h.boost.value>h.boost.max/2?1.1:1
                 }
             }
@@ -82,15 +83,22 @@ export function Boosts_Default_Init():BoostDef[]{
             idString:"green_bless",
             color:"#1f3",
             particle:"boost_green_bless_particle",
+            shield:{
+                multiplier:4,
+                penetrate:2,
+                break_invensibility:0.2
+            },
             se:{
-                update_modifiers(h):Record<string,number>{
-                    return {
-                        damage_reduction:0.8
-                    }
-                },
                 tick(dt,h){
-                    h.health.value=Math.min(h.health.value+(h.boost.value*dt)*0.01,h.health.max)
+                    if(h.boost.time<6)h.boost.time+=dt
+                    if(h.boost.time>=6){
+                        h.boost.value=Math.min(h.boost.value+50*dt,h.boost.max)
+                    }
+                    h.health.value=Math.min(h.health.value+(h.boost.max*dt)*0.007,h.health.max)
                     return 1.1
+                },
+                on_hitted(h){
+                    h.boost.time=0
                 }
             }
         },

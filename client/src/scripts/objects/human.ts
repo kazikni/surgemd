@@ -1,4 +1,4 @@
-import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Sound, Sprite2D, Tween } from "common/engine/web.ts";
+import { ABParticle2D, AudioInstance, ClientParticle2D, Container2D, Container2DObject, Sound, Sprite2D, Tween } from "common/engine/web.ts";
 import { GameObjectType, HumanAnimation, HumanAnimationType, HumanVisualData, zIndexes } from "common/scripts/others/constants.ts"
 import { GameItemType, GameObjectDefinitionType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
 import { DualAdditional, GunDef } from "common/scripts/definitions/items/guns.ts"
@@ -17,6 +17,7 @@ import { CircleHitbox2D, ColorM, ease, Hitbox2D, matrix4, Numeric, ParticlesEmit
 import { DefaultHumanModes } from "../defs/human_animations.ts";
 import { Humanoid, HumanoidAnimation, HumanoidAssets, HumanoidSprites } from "./humanoid.ts";
 import { BadgeDef } from "common/scripts/definitions/loadout/badges.ts";
+export type HumanParticleAnim={lifetime:number,sprite:Container2DObject}
 export class Human extends Humanoid{
     ////////////////////////////
     // Definition             //
@@ -86,6 +87,8 @@ export class Human extends Humanoid{
         cycle_sound_time:number|undefined,
 
         muzzle_flash_time:number,
+
+        particles:HumanParticleAnim[]
     }={
         emote_tween:undefined as Tween<Vec2>|undefined,
         emote_sound:undefined as AudioInstance|undefined,
@@ -112,7 +115,8 @@ export class Human extends Humanoid{
         walk_cycle:0,
         walk_time:0,
 
-        mounth:[]
+        mounth:[],
+        particles:[]
     }
     override assets:{
         weapon_switch_sound?:Sound
@@ -225,14 +229,15 @@ export class Human extends Humanoid{
     override on_layer_set(): void {
         this.container.layer=this.layer
         this.sprites.emote_container.layer=this.layer
+        if(this.sprites.name)this.sprites.name.layer=this.layer
         if(this.sprites.shadow)this.sprites.shadow.layer=this.layer
     }
 
     override can_interact(human: Human): boolean {
-        return (this.downed&&!human.downed)
+        return (this.downed&&!this.dead&&!human.downed)
     }
-    on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false){
-        this.container.callmode("hitted",position,critical,sound,reflected)
+    on_hitted(position:Vec2,critical:boolean=false,sound?:string,reflected:boolean=false,weight?:number){
+        this.container.callmode("hitted",position,critical,sound,reflected,weight)
     }
     on_die(){
         if(this.dead&&this.container.destroyed)return
@@ -344,6 +349,13 @@ export class Human extends Humanoid{
             this.sprites.name.position.x=this.position.x
             this.sprites.name.position.y=this.position.y+(1*this.scale)
             this.sprites.name.layer=this.layer
+        }
+        for(let i=0;i<this.animation.particles.length;i++){
+            this.animation.particles[i].lifetime-=dt
+            if(this.animation.particles[i].lifetime<=0){
+                this.animation.particles[i].sprite.destroy()
+                this.animation.particles.splice(i,1)
+            }
         }
         this.tick_footsteps(!this.seat)
         this.sprites.vest.rotation=Numeric.loop(this.sprites.vest.rotation+(1*dt),-3.1415,3.1415)

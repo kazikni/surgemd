@@ -41,6 +41,7 @@ ___
 * Danger Zone
 * Toxic Zone
 * Poison Side Effect
+* New Human Hit Effects
 ___
 ## Changes
 ___
@@ -56,6 +57,7 @@ ___
 ### Others
 * Battle Royale Level now have a smaller map
 * Improve Ping
+* Green Bless Now Is A Shield
 ___
 # Play The Game
 [Web Version](https://surgemd.io)

@@ -2,7 +2,7 @@ import { Definition, Numeric, tdm } from "../../../engine/core.ts";
 import { TD, TDType } from "../../../engine/core/lang/td.ts";
 import { ItemRank } from "../../others/item.ts";
 import { SideEffectType } from "../player/effects.ts";
-import { GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
+import { BulletReflection, GameItemDefTD, type GameItemType, type GameObjectDefinitionType } from "../utils.ts";
 
 export const AccessoryTD:TD={
     type:TDType.object,
@@ -78,7 +78,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
                         e.bullet.damage*=1.2
                         e.bullet.speed*=1.2
                         e.bullet.tracer_height*=1.75
-                        e.bullet.set_satured(1)
+                        e.bullet.set_satured(0)
                     }
                 }
             }
@@ -94,7 +94,7 @@ export function Accessorys_Default_Init():AccessoryDef[]{
                     e.bullet.damage*=1.25
                     e.bullet.speed*=1.2
                     e.bullet.tracer_height*=1.75
-                    e.bullet.set_satured(1)
+                    e.bullet.set_satured(0)
                 }
             }
         },
@@ -217,6 +217,15 @@ export function Accessorys_Default_Init():AccessoryDef[]{
                 },
                 "drop":(e)=>{
                     e.user.human_data.self_revive=e.user.inventory.accessorys.has_property("self_revive")
+                }
+            }
+        },
+        {
+            idString:"all_reflect",
+            rank:ItemRank.A,
+            events:{
+                "gun_shoot":(e)=>{
+                    e.bullet.reflection=BulletReflection.All
                 }
             }
         },

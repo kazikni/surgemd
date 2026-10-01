@@ -1,9 +1,10 @@
-import { Camera2D, Sprite2D } from "common/engine/web.ts";
+import { AudioInstance, Camera2D, Sprite2D } from "common/engine/web.ts";
 import { GameObjectType, ObjectsComponentEvent, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { CircleHitbox2D, ColorM, DefaultObjectEvents, ObjectComponent, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { bullet_weights } from "../defs/human_animations.ts";
 export const bullet_nc={
     number_name:1,
     string_name:"bullet_nc", // Bullet Network Client
@@ -46,52 +47,6 @@ export const bullet_nc={
                 }
             }
         ],
-        [ObjectsComponentEvent.collided]:[
-            (tobj,other:GameObject)=>{
-                switch(other.number_type){
-                    case GameObjectType.Human:{
-                        if((other as Human).dead||(other as Human).parachute||tobj.collided_with.has(other)||(other.id===tobj.owner_id&&!tobj.hit_owner))break
-                        const colBody=other.hitbox.overlap_line(tobj.old_position,tobj.position)
-                        const reflectSeg = (other as Human).get_reflect_segment()
-                        let colReflect = null
-                        let isReflect = false
-                        let chosen: typeof colBody | typeof colReflect = null
-                        if (reflectSeg) {
-                            colReflect = reflectSeg.overlap_line(tobj.old_position,tobj.position)
-                        }
-                        if (colBody || colReflect) {
-                            const distBody = colBody ? v2.distance(tobj.old_position, colBody.point) : Infinity
-                            const distPan = colReflect ? v2.distance(tobj.old_position, colReflect.point) : Infinity
-                            if (distPan < distBody) {
-                                chosen = colReflect
-                                isReflect = true
-                            } else {
-                                chosen = colBody
-                            }
-                        }
-                        if(chosen){
-                            tobj.collided_with.add(other);
-                            (other as Human).on_hitted(tobj.position,tobj._critical,undefined,isReflect)
-                            if(!(tobj.pass_through_humans||tobj.pass_through_everthing)||isReflect)tobj.die()
-                        }
-                        break
-                    }
-                    case GameObjectType.StaticBody:
-                    case GameObjectType.Walls:
-                    case GameObjectType.Building:
-                    case GameObjectType.Obstacle:
-                        if(!tobj.collided_with.has(other)&&!(other as StaticBody).physical_data.no_bullets_collision){
-                            const col=other.hitbox.overlap_line(tobj.old_position,tobj.position)
-                            if(col){
-                                tobj.collided_with.add(other);
-                                (other as StaticBody).on_hitted(tobj.position,tobj._critical)
-                                if(!((other as StaticBody).physical_data.passable_by_bullets||tobj.pass_through_everthing))tobj.die()
-                            }
-                        }
-                        break
-                }
-            }
-        ]
     }
 } as ObjectComponent<Bullet>
 export const bullet_c={
@@ -183,7 +138,7 @@ export const bullet_c={
                         }
                         if(chosen){
                             tobj.collided_with.add(other);
-                            (other as Human).on_hitted(tobj.position,tobj._critical,undefined,isReflect)
+                            (other as Human).on_hitted(tobj.position,tobj._critical,undefined,isReflect,tobj.weight)
                             if(!(tobj.pass_through_humans||tobj.pass_through_everthing)||isReflect)tobj.die()
                         }
                         break
@@ -196,8 +151,19 @@ export const bullet_c={
                             const col=other.hitbox.overlap_line(tobj.old_position,tobj.position)
                             if(col){
                                 tobj.collided_with.add(other);
+
                                 (other as StaticBody).on_hitted(tobj.position,tobj._critical)
-                                if(!((other as StaticBody).physical_data.passable_by_bullets||tobj.pass_through_everthing))tobj.die()
+                                if(!((other as StaticBody).physical_data.passable_by_bullets||tobj.pass_through_everthing)){
+                                    tobj.die()
+                                    /*const weight=bullet_weights[tobj.weight]??bullet_weights[0]
+                                    if(v2.distance(tobj.position,tobj.game.scene_2d.camera.position)<=weight.heavy_hit_distance){
+                                        tobj.game.sounds.play(tobj.game.resources.get_sound(weight.heavy_hit_sound??""),{
+                                            position:tobj.position,
+                                            max_distance:weight.heavy_hit_distance,
+                                            volume:1*(tobj.sprite_trail.tint.a/255)
+                                        })
+                                    }*/
+                                }
                             }
                         }
                         break
@@ -232,11 +198,13 @@ export class Bullet extends GameObject{
     // Visual                 //
     ////////////////////////////
     sprite_trail!:Sprite2D
+    weight:number=0
 
     ////////////////////////////
     // Sound                  //
     ////////////////////////////
-    _play_bullet_whiz = true
+    _play_bullet_whiz:number=0
+    whiz_sound?:AudioInstance
     _critical:boolean=false
 
     ////////////////////////////
@@ -288,15 +256,17 @@ export class Bullet extends GameObject{
             const dst=v2.scale(this.velocity,dt)
             v2m.add(this._position,this._position,dst)
             // Bullet Whiz Sound
-            if(this._play_bullet_whiz&&!(this.owner_id===this.game.active_entity_id&&!this.hit_owner)){
+            if(!(this.owner_id===this.game.active_entity_id&&!this.hit_owner)){
                 const dist=v2.distance(this.position,this.scene.camera.position)
-                if(dist<7){
-                    this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
-                        position: this.position,
-                        max_distance: 7,
-                        volume:0.6
-                    })
-                    this._play_bullet_whiz=false
+                if(this._play_bullet_whiz===0){
+                    if(dist<7){
+                        this.whiz_sound=this.game.sounds.play(this.game.resources.get_sound("bullet_whiz_"+random.int(1,3).toString()),{
+                            position: this.position,
+                            max_distance: 20,
+                            volume:0.6
+                        })
+                        this._play_bullet_whiz=1
+                    }
                 }
             }
 
@@ -334,6 +304,7 @@ export class Bullet extends GameObject{
             this.max_distance=stream.read_float32()
             this.speed=stream.read_float32()
             this.sprite_trail.rotation=stream.read_rad()
+            this.weight=stream.read_uint8()
 
             this.max_length=stream.read_float32()
             this.sprite_trail.scale!.y=stream.read_float32()

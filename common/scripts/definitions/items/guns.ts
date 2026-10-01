@@ -90,7 +90,8 @@ export const bullets_factory={
             critical_mult: 1.25,
             obstacle_mult: 1,
             falloff:0.8,
-            tracer:tracers.medium
+            tracer:tracers.medium,
+            weight:1
         }
     },
     sniper(power:number,tracer=tracers.large):BulletDef{
@@ -104,6 +105,8 @@ export const bullets_factory={
             falloff: 0.75,
             effective_range:0.17,
             tracer: tracer,
+
+            weight:3
         }
     },
     heavy_sniper(power:number,tracer=tracers.large):BulletDef{
@@ -116,6 +119,7 @@ export const bullets_factory={
             critical_mult:1.1,
             obstacle_mult:2,
             effective_range:0.12,
+            weight:4,
             tracer:tracer
         }
     },
@@ -184,7 +188,8 @@ export const bullets_factory={
 
             falloff:0.85,
             critical_mult:1.2,
-            tracer:tracer
+            tracer:tracer,
+            weight:2
         }
     }
 }

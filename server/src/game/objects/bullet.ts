@@ -29,6 +29,7 @@ export class Bullet extends ServerGameObject{
     // Damage
     damage:number=0
     penetration:number=1
+    weight?:number
     obstacle_mult:number=1
     critical_mult:number=1.25
     falloff?:number
@@ -196,6 +197,7 @@ export class Bullet extends ServerGameObject{
         if(def.reflection!==undefined)this.reflection=def.reflection
         else this.reflection=BulletReflection.Only_Reflective
 
+        if(def.weight!==undefined)this.weight=def.weight
         this.tracer_width=def.tracer.width
         this.tracer_height=def.tracer.height
         this.tracer_alpha=255
@@ -269,6 +271,7 @@ export class Bullet extends ServerGameObject{
 
         b.damage=this.damage
         b.penetration=this.penetration
+        b.weight=this.weight
         b.obstacle_mult=this.obstacle_mult
         b.critical_mult=this.critical_mult
         if(this.falloff)b.falloff=this.falloff
@@ -292,6 +295,7 @@ export class Bullet extends ServerGameObject{
             .write_float32(this.max_distance)
             .write_float32(this.speed)
             .write_rad(this.angle)
+            .write_uint8(this.weight??0)
             .write_float32(this.tracer_width)
             .write_float32(this.tracer_height)
             .write_uint32(this.tracer_color)

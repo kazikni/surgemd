@@ -1307,6 +1307,7 @@ export class Human extends Humanoid{
                 this.die(params)
             }
         }
+        this.boost.def.se?.on_hitted?.(this)
         this.inventory.accessorys.call_event("damage",{params,player:this})
         return [healthDamage, shieldDamage]
     }

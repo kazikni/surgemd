@@ -317,27 +317,20 @@ class SMDETree extends HTMLElement{
         this.items=[]
         this.parent_arrow=null
     }
-
-    add_option(text,elem,onclick){
-        const item={text,elem,onclick,tree:undefined}
-        this.items.push(item)
-
-        const node=this.create_item(item)
-        this.appendChild(node)
-        this.refresh()
-
-        return node
+    add_option(text, elem, onclick, index) {
+        return this.insert_item({
+            text,
+            elem,
+            onclick,
+            tree: undefined
+        }, index)
     }
-
-    add_subtree(text,tree=new SMDETree(),onclick){
-        const item={text,tree,onclick}
-        this.items.push(item)
-
-        const node=this.create_item(item)
-        this.appendChild(node)
-        this.refresh()
-
-        return node
+    add_subtree(text, tree = new SMDETree(), onclick, index) {
+        return this.insert_item({
+            text,
+            tree,
+            onclick
+        }, index)
     }
 
     create_item(item){
@@ -386,6 +379,19 @@ class SMDETree extends HTMLElement{
         if(this.parent_arrow){
             this.parent_arrow.textContent=this.items.length?"▸":""
         }
+    }
+    insert_item(item, index) {
+        const node = this.create_item(item)
+        if (index === undefined || index >= this.items.length) {
+            this.items.push(item)
+            this.appendChild(node)
+        } else {
+            index = Math.max(0, index)
+            this.items.splice(index, 0, item)
+            this.insertBefore(node, this.children[index])
+        }
+        this.refresh()
+        return node
     }
 
     clear(){

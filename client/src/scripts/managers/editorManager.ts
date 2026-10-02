@@ -1,7 +1,7 @@
 import { Graphics2D, HideElement, Key, ShowElement, type SMDEMenu, type SMDEWindow } from "common/engine/web.ts";
 import { Layers, zIndexes } from "common/scripts/others/constants.ts";
-import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, RectHitbox2D, split_strings_array, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
-import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject, WallEditorObject } from "../defs/editor_objects.ts";
+import { CircleHitbox2D, ColorM, DynamicStream, Hitbox2D, HitboxGroup2D, HitboxType2D, NullHitbox2D, random, RectHitbox2D, split_strings_array, StaticStream, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { CircleHitboxEditorObject, EditorObject, FloorImageEditorObject, ObstacleEditorObject, RectHitboxEditorObject, WallEditorObject, WallPoint, WallSegment } from "../defs/editor_objects.ts";
 import { build_setting_input, RectInput, SettingDef, Vec2Input } from "../defs/settings.ts";
 import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 import { GComponent } from "../others/component.ts";
@@ -63,7 +63,19 @@ export class ObjectsEditorWindow extends EditorWindow{
                 this.editor.objects.selected_object=this.editor.objects.add_object(new ObstacleEditorObject())
             })
             menu.add_option("Wall",()=>{
-                this.editor.objects.selected_object=this.editor.objects.add_object(new WallEditorObject())
+                const wall=new WallEditorObject()
+                this.editor.objects.selected_object=this.editor.objects.add_object(wall)
+
+                const w=wall.add_child(new WallSegment())
+
+                const p1=new WallPoint()
+                p1.position=v2(-5,0)
+                w.add_child(p1)
+
+                const p2=new WallPoint()
+                p2.position=v2(5,0)
+                w.add_child(p2)
+
             })
             this.editor.ui.appendChild(menu)
             this.editor.to_mouse_position(menu)
@@ -110,6 +122,12 @@ export class EditorObjectsManager{
                 return new FloorImageEditorObject()
             case 4:
                 return new ObstacleEditorObject()
+            case 5:
+                return new WallEditorObject()
+            case 6:
+                return new WallSegment()
+            case 7:
+                return new WallPoint()
             default:
                 throw new Error("Unknown object type")
         }
@@ -150,9 +168,13 @@ export class EditorObjectsManager{
     clone_object(obj:EditorObject){
         const ret=obj.clone()
         if(obj.parent){
-            obj.parent.add_child(ret)
+            let idx=obj.parent.childs?.content.indexOf?.(obj)
+            if(idx===-1)idx=undefined
+            obj.parent.add_child(ret,idx)
         }else{
             this.add_object(ret)
+        }
+        if(obj.childs){
         }
         this.selected_object=ret
         this.editor.update_propertys_window(ret)
@@ -164,6 +186,9 @@ export class EditorObjectsManager{
             stream.write_uint8(obj.type)
             obj.encode(stream)
         },2)
+    }
+    decode_object(stream:Stream){
+        
     }
     decode(stream:Stream){
         this.clear()
@@ -499,17 +524,25 @@ export class EditorManager extends GComponent{
         }
         return ret
     }
-    async save_file(name:string="map") {
+    async save_file(name: string = "map") {
         const stream = new DynamicStream()
         this.encode(stream)
-        const blob = new Blob([stream.buffer.slice(0, stream.length) as BlobPart], {
-            type: "application/octet-stream"
-        })
-        const a=document.createElement("a")
-        a.href=URL.createObjectURL(blob)
-        a.download=name+".smde"
+        const blob = new Blob(
+            [stream.buffer.slice(0, stream.length) as BlobPart],
+            {
+                type: "application/octet-stream"
+            }
+        )
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${name}_${random.code(5)}.smde`
+        document.body.appendChild(a)
         a.click()
-        URL.revokeObjectURL(a.href)
+        setTimeout(() => {
+            URL.revokeObjectURL(url)
+            a.remove()
+        }, 1000)
     }
     async load_file() {
         const input = document.createElement("input")

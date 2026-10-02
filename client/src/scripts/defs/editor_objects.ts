@@ -52,27 +52,29 @@ export abstract class EditorObject{
         this.editor.menu=menu
     }
 
-    add_child(c:EditorObject):EditorObject{
+    add_child(c:EditorObject,index?:number,allow_childs_modify:boolean=false):EditorObject{
         if(!this.childs?.content)return c
 
         if(c.childs){
             c.childs.tree_element=new SMDETree()
-            c._tree_option_element=this.childs.tree_element.add_subtree(c.name,c.childs.tree_element,c.on_name_clicked.bind(c))
+            c._tree_option_element=this.childs.tree_element.add_subtree(c.name,c.childs.tree_element,c.on_name_clicked.bind(c),index)
         }else{
             const node=document.createElement("span")
             node.innerText=c.name
-            c._tree_option_element=this.childs.tree_element.add_option(c.name,node,c.on_name_clicked.bind(c))
+            c._tree_option_element=this.childs.tree_element.add_option(c.name,node,c.on_name_clicked.bind(c),index)
         }
 
         c.parent=this
         c.editor=this.editor
-        this.childs.content.push(c)
+
+        if(index === undefined)this.childs.content.push(c)
+        else this.childs.content.splice(index, 0, c)
         c.on_create()
 
-        this.on_childs_modifiy()
+        if(allow_childs_modify)this.on_childs_modify()
         return c
     }
-    on_childs_modifiy():void{}
+    on_childs_modify():void{}
 
     on_reload():void{}
 
@@ -84,7 +86,7 @@ export abstract class EditorObject{
                 if(this.childs.content[i].destroyed){
                     this.childs.content[i]._destroy()
                     this.childs.content.splice(i,1)
-                    this.on_childs_modifiy()
+                    this.on_childs_modify()
                     i--
                     continue
                 }
@@ -110,23 +112,26 @@ export abstract class EditorObject{
 
     on_encode(stream:Stream){}
     encode(stream:Stream){
+        this.on_encode(stream)
         if(this.childs){
             stream.write_array(this.childs.content,obj=>{
                 stream.write_uint8(obj.type)
                 obj.encode(stream)
             },2)
         }
-        this.on_encode(stream)
     }
     on_decode(stream:Stream){}
     decode(stream:Stream){
-        stream.read_array(()=>{
-            const type=stream.read_uint8()
-            const obj:EditorObject=this.editor.objects.create_object(type)
-            this.add_child(obj)
-            obj.decode(stream)
-        },2)
         this.on_decode(stream)
+        if(this.childs){
+            stream.read_array(()=>{
+                const type=stream.read_uint8()
+                const obj:EditorObject=this.editor.objects.create_object(type)
+                this.add_child(obj,undefined,false)
+                obj.decode(stream)
+            },2)
+            this.on_childs_modify()
+        }
     }
 
     get_transform():EditorObjectTransform{
@@ -603,21 +608,11 @@ export class WallEditorObject extends EditorObject{
     wall_modify(){
         this.update_wall()
     }
-    override on_childs_modifiy(): void {
+    override on_childs_modify(): void {
         this.update_wall()
     }
 
     override on_create(): void {
-        const w=this.add_child(new WallSegment())
-
-        const p1=new WallPoint()
-        p1.position=v2(-5,0)
-        w.add_child(p1)
-
-        const p2=new WallPoint()
-        p2.position=v2(5,0)
-        w.add_child(p2)
-
         this.editor.game.scene_2d.add_object(this.wall,Layers.Normal+(this.def.layer??0))
         this.update_wall()
     }
@@ -668,12 +663,24 @@ export class WallEditorObject extends EditorObject{
 
     override clone(): EditorObject {
         const wall=new WallEditorObject()
+        wall.def=cloneDeep(this.def)
         return wall
     }
     override on_encode(stream:Stream){
-
+        stream.write_boolean_group2(this.def.position!==undefined,this.def.side!==undefined,this.def.tint!==undefined,this.def.width!==undefined,this.def.stroke_width!==undefined)
+        if(this.def.position!==undefined)stream.write_pos2(this.def.position)
+        if(this.def.side!==undefined)stream.write_uint8(this.def.side)
+        if(this.def.tint!==undefined)stream.write_uint32(this.def.tint)
+        if(this.def.width!==undefined)stream.write_float32(this.def.width)
+        if(this.def.stroke_width!==undefined)stream.write_float32(this.def.stroke_width)
     }
     override on_decode(stream:Stream){
+        const [has_position,has_side,has_tint,has_width,has_stroke_width]=stream.read_boolean_group2()
+        if(has_position)this.def.position=stream.read_pos2()
+        if(has_side)this.def.side=stream.read_uint8()
+        if(has_tint)this.def.tint=stream.read_uint32()
+        if(has_width)this.def.width=stream.read_float32()
+        if(has_stroke_width)this.def.stroke_width=stream.read_float32()
     }
 }
 export class WallSegment extends EditorObject{
@@ -687,8 +694,8 @@ export class WallSegment extends EditorObject{
         })
     }
 
-    override on_childs_modifiy(): void {
-        this.parent?.on_childs_modifiy?.()
+    override on_childs_modify(): void {
+        this.parent?.on_childs_modify?.()
     }
     override get_property(name: string) {
     }
@@ -705,7 +712,7 @@ export class WallSegment extends EditorObject{
         return []
     }
     override clone(): EditorObject {
-      throw new Error("Method not implemented.");
+        return new WallSegment()
     }
 }
 export class WallPoint extends EditorObject{

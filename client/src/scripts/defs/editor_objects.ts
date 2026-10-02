@@ -190,12 +190,12 @@ export class RectHitboxEditorObject extends EditorObject{
         return ret
     }
     override on_encode(stream:Stream){
-        stream.write_string(this.group,1).write_pos2(this.min).write_pos2(this.max)
+        stream.write_string(this.group,1).write_bpos2(this.min).write_bpos2(this.max)
     }
     override on_decode(stream:Stream){
         this.group=stream.read_string(1)
-        this.min=stream.read_pos2()
-        this.max=stream.read_pos2()
+        this.min=stream.read_bpos2()
+        this.max=stream.read_bpos2()
     }
 }
 export class CircleHitboxEditorObject extends EditorObject{
@@ -242,12 +242,12 @@ export class CircleHitboxEditorObject extends EditorObject{
         return ret
     }
     override on_encode(stream:Stream){
-        stream.write_string(this.group,1).write_pos2(this.center).write_rad(this.radius)
+        stream.write_string(this.group,1).write_bpos2(this.center).write_float64(this.radius)
     }
     override on_decode(stream:Stream){
         this.group=stream.read_string(1)
-        this.center=stream.read_pos2()
-        this.radius=stream.read_rad()
+        this.center=stream.read_bpos2()
+        this.radius=stream.read_float64()
     }
 }
 export class FloorImageEditorObject extends EditorObject{
@@ -349,10 +349,10 @@ export class FloorImageEditorObject extends EditorObject{
         )
 
         if(this.frame.image)stream.write_string(this.frame.image)
-        if(this.frame.position)stream.write_pos2(this.frame.position)
-        if(this.frame.rotation!==undefined)stream.write_rad(this.frame.rotation)
-        if(this.frame.scale!==undefined)stream.write_rad(this.frame.scale)
-        if(this.frame.scale2)stream.write_pos2(this.frame.scale2)
+        if(this.frame.position)stream.write_bpos2(this.frame.position)
+        if(this.frame.rotation!==undefined)stream.write_float64(this.frame.rotation)
+        if(this.frame.scale!==undefined)stream.write_float64(this.frame.scale)
+        if(this.frame.scale2)stream.write_bpos2(this.frame.scale2)
         if(this.frame.layer!==undefined)stream.write_int16(this.frame.layer)
         if(this.frame.tint!==undefined)stream.write_uint32(this.frame.tint)
         if(this.frame.alpha!==undefined)stream.write_uint8(this.frame.alpha)
@@ -376,10 +376,10 @@ export class FloorImageEditorObject extends EditorObject{
         ]=stream.read_boolean_group2();
 
         if(image)this.frame.image=stream.read_string()
-        if(position)this.frame.position=stream.read_pos2()
-        if(rotation)this.frame.rotation=stream.read_rad()
-        if(scale)this.frame.scale=stream.read_float32()
-        if(scale2)this.frame.scale2=stream.read_pos2()
+        if(position)this.frame.position=stream.read_bpos2()
+        if(rotation)this.frame.rotation=stream.read_float64()
+        if(scale)this.frame.scale=stream.read_float64()
+        if(scale2)this.frame.scale2=stream.read_bpos2()
         if(layer)this.frame.layer=stream.read_int16()
         if(tint)this.frame.tint=stream.read_uint32()
         if(alpha)this.frame.alpha=stream.read_uint8()
@@ -515,7 +515,7 @@ export class ObstacleEditorObject extends EditorObject{
     }
     override on_decode(stream: Stream): void {
         this.def = stream.read_string()
-        this.position = stream.read_pos2()
+        this.position = stream.read_bpos2()
 
         const[
             id,
@@ -537,11 +537,11 @@ export class ObstacleEditorObject extends EditorObject{
         this.allow_biome_skin=undefined
 
         if(id)this.id=stream.read_id()
-        if(rotation)this.rotation=stream.read_float32()
+        if(rotation)this.rotation=stream.read_float64()
         if(layer)this.layer=stream.read_int16()
         if(variation)this.variation=stream.read_uint8()
         if(skin)this.skin=stream.read_uint8()
-        if(scale)this.scale=stream.read_float32()
+        if(scale)this.scale=stream.read_float64()
 
         if(allowBiomeSkin){
             const [v]=stream.read_boolean_group()
@@ -552,7 +552,7 @@ export class ObstacleEditorObject extends EditorObject{
     }
     override on_encode(stream: Stream) {
         stream.write_string(this.def,1)
-        .write_pos2(this.position)
+        .write_bpos2(this.position)
         .write_boolean_group2(
             this.id!==undefined,
             this.rotation!==undefined,
@@ -564,11 +564,11 @@ export class ObstacleEditorObject extends EditorObject{
             this.allow_biome_skin!==undefined
         )
         if(this.id!==undefined)stream.write_id(this.id)
-        if(this.rotation!==undefined)stream.write_float32(this.rotation)
+        if(this.rotation!==undefined)stream.write_float64(this.rotation)
         if(this.layer!==undefined)stream.write_int16(this.layer)
         if(this.variation!==undefined)stream.write_uint8(this.variation)
         if(this.skin!==undefined)stream.write_uint8(this.skin)
-        if(this.scale!==undefined)stream.write_float32(this.scale)
+        if(this.scale!==undefined)stream.write_float64(this.scale)
         if(this.allow_biome_skin!==undefined)stream.write_boolean_group(this.allow_biome_skin)
     }
 }
@@ -668,19 +668,19 @@ export class WallEditorObject extends EditorObject{
     }
     override on_encode(stream:Stream){
         stream.write_boolean_group2(this.def.position!==undefined,this.def.side!==undefined,this.def.tint!==undefined,this.def.width!==undefined,this.def.stroke_width!==undefined)
-        if(this.def.position!==undefined)stream.write_pos2(this.def.position)
+        if(this.def.position!==undefined)stream.write_bpos2(this.def.position)
         if(this.def.side!==undefined)stream.write_uint8(this.def.side)
         if(this.def.tint!==undefined)stream.write_uint32(this.def.tint)
-        if(this.def.width!==undefined)stream.write_float32(this.def.width)
-        if(this.def.stroke_width!==undefined)stream.write_float32(this.def.stroke_width)
+        if(this.def.width!==undefined)stream.write_float64(this.def.width)
+        if(this.def.stroke_width!==undefined)stream.write_float64(this.def.stroke_width)
     }
     override on_decode(stream:Stream){
         const [has_position,has_side,has_tint,has_width,has_stroke_width]=stream.read_boolean_group2()
-        if(has_position)this.def.position=stream.read_pos2()
+        if(has_position)this.def.position=stream.read_bpos2()
         if(has_side)this.def.side=stream.read_uint8()
         if(has_tint)this.def.tint=stream.read_uint32()
-        if(has_width)this.def.width=stream.read_float32()
-        if(has_stroke_width)this.def.stroke_width=stream.read_float32()
+        if(has_width)this.def.width=stream.read_float64()
+        if(has_stroke_width)this.def.stroke_width=stream.read_float64()
     }
 }
 export class WallSegment extends EditorObject{
@@ -748,9 +748,9 @@ export class WallPoint extends EditorObject{
     }
 
     override on_encode(stream: Stream): void {
-        stream.write_pos2(this.position)
+        stream.write_bpos2(this.position)
     }
     override on_decode(stream: Stream): void {
-        this.position=stream.read_pos2()
+        this.position=stream.read_bpos2()
     }
 }

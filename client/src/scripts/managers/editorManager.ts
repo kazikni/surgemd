@@ -536,7 +536,7 @@ export class EditorManager extends GComponent{
         const url = URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = url
-        a.download = `${name}_${random.code(5)}.smde`
+        a.download = `${name}.smde`
         document.body.appendChild(a)
         a.click()
         setTimeout(() => {

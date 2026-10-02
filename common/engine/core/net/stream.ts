@@ -380,7 +380,7 @@ export abstract class Stream{
                 return this
             case "number":
                 this.write_uint8(2)
-                this.write_float32(obj)
+                this.write_float64(obj)
                 return this
             case "string":
                 this.write_uint8(3)
@@ -411,7 +411,7 @@ export abstract class Stream{
             case 1:
                 return this.read_uint8() === 1
             case 2:
-                return this.read_float32()  
+                return this.read_float64()  
             case 3:
                 return this.read_string(bytes2)
             case 4:
@@ -572,8 +572,8 @@ export abstract class Stream{
     }
 
     write_pos2(vector: Vec2):this{
-        this.write_float32(vector.x);
-        this.write_float32(vector.y);
+        this.write_float32(vector.x)
+        this.write_float32(vector.y)
         return this;
     }
     read_pos2(): Vec2 {
@@ -583,6 +583,17 @@ export abstract class Stream{
         };
     }
 
+    write_bpos2(vector: Vec2):this{
+        this.write_float64(vector.x)
+        this.write_float64(vector.y)
+        return this;
+    }
+    read_bpos2(): Vec2 {
+        return {
+            x: this.read_float64(),
+            y: this.read_float64()
+        };
+    }
     write_polar_mov2(move:PolarMovement):this{
         this.write_rad(move.dir)
         this.write_float(move.scale,0,1,1)

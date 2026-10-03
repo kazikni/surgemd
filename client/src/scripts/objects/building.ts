@@ -68,6 +68,13 @@ export class Building extends StaticBody{
 
     constructor(){
         super()
+        this.allow_tick=Debug.hitbox
+    }
+    override on_tick(_dt: number): void {
+        this.game.hitboxes_gfx.ctx.begin_path()
+        this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+        this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+        this.game.hitboxes_gfx.ctx.fill()
     }
     override on_destroy(): void {
         for(const o of this.objects){

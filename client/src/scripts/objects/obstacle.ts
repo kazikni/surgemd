@@ -6,7 +6,7 @@ import { StaticBody, StaticBodyAssetData, StaticBodyPhysicalData } from "./stati
 import { Human } from "./human.ts";
 import { CalculateDoorHitbox } from "common/scripts/others/functions.ts";
 import { HitSoundsDef } from "common/scripts/definitions/utils.ts";
-import { Angle, Color, ColorM, Hitbox2D, matrix4, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
+import { Angle, Color, ColorM, Hitbox2D, model2d, NullHitbox2D, Numeric, Orientation, ParticlesEmitter2D, random, RotationMode, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
 export function GetObstacleBaseFrame(def:ObstacleDef,variation:number,skin:number):string{
     let spr=def.assets?.frame?.base??def.idString
     if(skin>0&&def.assets?.frame?.biome_skins){
@@ -101,9 +101,11 @@ export class Obstacle extends StaticBody{
 
     constructor(){
         super()
+        this.allow_tick=Debug.hitbox
         this.container.visible=false
         this.container.add_child(this.sprite)
     }
+
     override on_layer_set(): void {
         this.container.layer=this.layer
         if(this.shadow)this.shadow.layer=this.layer
@@ -117,7 +119,12 @@ export class Obstacle extends StaticBody{
         if(this.emitter_1)this.emitter_1.destroyed=true
         if(this.shadow)this.shadow.destroy()
     }
-
+    override on_tick(_dt: number): void {
+        this.game.hitboxes_gfx.ctx.begin_path()
+        this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+        this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+        this.game.hitboxes_gfx.ctx.fill()
+    }
 
     // Below
     can_below(other:Hitbox2D):boolean{
@@ -565,12 +572,6 @@ export class Obstacle extends StaticBody{
             this.press_data.locked=bg[1]
             this.press_data.allow_switch=bg[2]
             this.update_press_data()
-        }
-        if(Debug.hitbox&&full){
-            this.game.hitboxes_gfx.ctx.begin_path()
-            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
-            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-            this.game.hitboxes_gfx.ctx.fill()
         }
     }
 }

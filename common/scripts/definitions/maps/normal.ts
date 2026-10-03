@@ -1,7 +1,8 @@
-import { RectHitbox2D, v2 } from "../../../engine/core.ts";
-import { Spawn } from "../../others/constants.ts";
+import { cloneDeep, mergeDeep, RectHitbox2D, RotationMode, v2 } from "../../../engine/core.ts";
+import { Spawn, zIndexes } from "../../others/constants.ts";
 import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
+import { hit_sounds } from "../utils.ts";
 import { MapBiomeDef, CounterMapDef, type MapDef } from "./base.ts";
 export const NormalBiome:MapBiomeDef={
     floors:{
@@ -89,11 +90,42 @@ export const map_spawns={
 }
 export const NormalMap:MapDef={
     loot_tables:LootTables,
-    biome:NormalBiome,
+    biome:mergeDeep(cloneDeep(NormalBiome),{
+        textures:[...NormalBiome.textures,"/assets/kspr/maps/normal"]
+    }),
+    definitions:{
+        objects:{
+            obstacles:[{
+                idString:"gas_pump",
+                health:200,
+                onDestroyExplosion:"barrel_explosion",
+                hitbox:new RectHitbox2D(v2(-0.58,-1.1),v2(0.58,1.1)),
+                scale:{
+                    destroy:0.85
+                },
+                zIndex:{base:zIndexes.Obstacles2},
+                assets:{
+                    frame:{
+                        transform:{
+                            hotspot:v2(0.33,0.5)
+                        }
+                    },
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x868d94
+                    },
+                    sounds:hit_sounds.heavy_metal,
+                },
+                rotation_mode:RotationMode.limited,
+                reflect_bullets:true,
+            }]
+        }
+    },
     size:v2(600,600),
     generation:{
         base:FloorType.Water,
         spawn:[
+            //{def:"gas_pump",count:1000},
             {def:"small_house_1",count:4},
             {def:"storehouse_1",count:4},
             {def:"bunker_1",count:2},

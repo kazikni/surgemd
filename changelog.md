@@ -34,6 +34,8 @@ ___
 * Here Ping
 * Heal Ping
 * Gift Ping
+### Obstacles
+* Gas Pump Can
 ___
 ### Others
 * Parachute Perspective

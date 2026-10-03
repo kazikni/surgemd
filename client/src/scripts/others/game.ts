@@ -565,6 +565,7 @@ export class Game extends ClientGame<GameObject>{
         }else{
             this.global_interpolation=1
         }
+        this.hitboxes_gfx.ctx.clear()
         this.ui_gfx.ctx.clear()
         if(this.state===GameState.Playing){
             this.ui.update(dt)
@@ -710,6 +711,7 @@ export class Game extends ClientGame<GameObject>{
         switch(play.type){
             case "online":{
                 if(this.offline)this.local_server.stop()
+                this.offline=false
                 const args={
                     ...play,
                     region:this.save.get_variable("sv_game_region"),

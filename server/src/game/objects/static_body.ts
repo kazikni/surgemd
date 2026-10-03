@@ -24,8 +24,8 @@ export abstract class StaticBody extends ServerGameObject{
     string_type:string="static_body"
     number_type:number=GameObjectType.StaticBody
 
-    spawn_hitbox!:Hitbox2D
-    interaction_hitbox!:Hitbox2D
+    spawn_hitbox?:Hitbox2D
+    interaction_hitbox?:Hitbox2D
 
     abstract physical_data:StaticBodyPhysicalData
 

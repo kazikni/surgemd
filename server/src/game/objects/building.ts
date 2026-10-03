@@ -269,8 +269,8 @@ export class Building extends StaticBody {
         side:Orientation
 
         hitbox:Hitbox2D
-        spawn_hitbox:Hitbox2D
-        interaction_hitbox:Hitbox2D
+        spawn_hitbox?:Hitbox2D
+        interaction_hitbox?:Hitbox2D
     }&StaticBodyPhysicalData={
         dirty:false,
 
@@ -295,7 +295,10 @@ export class Building extends StaticBody {
 
     override update_hitbox(): void {
         super.update_hitbox()
-        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        if(this.physical_data.interaction_hitbox)this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(this.position)
+        else this.interaction_hitbox=undefined
+        if(this.physical_data.spawn_hitbox)this.interaction_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
+        else this.spawn_hitbox=undefined
     }
     override tick(dt:number):void{
         for(const p in this.puzzles){
@@ -311,12 +314,6 @@ export class Building extends StaticBody {
         this.def=def
 
         if(def.hitbox)this.physical_data.hitbox=def.hitbox.clone()
-
-        if(this.def.spawnHitbox){
-            this.physical_data.spawn_hitbox=this.def.spawnHitbox
-        }else{
-            this.physical_data.spawn_hitbox=this.physical_data.hitbox
-        }
 
         this.allow_tick=this.def.generate.puzzles!==undefined
         if(this.def.no_collisions)this.physical_data.no_collision=this.def.no_collisions
@@ -337,14 +334,13 @@ export class Building extends StaticBody {
         if(this.def.spawnHitbox){
             this.physical_data.spawn_hitbox=this.def.spawnHitbox.transform(undefined,undefined,undefined,side)
         }else{
-            this.physical_data.spawn_hitbox=this.physical_data.hitbox
+            this.physical_data.spawn_hitbox=this.base_hitbox
         }
         this.physical_data.interaction_hitbox=this.physical_data.hitbox.transform(undefined,1.1)
         this.update_hitbox()
     }
     begin_generate(position:Vec2){
         this.position = position
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position)
         for(const p of this.def.generate.puzzles??[]){
             const puzzle=new BuildingPuzzle(this,p)
             this.puzzles[puzzle.id]=puzzle
@@ -371,6 +367,7 @@ export class Building extends StaticBody {
             })
             idx++
         }
+        this.update_hitbox()
         this.manager.cells.update_object(this)
     }
     generate(position: Vec2){

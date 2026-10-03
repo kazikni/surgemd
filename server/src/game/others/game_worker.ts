@@ -14,11 +14,7 @@ class App extends SelfGameWorker<Game,GameData,GameConfig,GameServerConfig>{
         this.fs=new DenoFileManager()
     }
     protected override onBegin(): void {
-        this.limiter = new ConnectionLimiter({
-            enabled: true,
-            windowMs: 60_000,
-            maxConnections: 5,
-        })
+        this.limiter = new ConnectionLimiter(this.config.limiter)
         if(this.limiter.config.enabled){
             this.limiter.start()
         }

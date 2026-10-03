@@ -46,7 +46,7 @@ export class Obstacle extends StaticBody{
         dirty:boolean
         dirty_part:boolean
 
-        spawn_hitbox:Hitbox2D
+        spawn_hitbox?:Hitbox2D
         hitbox:Hitbox2D
         interaction_hitbox:Hitbox2D
 
@@ -69,7 +69,6 @@ export class Obstacle extends StaticBody{
         rotation:0,
 
         hitbox:new NullHitbox2D(v2.new(0,0)),
-        spawn_hitbox:new NullHitbox2D(v2.new(0,0)),
         interaction_hitbox:new NullHitbox2D(v2.new(0,0)),
 
         stairs:[]
@@ -97,6 +96,12 @@ export class Obstacle extends StaticBody{
         super()
 
         this.allow_net_update=true
+    }
+
+    override update_hitbox(): void {
+        super.update_hitbox()
+        if(this.physical_data.spawn_hitbox)this.interaction_hitbox=this.physical_data.spawn_hitbox.transform(this.position)
+        else this.spawn_hitbox=undefined
     }
 
     choose_door_side(playerPos: Vec2): -1 | 1 {
@@ -215,7 +220,7 @@ export class Obstacle extends StaticBody{
         }
     }
     override can_interact(user: Human): boolean {
-        return !this.destroyed&&!this.health_data.dead&&(this.def.interactDestroy||this.def.expanded_behavior)as boolean&&(user.hitbox.colliding_with(this.interaction_hitbox)||user.hitbox.colliding_with(this.hitbox))
+        return !this.destroyed&&!this.health_data.dead&&(this.def.interactDestroy||this.def.expanded_behavior)as boolean&&(user.hitbox.colliding_with(this.interaction_hitbox??this.hitbox)||user.hitbox.colliding_with(this.hitbox))
     }
     override on_net_update(): void {
         if(this.door_data)this.door_data.dirty=false
@@ -335,8 +340,7 @@ export class Obstacle extends StaticBody{
     decal?:Decal
     set_position(position:Vec2,allow_biome_skin:boolean=false){
         this.position=position
-        this.spawn_hitbox=this.physical_data.spawn_hitbox.transform(position,undefined,undefined,undefined)
-        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position,undefined,undefined,undefined)
+        this.interaction_hitbox=this.physical_data.interaction_hitbox.transform(position)
         this.reset_scale()
         if(this.decal)this.decal.destroy()
         if(this.def.decal){
@@ -372,6 +376,7 @@ export class Obstacle extends StaticBody{
         for(const s of this.physical_data.stairs){
             s.hitbox=s.base_hitbox.transform(this.position,this.physical_data.scale)
         }
+        this.update_hitbox()
     }
     override side_effect(sf:SideEffect,owner?:Human){
         switch(sf.type){

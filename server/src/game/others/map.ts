@@ -85,7 +85,7 @@ export class GameMap extends BaseGameMap{
         const o=this.add_obstacle(def,layer)
         o.initialize()
 
-        const p=this.getRandomPosition(o.physical_data.spawn_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
+        const p=this.getRandomPosition(o.physical_data.spawn_hitbox??o.base_hitbox,o.id,layer??o.layer,spawn??o.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
         if(!p){
             o.destroy()
             return undefined
@@ -121,7 +121,7 @@ export class GameMap extends BaseGameMap{
         b.set_definition(def)
         b.layer=layer??Layers.Normal
         b.init()
-        const p=this.getRandomPosition(b.physical_data.spawn_hitbox,b.id,layer??b.layer,spawn??b.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
+        const p=this.getRandomPosition(b.physical_data.spawn_hitbox??b.base_hitbox,b.id,layer??b.layer,spawn??b.def.spawnMode??Spawn.grass,random,gen_position,gen_valid)
         if(!p){
             b.destroy()
             return undefined

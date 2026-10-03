@@ -1,20 +1,30 @@
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { JoinPacket } from "common/scripts/packets/join_packet.ts";
-import { delay } from "https://deno.land/std@0.204.0/async/delay.ts"
-import { BasicSocket, Client } from "common/engine/core.ts";
-const SERVER_URL = "http://localhost:8080"
-const BOT_COUNT = 5
-const TICK_RATE = 60
-const CONNECTION_DELAY=0.05
+import { BasicSocket, Client, Clock, sleep } from "common/engine/core.ts";
+import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
+import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
+import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
+
+const definitions=new GameDefinition()
+definitions.reset()
+PacketManager.pre_packet=(p)=>{
+    if(p.Name==="update")(p as UpdatePacket).definition=definitions
+}
+
+const SERVER_URL = "http://localhost:8000"
+const JOIN_ARGS=JSON.stringify({
+    region:"local",
+    mode:0,
+    token:undefined
+})
+const BOT_COUNT=550
+const TICK_RATE=60
+const CONNECTION_DELAY=0.01
 
 class Bot {
     ws?: WebSocket
     client?:Client
     id: number
-    messagesSent = 0
-    messagesRecv = 0
-    pingSum = 0
-    pings = 0
     active = true
 
     constructor(id: number) {
@@ -22,13 +32,24 @@ class Bot {
     }
 
     async connect():Promise<boolean>{
-        const con=await(await fetch(`${SERVER_URL}/api/get-game`)).json()
-        if(con.status===0){
+        if(this.client)this.client.disconnect()
+        const txt=await(await fetch(`${SERVER_URL}/find-game`,{
+            method:"post",
+            body:JOIN_ARGS
+        })).text()
+        let con:any
+        try{
+            con=JSON.parse(txt)
+        }catch(e:any){
+            return false
+        }
+        if(con.success){
             this.ws=new WebSocket(con.address)
             this.client=new Client(this.ws as BasicSocket,PacketManager)
-            this.ws.onopen = () => this.start()
-            this.ws.onmessage = (ev) => this.onMessage(ev)
-            this.ws.onclose = () => (this.active = false)
+            this.client.onopen=()=>{
+                setTimeout(()=>this.start(),1000)
+            }
+            this.client.on("gameover",this.on_game_over.bind(this))
             return true
         }else{
             return false
@@ -37,44 +58,16 @@ class Bot {
 
     start() {
         if(!this.client)return
-        const interval = 1000 / TICK_RATE
-        
         const jp=new JoinPacket()
         jp.player_name=`BOT-${this.id}`
-        jp.is_mobile=false
         this.client.emit_packet(jp)
+    }
+    tick(){
 
-        /*const loop = async () => {
-            while (this.active) {
-                const ts = performance.now()
-                const msg = JSON.stringify({ type: "ping", id: this.id, t: ts })
-                this.ws.send(msg)
-                this.messagesSent++
-                await delay(interval)
-            }
-        }
-        loop()*/
     }
 
-    onMessage(ev: MessageEvent) {
-        this.messagesRecv++
-        try {
-            const data = JSON.parse(ev.data)
-            if (data.type === "pong" && typeof data.t === "number") {
-                const latency = performance.now() - data.t
-                this.pingSum += latency
-                this.pings++
-            }
-        } catch {}
-    }
-
-    stats() {
-        return {
-            id: this.id,
-            sent: this.messagesSent,
-            recv: this.messagesRecv,
-            avgPing: this.pings ? (this.pingSum / this.pings).toFixed(2) : "N/A",
-        }
+    on_game_over(p:GameOverPacket){
+        this.connect()
     }
 }
 
@@ -88,24 +81,11 @@ for (let i = 0; i < BOT_COUNT; i++){
     bots.push(b)
 
     if(!connected)break
-    await delay(CONNECTION_DELAY*1000)
+    await sleep(CONNECTION_DELAY)
 }
 
-/*await delay(TEST_DURATION)
-
-console.log("Collecting results...")
-let totalSent = 0, totalRecv = 0, totalPing = 0, countPing = 0
-
-for (const b of bots) {
-  const s = b.stats()
-  totalSent += s.sent
-  totalRecv += s.recv
-  if (s.avgPing !== "N/A") {
-    totalPing += Number(s.avgPing)
-    countPing++
-  }
+function tick(dt:number){
 }
 
-console.log(`Test finished with ${BOT_COUNT} bots`)
-console.log(`Sent: ${totalSent}  |  Received: ${totalRecv}`)
-console.log(`Avg ping: ${countPing ? (totalPing / countPing).toFixed(2) : "N/A"} ms`)*/
+const clock=new Clock(TICK_RATE,1,tick)
+clock.start()

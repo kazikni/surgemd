@@ -1,6 +1,6 @@
 import { BattleRoyale, LevelPlayer, OfflineGameServer } from "./offline.ts";
 import { GameServerConfig } from "common/scripts/config/config.ts";
-import { FetchFileManager, OfflineClientsManager, WorkerSocket } from "common/engine/core.ts";
+import { FetchFileManager, ClientsManager, WorkerSocket } from "common/engine/core.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 let server:OfflineGameServer
 let level:LevelPlayer
@@ -34,7 +34,7 @@ async function manage_message(msg:any):Promise<void>{
             if(server)server.stop()
             server=new OfflineGameServer(
                 msg.config as GameServerConfig,
-                new OfflineClientsManager(PacketManager),
+                new ClientsManager(PacketManager),
                 fs
             );
             break

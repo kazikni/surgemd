@@ -611,6 +611,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager,mods?:CModsManager){
     const campaign_path="scripts/campaign"
     const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
+    const debug_mode=menu.save.get_variable("sv_debug_enabled")
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
             const path=campaign_path+"/"+campaign.charpters[c].levels[l]
@@ -669,93 +670,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
         },
     } as Record<string,MenuSubTabDef>
     const play_options:SubMenuOption[]=[]
-    if(sandbox_version){
-        play_options.push(
-            {
-                type:"label",
-                name:"menu.play.label-online",
-            },
-            {
-                type:"button",
-                id:"host_game",
-                name:"menu.play.host-game",
-                subtab:"host_game"
-            },
-            {
-                type:"button",
-                id:"join_game",
-                name:"menu.play.join-game",
-                subtab:"join_game"
-            }
-        )
-        play_subtabs["host_game"]={
-            generate:(p,_m)=>{
-                p.innerHTML=`
-<h3>Server</h3>
-<div>Server Port<br><input class="text-input-green" placeholder="Server Port" id="insert-server-port" value="8080"></input></div>
-<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
-<h3>Game</h3>
-<div>Mode ID<br><input class="text-input-green" placeholder="Mode ID" id="insert-mode-id" value="normal"></input></div>
-<div>Mode Settings<br><input class="text-input-green" placeholder="Mode Settings" id="insert-game-settings" value="{}"></input></div>
-<button class="btn-green" id="btn-edit-mode-settings">Edit Mode Settings</input>
-<button class="btn-green" id="btn-host-join-game">Host And Join</input>
-`
-                const port_input=p.querySelector("#insert-server-port") as HTMLInputElement
-                const password_input=p.querySelector("#insert-server-password") as HTMLInputElement
-
-                const mode_input=p.querySelector("#insert-mode-id") as HTMLInputElement
-                const game_settings_input=p.querySelector("#insert-game-settings") as HTMLInputElement
-
-                let btn=p.querySelector("#btn-host-join-game") as HTMLButtonElement
-                btn.onclick = async () => {
-                    const port=parseInt(port_input.value)
-                    const settings = JSON.parse(game_settings_input.value)
-                    menu.set_loading_current("Creating Server")
-                    await exec_server(
-                        port,
-                        mode_input.value,
-                        settings,
-                        password_input.value
-                    )
-                    if(menu.play_callback){
-                        menu.play_callback({
-                            type:"join",
-                            url:`ws://localhost:${port}/api/ws`,
-                            password:password_input.value,
-                            attempts:5,
-                            delay:500
-                        })
-                    }
-                }
-                btn=p.querySelector("#btn-edit-mode-settings") as HTMLButtonElement
-                btn.onclick=async()=>{
-                    game_settings_input.value=await menu.game_popup(game_mode_settings_manager_popup(JSON.parse(game_settings_input.value),translation,DefaultModeSettingsPopup[mode_input.value]))
-                }
-            }
-        }
-        play_subtabs["join_game"]={
-            generate:(p,_m)=>{
-                p.innerHTML=`
-<div>Server IP<br><input class="text-input-green" placeholder="Server IP" id="insert-server-ip" value="localhost:8080"></input></div>
-<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
-<button class="btn-green" id="btn-join-game" value="{}">Play</input>
-`
-                const ip_input=p.querySelector("#insert-server-ip") as HTMLInputElement
-                const password_input=p.querySelector("#insert-server-password") as HTMLInputElement
-
-                const btn=p.querySelector("button") as HTMLButtonElement
-                btn.onclick = () => {
-                    if(menu.play_callback)menu.play_callback({
-                        type:"join",
-                        url:(ip_input.value.startsWith("ws://")||ip_input.value.startsWith("wss://"))?ip_input.value:`ws://${ip_input.value}/api/ws`,
-                        password:password_input.value,
-                        attempts:2,
-                        delay:1000,
-                    })
-                }
-            }
-        }
-    }else if(menu.api_settings){
+    if(menu.api_settings){
         play_options.push(
             {
                 type:"label",
@@ -864,6 +779,38 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             }
         }
     }
+    if(debug_mode){
+        play_options.push(
+            {
+                type:"button",
+                id:"join_game",
+                name:"menu.play.join-game",
+                subtab:"join_game"
+            }
+        )
+        play_subtabs["join_game"]={
+            generate:(p,_m)=>{
+                p.innerHTML=`
+<div>Server IP<br><input class="text-input-green" placeholder="Server IP" id="insert-server-ip" value="localhost:8001"></input></div>
+<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
+<button class="btn-green" id="btn-join-game" value="{}">Play</input>
+`
+                const ip_input=p.querySelector("#insert-server-ip") as HTMLInputElement
+                const password_input=p.querySelector("#insert-server-password") as HTMLInputElement
+
+                const btn=p.querySelector("button") as HTMLButtonElement
+                btn.onclick = () => {
+                    if(menu.play_callback)menu.play_callback({
+                        type:"join",
+                        url:(ip_input.value.startsWith("ws://")||ip_input.value.startsWith("wss://"))?ip_input.value:`ws://${ip_input.value}/api/ws`,
+                        password:password_input.value,
+                        attempts:2,
+                        delay:1000,
+                    })
+                }
+            }
+        }
+    }
     play_options.push(
         {
             type:"label",
@@ -951,7 +898,13 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                     type:"button",
                     name:"menu.settings.keybinds",
                     subtab:"keybinds"
-                }
+                },
+                debug_mode?{
+                    id:"debug",
+                    type:"button",
+                    name:"menu.settings.debug",
+                    subtab:"debug"
+                }:undefined
             ],
             subtabs:{
                 "game":{
@@ -1202,6 +1155,18 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         }
                         generate_actions()
                     }
+                },
+                "debug":{
+                    generate:make_menu_settings(menu.save,"menu.settings.debug",[
+                        {
+                            type:"range",
+                            min:0,
+                            max:300,
+                            step:1,
+                            tname:"settings.debug.ping_emulation",
+                            var:"sv_debug_ping_emulation",
+                        }
+                    ],translation),
                 }
             },
             on_close(_m){

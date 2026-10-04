@@ -2,9 +2,8 @@ import { join, extname } from "https://deno.land/std/path/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { serveFile } from "https://deno.land/std/http/file_server.ts";
 import { Path } from "../core/math/utils.ts";
-
-export type HandlerFunc = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Response | null;
-export type HandlerFuncAsync = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Promise<Response | null>;
+import { Server } from "../server/server.ts";
+import { HandlerFunc, HandlerFuncAsync } from "../core/net/server_base.ts";
 
 export interface RequestLimitConfig {
     enabled: boolean
@@ -259,7 +258,7 @@ export class Router {
     }
 }
 
-export class Server extends Router {
+export class DenoServer extends Router implements Server {
     port: number;
     ssl: boolean = false;
     certFile: string;

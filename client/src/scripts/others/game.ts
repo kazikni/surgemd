@@ -738,6 +738,16 @@ export class Game extends ClientGame<GameObject>{
                 }
                 break
             }
+            case "join":{
+                const ws=new WebSocket(play.url)
+                ws.addEventListener("error", (event) => {
+                    this.state=GameState.Idle
+                    this.menu.hide_loading_screen()
+                    alert("No Server")
+                });
+                this.set_socket(ws)
+                return
+            }
             case "campaign":{
                 this.start_with_intro=play.start_with_intro
                 this.local_server.load_level(play.path)

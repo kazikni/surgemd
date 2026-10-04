@@ -482,3 +482,11 @@ export const tilemap_layer={
         return layer
     }
 }
+export interface ConnectionLimitConfig {
+    enabled: boolean
+
+    windowMs: number
+    maxConnections: number
+    burst?: number
+    onLimit?: "reject" | "close-oldest"
+}

@@ -88,7 +88,36 @@ tabs-container.bottom .tabs-header {
     border-right: none;
     border-bottom: none;
 }
-
+smde-console{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    height:100%;
+    background:#111;
+    color:#ddd;
+    font-family:monospace;
+    overflow:hidden;
+}
+smde-console .output{
+    flex:1;
+    overflow:auto;
+    padding:8px;
+    white-space:pre-wrap;
+    word-break:break-word;
+    width:100%;
+}
+smde-console .input{
+    width:100%;
+    box-sizing:border-box;
+    resize:none;
+    border:0;
+    border-top:1px solid #333;
+    outline:0;
+    padding:8px;
+    background:#181818;
+    color:#ddd;
+    font:inherit;
+}
 smde-menu{
     display:flex;
     flex-direction:column;

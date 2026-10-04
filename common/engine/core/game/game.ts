@@ -178,6 +178,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         if(!this.running)return
         this.running=false
         this.clock.stop()
+        this.on_stop()
         this.call_event("stop")
     }
 }

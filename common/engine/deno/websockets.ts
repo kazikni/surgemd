@@ -1,8 +1,8 @@
 import { random } from "../core/math/random.ts";
-import { BasicSocket, OfflineClientsManager } from "../core/net/client.ts";
+import { BasicSocket, ClientsManager } from "../core/net/client.ts";
 
-export class ClientsManager extends OfflineClientsManager {
-    handler(IDGen?: () => number): (req: Request, url: string[], info: Deno.ServeHandlerInfo) => Response | null {
+export class DenoClientsManager extends ClientsManager {
+    override handler(IDGen?: () => number): (req: Request, url: string[], info: Deno.ServeHandlerInfo) => Response | null {
         return this._createHandler(IDGen);
     }
 

@@ -1,4 +1,4 @@
-import { Path } from "../mod.ts";
+import { Path } from "../math/utils.ts";
 
 export abstract class FileHandle {
     abstract write(data: Uint8Array): Promise<void>

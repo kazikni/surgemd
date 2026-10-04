@@ -1,5 +1,6 @@
 @use "../components/background.scss";
 @use "../components/button.scss";
+@use "../components/text.scss";
 .game-editor-ui{
     position: absolute;
     z-index: 10;
@@ -38,4 +39,16 @@
     width: fit-content;
     height: fit-content;
     pointer-events: all;
+}
+
+#debug-console-container{
+    z-index: 100;
+    pointer-events: fill;
+    #debug-console{
+        .output{
+            @extend .span-text-base;
+        }
+        .input{
+        }
+    }
 }

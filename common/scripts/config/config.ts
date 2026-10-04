@@ -1,5 +1,6 @@
 import { type HostConfig } from "../../engine/core.ts";
 import { KSPRResolutionDefinition, type KSPRDefinition } from "../../engine/core/lang/kspr.ts";
+import { ConnectionLimitConfig } from "../../engine/core/definition/definitions.ts";
 
 export interface GameConfig{
     mode:string
@@ -91,6 +92,7 @@ export interface GameServerConfig{
     ntps:number
     tps:number
 
+    limiter:ConnectionLimitConfig
     region?:{
         name:string
         ip:string
@@ -151,6 +153,11 @@ export function ZeroGameServerConfig():GameServerConfig{
         ntps:32,
         max_games:1,
         use_workers:false,
+        limiter:{
+            enabled:false,
+            maxConnections:5,
+            windowMs:60000,
+        }
     }
 }
 export function ZeroConfig():ConfigType{

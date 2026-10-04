@@ -1069,7 +1069,7 @@ export const buildings_factory={
         ceiling?:string,
         b?:DeepPartial<BuildingDef>
     }={}){
-        const rect=new RectHitbox2D(v2(-9.3,-4.8),v2(9.3,4.8))
+        const rect=new RectHitbox2D(v2(-11.7,-5),v2(11.7,5))
         return mergeDeep({
             idString:id,
             is_ghost:true,
@@ -1096,6 +1096,9 @@ export const buildings_factory={
                 ],
                 tilemapv:[
                     //{def:"storehouse_floor"}
+                ],
+                floors:[
+                    {hitbox:rect,type:FloorType.Metal}
                 ]
             },
             floor_image:[
@@ -1105,7 +1108,7 @@ export const buildings_factory={
             ceiling:[
                 {
                     frame:{image:settings.ceiling??"storehouse_ceiling_1",scale:2.5},
-                    hitbox:rect,
+                    hitbox:new RectHitbox2D(v2(-9.3,-4.8),v2(9.3,4.8)),
                     scope_change:{}
                 }
             ]
@@ -1198,7 +1201,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                         {def:"ammo_crate",position:v2(0,3.5)},
                         {def:[
                             {def:"ammo_crate",weight:50},
-                            {def:"airdrop_locked",weight:1},
+                            {def:"copper_crate",weight:40},
                         ],position:v2(0,0)},
 
                         {def:"wood_crate",position:v2(0,-1.8)},

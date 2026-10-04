@@ -16,6 +16,7 @@ export const api_server=new IPLocation("testm.surgemd.io",8000,true,true,"")
 //export const api_server=new IPLocation("api.surgemd.io",443,true,true,"")
 //export const api_server=new IPLocation("testm.surgemd.io",8000,true,true,"")
 export const api_server=new IPLocation("localhost",8000,false,true,"")
+export const game_version="Pre-Beta-10"
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
@@ -84,6 +85,7 @@ export const ConfigCasters=Object.freeze({
     sv_ui_simple_mode:Casters.toBoolean,
     sv_ui_show_intro:Casters.toBoolean,
 
+    sv_debug_enabled:Casters.toBoolean,
     sv_debug_ping_emulation:Casters.toNumber,
 })
 export const ConfigDefaultValues={
@@ -137,6 +139,7 @@ export const ConfigDefaultValues={
     sv_ui_simple_mode:Debug.force_mobile||isMobile,
     sv_ui_show_intro:true,
 
+    sv_debug_enabled:false,
     sv_debug_ping_emulation:0,
 }
 export const ConfigDefaultActions={
@@ -264,13 +267,9 @@ export const ConfigDefaultActions={
         buttons:[],
         keys:[Key.Escape]
     },
-    "debug_menu":{
-        buttons:[GamepadButtonID.R3],
-        keys:[Key.Delete,Key.Backspace]
-    },
 
     "toggle_cursor":{
         keys:[],
         buttons:[GamepadButtonID.L3],
-    }
+    },
 }

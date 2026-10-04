@@ -83,7 +83,7 @@ export abstract class BaseGameMap{
         const objs=map.scene.objects.cells.get_objects(hitbox,layer)
         for(const o of objs){
             if(o.id!==id){
-                if((o.number_type===GameObjectType.Obstacle||o.number_type===GameObjectType.Building)&&!(o as StaticBody).physical_data.no_spawn_collision&&hitbox.colliding_with(o.spawn_hitbox??o.hitbox)){
+                if((o.number_type===GameObjectType.Obstacle||o.number_type===GameObjectType.Building||o.number_type===GameObjectType.Walls)&&!(o as StaticBody).physical_data.no_spawn_collision&&hitbox.colliding_with(o.spawn_hitbox??o.hitbox)){
                     return false
                 }
             }

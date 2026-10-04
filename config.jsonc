@@ -41,6 +41,11 @@
         "debug": {
             "debug_menu": true
         },
+        "limiter":{
+            "enabled":false,
+            "maxConnections":5,
+            "windowMs":60000
+        },
         "host": {
             "port": 8080,
             "ssl": false,

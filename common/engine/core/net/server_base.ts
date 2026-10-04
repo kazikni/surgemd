@@ -1,7 +1,8 @@
 import { ID } from "../math/utils.ts";
-import { BaseGameObject2D, AbstractGame, Scene2DInstance } from "../game/game.ts";
-import { Client, OfflineClientsManager } from "./client.ts";
-
+import { BaseGameObject2D, AbstractGame } from "../game/game.ts";
+import { Client, ClientsManager } from "./client.ts";
+export type HandlerFunc = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Response | null;
+export type HandlerFuncAsync = (req: Request, url_path: string[], info: Deno.ServeHandlerInfo) => Promise<Response | null>;
 //Definitions
 export interface HostConfig {
     port: number
@@ -12,12 +13,12 @@ export interface HostConfig {
 }
 
 export abstract class AbstractServerGame<DefaultGameObject2D extends BaseGameObject2D=BaseGameObject2D> extends AbstractGame<DefaultGameObject2D>{
-    public clients:OfflineClientsManager
+    public clients:ClientsManager
     public allowJoin:boolean
     public id:ID=1
     ticks:number=0
     ntps:number=30
-    constructor(tps:number,clients:OfflineClientsManager,objects:Array<new()=>DefaultGameObject2D>){
+    constructor(tps:number,clients:ClientsManager,objects:Array<new()=>DefaultGameObject2D>){
         super(tps,objects)
         this.allowJoin=true
         this.clients=clients

@@ -3,6 +3,7 @@ import { random } from "../math/random.ts";
 import { ID, SignalManager } from "../math/utils.ts";
 import { ConnectPacket, DisconnectPacket, InvalidPacket, MessagePacket, Packet, PacketsManager, PingPacket, PongPacket, SignalMessagePacket } from "./packets.ts";
 import { DynamicStream, StaticStream, Stream } from "./stream.ts";
+import { HandlerFunc } from "./server_base.ts"
 
 export class BasicSocket{
     readyState = 1;
@@ -194,7 +195,7 @@ export class Client{
         this.emit_packet(new ConnectPacket(this.ID))
     }
 }
-export class OfflineClientsManager{
+export class ClientsManager{
     clients:Map<ID,Client>
     packets_manager:PacketsManager
     onconnection?:(client:Client,username:string)=>void
@@ -278,5 +279,9 @@ export class OfflineClientsManager{
     }
     fake_connect_other_s(socket:BasicSocket){
         this.activate_ws(socket,random.id(),"localhost","localhost")
+    }
+
+    handler():HandlerFunc{
+        return (r,u,i)=>null
     }
 }

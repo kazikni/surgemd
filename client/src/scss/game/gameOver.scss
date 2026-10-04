@@ -107,7 +107,7 @@
     transition: transform 0.5s ease;
     .go-message{
         text-align: center;
-        animation: text-normal-float-position 1s alternate linear infinite, text-normal-float-rotate 0.5s alternate ease-in-out infinite;;
+        animation: text-normal-float-position 0.75s alternate linear infinite, text-normal-float-rotate 0.5s alternate ease-in-out infinite;;
     }
     &.hidden{
         transform: translateY(-100%);

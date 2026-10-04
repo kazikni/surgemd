@@ -232,8 +232,6 @@ export const guns_factory={
                 world:"weapon_small_world",
                 world_tint:0x22222f
             },
-
-            speed_mod:0.98,
         },extend??{})
     },
     assault(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -275,7 +273,6 @@ export const guns_factory={
                 time_scale:20,
                 walk:0.05
             },
-            speed_mod:0.97,
         },extend??{})
     },
     smg(id:string,ammo:string,small:boolean,extend:DeepPartial<GunDef>={}):GunDef{
@@ -318,7 +315,6 @@ export const guns_factory={
                 time_scale:25,
                 walk:0.03
             },
-            speed_mod:0.98,
         },extend??{})
     },
     dmr(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -357,7 +353,6 @@ export const guns_factory={
                 time_scale:8,
                 walk:0.07
             },
-            speed_mod:0.95,
         },extend??{})
     },
     sniper(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -395,8 +390,6 @@ export const guns_factory={
                 load_animation:default_animations.load_sniper,
                 cycle_animation:default_animations_factory.bolt_action_cycle(0.5),
             },
-
-            speed_mod:0.95,
         },extend??{})
     },
     shotgun(id:string,ammo:string,extend:DeepPartial<GunDef>={}):GunDef{
@@ -441,8 +434,6 @@ export const guns_factory={
                 load_animation:default_animations.load_pump,
                 cycle_animation:default_animations_factory.pump_cycle(0.4)
             },
-
-            speed_mod:0.95,
         },extend??{})
     },
 
@@ -793,7 +784,6 @@ export function Guns_Default_Init():GunDef[]{
             assets:{
                 reload_animation:default_animations_factory.insert_reload(0.3,5,"casing_ammo_p85",false,v2.half_one,WeaponsArmRig[3].left,"left_arm",undefined,v2(0.25,-0.2),-0.2),
             },
-            speed_mod:0.95,
         }),
         /////////////////////////////////////////////
         //                 ASSAULT                 //
@@ -1272,6 +1262,10 @@ export function Guns_Default_Init():GunDef[]{
             fire_delay:0.2,
             barrel_length:0.9,
 
+            recoil:{
+                speed:0.55,
+                duration:0.3
+            },
             ammo_spawn:{
                 amount:10
             },

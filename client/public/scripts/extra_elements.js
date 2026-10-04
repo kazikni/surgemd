@@ -42,6 +42,51 @@ class TabsContainer extends HTMLElement{
         });
     }
 }
+class SMDEConsole extends HTMLElement{
+    constructor(){
+        super()
+    }
+    connectedCallback(){
+        this.innerHTML=`
+            <div class="output"></div>
+            <input type="text" class="input"></input>
+        `
+
+        this.output=this.querySelector(".output")
+        this.input=this.querySelector(".input")
+
+        this.input.addEventListener("keydown",e=>{
+            if(e.key!=="Enter")return
+            e.preventDefault()
+            const value=this.input.value
+            this.input.value=""
+            const p=this.dispatchEvent(new CustomEvent("enter",{detail:value,cancelable:true}))
+            if(p)this.log("> "+value)
+        })
+    }
+
+    clear(){
+        this.output.innerHTML=""
+    }
+
+    log(...args){
+        const line=document.createElement("div")
+        line.textContent=args.map(x=>{
+            if(typeof x==="string")return x
+            try{return JSON.stringify(x,null,2)}
+            catch{return String(x)}
+        }).join(" ")
+        this.output.append(line)
+        this.output.scrollTop=this.output.scrollHeight
+    }
+
+    insert({index,html}){
+        const content=this.output.innerHTML
+        this.output.innerHTML=content.slice(0,index)+html+content.slice(index)
+    }
+}
+
+customElements.define("smde-console",SMDEConsole)
 class SMDEMenu extends HTMLElement {
     constructor(){
         super()

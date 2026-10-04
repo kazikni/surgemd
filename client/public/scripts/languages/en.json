@@ -362,7 +362,8 @@
                 "graphics": "Graphics",
                 "sounds": "Sounds",
                 "ui": "UI",
-                "keybinds": "Keybinds"
+                "keybinds": "Keybinds",
+                "debug": "Debug"
             },
             "loadout": {
                 "character": "Character",
@@ -418,6 +419,10 @@
                 "translation": "Translation",
                 "interactive": "Interactive UI",
                 "show_intro": "Show Intro"
+            },
+            "debug":{
+                "ping_emulation": "Ping Emulation",
+                "allow_alt_server": "Allow Alt Servers"
             }
         },
         "keybinds": {

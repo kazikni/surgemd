@@ -26,6 +26,9 @@ export class DenoFileHandle extends FileHandle {
     }
 }
 export class DenoFileManager extends FileManager {
+    override is_directory(path: string): boolean {
+        return false
+    }
     async read_file(path: string): Promise<string> {
         return await Deno.readTextFile(path)
     }

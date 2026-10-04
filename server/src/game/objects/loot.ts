@@ -33,6 +33,8 @@ export const loot_physics:ObjectComponent<Loot>={
             (obj,dt:number)=>{
                 const cf=Floors[obj.current_floor]
                 const speed=1*(cf.speed_mult??1)
+                const restitution=0.35
+                const friction=0.15
                 if(obj.current_floor === FloorType.Water){
                     for(const river of obj.scene.map.rivers){
                         const col=river.get_point_inside(obj.position)
@@ -53,7 +55,9 @@ export const loot_physics:ObjectComponent<Loot>={
                             if(other.id===obj.id)continue
                             const col=obj.hitbox.overlap_collision(other.hitbox)
                             if(col){
-                                obj.velocity=v2.sub(obj.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3.4*dt))
+                                const vel=v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,2*dt)
+                                v2m.sub(obj.velocity,obj.velocity,vel)
+                                v2m.add(other.velocity,other.velocity,vel)
                             }
                             break
                         }
@@ -71,7 +75,6 @@ export const loot_physics:ObjectComponent<Loot>={
                             const collisions=obj.hitbox.overlap_collisions(other.hitbox)
                             for(const col of collisions){
                                 obj.position=v2.sub(obj.position,v2.scale(col.dir,col.pen))
-                                obj.velocity=v2.sub(obj.velocity,v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,0.03))
                             }
                             break
                         }
@@ -82,7 +85,7 @@ export const loot_physics:ObjectComponent<Loot>={
                     const pos=v2.add(obj.position,v2.scale(obj.velocity,speed*dt))
                     obj.position=obj.scene.map.clamp_hitbox(pos,obj.base_hitbox)
                 }
-                if(!v2.is(obj.position,obj.old_position)||obj.velocity.x!=0||obj.velocity.y!=0){
+                if(!v2.is(obj.position,obj.old_position)){
                     obj.old_position=v2.clone(obj.position)
                     obj.current_floor=obj.scene.map.terrain.get_floor_type(obj.position,obj.layer,obj.scene.map.default_floor)
                     obj.set_dirty_part()

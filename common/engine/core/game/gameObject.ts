@@ -79,6 +79,10 @@ export type ObjectEventValidate<Object>=(obj:Object,...ev:any)=>boolean
 export abstract class BaseObject2D{
     // Physical
     public hitbox:Hitbox2D
+    cell_hitbox?:Hitbox2D
+
+    cell_rect?:Rect
+    old_cell_rect?:Rect
     public _base_hitbox:Hitbox2D
     get base_hitbox():Hitbox2D{
         return this._base_hitbox
@@ -114,10 +118,19 @@ export abstract class BaseObject2D{
 
     update_hitbox():void{
         this.hitbox=this.base_hitbox.transform(this._position)
-        if(this.manager?.cells)this.manager.cells.dirty_objects.add(this)
+
+        if(this.manager?.cells){
+            this.cell_rect=this.to_rect()
+            this.manager.cells.cell_pos(this.cell_rect.min)
+            this.manager.cells.cell_pos(this.cell_rect.max)
+            if(!this.old_cell_rect||this.cell_rect.min.x!==this.old_cell_rect.min.x||this.cell_rect.min.x!==this.old_cell_rect.min.y||this.cell_rect.max.x!==this.old_cell_rect.max.x||this.cell_rect.max.y!==this.old_cell_rect.max.y){
+                this.manager.cells.dirty_objects.add(this)
+                this.old_cell_rect=this.cell_rect
+            }
+        }
     }
     to_rect():Rect{
-        return this.hitbox.to_rect()
+        return (this.cell_hitbox??this.hitbox).to_rect()
     }
 
     add_component(c:ObjectComponent<any>){
@@ -189,6 +202,7 @@ export abstract class BaseObject2D{
         this.on_tick(dt)
         if(this.manager.cells.dirty_objects.has(this)){
             this.manager.cells.update_object(this)
+            this.manager.cells.dirty_objects.delete(this)
         }
     }
 
@@ -284,9 +298,12 @@ export class CellsManager2D<GameObject extends BaseObject2D = BaseObject2D> {
     update_object(obj: GameObject) {
         this.remove_object_from_cells(obj)
 
-        const rect=obj.to_rect()
-        this.cell_pos(rect.min)
-        this.cell_pos(rect.max)
+        if(!obj.cell_rect){
+            obj.cell_rect=obj.to_rect()
+            this.cell_pos(obj.cell_rect.min)
+            this.cell_pos(obj.cell_rect.max)
+        }
+        const rect=obj.cell_rect
 
         if(!this.object_cells.has(obj.id)){
             this.object_cells.set(obj.id, [])

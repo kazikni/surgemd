@@ -1,8 +1,8 @@
-import { api, API_BASE, api_server, socials } from "../others/config.ts";
+import { api, API_BASE, api_server, game_version, socials } from "../others/config.ts";
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController } from "common/engine/web.ts";
+import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement } from "common/engine/web.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
@@ -11,6 +11,7 @@ import { FileManager, random, TranslationManager } from "common/engine/core.ts";
 import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
 import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";
+import { debug } from "node:console";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
@@ -57,6 +58,8 @@ export class MenuManager{
 
         menu_background_night:document.querySelector(".night-background") as HTMLDivElement,
         menu_background_day:document.querySelector(".day-background") as HTMLDivElement,
+
+        game_version:document.querySelector("#game-version") as HTMLSpanElement
     }
 
     save!:GameSave
@@ -92,6 +95,12 @@ export class MenuManager{
             target_y:0,
         }
     }
+
+    game_version_clicks=0
+    game_version_click_last:number=0
+
+    debug_console_container:HTMLDivElement=document.querySelector("#debug-console-container") as HTMLDivElement
+    debug_console:any
 
     constructor(definitions:GameDefinition){
         this.params = new URLSearchParams(self.location.search)
@@ -318,6 +327,7 @@ export class MenuManager{
         }
     }
     async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager,music?:SoundController,ambient?:SoundController){
+        const debug_mode=save.get_variable("sv_debug_enabled")
         this.save=save
         this.resources=resources
         this.sounds=sounds
@@ -337,6 +347,42 @@ export class MenuManager{
         this.cutscene=new CutsceneManager(resources,sounds,input,transition)
         this.cutscene.initialize(this.content.history_overlay)
         this.cutscene.default_theme=default_cutscene_theme
+
+        this.content.game_version.innerText=game_version+(debug_mode?"-Debug":"")
+        this.content.game_version?.addEventListener("pointerdown",(e)=>{
+            const now=performance.now()
+            if(now-this.game_version_click_last>4000){
+                this.game_version_clicks=0
+            }
+            if(this.game_version_clicks===0){
+                this.game_version_click_last=performance.now()
+            }
+
+            this.game_version_clicks++
+            if(this.game_version_clicks>10){
+                this.save.set_variable("sv_debug_enabled",!debug_mode)
+                self.location.reload()
+            }
+        })
+
+        if(debug_mode){
+            this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'
+            this.debug_console=document.querySelector("#debug-console") as any  
+            document.addEventListener("keydown",(ev)=>{
+                if(ev.target&&ev.target instanceof HTMLInputElement)return
+                if(ev.key==="p"||ev.key==="`"||ev.key==="o"){
+                    ToggleElement(this.debug_console_container)
+                    this.debug_console.clear()
+                    this.debug_console.log("Welcome To Surgemd Console. Type \"/help\" ")
+                }
+            })
+            this.debug_console.addEventListener("enter",(e:CustomEvent)=>{
+                if(!(e.detail as string).startsWith("/")){
+                    e.preventDefault()
+                    this.debug_console.log(e.detail)
+                }
+            })
+        }
     }
     async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
         await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)

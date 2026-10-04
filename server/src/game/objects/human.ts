@@ -219,13 +219,6 @@ export const human_inventory:ObjectComponent<Human>={
                                 obj.equipment_data.scope=obj.game.definitions.scopes.getFromNumber(a.scope_id)
                             }
                             break
-                        case InputActionType.debug_give:
-                            if(obj.game.debug.debug_menu){
-                                const l=obj.game.definitions.game_items.valueString[a.item]
-                                if(!l)break
-                                obj.inventory.give_item(l,a.count,true)
-                            }
-                            break
                         default:
                             continue
                     }
@@ -929,20 +922,6 @@ export class Human extends Humanoid{
                 case InputActionType.buy_on_shop:
                     if(this.downed||this.parachute)break
                     this.game.modeManager.human_buy_item(this,this.game.definitions.game_items.valueNumber[a.item_id])
-                    break
-                case InputActionType.debug_spawn:
-                    if(this.game.debug.debug_menu){
-                        const l=this.game.definitions.game_items.valueString[a.item]
-                        if(!l)break
-                        const aditional:LootData[]=[]
-                        if(l.item_type===GameItemType.gun){
-                            aditional.push({
-                                item:this.game.definitions.ammos.getFromString((l as unknown as GunDef).ammo_type),
-                                count:((l as unknown as GunDef).ammo_spawn?.amount??0)*a.count
-                            })
-                        }
-                        this.scene.add_loot(this.position,{item:l,count:a.count,aditional},this.layer)
-                    }
                     break
             }
         }

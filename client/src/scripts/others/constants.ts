@@ -11,7 +11,7 @@ export type PlayArgs={
 }|{
     type: "join"
     url:string
-    password:string
+    password?:string
     attempts?:number
     delay?:number
 }|{

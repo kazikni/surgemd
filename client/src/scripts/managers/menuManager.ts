@@ -11,7 +11,7 @@ import { FileManager, random, TranslationManager } from "common/engine/core.ts";
 import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
 import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";
-import { debug } from "node:console";
+import { type DebugConsole } from "./debugConsole.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
@@ -101,6 +101,7 @@ export class MenuManager{
 
     debug_console_container:HTMLDivElement=document.querySelector("#debug-console-container") as HTMLDivElement
     debug_console:any
+    console?:DebugConsole
 
     constructor(definitions:GameDefinition){
         this.params = new URLSearchParams(self.location.search)
@@ -326,7 +327,7 @@ export class MenuManager{
             this.content.menu_options.style.pointerEvents=""
         }
     }
-    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager,mods?:CModsManager,music?:SoundController,ambient?:SoundController){
+    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager){
         const debug_mode=save.get_variable("sv_debug_enabled")
         this.save=save
         this.resources=resources
@@ -365,24 +366,36 @@ export class MenuManager{
             }
         })
 
-        if(debug_mode){
-            this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'
-            this.debug_console=document.querySelector("#debug-console") as any  
-            document.addEventListener("keydown",(ev)=>{
-                if(ev.target&&ev.target instanceof HTMLInputElement)return
-                if(ev.key==="p"||ev.key==="`"||ev.key==="o"){
-                    ToggleElement(this.debug_console_container)
-                    this.debug_console.clear()
-                    this.debug_console.log("Welcome To Surgemd Console. Type \"/help\" ")
+        /*this.console=debug_console
+        this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'
+        this.debug_console=document.querySelector("#debug-console") as any
+        if(this.console)this.console.ctx.logger=this.debug_console  
+        document.addEventListener("keydown",(ev)=>{
+            if(ev.target&&ev.target instanceof HTMLInputElement)return
+            if(ev.key==="p"||ev.key==="`"||ev.key==="o"){
+                ToggleElement(this.debug_console_container)
+                this.debug_console.clear()
+                this.debug_console.log("Welcome To Surgemd Console. Type \"/help\" ")
+            }
+        })
+        this.debug_console.addEventListener("enter",async(e:CustomEvent)=>{
+            if((e.detail as string).startsWith("/")){
+                e.preventDefault()
+                if(e.target instanceof HTMLInputElement){
+                    e.target.style.pointerEvents="none"
                 }
-            })
-            this.debug_console.addEventListener("enter",(e:CustomEvent)=>{
-                if(!(e.detail as string).startsWith("/")){
-                    e.preventDefault()
-                    this.debug_console.log(e.detail)
+                const cmd=(e.detail.substring(1) as string).split(" ")
+                this.debug_console.log("> ",e.detail)
+                const ret=await this.console?.run(cmd)
+                if(!ret?.valid_command)this.console?.ctx.game.input.actions.push({type:InputActionType.command,val:cmd})
+                if(e.target instanceof HTMLInputElement){
+                    e.target.style.pointerEvents=""
                 }
-            })
-        }
+            }else{
+                e.preventDefault()
+                this.debug_console.log(e.detail)
+            }
+        })*/
     }
     async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
         await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)

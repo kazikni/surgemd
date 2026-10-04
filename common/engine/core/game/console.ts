@@ -10,6 +10,10 @@ type CommandArg = {
     type: string
     default?: any
 }
+export interface CommandExecutioStatus{
+    result?:any
+    valid_command:boolean
+}
 export type CommandDef<CTX=ConsoleContext> = {
     name: string
     flags?: Record<string,CommandArg>
@@ -103,21 +107,21 @@ export class GameConsole<CTX extends ConsoleContext = ConsoleContext> {
         }
         return await this.run_command(tokens, cmd)
     }
-    private async run_command(tokens: string[],cmd: CommandDef<ConsoleCommandContext<CTX>>):Promise<any>{
+    private async run_command(tokens: string[],cmd: CommandDef<ConsoleCommandContext<CTX>>):Promise<CommandExecutioStatus>{
         if (tokens.length&&cmd.childrens) {
             const child = cmd.childrens.find((v)=>v.name===tokens[0])
             if(child){
                 tokens.shift()
-                return await this.run_command(tokens, child as CommandDef<ConsoleCommandContext<CTX>>)
+                return {result:await this.run_command(tokens, child as CommandDef<ConsoleCommandContext<CTX>>),valid_command:true}
             }
         }
         const ctx = this.parse(tokens, cmd)
         if(cmd.execute){
             const ret=cmd.execute(ctx)
-            if(ret instanceof Promise)return await ret
-            return ret
+            if(ret instanceof Promise)return {result:await ret,valid_command:true}
+            return {result:ret,valid_command:true}
         }
-        return
+        return {valid_command:false}
     }
     /* ================= TOKENIZER ================= */
     tokenize(input: string): string[] {

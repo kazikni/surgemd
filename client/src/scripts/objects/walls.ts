@@ -42,6 +42,7 @@ export class Walls extends StaticBody{
         this.wall.rotation=Angle.side2rad(this.physical_data.side as Orientation)
         this.wall.fill_color=ColorM.number(tint)
         this.wall.stroke_color=ColorM.mult_hsv(this.wall.fill_color,1.05,undefined,0.55)
+        this.wall.zIndex=zIndexes.BuildingsWalls1
         this.wall.set_wall(pos,width,stroke_width)
         if(hit_sounds)this.set_hit_sounds_def(hit_sounds)
         if(hit_particles)this.set_hit_particles_def("wall",0,hit_particles)
@@ -59,7 +60,6 @@ export class Walls extends StaticBody{
     }
     override on_create(args: any): void {
         super.on_create(args)
-        this.wall.zIndex=zIndexes.BuildingsWalls1
         this.scene.camera.add_object(this.wall)
     }
     override on_decode_net(stream: Stream, full: boolean): void {

@@ -654,7 +654,7 @@ export const buildings_factory={
             mergeDeep({
                 idString:id+"_bottom",
                 floor_image:[
-                    {image:"small_bunker_floor_2",scale:4.4,zIndex:zIndexes.BuildingFloor1},
+                    {image:"small_bunker_floor_bg",scale:4.4,zIndex:zIndexes.BuildingFloor1},
                     {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
                 ],
                 ceiling:[
@@ -1153,6 +1153,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                 {def:"metal_door",position:v2(-2.75,-0.7),rotation:1,variation:7}
             ]
         }),
+        
 
         buildings_factory.house.shed("shed",{
             walls_tint:2,

@@ -4,7 +4,7 @@ import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, Frame, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
 import { type CModsManager } from "../managers/modsManager.ts";
 import { Debug, sandbox_version, socials } from "../others/config.ts";
-import { exec_server, set_full_screen } from "./go_files.ts";
+import { set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
 import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
@@ -792,18 +792,17 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
             generate:(p,_m)=>{
                 p.innerHTML=`
 <div>Server IP<br><input class="text-input-green" placeholder="Server IP" id="insert-server-ip" value="localhost:8001"></input></div>
-<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>
+<!--<div>Server Password<br><input class="text-input-green" placeholder="Server Password" id="insert-server-password" value=""></input></div>-->
 <button class="btn-green" id="btn-join-game" value="{}">Play</input>
 `
                 const ip_input=p.querySelector("#insert-server-ip") as HTMLInputElement
-                const password_input=p.querySelector("#insert-server-password") as HTMLInputElement
+                //const password_input=p.querySelector("#insert-server-password") as HTMLInputElement
 
                 const btn=p.querySelector("button") as HTMLButtonElement
                 btn.onclick = () => {
                     if(menu.play_callback)menu.play_callback({
                         type:"join",
                         url:(ip_input.value.startsWith("ws://")||ip_input.value.startsWith("wss://"))?ip_input.value:`ws://${ip_input.value}/api/ws`,
-                        password:password_input.value,
                         attempts:2,
                         delay:1000,
                     })

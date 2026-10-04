@@ -1,4 +1,4 @@
-import { Matrix, matrix2, matrix4 } from "../../core/math/matrix.ts";
+import { Matrix } from "../../core/math/matrix.ts";
 import { Model3D } from "../../core/definition/models.ts";
 import { Color } from "../../core/math/color.ts";
 import { Vec3 } from "../../core/math/vec3.ts";
@@ -217,7 +217,7 @@ void main() {
             factory: fac,
             group: "texture_batch",
             draw,
-            free() {
+            free(){
             }
         })
     }

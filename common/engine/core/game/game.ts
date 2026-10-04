@@ -182,3 +182,7 @@ export abstract class AbstractGame<DefaultGameObject2D extends BaseGameObject2D=
         this.call_event("stop")
     }
 }
+export interface ConsoleLogger{
+    clear():void
+    log(...val:any[]):void
+}

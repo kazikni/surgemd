@@ -12,6 +12,7 @@ export enum InputActionType{
     buy_on_shop,
     debug_spawn,
     spectate,
+    command,
 }
 export type InputAction=({
     type:InputActionType.drop
@@ -43,12 +44,11 @@ export type InputAction=({
     type:InputActionType.buy_on_shop
     item_id:number
 }|{
-    type:InputActionType.debug_give|InputActionType.debug_spawn
-    item:string
-    count:number
-}|{
     type:InputActionType.spectate
     val:number // 0 = Normal, 1 = Next, 2 = Previor
+}|{
+    type:InputActionType.command
+    val:string[]
 })
 export class InputPacket extends Packet{
     ID=PacketType.Input
@@ -108,10 +108,8 @@ export class InputPacket extends Packet{
                     case InputActionType.spectate:
                         stream.write_uint8(i.val)
                         break
-                    case InputActionType.debug_give:
-                    case InputActionType.debug_spawn:
-                        stream.write_string_sized(i.item,32)
-                        .write_uint8(i.count)
+                    case InputActionType.command:
+                        stream.write_array(i.val,(v)=>stream.write_string(v,2),2)
                         break
                 }
           },1)
@@ -162,10 +160,8 @@ export class InputPacket extends Packet{
                 case InputActionType.spectate:
                     ret["val"]=stream.read_uint8()
                     break
-                case InputActionType.debug_give:
-                case InputActionType.debug_spawn:
-                    ret["item"]=stream.read_string_sized(32)
-                    ret["count"]=stream.read_uint8()
+                case InputActionType.command:
+                    ret["val"]=stream.read_array(()=>stream.read_string(2),1) as string[]
                     break
           }
           return ret

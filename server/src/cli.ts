@@ -1,7 +1,7 @@
 import { createCanvas } from "npm:@napi-rs/canvas";
 import { CommandDef, DynamicStream, GameConsole, StaticStream } from "common/engine/core.ts";
 import { KSPRImageFormat,kspr } from "common/engine/core/lang/kspr.ts";
-import { ClientsManager, DenoFileManager, Server } from "common/engine/deno.ts";
+import { DenoFileManager } from "common/engine/deno.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { Game } from "./game/others/game.ts";
 import { MapTD } from "common/scripts/definitions/maps/base.ts";

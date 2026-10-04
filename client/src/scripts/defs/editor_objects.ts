@@ -6,6 +6,7 @@ import { FrameSettings, RGBAInput, SettingDef, Vec2Input } from "./settings.ts";
 import { Obstacle } from "../objects/obstacle.ts";
 import { WallsDef } from "common/scripts/definitions/objects/walls.ts";
 import { Walls } from "../objects/walls.ts";
+import { BuildingDef } from "common/scripts/definitions/objects/buildings_base.ts";
 export interface EditorObjectTransform{
     position:Vec2
 }
@@ -140,6 +141,8 @@ export abstract class EditorObject{
     set_transform(transform:EditorObjectTransform){
         
     }
+
+    generate_building_object(o:BuildingDef){}
 }
 export class RectHitboxEditorObject extends EditorObject{
     override type=1
@@ -252,7 +255,7 @@ export class CircleHitboxEditorObject extends EditorObject{
 }
 export class FloorImageEditorObject extends EditorObject{
     override type=3
-    sprite=new Sprite2D()
+    sprite!:Sprite2D
 
     layer:number=Layers.Normal
     frame:(FrameDef&{create_shadow?:boolean})={}
@@ -262,6 +265,7 @@ export class FloorImageEditorObject extends EditorObject{
         super()
     }
     override on_create(): void{
+        this.sprite=new Sprite2D()
         this.editor.game.scene_2d.camera.add_object(this.sprite)
         this.update_sprite()
     }
@@ -390,6 +394,11 @@ export class FloorImageEditorObject extends EditorObject{
         }
 
         this.update_sprite()
+    }
+
+    override generate_building_object(o: BuildingDef): void {
+        if(!o.floor_image)o.floor_image=[]
+        o.floor_image.push(this.frame)
     }
 }
 export class ObstacleEditorObject extends EditorObject{
@@ -571,6 +580,19 @@ export class ObstacleEditorObject extends EditorObject{
         if(this.scale!==undefined)stream.write_float64(this.scale)
         if(this.allow_biome_skin!==undefined)stream.write_boolean_group(this.allow_biome_skin)
     }
+    override generate_building_object(o: BuildingDef): void {
+        if(!o.generate.obstacles)o.generate.obstacles=[]
+        o.generate.obstacles.push({
+            def:this.def,
+            position:this.position,
+            rotation:this.rotation,
+            scale:this.scale,
+            layer:this.layer,
+            variation:this.variation,
+            skin:this.skin,
+            allow_biome_skin:this.allow_biome_skin,
+        })
+    }
 }
 export class WallEditorObject extends EditorObject{
     override type=5
@@ -681,6 +703,12 @@ export class WallEditorObject extends EditorObject{
         if(has_tint)this.def.tint=stream.read_uint32()
         if(has_width)this.def.width=stream.read_float64()
         if(has_stroke_width)this.def.stroke_width=stream.read_float64()
+        this.update_wall()
+    }
+
+    override generate_building_object(o: BuildingDef): void {
+        if(!o.generate.walls)o.generate.walls=[]
+        o.generate.walls.push(this.def)
     }
 }
 export class WallSegment extends EditorObject{

@@ -24,9 +24,9 @@ export class GLTexture implements Texture{
     renderer:WebglRenderer
     texture?:WebGLTexture
     framebuffer?:WebGLFramebuffer
-    material:Material
+    material:GLMaterial<GL2D_TexBatchArgs,GL2D_TexBatchAttr>
 
-    constructor(size: Vec2,texture:WebGLTexture,renderer:WebglRenderer,material:Material){
+    constructor(size: Vec2,texture:WebGLTexture,renderer:WebglRenderer,material:GLMaterial<GL2D_TexBatchArgs,GL2D_TexBatchAttr>){
         this.renderer=renderer
         this.size=size
         this.texture=texture
@@ -54,6 +54,7 @@ export class GLTexture implements Texture{
     free(): void {
         if(this.texture){
             if(this.framebuffer)this.renderer.gl.deleteFramebuffer(this.framebuffer)
+            if(this.material.texture)this.material.free()
             this.renderer.gl.deleteTexture(this.texture)
             this.texture=undefined
         }

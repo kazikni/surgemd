@@ -3,7 +3,7 @@ import { Spawn, zIndexes } from "../../others/constants.ts";
 import { FloorType, RiverLayerDef } from "../../others/terrain.ts";
 import { LootTables } from "../loot_tables.ts";
 import { hit_sounds } from "../utils.ts";
-import { MapBiomeDef, CounterMapDef, type MapDef } from "./base.ts";
+import { MapBiomeDef, type MapDef } from "./base.ts";
 export const NormalBiome:MapBiomeDef={
     floors:{
 

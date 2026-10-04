@@ -1143,7 +1143,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             },
             rotation_mode:RotationMode.limited,
             zIndex:{
-                base:zIndexes.Obstacles2
+                base:zIndexes.Obstacles4
             },
             parallax:PerspetiveSizes.medium,
         },

@@ -177,7 +177,7 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
         row.appendChild(label);
     }
     let input:HTMLElement|undefined
-    let last_value:any=initial
+    let last_value:any
     switch(def.type){
         case "input":{
             const e=document.createElement("input")
@@ -335,6 +335,7 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
             break
         }
     }
+    if(initial!==undefined)last_value=(def.make_value?def.make_value(initial,def,input):initial)
 
     if(input){
         if(def.can_disable){
@@ -378,8 +379,16 @@ export function build_setting_input(def: SettingDef,translation: TranslationMana
                 wrap.appendChild(txt);
             }
             wrap.appendChild(input);
-            update();
             input=wrap;
+            ;(input as HTMLElement).style.opacity=enable.checked?"":"0.5";
+            const controls=input!.querySelectorAll("input,textarea,select,button");
+            if(controls.length===0){
+                (input as HTMLInputElement).toggleAttribute?.("disabled",!enable.checked);
+            }else{
+                controls.forEach(c=>{
+                    if(c!==enable)(c as HTMLInputElement).disabled=!enable.checked;
+                });
+            }
         }
         ;(input as any).setting_parent=parent
         ;(input as any).setting_def=def

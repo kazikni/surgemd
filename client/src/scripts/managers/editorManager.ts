@@ -224,22 +224,27 @@ export class EditorObjectsManager{
     }
 }
 export function building_to_string(b:BuildingDef):string{
-    let value=""
-    let spaces=1
-    const sep="   "
-    value+=`{\n`
-    if(b.idString)value+=`${sep.repeat(spaces)}idString: '${b.idString.toString()}',\n`
-    if(b.hitbox)value+=`${sep.repeat(spaces)}hitbox: ${b.hitbox.generate_code()},\n`
-    if(b.spawnHitbox)value+=`${sep.repeat(spaces)}spawnHitbox: ${b.spawnHitbox.generate_code()},\n`
-    if(b.no_collisions!==undefined)value+=`${sep.repeat(spaces)}no_collisions: ${b.no_collisions},\n`
-    if(b.no_bullet_collision!==undefined)value+=`${sep.repeat(spaces)}no_bullet_collision: ${b.no_bullet_collision},\n`
-    if(b.reflect_bullets!==undefined)value+=`${sep.repeat(spaces)}reflect_bullets: ${b.reflect_bullets},\n`
-    if(b.floor_image!==undefined)value+=`${sep.repeat(spaces)}floor_image: ${JSON.stringify(b.floor_image)}\n`
-    value+=`${sep.repeat(spaces)}generate: {\n`
-    spaces++
-    if(b.generate.obstacles!==undefined)value+=`${sep.repeat(spaces)}obstacles: ${JSON.stringify(b.generate.obstacles)}\n`
-    spaces--
-    value+=sep.repeat(spaces)+"}\n"+"}"
+    let value=`{`
+    value+=`idString:'${b.idString}'`
+    if(b.hitbox)value+=`,hitbox:${b.hitbox.generate_code()}`
+    if(b.spawnHitbox)value+=`,spawnHitbox:${b.spawnHitbox.generate_code()}`
+    if(b.no_collisions!==undefined)value+=`,no_collisions:${b.no_collisions}`
+    if(b.no_bullet_collision!==undefined)value+=`,no_bullet_collision:${b.no_bullet_collision}`
+    if(b.reflect_bullets!==undefined)value+=`,reflect_bullets:${b.reflect_bullets}`
+    if(b.is_ghost!==undefined)value+=`,is_ghost:${b.reflect_bullets}`
+    if(b.floor_image!==undefined)value+=`,floor_image:${JSON.stringify(b.floor_image)}`
+    value+=`,generate:{`
+    let idx=0
+    if(b.generate.obstacles!==undefined){
+        value+=`obstacles:${JSON.stringify(b.generate.obstacles)}`
+        idx++
+    }
+    if(b.generate.walls!==undefined){
+        if(idx>0)value+=","
+        value+=`walls:${JSON.stringify(b.generate.walls)}`
+        idx++
+    }
+    value+="}}"
     return value
 }
 export class EditorManager extends GComponent{
@@ -376,6 +381,7 @@ export class EditorManager extends GComponent{
             {type:"toggle",name:"No Collisions",var:"b.no_collisions"},
             {type:"toggle",name:"No Bullet Collision",var:"b.no_bullet_collision"},
             {type:"toggle",name:"Reflect Bullets",var:"reflect_bullets"},
+            {type:"toggle",name:"Is Ghost",var:"is_ghost"},
         ]
     }
     make_context_menu():SMDEMenu{
@@ -389,7 +395,7 @@ export class EditorManager extends GComponent{
             await navigator.clipboard.writeText(this.objects.make_hitbox().generate_code())
             alert("Hitbox code copied.")
         })
-        em.add_option("Building Objects",async()=>{
+        em.add_option("Building Object",async()=>{
             const building=this.make_building()
             await navigator.clipboard.writeText(building_to_string(building))
             alert("Building Objects code copied.")
@@ -500,27 +506,10 @@ export class EditorManager extends GComponent{
             no_collisions:this.get_setting("b.no_collisions"),
             no_bullet_collision:this.get_setting("b.no_bullet_collision"),
             reflect_bullets:this.get_setting("b.reflect_bullets"),
+            is_ghost:this.get_setting("b.is_ghost")
         }
         for(const obj of this.objects.objects){
-            switch(obj.type){
-                case 3:
-                    if(!ret.floor_image)ret.floor_image=[]
-                    ret.floor_image.push((obj as FloorImageEditorObject).frame)
-                    break
-                case 4:
-                    if(!ret.generate.obstacles)ret.generate.obstacles=[]
-                    ret.generate.obstacles.push({
-                        def:(obj as ObstacleEditorObject).def,
-                        position:(obj as ObstacleEditorObject).position,
-                        rotation:(obj as ObstacleEditorObject).rotation,
-                        scale:(obj as ObstacleEditorObject).scale,
-                        layer:(obj as ObstacleEditorObject).layer,
-                        variation:(obj as ObstacleEditorObject).variation,
-                        skin:(obj as ObstacleEditorObject).skin,
-                        allow_biome_skin:(obj as ObstacleEditorObject).allow_biome_skin,
-                    })
-                    break
-            }
+            obj.generate_building_object(ret)
         }
         return ret
     }

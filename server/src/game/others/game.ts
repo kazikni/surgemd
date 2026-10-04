@@ -147,6 +147,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         LevelPlayerScript,
         DeadZoneMode
     }
+
     constructor(main_config:GameServerConfig,clients:ClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
             Human,

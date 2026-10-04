@@ -64,7 +64,7 @@ export const loot_physics:ObjectComponent<Loot>={
                         case GameObjectType.Walls:{
                             if(other.physical_data.stairs.length>0){
                                 for(const s of other.physical_data.stairs){
-                                    if(s.hitbox.colliding_with(obj.hitbox))obj.manager.set_layer(this,other.layer+s.dest_layer)
+                                    if(s.hitbox.colliding_with(obj.hitbox))obj.manager.set_layer(obj,other.layer+s.dest_layer)
                                 }
                             }
                             if(other.physical_data.no_collision)break

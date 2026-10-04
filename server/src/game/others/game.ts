@@ -1,4 +1,4 @@
-import { AbstractServerGame, Client, FileManager, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, OfflineClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
+import { AbstractServerGame, Client, FileManager, KDate,  LootTableGetItemCallback,  LootTablesManager,  ModsManager, ClientsManager, random, ReplayRecorder, Stream, v2, Vec2 } from "common/engine/core.ts";
 import {globals} from "common/scripts/scripts.ts"
 import { ServerGameObject } from "./gameObject.ts";
 import { ModeManager } from "../mode/modeManager.ts";
@@ -147,7 +147,7 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         LevelPlayerScript,
         DeadZoneMode
     }
-    constructor(main_config:GameServerConfig,clients:OfflineClientsManager,fs:FileManager){
+    constructor(main_config:GameServerConfig,clients:ClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
             Human,
             HumanBody,

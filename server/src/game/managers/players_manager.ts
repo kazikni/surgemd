@@ -360,7 +360,7 @@ export class PlayersManager extends GameComponent{
             this.game.signals.emit("player_connect",{client:client})
             if(this.connect_add_player){
                 const p=this.connected_players[client.ID].add_player()
-                if(p)console.log(`${p.name} Join`)
+                if(p)console.log(`[GAME-${this.game.id}] ${p.name} Join`)
             }
             this.connected_players[client.ID].send_joinned()
         })

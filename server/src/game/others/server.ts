@@ -2,7 +2,8 @@ import { Server, AbstractGameContainer, AbstractGameServer, AbstractWorkerGameCo
 import { GameConfig, GameServerConfig } from "common/scripts/config/config.ts";
 import { Game, GameData } from "./game.ts";
 import { WorkerMessage } from "./game_worker.ts";
-import { deepEqual, FileManager, random } from "common/engine/core.ts";
+import { ClientsManager, deepEqual, FileManager, PacketsManager, random } from "common/engine/core.ts";
+import { ConnectionLimiter, server_factory } from "common/engine/server/server.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 export class ApiConnection {
     socket?: WebSocket
@@ -42,11 +43,11 @@ export class ApiConnection {
         }
         this.socket = ws
     }
-    handle_message(data: string) {
+    async handle_message(data: string) {
         const msg = JSON.parse(data)
         switch (msg.type) {
             case "find_game": {
-                const game = this.game.get_game(msg.config)
+                const game = await this.game.get_game(msg.config)
                 const addr=game?.get_address?.()
                 this.send({
                     type: "find_game_response",
@@ -72,18 +73,24 @@ export class ApiConnection {
 export class GameServer extends AbstractGameServer<GameData,GameConfig>{
     api_conn?:ApiConnection
     fs:FileManager
-    constructor(server: Server,config:GameServerConfig){
-        super(server,config)
+    clients_factory:new(packet:PacketsManager)=>ClientsManager
+    constructor(factory:server_factory,clients_factory:new(packet:PacketsManager)=>ClientsManager,server: Server,config:GameServerConfig,worker_path:string,fs:FileManager){
+        super(factory,server,config,fs)
+        this.clients_factory=clients_factory
         this.fs=new DenoFileManager()
         if(config.authentication&&config.region){
             this.api_conn=new ApiConnection(this,config)
             this.api_conn.connect()
         }
-        for(let i=0;i<=config.max_games;i++){
-            this.add_container(config.use_workers?new WorkerGameContainer():new SelfGameContainer())
+        for(let i=0;i<config.max_games;i++){
+            this.add_container(config.use_workers?new WorkerGameContainer(worker_path):new SelfGameContainer(this))
+        }
+        this.limiter = new ConnectionLimiter(config.limiter)
+        if(this.limiter.config.enabled){
+            this.limiter.start()
         }
     }
-    get_game(config?:GameConfig):GameContainer|undefined{
+    async get_game(config?:GameConfig):Promise<GameContainer|undefined>{
         for(const g of this.games.values()){
             if(
                 g.data&&g.data.running&&g.data.can_join&&
@@ -92,9 +99,9 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                 return g as GameContainer
             }
         }
-        return this.make_game(config)
+        return await this.make_game(config)
     }
-    make_game(config?:GameConfig):GameContainer|undefined{
+    async make_game(config?:GameConfig):Promise<GameContainer|undefined>{
         for(const g of this.games.values()){
             if(!g.running||g.data?.running)continue
             if(!config||!config.mode){
@@ -105,7 +112,7 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
                     }
                 }
             }
-            g.new_game(config)
+            await g.new_game(config)
             return g
         }
         return undefined
@@ -113,8 +120,8 @@ export class GameServer extends AbstractGameServer<GameData,GameConfig>{
 }
 export type GameContainer = AbstractGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>
 export class SelfGameContainer extends AbstractSelfGameContainer<Game,GameData,GameConfig,GameServerConfig,WorkerMessage>{
-    constructor(){
-        super(PacketManager)
+    constructor(server:GameServer){
+        super(new server.clients_factory(PacketManager))
     }
     override async make_game(config: GameConfig): Promise<Game> {
         const game=new Game(this.server.config,this.clients_manager,(this.server as unknown as GameServer).fs)
@@ -125,7 +132,7 @@ export class SelfGameContainer extends AbstractSelfGameContainer<Game,GameData,G
     }
     override on_message(msg: WorkerMessage): void {
     }
-    override begin(): void {
+    override async begin(): Promise<void> {
         this.server.server!.route("/api/ws/"+this.id,this.clients_manager.handler())
     }
     get_address():string{
@@ -135,10 +142,8 @@ export class SelfGameContainer extends AbstractSelfGameContainer<Game,GameData,G
 }
 export class WorkerGameContainer extends AbstractWorkerGameContainer<GameData,GameConfig,GameServerConfig,WorkerMessage>{
     override worker_path: URL
-    constructor(){
+    constructor(worker_path:string){
         super()
-
-        const worker_path=import.meta.filename?.endsWith(".ts")?"./game_worker.ts":"./game_worker.js"
         this.worker_path=new URL(worker_path, import.meta.url)
     }
     override on_message(msg: WorkerMessage): void {
@@ -147,8 +152,8 @@ export class WorkerGameContainer extends AbstractWorkerGameContainer<GameData,Ga
         const ssl=this.server.config.region?.ssl===undefined?this.server.config.host.ssl:this.server.config.region.ssl
         return `ws${ssl?"s":""}://${super.get_address(this.server.config.region?.ip??"localhost")}/api/ws`
     }
-    override begin(): void {
+    override async begin(): Promise<void> {
         this.port=this.server.config.host.port+this.id+1
-        super.begin()
+        await super.begin()
     }
 }

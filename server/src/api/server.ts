@@ -1,10 +1,10 @@
-import { ApiServerConfig, ApiSettings, GameConfig, GamePlayOption } from "common/scripts/config/config.ts";
+import { ApiServerConfig, ApiSettings, GameConfig } from "common/scripts/config/config.ts";
 import { GroupManager } from "./game/groups.ts";
-import { default_handlers, Server } from "common/engine/deno.ts";
+import { default_handlers, DenoServer } from "common/engine/deno.ts";
 import { RegionManager } from "./game/regions.ts";
 import { error } from "node:console";
 export class ApiServer {
-    server: Server
+    server: DenoServer
     groups = new GroupManager(this)
     regions = new RegionManager(this)
 
@@ -19,7 +19,7 @@ export class ApiServer {
         hour:number
     }
     constructor(public config: ApiServerConfig){
-        this.server = new Server(
+        this.server = new DenoServer(
             config.host.port,
             config.host.ssl,
             config.host.cert,

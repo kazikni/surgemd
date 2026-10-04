@@ -17,7 +17,7 @@ const JOIN_ARGS=JSON.stringify({
     mode:0,
     token:undefined
 })
-const BOT_COUNT=550
+const BOT_COUNT=250
 const TICK_RATE=60
 const CONNECTION_DELAY=0.01
 

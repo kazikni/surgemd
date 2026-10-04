@@ -654,7 +654,7 @@ export const buildings_factory={
             mergeDeep({
                 idString:id+"_bottom",
                 floor_image:[
-                    {image:"small_bunker_floor_bg",scale:4.4,zIndex:zIndexes.BuildingFloor1},
+                    {image:"small_bunker_floor_bg",scale:4.4,zIndex:zIndexes.BuildingFloor1,alpha:221},
                     {image:"small_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
                 ],
                 ceiling:[
@@ -1153,7 +1153,147 @@ export function Buildings_Default_Init():BuildingDef[]{
                 {def:"metal_door",position:v2(-2.75,-0.7),rotation:1,variation:7}
             ]
         }),
-        
+        {
+            idString: 'bunker_2_bottom',
+            hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
+            is_ghost:true,
+            floor_image: [/*{
+                image: "small_bunker_floor_bg",
+                scale: 4.85,
+                zIndex: zIndexes.BuildingFloor1,
+                alpha:221,
+            }, {
+                image: "small_bunker_floor_bg",
+                position: v2(-5.25,0),
+                scale: 4.85,
+                zIndex: 3,
+                alpha:221,
+            }, {
+                image: "small_bunker_floor_bg",
+                position: v2(5.25,0),
+                scale: 4.85,
+                zIndex: zIndexes.BuildingFloor1,
+                alpha:221,
+            },*/ {
+                image: "small_bunker_floor_1",
+                zIndex: zIndexes.BuildingsFloor2,
+            }, {
+                image: "small_bunker_floor_2",
+                position: v2(5.23,0),
+                zIndex: zIndexes.BuildingsFloor2,
+            }, {
+                image: "small_bunker_floor_2",
+                position: v2(-5.23,0),
+                zIndex: zIndexes.BuildingsFloor2,
+            }],
+            ceiling:[{
+                hitbox:new RectHitbox2D(v2(2.6,-2.83),v2(8.25,2.83)),
+                frame:{
+                    position:v2(5.3,0),
+                    image: "small_bunker_floor_bg",
+                    scale: 4,
+                    zIndex: zIndexes.BuildingsCeiling,
+                },
+                below:{},
+            }],
+            generate: {
+                obstacles: [{
+                    def: "metal_door",
+                    position: v2(-0.74,2.755),
+                    rotation: 0,
+                    variation: 7
+                },{
+                    def: "metal_door",
+                    position: v2(-2.6,0),
+                    rotation: 1,
+                    variation: 7
+                },{
+                    def: "metal_door",
+                    position: v2(2.6,0),
+                    rotation: 3,
+                    variation: 7,
+                    id:3,
+                    door_data:{
+                        locked:true,
+                        cant_close:true
+                    }
+                }, {
+                    def: "red_button",
+                    position: v2(-7.9,2),
+                    id:2,
+                    puzzle_piece:{},
+                    press_data:{allow_switch:false}
+                }, {
+                    def: "wood_table",
+                    position:v2(-7,1.4),
+                    rotation: 0,
+                    connections:[1]
+                }, {
+                    def: "wood_chair",
+                    position:v2(-6,1.4),
+                    rotation: 2
+                }, {
+                    def: "normal_tv",
+                    position: v2(-7,1.4),
+                    rotation: 0,
+                    id:1
+                }, {
+                    def: "small_bed",
+                    position: v2(-6.55,-1.75),
+                    rotation: 1
+                }, {
+                    def: "large_drawer",
+                    position: v2(-4.03,-2.15),
+                    rotation: 1
+                }, {
+                    def: "wood_table",
+                    position: v2(7,1.4)
+                }, {
+                    def: "ammo_crate",
+                    position: v2(3.9,1.6)
+                }],
+                walls: [{
+                    positions: [
+                        [
+                            v2(0.7,2.83),
+                            v2(8.05,2.83),
+                            v2(8.05,-2.83),
+                            v2(-8.05,-2.83),
+                            v2(-8.05,2.83),
+                            v2(-0.71,2.83)
+                        ],
+                        [
+                            v2(-2.6,-2.83),
+                            v2(-2.6,0.05)
+                        ],
+                        [
+                            v2(-2.6,1.45),
+                            v2(-2.6,2.83)
+                        ],
+                        [
+                            v2(2.6,-1.45),
+                            v2(2.6,-2.83)
+                        ],
+                        [
+                            v2(2.6,2.83),
+                            v2(2.6,-0.05)
+                        ]
+                    ],
+                    tint: 4211011,
+                    width: 0.4,
+                    stroke_width: 0.15
+                }],
+                puzzles:[{
+                    complete_conditions:[
+                        {type:"press"},
+                    ],
+                    complete_actions:[
+                        {type:"press",id:[2],activated:true,locked:true},
+                        {type:"door",id:3,locked:true,open_state:1}
+                    ],
+                }]
+            }
+        },
 
         buildings_factory.house.shed("shed",{
             walls_tint:2,

@@ -156,7 +156,7 @@ export const NormalMap:MapDef={
                     passes:1,
                     points:10,
                     spawn:[
-                        {def:"bunker_1",count:1},
+                        {def:"bunker_2",count:1},
                         {def:map_spawns.trees,count:400,spawn:Spawn.grass_only},
                     ],
                     region:{

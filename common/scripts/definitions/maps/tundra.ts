@@ -493,7 +493,8 @@ export const TundraMap:MapDef={
             {def:"storehouse_1",count:5},
             {def:map_spawns.containers,count:20},
 
-            {def:"bunker_1",count:3},
+            {def:"bunker_1",count:2},
+            {def:"bunker_2",count:1},
             {def:[
                 {def:"shed_t",weight:1},
                 {def:"hunt_house_1",weight:3}

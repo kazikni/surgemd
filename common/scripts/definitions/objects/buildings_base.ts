@@ -562,7 +562,6 @@ export const buildings_factory={
         const width=settings.width??0.83
         const height=settings.height??0.83
         const wall_size=settings.wall_size??0.14
-        const ceiling=settings.ceiling??id+"_ceiling_1"
         const floor=settings.floor??id+"_floor"
         const spawn_hb=new RectHitbox2D(v2(-width,-height),v2(width,height))
         return [
@@ -574,17 +573,10 @@ export const buildings_factory={
                     left:false,
                     right:true
                 },wall_size),
+                spawnHitbox:spawn_hb,
                 floor_image:[
-                    {image:floor+"_1"}
+                    {image:floor+"_1",zIndex:zIndexes.BuildingsFloor3}
                 ],
-                ceiling:[{
-                    frame:{
-                        image:ceiling,
-                        position:v2(0,0),
-                    },
-                    hitbox:spawn_hb,
-                    scope_change:{}
-                }],
                 generate:{
                     stair_data:[{
                         hitbox:RectHitbox2D.centered(v2(0.69,0),v2(0.01,1.5)),
@@ -600,15 +592,7 @@ export const buildings_factory={
                     left:false,
                     right:true
                 },wall_size),
-                ceiling:[{
-                    frame:{
-                        image:ceiling,
-                        position:v2(0,0),
-                        rotation:Math.PI
-                    },
-                    hitbox:spawn_hb,
-                    scope_change:{}
-                }],
+                spawnHitbox:spawn_hb,
                 floor_image:[
                     {image:floor+"_2",zIndex:zIndexes.BuildingFloor1,scale:4},
                     {image:floor+"_1"},
@@ -636,7 +620,7 @@ export const buildings_factory={
                 generate:{
                     sub_building:[
                         {
-                            def:"small_iron_stairs_down",
+                            def:"small_bunker_iron_stairs_down",
                             position:v2.new(-3.28,0),
                             rotation:0,
                         },
@@ -672,7 +656,7 @@ export const buildings_factory={
                 generate:{
                     sub_building:[
                         {
-                            def:"small_iron_stairs_up",
+                            def:"small_bunker_iron_stairs_up",
                             position:v2.new(-3.45,0),
                             rotation:2,
                         },
@@ -692,83 +676,13 @@ export const buildings_factory={
                                     particle:"metal_particle",
                                     tint:0x404143
                                 },
-                                sounds:hit_sounds,
+                                sounds:hit_sounds.heavy_metal,
                             },
                         }
                     ]
                 },
                 hitbox:rect,
                 is_ghost:true,
-            },settings.bottom??{})
-        ]
-    },
-    meat_bunker(id:string,settings:{
-        top?:DeepPartial<BuildingDef>
-        bottom?:DeepPartial<BuildingDef>
-        content?:BuildingObstacles[]
-    }={}):BuildingDef[]{
-        return [
-            mergeDeep({
-                idString:id,
-                generate:{
-                    sub_building:[
-                        {
-                            def:"small_iron_stairs_down",
-                            position:v2.new(-3.5,0),
-                            rotation:0,
-                        },
-                        {
-                            def:id+"_bottom",
-                            position:v2.zero(),
-                            rotation:0,
-                            layer:-1
-                        }
-                    ],
-                },
-                no_bullet_collision:true,
-                no_collisions:true,
-                hitbox:RectHitbox2D.centered(v2(0,0),v2(1,1)),
-            },settings.top??{}),
-            mergeDeep({
-                idString:id+"_bottom",
-                reflect_bullets:true,
-                floor_image:[
-                    {image:"meat_bunker_floor_1",zIndex:zIndexes.BuildingsFloor2},
-                ],
-                ceiling:[
-                    {
-                        frame:{
-                            image:"small_bunker_ceiling_1",
-                            position:v2(0,0),
-                            rotation:Math.PI
-                        },
-                        hitbox:new RectHitbox2D(v2(-2.65,-2.65),v2(2.65,2.65)),
-                        scope_change:{}
-                    }
-                ],
-                generate:{
-                    sub_building:[
-                        {
-                            def:"small_iron_stairs_up",
-                            position:v2.new(-3.28,0),
-                            rotation:2,
-                        },
-                    ],
-                    obstacles:[
-                        ...settings.content??[]
-                    ],
-                },
-                assets:{
-                    particles:{
-                        particle:"metal_particle",
-                        tint:0x404143
-                    },
-                    sounds:hit_sounds,
-                },
-                hitbox:new HitboxGroup2D(
-                    new RectHitbox2D(v2(-2.65,-2.65),v2(-2.45,-0.85)),
-                    new RectHitbox2D(v2(-2.65,0.85),v2(-2.45,2.65))
-                ),
             },settings.bottom??{})
         ]
     },
@@ -814,6 +728,7 @@ export const buildings_factory={
                     {
                         image:"shed_floor",
                         position:v2(0.21,0),
+                        zIndex:zIndexes.BuildingFloor1
                     }
                 ],
                 generate:{
@@ -1132,6 +1047,41 @@ export function Buildings_Default_Init():BuildingDef[]{
             }
         }),
 
+        ...buildings_factory.stairs("small_bunker_iron_stairs",{
+            bottom:{
+                ceiling:[{
+                    frame:{
+                        image:"small_iron_stairs_ceiling_1",
+                        position:v2(0,0),
+                        rotation:Math.PI
+                    },
+                    hitbox:new RectHitbox2D(v2(-0.83,-0.83),v2(0.83,0.83)),
+                    scope_change:{}
+                }]
+            },
+            top:{
+                ceiling:[{
+                    frame:{
+                        image:"small_iron_stairs_ceiling_1",
+                        position:v2(0,0),
+                        rotation:0
+                    },
+                    hitbox:new RectHitbox2D(v2(-0.83,-0.83),v2(0.83,0.83)),
+                    scope_change:{}
+                }]
+            },
+            both:{
+                reflect_bullets:true,
+                assets:{
+                    particles:{
+                        particle:"metal_particle",
+                        tint:0x656877,
+                    },
+                    sounds:hit_sounds.heavy_metal
+                }
+            },
+            floor:"small_iron_stairs_floor"
+        }),
         ...buildings_factory.stairs("small_iron_stairs",{
             both:{
                 reflect_bullets:true,
@@ -1153,6 +1103,8 @@ export function Buildings_Default_Init():BuildingDef[]{
                 {def:"metal_door",position:v2(-2.75,-0.7),rotation:1,variation:7}
             ]
         }),
+
+        // Meat Bunker
         {
             idString: 'bunker_2_bottom',
             hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
@@ -1186,17 +1138,45 @@ export function Buildings_Default_Init():BuildingDef[]{
                 position: v2(-5.23,0),
                 zIndex: zIndexes.BuildingsFloor2,
             }],
-            ceiling:[{
-                hitbox:new RectHitbox2D(v2(2.6,-2.83),v2(8.25,2.83)),
-                frame:{
-                    position:v2(5.3,0),
-                    image: "small_bunker_floor_bg",
-                    scale: 4,
-                    zIndex: zIndexes.BuildingsCeiling,
+            ceiling:[
+                {
+                    frame:{
+                        image:"small_bunker_ceiling_1",
+                        position:v2(0,0),
+                        scale:2.15,
+                        rotation:Math.PI
+                    },
+                    hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
+                    scope_change:{}
                 },
-                below:{},
-            }],
+                {
+                    frame:{
+                        image:"small_bunker_ceiling_1",
+                        position:v2(-5.3,0),
+                        scale:2.15,
+                        rotation:Math.PI
+                    },
+                    hitbox: new RectHitbox2D(v2(-8.25,-3.02),v2(8.25,3.02)),
+                },
+                {
+                    hitbox:new RectHitbox2D(v2(2.6,-2.83),v2(8.25,2.83)),
+                    frame:{
+                        position:v2(5.3,0),
+                        image: "small_bunker_floor_bg",
+                        scale: 4,
+                        zIndex: zIndexes.BuildingsCeiling,
+                    },
+                }
+            ],
             generate: {
+                loots:[
+                    {position:v2(-5,0),table:"normal_loot"},
+                    {position:v2(0,0),table:"normal_loot"},
+                    {position:v2(5,0),table:"normal_loot"},
+                ],
+                sub_building:[
+                    {def:"small_bunker_iron_stairs_up",position:v2(0,3.47),rotation:1}
+                ],
                 obstacles: [{
                     def: "metal_door",
                     position: v2(-0.74,2.755),
@@ -1246,21 +1226,27 @@ export function Buildings_Default_Init():BuildingDef[]{
                     position: v2(-4.03,-2.15),
                     rotation: 1
                 }, {
-                    def: "wood_table",
+                    def: [{def:"wood_table",weight:5},{def:"wood_table_bonesaw",weight:10}],
                     position: v2(7,1.4)
                 }, {
                     def: "ammo_crate",
                     position: v2(3.9,1.6)
+                }, {
+                    def:[
+                        {def:"military_chest",weight:1}
+                    ],
+                    position:v2(7.25,-1.72),
+                    rotation:2
                 }],
                 walls: [{
                     positions: [
                         [
-                            v2(0.7,2.83),
+                            v2(0.84,2.83),
                             v2(8.05,2.83),
                             v2(8.05,-2.83),
                             v2(-8.05,-2.83),
                             v2(-8.05,2.83),
-                            v2(-0.71,2.83)
+                            v2(-0.84,2.83)
                         ],
                         [
                             v2(-2.6,-2.83),
@@ -1281,7 +1267,15 @@ export function Buildings_Default_Init():BuildingDef[]{
                     ],
                     tint: 4211011,
                     width: 0.4,
-                    stroke_width: 0.15
+                    stroke_width: 0.15,
+                    reflect_bullets:true,
+                    assets:{
+                        particles:{
+                            particle:"metal_particle",
+                            tint:0x404143
+                        },
+                        sounds:hit_sounds.heavy_metal,
+                    },
                 }],
                 puzzles:[{
                     complete_conditions:[
@@ -1294,6 +1288,17 @@ export function Buildings_Default_Init():BuildingDef[]{
                 }]
             }
         },
+        mergeDeep(buildings_factory.house.shed("bunker_2",{
+            walls_tint:2,
+        }),{
+            idString:"bunker_2",
+            generate:{
+                sub_building:[
+                    {def:"bunker_2_bottom",position:v2(-3.47,0),layer:-1,rotation:3},
+                    {def:"small_iron_stairs_down",position:v2(0,0),rotation:2}
+                ],
+            }
+        } as BuildingDef),
 
         buildings_factory.house.shed("shed",{
             walls_tint:2,

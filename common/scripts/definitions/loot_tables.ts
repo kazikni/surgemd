@@ -268,6 +268,15 @@ export const LootTables={
         [{weight:1,count:5,table:"throwables"}],
         [{weight:1,count:4,table:"scopes"}],
     ],
+    military_chest:{
+        max:5,
+        min:2,
+        content:[
+            {weight:10,table:"guns"},
+            {weight:1,table:"mythic_guns"},
+            {weight:0.1,table:"legendary_guns"},
+        ]
+    },
     //Animals
     animal_medium:[
         [{weight:1,count:1,table:"consumibles"}],

@@ -6,6 +6,7 @@ ___
 * Weapons Load Animation
 * Guns Reload Animation
 * Guns Cycle Animation
+* Meat Bunker/Bunker 2
 ___
 ### Menu
 * New Loading Screen
@@ -36,6 +37,7 @@ ___
 * Gift Ping
 ### Obstacles
 * Gas Pump Can
+* Wood Table Bonesaw
 ___
 ### Others
 * Parachute Perspective

@@ -429,7 +429,7 @@ export const obstacles_factory={
         o?:DeepPartial<ObstacleDef>,
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
-            health:65,
+            health:110,
             hitbox:new RectHitbox2D(v2(-0.71,-1),v2(0.71,1)),
             scale:{
                 destroy:0.75,
@@ -1167,7 +1167,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"large_drawer",
-            health:65,
+            health:120,
             hitbox:new RectHitbox2D(v2(-0.475,-1.15),v2(0.475,1.15)),
             scale:{
                 destroy:0.75
@@ -1251,7 +1251,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"large_kitchen_drawer",
-            health:70,
+            health:130,
             hitbox:new RectHitbox2D(v2(-0.56,-1.1),v2(0.56,1.1)),
             scale:{
                 destroy:0.9
@@ -1308,8 +1308,37 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             parallax:PerspetiveSizes.medium,
         },
         {
+            idString:"wood_table_bonesaw",
+            health:100,
+            no_collision:true,
+            passable_by_bullets:true,
+            hitbox:new RectHitbox2D(v2(-0.75,-1.12),v2(0.75,1.12)),
+            loot_table:[{weight:1,item:"bonesaw"}],
+            scale:{
+                destroy:0.9
+            },
+            assets:{
+                frame:{
+                    dead:"wood_residue_1x2",
+                    dead_transform:{
+                        tint:0x5f3d07,
+                    }
+                },
+                particles:{
+                    particle:"plank_particle",
+                    tint:0x583b08
+                },
+                sounds:hit_sounds.wood,
+            },
+            zIndex:{
+                base:zIndexes.Obstacles3
+            },
+            rotation_mode:RotationMode.limited,
+            parallax:PerspetiveSizes.medium,
+        },
+        {
             idString:"wood_chair",
-            health:65,
+            health:80,
             hitbox:new RectHitbox2D(v2(-0.49,-0.47),v2(0.49,0.47)),
             scale:{
                 destroy:0.9
@@ -1333,7 +1362,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         },
         {
             idString:"small_bed",
-            health:100,
+            health:130,
             hitbox:new RectHitbox2D(v2(-0.77,-1.28),v2(0.77,1.28)),
             scale:{
                 destroy:0.8

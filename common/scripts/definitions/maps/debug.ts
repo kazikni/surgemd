@@ -136,7 +136,7 @@ export const SingleBuildMap:MapDef={
             //const def=map.scene.game.definitions.buildings.getFromString("puzzle_test")
             //const def=map.scene.game.definitions.buildings.getFromString("storehouse_1")
             //const def=map.scene.game.definitions.buildings.getFromString("bunker_1")
-            const def=map.scene.game.definitions.buildings.getFromString("bunker_2_bottom")
+            const def=map.scene.game.definitions.buildings.getFromString("bunker_2")
             //const def=map.scene.game.definitions.buildings.getFromString("small_house_1")
 
             //const def=map.scene.game.definitions.buildings.getFromString("blue_container_1")

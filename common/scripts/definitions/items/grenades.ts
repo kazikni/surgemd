@@ -133,7 +133,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
                 allow_hand:true,
                 time:5
             },
-            throw_max_speed:15,
+            throw_max_speed:10,
             frames:{
                 world:{
                     image:"proj_frag"
@@ -160,7 +160,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 time:4
             },
-            throw_max_speed:17,
+            throw_max_speed:12,
             rig_arms:DefaultFistRig,
             rig_image:GrenadeRig,
             frames:{
@@ -187,7 +187,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 ground:true
             },
-            throw_max_speed:10,
+            throw_max_speed:8,
             frames:{
                 world:{
                     image:"proj_molotov",
@@ -217,7 +217,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
                 allow_hand:true,
                 time:5
             },
-            throw_max_speed:15,
+            throw_max_speed:10,
             frames:{
                 world:{
                     image:"proj_mirv"
@@ -286,7 +286,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 time:20
             },
-            throw_max_speed:20,
+            throw_max_speed:15,
             frames:{
                 world:{
                     image:"proj_blue_flare"
@@ -337,7 +337,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 time:4
             },
-            throw_max_speed:20,
+            throw_max_speed:15,
             frames:{
                 world:{
                     image:"proj_red_flare"
@@ -391,7 +391,7 @@ export function Grenades_Default_Init():GrenadeDef[]{
             fuse:{
                 time:3
             },
-            throw_max_speed:20,
+            throw_max_speed:15,
             frames:{
                 world:{
                     image:"proj_yellow_flare"

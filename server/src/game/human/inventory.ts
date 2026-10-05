@@ -157,13 +157,10 @@ export class GunItem extends GunItemBase implements LItem{
             const time=def.fire_sequence.ease===undefined?this.fire_sequence:def.fire_sequence.ease(this.fire_sequence)
             if(def.fire_sequence.spread)spread*=Numeric.lerp(def.fire_sequence.spread.begin,def.fire_sequence.spread.end??1,time)
             this.fire_sequence=Math.min(this.fire_sequence+def.fire_sequence.increse,1)
-            //console.log(this.fire_sequence)
         }
 
         if(def.bullet){
             const bullets_count=def.bullet.count??1
-            //const patternPoint:Vec2[]=[]
-            //if(def.jitter_radius&&bullets_count>1)patternPoint.push(...getPatterningShape(bullets_count, def.jitter_radius??0))
             for(let i=0;i<bullets_count;i++){
                 let ang=user.physical_data.rotation
                 if(spread){
@@ -174,12 +171,8 @@ export class GunItem extends GunItemBase implements LItem{
                     pos.x+=def.jitter_radius
                     const angle=random.rad()
                     v2m.add(pos,pos,v2(Math.cos(angle)*def.jitter_radius*0.5,Math.sin(angle)*def.jitter_radius))
-                    //v2m.add(pos,pos,random.random_in_circle(def.jitter_radius))
                 }
-                /*const pos=patternPoint[i]?v2.add(position,patternPoint[i]):(
-                    def.jitter_radius?v2.add(position,random.random_in_circle(def.jitter_radius)):position
-                )*/
-                const b=user.game.scene_2d.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(def.ammo_type),this.def,user.layer,is_idle?0.25:undefined)
+                const b=user.game.scene_2d.add_bullet(pos,user,user.game.definitions.ammos.getFromStringSafe(def.ammo_type),this.def,user.layer,Math.random()<=(is_idle?user.game.modeManager.rules.humans.idle_critical_chance:user.game.modeManager.rules.humans.critical_chance))
                 b.set_definition(def.bullet.def)
                 b.speed*=user.get_modifier("bullet_speed")
                 b.tracer_height*=user.get_modifier("bullet_size")
@@ -705,9 +698,6 @@ export class GInventory extends GInventoryBase<LItem>{
         if(this.weapon_is_free(slot))return []
         this.net_sync.melee_world=true
         const loots:Loot[]=this.weapons[slot]!.drop()
-        for(const l of loots){
-            l.velocity.x-=1.5
-        }
         this.owner.actions.cancel()
         super.set_weapon(slot,undefined)
         return loots

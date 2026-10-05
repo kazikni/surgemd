@@ -175,10 +175,10 @@ export const TundraMap:MapDef={
             {item:"colt1873",weight:100},
     
             // Uncommon Guns
-            {item:"sr25",weight:83},
+            {item:"m110a2",weight:83},
             {item:"vss",weight:83},
             {item:"rifle_cbc",weight:80},
-            {item:"model94",weight:80},
+            {item:"empr641",weight:80},
             {item:"blr81",weight:75},
 
             // Unrelated Weapons
@@ -208,7 +208,7 @@ export const TundraMap:MapDef={
             {item:"rpg7",weight:1},
         ],
         mythic_guns:[
-            {item:"sr25",weight:13},
+            {item:"m110a2",weight:13},
             {item:"desert_eagle",weight:7},
             {item:"kar98k",weight:7},
             {item:"m2_2",weight:2},
@@ -420,7 +420,7 @@ export const TundraMap:MapDef={
                                     def:[
                                         {def:"rifle_cbc_mount",weight:10},
                                         {def:"vss_mount",weight:10},
-                                        {def:"model94_mount",weight:8},
+                                        {def:"empr641_mount",weight:8},
                                         {def:"blr81_mount",weight:8},
                                         {def:"kar98k_mount",weight:4},
                                         {def:"awp_mount",weight:0.05},
@@ -444,7 +444,7 @@ export const TundraMap:MapDef={
                                 {weight:15},
                                 {def:"rifle_cbc_mount",weight:10},
                                 {def:"vss_mount",weight:10},
-                                {def:"model94_mount",weight:8},
+                                {def:"empr641_mount",weight:8},
                                 {def:"blr81_mount",weight:8},
                                 {def:"kar98k_mount",weight:4},
                                 {def:"awp_mount",weight:0.05},

@@ -332,7 +332,7 @@ return (class extends LevelPlayerScript{
                         "gun1": [
                             {"item": "m870","weight": 5},
                             {"item": "hp18","weight": 5},
-                            {"item": "model94","weight": 3},
+                            {"item": "empr641","weight": 3},
                             {"item": "blr81","weight": 3},
                             {"item": "spas12","weight": 1.5},
                             {"item": "kar98k","weight": 1.5},

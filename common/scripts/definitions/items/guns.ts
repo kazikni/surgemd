@@ -1173,8 +1173,8 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.6
             },
         }),
-        guns_factory.sniper("model94","c22",{
-            name:"Model-94",
+        guns_factory.sniper("empr641","c22",{
+            name:"EMPR-641",
             rank:ItemRank.B,
 
             fire_delay:1,
@@ -1199,6 +1199,7 @@ export function Guns_Default_Init():GunDef[]{
                 speed:0.6
             },
             assets:{
+                world_tint:0x5e625f,
                 reload_animation:default_animations_factory.insert_reload(0.6,undefined,"casing_ammo_c22",undefined,undefined,undefined,undefined,undefined,undefined,0),
             }
         }),
@@ -1358,8 +1359,8 @@ export function Guns_Default_Init():GunDef[]{
         /////////////////////////////////////////////
         //                   DMR                   //
         /////////////////////////////////////////////
-        guns_factory.dmr("sr25","c51",{
-            name:"sr25",
+        guns_factory.dmr("m110a2","c51",{
+            name:"M110 A2",
             fire_delay:0.25,
             spread:2,
             ammo_spawn:{

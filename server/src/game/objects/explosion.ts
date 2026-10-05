@@ -35,7 +35,7 @@ export class Explosion extends ServerGameObject{
         const floor_def=Floors[floor]
         if(this.def.bullet){
             for(let i=0;i<this.def.bullet.count;i++){
-                const b=this.scene.add_bullet(this.position,this.owner,undefined,this.source,this.layer)
+                const b=this.scene.add_bullet(this.position,this.owner,undefined,this.source,this.layer,Math.random()<=this.game.modeManager.rules.humans.critical_chance)
                 b.set_definition(this.def.bullet.def)
                 b.hit_owner=true
                 b.set_direction(random.rad())

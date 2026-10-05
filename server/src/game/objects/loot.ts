@@ -33,8 +33,6 @@ export const loot_physics:ObjectComponent<Loot>={
             (obj,dt:number)=>{
                 const cf=Floors[obj.current_floor]
                 const speed=1*(cf.speed_mult??1)
-                const restitution=0.35
-                const friction=0.15
                 if(obj.current_floor === FloorType.Water){
                     for(const river of obj.scene.map.rivers){
                         const col=river.get_point_inside(obj.position)
@@ -55,9 +53,9 @@ export const loot_physics:ObjectComponent<Loot>={
                             if(other.id===obj.id)continue
                             const col=obj.hitbox.overlap_collision(other.hitbox)
                             if(col){
-                                const vel=v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,2*dt)
+                                const vel=v2.scale((col.dir.x===1&&col.dir.y===0)?v2.random(-1,1):col.dir,3*dt)
                                 v2m.sub(obj.velocity,obj.velocity,vel)
-                                v2m.add(other.velocity,other.velocity,vel)
+                                obj.position=v2.sub(obj.position,v2.scale(col.dir,col.pen*dt*2.5))
                             }
                             break
                         }
@@ -81,7 +79,7 @@ export const loot_physics:ObjectComponent<Loot>={
                     }
                 }
                 if(obj.velocity.x!=0||obj.velocity.y!=0){
-                    v2m.scale(obj.velocity,obj.velocity,1/(1+dt*3.3))
+                    v2m.scale(obj.velocity,obj.velocity,1/(1+dt*2.5))
                     const pos=v2.add(obj.position,v2.scale(obj.velocity,speed*dt))
                     obj.position=obj.scene.map.clamp_hitbox(pos,obj.base_hitbox)
                 }

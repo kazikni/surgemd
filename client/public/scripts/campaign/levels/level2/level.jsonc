@@ -1,21 +1,20 @@
 {
     "meta": {
-        "name": "RQPU Cowboys",
-        "location": "Rio De Janeiro",
-        "description": "Test Of Levels",
-        "size": "small",
-        "date": "02/12/2000 00:25",
+        "name": "Battle Royale",
+        "location": "South America - Southeast - MD Island",
+        "description": "After A Misterious Call. You Decide Go To The Marked Place.",
+        "date":"12:29 - 15/06/1976",
+        "size": "medium",
         "dificulty": "easy"
     },
     "assets": {
-        "background_music": "/assets/sounds/musics/single-player/music_1.mp3",
         "load": {
-            "sounds": {
+            "assets": {
                 "history_music_1": "/assets/sounds/musics/history_music_1.mp3"
             }
         }
     },
     "next_level":{
-        "complete":"../level3"
+        "complete":"../level2"
     }
 }

@@ -29,6 +29,8 @@ export interface GameRules{
                 speed:number
             }
         },
+        critical_chance:number
+        idle_critical_chance:number
         keep_inventory:boolean
         body_with_name:boolean
         help_up:{
@@ -112,6 +114,8 @@ export abstract class ModeManager extends GameComponent{
                     abstinence:0.009
                 },
             },
+            critical_chance:0.1,
+            idle_critical_chance:0.2,
             keep_inventory:false,
             body_with_name:true,
             no_quickswitch:false,

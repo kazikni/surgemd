@@ -187,9 +187,9 @@ export class Bullet extends ServerGameObject{
             this.on_hit()
         }
     }
-    override on_create(args?: {position:Vec2,owner:Human,ammo:AmmoDef,critical_chance?:number,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
+    override on_create(args?: {position:Vec2,owner:Human,ammo:AmmoDef,critical?:boolean,source?:DamageSourceDef,satured?:number}): void {
         this.base_hitbox=new CircleHitbox2D(v2.zero,0.2)
-        if(args)this.set_configuration(args.position,args.owner,args.ammo,args.critical_chance,args.critical,args.source)
+        if(args)this.set_configuration(args.position,args.owner,args.ammo,args.critical,args.source)
     }
     set_definition(def:BulletDef){
         this.speed=def.speed
@@ -214,13 +214,13 @@ export class Bullet extends ServerGameObject{
 
         this.pass_through_humans=def.pass_through_humans??false
     }
-    set_configuration(position:Vec2,owner:Human,ammo:AmmoDef,critical_chance:number=0.15,critical?:boolean,source?:DamageSourceDef,satured?:number){
+    set_configuration(position:Vec2,owner:Human,ammo:AmmoDef,critical?:boolean,source?:DamageSourceDef,satured?:number){
         this.position=position
         this.initial_position=v2.clone(position)
         this.old_position=v2.clone(this.position)
 
         this.owner=owner
-        this.critical=critical===undefined?(Math.random()<=critical_chance):critical
+        this.critical=critical??false
         this.source=source
         this.ammo=ammo
     }
@@ -258,7 +258,7 @@ export class Bullet extends ServerGameObject{
         return b
     }
     clone(position?:Vec2){
-        const b=this.scene.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer)
+        const b=this.scene.add_bullet(position??this.position,this.owner,this.ammo,this.source,this.layer,this.critical)
         
         b.speed=this.speed
         b.max_distance=this.max_distance

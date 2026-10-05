@@ -18,11 +18,11 @@ export const LootTables={
         {item:"famas",weight:8},
         {item:"rifle_cbc",weight:7},
         {item:"spas12",weight:7},
-        {item:"model94",weight:1},
+        {item:"empr641",weight:1},
         {item:"blr81",weight:1},
     ],
     mythic_guns:[
-        {item:"sr25",weight:20},
+        {item:"m110a2",weight:20},
         {item:"vss",weight:20},
         {item:"vector",weight:20},
         {item:"m4a1",weight:20},
@@ -114,10 +114,10 @@ export const LootTables={
         {item:"c45",count:40,weight:5},
         {item:"c22",count:40,weight:3.5},
         {item:"l15",count:80,weight:3.5},
-        {item:"p61",count:20,weight:0.1},
-        {item:"p85",count:5,weight:0.05},
-        {item:"gasoline",count:5,weight:0.05},
-        {item:"explosive_ammo",count:2,weight:0.05},
+        {item:"p61",count:40,weight:0.1},
+        {item:"p85",count:10,weight:0.05},
+        {item:"gasoline",count:10,weight:0.05},
+        {item:"explosive_ammo",count:5,weight:0.05},
     ],
     //Throwables
     throwables:[
@@ -304,3 +304,58 @@ export const LootTables={
         ]
     ]
 } satisfies Record<string,LootTable<LootAditional>>
+
+export const SimpleLootTables={
+    common_guns:[
+        {item:"m9",weight:100},
+        {item:"mp5",weight:90},
+        {item:"micro_uzi",weight:80},
+        {item:"ak47",weight:40},
+        {item:"m870",weight:39},
+        {item:"aipc39",weight:35},
+        {item:"m110a2",weight:5},
+        {item:"kar98k",weight:5},
+    ],
+    guns:[
+        {table:"common_guns",weight:1},
+    ],
+    melees:[
+        {item:"survival_knife",weight:15},
+        {item:"shovel",weight:15},
+        {item:"axe",weight:10},
+        {item:"pan",weight:2},
+    ],
+    scopes:[
+        {item:"scope_2",count:1,weight:28},
+        {item:"scope_3",count:1,weight:11},
+    ],
+    consumibles:[
+        {table:"health_consumibles",count:1,weight:10},
+        {table:"adrenaline_consumibles",count:1,weight:6},
+    ],
+    ammos:[
+        {item:"p76",count:10,weight:5},
+        {item:"l19",count:60,weight:5},
+        {item:"c51",count:40,weight:5},
+    ],
+
+    wood_crate:[
+        {weight:1,count:1,table:"normal_loot"},
+    ],
+    civil_loot:[
+        {weight:1,table:"ammos"},
+        {weight:1,table:"consumibles"},
+        {weight:0.7,table:"equipments"},
+        {weight:0.7,table:"scopes"},
+        {weight:0.1,table:"guns"},
+        {weight:0.003,table:"melees"},
+    ],
+    normal_loot:[
+        {weight:1,table:"ammos"},
+        {weight:1,table:"consumibles"},
+        {weight:0.8,table:"guns"},
+        {weight:0.7,table:"equipments"},
+        {weight:0.6,table:"scopes"},
+        {weight:0.01,table:"melees"},
+    ],
+}

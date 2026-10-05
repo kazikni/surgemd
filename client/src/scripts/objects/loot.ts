@@ -1,5 +1,5 @@
 
-import { type Camera2D, Container2D, Sound, Sprite2D } from "common/engine/web.ts";
+import { Container2D, Sound, Sprite2D } from "common/engine/web.ts";
 import { GameConstants, GameObjectType, LootData, zIndexes } from "common/scripts/others/constants.ts";
 import { GameObject } from "../others/gameObject.ts";
 import { GameItemType, ItemQualitySettings } from "common/scripts/definitions/utils.ts"
@@ -117,8 +117,16 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
     pickup_sound:Sound|undefined
     constructor(){
         super()
-
         this.add_component(loot_visual)
+    }
+
+    override on_tick(_dt: number): void {
+        if(Debug.hitbox){
+            this.game.hitboxes_gfx.ctx.begin_path()
+            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.fill()
+        }
     }
     override can_interact(h:Human): boolean {
         return this.loot_data?.item&&h.hitbox.colliding_with(this.hitbox)

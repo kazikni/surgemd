@@ -74,6 +74,11 @@ body.game-mobile-version{
     .inventory-item-slot {
         width: 4.5vw;
         height: 4.5vw;
+        &:active{
+            border-top:0.5vh solid var(--ui-theme-primary);
+            border-top-left-radius: 1vh;
+            border-top-right-radius: 1vh;
+        }
     }
     #ui-iitems{
         .scope-slot{
@@ -88,6 +93,11 @@ body.game-mobile-version{
                     height: 4vw;
                 }
             }
+            &:active{
+                border-top:0.5vh solid var(--ui-theme-primary);
+                border-top-left-radius: 1vh;
+                border-top-right-radius: 1vh;
+            }
         }
     }
 
@@ -96,6 +106,11 @@ body.game-mobile-version{
 
         .weapon-slot{
             height: 13vh;
+            &:active{
+                border-top:0.5vh solid var(--ui-theme-primary);
+                border-top-left-radius: 1vh;
+                border-top-right-radius: 1vh;
+            }
         }
     }
     #menu-options{

@@ -123,13 +123,13 @@ export class ServerGameScene2D extends Scene2DInstance<ServerGameObject>{
     }
 
     
-    add_bullet(position:Vec2,owner?:Human,ammo?:AmmoDef,source?:DamageSourceDef,layer:number=Layers.Normal,critical_chance?:number):Bullet{
+    add_bullet(position:Vec2,owner?:Human,ammo?:AmmoDef,source?:DamageSourceDef,layer:number=Layers.Normal,critical?:boolean):Bullet{
         const b=this.objects.add_object(new Bullet(),layer,undefined,{
             position:v2.clone(position),
             owner:owner,
             ammo:ammo,
             source,
-            critical_chance,
+            critical,
         })as Bullet
         return b
     }

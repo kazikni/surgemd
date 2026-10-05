@@ -1,168 +1,230 @@
 return (class extends LevelPlayerScript{
     async initialize_mode(){
-        const gun_enemy={
-            ai: {
-                kind: "npc"
-            },
-            inventory:{
-                hand:1,
-                gun1: [
-                    {item:"colt1873",weight: 1.1},
-                    {item:"m9",weight: 1.1},
-                    {item:"taurustx",weight: 1.1},
-                    {item:"mp5",weight: 1},
-                    {item:"ak47",weight: 1},
-                    {item:"ar15",weight: 1},
-                    {item:"m870",weight: 0.75},
-                    {item:"famas",weight: 0.75},
-                    {item:"m4a1",weight: 0.75},
-                    {item:"micro_uzi",weight: 0.75},
-                    {item:"m1921",weight: 0.75},
-                    {item:"tec22",weight: 0.75},
-                    {item:"hp18",weight: 0.6},
-                    {item:"spas12",weight: 0.6},
-                    {item:"sr25",weight: 0.6},
-                    {item:"vss",weight: 0.5},
-                    {item:"desert_eagle",weight: 0.5},
-                    {item:"aipc39",weight: 0.5},
-                    {item:"vector",weight: 0.5},
-                    {item:"p90",weight: 0.5},
-                    {item:"kar98k",weight: 0.5},
-                    {item:"model94",weight: 0.5},
-                    {item:"blr81",weight: 0.5},
-                    {item:"rifle_cbc",weight: 0.5},
-                    {item:"m1_garand",weight: 0.4},
-                    {item:"awp",weight: 0.4},
-                    {item:"awm",weight: 0.25},
-                ],
-            }
-        }
-        const melee_enemy={
-            ai: {
-                kind: "npc"
-            },
-            inventory:{
-                melee: [
-                    {item:"baseball_bat",weight: 10},
-                    {item:"survival_knife",weight: 10},
-                    {item:"shovel",weight: 2},
-                ],
-            }
-        }
-
         await this.game.auto_init({
-            mode:"sequence",
+            mode:"normal",
             settings:{
-                map: {
-                    loot_tables:{},
-                    biome:NormalBiome,
-                    bounds_size:0,
-                    size:v2(50,50),
-                    generation:{
-                        base:FloorType.Grass,
-                        spawn:[
-                            {def:"shed",count:2},
-                            {def:map_spawns.containers,count:2},
-
-                            {def:"sillo",count:1},
-                            {def:map_spawns.trees,count:10},
-                            {def:map_spawns.rocks,count:10},
-                            {def:"bush",count:3},
-                            {def:"barrel",count:2},
-
-                            {def:"normal_loot",count:2},
-                        ],
+                map:{
+                    def:{
+                        ...NormalMap,
+                        loot_tables:{...LootTables,...SimpleLootTables}
                     }
                 },
-                commands:[
-                    // Wave 1
-                    {
-                        type:"spawn_enemies",
-                        enemies:[
-                            {
-                                "def": gun_enemy,
-                                "count": 5
-                            },
-                            {
-                                "def": melee_enemy,
-                                "count": 5
-                            },
-                        ]
-                    },
-                    { type:"enemys_count"},
-                    { type:"save_checkpoint"},
-
-                    // Wave 2
-                    {
-                        type:"spawn_enemies",
-                        enemies:[
-                            {
-                                "def": gun_enemy,
-                                "count": 5
-                            },
-                            {
-                                "def": melee_enemy,
-                                "count": 5
-                            },
-                        ]
-                    },
-                    { type:"enemys_count"},
-                    { type:"save_checkpoint"},
-
-                    // Final Wave
-                    {
-                        type:"spawn_enemies",
-                        enemies:[
-                            {
-                                "def": gun_enemy,
-                                "count": 5
-                            },
-                            {
-                                "def": melee_enemy,
-                                "count": 5
-                            },
-                        ]
-                    },
-                    { type:"enemys_count"},
-
-                    { type:"finish"},
-                ]
-            }
-        })
-        this.game.modeManager.rules.humans.modifiers.health=0.5
-    }
-    on_spawn_player(player,first){
-        if(first)player.set_preset({
-            inventory: {
-                hand:1,
-                gun1: [
-                    {item:"colt1873",weight: 1},
-                ],
-                aitems:{
-                    "c22": 6,
+                deadzone:{
+                    mode:DeadZoneMode.staged,
+                    stages:MakeDeadZoneStages({
+                        count:7,
+                        radius:{
+                            decay:0.61,
+                            initial:30
+                        },
+                        damage:{
+                            advancing_scale:2,
+                            waiting_scale:1,
+                            limit:10,
+                            initial:2
+                        },
+                        wait_time:{
+                            initial:40,
+                            decay:0.97,
+                            min:30,
+                        },
+                        advancing_time:{
+                            initial:30,
+                            decay:0.95,
+                            min:20,
+                        },
+                    }),
                 },
-                items:[
-                    [{"item": "frag_grenade", "count": 10, "weight": 1}],
-                ],
-                iitems: [
-                    "scope_2",
-                    "scope_3"
-                ],
+                events:[]
             }
         })
+    }
+    on_start(){
+        this.game.modeManager.add_enemies([
+            {
+                "def": {
+                    "ai": {
+                        "kind": "advanced_legacy"
+                    },
+                    "boosts": [
+                        {"weight": 7,"def": "adrenaline","value": 0},
+                        {"weight": 1,"def": "adrenaline","value": 1},
+                    ],
+                    "inventory": {
+                        "infinity_ammo": true,
+                        "hand": 1,
+                        "backpack": [
+                            {
+                                "item": "basic_pack",
+                                "weight": 10
+                            },
+                            {
+                                "item": "military_pack",
+                                "weight": 1
+                            },
+                            {
+                                "item": "tactical_pack",
+                                "weight": 0.1
+                            }
+                        ],
+                        "vest": [
+                            {
+                                "item": "civil_vest",
+                                "weight": 10
+                            },
+                            {
+                                "item": "military_vest",
+                                "weight": 1
+                            },
+                            {
+                                "item": "tactical_vest",
+                                "weight": 0.1
+                            }
+                        ],
+                        "helmet": [
+                            {
+                                "item": "bike_helmet",
+                                "weight": 10
+                            },
+                            {
+                                "item": "military_helmet",
+                                "weight": 1
+                            },
+                            {
+                                "item": "tactical_helmet",
+                                "weight": 0.1
+                            }
+                        ],
+                        "melee": [
+                            {
+                                "item": "fist",
+                                "weight": 40
+                            },
+                            {
+                                "item": "survival_knife",
+                                "weight": 10
+                            },
+                            {
+                                "item": "shovel",
+                                "weight": 10
+                            },
+                            {
+                                "item": "axe",
+                                "weight": 5
+                            },
+                        ],
+                        "gun1": [
+                            {
+                                "item": "m9",
+                                "weight": 8
+                            },
+                            {
+                                "item": "m9_dual",
+                                "weight": 8
+                            },
+                            {
+                                "item": "mp5",
+                                "weight": 8
+                            },
+                            {
+                                "item": "micro_uzi",
+                                "weight": 7
+                            },
+                            {
+                                "item": "m870",
+                                "weight": 7
+                            },
+                            {
+                                "item": "ak47",
+                                "weight": 7
+                            },
+                            {item:"m110a2",weight:0.3},
+                            {
+                                "item": "kar98k",
+                                "weight": 0.2
+                            },
+                        ],
+                        "gun2": [
+                            {
+                                "item": "m9",
+                                "weight": 8
+                            },
+                            {
+                                "item": "m9_dual",
+                                "weight": 8
+                            },
+                            {
+                                "item": "mp5",
+                                "weight": 8
+                            },
+                            {
+                                "item": "micro_uzi",
+                                "weight": 7
+                            },
+                            {
+                                "item": "ak47",
+                                "weight": 7
+                            },
+                            {item:"m110a2",weight:0.6},
+                            {
+                                "item": "kar98k",
+                                "weight": 0.2
+                            },
+                        ],
+                        "aitems": {
+                            "p76":20,
+                            "c51": 140,
+                            "l19": 20,
+                        },
+                        "items": [
+                            [
+                                {
+                                    "item": "bandage",
+                                    "weight": 1,
+                                    "count": 5
+                                }
+                            ],
+                            [
+                                {
+                                    "item": "medikit",
+                                    "weight": 1
+                                }
+                            ],
+                            [
+                                {
+                                    "item": "yellow_soda",
+                                    "weight": 1
+                                }
+                            ]
+                        ],
+                        "iitems": [
+                            "scope_2"
+                        ]
+                    }
+                },
+                "count": 29
+            },
+            {
+                "def": {
+                    "ai": {
+                        "kind": "dumb"
+                    }
+                },
+                "count": 70
+            }
+        ])
+    }
+    on_spawn_player(player){
+        player.set_preset(this.preset)
     }
     async on_begin(){
-        await this.send_message_event({type:OnlineMessageType.Load,assets:{"gameplay_music":"/assets/sounds/musics/online/game_tundra_music_4.mp3"}})
-        this.background=await this.load_json("../../backgrounds/city_river.json")
-        this.cutscene=[
-            {type:CutsceneCommandType.SetSoundController,controller:"music",source:"gameplay_music"},
-            {type:CutsceneCommandType.SetBackground,background:this.background,timescale:80},
-            ...this.make_level_intro(),
-        ]
+        this.cutscene=await this.load_json("cutscenes/begin.jsonc")
+        this.preset=await this.level.load_character({"path": "../../characters/nick.jsonc"})
     }
-    async on_before(){
-        await this.show_cutscene(this.cutscene)
-    }
-    on_start(first){
+    async on_before(start_with_intro){
+        const cutscene=[]
+        //if(start_with_intro)cutscene.push(...this.cutscene)
+        cutscene.push(...this.make_level_intro())
+        await this.show_cutscene(cutscene)
     }
 })

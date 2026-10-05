@@ -376,7 +376,7 @@ export class Game extends ClientGame<GameObject>{
                 const cam_c=v2.dscale(this.scene_2d.camera.size,2)
                 const mouse_p=e.position
                 const angle=v2.lookTo(cam_c,mouse_p)
-                const dist=v2.distance(cam_c,mouse_p)/v2.len(cam_c)
+                const dist=v2.distance(cam_c,mouse_p)/Math.min(cam_c.x,cam_c.y)
                 this.set_lookTo_angle(angle,dist)
             }
         })
@@ -412,6 +412,7 @@ export class Game extends ClientGame<GameObject>{
     set_lookTo_angle(angle:number,dist:number){
         if(!this.active_entity)return
         this.input.angle=angle
+        if(dist>1)dist=1
         this.input.distance_to_aim=dist
         if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")){
             this.active_entity.enable_auto_rot=false

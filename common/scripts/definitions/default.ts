@@ -58,7 +58,7 @@ export const DefaultDefinitions:GameADefinitions={
     }
 }
 
-const guns_mount=["hp18","m870","model94","blr81","kar98k","rifle_cbc","vss","awp"]
+const guns_mount=["hp18","m870","empr641","blr81","kar98k","rifle_cbc","vss","awp"]
 
 for(const g of guns_mount){
     DefaultDefinitions.objects!.obstacles!.push(obstacles_factory.gun_mount(DefaultDefinitions.items!.guns!.find((def)=>def.idString===g)!,{

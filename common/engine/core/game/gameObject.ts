@@ -946,7 +946,7 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
         stream.write_boolean_group(save_id)
         stream.write_uint8(this.layers_orden.length)
 
-        let idx=0
+        let idx=1
         const ctx:CheckpointContext={
             coid:{},
             idco:{}
@@ -961,10 +961,13 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             for(const o of this.layers[l].orden){
                 if(this.objects[o]?.allow_checkpoint){
                     if(this.valid_encode_object_checkpoint&&!this.valid_encode_object_checkpoint(this.objects[o]))continue
-                    if(!blacklist.has(this.objects[o].number_type)&&!blacklist.has(this.objects[o].string_type))objects.push(this.objects[o])
+                    if(!blacklist.has(this.objects[o].number_type)&&!blacklist.has(this.objects[o].string_type)){
+                        objects.push(this.objects[o])
+                        ctx.coid[idx]=this.objects[o].id
+                        ctx.idco[this.objects[o].id]=idx
+                        idx++
+                    }
                 }
-                ctx.coid[idx]=this.objects[o].id
-                ctx.idco[this.objects[o].id]=idx
             }
             objects.sort((a, b) => {
                 const pa=orderMap.get(a.number_type)??orderMap.get(a.string_type)??Number.MAX_SAFE_INTEGER
@@ -974,11 +977,9 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
             stream.write_uint16(objects.length)
             for(const obj of objects){
                 if(save_id)stream.write_id(obj.id)
-                stream.write_id(idx)
+                stream.write_id(ctx.idco[obj.id])
                 stream.write_uint8(obj.number_type)
-                //.write_boolean_group(obj.is_new)
                 this.encode_object_checkpoint?.(stream,obj)
-                idx++
             }
             layers.push(objects)
         }
@@ -1010,7 +1011,6 @@ export class GameObjectManager2D<GameObject extends BaseObject2D>{
                 if(read_id)id=stream.read_id()
                 const co=stream.read_id()
                 const tp=stream.read_uint8()
-                //const bg=stream.read_boolean_group()
                 const obb=this.make_object_checkpoint?.(stream,id,layer,tp)
                 if(!obb)continue
                 const obj=this.add_object(obb,layer,id)

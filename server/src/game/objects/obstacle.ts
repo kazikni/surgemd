@@ -546,7 +546,7 @@ export class Obstacle extends StaticBody{
         .write_boolean_group(this.health_data.dead)
         .write_uint8(this.visual_data.variation)
         .write_uint8(this.visual_data.skin)
-        
+
         for(let i=0;i<this.connections.length;i++){
             if(!this.connections[i]){
                 this.connections.splice(i,1)

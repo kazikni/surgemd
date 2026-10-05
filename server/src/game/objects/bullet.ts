@@ -31,7 +31,7 @@ export class Bullet extends ServerGameObject{
     penetration:number=1
     weight?:number
     obstacle_mult:number=1
-    critical_mult:number=1.25
+    critical_mult?:number
     falloff?:number
     effective_range?:number
     on_hit_explosion?:ExplosionDef
@@ -125,7 +125,7 @@ export class Bullet extends ServerGameObject{
                             const falloffT=Math.max(0,Math.min(1,(disT-range)/(1-range)))
                             dmg*=Numeric.lerp(1,this.falloff,falloffT)
                         }
-                        dmg*=this.critical?this.critical_mult:1
+                        if(this.critical&&this.critical_mult!==undefined)dmg*=this.critical_mult
                         ;(obj as Human).damage({
                             amount:dmg,
                             owner:this.owner,

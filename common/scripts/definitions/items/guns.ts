@@ -100,7 +100,7 @@ export const bullets_factory={
             range: 200 * (1 + (power - 1) * 0.5),
             speed: 55 * (1 + (power - 1) * 0.6),
 
-            critical_mult: 1.1,
+            critical_mult: 1.15,
             obstacle_mult: 1.25,
             falloff: 0.75,
             effective_range:0.17,
@@ -515,6 +515,7 @@ export function Guns_Default_Init():GunDef[]{
                     falloff:0.8,
                     speed:38,
                     obstacle_mult:1.2,
+                    critical_mult:1.3,
                     tracer:tracers.small,
                 }
             },
@@ -556,6 +557,7 @@ export function Guns_Default_Init():GunDef[]{
             bullet:{
                 def:{
                     damage:9.6,
+                    critical_mult:1.3,
                     range:70,
                     falloff:0.8,
                     speed:20,
@@ -653,6 +655,7 @@ export function Guns_Default_Init():GunDef[]{
             bullet:{
                 def:{
                     damage:21.6,
+                    critical_mult:1.25,
                     range:130,
                     falloff:0.8,
                     speed:43,
@@ -698,6 +701,7 @@ export function Guns_Default_Init():GunDef[]{
             bullet:{
                 def:{
                     damage:25.2,
+                    critical_mult:1.25,
                     range:170,
                     falloff:0.8,
                     speed:45,
@@ -1364,6 +1368,7 @@ export function Guns_Default_Init():GunDef[]{
             bullet:{
                 def:{
                     damage:25,
+                    critical_mult:1.2,
                     falloff:0.75,
                     range:165,
                     speed:50,
@@ -1394,6 +1399,7 @@ export function Guns_Default_Init():GunDef[]{
             bullet:{
                 def:{
                     damage:16.8,
+                    critical_mult:1.2,
                     falloff:0.7,
                     range:165,
                     speed:45,
@@ -1460,6 +1466,7 @@ export function Guns_Default_Init():GunDef[]{
             bullet:{
                 def:{
                     damage:12,
+                    critical_mult:1.25,
                     obstacle_mult:2,
                     range:170,
                     speed:35,

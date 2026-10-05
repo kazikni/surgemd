@@ -591,6 +591,9 @@ export class MeleeItem extends MeleeItemBase implements LItem{
             this.firing=false
         }
     }
+    override load(def?: GameItem): void {
+        this.use_delay=this.def.switch_delay??0
+    }
     override unload(): void {
         this.use_delay=this.def.attack_delay
         this.damage_times.length=0

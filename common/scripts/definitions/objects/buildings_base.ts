@@ -1198,7 +1198,7 @@ export function Buildings_Default_Init():BuildingDef[]{
                         cant_close:true
                     }
                 }, {
-                    def: "red_button",
+                    def: "green_button",
                     position: v2(-7.9,2),
                     id:2,
                     puzzle_piece:{},

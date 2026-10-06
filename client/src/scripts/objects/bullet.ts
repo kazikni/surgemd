@@ -4,7 +4,6 @@ import { GameObject } from "../others/gameObject.ts";
 import { type Human } from "./human.ts";
 import { type StaticBody } from "./static_body.ts";
 import { CircleHitbox2D, ColorM, DefaultObjectEvents, ObjectComponent, random, Stream, v2, v2m, Vec2 } from "common/engine/core.ts";
-import { bullet_weights } from "../defs/human_animations.ts";
 export const bullet_nc={
     number_name:1,
     string_name:"bullet_nc", // Bullet Network Client

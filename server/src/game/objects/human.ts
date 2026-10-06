@@ -900,6 +900,11 @@ export class Human extends Humanoid{
                     this.emote_time=1.5
                     this.input.message=a.value
                     this.input.emote=undefined
+                    if(this.input.message.startsWith("/")&&this.game.debug.debug_menu){
+                        this.game.console.run(this.game.console.tokenize(this.input.message.substring(1)),{
+                            owner:this
+                        })
+                    }
                     break
                 }
                 case InputActionType.ping:

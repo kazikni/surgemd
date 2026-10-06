@@ -2,8 +2,7 @@
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
 import { BrowserFileManager, formatToHtml, Frame, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
-import { type CModsManager } from "../managers/modsManager.ts";
-import { Debug, sandbox_version, socials } from "../others/config.ts";
+import { Debug, socials } from "../others/config.ts";
 import { set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { LoadoutItemKind } from "common/scripts/definitions/loadout/skins.ts";
@@ -608,7 +607,7 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
     }
 }
 
-export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager,mods?:CModsManager){
+export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager){
     const campaign_path="scripts/campaign"
     const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
     const debug_mode=menu.save.get_variable("sv_debug_enabled")
@@ -719,7 +718,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                     <h3>Group ${g.code}
 <div style="display:flex;gap:8px;flex-wrap:wrap;">
 <button id="btn-copy-code" class="btn-blue">Copy Code</button>
-${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Link</button></h3>`}
+<button id="btn-copy-link" class="btn-blue">Copy Invite Link</button>
 </div>
 <p>Leader:${isLeader?"You":"Player "+g.leader}</p>
 <div class="settings-row">
@@ -755,11 +754,9 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                         await navigator.clipboard.writeText(g.code)
                         alert("Group code copied.")
                     }
-                    if(!sandbox_version){
-                        (p.querySelector("#btn-copy-link") as HTMLButtonElement).onclick=async()=>{
-                            await navigator.clipboard.writeText(`${location.origin}/?group-id=${g.code}`)
-                            alert("Invite link copied.")
-                        }
+                    (p.querySelector("#btn-copy-link") as HTMLButtonElement).onclick=async()=>{
+                        await navigator.clipboard.writeText(`${location.origin}/?group-id=${g.code}`)
+                        alert("Invite link copied.")
                     }
                     if(isLeader){
                         const lockToggle=p.querySelector("#group-lock-toggle") as HTMLInputElement
@@ -1287,29 +1284,6 @@ ${sandbox_version?"":`<button id="btn-copy-link" class="btn-blue">Copy Invite Li
                 },
             },
         },
-        ((sandbox_version&&mods)?({
-            name:"menu.options.mods",
-            id:"mods",
-            options:[
-                {
-                    id:"mods_list",
-                    name:"menu.mods.mods-list",
-                    type:"button",
-                    subtab:"mods_list"
-                }
-            ],
-            subtabs:{
-                "mods_list":{
-                    generate:(_p,_m)=>{
-
-                    },
-                    on_open:mods.menu_manage.bind(mods)
-                }
-            },
-            on_close(_m){
-                if(mods.state_changed)self.location.reload()
-            }
-        }):undefined),
         {
             id:"about",
             name:"menu.options.about",

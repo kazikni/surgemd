@@ -20,7 +20,6 @@ export const game_version="Pre-Beta-10"
 export const API_BASE=api_server.toString("http")
 export const api=true
 export const forum=false
-export const sandbox_version=false
 export const socials={
     discord:"https://discord.gg/7czkBvtmSU",
     youtube:"https://youtube.com/@kazikni",

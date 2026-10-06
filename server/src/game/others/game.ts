@@ -33,6 +33,7 @@ import { SequenceMode } from "../mode/sequence.ts";
 import { HumanBody } from "../objects/human_body.ts";
 import { Walls } from "../objects/walls.ts";
 import { TilemapVisual } from "../objects/tilemap.ts";
+import { DebugConsole } from "../managers/console_manager.ts";
 export interface GameData {
     living_count: number[]
 
@@ -148,6 +149,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         DeadZoneMode
     }
 
+    console:DebugConsole
+
     constructor(main_config:GameServerConfig,clients:ClientsManager,fs:FileManager){
         super(main_config.tps,clients,[
             Human,
@@ -181,6 +184,8 @@ export class Game extends AbstractServerGame<ServerGameObject>{
         this.debug=main_config.debug
 
         this.add_component(this.players)
+
+        this.console=new DebugConsole(this,{})
     }
     async init(mode:ModeManager){
         this.initialized=false

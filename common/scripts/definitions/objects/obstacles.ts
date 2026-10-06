@@ -257,7 +257,7 @@ export const obstacles_factory={
         return mergeDeep({idString:settings.id??((weapon?.idString??"")+"_mount")},{
             health:65,
             height:1,
-            hitbox:new RectHitbox2D(v2(-0.6,-0.15),v2(0.6,0.15)),
+            hitbox:new RectHitbox2D(v2(-0.65,-0.15),v2(0.65,0.15)),
             scale:{
                 destroy:0.8
             },
@@ -430,7 +430,7 @@ export const obstacles_factory={
     }={}):ObstacleDef{
         return mergeDeep({idString:id},{
             health:110,
-            hitbox:new RectHitbox2D(v2(-0.71,-1),v2(0.71,1)),
+            hitbox:new RectHitbox2D(v2(-0.52,-0.83),v2(0.52,0.83)),
             scale:{
                 destroy:0.75,
             },
@@ -661,7 +661,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 sounds:hit_sounds.heavy_metal
             },
             zIndex:{
-                base:zIndexes.Obstacles5
+                base:zIndexes.Obstacles6
             },
             rotation_mode:RotationMode.full,
             reflect_bullets:true,
@@ -689,7 +689,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 sounds:hit_sounds.tree
             },
             zIndex:{
-                base:zIndexes.Obstacles4
+                base:zIndexes.Obstacles5
             },
             rotation_mode:RotationMode.full,
             below:{
@@ -723,7 +723,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 sounds:hit_sounds.tree
             },
             zIndex:{
-                base:zIndexes.Obstacles5
+                base:zIndexes.Obstacles6
             },
             rotation_mode:RotationMode.full,
             below:{
@@ -1227,7 +1227,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         {
             idString:"small_stove",
             health:85,
-            hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
+            hitbox:new RectHitbox2D(v2(-0.6,-0.6),v2(0.6,0.6)),
             scale:{
                 destroy:0.9
             },
@@ -1257,7 +1257,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         {
             idString:"sink",
             health:85,
-            hitbox:new RectHitbox2D(v2(-0.56,-0.56),v2(0.56,0.56)),
+            hitbox:new RectHitbox2D(v2(-0.6,-0.6),v2(0.6,0.6)),
             scale:{
                 destroy:0.9
             },
@@ -1283,7 +1283,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         {
             idString:"large_kitchen_drawer",
             health:130,
-            hitbox:new RectHitbox2D(v2(-0.56,-1.1),v2(0.56,1.1)),
+            hitbox:new RectHitbox2D(v2(-0.55,-1.15),v2(0.55,1.15)),
             scale:{
                 destroy:0.9
             },
@@ -1291,7 +1291,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 frame:{
                     variations:2,
                     transform:{
-                        hotspot:v2(0.4495,0.5)
+                        hotspot:v2(0.45,0.5)
                     },
                     dead:"wood_residue_1x2",
                     dead_transform:{
@@ -1315,7 +1315,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             health:100,
             no_collision:true,
             passable_by_bullets:true,
-            hitbox:new RectHitbox2D(v2(-0.75,-1.12),v2(0.75,1.12)),
+            hitbox:new RectHitbox2D(v2(-0.85,-1.2),v2(0.85,1.2)),
             scale:{
                 destroy:0.9
             },
@@ -1343,7 +1343,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             health:100,
             no_collision:true,
             passable_by_bullets:true,
-            hitbox:new RectHitbox2D(v2(-0.75,-1.12),v2(0.75,1.12)),
+            hitbox:new RectHitbox2D(v2(-0.85,-1.2),v2(0.85,1.2)),
             loot_table:[{weight:1,item:"bonesaw"}],
             scale:{
                 destroy:0.9
@@ -1394,7 +1394,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
         {
             idString:"small_bed",
             health:130,
-            hitbox:new RectHitbox2D(v2(-0.77,-1.28),v2(0.77,1.28)),
+            hitbox:new RectHitbox2D(v2(-0.8,-1.28),v2(0.8,1.28)),
             scale:{
                 destroy:0.8
             },

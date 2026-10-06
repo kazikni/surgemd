@@ -40,6 +40,7 @@ ___
 ### Obstacles
 * Gas Pump Can
 * Wood Table Bonesaw
+* Computer
 ___
 ### Others
 * Parachute Perspective
@@ -55,6 +56,7 @@ ___
 * Some Balance Changes
 * Some Loot Table Changes
 * Some Sprites Changes
+* Some Hitboxes Changes
 * Send item emote now show the rarity of the item
 ___
 ### Menu

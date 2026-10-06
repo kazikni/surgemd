@@ -97,7 +97,7 @@ export class GameConsole<CTX extends ConsoleContext = ConsoleContext> {
         this.types[name] = parser
     }
     /* ================= RUN ================= */
-    async run(tokens: string[]) {
+    async run(tokens: string[],ctx?:Partial<CTX>) {
         if (!tokens.length) return
         const name = tokens.shift()!.toLowerCase()
         const cmd = this.commands.get(name)
@@ -105,18 +105,19 @@ export class GameConsole<CTX extends ConsoleContext = ConsoleContext> {
             this.error(`Unknown command: ${name}`)
             return
         }
-        return await this.run_command(tokens, cmd)
+        return await this.run_command(tokens, cmd,ctx)
     }
-    private async run_command(tokens: string[],cmd: CommandDef<ConsoleCommandContext<CTX>>):Promise<CommandExecutioStatus>{
+    private async run_command(tokens: string[],cmd: CommandDef<ConsoleCommandContext<CTX>>,_ctx?:Partial<CTX>):Promise<CommandExecutioStatus>{
         if (tokens.length&&cmd.childrens) {
             const child = cmd.childrens.find((v)=>v.name===tokens[0])
             if(child){
                 tokens.shift()
-                return {result:await this.run_command(tokens, child as CommandDef<ConsoleCommandContext<CTX>>),valid_command:true}
+                return {result:await this.run_command(tokens, child as CommandDef<ConsoleCommandContext<CTX>>,_ctx),valid_command:true}
             }
         }
-        const ctx = this.parse(tokens, cmd)
+        let ctx = this.parse(tokens, cmd)
         if(cmd.execute){
+            if(_ctx)ctx={...ctx,..._ctx}
             const ret=cmd.execute(ctx)
             if(ret instanceof Promise)return {result:await ret,valid_command:true}
             return {result:ret,valid_command:true}

@@ -175,6 +175,18 @@ export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupF
         }
     }
 }
+export function warning_popup(msg:string,btn_msg:string="Continue"): PopupFunction {
+    return (popup) => {
+        popup.parent.style.cssText="text-align:center;font-family:'Russo-One';font-size:1.25vw;"
+        popup.parent.innerHTML=`
+<p class="span-text">${msg}</p>
+<button id="continue" class="btn-green" style="font-size:3vw;">${btn_msg}</button>`
+        const btn = popup.parent.querySelector("#continue") as HTMLButtonElement
+        btn.onclick = () => {
+            popup.resolve(undefined)
+        }
+    }
+}
 export function input_popup(msg:string,placeholder="message",enter_msg="Enter",limit?:number): PopupFunction {
     return (popup) => {
         popup.parent.innerHTML=`

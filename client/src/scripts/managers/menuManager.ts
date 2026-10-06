@@ -5,7 +5,7 @@ import { PlayArgs } from "../others/constants.ts";
 import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement } from "common/engine/web.ts";
 import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
-import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption } from "../defs/menu.ts";
+import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption, warning_popup } from "../defs/menu.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
 import { FileManager, random, TranslationManager } from "common/engine/core.ts";
 import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
@@ -200,7 +200,8 @@ export class MenuManager{
                 video.addEventListener("canplaythrough", start, { once: true })
             }
 
-            video.addEventListener("ended",() => {
+            video.addEventListener("ended",async() => {
+                await this.game_popup(warning_popup(this.translation.get("menu.warnings.initial",{"version":game_version})))
                 screen.style.opacity = "0"
                 setTimeout(() => {
                     finish()
@@ -397,8 +398,8 @@ export class MenuManager{
             }
         })*/
     }
-    async reload(definitions:GameDefinition,fs:FileManager,mods?:CModsManager){
-        await MenuInitDefault(this,definitions,fs,this.translation,this.resources,mods)
+    async reload(definitions:GameDefinition,fs:FileManager){
+        await MenuInitDefault(this,definitions,fs,this.translation,this.resources)
     }
     async update_api(){
         if(api){

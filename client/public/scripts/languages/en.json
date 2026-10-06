@@ -383,6 +383,9 @@
             "loading-screen": {
                 "load": "Loading: ${text}",
                 "unload": "Unloading: ${text}"
+            },
+            "warnings":{
+                "initial":"<h1>Warning</h1>This game contains content that may be disturbing to some people:</br>Fictional and real illicit drugs.</br>Blood and violence.</br>Firearms and melee weapons.<h1>${version}</h1>This game is not yet complete.<br>This version is just a test.</br>Join our Discord to keep up with news and updates.</br>"
             }
         },
         "settings": {

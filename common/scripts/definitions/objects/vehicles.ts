@@ -57,9 +57,9 @@ export const VehicleTemplates = {
         idString: id,
         spawn:Spawn.ground,
         hitbox: new HitboxGroup2D(
-            new CircleHitbox2D(v2(1.0, 0), 1.0),
-            new CircleHitbox2D(v2(-0.9, 0), 1.0),
-            new CircleHitbox2D(v2(0, 0), 1.2)
+            new CircleHitbox2D(v2(0.9, 0), 0.5),
+            new CircleHitbox2D(v2(-0.9, 0), 0.5),
+            new CircleHitbox2D(v2(0, 0), 0.5)
         ),
         frame: {
             base_transform:{
@@ -68,26 +68,24 @@ export const VehicleTemplates = {
         },
         center: v2(0, 0),
         pillot_seat: {
-            position: v2(0, 0),
+            position: v2(-0.3, 0),
             leave: v2(0, 1),
             doors: [v2(0, 0.5), v2(0, -0.5)],
-            scope_change:{zoom:0.25}
         },
         wheels: {
             defs: [
-                {movable: true,position: v2(0.75, 0),scale: 1},
-                {movable: true,position: v2(-0.75, 0),scale: 1}
+                {movable: true,position: v2(1.1, 0),scale: 1.4},
+                {movable: false,position: v2(-1, 0),scale: 1.4}
             ]
         },
         physics:{
             mass:130,
 
-            engine_force:700,
-            brake_force:700,
+            engine_force:1500,
+            brake_force:1000,
 
-            traction:1.1,
-
-            drag:0.1,
+            traction:1,
+            drag:0.75,
 
             max_steer_speed:7,
             steer_force:20,
@@ -101,10 +99,10 @@ export const VehicleTemplates = {
             new CircleHitbox2D(v2(1.2,0.55),1.15),
             new CircleHitbox2D(v2(1.2,-0.55),1.15),
 
-            new CircleHitbox2D(v2(-1.2,0.55),1.2),
-            new CircleHitbox2D(v2(-1.2,-0.55),1.2),
+            new CircleHitbox2D(v2(-1.8,0.55),1.2),
+            new CircleHitbox2D(v2(-1.8,-0.55),1.2),
 
-            new CircleHitbox2D(v2(0,0),1.45)
+            new CircleHitbox2D(v2(-0.5,0),1.45)
         ),
         frame: {
             base_transform:{
@@ -134,7 +132,6 @@ export const VehicleTemplates = {
             position:v2(0,-0.7),
             leave:v2(0,-1.5),
             doors:[v2(0,-1.5)],
-            scope_change:{zoom:0.3}
         },
 
         seats:[

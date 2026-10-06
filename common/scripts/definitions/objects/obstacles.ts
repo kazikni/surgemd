@@ -1127,6 +1127,7 @@ export function Obstacles_Default_Init():ObstacleDef[]{
             health:150,
             hitbox:new RectHitbox2D(v2(-0.4,-0.4),v2(0.4,0.4)),
             reflect_bullets:true,
+            no_collision:true,
             assets:{
                 frame:{
                     dead:"metal_residue_1x1",
@@ -1138,6 +1139,36 @@ export function Obstacles_Default_Init():ObstacleDef[]{
                 particles:{
                     particle:"metal_particle",
                     tint:0x484848,
+                },
+                sounds:hit_sounds.light_metal,
+            },
+            rotation_mode:RotationMode.limited,
+            zIndex:{
+                base:zIndexes.Obstacles4
+            },
+            parallax:PerspetiveSizes.medium,
+        },
+        {
+            idString:"computer",
+            health:200,
+            hitbox:new RectHitbox2D(v2(-0.4,-0.39),v2(0.4,0.39)),
+            reflect_bullets:true,
+            no_collision:true,
+            assets:{
+                frame:{
+                    dead:"metal_residue_1x1",
+                    dead_transform:{
+                        tint:0xc1c3cb,
+                        scale:2,
+                        hotspot:v2.half_one
+                    },
+                    transform:{
+                        hotspot:v2(0.3,0.39)
+                    }
+                },
+                particles:{
+                    particle:"metal_particle",
+                    tint:0xc1c3cb,
                 },
                 sounds:hit_sounds.light_metal,
             },

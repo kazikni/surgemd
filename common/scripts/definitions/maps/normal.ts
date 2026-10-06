@@ -145,7 +145,6 @@ export const NormalMap:MapDef={
             {def:"normal_loot",count:100},
             {def:"jeep",count:5},
             {def:"bike",count:5},
-            {def:"boat",count:5},
         ],
         islands:[{
             structures:[

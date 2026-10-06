@@ -803,6 +803,13 @@ export class HitboxGroup2D extends BaseHitbox2D{
             hb.translate(position,position_angle)
         }
     }
+    rotate(rad:number):void{
+        for(const hb of this.hitboxes){
+            if(hb.type===HitboxType2D.circle){
+                v2m.rotate_RadAngle(hb.position,rad)
+            }
+        }
+    }
     override clone(deep:boolean=true): HitboxGroup2D {
         return new HitboxGroup2D(...(deep?this.hitboxes.map(hitbox => hitbox.clone(true)):this.hitboxes));
     }

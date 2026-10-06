@@ -570,10 +570,11 @@ export class MeleeItem extends MeleeItemBase implements LItem{
     }
     update(user: Human,dt:number): void {
         if(this.inventory.hand_item===this&&!user.downed){
-            if(this.damage_times.length>0){
-                this.damage_times[0]-=dt
-                if(this.damage_times[0]<=0){
-                    this.damage_times.shift()
+            for(let i=0;i<this.damage_times.length;i++){
+                this.damage_times[i]-=dt
+                if(this.damage_times[i]<=0){
+                    this.damage_times.splice(i,1)
+                    i--
                     this.attack(user)
                 }
             }

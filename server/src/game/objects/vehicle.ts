@@ -7,6 +7,7 @@ import {
     v2,
     v2m,
     Vec2,
+    HitboxType2D,
 } from "common/engine/core.ts"
 import { Human } from "./human.ts"
 import { GameObjectType } from "common/scripts/others/constants.ts"
@@ -291,6 +292,11 @@ export class Vehicle extends MovingBody {
 
         if(Math.abs(this.speed) > 0.001 ||Math.abs(this.physical_data.angular_velocity) > 0.001 ||this.is_new){
             this.physical_data.dirty = true
+            if(this.def!.hitbox.type===HitboxType2D.group){
+                this.base_hitbox=this.def!.hitbox.clone()
+                this.base_hitbox.rotate(this.physical_data.rotation)
+                this.update_hitbox()
+            }
             this.set_dirty_part()
         }
 

@@ -1213,8 +1213,8 @@ export function Buildings_Default_Init():BuildingDef[]{
                     position:v2(-6,1.4),
                     rotation: 2
                 }, {
-                    def: "normal_tv",
-                    position: v2(-7,1.4),
+                    def: "computer",
+                    position: v2(-7.3,1.4),
                     rotation: 0,
                     id:1
                 }, {

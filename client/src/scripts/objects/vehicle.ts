@@ -4,7 +4,7 @@ import { GameObjectType, zIndexes } from "common/scripts/others/constants.ts"
 import { MovingBody } from "./moving_body.ts"
 import { FloorKind, Floors, FloorType } from "common/scripts/others/terrain.ts";
 import { ClientDecal } from "./client_decal.ts";
-import { ColorM, Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
+import { ColorM, HitboxType2D, Numeric, RectHitbox2D, Stream, v2, v2m } from "common/engine/core.ts";
 import { Debug } from "../others/config.ts";
 export class Vehicle extends MovingBody {
     string_type = "vehicle"
@@ -117,7 +117,21 @@ export class Vehicle extends MovingBody {
         }
 
         this.container.position = this.position
-        this.container.rotation = this.rotation
+        if(this.container.rotation!==this.rotation){
+            if(this.def!.hitbox.type===HitboxType2D.group){
+                this.base_hitbox=this.def!.hitbox.clone()
+                this.base_hitbox.rotate(this.rotation)
+                this.update_hitbox()
+            }
+            this.container.rotation = this.rotation
+        }
+
+        if(Debug.hitbox){
+            this.game.hitboxes_gfx.ctx.begin_path()
+            this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
+            this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
+            this.game.hitboxes_gfx.ctx.fill()
+        }
     }
     override on_destroy() {
         this.container.destroy()
@@ -133,12 +147,6 @@ export class Vehicle extends MovingBody {
         if (full) {
             const defId = stream.read_uint8()
             this.set_def(this.game.definitions.vehicles.getFromNumber(defId))
-            if(Debug.hitbox){
-                this.game.hitboxes_gfx.ctx.begin_path()
-                this.game.hitboxes_gfx.ctx.hitbox(this.hitbox)
-                this.game.hitboxes_gfx.ctx.fill_color=ColorM.hex("#f007")
-                this.game.hitboxes_gfx.ctx.fill()
-            }
         }
     }
 }

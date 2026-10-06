@@ -379,7 +379,7 @@ export const melees_factorys={
             damage:25,
             attack_delay:0.65,
             switch_delay:0.5,
-            damage_delays:[0.25,0.5],
+            damage_delays:[0.25,0.55],
             rig_arms:{
                 left:{
                     position:DefaultFistRig.left!.position,

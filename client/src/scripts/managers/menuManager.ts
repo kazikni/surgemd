@@ -3,7 +3,6 @@ import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
 import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement } from "common/engine/web.ts";
-import { CModsManager } from "./modsManager.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption, warning_popup } from "../defs/menu.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
@@ -12,6 +11,7 @@ import { CutsceneManager } from "common/engine/web/misc/cutscene.ts";
 import { backgrounds, default_cutscene_theme } from "common/scripts/config/background_effect.ts";
 import { BackgroundManager } from "common/engine/web/misc/background.ts";
 import { type DebugConsole } from "./debugConsole.ts";
+import { set_full_screen } from "../defs/go_files.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
 
 export class MenuManager{
@@ -366,6 +366,8 @@ export class MenuManager{
                 self.location.reload()
             }
         })
+
+        if(save.get_variable("sv_graphics_fullscreen"))set_full_screen(true)
 
         /*this.console=debug_console
         this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'

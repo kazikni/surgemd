@@ -1,16 +1,56 @@
 import { FontStyle } from "../../core/definition/utils.ts";
 import { Random1,random } from "../../core/math/random.ts";
 import { Numeric } from "../../core/math/utils.ts";
+import { Vec2 } from "../../core/math/vec2.ts";
 import { type ClientGame } from "./game.ts";
-export interface SMDEMenu extends HTMLElement{
-    hover:boolean
+declare global{
+    class TabsContainer extends HTMLElement{
+        switchTab(index:number):void
+    }
+    class SMDEConsole extends HTMLElement{
+        clear():void
+        log(...args:any):void
+        insert(val:{index:number,html:string}):void
+    }
+    class SMDEMenu extends HTMLElement {
+        set_hover(hover:boolean):void
+        close():void
+        rebuild():void
+        add_option(text:string,onclick:(e:PointerEvent)=>void):HTMLElement
+        add_submenu(text:string, menu:SMDEMenu):HTMLElement
+    }
+    class SMDEOptionSubMenu extends HTMLElement{}
+    class SMDEJoystick extends HTMLElement {
+        knob:HTMLDivElement
+        active:boolean
+        center:Vec2
+        value:Vec2
+        pointerId:number|null
+    }
+    class SMDEWindow extends HTMLElement{
+        movable:boolean
+        moving:boolean
+        dragOffset:Vec2
+        content:HTMLElement|null
+        add_close_button():HTMLButtonElement
+        add_title():HTMLSpanElement
+        set_size(width:number,height:number):void
+        set_top(val:string):void
+        set_title(val:string):void
+    }
+    class SMDETree extends HTMLElement{
+        items:HTMLElement[]
+        parent_arrow:HTMLElement|null
+        add_option(text:string, elem:HTMLElement, onclick?:(e:any)=>void, index?:number):HTMLElement
+        add_subtree(text:string, tree:SMDETree, onclick?:(e:any)=>void, index?:number):HTMLElement
+        create_item(item:HTMLElement):HTMLDivElement
+
+        refresh():void
+        insert_item(item:HTMLElement, index?:number):HTMLDivElement
+
+        clear():void
+    }
 }
-export interface SMDEOptionSubMenu extends HTMLElement{}
-export interface SMDEJoystick extends HTMLElement{}
-export interface SMDEWindow extends HTMLElement{
-    content:HTMLElement 
-}
-export interface TabsContainer extends HTMLElement{}
 export interface TweenOptions<T>{
     target: T
     to: Partial<T>

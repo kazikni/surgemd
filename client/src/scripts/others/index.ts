@@ -2,7 +2,7 @@ import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
 import { isMobile } from "common/engine/web.ts";
-import { GoFileManager, is_binary } from "../defs/go_files.ts";
+import { BinFileManager, is_binary } from "../defs/go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
@@ -33,7 +33,7 @@ import { FetchFileManager, FileManager, TranslationManager } from "common/engine
 
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
 
-    const fs:FileManager=is_binary?new GoFileManager():new FetchFileManager()
+    const fs:FileManager=is_binary?new BinFileManager():new FetchFileManager()
 
     class App{
         game:Game

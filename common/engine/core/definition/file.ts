@@ -18,6 +18,8 @@ export abstract class FileManager{
     abstract list_dir(path:string):Promise<string[]>
     abstract open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle>
 
+    abstract exist(path:string):Promise<boolean>
+
     async list_dir_recursive(path:string,base:string=""):Promise<string[]>{
         const ret:string[]=[]
         const files=await this.list_dir(Path.join_simple(base,path))
@@ -35,6 +37,9 @@ export abstract class FileManager{
 
 export class FetchFileManager extends FileManager {
     base:string="/"
+    override async exist(path: string): Promise<boolean> {
+        return true
+    }
     override is_directory(path: string): boolean {
         return false
     }

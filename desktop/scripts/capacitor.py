@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parent.parent.parent
 CAPACITOR_DIR=ROOT/"desktop/capacitor"
 CAPACITOR_ANDROID_DIR=CAPACITOR_DIR/"android"
 CLIENT_DIR=ROOT/"client"
-DIST_DIR=CAPACITOR_DIR/"dist"
+DIST_DIR=ROOT/"desktop/dist"
 BUILD_DIR=CLIENT_DIR/"dist"
 IS_WINDOWS=os.name=="nt"
 

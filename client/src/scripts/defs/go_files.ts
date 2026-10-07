@@ -1,78 +1,64 @@
-import { FileManager } from "common/engine/core.ts";
-
-export const is_binary =typeof window.go_is_binary_version==="undefined"?false:await window.go_is_binary_version()
-if (is_binary) {
-    console.log("Running as desktop binary")
+import {FileManager} from "common/engine/core.ts"
+import { FileHandle } from "common/engine/core/definition/file.ts";
+declare global{
+    interface Window{
+        electronAPI:{
+            isBinary:()=>Promise<boolean>
+            readFile:(path:string)=>Promise<string>
+            writeFile:(path:string,content:string)=>Promise<void>
+            readFileB:(path:string)=>Promise<string>
+            writeFileB:(path:string,content:string)=>Promise<void>
+            listDir:(path:string)=>Promise<string[]>
+            fullscreen:(enable:boolean)=>Promise<void>
+            exist:(path:string)=>Promise<boolean>
+        }
+    }
 }
-export class GoFileManager extends FileManager {
-    async read_file(path: string): Promise<string> {
-        return await window.go_fs_readFile(path)
+export const is_binary=typeof window.electronAPI==="undefined"?false:await window.electronAPI.isBinary()
+
+export class BinFileManager extends FileManager{
+    override open(path: string, mode: "r" | "w" | "rw"): Promise<FileHandle> {
+      throw new Error("Method not implemented.");
     }
-    async write_file(path: string, content: string): Promise<void> {
-        await window.go_fs_writeFile(path, content)
+    override is_directory(path: string): boolean {
+      throw new Error("Method not implemented.");
     }
-    async read_fileb(path: string): Promise<Uint8Array> {
-        const b64 = await window.go_fs_readFileB(path)
-        const bin = atob(b64)
-        const arr = new Uint8Array(bin.length)
-        for (let i = 0; i < bin.length; i++) {
-            arr[i] = bin.charCodeAt(i)
+    async read_file(path:string):Promise<string>{
+        return await window.electronAPI.readFile(path)
+    }
+    async write_file(path:string,content:string):Promise<void>{
+        await window.electronAPI.writeFile(path,content)
+    }
+    async read_fileb(path:string):Promise<Uint8Array>{
+        const b64=await window.electronAPI.readFileB(path)
+        const bin=atob(b64)
+        const arr=new Uint8Array(bin.length)
+        for(let i=0;i<bin.length;i++){
+            arr[i]=bin.charCodeAt(i)
         }
         return arr
     }
-    async write_fileb(path: string, content: Uint8Array): Promise<void> {
-        let bin = ""
-        for (let i = 0; i < content.length; i++) {
-            bin += String.fromCharCode(content[i])
+    async write_fileb(path:string,content:Uint8Array):Promise<void>{
+        let bin=""
+        for(let i=0;i<content.length;i++){
+            bin+=String.fromCharCode(content[i])
         }
-        const b64 = btoa(bin)
-        await window.go_fs_writeFileB(path, b64)
+        await window.electronAPI.writeFileB(path,btoa(bin))
     }
-    async list_dir(path: string): Promise<string[]> {
-        return await window.go_fs_listDir(path)
-    }
-}
-export async function exec_cmd(command: string): Promise<string> {
-    if (!is_binary) {
-        throw new Error("exec_cmd avaliable only in desktop version")
+    async list_dir(path:string):Promise<string[]>{
+        return await window.electronAPI.listDir(path)
     }
 
-    return await window.go_exec_cmd(command)
+    override exist(path: string): Promise<boolean> {
+        return window.electronAPI.exist(path)
+    }
 }
 
-export async function exec_server(
-    port: number,
-    mode: string,
-    settings: object,
-    password: string = ""
-) {
-    if (!is_binary) throw new Error("Desktop only")
-
-    return await window.go_exec_server(
-        port,
-        mode,
-        JSON.stringify(settings),
-        password
-    )
-}
-
-export async function stop_server() {
-    if (!is_binary) throw new Error("Desktop only")
-    return await window.go_stop_server()
-}
 let is_fullscreen=false
-if(is_binary){
-    document.addEventListener("keydown", e=>{
-        if(e.key==="F11"){
-            is_fullscreen=!is_fullscreen
-            window.go_toggle_fullscreen(is_fullscreen)
-        }
-    })
-}
-
 export function set_full_screen(enable:boolean){
+    is_fullscreen=enable
     if(is_binary){
-        window.go_toggle_fullscreen(enable)
+        window.electronAPI.fullscreen(enable)
     }else{
         if(enable){
             if(!document.fullscreenElement){
@@ -84,4 +70,12 @@ export function set_full_screen(enable:boolean){
             }
         }
     }
+}
+if(is_binary){
+    document.addEventListener("keydown", e=>{
+        if(e.key==="F11"){
+            is_fullscreen=!is_fullscreen
+            set_full_screen(is_fullscreen)
+        }
+    })
 }

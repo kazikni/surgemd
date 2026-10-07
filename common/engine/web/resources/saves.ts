@@ -160,12 +160,13 @@ export class GameSave{
         switch(save.type){
             case "file":
                 try{
-                    const s=await save.fs.read_file(save.path)
-                    if(s){
-                        const f=JSON.parse(s) as GameConsoleFile
+                    if(await save.fs.exist(save.path)){
+                        const f=JSON.parse(await save.fs.read_file(save.path)) as GameConsoleFile
                         this.load_save(f)
                     }else{
                         await this.save(save)
+                        const f=JSON.parse(await save.fs.read_file(save.path)) as GameConsoleFile
+                        this.load_save(f)
                     }
                 }catch(e){
                     await this.save(save)

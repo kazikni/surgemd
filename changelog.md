@@ -15,6 +15,7 @@ ___
 * Hide Boost Bar When you dont have boost
 * Improve Mobile GUI
 * Now You can send badges as emotes
+* Initial Warning
 ___
 ### Items
 * Baseball Bat

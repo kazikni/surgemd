@@ -1,4 +1,4 @@
-import { HideElement, ShowElement, UIModule } from "common/engine/web.ts";
+import { HideElement, ShowElement, Sound, UIModule } from "common/engine/web.ts";
 import { type Game } from "../others/game.ts";
 import { FeedMessage, FeedMessageType, GeneralUpdate, GlobalMessage } from "common/scripts/packets/general_update.ts";
 
@@ -14,7 +14,7 @@ export class InformationBoxModule extends UIModule<Game> {
     global_messages!: HTMLDivElement
 
     gmsg:GlobalMessageInstance[]=[]
-    queue: {msg:string,player_id?:number}[] = []
+    queue: {msg:string,player_id?:number,sound?:Sound}[] = []
     time = 0
 
     override on_init(): void {
@@ -27,7 +27,7 @@ export class InformationBoxModule extends UIModule<Game> {
         HideElement(this.interaction)
     }
 
-    push_infobox(msg: string,player_id?:number) {
+    push_infobox(msg: string,player_id?:number,sound?:Sound) {
         if(player_id!==undefined){
             for(let i=0;i<this.queue.length;i++){
                 if(this.queue[i].player_id===player_id){
@@ -39,7 +39,8 @@ export class InformationBoxModule extends UIModule<Game> {
         if(this.queue.length===0)this.time=0
         this.queue.push({
             msg:msg,
-            player_id:player_id
+            player_id:player_id,
+            sound
         })
     }
     push_msg(msg:GlobalMessage){
@@ -67,7 +68,7 @@ export class InformationBoxModule extends UIModule<Game> {
                 if(!this.game.ui.self_feed_enabled)break
                 const msg=(state.obj as FeedMessage)
                 if(msg.type===FeedMessageType.kill&&msg.killer?.id===this.game.active_entity_id){
-                    this.push_infobox(this.game.language.get("infobox.kill",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId)
+                    this.push_infobox(this.game.language.get("infobox.kill",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId,this.game.resources.get_sound("ui_kill"))
                 }else if(msg.type===FeedMessageType.down&&msg.killer?.id===this.game.active_entity_id){
                     this.push_infobox(this.game.language.get("infobox.knock",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId)
                 }
@@ -87,12 +88,12 @@ export class InformationBoxModule extends UIModule<Game> {
             if (this.time <= 0) {
                 this.killbox.innerHTML = this.queue[0].msg
                 ShowElement(this.killbox)
+                this.game.sounds.play(this.queue[0].sound)
             }
             this.time += dt
-            if (this.time >= 3) {
+            if (this.time >=(this.queue.length>1?1.5:4)) {
                 this.time = 0
                 this.queue.shift()
-
                 if (this.queue.length === 0) {
                     HideElement(this.killbox)
                 }

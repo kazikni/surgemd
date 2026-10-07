@@ -121,7 +121,7 @@ async function cleanElectron(dir:string){
     }
 }
 await buildElectron("win32")
-await cleanElectron(join(dist_path,"surgemd-linux-x64"))
+await cleanElectron(join(dist_path,"surgemd-win32-x64"))
 await buildElectron("linux")
 await cleanElectron(join(dist_path,"surgemd-linux-x64"))
 

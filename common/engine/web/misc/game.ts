@@ -6,7 +6,7 @@ import { ResourcesManager } from "../resources/resources.ts"
 import { ParticlesManager2D } from "../../core/game/particles.ts"
 import { ClientParticle2D } from "./particles.ts"
 import { InputManager } from "./keys.ts"
-import { GameSave } from "../resources/saves.ts"
+import { SaveManager } from "../resources/saves.ts"
 import { TranslationManager } from "../../core/definition/definitions.ts";
 import { UIRoot } from "./html_manager.ts";
 import { AudioEngine } from "../resources/sounds.ts";
@@ -70,7 +70,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
     input_manager:InputManager
 
     sounds:AudioEngine
-    save:GameSave
+    save:SaveManager
     ui_manager:UIRoot<any>
 
     constructor(renderer:Renderer,language:TranslationManager=new TranslationManager(),objects:Array<new ()=>GObject2D>=[]){
@@ -78,7 +78,7 @@ export abstract class ClientGame<GObject2D extends ClientGameObject2D=ClientGame
 
         this.renderer=renderer
         this.language=language
-        this.save=new GameSave()
+        this.save=new SaveManager()
 
         this.sounds=new AudioEngine()
         this.resources=new ResourcesManager(renderer as WebglRenderer,this.sounds)

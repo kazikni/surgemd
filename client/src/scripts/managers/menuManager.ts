@@ -2,7 +2,7 @@ import { api, API_BASE, api_server, game_version, socials } from "../others/conf
 import { ApiSettings, FindGameResult } from "common/scripts/config/config.ts";
 import { AccountManager } from "./accountManager.ts";
 import { PlayArgs } from "../others/constants.ts";  
-import { AudioEngine, Camera2D, GameSave, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement } from "common/engine/web.ts";
+import { AudioEngine, Camera2D, SaveManager, HideElement,InputManager, ResourcesManager, ShowElement, ShowTab, Sound, SoundController, ToggleElement } from "common/engine/web.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { GamePopupCTX, MenuInitDefault, MenuTab, MenuTabDef, SubMenuOption, warning_popup } from "../defs/menu.ts";
 import { OnlineMessageCharacter } from "common/scripts/packets/messages.ts";
@@ -62,7 +62,7 @@ export class MenuManager{
         game_version:document.querySelector("#game-version") as HTMLSpanElement
     }
 
-    save!:GameSave
+    save!:SaveManager
     resources!:ResourcesManager
     translation!:TranslationManager
     sounds!:AudioEngine
@@ -328,7 +328,7 @@ export class MenuManager{
             this.content.menu_options.style.pointerEvents=""
         }
     }
-    async init(input:InputManager,save:GameSave,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager){
+    async init(input:InputManager,save:SaveManager,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager){
         const debug_mode=save.get_variable("sv_debug_enabled")
         this.save=save
         this.resources=resources

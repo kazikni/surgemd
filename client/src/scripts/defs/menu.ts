@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { BrowserFileManager, formatToHtml, Frame, GameSave, isMobile, ResourcesManager } from "common/engine/web.ts";
+import { BrowserFileManager, formatToHtml, Frame, SaveManager, isMobile, ResourcesManager } from "common/engine/web.ts";
 import { Debug, socials } from "../others/config.ts";
 import { set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
@@ -205,7 +205,7 @@ export function input_popup(msg:string,placeholder="message",enter_msg="Enter",l
         }
     }
 }
-export function make_menu_settings(save: GameSave,name:string, defs: (SettingDef|undefined)[],translation:TranslationManager){
+export function make_menu_settings(save: SaveManager,name:string, defs: (SettingDef|undefined)[],translation:TranslationManager){
     return (parent:HTMLDivElement)=>{
         parent.innerHTML=`<h1 class="span-text-base">${translation.get(name)}</h1>`
         for(const def of defs){
@@ -275,7 +275,7 @@ export function make_menu_play_options(options:GamePlayOption[]){
         }
     }
 }
-export function make_emotes_settings(save: GameSave,resources:ResourcesManager,definitions:GameDefinition,emotes: (EmoteDef|BadgeDef|string)[],translation: TranslationManager){
+export function make_emotes_settings(save: SaveManager,resources:ResourcesManager,definitions:GameDefinition,emotes: (EmoteDef|BadgeDef|string)[],translation: TranslationManager){
     return (parent: HTMLDivElement)=>{
         let selected_elem: HTMLElement|null=null
         let selected_elem_out: HTMLElement|null=null
@@ -401,7 +401,7 @@ export function make_emotes_settings(save: GameSave,resources:ResourcesManager,d
         }
     }
 }
-export function make_badges_settings(save: GameSave,resources: ResourcesManager,badges:BadgeDef[],translation: TranslationManager) {
+export function make_badges_settings(save: SaveManager,resources: ResourcesManager,badges:BadgeDef[],translation: TranslationManager) {
     return (parent: HTMLDivElement) => {
         let selected: string=save.get_variable("sv_loadout_badge")
 
@@ -450,7 +450,7 @@ export function make_badges_settings(save: GameSave,resources: ResourcesManager,
         }
     }
 }
-export function select_loadout_item(save: GameSave,resources: ResourcesManager,items: string[],slots:string[],icon_placeholder:string,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
+export function select_loadout_item(save: SaveManager,resources: ResourcesManager,items: string[],slots:string[],icon_placeholder:string,variable: string,translation_item_begin: string,translation_slot_begin:string,translation: TranslationManager) {
     return (parent: HTMLDivElement) => {
         let selectedElem: HTMLDivElement | null = null
         let selectedSlot: HTMLDivElement | null = null

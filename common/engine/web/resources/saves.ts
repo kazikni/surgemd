@@ -86,7 +86,7 @@ export type SaveKind={
     type:"localstorage",
     key:string,
 }
-export class GameSave{
+export class SaveManager{
     casters:Record<string,(val:any)=>Result<any,any>>={}
     default_values:Record<string, any>={}
     content:Record<string,any>={}

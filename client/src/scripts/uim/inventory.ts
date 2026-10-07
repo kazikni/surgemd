@@ -2,7 +2,6 @@ import { Frame, HideElement, ShowElement, UIModule } from "common/engine/web.ts"
 import { Game } from "../others/game.ts";
 import { InventoryItemData, GameItemType } from "common/scripts/definitions/utils.ts";
 import { GameItem, WeaponDef } from "common/scripts/definitions/game_defs.ts";
-import { GunDef } from "common/scripts/definitions/items/guns.ts";
 import { HelmetDef, VestDef } from "common/scripts/definitions/items/equipaments.ts";
 import { BackpackDef } from "common/scripts/definitions/items/backpacks.ts";
 import { type Human } from "../objects/human.ts";

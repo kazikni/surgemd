@@ -24,8 +24,10 @@ function createWindow(){
             preload:path.join(__dirname,"preload.js")
         }
     })
+    //win.webContents.openDevTools();
 
     ipcMain.handle("is-binary",()=>true)
+    ipcMain.handle("fs-make-dir",(_,path)=>fsp.mkdir(path))
     ipcMain.handle("fs-read",async(_,path)=>{
         return await fsp.readFile(path,"utf8")
     })
@@ -39,7 +41,12 @@ function createWindow(){
         await fsp.writeFile(path,Buffer.from(content,"base64"))
     })
     ipcMain.handle("fs-exist",async(_,path)=>{
-        return fs.existsSync(path)
+        try{
+            await fsp.access(path)
+            return true
+        }catch{
+            return false
+        }
     })
     ipcMain.handle("fs-list",async(_,path)=>{
         return await fs.readdir(path)

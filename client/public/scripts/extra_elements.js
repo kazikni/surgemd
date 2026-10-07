@@ -86,7 +86,6 @@ class SMDEConsole extends HTMLElement{
     }
 }
 
-customElements.define("smde-console",SMDEConsole)
 class SMDEMenu extends HTMLElement {
     constructor(){
         super()
@@ -447,6 +446,7 @@ class SMDETree extends HTMLElement{
 }
 
 customElements.define("smde-joystick", SMDEJoystick);
+customElements.define("smde-console",SMDEConsole)
 customElements.define('tabs-container', TabsContainer)
 customElements.define("smde-menu", SMDEMenu)
 customElements.define("smde-option-submenu", SMDEOptionSubMenu)

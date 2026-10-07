@@ -13,7 +13,7 @@ import { BackgroundManager } from "common/engine/web/misc/background.ts";
 import { type DebugConsole } from "./debugConsole.ts";
 import { set_full_screen } from "../defs/go_files.ts";
 export type PopupFunction=(ctx:GamePopupCTX)=>void
-
+interface Partner{name:string,url:string,class?:string}
 export class MenuManager{
     api_settings?:ApiSettings
     account:AccountManager
@@ -53,7 +53,7 @@ export class MenuManager{
         history_content:document.body.querySelector("#history-content") as HTMLDivElement,
 
         main_social:document.body.querySelector("#main-social") as HTMLDivElement,
-        content_creators:document.querySelector("#featured-content-creators") as HTMLDivElement,
+        featured_links:document.querySelector("#featured-links") as HTMLDivElement,
         //team_options_div:document.body.querySelector("#menu-play-teams") as HTMLSelectElement,
 
         menu_background_night:document.querySelector(".night-background") as HTMLDivElement,
@@ -123,12 +123,34 @@ export class MenuManager{
 <a href="${socials.github}" target="_blank" class="social-link">
     <i class="social-icon github"></i>
 </a>
+<a href="${socials.android}" target="_blank" class="social-link">
+    <i class="social-icon android"></i>
+</a>
+<a href="${socials.windows}" target="_blank" class="social-link">
+    <i class="social-icon windows"></i>
+</a>
+<a href="${socials.linux}" target="_blank" class="social-link">
+    <i class="social-icon linux"></i>
+</a>
 `
-        this.update_content_creators([
-            random.choose([
-                {name:"Kazikni",url:"https://youtube.com/@kazikni"},
-                {name:"Namerio",url:"https://youtube.com/@namerio1"},
-            ]),
+        this.update_featured_links([
+            {
+                name:"Content Creators",
+                class:"btn-blue partner content-creator",
+                content:[
+                    random.choose([
+                        {name:"Kazikni",url:"https://youtube.com/@kazikni"},
+                        {name:"Namerio",url:"https://youtube.com/@namerio1"},
+                    ]),
+                ]
+            },
+            {
+                name:"Partners",
+                class:"btn-blue partner",
+                content:[
+                    {name:"Resurviv.biz",url:"https://resurviv.biz"}
+                ]
+            }
         ])
 
 
@@ -174,7 +196,7 @@ export class MenuManager{
             const screen = this.content.initial_screen
             const video = document.getElementById("intro-video") as HTMLVideoElement
 
-            if(!this.save.get_variable("sv_ui_show_intro")){
+            if(!this.save.settings.get_var("sv_ui_show_intro")){
                 screen.style.opacity = "0"
                 finish()
                 return
@@ -329,7 +351,7 @@ export class MenuManager{
         }
     }
     async init(input:InputManager,save:SaveManager,fs:FileManager,resources:ResourcesManager,sounds:AudioEngine,cam2d:Camera2D,definitions:GameDefinition,transition:TranslationManager){
-        const debug_mode=save.get_variable("sv_debug_enabled")
+        const debug_mode=save.settings.get_var("sv_debug_enabled")
         this.save=save
         this.resources=resources
         this.sounds=sounds
@@ -362,12 +384,12 @@ export class MenuManager{
 
             this.game_version_clicks++
             if(this.game_version_clicks>10){
-                this.save.set_variable("sv_debug_enabled",!debug_mode)
+                this.save.settings.set_var("sv_debug_enabled",!debug_mode)
                 self.location.reload()
             }
         })
 
-        if(save.get_variable("sv_graphics_fullscreen"))set_full_screen(true)
+        if(save.settings.get_var("sv_graphics_fullscreen"))set_full_screen(true)
 
         /*this.console=debug_console
         this.debug_console_container.content.innerHTML='<smde-console id="debug-console"></smde-console>'
@@ -730,11 +752,16 @@ export class MenuManager{
             update()
         })
     }
-    update_content_creators(content_creators:{name:string,url:string}[]){
-        this.content.content_creators.innerHTML+="<span>Featured Content-Creators</span>"
-        for(const creator of content_creators){
-            this.content.content_creators.innerHTML+=`<div class="btn-blue content-creator" onclick="location.href='${creator.url}'">${creator.name}</div>`
+    update_featured_links(links:{content:Partner[],name:string,class:string}[]=[]){
+        let val=""
+        for(const l of links){
+            if(l.content.length===0)continue
+            val+="<h2>"+l.name+"</h2>"
+            for(const li of l.content){
+                val+=`<div class="${l.class+" "+(li.class??"")}" onclick="location.href='${li.url}'">${li.name}</div>`
+            }
         }
+        this.content.featured_links.innerHTML=val
     }
 
     interval?:any

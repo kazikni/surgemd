@@ -1,4 +1,4 @@
-import { Casters, GamepadButtonID, isMobile, Key } from "common/engine/web.ts";
+import { Casters, GamepadButtonID, is_mobile, Key } from "common/engine/web.ts";
 import { IPLocation } from "common/engine/core.ts";
 
 /*
@@ -24,16 +24,25 @@ export const socials={
     discord:"https://discord.gg/7czkBvtmSU",
     youtube:"https://youtube.com/@kazikni",
     github:"https://github.com/kazikni/surgemd",
+    android:"/files/surgemd-android.apk",
+    windows:"/files/surgemd-windows.zip",
+    linux:"/files/surgemd-linux.zip"
 } satisfies Record<string,string>
 export const Debug={
     hitbox:false,
-    force_mobile:false
 }
 export enum GraphicsDConfig {
     None=0,
     Normal,
     Advanced,
 }
+
+force_mobile=false
+block_mobile=false
+
+const mobile=is_mobile()
+const low_graphics=mobile
+
 export const ConfigCasters=Object.freeze({
     sv_loadout_name:Casters.toString,
     sv_loadout_female:Casters.toBoolean,
@@ -104,12 +113,12 @@ export const ConfigDefaultValues={
     sv_loadout_badge:"",
 
     sv_graphics_renderer:"webgl2",
-    sv_graphics_resolution:(Debug.force_mobile||isMobile)?"low":"medium",
-    sv_graphics_shadows:!(Debug.force_mobile||isMobile),
+    sv_graphics_resolution:(low_graphics)?"low":"medium",
+    sv_graphics_shadows:!low_graphics,
     sv_graphics_perspective:false,
     sv_graphics_particles:GraphicsDConfig.Advanced,
     sv_graphics_lights:GraphicsDConfig.Advanced,
-    sv_graphics_post_proccess:(Debug.force_mobile||isMobile)?GraphicsDConfig.None:GraphicsDConfig.Advanced,
+    sv_graphics_post_proccess:low_graphics?GraphicsDConfig.None:GraphicsDConfig.Advanced,
     sv_graphics_climate:true,
     sv_graphics_fullscreen:false,
 
@@ -120,7 +129,7 @@ export const ConfigDefaultValues={
     sv_game_ammo_outline:true,
     sv_game_ping:5,
 
-    sv_mobile_auto_pickup:Debug.force_mobile||isMobile,
+    sv_mobile_auto_pickup:mobile,
 
     sv_sounds_master_volume:1,
     sv_sounds_music_volume:1,
@@ -135,7 +144,7 @@ export const ConfigDefaultValues={
     sv_ui_special_color:"#fffb00",
     sv_ui_translation:"en",
     sv_ui_interactive:true,
-    sv_ui_simple_mode:Debug.force_mobile||isMobile,
+    sv_ui_simple_mode:low_graphics,
     sv_ui_show_intro:true,
 
     sv_debug_enabled:false,

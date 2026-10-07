@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { deleteDeep, FileManager, getDeep, Numeric, parseJSONC, setDeep, TranslationManager } from "common/engine/core.ts";
 import { PopupFunction, type MenuManager } from "../managers/menuManager.ts";
-import { BrowserFileManager, formatToHtml, Frame, SaveManager, isMobile, ResourcesManager } from "common/engine/web.ts";
+import { BrowserFileManager, formatToHtml, Frame, SaveManager, ResourcesManager, is_mobile } from "common/engine/web.ts";
 import { Debug, socials } from "../others/config.ts";
 import { set_full_screen } from "./go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
@@ -175,7 +175,7 @@ export function yes_no_popup(msg:string,yes_text = "Yes",no_text = "No"): PopupF
         }
     }
 }
-export function warning_popup(msg:string,btn_msg:string="Continue"): PopupFunction {
+export function warning_popup(msg:string,btn_msg:string="Ok"): PopupFunction {
     return (popup) => {
         popup.parent.style.cssText="text-align:center;font-family:'Russo-One';font-size:1.25vw;"
         popup.parent.innerHTML=`
@@ -214,12 +214,12 @@ export function make_menu_settings(save: SaveManager,name:string, defs: (Setting
                 build_setting_input(def,translation,
                     // deno-lint-ignore ban-ts-comment
                     //@ts-ignore
-                    def.var?save.get_variable(def.var):"",
+                    def.var?save.settings.get_var(def.var):"",
                     {
                         on_change(val:any){
                             // deno-lint-ignore ban-ts-comment
                             //@ts-ignore
-                            save.set_variable(def.var,val)
+                            save.settings.set_var(def.var,val)
                         },
                     },
                 )
@@ -299,7 +299,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
             const def=definitions.game_objects.valueString[t.dataset.idString as string] as EmoteDef|BadgeDef
             if(!def)return
 
-            save.set_variable("sv_loadout_emote_"+selected_elem_out.dataset.slot,def.idString)
+            save.settings.set_var("sv_loadout_emote_"+selected_elem_out.dataset.slot,def.idString)
 
             let frame:Frame|undefined
             if(def.def_type===GameObjectDefinitionType.badge){
@@ -353,7 +353,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
             "death"
         ]
         for(const slot of slots){
-            const cur_emote=definitions.game_objects.valueString[save.get_variable("sv_loadout_emote_"+slot)] as EmoteDef|BadgeDef|undefined
+            const cur_emote=definitions.game_objects.valueString[save.settings.get_var("sv_loadout_emote_"+slot)] as EmoteDef|BadgeDef|undefined
             
             const container=document.createElement("div")
             container.className="litem emote-slot-"+slot
@@ -390,7 +390,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
                     selected_elem_out=t
                     t.classList.add("selected")
 
-                    const sv=save.get_variable("sv_loadout_emote_"+container.dataset.slot!)
+                    const sv=save.settings.get_var("sv_loadout_emote_"+container.dataset.slot!)
                     if(selected_elem)selected_elem.classList.remove("selected")
                     selected_elem=vv[sv]
                     selected_elem.classList.add("selected")
@@ -403,7 +403,7 @@ export function make_emotes_settings(save: SaveManager,resources:ResourcesManage
 }
 export function make_badges_settings(save: SaveManager,resources: ResourcesManager,badges:BadgeDef[],translation: TranslationManager) {
     return (parent: HTMLDivElement) => {
-        let selected: string=save.get_variable("sv_loadout_badge")
+        let selected: string=save.settings.get_var("sv_loadout_badge")
 
         parent.innerHTML = `
 <div class="loadout-icons-group items">
@@ -417,7 +417,7 @@ export function make_badges_settings(save: SaveManager,resources: ResourcesManag
             selected=null_elem.dataset.idString!
             selectedElem=null_elem
             null_elem.classList.add("selected")
-            save.set_variable("sv_loadout_badge",selected)
+            save.settings.set_var("sv_loadout_badge",selected)
         }
         let selectedElem: HTMLDivElement|null
         if(!selected){
@@ -443,7 +443,7 @@ export function make_badges_settings(save: SaveManager,resources: ResourcesManag
                 selected=div.dataset.idString!
                 selectedElem=div
                 div.classList.add("selected")
-                save.set_variable("sv_loadout_badge",selected)
+                save.settings.set_var("sv_loadout_badge",selected)
             }
 
             inventory.appendChild(div)
@@ -481,7 +481,7 @@ export function select_loadout_item(save: SaveManager,resources: ResourcesManage
                 if(selectedElem)selectedElem.classList.remove("selected")
                 selectedElem=div
                 div.classList.add("selected")
-                save.set_variable(variable+selectedSlot.dataset.slot,id)
+                save.settings.set_var(variable+selectedSlot.dataset.slot,id)
             }
 
             inventory.appendChild(div)
@@ -490,7 +490,7 @@ export function select_loadout_item(save: SaveManager,resources: ResourcesManage
         const active = parent.querySelector(".active-items") as HTMLDivElement
 
         for (const slot of slots) {
-            const value = save.get_variable(variable + slot)
+            const value = save.settings.get_var(variable + slot)
             const div = document.createElement("div")
             div.className = "litem"
             div.dataset.slot = slot
@@ -509,7 +509,7 @@ export function select_loadout_item(save: SaveManager,resources: ResourcesManage
                     selectedSlot = div
                     div.classList.add("selected")
                     
-                    const sv=save.get_variable(variable+selectedSlot.dataset.slot)
+                    const sv=save.settings.get_var(variable+selectedSlot.dataset.slot)
                     if(selectedElem)selectedElem.classList.remove("selected")
                     selectedElem=vv[sv]
                     selectedElem.classList.add("selected")
@@ -622,7 +622,8 @@ export const DefaultModeSettingsPopup:Record<string,ModeSettingsPopupDef>={
 export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinition,fs:FileManager,translation:TranslationManager,resources:ResourcesManager){
     const campaign_path="scripts/campaign"
     const campaign=parseJSONC(await fs.read_file(campaign_path+"/main.jsonc"))
-    const debug_mode=menu.save.get_variable("sv_debug_enabled")
+    const debug_mode=menu.save.settings.get_var("sv_debug_enabled")
+    const mobile=is_mobile()
     for(const c in campaign.charpters){
         for(const l in campaign.charpters[c].levels){
             const path=campaign_path+"/"+campaign.charpters[c].levels[l]
@@ -831,7 +832,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             subtab:"campaign_level_selector"
         },
     )
-    if(!isMobile){
+    if(!mobile){
         play_options.push(
             {
                 type:"label",
@@ -901,11 +902,17 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                     name:"menu.settings.ui",
                     subtab:"ui"
                 },
-                (isMobile||Debug.force_mobile)?undefined:{
+                mobile?undefined:{
                     id:"keybinds",
                     type:"button",
                     name:"menu.settings.keybinds",
                     subtab:"keybinds"
+                },
+                {
+                    id:"file",
+                    type:"button",
+                    name:"menu.settings.file",
+                    subtab:"file"
                 },
                 debug_mode?{
                     id:"debug",
@@ -1102,7 +1109,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                                 {name:"Ak-47",value:"ak47"},
                             ],
                         },
-                        (isMobile||Debug.force_mobile)?undefined:{
+                        (mobile)?undefined:{
                             type:"toggle",
                             tname:"settings.ui.interactive",
                             var:"sv_ui_interactive",
@@ -1140,7 +1147,7 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                                         `
                                         ctx.resolve(await menu.input.wait_for_any_key())
                                     })
-                                    menu.save.set_action(name,{
+                                    menu.save.settings.set_action(name,{
                                         ...action,
                                         keys:[key]
                                     })
@@ -1156,8 +1163,8 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                         reset.textContent="Reset Keybinds"
                         reset.onclick=()=>{
                             menu.save.input_manager?.resetAllActions()
-                            if(menu.save.current_save){
-                                menu.save.save(menu.save.current_save)
+                            if(menu.save.settings.save_kind){
+                                menu.save.settings.save(menu.save.settings.save_kind)
                             }
                             generate_actions()
                         }
@@ -1175,6 +1182,33 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                             var:"sv_debug_ping_emulation",
                         }
                     ],translation),
+                },
+                "file":{
+                    generate(p,m){
+                        p.innerHTML=`
+<h1 class="text-span-base">Settings Save</h1>
+<button class="btn-blue" id="btn-export-save">Export</button>
+<button class="btn-blue" id="btn-import-save">Import</button>
+<button class="btn-blue" id="btn-reset-save">Reset</button>
+`
+                        let btn=p.querySelector("#btn-export-save") as HTMLButtonElement
+                        btn.onclick=async()=>{
+                            await navigator.clipboard.writeText(m.save.settings.export())
+                            m.game_popup(warning_popup("Copied To Clipboard"))
+                        }
+                        btn=p.querySelector("#btn-import-save") as HTMLButtonElement
+                        btn.onclick=async()=>{
+                            const txt=await m.game_popup(input_popup("Enter The Code"))
+                            m.save.settings.import(txt)
+                            self.location.reload()
+                        }
+                        btn=p.querySelector("#btn-reset-save") as HTMLButtonElement
+                        btn.onclick=()=>{
+                            m.save.settings.reset()
+                            if(m.save.settings.save_kind)m.save.settings.save(m.save.settings.save_kind)
+                            self.location.reload()
+                        }
+                    }
                 }
             },
             on_close(_m){
@@ -1313,6 +1347,15 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
     </a>
     <a href="${socials.github}" target="_blank" class="social-link">
         <i class="social-icon github"></i>
+    </a>
+    <a href="${socials.android}" target="_blank" class="social-link">
+        <i class="social-icon android"></i>
+    </a>
+    <a href="${socials.windows}" target="_blank" class="social-link">
+        <i class="social-icon windows"></i>
+    </a>
+    <a href="${socials.linux}" target="_blank" class="social-link">
+        <i class="social-icon linux"></i>
     </a>
 </div>`
                     }

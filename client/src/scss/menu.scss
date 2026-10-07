@@ -232,8 +232,8 @@
 }
 .social-links {
     display: flex;
-    gap: 20px;
-    padding: 15px;
+    gap: 0.5vw;
+    padding: 0.75vw;
 
     .social-link {
         @extend .btn-blue;
@@ -267,32 +267,8 @@
         &.linux {
             background-image: url("/assets/img/menu/socials/linux-icon.svg");
         }
-    }
-    
-    @include main.large_screen {
-        gap: 12px;
-        padding: 16px;
-        .social-link {
-            width: 33px;
-            height: 33px;
-        }
-        .social-icon {
-            width: 20px;
-            height: 20px;
-            font-size: 5px;
-        }
-    }
-    @include main.medium_screen {
-        gap: 10px;
-        padding: 7px;
-        .social-link {
-            width: 26px;
-            height: 26px;
-        }
-        .social-icon {
-            width: 16px;
-            height: 16px;
-            font-size: 5px;
+        &.android {
+            background-image: url("/assets/img/menu/socials/android-icon.svg");
         }
     }
 }
@@ -316,7 +292,7 @@
 #about-sm-social{
     align-content: center;
 }
-#featured-content-creators{
+#featured-links{
     display: flex;
     background-color: #0004;
     flex-direction: column;
@@ -326,18 +302,22 @@
     padding: 1vw;
     border-radius: 0 0 0.5vw 0;
     pointer-events: all;
-    span{
+    text-align: center;
+    h2{
         font-size: 1vw;
-        margin-bottom: 1vw;
+    }
+    .partner{
+        text-align: center;
+        margin-top: -0.5vw;
+        align-items: center;
+        font-size: 1vw;
+        padding: 0.25vw 0.25vh;
     }
     .content-creator{
-        text-align: center;
-        margin-top: -0.2vw;
-        align-items: center;
         background-image: url("/assets/img/menu/socials/youtube-icon.svg");
         background-repeat: no-repeat;
         background-position: 5% 50%;
-        background-size: 17%;
+        background-size: 15%;
     }
 }
 .background-menu-md{

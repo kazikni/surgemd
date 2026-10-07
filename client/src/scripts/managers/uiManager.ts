@@ -7,7 +7,7 @@ import { EmoteDef } from "common/scripts/definitions/loadout/emotes.ts";
 import { GameOverPacket } from "common/scripts/packets/gameOver.ts";
 import { CrosshairManager, StaticCrosshair } from "./crosshairManager.ts";
 import { GameObject } from "../others/gameObject.ts";
-import { disableContextMenuPrevent, enableContextMenuPrevent, Frame, HideElement, InputEventType, isMobile, Key, ShowElement, ToggleElement } from "common/engine/web.ts";
+import { disableContextMenuPrevent, enableContextMenuPrevent, Frame, HideElement, InputEventType, is_mobile, Key, ShowElement, ToggleElement } from "common/engine/web.ts";
 import { InputActionType } from "common/scripts/packets/input_packet.ts";
 import { Human } from "../objects/human.ts";
 import { AimCrosshair, DefaultCrosshair } from "../defs/crosshair.ts";
@@ -136,7 +136,7 @@ export class UiManager{
     }
     async init(){
         this.content.restart_gameOver.innerHTML=`<div class="go-message">${this.game.language.get("gameover.restart.press")}</div>`
-        if(isMobile||Debug.force_mobile){
+        if(is_mobile()){
             await this.mobile_init()
         }
     }
@@ -183,7 +183,7 @@ export class UiManager{
         color=ColorM.mult_rgba(color,1,1,1,0.4)
         this.content.game_gui.style.setProperty("--ui-panel-background",ColorM.rgba2hex(color))
         this.content.game_gui.style.setProperty("--ui-panel-border",`0.2vh solid ${primary}`)
-        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.get_variable("sv_ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
+        this.content.game_gui.style.setProperty("--ui-panel-box-shadow",this.game.save.settings.get_var("sv_ui_simple_mode")?"":`0 0 0.5vh ${primary}`)
 
         this.game.ui_manager.signal("update_theme",{})
     }
@@ -205,6 +205,7 @@ export class UiManager{
         interact: this._makeHint(["E - Interact"]),
     }
     async mobile_init(){
+        this.mobile_enabled=true
         this.mobile_open()
         document.body.classList.toggle("game-mobile-version",true)
         let rotating=false
@@ -252,6 +253,7 @@ export class UiManager{
         this.mobile_content.btn_emotes.addEventListener("pointerdown",(e)=>{
             this.begin_emote_wheel(v2(this.game.renderer.canvas.clientWidth/2,this.game.renderer.canvas.clientHeight/2),false)
         })
+        HideElement(this.mobile_content.btn_toggle_map)
         this.mobile_content.btn_toggle_map.addEventListener("pointerdown",(e)=>{
             this.game.input_manager.emit({type:InputEventType.ActionDown,action:"toggle_full_device"})
             this.game.input_manager.emit({type:InputEventType.ActionUp,action:"toggle_full_device"})
@@ -292,10 +294,10 @@ export class UiManager{
                 ]
             }else{
                 emotes=[
-                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_right")] as (EmoteDef|BadgeDef|PingDef|undefined),  // Right
-                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_bottom")] as (EmoteDef|BadgeDef|PingDef|undefined), // Bottom
-                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_left")] as (EmoteDef|BadgeDef|PingDef|undefined),   // Left
-                    this.game.definitions.game_objects.valueString[this.game.save.get_variable("sv_loadout_emote_top")] as (EmoteDef|BadgeDef|PingDef|undefined),    // Top
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_right")] as (EmoteDef|BadgeDef|PingDef|undefined),  // Right
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_bottom")] as (EmoteDef|BadgeDef|PingDef|undefined), // Bottom
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_left")] as (EmoteDef|BadgeDef|PingDef|undefined),   // Left
+                    this.game.definitions.game_objects.valueString[this.game.save.settings.get_var("sv_loadout_emote_top")] as (EmoteDef|BadgeDef|PingDef|undefined),    // Top
                 ]
             }
             
@@ -398,7 +400,7 @@ export class UiManager{
         this.content.emote_wheel.main.onclick=(e)=>this.end_emote_wheel(true)
         this.emote_wheel.emotes=emotes
     }
-    mobile_enabled:boolean=isMobile||Debug.force_mobile
+    mobile_enabled:boolean=false
     mobile_close(){
         HideElement(this.mobile_content.gui)
         ShowElement(this.content.help_gui)
@@ -412,10 +414,10 @@ export class UiManager{
     start(){
         HideElement(this.content.post_proccess.tiltshift)
         HideElement(this.content.post_proccess.vignetting)
-        if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
+        if(this.game.save.settings.get_var("sv_graphics_post_proccess")>=GraphicsDConfig.Advanced){
             ShowElement(this.content.post_proccess.tiltshift)
         }
-        if(this.game.save.get_variable("sv_graphics_post_proccess")>=GraphicsDConfig.Normal){
+        if(this.game.save.settings.get_var("sv_graphics_post_proccess")>=GraphicsDConfig.Normal){
             ShowElement(this.content.post_proccess.vignetting)
         }
         this.game.renderer.canvas.focus()
@@ -717,7 +719,7 @@ export class UiManager{
                     break
             }
         }else if(e.button===0){
-            if(!this.game.save.get_variable("sv_ui_interactive"))return
+            if(!this.game.save.settings.get_var("sv_ui_interactive"))return
             switch(item_kind){
                 case 1:
                     if(this.game.comunication_mode){
@@ -914,7 +916,7 @@ export class UiManager{
             if(!o.can_interact(player)) continue
             this.current_interaction = o
             if(this.current_interaction!==old_inter){
-                if(this.game.save.get_variable("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
+                if(this.game.save.settings.get_var("sv_mobile_auto_pickup")&&this.current_interaction.auto_interact(player)){
                     this.game.input_manager.listener.emit("actiondown",{action:"interact"})
                 }
                 const hint = o.get_interact_hint(player)

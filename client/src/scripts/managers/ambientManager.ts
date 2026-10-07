@@ -204,7 +204,7 @@ export class AmbientManager extends GComponent{
             }
             if(!this.finalization&&!this.music.running&&this.musics.length>0){
                 if(Math.random()<=0.009){
-                    if(this.finding_music&&this.game.save.get_variable("sv_sounds_gameplay_music")){
+                    if(this.finding_music&&this.game.save.settings.get_var("sv_sounds_gameplay_music")){
                         const music=random.choose(this.musics)
                         this.game.resources.load_sound("gameplay_music",{
                             src:music,
@@ -356,7 +356,7 @@ export class AmbientManager extends GComponent{
             bus:"ui",
             volume:0.75
         })
-        if(this.game.save.get_variable("sv_sounds_gameplay_music")){
+        if(this.game.save.settings.get_var("sv_sounds_gameplay_music")){
             this.game.resources.load_sound("gameplay_music",{
                 src:"/assets/sounds/musics/finalization_music_1.mp3",
                 volume:1

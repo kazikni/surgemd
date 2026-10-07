@@ -1,4 +1,4 @@
-import { ClientGame, Graphics2D, HideElement, InputActionEvent, InputAxisEvent, InputControllerChanged, InputEventType, InputMouseMoveEvent, isMobile, Key, ShowElement, Tileset, ToggleElement, WebglRenderer } from "common/engine/web.ts";
+import { ClientGame, Graphics2D, InputActionEvent, InputAxisEvent, InputControllerChanged, InputEventType, InputMouseMoveEvent, Key, ShowElement, Tileset, ToggleElement, WebglRenderer } from "common/engine/web.ts";
 import { InputActionType, InputPacket } from "common/scripts/packets/input_packet.ts";
 import { ClientScene2D, GameObject } from "./gameObject.ts";
 import { UiManager } from "../managers/uiManager.ts";
@@ -147,9 +147,9 @@ export class Game extends ClientGame<GameObject>{
         this.sounds.create_bus("obstacles")
         this.sounds.create_bus("explosions")
 
-        this.save.casters=ConfigCasters
-        this.save.default_values=ConfigDefaultValues
-        this.save.default_actions=ConfigDefaultActions
+        this.save.settings.casters=ConfigCasters
+        this.save.settings.default_values=ConfigDefaultValues
+        this.save.settings.default_actions=ConfigDefaultActions
 
         this.ui=new UiManager(this)
         this.menu=menu
@@ -182,17 +182,17 @@ export class Game extends ClientGame<GameObject>{
         if(this.theme_colors[name])return this.theme_colors[name]
         switch(name){
             case "primary":
-                return this.save.get_variable("sv_ui_primary_color")
+                return this.save.settings.get_var("sv_ui_primary_color")
             case "secondary":
-                return this.save.get_variable("sv_ui_secondary_color")
+                return this.save.settings.get_var("sv_ui_secondary_color")
             case "tertiary":
-                return this.save.get_variable("sv_ui_tertiary_color")
+                return this.save.settings.get_var("sv_ui_tertiary_color")
             case "positive":
-                return this.save.get_variable("sv_ui_positive_color")
+                return this.save.settings.get_var("sv_ui_positive_color")
             case "negative":
-                return this.save.get_variable("sv_ui_negative_color")
+                return this.save.settings.get_var("sv_ui_negative_color")
             case "special":
-                return this.save.get_variable("sv_ui_special_color")
+                return this.save.settings.get_var("sv_ui_special_color")
         }
         return "#ffffff"
     }
@@ -372,7 +372,7 @@ export class Game extends ClientGame<GameObject>{
             this.ui_manager.signal("actionup",a)
         })
         this.input_manager.listener.on(InputEventType.MouseMove,(e:InputMouseMoveEvent)=>{
-            if(!isMobile){
+            if(!this.ui.mobile_enabled){
                 const cam_c=v2.dscale(this.scene_2d.camera.size,2)
                 const mouse_p=e.position
                 const angle=v2.lookTo(cam_c,mouse_p)
@@ -391,9 +391,9 @@ export class Game extends ClientGame<GameObject>{
     }
     override async bind(fs?:FileManager): Promise<void> {
         super.bind()
-        this.save.compatible_version=1
-        this.save.version=1
-        await this.save.init(is_binary?{
+        this.save.settings.compatible_version=1
+        this.save.settings.version=1
+        await this.save.settings.init(is_binary?{
             type:"file",
             path:"save/settings.json",
             fs:fs!,
@@ -403,7 +403,7 @@ export class Game extends ClientGame<GameObject>{
         })
 
         this.language.load_default_language(await(await fetch("/scripts/languages/en.json")).json() as Language,"main")
-        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.get_variable("sv_ui_translation")}.json`)).json() as Language,"main")
+        this.language.load_language(await(await fetch(`/scripts/languages/${this.save.settings.get_var("sv_ui_translation")}.json`)).json() as Language,"main")
 
         this.fs=fs
         await this.ui.init()
@@ -414,7 +414,7 @@ export class Game extends ClientGame<GameObject>{
         this.input.angle=angle
         if(dist>1)dist=1
         this.input.distance_to_aim=dist
-        if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.get_variable("sv_game_client_rot")){
+        if(!this.spectating&&!this.fineshed&&!this.active_entity.downed&&!this.active_entity.swimming&&!this.active_entity.seat&&this.save.settings.get_var("sv_game_client_rot")){
             this.active_entity.enable_auto_rot=false
             this.active_entity.rotation=this.input.angle
         }else{
@@ -445,7 +445,7 @@ export class Game extends ClientGame<GameObject>{
             if(agro.includes(p))continue
             this.resources.unload_imported(p)
         }
-        let resolution = this.save.get_variable("sv_graphics_resolution")
+        let resolution = this.save.settings.get_var("sv_graphics_resolution")
         for(const tt of agro){
             if(this.resources.imported[tt])continue
             const v=await this.resources.load_json(`${tt}/settings.json`,this.menu.set_loading_current)
@@ -464,7 +464,7 @@ export class Game extends ClientGame<GameObject>{
         if(languages_path!=""){
             try{
                 this.language.load_default_language(await this.resources.load_json(`${languages_path}/en.json`),"ingame")
-                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.get_variable("sv_ui_translation")}.json`),"ingame")
+                this.language.load_language(await this.resources.load_json(`${languages_path}/${this.save.settings.get_var("sv_ui_translation")}.json`),"ingame")
             }catch(e){
                 console.log(e)
             }
@@ -561,7 +561,7 @@ export class Game extends ClientGame<GameObject>{
                 this.ui.content.mouse.style.top=this.input_manager.virtual_mouse.y+"px"
             }
         }
-        if(this.save.get_variable("sv_game_interpolation")){
+        if(this.save.settings.get_var("sv_game_interpolation")){
             this.global_interpolation=Numeric.get_interpolation_t(this.ntps,dt)
         }else{
             this.global_interpolation=1
@@ -683,19 +683,19 @@ export class Game extends ClientGame<GameObject>{
     join(){
         if(!this.client)return
         const packet=new JoinPacket()
-        packet.player_name=this.save.get_variable("sv_loadout_name")
+        packet.player_name=this.save.settings.get_var("sv_loadout_name")
         packet.skin={
-            female:this.save.get_variable("sv_loadout_female"),
-            body_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_body_tint")),
-            hair:(this.definitions.loadout.getFromStringSafe(this.save.get_variable("sv_loadout_hair")))?.idNumber??0,
-            hair_tint:ColorM.hex2number(this.save.get_variable("sv_loadout_hair_tint")),
-            shirt:(this.definitions.loadout.getFromString(this.save.get_variable("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
+            female:this.save.settings.get_var("sv_loadout_female"),
+            body_tint:ColorM.hex2number(this.save.settings.get_var("sv_loadout_body_tint")),
+            hair:(this.definitions.loadout.getFromStringSafe(this.save.settings.get_var("sv_loadout_hair")))?.idNumber??0,
+            hair_tint:ColorM.hex2number(this.save.settings.get_var("sv_loadout_hair_tint")),
+            shirt:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
         }
         packet.group_token=this.group_token
-        packet.victory_emote=this.definitions.game_objects.keysString[this.save.get_variable("sv_loadout_emote_victory")]??0
-        packet.death_emote=this.definitions.game_objects.keysString[this.save.get_variable("sv_loadout_emote_death")]??0
-        packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.get_variable("sv_loadout_wrapping_weapons"))?.idNumber??0
-        packet.badge=this.definitions.badges.getFromStringSafe(this.save.get_variable("sv_loadout_badge"))?.idNumber??0
+        packet.victory_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("sv_loadout_emote_victory")]??0
+        packet.death_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("sv_loadout_emote_death")]??0
+        packet.wrapping=this.definitions.wrapping.getFromStringSafe(this.save.settings.get_var("sv_loadout_wrapping_weapons"))?.idNumber??0
+        packet.badge=this.definitions.badges.getFromStringSafe(this.save.settings.get_var("sv_loadout_badge"))?.idNumber??0
         this.client.emit_packet(packet)
     }
 
@@ -715,7 +715,7 @@ export class Game extends ClientGame<GameObject>{
                 this.offline=false
                 const args={
                     ...play,
-                    region:this.save.get_variable("sv_game_region"),
+                    region:this.save.settings.get_var("sv_game_region"),
                 }
                 try{
                     if(this.menu.group_state){
@@ -809,10 +809,10 @@ export class Game extends ClientGame<GameObject>{
         if(this.client===client)return
         if(this.client&&this.client.opened)this.client.disconnect()
         this.client=client
-        client.send_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
-        client.recev_ping_emulation=this.save.get_variable("sv_debug_ping_emulation")
+        client.send_ping_emulation=this.save.settings.get_var("sv_debug_ping_emulation")
+        client.recev_ping_emulation=this.save.settings.get_var("sv_debug_ping_emulation")
 
-        this.world_shadow.enabled=this.save.get_variable("sv_graphics_shadows")
+        this.world_shadow.enabled=this.save.settings.get_var("sv_graphics_shadows")
 
         client.on("general_update",(p:GeneralUpdatePacket)=>{
             this.process_general_update(p.content)

@@ -205,7 +205,7 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
                 this.sprite_main.rotation=Angle.deg2rad(-30)
                 this.sprite_main.visible=true
                 this.sprite_main.scale=v2(2,2)
-                if(this.game.save.get_variable("sv_game_ammo_outline")){
+                if(this.game.save.settings.get_var("sv_game_ammo_outline")){
                     this.sprite_outline.frame=this.game.resources.get_frame(`${(data.item as unknown as GunDef).ammo_type}_outline`)
                 }else{
                     this.sprite_outline.frame=this.game.resources.get_frame("rarity_outline")
@@ -348,7 +348,7 @@ export class Loot extends GameObject implements LootBase,LootBaseNC{
                 this.game.hitboxes_gfx.ctx.fill()
             }
         }else{
-            if(this.game.save.get_variable("sv_game_interpolation")){
+            if(this.game.save.settings.get_var("sv_game_interpolation")){
                 this.dest_pos=position
             }else{
                 this.position=position

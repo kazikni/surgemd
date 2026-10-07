@@ -363,6 +363,7 @@
                 "sounds": "Sounds",
                 "ui": "UI",
                 "keybinds": "Keybinds",
+                "file":"File",
                 "debug": "Debug"
             },
             "loadout": {

@@ -33,7 +33,7 @@ export const bullet_weights:Record<number,BulletWeightDef>={
 
 export const DefaultHumanModes={
     broke_shield(h:Human){
-        const particles=h.game.save.get_variable("sv_graphics_particles")
+        const particles=h.game.save.settings.get_var("sv_graphics_particles")
         if(particles>=GraphicsDConfig.Advanced){
             for(let p=0;p<14;p++){
                 const a=random.rad()

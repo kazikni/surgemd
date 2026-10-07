@@ -1,38 +1,13 @@
 import { Game} from "./game.ts"
 import "../../scss/main.scss"
 import { MenuManager } from "../managers/menuManager.ts";
-import { isMobile } from "common/engine/web.ts";
 import { BinFileManager, is_binary } from "../defs/go_files.ts";
 import { GameDefinition } from "common/scripts/definitions/game_defs.ts";
 import { PacketManager } from "common/scripts/packets/packet_manager.ts";
 import { UpdatePacket } from "common/scripts/packets/update_packet.ts";
 import { FetchFileManager, FileManager, TranslationManager } from "common/engine/core.ts";
 (async() => {
-    async function requestImmersive() {
-        const el = document.documentElement;
-        if (!document.fullscreenElement) {
-            if (el.requestFullscreen) {
-                await el.requestFullscreen({ navigationUI: "hide" });
-            } else if ((el as any).webkitRequestFullscreen) {
-                await (el as any).webkitRequestFullscreen();
-            }
-        }
-        if((window as any).Capacitor?.Plugins?.StatusBar){
-            try {
-                await (window as any).Capacitor.Plugins.StatusBar.hide();
-            } catch {}
-        }
-    }
-    
-    document.addEventListener("touchstart", requestImmersive);
-    document.addEventListener("visibilitychange", async () => {
-        if ((!document.hidden)&&isMobile) {
-            await requestImmersive();
-        }
-    })
-
     const canvas=document.querySelector("#game-canvas") as HTMLCanvasElement
-
     const fs:FileManager=is_binary?new BinFileManager():new FetchFileManager()
 
     class App{

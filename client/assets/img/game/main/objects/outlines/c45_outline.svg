@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="130.799"
-   height="130.799"
-   viewBox="0 0 34.607 34.607"
+   width="128.91296"
+   height="128.91296"
+   viewBox="0 0 34.10799 34.10799"
    version="1.1"
    id="svg199"
    sodipodi:docname="c45_outline.svg"
@@ -23,14 +23,15 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="6.406777"
-     inkscape:cx="25.207682"
-     inkscape:cy="65.399498"
+     inkscape:cx="77.964318"
+     inkscape:cy="64.46299"
      inkscape:window-width="1920"
      inkscape:window-height="1008"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg199" />
+     inkscape:current-layer="svg199"
+     showguides="false" />
   <defs
      id="defs195">
     <radialGradient
@@ -41,24 +42,24 @@
        r="10.964"
        fx="10.857"
        fy="10.857"
-       gradientTransform="translate(1 1)scale(1.50167)"
+       gradientTransform="matrix(1.50167,0,0,1.50167,0.75099587,0.75099587)"
        gradientUnits="userSpaceOnUse" />
     <linearGradient
        id="a">
       <stop
          offset="0"
-         style="stop-color:#52ff6c;stop-opacity:.5"
+         style="stop-color:#d9d9d9;stop-opacity:0.8509804;"
          id="stop190" />
       <stop
-         offset="1"
-         style="stop-color:#007a0a;stop-opacity:.69999999"
+         offset="0.99926257"
+         style="stop-color:#277318;stop-opacity:0.80000001;"
          id="stop192" />
     </linearGradient>
   </defs>
   <circle
-     cx="17.303"
-     cy="17.303"
-     r="16.304"
-     style="fill:url(#b);stroke:#036600;stroke-width:1.99998;stroke-dasharray:none;stroke-opacity:1"
+     cx="17.053995"
+     cy="17.053995"
+     r="16.304001"
+     style="fill:url(#b);stroke:#30ba30;stroke-width:1.49999;stroke-dasharray:none;stroke-opacity:1"
      id="circle197" />
 </svg>

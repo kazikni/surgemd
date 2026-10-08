@@ -1390,7 +1390,7 @@ export class Human extends Humanoid{
         this.human_data.pulse_movement=undefined
         this.actions.cancel()
     }
-    die(params:DamageParams){
+    die(params:DamageParams):void{
         if(this.dead)return
 
         this.net_sync_deletion=false

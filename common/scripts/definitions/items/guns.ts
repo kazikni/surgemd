@@ -368,7 +368,7 @@ export const guns_factory={
             fire_on_release:true,
             fire_delay:0.2,
             switch_delay:0.15,
-            unload_delay:1,
+            unload_delay:1.1,
 
             case_particle:{
                 position:v2.new(0.75,0.05)
@@ -404,7 +404,7 @@ export const guns_factory={
             fire_mode:FireMode.Single,
             fire_delay:0.2,
             switch_delay:0.15,
-            unload_delay:1,
+            unload_delay:1.1,
             class_switch_multiply:{
                 [GunClasses.Shotgun]:10
             },

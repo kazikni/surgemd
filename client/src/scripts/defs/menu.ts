@@ -887,6 +887,133 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             options:play_options
         },
         {
+            id:"loadout",
+            name:"menu.options.loadout",
+            options:[
+                {
+                    id:"character",
+                    type:"button",
+                    name:"menu.loadout.character",
+                    subtab:"character"
+                },
+                {
+                    id:"emotes",
+                    type:"button",
+                    name:"menu.loadout.emotes",
+                    subtab:"emotes"
+                },
+                {
+                    id:"wrapping",
+                    type:"button",
+                    name:"menu.loadout.wrapping",
+                    subtab:"wrapping"
+                },
+                {
+                    id:"badge",
+                    type:"button",
+                    name:"menu.loadout.badges",
+                    subtab:"badges"
+                },
+            ],
+            subtabs:{
+                "character":{
+                    generate:make_menu_settings(menu.save,"menu.loadout.character",[
+                        {
+                            type:"input",
+                            tname:"loadout.character.name",
+                            var:"sv_loadout_name",
+                            limit:GameConstants.player.max_name_size
+                        },
+                        {
+                            type:"color",
+                            tname:"loadout.character.hair_tint",
+                            var:"sv_loadout_hair_tint",
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.hair_type",
+                            var:"sv_loadout_hair",
+                            options:hairs_types,
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.body_tint",
+                            var:"sv_loadout_body_tint",
+                            options:[
+                                {
+                                    name:"1",
+                                    value:"#f0a93f"
+                                },
+                                {
+                                    name:"2",
+                                    value:"#a06e22"
+                                },
+                                {
+                                    name:"3",
+                                    value:"#a06e22"
+                                },
+                                {
+                                    name:"4",
+                                    value:"#d8a14e"
+                                },
+                                {
+                                    name:"5",
+                                    value:"#ffcb7c"
+                                },
+                                {
+                                    name:"6",
+                                    value:"#f39f67"
+                                }
+                            ]
+                        },
+                        {
+                            type:"toggle",
+                            tname:"loadout.character.female",
+                            var:"sv_loadout_female",
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.shirt",
+                            var:"sv_loadout_shirt",
+                            options:shirts_types,
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.legs",
+                            var:"sv_loadout_legs",
+                            options:legs_types,
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.shoes",
+                            var:"sv_loadout_shoes",
+                            options:foot_types,
+                        },
+                    ],translation)
+                },
+                "emotes":{
+                    generate:make_emotes_settings(menu.save,resources,definitions,[
+                        "Emotes",
+                        ...Object.values(definitions.emotes.value),
+                        "Badges",
+                        ...Object.values(definitions.badges.value)
+                    ],translation)
+                },
+                "wrapping":{
+                    generate:(()=>{
+                        const wrapping=Object.values(definitions.wrapping.value)
+                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/assets/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
+                    })()
+                },
+                "badges":{
+                    generate:(()=>{
+                        const badges=Object.values(definitions.badges.value)
+                        return make_badges_settings(menu.save,resources,badges,translation)
+                    })()
+                },
+            },
+        },
+        {
             id:"settings",
             name:"menu.options.settings",
             options:[
@@ -1119,9 +1246,9 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                             var:"sv_ui_translation",
                             options:[
                                 {name:"English",value:"en"},
-                                {name:"Espanhol",value:"es"},
+                                //{name:"Espanhol",value:"es"},
                                 {name:"Brazilian Portuguese",value:"pt-br"},
-                                {name:"Turkish",value:"tr"},
+                                //{name:"Turkish",value:"tr"},
                                 {name:"Ak-47",value:"ak47"},
                             ],
                         },
@@ -1230,133 +1357,6 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             on_close(_m){
                 //self.location.reload()
             }
-        },
-        {
-            id:"loadout",
-            name:"menu.options.loadout",
-            options:[
-                {
-                    id:"character",
-                    type:"button",
-                    name:"menu.loadout.character",
-                    subtab:"character"
-                },
-                {
-                    id:"emotes",
-                    type:"button",
-                    name:"menu.loadout.emotes",
-                    subtab:"emotes"
-                },
-                {
-                    id:"wrapping",
-                    type:"button",
-                    name:"menu.loadout.wrapping",
-                    subtab:"wrapping"
-                },
-                {
-                    id:"badge",
-                    type:"button",
-                    name:"menu.loadout.badges",
-                    subtab:"badges"
-                },
-            ],
-            subtabs:{
-                "character":{
-                    generate:make_menu_settings(menu.save,"menu.loadout.character",[
-                        {
-                            type:"input",
-                            tname:"loadout.character.name",
-                            var:"sv_loadout_name",
-                            limit:GameConstants.player.max_name_size
-                        },
-                        {
-                            type:"color",
-                            tname:"loadout.character.hair_tint",
-                            var:"sv_loadout_hair_tint",
-                        },
-                        {
-                            type:"enum",
-                            tname:"loadout.character.hair_type",
-                            var:"sv_loadout_hair",
-                            options:hairs_types,
-                        },
-                        {
-                            type:"enum",
-                            tname:"loadout.character.body_tint",
-                            var:"sv_loadout_body_tint",
-                            options:[
-                                {
-                                    name:"1",
-                                    value:"#f0a93f"
-                                },
-                                {
-                                    name:"2",
-                                    value:"#a06e22"
-                                },
-                                {
-                                    name:"3",
-                                    value:"#a06e22"
-                                },
-                                {
-                                    name:"4",
-                                    value:"#d8a14e"
-                                },
-                                {
-                                    name:"5",
-                                    value:"#ffcb7c"
-                                },
-                                {
-                                    name:"6",
-                                    value:"#f39f67"
-                                }
-                            ]
-                        },
-                        {
-                            type:"toggle",
-                            tname:"loadout.character.female",
-                            var:"sv_loadout_female",
-                        },
-                        {
-                            type:"enum",
-                            tname:"loadout.character.shirt",
-                            var:"sv_loadout_shirt",
-                            options:shirts_types,
-                        },
-                        {
-                            type:"enum",
-                            tname:"loadout.character.legs",
-                            var:"sv_loadout_legs",
-                            options:legs_types,
-                        },
-                        {
-                            type:"enum",
-                            tname:"loadout.character.shoes",
-                            var:"sv_loadout_shoes",
-                            options:foot_types,
-                        },
-                    ],translation)
-                },
-                "emotes":{
-                    generate:make_emotes_settings(menu.save,resources,definitions,[
-                        "Emotes",
-                        ...Object.values(definitions.emotes.value),
-                        "Badges",
-                        ...Object.values(definitions.badges.value)
-                    ],translation)
-                },
-                "wrapping":{
-                    generate:(()=>{
-                        const wrapping=Object.values(definitions.wrapping.value)
-                        return select_loadout_item(menu.save,resources,["",...wrapping.map((w)=>w.idString)],["weapons"],"/assets/img/menu/loadout/wrapping/wr_","sv_loadout_wrapping_","wrapping.","loadout.wrapping.",translation)
-                    })()
-                },
-                "badges":{
-                    generate:(()=>{
-                        const badges=Object.values(definitions.badges.value)
-                        return make_badges_settings(menu.save,resources,badges,translation)
-                    })()
-                },
-            },
         },
         {
             id:"about",

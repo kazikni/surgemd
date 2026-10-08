@@ -67,9 +67,9 @@ export class InformationBoxModule extends UIModule<Game> {
             case "feed_message":{
                 if(!this.game.ui.self_feed_enabled)break
                 const msg=(state.obj as FeedMessage)
-                if(msg.type===FeedMessageType.kill&&msg.killer?.id===this.game.active_entity_id){
+                if(msg.type===FeedMessageType.kill&&msg.killer?.id===this.game.active_entity_id&&msg.victimId!==this.game.active_entity_id){
                     this.push_infobox(this.game.language.get("infobox.kill",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId,this.game.resources.get_sound("ui_kill"))
-                }else if(msg.type===FeedMessageType.down&&msg.killer?.id===this.game.active_entity_id){
+                }else if(msg.type===FeedMessageType.down&&msg.killer?.id===this.game.active_entity_id&&msg.victimId!==this.game.active_entity_id){
                     this.push_infobox(this.game.language.get("infobox.knock",{kills:(msg.killer?.kills??0).toString(),victim:this.game.ui.players_name[msg.victimId].name}),msg.victimId)
                 }
                 break

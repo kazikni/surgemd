@@ -206,7 +206,6 @@ export class Player extends Human{
     override die(params: DamageParams): void {
         if(this.dead)return
         super.die(params)
-
         if(this.killed_by&&this.killed_by instanceof Player){
             this.scene.feed_messages.push({
                 killer:{
@@ -229,7 +228,6 @@ export class Player extends Human{
                 damage_reason:params.reason,
             })
         }
-
         if(this.team_data.group)this.team_data.group.dirty=true
     }
     override revive(): void {

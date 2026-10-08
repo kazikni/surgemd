@@ -113,12 +113,12 @@ export enum zIndexes{
 
     Loots,
     DownedHumans,
+    Bullets,
     Obstacles1,
-    Obstacles2,
     GrenadeGround,
+    Obstacles2,
     Rain2,
 
-    Bullets,
     Vehicles,
     Creatures,
     CaseParticles,

@@ -854,6 +854,8 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
     }
     const hairs_types:SettingOption[]=[]
     const shirts_types:SettingOption[]=[]
+    const legs_types:SettingOption[]=[]
+    const foot_types:SettingOption[]=[]
     for(const l in definitions.loadout.value){
         if(definitions.loadout.value[l].item===LoadoutItemKind.Hair){
             hairs_types.push({
@@ -862,6 +864,16 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
             })
         }else if(definitions.loadout.value[l].item===LoadoutItemKind.Shirt){
             shirts_types.push({
+                name:definitions.loadout.value[l].idString,
+                value:definitions.loadout.value[l].idString
+            })
+        }else if(definitions.loadout.value[l].item===LoadoutItemKind.Leg){
+            legs_types.push({
+                name:definitions.loadout.value[l].idString,
+                value:definitions.loadout.value[l].idString
+            })
+        }else if(definitions.loadout.value[l].item===LoadoutItemKind.Foot){
+            foot_types.push({
                 name:definitions.loadout.value[l].idString,
                 value:definitions.loadout.value[l].idString
             })
@@ -1309,6 +1321,18 @@ export async function MenuInitDefault(menu:MenuManager,definitions:GameDefinitio
                             tname:"loadout.character.shirt",
                             var:"sv_loadout_shirt",
                             options:shirts_types,
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.legs",
+                            var:"sv_loadout_legs",
+                            options:legs_types,
+                        },
+                        {
+                            type:"enum",
+                            tname:"loadout.character.shoes",
+                            var:"sv_loadout_shoes",
+                            options:foot_types,
                         },
                     ],translation)
                 },

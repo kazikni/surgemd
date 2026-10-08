@@ -33,7 +33,7 @@ import { SyncedParticle } from "../objects/synced_particle.ts";
 import { GInventory } from "./inventory.ts";
 import { GameDeviceManager } from "../managers/deviceManager.ts";
 import { Floors, FloorType } from "common/scripts/others/terrain.ts";
-import { LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutFootDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { Plane } from "../objects/plane.ts";
 import { Decal } from "../objects/decals.ts";
 import { HumanBody } from "../objects/human_body.ts";
@@ -690,6 +690,8 @@ export class Game extends ClientGame<GameObject>{
             hair:(this.definitions.loadout.getFromStringSafe(this.save.settings.get_var("sv_loadout_hair")))?.idNumber??0,
             hair_tint:ColorM.hex2number(this.save.settings.get_var("sv_loadout_hair_tint")),
             shirt:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_shirt")) as LoadoutShirtDef).idNumber!,
+            legs:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_legs")) as LoadoutLegDef).idNumber!,
+            foot:(this.definitions.loadout.getFromString(this.save.settings.get_var("sv_loadout_foot")) as LoadoutFootDef).idNumber!,
         }
         packet.group_token=this.group_token
         packet.victory_emote=this.definitions.game_objects.keysString[this.save.settings.get_var("sv_loadout_emote_victory")]??0

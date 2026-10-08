@@ -17,6 +17,9 @@ export class JoinPacket extends Packet{
 
         body_tint:number
         hair_tint:number
+
+        legs:number
+        foot:number
     }
 
     wrapping:number=0
@@ -34,6 +37,8 @@ export class JoinPacket extends Packet{
         stream.write_boolean_group(this.tank_vehicle_control,this.skin!==undefined,this.skin?.female)
         if(this.skin!==undefined){
             stream.write_uint16(this.skin.shirt)
+            stream.write_uint16(this.skin.legs)
+            stream.write_uint16(this.skin.foot)
             stream.write_uint16(this.skin.hair)
             stream.write_uint32(this.skin.body_tint)
             stream.write_uint32(this.skin.hair_tint)
@@ -54,9 +59,13 @@ export class JoinPacket extends Packet{
                 female:female_skin,
                 hair:0,
                 hair_tint:0,
-                shirt:0
+                shirt:0,
+                foot:0,
+                legs:0
             }
             this.skin.shirt=stream.read_uint16()
+            this.skin.legs=stream.read_uint16()
+            this.skin.foot=stream.read_uint16()
             this.skin.hair=stream.read_uint16()
             this.skin.body_tint=stream.read_uint32()
             this.skin.hair_tint=stream.read_uint32()

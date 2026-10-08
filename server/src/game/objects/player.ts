@@ -8,7 +8,7 @@ import { JoinPacket } from "common/scripts/packets/join_packet.ts";
 import { Stream, RectHitbox2D } from "common/engine/core.ts";
 import { type ServerGameObject } from "../others/gameObject.ts";
 import { SideEffect } from "common/scripts/definitions/player/effects.ts";
-import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutHairDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
+import { LoadoutAccessoryDef, LoadoutEyesDef, LoadoutFootDef, LoadoutHairDef, LoadoutLegDef, LoadoutShirtDef } from "common/scripts/definitions/loadout/skins.ts";
 import { PlayerStatus } from "common/scripts/others/constants.ts";
 import { FeedMessageType } from "common/scripts/packets/general_update.ts";
 import { type ServerGameScene2D } from "../others/scene.ts";
@@ -299,6 +299,8 @@ export class Player extends Human{
             }
             this.visual.body.tint=jp.skin.body_tint
             this.visual.shirt=this.game.definitions.loadout.getFromNumber(jp.skin.shirt) as LoadoutShirtDef
+            this.visual.legs=this.game.definitions.loadout.getFromNumber(jp.skin.legs) as LoadoutLegDef
+            this.visual.foot=this.game.definitions.loadout.getFromNumber(jp.skin.foot) as LoadoutFootDef
             this.visual.accessorys=[]
             if(jp.skin.female){
                 this.visual.accessorys=[this.game.definitions.loadout.getFromString("white_hair_bow") as LoadoutAccessoryDef]

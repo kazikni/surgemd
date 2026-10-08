@@ -471,7 +471,9 @@
                 "hair_type": "Hair Type",
                 "body_tint": "Body Color",
                 "female": "Is Female",
-                "shirt": "Shirt"
+                "shirt": "Shirt",
+                "legs": "Legs",
+                "shoes": "Shoes"
             },
             "emotes":{
                 "left":"Left",
